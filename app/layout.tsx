@@ -7,6 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Calendar, LayoutGrid, Users, ClipboardList } from "lucide-react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import ToastContainer from "@/components/Toast";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
@@ -69,6 +70,7 @@ export default function RootLayout({
 
                     {/* Mobile Bottom Tab Bar */}
                     <MobileBottomNav />
+                    <ToastContainer />
                 </div>
             </body>
         </html>

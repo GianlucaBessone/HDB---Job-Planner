@@ -13,7 +13,9 @@ import {
     ShieldAlert,
     AlertCircle,
     Edit3,
-    XCircle
+    XCircle,
+    LayoutGrid,
+    List
 } from 'lucide-react';
 
 const PREDEFINED_TAGS = ['Electricista', 'Ayudante', 'Técnico CCTV', 'Supervisor', 'Otro'];
@@ -30,6 +32,7 @@ export default function OperatorsPage() {
         etiquetas: [] as string[]
     });
     const [customTag, setCustomTag] = useState('');
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
     useEffect(() => {
         loadOperators();
@@ -147,6 +150,20 @@ export default function OperatorsPage() {
                         onChange={e => setSearchTerm(e.target.value)}
                     />
                 </div>
+                <div className="flex bg-slate-100 p-1.5 rounded-2xl shrink-0">
+                    <button
+                        onClick={() => setViewMode('grid')}
+                        className={`p-2 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-primary' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                        <LayoutGrid className="w-5 h-5" />
+                    </button>
+                    <button
+                        onClick={() => setViewMode('list')}
+                        className={`p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-primary' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                        <List className="w-5 h-5" />
+                    </button>
+                </div>
             </div>
 
             {/* Modal */}
@@ -226,15 +243,56 @@ export default function OperatorsPage() {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "flex flex-col gap-3"}>
                 {isLoading ? (
                     Array(6).fill(0).map((_, i) => (
-                        <div key={i} className="h-40 bg-slate-100/50 rounded-3xl animate-pulse"></div>
+                        <div key={i} className={`bg-slate-100/50 rounded-3xl animate-pulse ${viewMode === 'grid' ? 'h-40' : 'h-16'}`}></div>
                     ))
                 ) : (
                     <>
                         {filteredOperators.map((op: any) => {
                             const tags = op.etiquetas || [];
+                            if (viewMode === 'list') {
+                                return (
+                                    <div key={op.id} className="bg-white px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between hover:border-primary/30 transition-all group">
+                                        <div className="flex items-center gap-4 min-w-0">
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${op.activo ? 'bg-primary/10 text-primary' : 'bg-slate-100 text-slate-400'}`}>
+                                                <UsersIcon className="w-5 h-5" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <h4 className="font-bold text-slate-800 truncate">{op.nombreCompleto}</h4>
+                                                <div className="flex gap-1 overflow-hidden">
+                                                    {tags.slice(0, 2).map((t: string) => (
+                                                        <span key={t} className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">{t}</span>
+                                                    ))}
+                                                    {tags.length > 2 && <span className="text-[9px] font-bold text-primary italic">+{tags.length - 2}</span>}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <button
+                                                onClick={() => openEdit(op)}
+                                                className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-primary transition-all active:scale-95"
+                                            >
+                                                <Edit3 className="w-4 h-4 md:w-5 md:h-5" />
+                                            </button>
+                                            <button
+                                                onClick={() => toggleStatus(op.id, op.activo)}
+                                                className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 transition-all active:scale-95"
+                                            >
+                                                {op.activo ? <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 text-green-500" /> : <XCircle className="w-4 h-4 md:w-5 md:h-5 text-slate-300" />}
+                                            </button>
+                                            <button
+                                                onClick={() => deleteOperator(op.id)}
+                                                className="p-2 hover:bg-red-50 rounded-xl text-slate-300 hover:text-red-500 transition-all active:scale-95"
+                                            >
+                                                <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            }
+
                             return (
                                 <div key={op.id} className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm group hover:border-primary/30 hover:shadow-xl transition-all duration-300 overflow-hidden relative">
                                     <div className="flex justify-between items-start mb-4 relative z-10">

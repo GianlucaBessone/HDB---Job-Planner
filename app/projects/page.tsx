@@ -12,7 +12,9 @@ import {
     AlertCircle,
     Clock,
     Save,
-    X
+    X,
+    LayoutGrid,
+    List
 } from 'lucide-react';
 
 export default function ProjectsPage() {
@@ -28,6 +30,7 @@ export default function ProjectsPage() {
         horasEstimadas: 0,
         horasConsumidas: 0
     });
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
     useEffect(() => {
         loadProjects();
@@ -137,6 +140,20 @@ export default function ProjectsPage() {
                         onChange={e => setSearchTerm(e.target.value)}
                     />
                 </div>
+                <div className="flex bg-slate-100 p-1.5 rounded-2xl shrink-0 gap-1">
+                    <button
+                        onClick={() => setViewMode('grid')}
+                        className={`p-2 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-primary' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                        <LayoutGrid className="w-5 h-5" />
+                    </button>
+                    <button
+                        onClick={() => setViewMode('list')}
+                        className={`p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-primary' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                        <List className="w-5 h-5" />
+                    </button>
+                </div>
             </div>
 
             {/* Modal */}
@@ -202,16 +219,57 @@ export default function ProjectsPage() {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "flex flex-col gap-3"}>
                 {isLoading ? (
                     Array(6).fill(0).map((_, i) => (
-                        <div key={i} className="h-64 bg-slate-100/50 rounded-3xl animate-pulse"></div>
+                        <div key={i} className={`bg-slate-100/50 rounded-3xl animate-pulse ${viewMode === 'grid' ? 'h-64' : 'h-16'}`}></div>
                     ))
                 ) : (
                     <>
                         {filteredProjects.map((p: any) => {
                             const progress = p.horasEstimadas > 0 ? (p.horasConsumidas / p.horasEstimadas) * 100 : 0;
                             const isOver = p.horasConsumidas > p.horasEstimadas;
+
+                            if (viewMode === 'list') {
+                                return (
+                                    <div key={p.id} className="bg-white px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between hover:border-primary/30 transition-all group">
+                                        <div className="flex items-center gap-4 min-w-0">
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${p.activo ? 'bg-primary/10 text-primary' : 'bg-slate-100 text-slate-400'}`}>
+                                                <Briefcase className="w-5 h-5" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <h4 className="font-bold text-slate-800 truncate">{p.nombre}</h4>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-16 md:w-24 bg-slate-100 h-1 rounded-full overflow-hidden">
+                                                        <div className={`h-full ${isOver ? 'bg-red-500' : 'bg-primary'}`} style={{ width: `${Math.min(100, progress)}%` }}></div>
+                                                    </div>
+                                                    <span className="text-[10px] font-bold text-slate-400">{p.horasConsumidas}H</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <button
+                                                onClick={() => openEdit(p)}
+                                                className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-primary transition-all active:scale-95"
+                                            >
+                                                <Edit3 className="w-4 h-4 md:w-5 md:h-5" />
+                                            </button>
+                                            <button
+                                                onClick={() => toggleStatus(p.id, p.activo)}
+                                                className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 transition-all active:scale-95"
+                                            >
+                                                {p.activo ? <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 text-green-500" /> : <XCircle className="w-4 h-4 md:w-5 md:h-5 text-slate-300" />}
+                                            </button>
+                                            <button
+                                                onClick={() => deleteProject(p.id)}
+                                                className="p-2 hover:bg-red-50 rounded-xl text-slate-300 hover:text-red-500 transition-all active:scale-95"
+                                            >
+                                                <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            }
 
                             return (
                                 <div key={p.id} className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-primary/20 group transition-all duration-300 relative">

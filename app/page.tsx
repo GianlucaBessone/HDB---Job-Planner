@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { formatWhatsAppMessage } from '@/lib/whatsappFormatter';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { showToast } from '@/components/Toast';
 import {
     Calendar as CalendarIcon,
     Plus,
@@ -41,6 +42,7 @@ export default function PlanningPage() {
     // Mobile panels
     const [showWhatsApp, setShowWhatsApp] = useState(false);
     const [showFavorites, setShowFavorites] = useState(false);
+    const [collapsedIndices, setCollapsedIndices] = useState<number[]>([]);
 
     const loadPlanning = useCallback(async () => {
         setIsLoading(true);
@@ -167,9 +169,9 @@ export default function PlanningPage() {
                 body: JSON.stringify({ fecha, blocks })
             });
             await loadPlanning();
-            alert('Planificación guardada con éxito');
+            showToast('Planificación guardada con éxito', 'success');
         } catch (error) {
-            alert('Error al guardar');
+            showToast('Error al guardar', 'error');
         } finally { setIsSaving(false); }
     };
 
@@ -180,13 +182,13 @@ export default function PlanningPage() {
             const data = await fetch(`/api/planning?fecha=${duplicateDate}&t=${Date.now()}`).then(res => res.json());
             if (data && data.blocks && data.blocks.length > 0) {
                 setBlocks(data.blocks);
-                alert(`Planificación copiada de ${duplicateDate}`);
-            } else { alert('No se encontró planificación para esa fecha'); }
-        } catch (error) { alert('Error al duplicar'); } finally { setIsLoading(false); }
+                showToast(`Planificación copiada de ${duplicateDate}`, 'success');
+            } else { showToast('No se encontró planificación para esa fecha', 'info'); }
+        } catch (error) { showToast('Error al duplicar', 'error'); } finally { setIsLoading(false); }
     };
 
     const whatsappMessage = formatWhatsAppMessage({ date: fecha, blocks });
-    const copyToClipboard = () => { navigator.clipboard.writeText(whatsappMessage); alert('Mensaje copiado al portapapeles'); };
+    const copyToClipboard = () => { navigator.clipboard.writeText(whatsappMessage); showToast('Mensaje copiado al portapapeles', 'success'); };
     const openInWhatsApp = () => { const url = `https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`; window.open(url, '_blank'); };
     const displayDate = format(new Date(fecha + 'T12:00:00'), "EEEE d 'de' MMMM", { locale: es });
 
@@ -249,122 +251,152 @@ export default function PlanningPage() {
                         <div className="flex flex-col items-center justify-center py-20 animate-pulse"><div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4"></div><p className="text-slate-400 font-medium">Cargando...</p></div>
                     ) : (
                         <div className="space-y-3 md:space-y-4">
-                            {blocks.map((block, index) => (
-                                <div key={`block-${index}`} className="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm relative group hover:border-primary/30 transition-all duration-300">
-                                    {/* Top Controls */}
-                                    <div className="flex justify-between items-center mb-3 md:mb-6">
-                                        <div className="flex items-center gap-0.5">
-                                            <button
-                                                onClick={() => moveBlock(index, 'up')}
-                                                disabled={index === 0}
-                                                className="p-1 text-slate-300 hover:text-primary hover:bg-primary/5 rounded-lg disabled:opacity-0 transition-all active:scale-90"
-                                            >
-                                                <ChevronUp className="w-4 h-4 md:w-5 md:h-5" />
-                                            </button>
-                                            <button
-                                                onClick={() => moveBlock(index, 'down')}
-                                                disabled={index === blocks.length - 1}
-                                                className="p-1 text-slate-300 hover:text-primary hover:bg-primary/5 rounded-lg disabled:opacity-0 transition-all active:scale-90"
-                                            >
-                                                <ChevronDown className="w-4 h-4 md:w-5 md:h-5" />
-                                            </button>
-                                        </div>
+                            {blocks.map((block, index) => {
+                                const isCollapsed = collapsedIndices.includes(index);
+                                const toggleCollapse = () => {
+                                    setCollapsedIndices(prev =>
+                                        prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
+                                    );
+                                };
 
-                                        <div className="flex items-center gap-1">
-                                            <button
-                                                onClick={() => saveAsFavorite(block)}
-                                                className="p-2 text-slate-300 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-all active:scale-90"
-                                            >
-                                                <Star className="w-4 h-4 md:w-5 md:h-5" />
-                                            </button>
-                                            <button
-                                                onClick={() => removeBlock(index)}
-                                                className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all active:scale-90"
-                                            >
-                                                <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
-                                            </button>
-                                        </div>
-                                    </div>
+                                return (
+                                    <div key={`block-${index}`} className="bg-white rounded-2xl border border-slate-200 shadow-sm relative group hover:border-primary/30 transition-all duration-300 overflow-hidden">
+                                        {/* Top Controls & Collapse Trigger */}
+                                        <div className="flex items-center px-4 md:px-6 py-3 border-b border-transparent group-hover:bg-slate-50/50 transition-colors">
+                                            <div className="flex items-center gap-0.5 shrink-0">
+                                                <button
+                                                    onClick={() => moveBlock(index, 'up')}
+                                                    disabled={index === 0}
+                                                    className="p-1 text-slate-300 hover:text-primary hover:bg-primary/5 rounded-lg disabled:opacity-0 transition-all active:scale-90"
+                                                >
+                                                    <ChevronUp className="w-4 h-4 md:w-5 md:h-5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => moveBlock(index, 'down')}
+                                                    disabled={index === blocks.length - 1}
+                                                    className="p-1 text-slate-300 hover:text-primary hover:bg-primary/5 rounded-lg disabled:opacity-0 transition-all active:scale-90"
+                                                >
+                                                    <ChevronDown className="w-4 h-4 md:w-5 md:h-5" />
+                                                </button>
+                                            </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
-                                        <div className="space-y-3 md:space-y-5">
-                                            <div className="space-y-1.5">
-                                                <label className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider px-1">Tipo / Proyecto</label>
-                                                {block.isNoteOnly ? (
-                                                    <div className="w-full bg-slate-100 border border-slate-200 rounded-xl py-2.5 px-3 text-sm text-slate-500 font-bold italic flex items-center gap-2">
-                                                        <StickyNote className="w-4 h-4" /> NOTA LIBRE
+                                            {/* Clickable area for collapse */}
+                                            <div
+                                                className="flex-1 flex justify-center items-center cursor-pointer h-10 select-none"
+                                                onClick={toggleCollapse}
+                                            >
+                                                {isCollapsed ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-xs font-bold text-slate-600 uppercase tracking-tight truncate max-w-[150px] md:max-w-xs px-2 py-1 bg-slate-100 rounded-lg">
+                                                            {block.projectName || 'Sin Proyecto'}
+                                                        </span>
+                                                        <ChevronDown className="w-4 h-4 text-slate-400 animate-bounce-slow" />
                                                     </div>
                                                 ) : (
-                                                    <select className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-primary/20 appearance-auto" value={block.projectId || ''} onChange={e => updateBlock(index, 'projectId', e.target.value)}>
-                                                        <option value="">Seleccionar Proyecto</option>
-                                                        {projects.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
-                                                    </select>
+                                                    <div className="w-12 h-1.5 bg-slate-100 rounded-full group-hover:bg-slate-200 transition-colors"></div>
                                                 )}
                                             </div>
 
-                                            {!block.isNoteOnly && (
-                                                <div className="grid grid-cols-2 gap-3">
-                                                    <div className="space-y-1.5">
-                                                        <label className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider px-1">Inicio</label>
-                                                        <input type="time" className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm text-slate-700 outline-none" value={block.startTime || ''} onChange={e => updateBlock(index, 'startTime', e.target.value)} />
-                                                    </div>
-                                                    <div className="space-y-1.5">
-                                                        <label className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider px-1">Fin</label>
-                                                        <input type="time" className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm text-slate-700 outline-none" value={block.endTime || ''} onChange={e => updateBlock(index, 'endTime', e.target.value)} />
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            <div className="space-y-1.5">
-                                                <label className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider px-1">{block.isNoteOnly ? 'Contenido de la Nota' : 'Nota / Detalles'}</label>
-                                                <textarea
-                                                    placeholder={block.isNoteOnly ? "Escribe tu mensaje aquí..." : "Añade detalles relevantes..."}
-                                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-primary/20 resize-none h-16 md:h-24"
-                                                    value={block.note || ''} onChange={e => updateBlock(index, 'note', e.target.value)}
-                                                />
+                                            <div className="flex items-center gap-1 shrink-0">
+                                                <button
+                                                    onClick={() => saveAsFavorite(block)}
+                                                    className="p-2 text-slate-300 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-all active:scale-90"
+                                                >
+                                                    <Star className="w-4 h-4 md:w-5 md:h-5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => removeBlock(index)}
+                                                    className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all active:scale-90"
+                                                >
+                                                    <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+                                                </button>
                                             </div>
                                         </div>
 
-                                        {!block.isNoteOnly && (
-                                            <div className="space-y-2">
-                                                <div className="flex justify-between items-center px-1">
-                                                    <label className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider">Operadores</label>
-                                                    <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{block.operatorIds.length} sel.</span>
-                                                </div>
-                                                <div className="bg-slate-50/50 border border-slate-200 rounded-2xl p-2 md:p-4 max-h-[160px] md:max-h-[250px] overflow-y-auto space-y-0.5 custom-scrollbar overscroll-contain">
-                                                    {operators.map(op => {
-                                                        const isSelected = block.operatorIds.includes(op.id);
-                                                        const isFirstBlock = index === 0;
-                                                        const isUsedElsewhere = blocks.some((otherBlock, otherIndex) =>
-                                                            index !== otherIndex && otherBlock.operatorIds.includes(op.id)
-                                                        );
-                                                        let conflictBlock = -1;
-                                                        const hasConflict = isUsedElsewhere && blocks.some((b, i) => {
-                                                            if (i === index || !b.operatorIds.includes(op.id)) return false;
-                                                            if (!b.endTime) { conflictBlock = i + 1; return true; }
-                                                            if (block.startTime && block.startTime < b.endTime) { conflictBlock = i + 1; return true; }
-                                                            return false;
-                                                        });
-                                                        const isDisabled = !isFirstBlock && isUsedElsewhere && !isSelected && (!block.startTime || hasConflict);
-                                                        return (
-                                                            <label key={op.id} className={`flex items-center gap-2 p-2 md:p-3 rounded-xl transition-all text-sm ${isSelected ? 'bg-primary/20 text-primary-dark font-medium border border-primary/20' : isDisabled ? 'opacity-40 cursor-not-allowed bg-slate-50 text-slate-400' : 'hover:bg-slate-100 text-slate-600 border border-transparent cursor-pointer'}`}>
-                                                                <input type="checkbox" className="w-4 h-4 rounded border-slate-300 text-primary disabled:cursor-not-allowed shrink-0" checked={isSelected} disabled={isDisabled} onChange={e => {
-                                                                    const next = e.target.checked ? [...block.operatorIds, op.id] : block.operatorIds.filter((id: string) => id !== op.id);
-                                                                    updateBlock(index, 'operatorIds', next);
-                                                                }} />
-                                                                <div className="flex flex-col min-w-0">
-                                                                    <span className="text-xs md:text-sm truncate">{op.nombreCompleto}</span>
-                                                                    {isDisabled && !isSelected && <span className="text-[9px] font-bold uppercase text-red-400">{hasConflict ? 'Ocupado' : 'Re-Asignar'}</span>}
+                                        {!isCollapsed && (
+                                            <div className="p-4 md:p-6 pt-2 md:pt-4 animate-in slide-in-from-top-2 duration-200">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+                                                    <div className="space-y-3 md:space-y-5">
+                                                        <div className="space-y-1.5">
+                                                            <label className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider px-1">Tipo / Proyecto</label>
+                                                            {block.isNoteOnly ? (
+                                                                <div className="w-full bg-slate-100 border border-slate-200 rounded-xl py-2.5 px-3 text-sm text-slate-500 font-bold italic flex items-center gap-2">
+                                                                    <StickyNote className="w-4 h-4" /> NOTA LIBRE
                                                                 </div>
-                                                            </label>
-                                                        );
-                                                    })}
+                                                            ) : (
+                                                                <select className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-primary/20 appearance-auto" value={block.projectId || ''} onChange={e => updateBlock(index, 'projectId', e.target.value)}>
+                                                                    <option value="">Seleccionar Proyecto</option>
+                                                                    {projects.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+                                                                </select>
+                                                            )}
+                                                        </div>
+
+                                                        {!block.isNoteOnly && (
+                                                            <div className="grid grid-cols-2 gap-3">
+                                                                <div className="space-y-1.5">
+                                                                    <label className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider px-1">Inicio</label>
+                                                                    <input type="time" className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm text-slate-700 outline-none" value={block.startTime || ''} onChange={e => updateBlock(index, 'startTime', e.target.value)} />
+                                                                </div>
+                                                                <div className="space-y-1.5">
+                                                                    <label className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider px-1">Fin</label>
+                                                                    <input type="time" className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm text-slate-700 outline-none" value={block.endTime || ''} onChange={e => updateBlock(index, 'endTime', e.target.value)} />
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        <div className="space-y-1.5">
+                                                            <label className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider px-1">{block.isNoteOnly ? 'Contenido de la Nota' : 'Nota / Detalles'}</label>
+                                                            <textarea
+                                                                placeholder={block.isNoteOnly ? "Escribe tu mensaje aquí..." : "Añade detalles relevantes..."}
+                                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-primary/20 resize-none h-16 md:h-24"
+                                                                value={block.note || ''} onChange={e => updateBlock(index, 'note', e.target.value)}
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    {!block.isNoteOnly && (
+                                                        <div className="space-y-2">
+                                                            <div className="flex justify-between items-center px-1">
+                                                                <label className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider">Operadores</label>
+                                                                <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{block.operatorIds.length} sel.</span>
+                                                            </div>
+                                                            <div className="bg-slate-50/50 border border-slate-200 rounded-2xl p-2 md:p-4 max-h-[160px] md:max-h-[250px] overflow-y-auto space-y-0.5 custom-scrollbar overscroll-contain">
+                                                                {operators.map(op => {
+                                                                    const isSelected = block.operatorIds.includes(op.id);
+                                                                    const isFirstBlock = index === 0;
+                                                                    const isUsedElsewhere = blocks.some((otherBlock, otherIndex) =>
+                                                                        index !== otherIndex && otherBlock.operatorIds.includes(op.id)
+                                                                    );
+                                                                    let conflictBlock = -1;
+                                                                    const hasConflict = isUsedElsewhere && blocks.some((b, i) => {
+                                                                        if (i === index || !b.operatorIds.includes(op.id)) return false;
+                                                                        if (!b.endTime) { conflictBlock = i + 1; return true; }
+                                                                        if (block.startTime && block.startTime < b.endTime) { conflictBlock = i + 1; return true; }
+                                                                        return false;
+                                                                    });
+                                                                    const isDisabled = !isFirstBlock && isUsedElsewhere && !isSelected && (!block.startTime || hasConflict);
+                                                                    return (
+                                                                        <label key={op.id} className={`flex items-center gap-2 p-2 md:p-3 rounded-xl transition-all text-sm ${isSelected ? 'bg-primary/20 text-primary-dark font-medium border border-primary/20' : isDisabled ? 'opacity-40 cursor-not-allowed bg-slate-50 text-slate-400' : 'hover:bg-slate-100 text-slate-600 border border-transparent cursor-pointer'}`}>
+                                                                            <input type="checkbox" className="w-4 h-4 rounded border-slate-300 text-primary disabled:cursor-not-allowed shrink-0" checked={isSelected} disabled={isDisabled} onChange={e => {
+                                                                                const next = e.target.checked ? [...block.operatorIds, op.id] : block.operatorIds.filter((id: string) => id !== op.id);
+                                                                                updateBlock(index, 'operatorIds', next);
+                                                                            }} />
+                                                                            <div className="flex flex-col min-w-0">
+                                                                                <span className="text-xs md:text-sm truncate">{op.nombreCompleto}</span>
+                                                                                {isDisabled && !isSelected && <span className="text-[9px] font-bold uppercase text-red-400">{hasConflict ? 'Ocupado' : 'Re-Asignar'}</span>}
+                                                                            </div>
+                                                                        </label>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         )}
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>
