@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id              String   @id @default(cuid())
+  nombre          String
+  activo          Boolean  @default(true)
+  observaciones   String?
+  horasEstimadas  Int      @default(0)
+  horasConsumidas Int      @default(0)
+  createdAt       DateTime @default(now())
+}
+
+model Operator {
+  id             String   @id @default(cuid())
+  nombreCompleto String
+  activo         Boolean  @default(true)
+  etiquetas      Json     // Now using native Json type
+  createdAt      DateTime @default(now())
+}
+
+model FavoriteBlock {
+  id            String  @id @default(cuid())
+  name          String
+  projectId     String?
+  projectName   String?
+  startTime     String?
+  endTime       String?
+  note          String?
+  operatorIds   Json?   // Now using native Json type
+  operatorNames Json?   // Now using native Json type
+  isNoteOnly    Boolean @default(false)
+}
+
+model Planning {
+  id        String   @id @default(cuid())
+  fecha     String   @unique // YYYY-MM-DD
+  blocks    Json     // Now using native Json type
+  createdAt DateTime @default(now())
+}
+
