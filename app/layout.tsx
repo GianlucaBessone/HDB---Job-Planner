@@ -1,6 +1,6 @@
 'use client';
 
-import type { Metadata } from "next";
+import { useEffect } from "react";
 import { Outfit } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
@@ -15,13 +15,27 @@ export default function RootLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
+    useEffect(() => {
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(
+                    registration => console.log('SW registered: ', registration),
+                    error => console.log('SW registration failed: ', error)
+                );
+            });
+        }
+    }, []);
+
     return (
         <html lang="es">
             <head>
                 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
                 <meta name="apple-mobile-web-app-capable" content="yes" />
                 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-                <meta name="theme-color" content="#ffffff" />
+                <meta name="apple-mobile-web-app-title" content="HDB Planner" />
+                <meta name="theme-color" content="#2563eb" />
+                <link rel="manifest" href="/manifest.json" />
+                <link rel="apple-touch-icon" href="/icon-192x192.png" />
                 <title>HDB | Job Planner</title>
                 <meta name="description" content="Sistema premium de planificación para técnicos" />
             </head>

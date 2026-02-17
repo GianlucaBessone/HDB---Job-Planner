@@ -104,8 +104,10 @@ export default function ProjectsPage() {
         await fetch(`/api/projects?id=${id}`, { method: 'DELETE' });
     };
 
+    const normalize = (str: string) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
     const filteredProjects = projects.filter(p =>
-        p.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+        normalize(p.nombre).includes(normalize(searchTerm))
     );
 
     return (

@@ -114,8 +114,10 @@ export default function OperatorsPage() {
         await fetch(`/api/operators?id=${id}`, { method: 'DELETE' });
     };
 
+    const normalize = (str: string) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
     const filteredOperators = operators.filter(op =>
-        op.nombreCompleto.toLowerCase().includes(searchTerm.toLowerCase())
+        normalize(op.nombreCompleto).includes(normalize(searchTerm))
     );
 
     return (
