@@ -5,6 +5,7 @@ import { formatWhatsAppMessage } from '@/lib/whatsappFormatter';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { showToast } from '@/components/Toast';
+import { usePlanningStore } from '@/lib/store/usePlanningStore';
 import {
     Calendar as CalendarIcon,
     Plus,
@@ -26,12 +27,14 @@ import {
 } from 'lucide-react';
 
 export default function PlanningPage() {
-    const [fecha, setFecha] = useState(() => {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        return format(tomorrow, 'yyyy-MM-dd');
-    });
-    const [blocks, setBlocks] = useState<any[]>([]);
+    const {
+        fecha: storeFecha,
+        setFecha: setStoreFecha,
+        blocksByDate,
+        setBlocksForDate
+    } = usePlanningStore();
+
+    const [isHydrated, setIsHydrated] = useState(false);
     const [projects, setProjects] = useState<any[]>([]);
     const [operators, setOperators] = useState<any[]>([]);
     const [favorites, setFavorites] = useState<any[]>([]);
@@ -39,12 +42,43 @@ export default function PlanningPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [duplicateDate, setDuplicateDate] = useState('');
 
+    // Hydration fix for client-side persistence
+    useEffect(() => {
+        setIsHydrated(true);
+        if (!storeFecha) {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            setStoreFecha(format(tomorrow, 'yyyy-MM-dd'));
+        }
+    }, [storeFecha, setStoreFecha]);
+
+    // Use store values
+    const fecha = storeFecha || '';
+    const blocks = blocksByDate[fecha] || [];
+
+    // Helper to update blocks for current fecha
+    const setBlocks = (update: any[] | ((prev: any[]) => any[])) => {
+        const nextBlocks = typeof update === 'function' ? update(blocks) : update;
+        setBlocksForDate(fecha, nextBlocks);
+    };
+
     // Mobile panels
     const [showWhatsApp, setShowWhatsApp] = useState(false);
     const [showFavorites, setShowFavorites] = useState(false);
     const [collapsedIndices, setCollapsedIndices] = useState<number[]>([]);
 
     const loadPlanning = useCallback(async () => {
+        if (!fecha) return;
+
+        // If we already have blocks for this date in the store and we ARE hydrated,
+        // we might want to skip the API call if we want to keep unsaved changes.
+        // However, we should fetch at least once per session per date.
+        // For now, let's keep the logic: if blocks exist in store, don't overwrite.
+        if (blocks.length > 0) {
+            setIsLoading(false);
+            return;
+        }
+
         setIsLoading(true);
         try {
             const data = await fetch(`/api/planning?fecha=${fecha}&t=${Date.now()}`).then(res => res.json());
@@ -58,7 +92,7 @@ export default function PlanningPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [fecha]);
+    }, [fecha, blocks.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const loadData = useCallback(async () => {
         try {
@@ -76,7 +110,9 @@ export default function PlanningPage() {
     }, []);
 
     useEffect(() => { loadData(); }, [loadData]);
-    useEffect(() => { loadPlanning(); }, [loadPlanning]);
+    useEffect(() => {
+        if (isHydrated) loadPlanning();
+    }, [loadPlanning, isHydrated]);
 
     const addBlock = (type: 'work' | 'note' = 'work') => {
         const newBlock = type === 'work' ? {
@@ -168,7 +204,6 @@ export default function PlanningPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ fecha, blocks })
             });
-            await loadPlanning();
             showToast('Planificación guardada con éxito', 'success');
         } catch (error) {
             showToast('Error al guardar', 'error');
@@ -190,6 +225,12 @@ export default function PlanningPage() {
     const whatsappMessage = formatWhatsAppMessage({ date: fecha, blocks });
     const copyToClipboard = () => { navigator.clipboard.writeText(whatsappMessage); showToast('Mensaje copiado al portapapeles', 'success'); };
     const openInWhatsApp = () => { const url = `https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`; window.open(url, '_blank'); };
+
+    // Safety check for display date during hydration
+    if (!isHydrated || !fecha) return <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+    </div>;
+
     const displayDate = format(new Date(fecha + 'T12:00:00'), "EEEE d 'de' MMMM", { locale: es });
 
     return (
@@ -208,7 +249,7 @@ export default function PlanningPage() {
                             type="date"
                             className="bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all w-full"
                             value={fecha}
-                            onChange={e => setFecha(e.target.value)}
+                            onChange={e => setStoreFecha(e.target.value)}
                         />
                     </div>
                     <div className="h-8 w-[1px] bg-slate-200 hidden md:block"></div>
