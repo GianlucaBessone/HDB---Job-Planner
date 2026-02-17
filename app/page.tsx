@@ -65,7 +65,7 @@ export default function PlanningPage() {
     // Mobile panels
     const [showWhatsApp, setShowWhatsApp] = useState(false);
     const [showFavorites, setShowFavorites] = useState(false);
-    const [collapsedIndices, setCollapsedIndices] = useState<number[]>([]);
+    const [expandedIndices, setExpandedIndices] = useState<number[]>([]);
 
     const loadPlanning = useCallback(async () => {
         if (!fecha) return;
@@ -293,9 +293,9 @@ export default function PlanningPage() {
                     ) : (
                         <div className="space-y-3 md:space-y-4">
                             {blocks.map((block, index) => {
-                                const isCollapsed = collapsedIndices.includes(index);
+                                const isCollapsed = !expandedIndices.includes(index);
                                 const toggleCollapse = () => {
-                                    setCollapsedIndices(prev =>
+                                    setExpandedIndices(prev =>
                                         prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
                                     );
                                 };

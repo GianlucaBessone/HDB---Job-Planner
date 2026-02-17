@@ -30,7 +30,7 @@ export default function ProjectsPage() {
         horasEstimadas: 0,
         horasConsumidas: 0
     });
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
 
     useEffect(() => {
         loadProjects();

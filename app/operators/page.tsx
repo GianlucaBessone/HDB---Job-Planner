@@ -32,7 +32,7 @@ export default function OperatorsPage() {
         etiquetas: [] as string[]
     });
     const [customTag, setCustomTag] = useState('');
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
 
     useEffect(() => {
         loadOperators();
