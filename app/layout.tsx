@@ -6,6 +6,7 @@ import "./globals.css";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Calendar, LayoutGrid, Users, ClipboardList } from "lucide-react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
@@ -43,6 +44,7 @@ export default function RootLayout({
 
                     <main className="flex-1 max-w-[1800px] mx-auto w-full px-4 md:px-8 py-6 md:py-8 pb-24 md:pb-8">
                         {children}
+                        <SpeedInsights />
                     </main>
 
                     <footer className="hidden md:block border-t bg-white py-6">
@@ -91,8 +93,8 @@ function MobileBottomNav() {
                             key={tab.href}
                             href={tab.href}
                             className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-all duration-200 relative ${isActive
-                                    ? 'text-primary'
-                                    : 'text-slate-400 active:text-slate-600'
+                                ? 'text-primary'
+                                : 'text-slate-400 active:text-slate-600'
                                 }`}
                         >
                             {isActive && (
@@ -115,8 +117,8 @@ function NavLink({ href, icon, label, active }: { href: string; icon: React.Reac
         <Link
             href={href}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${active
-                    ? 'text-primary bg-primary/10 font-semibold'
-                    : 'text-slate-600 hover:text-primary hover:bg-primary/5'
+                ? 'text-primary bg-primary/10 font-semibold'
+                : 'text-slate-600 hover:text-primary hover:bg-primary/5'
                 }`}
         >
             {icon}
