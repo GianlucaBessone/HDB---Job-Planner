@@ -49,4 +49,12 @@ model Planning {
   blocks    Json     // Now using native Json type
   createdAt DateTime @default(now())
 }
-
+model HdbClient {
+  id        String   @id @default(cuid())
+  nombre    String
+  email     String?
+  telefono  String?
+  direccion String?
+  activo    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}

@@ -74,6 +74,22 @@ export const dataLayer = {
             update: { blocks: blocks as any },
             create: { fecha, blocks: blocks as any }
         });
+    },
+
+    // Clients
+    async getClients() {
+        return await prisma.hdbClient.findMany({
+            orderBy: { nombre: 'asc' }
+        });
+    },
+    async createClient(data: { nombre: string; email?: string; telefono?: string; direccion?: string; activo?: boolean }) {
+        return await prisma.hdbClient.create({ data });
+    },
+    async updateClient(id: string, data: { nombre?: string; email?: string; telefono?: string; direccion?: string; activo?: boolean }) {
+        return await prisma.hdbClient.update({ where: { id }, data });
+    },
+    async deleteClient(id: string) {
+        return await prisma.hdbClient.delete({ where: { id } });
     }
 
 
