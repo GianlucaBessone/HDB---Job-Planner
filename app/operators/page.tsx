@@ -17,6 +17,7 @@ import {
     LayoutGrid,
     List
 } from 'lucide-react';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 const PREDEFINED_TAGS = ['Electricista', 'Ayudante', 'Técnico CCTV', 'Supervisor', 'Otro'];
 
@@ -33,6 +34,9 @@ export default function OperatorsPage() {
     });
     const [customTag, setCustomTag] = useState('');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [operatorToDelete, setOperatorToDelete] = useState<string | null>(null);
 
     useEffect(() => {
         loadOperators();
@@ -110,11 +114,18 @@ export default function OperatorsPage() {
         });
     };
 
-    const deleteOperator = async (id: string) => {
-        if (!confirm('¿Eliminar operador?')) return;
-        // Optimistic update
+    const handleDeleteClick = (id: string) => {
+        setOperatorToDelete(id);
+        setIsConfirmOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!operatorToDelete) return;
+        const id = operatorToDelete;
         setOperators(prev => prev.filter(op => op.id !== id));
         await fetch(`/api/operators?id=${id}`, { method: 'DELETE' });
+        setIsConfirmOpen(false);
+        setOperatorToDelete(null);
     };
 
     const normalize = (str: string) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -283,7 +294,7 @@ export default function OperatorsPage() {
                                                 {op.activo ? <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 text-green-500" /> : <XCircle className="w-4 h-4 md:w-5 md:h-5 text-slate-300" />}
                                             </button>
                                             <button
-                                                onClick={() => deleteOperator(op.id)}
+                                                onClick={() => handleDeleteClick(op.id)}
                                                 className="p-2 hover:bg-red-50 rounded-xl text-slate-300 hover:text-red-500 transition-all active:scale-95"
                                             >
                                                 <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
@@ -313,7 +324,7 @@ export default function OperatorsPage() {
                                                 {op.activo ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <XCircle className="w-5 h-5 text-slate-300" />}
                                             </button>
                                             <button
-                                                onClick={() => deleteOperator(op.id)}
+                                                onClick={() => handleDeleteClick(op.id)}
                                                 className="p-2.5 hover:bg-red-50 rounded-xl text-slate-300 hover:text-red-500 transition-all active:scale-90"
                                             >
                                                 <Trash2 className="w-5 h-5" />
@@ -350,6 +361,14 @@ export default function OperatorsPage() {
                     <p className="font-bold text-slate-700 text-lg">Equipo de trabajo vacío</p>
                 </div>
             )}
+
+            <ConfirmDialog
+                isOpen={isConfirmOpen}
+                title="Eliminar Operador"
+                message="¿Estás seguro de que deseas eliminar este operador? Esta acción no se puede deshacer."
+                onConfirm={confirmDelete}
+                onCancel={() => setIsConfirmOpen(false)}
+            />
         </div>
     );
 }

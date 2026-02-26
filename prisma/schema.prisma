@@ -14,6 +14,11 @@ model Project {
   observaciones   String?
   horasEstimadas  Int      @default(0)
   horasConsumidas Int      @default(0)
+  cliente         String?
+  responsable     String?
+  estado          String   @default("activo") // activo | en_riesgo | atrasado | finalizado
+  fechaInicio     String?
+  fechaFin        String?
   createdAt       DateTime @default(now())
 }
 

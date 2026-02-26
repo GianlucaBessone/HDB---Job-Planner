@@ -13,10 +13,10 @@ export const dataLayer = {
             orderBy: { createdAt: 'desc' }
         });
     },
-    async createProject(data: { nombre: string; activo?: boolean; observaciones?: string; horasEstimadas?: number; horasConsumidas?: number }) {
+    async createProject(data: { nombre: string; activo?: boolean; observaciones?: string; horasEstimadas?: number; horasConsumidas?: number; cliente?: string; responsable?: string; estado?: string; fechaInicio?: string; fechaFin?: string }) {
         return await prisma.project.create({ data });
     },
-    async updateProject(id: string, data: { nombre?: string; activo?: boolean; observaciones?: string; horasEstimadas?: number; horasConsumidas?: number }) {
+    async updateProject(id: string, data: { nombre?: string; activo?: boolean; observaciones?: string; horasEstimadas?: number; horasConsumidas?: number; cliente?: string; responsable?: string; estado?: string; fechaInicio?: string; fechaFin?: string }) {
         return await prisma.project.update({ where: { id }, data });
     },
     async deleteProject(id: string) {

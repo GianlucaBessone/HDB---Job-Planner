@@ -25,6 +25,7 @@ import {
     PanelLeftOpen,
     Send
 } from 'lucide-react';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 export default function PlanningPage() {
     const {
@@ -66,6 +67,9 @@ export default function PlanningPage() {
     const [showWhatsApp, setShowWhatsApp] = useState(false);
     const [showFavorites, setShowFavorites] = useState(false);
     const [expandedIndices, setExpandedIndices] = useState<number[]>([]);
+
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [favoriteToDelete, setFavoriteToDelete] = useState<string | null>(null);
 
     const loadPlanning = useCallback(async () => {
         if (!fecha) return;
@@ -189,11 +193,19 @@ export default function PlanningPage() {
         setShowFavorites(false);
     };
 
-    const deleteFavorite = async (id: string, e: React.MouseEvent) => {
+    const handleDeleteFavoriteClick = (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!confirm('¿Eliminar favorito?')) return;
+        setFavoriteToDelete(id);
+        setIsConfirmOpen(true);
+    };
+
+    const confirmDeleteFavorite = async () => {
+        if (!favoriteToDelete) return;
+        const id = favoriteToDelete;
         await fetch(`/api/favorites?id=${id}`, { method: 'DELETE' });
         setFavorites(prev => prev.filter(f => f.id !== id));
+        setIsConfirmOpen(false);
+        setFavoriteToDelete(null);
     };
 
     const handleSave = async () => {
@@ -477,7 +489,7 @@ export default function PlanningPage() {
                                             <p className="text-[10px] text-slate-400 truncate">{fav.isNoteOnly ? 'Tipo: Nota' : `Ref: ${fav.projectName || 'Sin Proyecto'}`}</p>
                                         </div>
                                     </div>
-                                    <button onClick={(e) => deleteFavorite(fav.id, e)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all"><X className="w-4 h-4" /></button>
+                                    <button onClick={(e) => handleDeleteFavoriteClick(fav.id, e)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all"><X className="w-4 h-4" /></button>
                                 </div>
                             ))}
                             {favorites.length === 0 && <p className="text-[11px] text-slate-400 italic text-center py-4">No tienes plantillas guardadas</p>}
@@ -559,7 +571,7 @@ export default function PlanningPage() {
                                                 <p className="text-[10px] text-slate-400 truncate">{fav.isNoteOnly ? 'Tipo: Nota' : `Ref: ${fav.projectName || 'Sin Proyecto'}`}</p>
                                             </div>
                                         </div>
-                                        <button onClick={(e) => deleteFavorite(fav.id, e)} className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all shrink-0"><X className="w-4 h-4" /></button>
+                                        <button onClick={(e) => handleDeleteFavoriteClick(fav.id, e)} className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all shrink-0"><X className="w-4 h-4" /></button>
                                     </div>
                                 ))}
                                 {favorites.length === 0 && (
@@ -574,6 +586,14 @@ export default function PlanningPage() {
                     </div>
                 </div>
             )}
+
+            <ConfirmDialog
+                isOpen={isConfirmOpen}
+                title="Eliminar Favorito"
+                message="¿Estás seguro de que deseas eliminar esta plantilla favorita?"
+                onConfirm={confirmDeleteFavorite}
+                onCancel={() => setIsConfirmOpen(false)}
+            />
         </div>
     );
 }
