@@ -72,13 +72,11 @@ export default function PlanningPage() {
     const [favoriteToDelete, setFavoriteToDelete] = useState<string | null>(null);
 
     const loadPlanning = useCallback(async () => {
-        if (!fecha) return;
+        if (!fecha || !isHydrated) return;
 
-        // If we already have blocks for this date in the store and we ARE hydrated,
-        // we might want to skip the API call if we want to keep unsaved changes.
-        // However, we should fetch at least once per session per date.
-        // For now, let's keep the logic: if blocks exist in store, don't overwrite.
-        if (blocks.length > 0) {
+        // If we already have blocks for this date in the store,
+        // we skip the API call to keep unsaved changes or respect the empty state.
+        if (blocksByDate[fecha] !== undefined) {
             setIsLoading(false);
             return;
         }
@@ -93,10 +91,11 @@ export default function PlanningPage() {
             }
         } catch (error) {
             console.error('Error loading planning:', error);
+            setBlocks([]); // Ensure we mark it as loaded even on error
         } finally {
             setIsLoading(false);
         }
-    }, [fecha, blocks.length]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [fecha, isHydrated]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const loadData = useCallback(async () => {
         try {
