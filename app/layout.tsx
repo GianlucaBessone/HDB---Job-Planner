@@ -5,7 +5,7 @@ import { Outfit } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Calendar, LayoutGrid, Users, ClipboardList, Menu, X, Landmark } from "lucide-react";
+import { Calendar, LayoutGrid, Users, ClipboardList, Menu, X, Landmark, LayoutDashboard } from "lucide-react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import ToastContainer from "@/components/Toast";
 
@@ -89,6 +89,7 @@ function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) 
     const pathname = usePathname();
 
     const menuItems = [
+        { href: '/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, label: 'Panel de Análisis' },
         { href: '/', icon: <Calendar className="w-5 h-5" />, label: 'Planificación' },
         { href: '/projects', icon: <LayoutGrid className="w-5 h-5" />, label: 'Gestión de Proyectos' },
         { href: '/operators', icon: <Users className="w-5 h-5" />, label: 'Gestión de Operadores' },
