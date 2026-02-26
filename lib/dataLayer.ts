@@ -1,22 +1,39 @@
 import { PrismaClient } from '@prisma/client';
 
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
+const getPrisma = () => {
+    const g = global as any;
+    if (process.env.NODE_ENV === 'production') return new PrismaClient();
 
-export const prisma = globalForPrisma.prisma || new PrismaClient();
+    // Aggressive check for stale instance in development
+    if (g.prisma) {
+        const models = Object.keys(g.prisma);
+        if (!models.includes('hdbClient')) {
+            console.log('--- PRISMA STALE: hdbClient missing. Recreating... ---');
+            delete g.prisma;
+        }
+    }
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+    if (!g.prisma) {
+        console.log('--- PRISMA: Initializing new instance ---');
+        g.prisma = new PrismaClient();
+    }
+    return g.prisma;
+};
+
+export const prisma = getPrisma();
 
 export const dataLayer = {
     // Projects
     async getProjects() {
         return await prisma.project.findMany({
+            include: { client: true },
             orderBy: { createdAt: 'desc' }
         });
     },
-    async createProject(data: { nombre: string; activo?: boolean; observaciones?: string; horasEstimadas?: number; horasConsumidas?: number; cliente?: string; responsable?: string; estado?: string; fechaInicio?: string; fechaFin?: string }) {
+    async createProject(data: { nombre: string; activo?: boolean; observaciones?: string; horasEstimadas?: number; horasConsumidas?: number; cliente?: string; clientId?: string; responsable?: string; estado?: string; fechaInicio?: string; fechaFin?: string }) {
         return await prisma.project.create({ data });
     },
-    async updateProject(id: string, data: { nombre?: string; activo?: boolean; observaciones?: string; horasEstimadas?: number; horasConsumidas?: number; cliente?: string; responsable?: string; estado?: string; fechaInicio?: string; fechaFin?: string }) {
+    async updateProject(id: string, data: { nombre?: string; activo?: boolean; observaciones?: string; horasEstimadas?: number; horasConsumidas?: number; cliente?: string; clientId?: string; responsable?: string; estado?: string; fechaInicio?: string; fechaFin?: string }) {
         return await prisma.project.update({ where: { id }, data });
     },
     async deleteProject(id: string) {

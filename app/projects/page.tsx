@@ -36,6 +36,8 @@ interface Project {
     horasEstimadas: number;
     horasConsumidas: number;
     cliente?: string;
+    clientId?: string;
+    client?: { id: string; nombre: string };
     responsable?: string;
     estado: ProjectStatus;
     fechaInicio?: string;
@@ -49,6 +51,7 @@ interface FormData {
     horasEstimadas: number;
     horasConsumidas: number;
     cliente: string;
+    clientId: string;
     responsable: string;
     estado: ProjectStatus;
     fechaInicio: string;
@@ -86,6 +89,7 @@ const EMPTY_FORM: FormData = {
     horasEstimadas: 0,
     horasConsumidas: 0,
     cliente: '',
+    clientId: '',
     responsable: '',
     estado: 'activo',
     fechaInicio: '',
@@ -108,6 +112,7 @@ const normalize = (s: string) =>
 export default function ProjectsPage() {
     const [projects, setProjects] = useState<Project[]>([]);
     const [operators, setOperators] = useState<{ id: string; nombreCompleto: string }[]>([]);
+    const [clients, setClients] = useState<{ id: string; nombre: string }[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -123,7 +128,15 @@ export default function ProjectsPage() {
     useEffect(() => {
         loadProjects();
         loadOperators();
+        loadClients();
     }, []);
+
+    const loadClients = async () => {
+        try {
+            const data = await fetch('/api/clients').then(res => res.json());
+            if (Array.isArray(data)) setClients(data);
+        } catch (e) { /* ignore */ }
+    };
 
     const loadProjects = async (silent = false) => {
         if (!silent) setIsLoading(true);
@@ -160,6 +173,7 @@ export default function ProjectsPage() {
             horasEstimadas: project.horasEstimadas || 0,
             horasConsumidas: project.horasConsumidas || 0,
             cliente: project.cliente || '',
+            clientId: project.clientId || '',
             responsable: project.responsable || '',
             estado: project.estado || 'activo',
             fechaInicio: project.fechaInicio || '',
@@ -404,6 +418,7 @@ export default function ProjectsPage() {
                     setFormData={setFormData}
                     editingProject={editingProject}
                     operators={operators}
+                    clients={clients}
                     onSubmit={handleSubmit}
                     onClose={() => setIsModalOpen(false)}
                 />
@@ -467,7 +482,9 @@ function ProjectCard({
                 <div className="flex items-center gap-1.5 min-w-0">
                     <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     <span className="text-slate-400 shrink-0">Cliente:</span>
-                    <span className="font-semibold text-slate-700 truncate">{project.cliente || '—'}</span>
+                    <span className="font-semibold text-slate-700 truncate">
+                        {project.client?.nombre || project.cliente || '—'}
+                    </span>
                 </div>
                 <div className="flex items-center gap-1.5 min-w-0">
                     <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -530,6 +547,7 @@ function ProjectModal({
     setFormData,
     editingProject,
     operators,
+    clients,
     onSubmit,
     onClose,
 }: {
@@ -537,6 +555,7 @@ function ProjectModal({
     setFormData: React.Dispatch<React.SetStateAction<FormData>>;
     editingProject: Project | null;
     operators: { id: string; nombreCompleto: string }[];
+    clients: { id: string; nombre: string }[];
     onSubmit: (e: React.FormEvent) => void;
     onClose: () => void;
 }) {
@@ -575,13 +594,24 @@ function ProjectModal({
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Cliente</label>
-                                <input
-                                    type="text"
+                                <select
                                     className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
-                                    value={formData.cliente}
-                                    onChange={e => set('cliente', e.target.value)}
-                                    placeholder="Nombre del cliente"
-                                />
+                                    value={formData.clientId}
+                                    onChange={e => {
+                                        const selectedId = e.target.value;
+                                        const client = clients.find(c => c.id === selectedId);
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            clientId: selectedId,
+                                            cliente: client ? client.nombre : ''
+                                        }));
+                                    }}
+                                >
+                                    <option value="">— Seleccionar cliente —</option>
+                                    {clients.map(c => (
+                                        <option key={c.id} value={c.id}>{c.nombre}</option>
+                                    ))}
+                                </select>
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Responsable</label>

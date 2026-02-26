@@ -14,7 +14,9 @@ model Project {
   observaciones   String?
   horasEstimadas  Int      @default(0)
   horasConsumidas Int      @default(0)
-  cliente         String?
+  cliente         String?  // Keeping this for legacy text
+  clientId        String?
+  client          HdbClient? @relation(fields: [clientId], references: [id])
   responsable     String?
   estado          String   @default("activo") // activo | en_riesgo | atrasado | finalizado
   fechaInicio     String?
@@ -56,5 +58,6 @@ model HdbClient {
   telefono  String?
   direccion String?
   activo    Boolean  @default(true)
+  projects  Project[]
   createdAt DateTime @default(now())
 }
