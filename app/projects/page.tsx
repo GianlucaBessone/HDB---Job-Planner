@@ -24,6 +24,7 @@ import {
     Activity,
     SlidersHorizontal,
     Timer,
+    FileText
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
 
@@ -553,6 +554,17 @@ function ProjectCard({
                         <Calendar className="w-3 h-3" />
                         Planificación
                     </Link>
+                    {project.estado === 'finalizado' && (
+                        <Link
+                            href={`/projects/${project.id}/report`}
+                            target="_blank"
+                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-100 hover:bg-rose-100 transition-all active:scale-95 whitespace-nowrap"
+                            title="Descargar Reporte PDF"
+                        >
+                            <FileText className="w-3 h-3" />
+                            PDF
+                        </Link>
+                    )}
                 </div>
             </div>
         </div>

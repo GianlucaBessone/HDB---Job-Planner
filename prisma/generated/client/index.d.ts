@@ -43,6 +43,16 @@ export type Planning = $Result.DefaultSelection<Prisma.$PlanningPayload>
  * 
  */
 export type HdbClient = $Result.DefaultSelection<Prisma.$HdbClientPayload>
+/**
+ * Model User
+ * 
+ */
+export type User = $Result.DefaultSelection<Prisma.$UserPayload>
+/**
+ * Model TimeEntry
+ * 
+ */
+export type TimeEntry = $Result.DefaultSelection<Prisma.$TimeEntryPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -226,6 +236,26 @@ export class PrismaClient<
     * ```
     */
   get hdbClient(): Prisma.HdbClientDelegate<ExtArgs>;
+
+  /**
+   * `prisma.user`: Exposes CRUD operations for the **User** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Users
+    * const users = await prisma.user.findMany()
+    * ```
+    */
+  get user(): Prisma.UserDelegate<ExtArgs>;
+
+  /**
+   * `prisma.timeEntry`: Exposes CRUD operations for the **TimeEntry** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more TimeEntries
+    * const timeEntries = await prisma.timeEntry.findMany()
+    * ```
+    */
+  get timeEntry(): Prisma.TimeEntryDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -672,7 +702,9 @@ export namespace Prisma {
     Operator: 'Operator',
     FavoriteBlock: 'FavoriteBlock',
     Planning: 'Planning',
-    HdbClient: 'HdbClient'
+    HdbClient: 'HdbClient',
+    User: 'User',
+    TimeEntry: 'TimeEntry'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -688,7 +720,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "project" | "clientDelay" | "operator" | "favoriteBlock" | "planning" | "hdbClient"
+      modelProps: "project" | "clientDelay" | "operator" | "favoriteBlock" | "planning" | "hdbClient" | "user" | "timeEntry"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1112,6 +1144,146 @@ export namespace Prisma {
           }
         }
       }
+      User: {
+        payload: Prisma.$UserPayload<ExtArgs>
+        fields: Prisma.UserFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.UserFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.UserFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPayload>
+          }
+          findFirst: {
+            args: Prisma.UserFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.UserFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPayload>
+          }
+          findMany: {
+            args: Prisma.UserFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPayload>[]
+          }
+          create: {
+            args: Prisma.UserCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPayload>
+          }
+          createMany: {
+            args: Prisma.UserCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.UserCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPayload>[]
+          }
+          delete: {
+            args: Prisma.UserDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPayload>
+          }
+          update: {
+            args: Prisma.UserUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPayload>
+          }
+          deleteMany: {
+            args: Prisma.UserDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.UserUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.UserUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPayload>
+          }
+          aggregate: {
+            args: Prisma.UserAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateUser>
+          }
+          groupBy: {
+            args: Prisma.UserGroupByArgs<ExtArgs>
+            result: $Utils.Optional<UserGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.UserCountArgs<ExtArgs>
+            result: $Utils.Optional<UserCountAggregateOutputType> | number
+          }
+        }
+      }
+      TimeEntry: {
+        payload: Prisma.$TimeEntryPayload<ExtArgs>
+        fields: Prisma.TimeEntryFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.TimeEntryFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TimeEntryPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.TimeEntryFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TimeEntryPayload>
+          }
+          findFirst: {
+            args: Prisma.TimeEntryFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TimeEntryPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.TimeEntryFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TimeEntryPayload>
+          }
+          findMany: {
+            args: Prisma.TimeEntryFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TimeEntryPayload>[]
+          }
+          create: {
+            args: Prisma.TimeEntryCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TimeEntryPayload>
+          }
+          createMany: {
+            args: Prisma.TimeEntryCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.TimeEntryCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TimeEntryPayload>[]
+          }
+          delete: {
+            args: Prisma.TimeEntryDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TimeEntryPayload>
+          }
+          update: {
+            args: Prisma.TimeEntryUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TimeEntryPayload>
+          }
+          deleteMany: {
+            args: Prisma.TimeEntryDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.TimeEntryUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.TimeEntryUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TimeEntryPayload>
+          }
+          aggregate: {
+            args: Prisma.TimeEntryAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateTimeEntry>
+          }
+          groupBy: {
+            args: Prisma.TimeEntryGroupByArgs<ExtArgs>
+            result: $Utils.Optional<TimeEntryGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.TimeEntryCountArgs<ExtArgs>
+            result: $Utils.Optional<TimeEntryCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1274,10 +1446,12 @@ export namespace Prisma {
 
   export type ProjectCountOutputType = {
     clientDelays: number
+    timeEntries: number
   }
 
   export type ProjectCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     clientDelays?: boolean | ProjectCountOutputTypeCountClientDelaysArgs
+    timeEntries?: boolean | ProjectCountOutputTypeCountTimeEntriesArgs
   }
 
   // Custom InputTypes
@@ -1296,6 +1470,44 @@ export namespace Prisma {
    */
   export type ProjectCountOutputTypeCountClientDelaysArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ClientDelayWhereInput
+  }
+
+  /**
+   * ProjectCountOutputType without action
+   */
+  export type ProjectCountOutputTypeCountTimeEntriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TimeEntryWhereInput
+  }
+
+
+  /**
+   * Count Type OperatorCountOutputType
+   */
+
+  export type OperatorCountOutputType = {
+    timeEntries: number
+  }
+
+  export type OperatorCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    timeEntries?: boolean | OperatorCountOutputTypeCountTimeEntriesArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * OperatorCountOutputType without action
+   */
+  export type OperatorCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OperatorCountOutputType
+     */
+    select?: OperatorCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * OperatorCountOutputType without action
+   */
+  export type OperatorCountOutputTypeCountTimeEntriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TimeEntryWhereInput
   }
 
 
@@ -1602,6 +1814,7 @@ export namespace Prisma {
     createdAt?: boolean
     client?: boolean | Project$clientArgs<ExtArgs>
     clientDelays?: boolean | Project$clientDelaysArgs<ExtArgs>
+    timeEntries?: boolean | Project$timeEntriesArgs<ExtArgs>
     _count?: boolean | ProjectCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["project"]>
 
@@ -1641,6 +1854,7 @@ export namespace Prisma {
   export type ProjectInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     client?: boolean | Project$clientArgs<ExtArgs>
     clientDelays?: boolean | Project$clientDelaysArgs<ExtArgs>
+    timeEntries?: boolean | Project$timeEntriesArgs<ExtArgs>
     _count?: boolean | ProjectCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ProjectIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -1652,6 +1866,7 @@ export namespace Prisma {
     objects: {
       client: Prisma.$HdbClientPayload<ExtArgs> | null
       clientDelays: Prisma.$ClientDelayPayload<ExtArgs>[]
+      timeEntries: Prisma.$TimeEntryPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2033,6 +2248,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     client<T extends Project$clientArgs<ExtArgs> = {}>(args?: Subset<T, Project$clientArgs<ExtArgs>>): Prisma__HdbClientClient<$Result.GetResult<Prisma.$HdbClientPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     clientDelays<T extends Project$clientDelaysArgs<ExtArgs> = {}>(args?: Subset<T, Project$clientDelaysArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ClientDelayPayload<ExtArgs>, T, "findMany"> | Null>
+    timeEntries<T extends Project$timeEntriesArgs<ExtArgs> = {}>(args?: Subset<T, Project$timeEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TimeEntryPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2425,6 +2641,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ClientDelayScalarFieldEnum | ClientDelayScalarFieldEnum[]
+  }
+
+  /**
+   * Project.timeEntries
+   */
+  export type Project$timeEntriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TimeEntry
+     */
+    select?: TimeEntrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TimeEntryInclude<ExtArgs> | null
+    where?: TimeEntryWhereInput
+    orderBy?: TimeEntryOrderByWithRelationInput | TimeEntryOrderByWithRelationInput[]
+    cursor?: TimeEntryWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TimeEntryScalarFieldEnum | TimeEntryScalarFieldEnum[]
   }
 
   /**
@@ -3617,6 +3853,8 @@ export namespace Prisma {
     activo?: boolean
     etiquetas?: boolean
     createdAt?: boolean
+    timeEntries?: boolean | Operator$timeEntriesArgs<ExtArgs>
+    _count?: boolean | OperatorCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["operator"]>
 
   export type OperatorSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -3635,10 +3873,17 @@ export namespace Prisma {
     createdAt?: boolean
   }
 
+  export type OperatorInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    timeEntries?: boolean | Operator$timeEntriesArgs<ExtArgs>
+    _count?: boolean | OperatorCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type OperatorIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
 
   export type $OperatorPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Operator"
-    objects: {}
+    objects: {
+      timeEntries: Prisma.$TimeEntryPayload<ExtArgs>[]
+    }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       nombreCompleto: string
@@ -4009,6 +4254,7 @@ export namespace Prisma {
    */
   export interface Prisma__OperatorClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    timeEntries<T extends Operator$timeEntriesArgs<ExtArgs> = {}>(args?: Subset<T, Operator$timeEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TimeEntryPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4056,6 +4302,10 @@ export namespace Prisma {
      */
     select?: OperatorSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OperatorInclude<ExtArgs> | null
+    /**
      * Filter, which Operator to fetch.
      */
     where: OperatorWhereUniqueInput
@@ -4070,6 +4320,10 @@ export namespace Prisma {
      */
     select?: OperatorSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OperatorInclude<ExtArgs> | null
+    /**
      * Filter, which Operator to fetch.
      */
     where: OperatorWhereUniqueInput
@@ -4083,6 +4337,10 @@ export namespace Prisma {
      * Select specific fields to fetch from the Operator
      */
     select?: OperatorSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OperatorInclude<ExtArgs> | null
     /**
      * Filter, which Operator to fetch.
      */
@@ -4128,6 +4386,10 @@ export namespace Prisma {
      */
     select?: OperatorSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OperatorInclude<ExtArgs> | null
+    /**
      * Filter, which Operator to fetch.
      */
     where?: OperatorWhereInput
@@ -4172,6 +4434,10 @@ export namespace Prisma {
      */
     select?: OperatorSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OperatorInclude<ExtArgs> | null
+    /**
      * Filter, which Operators to fetch.
      */
     where?: OperatorWhereInput
@@ -4210,6 +4476,10 @@ export namespace Prisma {
      * Select specific fields to fetch from the Operator
      */
     select?: OperatorSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OperatorInclude<ExtArgs> | null
     /**
      * The data needed to create a Operator.
      */
@@ -4251,6 +4521,10 @@ export namespace Prisma {
      */
     select?: OperatorSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OperatorInclude<ExtArgs> | null
+    /**
      * The data needed to update a Operator.
      */
     data: XOR<OperatorUpdateInput, OperatorUncheckedUpdateInput>
@@ -4283,6 +4557,10 @@ export namespace Prisma {
      */
     select?: OperatorSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OperatorInclude<ExtArgs> | null
+    /**
      * The filter to search for the Operator to update in case it exists.
      */
     where: OperatorWhereUniqueInput
@@ -4305,6 +4583,10 @@ export namespace Prisma {
      */
     select?: OperatorSelect<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OperatorInclude<ExtArgs> | null
+    /**
      * Filter which Operator to delete.
      */
     where: OperatorWhereUniqueInput
@@ -4321,6 +4603,26 @@ export namespace Prisma {
   }
 
   /**
+   * Operator.timeEntries
+   */
+  export type Operator$timeEntriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TimeEntry
+     */
+    select?: TimeEntrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TimeEntryInclude<ExtArgs> | null
+    where?: TimeEntryWhereInput
+    orderBy?: TimeEntryOrderByWithRelationInput | TimeEntryOrderByWithRelationInput[]
+    cursor?: TimeEntryWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TimeEntryScalarFieldEnum | TimeEntryScalarFieldEnum[]
+  }
+
+  /**
    * Operator without action
    */
   export type OperatorDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4328,6 +4630,10 @@ export namespace Prisma {
      * Select specific fields to fetch from the Operator
      */
     select?: OperatorSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OperatorInclude<ExtArgs> | null
   }
 
 
@@ -7096,6 +7402,1929 @@ export namespace Prisma {
 
 
   /**
+   * Model User
+   */
+
+  export type AggregateUser = {
+    _count: UserCountAggregateOutputType | null
+    _min: UserMinAggregateOutputType | null
+    _max: UserMaxAggregateOutputType | null
+  }
+
+  export type UserMinAggregateOutputType = {
+    id: string | null
+    username: string | null
+    password: string | null
+    role: string | null
+    createdAt: Date | null
+  }
+
+  export type UserMaxAggregateOutputType = {
+    id: string | null
+    username: string | null
+    password: string | null
+    role: string | null
+    createdAt: Date | null
+  }
+
+  export type UserCountAggregateOutputType = {
+    id: number
+    username: number
+    password: number
+    role: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type UserMinAggregateInputType = {
+    id?: true
+    username?: true
+    password?: true
+    role?: true
+    createdAt?: true
+  }
+
+  export type UserMaxAggregateInputType = {
+    id?: true
+    username?: true
+    password?: true
+    role?: true
+    createdAt?: true
+  }
+
+  export type UserCountAggregateInputType = {
+    id?: true
+    username?: true
+    password?: true
+    role?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type UserAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which User to aggregate.
+     */
+    where?: UserWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Users to fetch.
+     */
+    orderBy?: UserOrderByWithRelationInput | UserOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: UserWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Users from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Users.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Users
+    **/
+    _count?: true | UserCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: UserMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: UserMaxAggregateInputType
+  }
+
+  export type GetUserAggregateType<T extends UserAggregateArgs> = {
+        [P in keyof T & keyof AggregateUser]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateUser[P]>
+      : GetScalarType<T[P], AggregateUser[P]>
+  }
+
+
+
+
+  export type UserGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserWhereInput
+    orderBy?: UserOrderByWithAggregationInput | UserOrderByWithAggregationInput[]
+    by: UserScalarFieldEnum[] | UserScalarFieldEnum
+    having?: UserScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: UserCountAggregateInputType | true
+    _min?: UserMinAggregateInputType
+    _max?: UserMaxAggregateInputType
+  }
+
+  export type UserGroupByOutputType = {
+    id: string
+    username: string
+    password: string
+    role: string
+    createdAt: Date
+    _count: UserCountAggregateOutputType | null
+    _min: UserMinAggregateOutputType | null
+    _max: UserMaxAggregateOutputType | null
+  }
+
+  type GetUserGroupByPayload<T extends UserGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<UserGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof UserGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], UserGroupByOutputType[P]>
+            : GetScalarType<T[P], UserGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type UserSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    username?: boolean
+    password?: boolean
+    role?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["user"]>
+
+  export type UserSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    username?: boolean
+    password?: boolean
+    role?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["user"]>
+
+  export type UserSelectScalar = {
+    id?: boolean
+    username?: boolean
+    password?: boolean
+    role?: boolean
+    createdAt?: boolean
+  }
+
+
+  export type $UserPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "User"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      username: string
+      password: string
+      role: string
+      createdAt: Date
+    }, ExtArgs["result"]["user"]>
+    composites: {}
+  }
+
+  type UserGetPayload<S extends boolean | null | undefined | UserDefaultArgs> = $Result.GetResult<Prisma.$UserPayload, S>
+
+  type UserCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<UserFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: UserCountAggregateInputType | true
+    }
+
+  export interface UserDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['User'], meta: { name: 'User' } }
+    /**
+     * Find zero or one User that matches the filter.
+     * @param {UserFindUniqueArgs} args - Arguments to find a User
+     * @example
+     * // Get one User
+     * const user = await prisma.user.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends UserFindUniqueArgs>(args: SelectSubset<T, UserFindUniqueArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one User that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {UserFindUniqueOrThrowArgs} args - Arguments to find a User
+     * @example
+     * // Get one User
+     * const user = await prisma.user.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends UserFindUniqueOrThrowArgs>(args: SelectSubset<T, UserFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first User that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserFindFirstArgs} args - Arguments to find a User
+     * @example
+     * // Get one User
+     * const user = await prisma.user.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends UserFindFirstArgs>(args?: SelectSubset<T, UserFindFirstArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first User that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserFindFirstOrThrowArgs} args - Arguments to find a User
+     * @example
+     * // Get one User
+     * const user = await prisma.user.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends UserFindFirstOrThrowArgs>(args?: SelectSubset<T, UserFindFirstOrThrowArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more Users that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Users
+     * const users = await prisma.user.findMany()
+     * 
+     * // Get first 10 Users
+     * const users = await prisma.user.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const userWithIdOnly = await prisma.user.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends UserFindManyArgs>(args?: SelectSubset<T, UserFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a User.
+     * @param {UserCreateArgs} args - Arguments to create a User.
+     * @example
+     * // Create one User
+     * const User = await prisma.user.create({
+     *   data: {
+     *     // ... data to create a User
+     *   }
+     * })
+     * 
+     */
+    create<T extends UserCreateArgs>(args: SelectSubset<T, UserCreateArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many Users.
+     * @param {UserCreateManyArgs} args - Arguments to create many Users.
+     * @example
+     * // Create many Users
+     * const user = await prisma.user.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends UserCreateManyArgs>(args?: SelectSubset<T, UserCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Users and returns the data saved in the database.
+     * @param {UserCreateManyAndReturnArgs} args - Arguments to create many Users.
+     * @example
+     * // Create many Users
+     * const user = await prisma.user.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Users and only return the `id`
+     * const userWithIdOnly = await prisma.user.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends UserCreateManyAndReturnArgs>(args?: SelectSubset<T, UserCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a User.
+     * @param {UserDeleteArgs} args - Arguments to delete one User.
+     * @example
+     * // Delete one User
+     * const User = await prisma.user.delete({
+     *   where: {
+     *     // ... filter to delete one User
+     *   }
+     * })
+     * 
+     */
+    delete<T extends UserDeleteArgs>(args: SelectSubset<T, UserDeleteArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one User.
+     * @param {UserUpdateArgs} args - Arguments to update one User.
+     * @example
+     * // Update one User
+     * const user = await prisma.user.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends UserUpdateArgs>(args: SelectSubset<T, UserUpdateArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more Users.
+     * @param {UserDeleteManyArgs} args - Arguments to filter Users to delete.
+     * @example
+     * // Delete a few Users
+     * const { count } = await prisma.user.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends UserDeleteManyArgs>(args?: SelectSubset<T, UserDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Users.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Users
+     * const user = await prisma.user.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends UserUpdateManyArgs>(args: SelectSubset<T, UserUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one User.
+     * @param {UserUpsertArgs} args - Arguments to update or create a User.
+     * @example
+     * // Update or create a User
+     * const user = await prisma.user.upsert({
+     *   create: {
+     *     // ... data to create a User
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the User we want to update
+     *   }
+     * })
+     */
+    upsert<T extends UserUpsertArgs>(args: SelectSubset<T, UserUpsertArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of Users.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserCountArgs} args - Arguments to filter Users to count.
+     * @example
+     * // Count the number of Users
+     * const count = await prisma.user.count({
+     *   where: {
+     *     // ... the filter for the Users we want to count
+     *   }
+     * })
+    **/
+    count<T extends UserCountArgs>(
+      args?: Subset<T, UserCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], UserCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a User.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends UserAggregateArgs>(args: Subset<T, UserAggregateArgs>): Prisma.PrismaPromise<GetUserAggregateType<T>>
+
+    /**
+     * Group by User.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends UserGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: UserGroupByArgs['orderBy'] }
+        : { orderBy?: UserGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, UserGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetUserGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the User model
+   */
+  readonly fields: UserFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for User.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the User model
+   */ 
+  interface UserFieldRefs {
+    readonly id: FieldRef<"User", 'String'>
+    readonly username: FieldRef<"User", 'String'>
+    readonly password: FieldRef<"User", 'String'>
+    readonly role: FieldRef<"User", 'String'>
+    readonly createdAt: FieldRef<"User", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * User findUnique
+   */
+  export type UserFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Filter, which User to fetch.
+     */
+    where: UserWhereUniqueInput
+  }
+
+  /**
+   * User findUniqueOrThrow
+   */
+  export type UserFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Filter, which User to fetch.
+     */
+    where: UserWhereUniqueInput
+  }
+
+  /**
+   * User findFirst
+   */
+  export type UserFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Filter, which User to fetch.
+     */
+    where?: UserWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Users to fetch.
+     */
+    orderBy?: UserOrderByWithRelationInput | UserOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Users.
+     */
+    cursor?: UserWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Users from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Users.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Users.
+     */
+    distinct?: UserScalarFieldEnum | UserScalarFieldEnum[]
+  }
+
+  /**
+   * User findFirstOrThrow
+   */
+  export type UserFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Filter, which User to fetch.
+     */
+    where?: UserWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Users to fetch.
+     */
+    orderBy?: UserOrderByWithRelationInput | UserOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Users.
+     */
+    cursor?: UserWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Users from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Users.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Users.
+     */
+    distinct?: UserScalarFieldEnum | UserScalarFieldEnum[]
+  }
+
+  /**
+   * User findMany
+   */
+  export type UserFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Filter, which Users to fetch.
+     */
+    where?: UserWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Users to fetch.
+     */
+    orderBy?: UserOrderByWithRelationInput | UserOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Users.
+     */
+    cursor?: UserWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Users from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Users.
+     */
+    skip?: number
+    distinct?: UserScalarFieldEnum | UserScalarFieldEnum[]
+  }
+
+  /**
+   * User create
+   */
+  export type UserCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * The data needed to create a User.
+     */
+    data: XOR<UserCreateInput, UserUncheckedCreateInput>
+  }
+
+  /**
+   * User createMany
+   */
+  export type UserCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Users.
+     */
+    data: UserCreateManyInput | UserCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * User createManyAndReturn
+   */
+  export type UserCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many Users.
+     */
+    data: UserCreateManyInput | UserCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * User update
+   */
+  export type UserUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * The data needed to update a User.
+     */
+    data: XOR<UserUpdateInput, UserUncheckedUpdateInput>
+    /**
+     * Choose, which User to update.
+     */
+    where: UserWhereUniqueInput
+  }
+
+  /**
+   * User updateMany
+   */
+  export type UserUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Users.
+     */
+    data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyInput>
+    /**
+     * Filter which Users to update
+     */
+    where?: UserWhereInput
+  }
+
+  /**
+   * User upsert
+   */
+  export type UserUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * The filter to search for the User to update in case it exists.
+     */
+    where: UserWhereUniqueInput
+    /**
+     * In case the User found by the `where` argument doesn't exist, create a new User with this data.
+     */
+    create: XOR<UserCreateInput, UserUncheckedCreateInput>
+    /**
+     * In case the User was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<UserUpdateInput, UserUncheckedUpdateInput>
+  }
+
+  /**
+   * User delete
+   */
+  export type UserDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Filter which User to delete.
+     */
+    where: UserWhereUniqueInput
+  }
+
+  /**
+   * User deleteMany
+   */
+  export type UserDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Users to delete
+     */
+    where?: UserWhereInput
+  }
+
+  /**
+   * User without action
+   */
+  export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+  }
+
+
+  /**
+   * Model TimeEntry
+   */
+
+  export type AggregateTimeEntry = {
+    _count: TimeEntryCountAggregateOutputType | null
+    _avg: TimeEntryAvgAggregateOutputType | null
+    _sum: TimeEntrySumAggregateOutputType | null
+    _min: TimeEntryMinAggregateOutputType | null
+    _max: TimeEntryMaxAggregateOutputType | null
+  }
+
+  export type TimeEntryAvgAggregateOutputType = {
+    horasTrabajadas: number | null
+  }
+
+  export type TimeEntrySumAggregateOutputType = {
+    horasTrabajadas: number | null
+  }
+
+  export type TimeEntryMinAggregateOutputType = {
+    id: string | null
+    operatorId: string | null
+    projectId: string | null
+    fecha: string | null
+    horaIngreso: string | null
+    horaEgreso: string | null
+    horasTrabajadas: number | null
+    estadoConfirmado: boolean | null
+    confirmadoPorSupervisor: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type TimeEntryMaxAggregateOutputType = {
+    id: string | null
+    operatorId: string | null
+    projectId: string | null
+    fecha: string | null
+    horaIngreso: string | null
+    horaEgreso: string | null
+    horasTrabajadas: number | null
+    estadoConfirmado: boolean | null
+    confirmadoPorSupervisor: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type TimeEntryCountAggregateOutputType = {
+    id: number
+    operatorId: number
+    projectId: number
+    fecha: number
+    horaIngreso: number
+    horaEgreso: number
+    horasTrabajadas: number
+    estadoConfirmado: number
+    confirmadoPorSupervisor: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type TimeEntryAvgAggregateInputType = {
+    horasTrabajadas?: true
+  }
+
+  export type TimeEntrySumAggregateInputType = {
+    horasTrabajadas?: true
+  }
+
+  export type TimeEntryMinAggregateInputType = {
+    id?: true
+    operatorId?: true
+    projectId?: true
+    fecha?: true
+    horaIngreso?: true
+    horaEgreso?: true
+    horasTrabajadas?: true
+    estadoConfirmado?: true
+    confirmadoPorSupervisor?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type TimeEntryMaxAggregateInputType = {
+    id?: true
+    operatorId?: true
+    projectId?: true
+    fecha?: true
+    horaIngreso?: true
+    horaEgreso?: true
+    horasTrabajadas?: true
+    estadoConfirmado?: true
+    confirmadoPorSupervisor?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type TimeEntryCountAggregateInputType = {
+    id?: true
+    operatorId?: true
+    projectId?: true
+    fecha?: true
+    horaIngreso?: true
+    horaEgreso?: true
+    horasTrabajadas?: true
+    estadoConfirmado?: true
+    confirmadoPorSupervisor?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type TimeEntryAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TimeEntry to aggregate.
+     */
+    where?: TimeEntryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TimeEntries to fetch.
+     */
+    orderBy?: TimeEntryOrderByWithRelationInput | TimeEntryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: TimeEntryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TimeEntries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TimeEntries.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned TimeEntries
+    **/
+    _count?: true | TimeEntryCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: TimeEntryAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: TimeEntrySumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: TimeEntryMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: TimeEntryMaxAggregateInputType
+  }
+
+  export type GetTimeEntryAggregateType<T extends TimeEntryAggregateArgs> = {
+        [P in keyof T & keyof AggregateTimeEntry]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateTimeEntry[P]>
+      : GetScalarType<T[P], AggregateTimeEntry[P]>
+  }
+
+
+
+
+  export type TimeEntryGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TimeEntryWhereInput
+    orderBy?: TimeEntryOrderByWithAggregationInput | TimeEntryOrderByWithAggregationInput[]
+    by: TimeEntryScalarFieldEnum[] | TimeEntryScalarFieldEnum
+    having?: TimeEntryScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: TimeEntryCountAggregateInputType | true
+    _avg?: TimeEntryAvgAggregateInputType
+    _sum?: TimeEntrySumAggregateInputType
+    _min?: TimeEntryMinAggregateInputType
+    _max?: TimeEntryMaxAggregateInputType
+  }
+
+  export type TimeEntryGroupByOutputType = {
+    id: string
+    operatorId: string
+    projectId: string
+    fecha: string
+    horaIngreso: string | null
+    horaEgreso: string | null
+    horasTrabajadas: number
+    estadoConfirmado: boolean
+    confirmadoPorSupervisor: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: TimeEntryCountAggregateOutputType | null
+    _avg: TimeEntryAvgAggregateOutputType | null
+    _sum: TimeEntrySumAggregateOutputType | null
+    _min: TimeEntryMinAggregateOutputType | null
+    _max: TimeEntryMaxAggregateOutputType | null
+  }
+
+  type GetTimeEntryGroupByPayload<T extends TimeEntryGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<TimeEntryGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof TimeEntryGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], TimeEntryGroupByOutputType[P]>
+            : GetScalarType<T[P], TimeEntryGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type TimeEntrySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    operatorId?: boolean
+    projectId?: boolean
+    fecha?: boolean
+    horaIngreso?: boolean
+    horaEgreso?: boolean
+    horasTrabajadas?: boolean
+    estadoConfirmado?: boolean
+    confirmadoPorSupervisor?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    operator?: boolean | OperatorDefaultArgs<ExtArgs>
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["timeEntry"]>
+
+  export type TimeEntrySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    operatorId?: boolean
+    projectId?: boolean
+    fecha?: boolean
+    horaIngreso?: boolean
+    horaEgreso?: boolean
+    horasTrabajadas?: boolean
+    estadoConfirmado?: boolean
+    confirmadoPorSupervisor?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    operator?: boolean | OperatorDefaultArgs<ExtArgs>
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["timeEntry"]>
+
+  export type TimeEntrySelectScalar = {
+    id?: boolean
+    operatorId?: boolean
+    projectId?: boolean
+    fecha?: boolean
+    horaIngreso?: boolean
+    horaEgreso?: boolean
+    horasTrabajadas?: boolean
+    estadoConfirmado?: boolean
+    confirmadoPorSupervisor?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type TimeEntryInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    operator?: boolean | OperatorDefaultArgs<ExtArgs>
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }
+  export type TimeEntryIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    operator?: boolean | OperatorDefaultArgs<ExtArgs>
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }
+
+  export type $TimeEntryPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "TimeEntry"
+    objects: {
+      operator: Prisma.$OperatorPayload<ExtArgs>
+      project: Prisma.$ProjectPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      operatorId: string
+      projectId: string
+      fecha: string
+      horaIngreso: string | null
+      horaEgreso: string | null
+      horasTrabajadas: number
+      estadoConfirmado: boolean
+      confirmadoPorSupervisor: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["timeEntry"]>
+    composites: {}
+  }
+
+  type TimeEntryGetPayload<S extends boolean | null | undefined | TimeEntryDefaultArgs> = $Result.GetResult<Prisma.$TimeEntryPayload, S>
+
+  type TimeEntryCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<TimeEntryFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: TimeEntryCountAggregateInputType | true
+    }
+
+  export interface TimeEntryDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['TimeEntry'], meta: { name: 'TimeEntry' } }
+    /**
+     * Find zero or one TimeEntry that matches the filter.
+     * @param {TimeEntryFindUniqueArgs} args - Arguments to find a TimeEntry
+     * @example
+     * // Get one TimeEntry
+     * const timeEntry = await prisma.timeEntry.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends TimeEntryFindUniqueArgs>(args: SelectSubset<T, TimeEntryFindUniqueArgs<ExtArgs>>): Prisma__TimeEntryClient<$Result.GetResult<Prisma.$TimeEntryPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one TimeEntry that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {TimeEntryFindUniqueOrThrowArgs} args - Arguments to find a TimeEntry
+     * @example
+     * // Get one TimeEntry
+     * const timeEntry = await prisma.timeEntry.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends TimeEntryFindUniqueOrThrowArgs>(args: SelectSubset<T, TimeEntryFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TimeEntryClient<$Result.GetResult<Prisma.$TimeEntryPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first TimeEntry that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TimeEntryFindFirstArgs} args - Arguments to find a TimeEntry
+     * @example
+     * // Get one TimeEntry
+     * const timeEntry = await prisma.timeEntry.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends TimeEntryFindFirstArgs>(args?: SelectSubset<T, TimeEntryFindFirstArgs<ExtArgs>>): Prisma__TimeEntryClient<$Result.GetResult<Prisma.$TimeEntryPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first TimeEntry that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TimeEntryFindFirstOrThrowArgs} args - Arguments to find a TimeEntry
+     * @example
+     * // Get one TimeEntry
+     * const timeEntry = await prisma.timeEntry.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends TimeEntryFindFirstOrThrowArgs>(args?: SelectSubset<T, TimeEntryFindFirstOrThrowArgs<ExtArgs>>): Prisma__TimeEntryClient<$Result.GetResult<Prisma.$TimeEntryPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more TimeEntries that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TimeEntryFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all TimeEntries
+     * const timeEntries = await prisma.timeEntry.findMany()
+     * 
+     * // Get first 10 TimeEntries
+     * const timeEntries = await prisma.timeEntry.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const timeEntryWithIdOnly = await prisma.timeEntry.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends TimeEntryFindManyArgs>(args?: SelectSubset<T, TimeEntryFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TimeEntryPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a TimeEntry.
+     * @param {TimeEntryCreateArgs} args - Arguments to create a TimeEntry.
+     * @example
+     * // Create one TimeEntry
+     * const TimeEntry = await prisma.timeEntry.create({
+     *   data: {
+     *     // ... data to create a TimeEntry
+     *   }
+     * })
+     * 
+     */
+    create<T extends TimeEntryCreateArgs>(args: SelectSubset<T, TimeEntryCreateArgs<ExtArgs>>): Prisma__TimeEntryClient<$Result.GetResult<Prisma.$TimeEntryPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many TimeEntries.
+     * @param {TimeEntryCreateManyArgs} args - Arguments to create many TimeEntries.
+     * @example
+     * // Create many TimeEntries
+     * const timeEntry = await prisma.timeEntry.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends TimeEntryCreateManyArgs>(args?: SelectSubset<T, TimeEntryCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many TimeEntries and returns the data saved in the database.
+     * @param {TimeEntryCreateManyAndReturnArgs} args - Arguments to create many TimeEntries.
+     * @example
+     * // Create many TimeEntries
+     * const timeEntry = await prisma.timeEntry.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many TimeEntries and only return the `id`
+     * const timeEntryWithIdOnly = await prisma.timeEntry.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends TimeEntryCreateManyAndReturnArgs>(args?: SelectSubset<T, TimeEntryCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TimeEntryPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a TimeEntry.
+     * @param {TimeEntryDeleteArgs} args - Arguments to delete one TimeEntry.
+     * @example
+     * // Delete one TimeEntry
+     * const TimeEntry = await prisma.timeEntry.delete({
+     *   where: {
+     *     // ... filter to delete one TimeEntry
+     *   }
+     * })
+     * 
+     */
+    delete<T extends TimeEntryDeleteArgs>(args: SelectSubset<T, TimeEntryDeleteArgs<ExtArgs>>): Prisma__TimeEntryClient<$Result.GetResult<Prisma.$TimeEntryPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one TimeEntry.
+     * @param {TimeEntryUpdateArgs} args - Arguments to update one TimeEntry.
+     * @example
+     * // Update one TimeEntry
+     * const timeEntry = await prisma.timeEntry.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends TimeEntryUpdateArgs>(args: SelectSubset<T, TimeEntryUpdateArgs<ExtArgs>>): Prisma__TimeEntryClient<$Result.GetResult<Prisma.$TimeEntryPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more TimeEntries.
+     * @param {TimeEntryDeleteManyArgs} args - Arguments to filter TimeEntries to delete.
+     * @example
+     * // Delete a few TimeEntries
+     * const { count } = await prisma.timeEntry.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends TimeEntryDeleteManyArgs>(args?: SelectSubset<T, TimeEntryDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more TimeEntries.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TimeEntryUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many TimeEntries
+     * const timeEntry = await prisma.timeEntry.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends TimeEntryUpdateManyArgs>(args: SelectSubset<T, TimeEntryUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one TimeEntry.
+     * @param {TimeEntryUpsertArgs} args - Arguments to update or create a TimeEntry.
+     * @example
+     * // Update or create a TimeEntry
+     * const timeEntry = await prisma.timeEntry.upsert({
+     *   create: {
+     *     // ... data to create a TimeEntry
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the TimeEntry we want to update
+     *   }
+     * })
+     */
+    upsert<T extends TimeEntryUpsertArgs>(args: SelectSubset<T, TimeEntryUpsertArgs<ExtArgs>>): Prisma__TimeEntryClient<$Result.GetResult<Prisma.$TimeEntryPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of TimeEntries.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TimeEntryCountArgs} args - Arguments to filter TimeEntries to count.
+     * @example
+     * // Count the number of TimeEntries
+     * const count = await prisma.timeEntry.count({
+     *   where: {
+     *     // ... the filter for the TimeEntries we want to count
+     *   }
+     * })
+    **/
+    count<T extends TimeEntryCountArgs>(
+      args?: Subset<T, TimeEntryCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], TimeEntryCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a TimeEntry.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TimeEntryAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends TimeEntryAggregateArgs>(args: Subset<T, TimeEntryAggregateArgs>): Prisma.PrismaPromise<GetTimeEntryAggregateType<T>>
+
+    /**
+     * Group by TimeEntry.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TimeEntryGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends TimeEntryGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: TimeEntryGroupByArgs['orderBy'] }
+        : { orderBy?: TimeEntryGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, TimeEntryGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTimeEntryGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the TimeEntry model
+   */
+  readonly fields: TimeEntryFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for TimeEntry.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__TimeEntryClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    operator<T extends OperatorDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OperatorDefaultArgs<ExtArgs>>): Prisma__OperatorClient<$Result.GetResult<Prisma.$OperatorPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    project<T extends ProjectDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProjectDefaultArgs<ExtArgs>>): Prisma__ProjectClient<$Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the TimeEntry model
+   */ 
+  interface TimeEntryFieldRefs {
+    readonly id: FieldRef<"TimeEntry", 'String'>
+    readonly operatorId: FieldRef<"TimeEntry", 'String'>
+    readonly projectId: FieldRef<"TimeEntry", 'String'>
+    readonly fecha: FieldRef<"TimeEntry", 'String'>
+    readonly horaIngreso: FieldRef<"TimeEntry", 'String'>
+    readonly horaEgreso: FieldRef<"TimeEntry", 'String'>
+    readonly horasTrabajadas: FieldRef<"TimeEntry", 'Float'>
+    readonly estadoConfirmado: FieldRef<"TimeEntry", 'Boolean'>
+    readonly confirmadoPorSupervisor: FieldRef<"TimeEntry", 'String'>
+    readonly createdAt: FieldRef<"TimeEntry", 'DateTime'>
+    readonly updatedAt: FieldRef<"TimeEntry", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * TimeEntry findUnique
+   */
+  export type TimeEntryFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TimeEntry
+     */
+    select?: TimeEntrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TimeEntryInclude<ExtArgs> | null
+    /**
+     * Filter, which TimeEntry to fetch.
+     */
+    where: TimeEntryWhereUniqueInput
+  }
+
+  /**
+   * TimeEntry findUniqueOrThrow
+   */
+  export type TimeEntryFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TimeEntry
+     */
+    select?: TimeEntrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TimeEntryInclude<ExtArgs> | null
+    /**
+     * Filter, which TimeEntry to fetch.
+     */
+    where: TimeEntryWhereUniqueInput
+  }
+
+  /**
+   * TimeEntry findFirst
+   */
+  export type TimeEntryFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TimeEntry
+     */
+    select?: TimeEntrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TimeEntryInclude<ExtArgs> | null
+    /**
+     * Filter, which TimeEntry to fetch.
+     */
+    where?: TimeEntryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TimeEntries to fetch.
+     */
+    orderBy?: TimeEntryOrderByWithRelationInput | TimeEntryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TimeEntries.
+     */
+    cursor?: TimeEntryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TimeEntries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TimeEntries.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TimeEntries.
+     */
+    distinct?: TimeEntryScalarFieldEnum | TimeEntryScalarFieldEnum[]
+  }
+
+  /**
+   * TimeEntry findFirstOrThrow
+   */
+  export type TimeEntryFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TimeEntry
+     */
+    select?: TimeEntrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TimeEntryInclude<ExtArgs> | null
+    /**
+     * Filter, which TimeEntry to fetch.
+     */
+    where?: TimeEntryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TimeEntries to fetch.
+     */
+    orderBy?: TimeEntryOrderByWithRelationInput | TimeEntryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TimeEntries.
+     */
+    cursor?: TimeEntryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TimeEntries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TimeEntries.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TimeEntries.
+     */
+    distinct?: TimeEntryScalarFieldEnum | TimeEntryScalarFieldEnum[]
+  }
+
+  /**
+   * TimeEntry findMany
+   */
+  export type TimeEntryFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TimeEntry
+     */
+    select?: TimeEntrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TimeEntryInclude<ExtArgs> | null
+    /**
+     * Filter, which TimeEntries to fetch.
+     */
+    where?: TimeEntryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TimeEntries to fetch.
+     */
+    orderBy?: TimeEntryOrderByWithRelationInput | TimeEntryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing TimeEntries.
+     */
+    cursor?: TimeEntryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TimeEntries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TimeEntries.
+     */
+    skip?: number
+    distinct?: TimeEntryScalarFieldEnum | TimeEntryScalarFieldEnum[]
+  }
+
+  /**
+   * TimeEntry create
+   */
+  export type TimeEntryCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TimeEntry
+     */
+    select?: TimeEntrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TimeEntryInclude<ExtArgs> | null
+    /**
+     * The data needed to create a TimeEntry.
+     */
+    data: XOR<TimeEntryCreateInput, TimeEntryUncheckedCreateInput>
+  }
+
+  /**
+   * TimeEntry createMany
+   */
+  export type TimeEntryCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many TimeEntries.
+     */
+    data: TimeEntryCreateManyInput | TimeEntryCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * TimeEntry createManyAndReturn
+   */
+  export type TimeEntryCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TimeEntry
+     */
+    select?: TimeEntrySelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many TimeEntries.
+     */
+    data: TimeEntryCreateManyInput | TimeEntryCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TimeEntryIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * TimeEntry update
+   */
+  export type TimeEntryUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TimeEntry
+     */
+    select?: TimeEntrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TimeEntryInclude<ExtArgs> | null
+    /**
+     * The data needed to update a TimeEntry.
+     */
+    data: XOR<TimeEntryUpdateInput, TimeEntryUncheckedUpdateInput>
+    /**
+     * Choose, which TimeEntry to update.
+     */
+    where: TimeEntryWhereUniqueInput
+  }
+
+  /**
+   * TimeEntry updateMany
+   */
+  export type TimeEntryUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update TimeEntries.
+     */
+    data: XOR<TimeEntryUpdateManyMutationInput, TimeEntryUncheckedUpdateManyInput>
+    /**
+     * Filter which TimeEntries to update
+     */
+    where?: TimeEntryWhereInput
+  }
+
+  /**
+   * TimeEntry upsert
+   */
+  export type TimeEntryUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TimeEntry
+     */
+    select?: TimeEntrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TimeEntryInclude<ExtArgs> | null
+    /**
+     * The filter to search for the TimeEntry to update in case it exists.
+     */
+    where: TimeEntryWhereUniqueInput
+    /**
+     * In case the TimeEntry found by the `where` argument doesn't exist, create a new TimeEntry with this data.
+     */
+    create: XOR<TimeEntryCreateInput, TimeEntryUncheckedCreateInput>
+    /**
+     * In case the TimeEntry was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<TimeEntryUpdateInput, TimeEntryUncheckedUpdateInput>
+  }
+
+  /**
+   * TimeEntry delete
+   */
+  export type TimeEntryDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TimeEntry
+     */
+    select?: TimeEntrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TimeEntryInclude<ExtArgs> | null
+    /**
+     * Filter which TimeEntry to delete.
+     */
+    where: TimeEntryWhereUniqueInput
+  }
+
+  /**
+   * TimeEntry deleteMany
+   */
+  export type TimeEntryDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TimeEntries to delete
+     */
+    where?: TimeEntryWhereInput
+  }
+
+  /**
+   * TimeEntry without action
+   */
+  export type TimeEntryDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TimeEntry
+     */
+    select?: TimeEntrySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TimeEntryInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -7191,6 +9420,34 @@ export namespace Prisma {
   };
 
   export type HdbClientScalarFieldEnum = (typeof HdbClientScalarFieldEnum)[keyof typeof HdbClientScalarFieldEnum]
+
+
+  export const UserScalarFieldEnum: {
+    id: 'id',
+    username: 'username',
+    password: 'password',
+    role: 'role',
+    createdAt: 'createdAt'
+  };
+
+  export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+  export const TimeEntryScalarFieldEnum: {
+    id: 'id',
+    operatorId: 'operatorId',
+    projectId: 'projectId',
+    fecha: 'fecha',
+    horaIngreso: 'horaIngreso',
+    horaEgreso: 'horaEgreso',
+    horasTrabajadas: 'horasTrabajadas',
+    estadoConfirmado: 'estadoConfirmado',
+    confirmadoPorSupervisor: 'confirmadoPorSupervisor',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type TimeEntryScalarFieldEnum = (typeof TimeEntryScalarFieldEnum)[keyof typeof TimeEntryScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -7338,6 +9595,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Project"> | Date | string
     client?: XOR<HdbClientNullableRelationFilter, HdbClientWhereInput> | null
     clientDelays?: ClientDelayListRelationFilter
+    timeEntries?: TimeEntryListRelationFilter
   }
 
   export type ProjectOrderByWithRelationInput = {
@@ -7356,6 +9614,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     client?: HdbClientOrderByWithRelationInput
     clientDelays?: ClientDelayOrderByRelationAggregateInput
+    timeEntries?: TimeEntryOrderByRelationAggregateInput
   }
 
   export type ProjectWhereUniqueInput = Prisma.AtLeast<{
@@ -7377,6 +9636,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Project"> | Date | string
     client?: XOR<HdbClientNullableRelationFilter, HdbClientWhereInput> | null
     clientDelays?: ClientDelayListRelationFilter
+    timeEntries?: TimeEntryListRelationFilter
   }, "id">
 
   export type ProjectOrderByWithAggregationInput = {
@@ -7505,6 +9765,7 @@ export namespace Prisma {
     activo?: BoolFilter<"Operator"> | boolean
     etiquetas?: JsonFilter<"Operator">
     createdAt?: DateTimeFilter<"Operator"> | Date | string
+    timeEntries?: TimeEntryListRelationFilter
   }
 
   export type OperatorOrderByWithRelationInput = {
@@ -7513,6 +9774,7 @@ export namespace Prisma {
     activo?: SortOrder
     etiquetas?: SortOrder
     createdAt?: SortOrder
+    timeEntries?: TimeEntryOrderByRelationAggregateInput
   }
 
   export type OperatorWhereUniqueInput = Prisma.AtLeast<{
@@ -7524,6 +9786,7 @@ export namespace Prisma {
     activo?: BoolFilter<"Operator"> | boolean
     etiquetas?: JsonFilter<"Operator">
     createdAt?: DateTimeFilter<"Operator"> | Date | string
+    timeEntries?: TimeEntryListRelationFilter
   }, "id">
 
   export type OperatorOrderByWithAggregationInput = {
@@ -7737,6 +10000,148 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"HdbClient"> | Date | string
   }
 
+  export type UserWhereInput = {
+    AND?: UserWhereInput | UserWhereInput[]
+    OR?: UserWhereInput[]
+    NOT?: UserWhereInput | UserWhereInput[]
+    id?: StringFilter<"User"> | string
+    username?: StringFilter<"User"> | string
+    password?: StringFilter<"User"> | string
+    role?: StringFilter<"User"> | string
+    createdAt?: DateTimeFilter<"User"> | Date | string
+  }
+
+  export type UserOrderByWithRelationInput = {
+    id?: SortOrder
+    username?: SortOrder
+    password?: SortOrder
+    role?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type UserWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    username?: string
+    AND?: UserWhereInput | UserWhereInput[]
+    OR?: UserWhereInput[]
+    NOT?: UserWhereInput | UserWhereInput[]
+    password?: StringFilter<"User"> | string
+    role?: StringFilter<"User"> | string
+    createdAt?: DateTimeFilter<"User"> | Date | string
+  }, "id" | "username">
+
+  export type UserOrderByWithAggregationInput = {
+    id?: SortOrder
+    username?: SortOrder
+    password?: SortOrder
+    role?: SortOrder
+    createdAt?: SortOrder
+    _count?: UserCountOrderByAggregateInput
+    _max?: UserMaxOrderByAggregateInput
+    _min?: UserMinOrderByAggregateInput
+  }
+
+  export type UserScalarWhereWithAggregatesInput = {
+    AND?: UserScalarWhereWithAggregatesInput | UserScalarWhereWithAggregatesInput[]
+    OR?: UserScalarWhereWithAggregatesInput[]
+    NOT?: UserScalarWhereWithAggregatesInput | UserScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"User"> | string
+    username?: StringWithAggregatesFilter<"User"> | string
+    password?: StringWithAggregatesFilter<"User"> | string
+    role?: StringWithAggregatesFilter<"User"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
+  }
+
+  export type TimeEntryWhereInput = {
+    AND?: TimeEntryWhereInput | TimeEntryWhereInput[]
+    OR?: TimeEntryWhereInput[]
+    NOT?: TimeEntryWhereInput | TimeEntryWhereInput[]
+    id?: StringFilter<"TimeEntry"> | string
+    operatorId?: StringFilter<"TimeEntry"> | string
+    projectId?: StringFilter<"TimeEntry"> | string
+    fecha?: StringFilter<"TimeEntry"> | string
+    horaIngreso?: StringNullableFilter<"TimeEntry"> | string | null
+    horaEgreso?: StringNullableFilter<"TimeEntry"> | string | null
+    horasTrabajadas?: FloatFilter<"TimeEntry"> | number
+    estadoConfirmado?: BoolFilter<"TimeEntry"> | boolean
+    confirmadoPorSupervisor?: StringNullableFilter<"TimeEntry"> | string | null
+    createdAt?: DateTimeFilter<"TimeEntry"> | Date | string
+    updatedAt?: DateTimeFilter<"TimeEntry"> | Date | string
+    operator?: XOR<OperatorRelationFilter, OperatorWhereInput>
+    project?: XOR<ProjectRelationFilter, ProjectWhereInput>
+  }
+
+  export type TimeEntryOrderByWithRelationInput = {
+    id?: SortOrder
+    operatorId?: SortOrder
+    projectId?: SortOrder
+    fecha?: SortOrder
+    horaIngreso?: SortOrderInput | SortOrder
+    horaEgreso?: SortOrderInput | SortOrder
+    horasTrabajadas?: SortOrder
+    estadoConfirmado?: SortOrder
+    confirmadoPorSupervisor?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    operator?: OperatorOrderByWithRelationInput
+    project?: ProjectOrderByWithRelationInput
+  }
+
+  export type TimeEntryWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: TimeEntryWhereInput | TimeEntryWhereInput[]
+    OR?: TimeEntryWhereInput[]
+    NOT?: TimeEntryWhereInput | TimeEntryWhereInput[]
+    operatorId?: StringFilter<"TimeEntry"> | string
+    projectId?: StringFilter<"TimeEntry"> | string
+    fecha?: StringFilter<"TimeEntry"> | string
+    horaIngreso?: StringNullableFilter<"TimeEntry"> | string | null
+    horaEgreso?: StringNullableFilter<"TimeEntry"> | string | null
+    horasTrabajadas?: FloatFilter<"TimeEntry"> | number
+    estadoConfirmado?: BoolFilter<"TimeEntry"> | boolean
+    confirmadoPorSupervisor?: StringNullableFilter<"TimeEntry"> | string | null
+    createdAt?: DateTimeFilter<"TimeEntry"> | Date | string
+    updatedAt?: DateTimeFilter<"TimeEntry"> | Date | string
+    operator?: XOR<OperatorRelationFilter, OperatorWhereInput>
+    project?: XOR<ProjectRelationFilter, ProjectWhereInput>
+  }, "id">
+
+  export type TimeEntryOrderByWithAggregationInput = {
+    id?: SortOrder
+    operatorId?: SortOrder
+    projectId?: SortOrder
+    fecha?: SortOrder
+    horaIngreso?: SortOrderInput | SortOrder
+    horaEgreso?: SortOrderInput | SortOrder
+    horasTrabajadas?: SortOrder
+    estadoConfirmado?: SortOrder
+    confirmadoPorSupervisor?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: TimeEntryCountOrderByAggregateInput
+    _avg?: TimeEntryAvgOrderByAggregateInput
+    _max?: TimeEntryMaxOrderByAggregateInput
+    _min?: TimeEntryMinOrderByAggregateInput
+    _sum?: TimeEntrySumOrderByAggregateInput
+  }
+
+  export type TimeEntryScalarWhereWithAggregatesInput = {
+    AND?: TimeEntryScalarWhereWithAggregatesInput | TimeEntryScalarWhereWithAggregatesInput[]
+    OR?: TimeEntryScalarWhereWithAggregatesInput[]
+    NOT?: TimeEntryScalarWhereWithAggregatesInput | TimeEntryScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"TimeEntry"> | string
+    operatorId?: StringWithAggregatesFilter<"TimeEntry"> | string
+    projectId?: StringWithAggregatesFilter<"TimeEntry"> | string
+    fecha?: StringWithAggregatesFilter<"TimeEntry"> | string
+    horaIngreso?: StringNullableWithAggregatesFilter<"TimeEntry"> | string | null
+    horaEgreso?: StringNullableWithAggregatesFilter<"TimeEntry"> | string | null
+    horasTrabajadas?: FloatWithAggregatesFilter<"TimeEntry"> | number
+    estadoConfirmado?: BoolWithAggregatesFilter<"TimeEntry"> | boolean
+    confirmadoPorSupervisor?: StringNullableWithAggregatesFilter<"TimeEntry"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"TimeEntry"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"TimeEntry"> | Date | string
+  }
+
   export type ProjectCreateInput = {
     id?: string
     nombre: string
@@ -7752,6 +10157,7 @@ export namespace Prisma {
     createdAt?: Date | string
     client?: HdbClientCreateNestedOneWithoutProjectsInput
     clientDelays?: ClientDelayCreateNestedManyWithoutProjectInput
+    timeEntries?: TimeEntryCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateInput = {
@@ -7769,6 +10175,7 @@ export namespace Prisma {
     fechaFin?: string | null
     createdAt?: Date | string
     clientDelays?: ClientDelayUncheckedCreateNestedManyWithoutProjectInput
+    timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUpdateInput = {
@@ -7786,6 +10193,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     client?: HdbClientUpdateOneWithoutProjectsNestedInput
     clientDelays?: ClientDelayUpdateManyWithoutProjectNestedInput
+    timeEntries?: TimeEntryUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateInput = {
@@ -7803,6 +10211,7 @@ export namespace Prisma {
     fechaFin?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     clientDelays?: ClientDelayUncheckedUpdateManyWithoutProjectNestedInput
+    timeEntries?: TimeEntryUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectCreateManyInput = {
@@ -7941,6 +10350,7 @@ export namespace Prisma {
     activo?: boolean
     etiquetas: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
+    timeEntries?: TimeEntryCreateNestedManyWithoutOperatorInput
   }
 
   export type OperatorUncheckedCreateInput = {
@@ -7949,6 +10359,7 @@ export namespace Prisma {
     activo?: boolean
     etiquetas: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
+    timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutOperatorInput
   }
 
   export type OperatorUpdateInput = {
@@ -7957,6 +10368,7 @@ export namespace Prisma {
     activo?: BoolFieldUpdateOperationsInput | boolean
     etiquetas?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    timeEntries?: TimeEntryUpdateManyWithoutOperatorNestedInput
   }
 
   export type OperatorUncheckedUpdateInput = {
@@ -7965,6 +10377,7 @@ export namespace Prisma {
     activo?: BoolFieldUpdateOperationsInput | boolean
     etiquetas?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    timeEntries?: TimeEntryUncheckedUpdateManyWithoutOperatorNestedInput
   }
 
   export type OperatorCreateManyInput = {
@@ -8205,6 +10618,158 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type UserCreateInput = {
+    id?: string
+    username: string
+    password: string
+    role?: string
+    createdAt?: Date | string
+  }
+
+  export type UserUncheckedCreateInput = {
+    id?: string
+    username: string
+    password: string
+    role?: string
+    createdAt?: Date | string
+  }
+
+  export type UserUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserCreateManyInput = {
+    id?: string
+    username: string
+    password: string
+    role?: string
+    createdAt?: Date | string
+  }
+
+  export type UserUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TimeEntryCreateInput = {
+    id?: string
+    fecha: string
+    horaIngreso?: string | null
+    horaEgreso?: string | null
+    horasTrabajadas?: number
+    estadoConfirmado?: boolean
+    confirmadoPorSupervisor?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    operator: OperatorCreateNestedOneWithoutTimeEntriesInput
+    project: ProjectCreateNestedOneWithoutTimeEntriesInput
+  }
+
+  export type TimeEntryUncheckedCreateInput = {
+    id?: string
+    operatorId: string
+    projectId: string
+    fecha: string
+    horaIngreso?: string | null
+    horaEgreso?: string | null
+    horasTrabajadas?: number
+    estadoConfirmado?: boolean
+    confirmadoPorSupervisor?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TimeEntryUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fecha?: StringFieldUpdateOperationsInput | string
+    horaIngreso?: NullableStringFieldUpdateOperationsInput | string | null
+    horaEgreso?: NullableStringFieldUpdateOperationsInput | string | null
+    horasTrabajadas?: FloatFieldUpdateOperationsInput | number
+    estadoConfirmado?: BoolFieldUpdateOperationsInput | boolean
+    confirmadoPorSupervisor?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    operator?: OperatorUpdateOneRequiredWithoutTimeEntriesNestedInput
+    project?: ProjectUpdateOneRequiredWithoutTimeEntriesNestedInput
+  }
+
+  export type TimeEntryUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    operatorId?: StringFieldUpdateOperationsInput | string
+    projectId?: StringFieldUpdateOperationsInput | string
+    fecha?: StringFieldUpdateOperationsInput | string
+    horaIngreso?: NullableStringFieldUpdateOperationsInput | string | null
+    horaEgreso?: NullableStringFieldUpdateOperationsInput | string | null
+    horasTrabajadas?: FloatFieldUpdateOperationsInput | number
+    estadoConfirmado?: BoolFieldUpdateOperationsInput | boolean
+    confirmadoPorSupervisor?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TimeEntryCreateManyInput = {
+    id?: string
+    operatorId: string
+    projectId: string
+    fecha: string
+    horaIngreso?: string | null
+    horaEgreso?: string | null
+    horasTrabajadas?: number
+    estadoConfirmado?: boolean
+    confirmadoPorSupervisor?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TimeEntryUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fecha?: StringFieldUpdateOperationsInput | string
+    horaIngreso?: NullableStringFieldUpdateOperationsInput | string | null
+    horaEgreso?: NullableStringFieldUpdateOperationsInput | string | null
+    horasTrabajadas?: FloatFieldUpdateOperationsInput | number
+    estadoConfirmado?: BoolFieldUpdateOperationsInput | boolean
+    confirmadoPorSupervisor?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TimeEntryUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    operatorId?: StringFieldUpdateOperationsInput | string
+    projectId?: StringFieldUpdateOperationsInput | string
+    fecha?: StringFieldUpdateOperationsInput | string
+    horaIngreso?: NullableStringFieldUpdateOperationsInput | string | null
+    horaEgreso?: NullableStringFieldUpdateOperationsInput | string | null
+    horasTrabajadas?: FloatFieldUpdateOperationsInput | number
+    estadoConfirmado?: BoolFieldUpdateOperationsInput | boolean
+    confirmadoPorSupervisor?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -8273,12 +10838,22 @@ export namespace Prisma {
     none?: ClientDelayWhereInput
   }
 
+  export type TimeEntryListRelationFilter = {
+    every?: TimeEntryWhereInput
+    some?: TimeEntryWhereInput
+    none?: TimeEntryWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
   }
 
   export type ClientDelayOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type TimeEntryOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -8700,6 +11275,85 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
+  export type UserCountOrderByAggregateInput = {
+    id?: SortOrder
+    username?: SortOrder
+    password?: SortOrder
+    role?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type UserMaxOrderByAggregateInput = {
+    id?: SortOrder
+    username?: SortOrder
+    password?: SortOrder
+    role?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type UserMinOrderByAggregateInput = {
+    id?: SortOrder
+    username?: SortOrder
+    password?: SortOrder
+    role?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type OperatorRelationFilter = {
+    is?: OperatorWhereInput
+    isNot?: OperatorWhereInput
+  }
+
+  export type TimeEntryCountOrderByAggregateInput = {
+    id?: SortOrder
+    operatorId?: SortOrder
+    projectId?: SortOrder
+    fecha?: SortOrder
+    horaIngreso?: SortOrder
+    horaEgreso?: SortOrder
+    horasTrabajadas?: SortOrder
+    estadoConfirmado?: SortOrder
+    confirmadoPorSupervisor?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type TimeEntryAvgOrderByAggregateInput = {
+    horasTrabajadas?: SortOrder
+  }
+
+  export type TimeEntryMaxOrderByAggregateInput = {
+    id?: SortOrder
+    operatorId?: SortOrder
+    projectId?: SortOrder
+    fecha?: SortOrder
+    horaIngreso?: SortOrder
+    horaEgreso?: SortOrder
+    horasTrabajadas?: SortOrder
+    estadoConfirmado?: SortOrder
+    confirmadoPorSupervisor?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type TimeEntryMinOrderByAggregateInput = {
+    id?: SortOrder
+    operatorId?: SortOrder
+    projectId?: SortOrder
+    fecha?: SortOrder
+    horaIngreso?: SortOrder
+    horaEgreso?: SortOrder
+    horasTrabajadas?: SortOrder
+    estadoConfirmado?: SortOrder
+    confirmadoPorSupervisor?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type TimeEntrySumOrderByAggregateInput = {
+    horasTrabajadas?: SortOrder
+  }
+
   export type HdbClientCreateNestedOneWithoutProjectsInput = {
     create?: XOR<HdbClientCreateWithoutProjectsInput, HdbClientUncheckedCreateWithoutProjectsInput>
     connectOrCreate?: HdbClientCreateOrConnectWithoutProjectsInput
@@ -8713,11 +11367,25 @@ export namespace Prisma {
     connect?: ClientDelayWhereUniqueInput | ClientDelayWhereUniqueInput[]
   }
 
+  export type TimeEntryCreateNestedManyWithoutProjectInput = {
+    create?: XOR<TimeEntryCreateWithoutProjectInput, TimeEntryUncheckedCreateWithoutProjectInput> | TimeEntryCreateWithoutProjectInput[] | TimeEntryUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: TimeEntryCreateOrConnectWithoutProjectInput | TimeEntryCreateOrConnectWithoutProjectInput[]
+    createMany?: TimeEntryCreateManyProjectInputEnvelope
+    connect?: TimeEntryWhereUniqueInput | TimeEntryWhereUniqueInput[]
+  }
+
   export type ClientDelayUncheckedCreateNestedManyWithoutProjectInput = {
     create?: XOR<ClientDelayCreateWithoutProjectInput, ClientDelayUncheckedCreateWithoutProjectInput> | ClientDelayCreateWithoutProjectInput[] | ClientDelayUncheckedCreateWithoutProjectInput[]
     connectOrCreate?: ClientDelayCreateOrConnectWithoutProjectInput | ClientDelayCreateOrConnectWithoutProjectInput[]
     createMany?: ClientDelayCreateManyProjectInputEnvelope
     connect?: ClientDelayWhereUniqueInput | ClientDelayWhereUniqueInput[]
+  }
+
+  export type TimeEntryUncheckedCreateNestedManyWithoutProjectInput = {
+    create?: XOR<TimeEntryCreateWithoutProjectInput, TimeEntryUncheckedCreateWithoutProjectInput> | TimeEntryCreateWithoutProjectInput[] | TimeEntryUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: TimeEntryCreateOrConnectWithoutProjectInput | TimeEntryCreateOrConnectWithoutProjectInput[]
+    createMany?: TimeEntryCreateManyProjectInputEnvelope
+    connect?: TimeEntryWhereUniqueInput | TimeEntryWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -8768,6 +11436,20 @@ export namespace Prisma {
     deleteMany?: ClientDelayScalarWhereInput | ClientDelayScalarWhereInput[]
   }
 
+  export type TimeEntryUpdateManyWithoutProjectNestedInput = {
+    create?: XOR<TimeEntryCreateWithoutProjectInput, TimeEntryUncheckedCreateWithoutProjectInput> | TimeEntryCreateWithoutProjectInput[] | TimeEntryUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: TimeEntryCreateOrConnectWithoutProjectInput | TimeEntryCreateOrConnectWithoutProjectInput[]
+    upsert?: TimeEntryUpsertWithWhereUniqueWithoutProjectInput | TimeEntryUpsertWithWhereUniqueWithoutProjectInput[]
+    createMany?: TimeEntryCreateManyProjectInputEnvelope
+    set?: TimeEntryWhereUniqueInput | TimeEntryWhereUniqueInput[]
+    disconnect?: TimeEntryWhereUniqueInput | TimeEntryWhereUniqueInput[]
+    delete?: TimeEntryWhereUniqueInput | TimeEntryWhereUniqueInput[]
+    connect?: TimeEntryWhereUniqueInput | TimeEntryWhereUniqueInput[]
+    update?: TimeEntryUpdateWithWhereUniqueWithoutProjectInput | TimeEntryUpdateWithWhereUniqueWithoutProjectInput[]
+    updateMany?: TimeEntryUpdateManyWithWhereWithoutProjectInput | TimeEntryUpdateManyWithWhereWithoutProjectInput[]
+    deleteMany?: TimeEntryScalarWhereInput | TimeEntryScalarWhereInput[]
+  }
+
   export type ClientDelayUncheckedUpdateManyWithoutProjectNestedInput = {
     create?: XOR<ClientDelayCreateWithoutProjectInput, ClientDelayUncheckedCreateWithoutProjectInput> | ClientDelayCreateWithoutProjectInput[] | ClientDelayUncheckedCreateWithoutProjectInput[]
     connectOrCreate?: ClientDelayCreateOrConnectWithoutProjectInput | ClientDelayCreateOrConnectWithoutProjectInput[]
@@ -8780,6 +11462,20 @@ export namespace Prisma {
     update?: ClientDelayUpdateWithWhereUniqueWithoutProjectInput | ClientDelayUpdateWithWhereUniqueWithoutProjectInput[]
     updateMany?: ClientDelayUpdateManyWithWhereWithoutProjectInput | ClientDelayUpdateManyWithWhereWithoutProjectInput[]
     deleteMany?: ClientDelayScalarWhereInput | ClientDelayScalarWhereInput[]
+  }
+
+  export type TimeEntryUncheckedUpdateManyWithoutProjectNestedInput = {
+    create?: XOR<TimeEntryCreateWithoutProjectInput, TimeEntryUncheckedCreateWithoutProjectInput> | TimeEntryCreateWithoutProjectInput[] | TimeEntryUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: TimeEntryCreateOrConnectWithoutProjectInput | TimeEntryCreateOrConnectWithoutProjectInput[]
+    upsert?: TimeEntryUpsertWithWhereUniqueWithoutProjectInput | TimeEntryUpsertWithWhereUniqueWithoutProjectInput[]
+    createMany?: TimeEntryCreateManyProjectInputEnvelope
+    set?: TimeEntryWhereUniqueInput | TimeEntryWhereUniqueInput[]
+    disconnect?: TimeEntryWhereUniqueInput | TimeEntryWhereUniqueInput[]
+    delete?: TimeEntryWhereUniqueInput | TimeEntryWhereUniqueInput[]
+    connect?: TimeEntryWhereUniqueInput | TimeEntryWhereUniqueInput[]
+    update?: TimeEntryUpdateWithWhereUniqueWithoutProjectInput | TimeEntryUpdateWithWhereUniqueWithoutProjectInput[]
+    updateMany?: TimeEntryUpdateManyWithWhereWithoutProjectInput | TimeEntryUpdateManyWithWhereWithoutProjectInput[]
+    deleteMany?: TimeEntryScalarWhereInput | TimeEntryScalarWhereInput[]
   }
 
   export type ProjectCreateNestedOneWithoutClientDelaysInput = {
@@ -8802,6 +11498,48 @@ export namespace Prisma {
     upsert?: ProjectUpsertWithoutClientDelaysInput
     connect?: ProjectWhereUniqueInput
     update?: XOR<XOR<ProjectUpdateToOneWithWhereWithoutClientDelaysInput, ProjectUpdateWithoutClientDelaysInput>, ProjectUncheckedUpdateWithoutClientDelaysInput>
+  }
+
+  export type TimeEntryCreateNestedManyWithoutOperatorInput = {
+    create?: XOR<TimeEntryCreateWithoutOperatorInput, TimeEntryUncheckedCreateWithoutOperatorInput> | TimeEntryCreateWithoutOperatorInput[] | TimeEntryUncheckedCreateWithoutOperatorInput[]
+    connectOrCreate?: TimeEntryCreateOrConnectWithoutOperatorInput | TimeEntryCreateOrConnectWithoutOperatorInput[]
+    createMany?: TimeEntryCreateManyOperatorInputEnvelope
+    connect?: TimeEntryWhereUniqueInput | TimeEntryWhereUniqueInput[]
+  }
+
+  export type TimeEntryUncheckedCreateNestedManyWithoutOperatorInput = {
+    create?: XOR<TimeEntryCreateWithoutOperatorInput, TimeEntryUncheckedCreateWithoutOperatorInput> | TimeEntryCreateWithoutOperatorInput[] | TimeEntryUncheckedCreateWithoutOperatorInput[]
+    connectOrCreate?: TimeEntryCreateOrConnectWithoutOperatorInput | TimeEntryCreateOrConnectWithoutOperatorInput[]
+    createMany?: TimeEntryCreateManyOperatorInputEnvelope
+    connect?: TimeEntryWhereUniqueInput | TimeEntryWhereUniqueInput[]
+  }
+
+  export type TimeEntryUpdateManyWithoutOperatorNestedInput = {
+    create?: XOR<TimeEntryCreateWithoutOperatorInput, TimeEntryUncheckedCreateWithoutOperatorInput> | TimeEntryCreateWithoutOperatorInput[] | TimeEntryUncheckedCreateWithoutOperatorInput[]
+    connectOrCreate?: TimeEntryCreateOrConnectWithoutOperatorInput | TimeEntryCreateOrConnectWithoutOperatorInput[]
+    upsert?: TimeEntryUpsertWithWhereUniqueWithoutOperatorInput | TimeEntryUpsertWithWhereUniqueWithoutOperatorInput[]
+    createMany?: TimeEntryCreateManyOperatorInputEnvelope
+    set?: TimeEntryWhereUniqueInput | TimeEntryWhereUniqueInput[]
+    disconnect?: TimeEntryWhereUniqueInput | TimeEntryWhereUniqueInput[]
+    delete?: TimeEntryWhereUniqueInput | TimeEntryWhereUniqueInput[]
+    connect?: TimeEntryWhereUniqueInput | TimeEntryWhereUniqueInput[]
+    update?: TimeEntryUpdateWithWhereUniqueWithoutOperatorInput | TimeEntryUpdateWithWhereUniqueWithoutOperatorInput[]
+    updateMany?: TimeEntryUpdateManyWithWhereWithoutOperatorInput | TimeEntryUpdateManyWithWhereWithoutOperatorInput[]
+    deleteMany?: TimeEntryScalarWhereInput | TimeEntryScalarWhereInput[]
+  }
+
+  export type TimeEntryUncheckedUpdateManyWithoutOperatorNestedInput = {
+    create?: XOR<TimeEntryCreateWithoutOperatorInput, TimeEntryUncheckedCreateWithoutOperatorInput> | TimeEntryCreateWithoutOperatorInput[] | TimeEntryUncheckedCreateWithoutOperatorInput[]
+    connectOrCreate?: TimeEntryCreateOrConnectWithoutOperatorInput | TimeEntryCreateOrConnectWithoutOperatorInput[]
+    upsert?: TimeEntryUpsertWithWhereUniqueWithoutOperatorInput | TimeEntryUpsertWithWhereUniqueWithoutOperatorInput[]
+    createMany?: TimeEntryCreateManyOperatorInputEnvelope
+    set?: TimeEntryWhereUniqueInput | TimeEntryWhereUniqueInput[]
+    disconnect?: TimeEntryWhereUniqueInput | TimeEntryWhereUniqueInput[]
+    delete?: TimeEntryWhereUniqueInput | TimeEntryWhereUniqueInput[]
+    connect?: TimeEntryWhereUniqueInput | TimeEntryWhereUniqueInput[]
+    update?: TimeEntryUpdateWithWhereUniqueWithoutOperatorInput | TimeEntryUpdateWithWhereUniqueWithoutOperatorInput[]
+    updateMany?: TimeEntryUpdateManyWithWhereWithoutOperatorInput | TimeEntryUpdateManyWithWhereWithoutOperatorInput[]
+    deleteMany?: TimeEntryScalarWhereInput | TimeEntryScalarWhereInput[]
   }
 
   export type ProjectCreateNestedManyWithoutClientInput = {
@@ -8844,6 +11582,34 @@ export namespace Prisma {
     update?: ProjectUpdateWithWhereUniqueWithoutClientInput | ProjectUpdateWithWhereUniqueWithoutClientInput[]
     updateMany?: ProjectUpdateManyWithWhereWithoutClientInput | ProjectUpdateManyWithWhereWithoutClientInput[]
     deleteMany?: ProjectScalarWhereInput | ProjectScalarWhereInput[]
+  }
+
+  export type OperatorCreateNestedOneWithoutTimeEntriesInput = {
+    create?: XOR<OperatorCreateWithoutTimeEntriesInput, OperatorUncheckedCreateWithoutTimeEntriesInput>
+    connectOrCreate?: OperatorCreateOrConnectWithoutTimeEntriesInput
+    connect?: OperatorWhereUniqueInput
+  }
+
+  export type ProjectCreateNestedOneWithoutTimeEntriesInput = {
+    create?: XOR<ProjectCreateWithoutTimeEntriesInput, ProjectUncheckedCreateWithoutTimeEntriesInput>
+    connectOrCreate?: ProjectCreateOrConnectWithoutTimeEntriesInput
+    connect?: ProjectWhereUniqueInput
+  }
+
+  export type OperatorUpdateOneRequiredWithoutTimeEntriesNestedInput = {
+    create?: XOR<OperatorCreateWithoutTimeEntriesInput, OperatorUncheckedCreateWithoutTimeEntriesInput>
+    connectOrCreate?: OperatorCreateOrConnectWithoutTimeEntriesInput
+    upsert?: OperatorUpsertWithoutTimeEntriesInput
+    connect?: OperatorWhereUniqueInput
+    update?: XOR<XOR<OperatorUpdateToOneWithWhereWithoutTimeEntriesInput, OperatorUpdateWithoutTimeEntriesInput>, OperatorUncheckedUpdateWithoutTimeEntriesInput>
+  }
+
+  export type ProjectUpdateOneRequiredWithoutTimeEntriesNestedInput = {
+    create?: XOR<ProjectCreateWithoutTimeEntriesInput, ProjectUncheckedCreateWithoutTimeEntriesInput>
+    connectOrCreate?: ProjectCreateOrConnectWithoutTimeEntriesInput
+    upsert?: ProjectUpsertWithoutTimeEntriesInput
+    connect?: ProjectWhereUniqueInput
+    update?: XOR<XOR<ProjectUpdateToOneWithWhereWithoutTimeEntriesInput, ProjectUpdateWithoutTimeEntriesInput>, ProjectUncheckedUpdateWithoutTimeEntriesInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -9112,6 +11878,42 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type TimeEntryCreateWithoutProjectInput = {
+    id?: string
+    fecha: string
+    horaIngreso?: string | null
+    horaEgreso?: string | null
+    horasTrabajadas?: number
+    estadoConfirmado?: boolean
+    confirmadoPorSupervisor?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    operator: OperatorCreateNestedOneWithoutTimeEntriesInput
+  }
+
+  export type TimeEntryUncheckedCreateWithoutProjectInput = {
+    id?: string
+    operatorId: string
+    fecha: string
+    horaIngreso?: string | null
+    horaEgreso?: string | null
+    horasTrabajadas?: number
+    estadoConfirmado?: boolean
+    confirmadoPorSupervisor?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TimeEntryCreateOrConnectWithoutProjectInput = {
+    where: TimeEntryWhereUniqueInput
+    create: XOR<TimeEntryCreateWithoutProjectInput, TimeEntryUncheckedCreateWithoutProjectInput>
+  }
+
+  export type TimeEntryCreateManyProjectInputEnvelope = {
+    data: TimeEntryCreateManyProjectInput | TimeEntryCreateManyProjectInput[]
+    skipDuplicates?: boolean
+  }
+
   export type HdbClientUpsertWithoutProjectsInput = {
     update: XOR<HdbClientUpdateWithoutProjectsInput, HdbClientUncheckedUpdateWithoutProjectsInput>
     create: XOR<HdbClientCreateWithoutProjectsInput, HdbClientUncheckedCreateWithoutProjectsInput>
@@ -9174,6 +11976,39 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"ClientDelay"> | Date | string
   }
 
+  export type TimeEntryUpsertWithWhereUniqueWithoutProjectInput = {
+    where: TimeEntryWhereUniqueInput
+    update: XOR<TimeEntryUpdateWithoutProjectInput, TimeEntryUncheckedUpdateWithoutProjectInput>
+    create: XOR<TimeEntryCreateWithoutProjectInput, TimeEntryUncheckedCreateWithoutProjectInput>
+  }
+
+  export type TimeEntryUpdateWithWhereUniqueWithoutProjectInput = {
+    where: TimeEntryWhereUniqueInput
+    data: XOR<TimeEntryUpdateWithoutProjectInput, TimeEntryUncheckedUpdateWithoutProjectInput>
+  }
+
+  export type TimeEntryUpdateManyWithWhereWithoutProjectInput = {
+    where: TimeEntryScalarWhereInput
+    data: XOR<TimeEntryUpdateManyMutationInput, TimeEntryUncheckedUpdateManyWithoutProjectInput>
+  }
+
+  export type TimeEntryScalarWhereInput = {
+    AND?: TimeEntryScalarWhereInput | TimeEntryScalarWhereInput[]
+    OR?: TimeEntryScalarWhereInput[]
+    NOT?: TimeEntryScalarWhereInput | TimeEntryScalarWhereInput[]
+    id?: StringFilter<"TimeEntry"> | string
+    operatorId?: StringFilter<"TimeEntry"> | string
+    projectId?: StringFilter<"TimeEntry"> | string
+    fecha?: StringFilter<"TimeEntry"> | string
+    horaIngreso?: StringNullableFilter<"TimeEntry"> | string | null
+    horaEgreso?: StringNullableFilter<"TimeEntry"> | string | null
+    horasTrabajadas?: FloatFilter<"TimeEntry"> | number
+    estadoConfirmado?: BoolFilter<"TimeEntry"> | boolean
+    confirmadoPorSupervisor?: StringNullableFilter<"TimeEntry"> | string | null
+    createdAt?: DateTimeFilter<"TimeEntry"> | Date | string
+    updatedAt?: DateTimeFilter<"TimeEntry"> | Date | string
+  }
+
   export type ProjectCreateWithoutClientDelaysInput = {
     id?: string
     nombre: string
@@ -9188,6 +12023,7 @@ export namespace Prisma {
     fechaFin?: string | null
     createdAt?: Date | string
     client?: HdbClientCreateNestedOneWithoutProjectsInput
+    timeEntries?: TimeEntryCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutClientDelaysInput = {
@@ -9204,6 +12040,7 @@ export namespace Prisma {
     fechaInicio?: string | null
     fechaFin?: string | null
     createdAt?: Date | string
+    timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutClientDelaysInput = {
@@ -9236,6 +12073,7 @@ export namespace Prisma {
     fechaFin?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     client?: HdbClientUpdateOneWithoutProjectsNestedInput
+    timeEntries?: TimeEntryUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutClientDelaysInput = {
@@ -9252,6 +12090,59 @@ export namespace Prisma {
     fechaInicio?: NullableStringFieldUpdateOperationsInput | string | null
     fechaFin?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    timeEntries?: TimeEntryUncheckedUpdateManyWithoutProjectNestedInput
+  }
+
+  export type TimeEntryCreateWithoutOperatorInput = {
+    id?: string
+    fecha: string
+    horaIngreso?: string | null
+    horaEgreso?: string | null
+    horasTrabajadas?: number
+    estadoConfirmado?: boolean
+    confirmadoPorSupervisor?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    project: ProjectCreateNestedOneWithoutTimeEntriesInput
+  }
+
+  export type TimeEntryUncheckedCreateWithoutOperatorInput = {
+    id?: string
+    projectId: string
+    fecha: string
+    horaIngreso?: string | null
+    horaEgreso?: string | null
+    horasTrabajadas?: number
+    estadoConfirmado?: boolean
+    confirmadoPorSupervisor?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TimeEntryCreateOrConnectWithoutOperatorInput = {
+    where: TimeEntryWhereUniqueInput
+    create: XOR<TimeEntryCreateWithoutOperatorInput, TimeEntryUncheckedCreateWithoutOperatorInput>
+  }
+
+  export type TimeEntryCreateManyOperatorInputEnvelope = {
+    data: TimeEntryCreateManyOperatorInput | TimeEntryCreateManyOperatorInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type TimeEntryUpsertWithWhereUniqueWithoutOperatorInput = {
+    where: TimeEntryWhereUniqueInput
+    update: XOR<TimeEntryUpdateWithoutOperatorInput, TimeEntryUncheckedUpdateWithoutOperatorInput>
+    create: XOR<TimeEntryCreateWithoutOperatorInput, TimeEntryUncheckedCreateWithoutOperatorInput>
+  }
+
+  export type TimeEntryUpdateWithWhereUniqueWithoutOperatorInput = {
+    where: TimeEntryWhereUniqueInput
+    data: XOR<TimeEntryUpdateWithoutOperatorInput, TimeEntryUncheckedUpdateWithoutOperatorInput>
+  }
+
+  export type TimeEntryUpdateManyWithWhereWithoutOperatorInput = {
+    where: TimeEntryScalarWhereInput
+    data: XOR<TimeEntryUpdateManyMutationInput, TimeEntryUncheckedUpdateManyWithoutOperatorInput>
   }
 
   export type ProjectCreateWithoutClientInput = {
@@ -9268,6 +12159,7 @@ export namespace Prisma {
     fechaFin?: string | null
     createdAt?: Date | string
     clientDelays?: ClientDelayCreateNestedManyWithoutProjectInput
+    timeEntries?: TimeEntryCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutClientInput = {
@@ -9284,6 +12176,7 @@ export namespace Prisma {
     fechaFin?: string | null
     createdAt?: Date | string
     clientDelays?: ClientDelayUncheckedCreateNestedManyWithoutProjectInput
+    timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutClientInput = {
@@ -9331,6 +12224,138 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Project"> | Date | string
   }
 
+  export type OperatorCreateWithoutTimeEntriesInput = {
+    id?: string
+    nombreCompleto: string
+    activo?: boolean
+    etiquetas: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+  }
+
+  export type OperatorUncheckedCreateWithoutTimeEntriesInput = {
+    id?: string
+    nombreCompleto: string
+    activo?: boolean
+    etiquetas: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+  }
+
+  export type OperatorCreateOrConnectWithoutTimeEntriesInput = {
+    where: OperatorWhereUniqueInput
+    create: XOR<OperatorCreateWithoutTimeEntriesInput, OperatorUncheckedCreateWithoutTimeEntriesInput>
+  }
+
+  export type ProjectCreateWithoutTimeEntriesInput = {
+    id?: string
+    nombre: string
+    activo?: boolean
+    observaciones?: string | null
+    horasEstimadas?: number
+    horasConsumidas?: number
+    cliente?: string | null
+    responsable?: string | null
+    estado?: string
+    fechaInicio?: string | null
+    fechaFin?: string | null
+    createdAt?: Date | string
+    client?: HdbClientCreateNestedOneWithoutProjectsInput
+    clientDelays?: ClientDelayCreateNestedManyWithoutProjectInput
+  }
+
+  export type ProjectUncheckedCreateWithoutTimeEntriesInput = {
+    id?: string
+    nombre: string
+    activo?: boolean
+    observaciones?: string | null
+    horasEstimadas?: number
+    horasConsumidas?: number
+    cliente?: string | null
+    clientId?: string | null
+    responsable?: string | null
+    estado?: string
+    fechaInicio?: string | null
+    fechaFin?: string | null
+    createdAt?: Date | string
+    clientDelays?: ClientDelayUncheckedCreateNestedManyWithoutProjectInput
+  }
+
+  export type ProjectCreateOrConnectWithoutTimeEntriesInput = {
+    where: ProjectWhereUniqueInput
+    create: XOR<ProjectCreateWithoutTimeEntriesInput, ProjectUncheckedCreateWithoutTimeEntriesInput>
+  }
+
+  export type OperatorUpsertWithoutTimeEntriesInput = {
+    update: XOR<OperatorUpdateWithoutTimeEntriesInput, OperatorUncheckedUpdateWithoutTimeEntriesInput>
+    create: XOR<OperatorCreateWithoutTimeEntriesInput, OperatorUncheckedCreateWithoutTimeEntriesInput>
+    where?: OperatorWhereInput
+  }
+
+  export type OperatorUpdateToOneWithWhereWithoutTimeEntriesInput = {
+    where?: OperatorWhereInput
+    data: XOR<OperatorUpdateWithoutTimeEntriesInput, OperatorUncheckedUpdateWithoutTimeEntriesInput>
+  }
+
+  export type OperatorUpdateWithoutTimeEntriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nombreCompleto?: StringFieldUpdateOperationsInput | string
+    activo?: BoolFieldUpdateOperationsInput | boolean
+    etiquetas?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OperatorUncheckedUpdateWithoutTimeEntriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nombreCompleto?: StringFieldUpdateOperationsInput | string
+    activo?: BoolFieldUpdateOperationsInput | boolean
+    etiquetas?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProjectUpsertWithoutTimeEntriesInput = {
+    update: XOR<ProjectUpdateWithoutTimeEntriesInput, ProjectUncheckedUpdateWithoutTimeEntriesInput>
+    create: XOR<ProjectCreateWithoutTimeEntriesInput, ProjectUncheckedCreateWithoutTimeEntriesInput>
+    where?: ProjectWhereInput
+  }
+
+  export type ProjectUpdateToOneWithWhereWithoutTimeEntriesInput = {
+    where?: ProjectWhereInput
+    data: XOR<ProjectUpdateWithoutTimeEntriesInput, ProjectUncheckedUpdateWithoutTimeEntriesInput>
+  }
+
+  export type ProjectUpdateWithoutTimeEntriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nombre?: StringFieldUpdateOperationsInput | string
+    activo?: BoolFieldUpdateOperationsInput | boolean
+    observaciones?: NullableStringFieldUpdateOperationsInput | string | null
+    horasEstimadas?: IntFieldUpdateOperationsInput | number
+    horasConsumidas?: IntFieldUpdateOperationsInput | number
+    cliente?: NullableStringFieldUpdateOperationsInput | string | null
+    responsable?: NullableStringFieldUpdateOperationsInput | string | null
+    estado?: StringFieldUpdateOperationsInput | string
+    fechaInicio?: NullableStringFieldUpdateOperationsInput | string | null
+    fechaFin?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    client?: HdbClientUpdateOneWithoutProjectsNestedInput
+    clientDelays?: ClientDelayUpdateManyWithoutProjectNestedInput
+  }
+
+  export type ProjectUncheckedUpdateWithoutTimeEntriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nombre?: StringFieldUpdateOperationsInput | string
+    activo?: BoolFieldUpdateOperationsInput | boolean
+    observaciones?: NullableStringFieldUpdateOperationsInput | string | null
+    horasEstimadas?: IntFieldUpdateOperationsInput | number
+    horasConsumidas?: IntFieldUpdateOperationsInput | number
+    cliente?: NullableStringFieldUpdateOperationsInput | string | null
+    clientId?: NullableStringFieldUpdateOperationsInput | string | null
+    responsable?: NullableStringFieldUpdateOperationsInput | string | null
+    estado?: StringFieldUpdateOperationsInput | string
+    fechaInicio?: NullableStringFieldUpdateOperationsInput | string | null
+    fechaFin?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    clientDelays?: ClientDelayUncheckedUpdateManyWithoutProjectNestedInput
+  }
+
   export type ClientDelayCreateManyProjectInput = {
     id?: string
     fecha: string
@@ -9340,6 +12365,19 @@ export namespace Prisma {
     motivo: string
     duracion: number
     createdAt?: Date | string
+  }
+
+  export type TimeEntryCreateManyProjectInput = {
+    id?: string
+    operatorId: string
+    fecha: string
+    horaIngreso?: string | null
+    horaEgreso?: string | null
+    horasTrabajadas?: number
+    estadoConfirmado?: boolean
+    confirmadoPorSupervisor?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type ClientDelayUpdateWithoutProjectInput = {
@@ -9375,6 +12413,97 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type TimeEntryUpdateWithoutProjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fecha?: StringFieldUpdateOperationsInput | string
+    horaIngreso?: NullableStringFieldUpdateOperationsInput | string | null
+    horaEgreso?: NullableStringFieldUpdateOperationsInput | string | null
+    horasTrabajadas?: FloatFieldUpdateOperationsInput | number
+    estadoConfirmado?: BoolFieldUpdateOperationsInput | boolean
+    confirmadoPorSupervisor?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    operator?: OperatorUpdateOneRequiredWithoutTimeEntriesNestedInput
+  }
+
+  export type TimeEntryUncheckedUpdateWithoutProjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    operatorId?: StringFieldUpdateOperationsInput | string
+    fecha?: StringFieldUpdateOperationsInput | string
+    horaIngreso?: NullableStringFieldUpdateOperationsInput | string | null
+    horaEgreso?: NullableStringFieldUpdateOperationsInput | string | null
+    horasTrabajadas?: FloatFieldUpdateOperationsInput | number
+    estadoConfirmado?: BoolFieldUpdateOperationsInput | boolean
+    confirmadoPorSupervisor?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TimeEntryUncheckedUpdateManyWithoutProjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    operatorId?: StringFieldUpdateOperationsInput | string
+    fecha?: StringFieldUpdateOperationsInput | string
+    horaIngreso?: NullableStringFieldUpdateOperationsInput | string | null
+    horaEgreso?: NullableStringFieldUpdateOperationsInput | string | null
+    horasTrabajadas?: FloatFieldUpdateOperationsInput | number
+    estadoConfirmado?: BoolFieldUpdateOperationsInput | boolean
+    confirmadoPorSupervisor?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TimeEntryCreateManyOperatorInput = {
+    id?: string
+    projectId: string
+    fecha: string
+    horaIngreso?: string | null
+    horaEgreso?: string | null
+    horasTrabajadas?: number
+    estadoConfirmado?: boolean
+    confirmadoPorSupervisor?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TimeEntryUpdateWithoutOperatorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fecha?: StringFieldUpdateOperationsInput | string
+    horaIngreso?: NullableStringFieldUpdateOperationsInput | string | null
+    horaEgreso?: NullableStringFieldUpdateOperationsInput | string | null
+    horasTrabajadas?: FloatFieldUpdateOperationsInput | number
+    estadoConfirmado?: BoolFieldUpdateOperationsInput | boolean
+    confirmadoPorSupervisor?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    project?: ProjectUpdateOneRequiredWithoutTimeEntriesNestedInput
+  }
+
+  export type TimeEntryUncheckedUpdateWithoutOperatorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    projectId?: StringFieldUpdateOperationsInput | string
+    fecha?: StringFieldUpdateOperationsInput | string
+    horaIngreso?: NullableStringFieldUpdateOperationsInput | string | null
+    horaEgreso?: NullableStringFieldUpdateOperationsInput | string | null
+    horasTrabajadas?: FloatFieldUpdateOperationsInput | number
+    estadoConfirmado?: BoolFieldUpdateOperationsInput | boolean
+    confirmadoPorSupervisor?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TimeEntryUncheckedUpdateManyWithoutOperatorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    projectId?: StringFieldUpdateOperationsInput | string
+    fecha?: StringFieldUpdateOperationsInput | string
+    horaIngreso?: NullableStringFieldUpdateOperationsInput | string | null
+    horaEgreso?: NullableStringFieldUpdateOperationsInput | string | null
+    horasTrabajadas?: FloatFieldUpdateOperationsInput | number
+    estadoConfirmado?: BoolFieldUpdateOperationsInput | boolean
+    confirmadoPorSupervisor?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type ProjectCreateManyClientInput = {
     id?: string
     nombre: string
@@ -9404,6 +12533,7 @@ export namespace Prisma {
     fechaFin?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     clientDelays?: ClientDelayUpdateManyWithoutProjectNestedInput
+    timeEntries?: TimeEntryUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutClientInput = {
@@ -9420,6 +12550,7 @@ export namespace Prisma {
     fechaFin?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     clientDelays?: ClientDelayUncheckedUpdateManyWithoutProjectNestedInput
+    timeEntries?: TimeEntryUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateManyWithoutClientInput = {
@@ -9446,6 +12577,10 @@ export namespace Prisma {
      * @deprecated Use ProjectCountOutputTypeDefaultArgs instead
      */
     export type ProjectCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ProjectCountOutputTypeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use OperatorCountOutputTypeDefaultArgs instead
+     */
+    export type OperatorCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = OperatorCountOutputTypeDefaultArgs<ExtArgs>
     /**
      * @deprecated Use HdbClientCountOutputTypeDefaultArgs instead
      */
@@ -9474,6 +12609,14 @@ export namespace Prisma {
      * @deprecated Use HdbClientDefaultArgs instead
      */
     export type HdbClientArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = HdbClientDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use UserDefaultArgs instead
+     */
+    export type UserArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = UserDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use TimeEntryDefaultArgs instead
+     */
+    export type TimeEntryArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = TimeEntryDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

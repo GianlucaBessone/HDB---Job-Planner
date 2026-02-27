@@ -188,6 +188,28 @@ exports.Prisma.HdbClientScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.UserScalarFieldEnum = {
+  id: 'id',
+  username: 'username',
+  password: 'password',
+  role: 'role',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.TimeEntryScalarFieldEnum = {
+  id: 'id',
+  operatorId: 'operatorId',
+  projectId: 'projectId',
+  fecha: 'fecha',
+  horaIngreso: 'horaIngreso',
+  horaEgreso: 'horaEgreso',
+  horasTrabajadas: 'horasTrabajadas',
+  estadoConfirmado: 'estadoConfirmado',
+  confirmadoPorSupervisor: 'confirmadoPorSupervisor',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -225,7 +247,9 @@ exports.Prisma.ModelName = {
   Operator: 'Operator',
   FavoriteBlock: 'FavoriteBlock',
   Planning: 'Planning',
-  HdbClient: 'HdbClient'
+  HdbClient: 'HdbClient',
+  User: 'User',
+  TimeEntry: 'TimeEntry'
 };
 
 /**

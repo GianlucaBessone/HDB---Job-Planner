@@ -24,6 +24,7 @@ model Project {
   fechaFin        String?
   createdAt       DateTime      @default(now())
   clientDelays    ClientDelay[]
+  timeEntries     TimeEntry[]
 }
 
 model ClientDelay {
@@ -40,11 +41,12 @@ model ClientDelay {
 }
 
 model Operator {
-  id             String   @id @default(cuid())
+  id             String      @id @default(cuid())
   nombreCompleto String
-  activo         Boolean  @default(true)
+  activo         Boolean     @default(true)
   etiquetas      Json // Now using native Json type
-  createdAt      DateTime @default(now())
+  createdAt      DateTime    @default(now())
+  timeEntries    TimeEntry[]
 }
 
 model FavoriteBlock {
@@ -76,4 +78,32 @@ model HdbClient {
   activo    Boolean   @default(true)
   projects  Project[]
   createdAt DateTime  @default(now())
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String // Hashed password or PIN
+  role      String   @default("operador") // operador | supervisor | admin
+  createdAt DateTime @default(now())
+}
+
+model TimeEntry {
+  id                      String   @id @default(cuid())
+  operatorId              String
+  operator                Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  projectId               String
+  project                 Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  fecha                   String // YYYY-MM-DD
+  horaIngreso             String? // HH:mm
+  horaEgreso              String? // HH:mm
+  horasTrabajadas         Float    @default(0)
+  estadoConfirmado        Boolean  @default(false)
+  confirmadoPorSupervisor String?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  @@index([fecha])
+  @@index([projectId])
+  @@index([operatorId])
 }
