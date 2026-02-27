@@ -1,23 +1,22 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/dataLayer';
 
-// Mapeo simple de roles o PINs. Por simplicidad, se puede validar acá un PIN fijo o implementando el modelo User creado.
-// Aquí usamos una validación básica "si envían adminPin correcto, pueden sobreescribir confirmados".
-const SUPERVISOR_PIN = process.env.SUPERVISOR_PIN || '1234';
 
 function calculateHours(start: string, end: string): number {
     if (!start || !end) return 0;
     const [h1, m1] = start.split(':').map(Number);
     const [h2, m2] = end.split(':').map(Number);
-    const date1 = new Date();
-    date1.setHours(h1, m1, 0, 0);
-    const date2 = new Date();
-    date2.setHours(h2, m2, 0, 0);
-    // if end is before start, assume it means next day (though usually not the case here)
-    if (date2 < date1) date2.setDate(date2.getDate() + 1);
 
-    const diff = (date2.getTime() - date1.getTime()) / (1000 * 60 * 60);
-    return Math.round(diff * 100) / 100;
+    const startMins = h1 * 60 + m1;
+    let endMins = h2 * 60 + m2;
+
+    // if end is before start, assume it means next day (overnight shift)
+    if (endMins < startMins) {
+        endMins += 24 * 60;
+    }
+
+    const diffHours = (endMins - startMins) / 60;
+    return Math.round(diffHours * 100) / 100;
 }
 
 export async function GET(req: Request) {
@@ -51,7 +50,11 @@ export async function POST(req: Request) {
     try {
         const data = await req.json();
 
-        const { operatorId, projectId, fecha, horaIngreso, horaEgreso } = data;
+        const { operatorId, projectId, fecha, horaIngreso, horaEgreso, isExtra, requestUserId, requestUserRole } = data;
+
+        if (requestUserRole === 'operador' && requestUserId !== operatorId) {
+            return NextResponse.json({ error: 'No tienes permisos para crear registros para otros operadores.' }, { status: 403 });
+        }
 
         let horasTrabajadas = 0;
         if (horaIngreso && horaEgreso) {
@@ -65,7 +68,8 @@ export async function POST(req: Request) {
                 fecha,
                 horaIngreso,
                 horaEgreso,
-                horasTrabajadas
+                horasTrabajadas,
+                isExtra: isExtra || false
             }
         });
 
@@ -79,24 +83,29 @@ export async function POST(req: Request) {
         }
 
         return NextResponse.json(entry, { status: 201 });
-    } catch (error) {
-        return NextResponse.json({ error: 'Failed to create time entry' }, { status: 500 });
+    } catch (error: any) {
+        console.error("POST Error: ", error);
+        return NextResponse.json({ error: error?.message || 'Failed to create time entry' }, { status: 500 });
     }
 }
 
 export async function PUT(req: Request) {
     try {
         const data = await req.json();
-        const { id, horaIngreso, horaEgreso, estadoConfirmado, adminPin } = data;
+        const { id, horaIngreso, horaEgreso, estadoConfirmado, isExtra, requestUserId, requestUserRole } = data;
 
         // Check if existing
         const existing = await prisma.timeEntry.findUnique({ where: { id } });
         if (!existing) return NextResponse.json({ error: 'Entry not found' }, { status: 404 });
 
-        // If it was already confirmed, require supervisor pin to edit
+        if (requestUserRole === 'operador' && existing.operatorId !== requestUserId) {
+            return NextResponse.json({ error: 'No tienes permisos para modificar los registros de otros operadores.' }, { status: 403 });
+        }
+
+        // If it was already confirmed, restrict operators from editing
         if (existing.estadoConfirmado) {
-            if (adminPin !== SUPERVISOR_PIN) {
-                return NextResponse.json({ error: 'PIN de supervisor incorrecto o faltante. No se puede editar un día ya confirmado.' }, { status: 403 });
+            if (requestUserRole === 'operador') {
+                return NextResponse.json({ error: 'No tienes permisos para editar un día ya confirmado.' }, { status: 403 });
             }
         }
 
@@ -117,8 +126,9 @@ export async function PUT(req: Request) {
                 horaIngreso: newHoraIngreso,
                 horaEgreso: newHoraEgreso,
                 horasTrabajadas,
+                isExtra: isExtra !== undefined ? isExtra : existing.isExtra,
                 estadoConfirmado: estadoConfirmado !== undefined ? estadoConfirmado : existing.estadoConfirmado,
-                confirmadoPorSupervisor: estadoConfirmado ? (adminPin ? "Supervisor" : null) : null
+                confirmadoPorSupervisor: estadoConfirmado ? requestUserId : null
             }
         });
 
@@ -130,8 +140,9 @@ export async function PUT(req: Request) {
         }
 
         return NextResponse.json(updated);
-    } catch (error) {
-        return NextResponse.json({ error: 'Failed to update time entry' }, { status: 500 });
+    } catch (error: any) {
+        console.error("PUT Error: ", error);
+        return NextResponse.json({ error: error?.message || 'Failed to update time entry' }, { status: 500 });
     }
 }
 
@@ -139,15 +150,22 @@ export async function DELETE(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
         const id = searchParams.get('id');
-        const adminPin = searchParams.get('adminPin');
+        const requestUserId = searchParams.get('requestUserId');
+        const requestUserRole = searchParams.get('requestUserRole');
 
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
 
         const existing = await prisma.timeEntry.findUnique({ where: { id } });
         if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-        if (existing.estadoConfirmado && adminPin !== SUPERVISOR_PIN) {
-            return NextResponse.json({ error: 'PIN de supervisor incorrecto. El día está confirmado.' }, { status: 403 });
+        if (requestUserRole === 'operador' && existing.operatorId !== requestUserId) {
+            return NextResponse.json({ error: 'No tienes permisos para eliminar los registros de otros operadores.' }, { status: 403 });
+        }
+
+        if (existing.estadoConfirmado) {
+            if (requestUserRole === 'operador') {
+                return NextResponse.json({ error: 'No tienes permisos para eliminar un día ya confirmado.' }, { status: 403 });
+            }
         }
 
         await prisma.timeEntry.delete({ where: { id } });
@@ -160,7 +178,8 @@ export async function DELETE(req: Request) {
         }
 
         return NextResponse.json({ success: true });
-    } catch (error) {
-        return NextResponse.json({ error: 'Failed to delete time entry' }, { status: 500 });
+    } catch (error: any) {
+        console.error("DELETE Error: ", error);
+        return NextResponse.json({ error: error?.message || 'Failed to delete time entry' }, { status: 500 });
     }
 }

@@ -200,8 +200,22 @@ exports.Prisma.TimeEntryScalarFieldEnum = {
   horasTrabajadas: 'horasTrabajadas',
   estadoConfirmado: 'estadoConfirmado',
   confirmadoPorSupervisor: 'confirmadoPorSupervisor',
+  isExtra: 'isExtra',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.NotificationScalarFieldEnum = {
+  id: 'id',
+  operatorId: 'operatorId',
+  forSupervisors: 'forSupervisors',
+  title: 'title',
+  message: 'message',
+  type: 'type',
+  relatedId: 'relatedId',
+  metadata: 'metadata',
+  read: 'read',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -242,7 +256,8 @@ exports.Prisma.ModelName = {
   FavoriteBlock: 'FavoriteBlock',
   Planning: 'Planning',
   HdbClient: 'HdbClient',
-  TimeEntry: 'TimeEntry'
+  TimeEntry: 'TimeEntry',
+  Notification: 'Notification'
 };
 
 /**

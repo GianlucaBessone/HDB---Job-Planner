@@ -3,10 +3,10 @@ import { PrismaClient } from '../prisma/generated/client';
 
 const getPrisma = () => {
     const g = global as any;
-    if (!g.prisma) {
-        g.prisma = new PrismaClient();
+    if (!g.prisma_v2) {
+        g.prisma_v2 = new PrismaClient();
     }
-    return g.prisma;
+    return g.prisma_v2;
 };
 
 export const prisma = getPrisma();

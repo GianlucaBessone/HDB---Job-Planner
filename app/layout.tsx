@@ -9,6 +9,7 @@ import { Calendar, LayoutGrid, Users, ClipboardList, Menu, X, Landmark, LayoutDa
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import ToastContainer from "@/components/Toast";
 import LoginScreen from "@/components/LoginScreen";
+import NotificationsDropdown from "@/components/NotificationsDropdown";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
@@ -61,11 +62,12 @@ export default function RootLayout({
                         <div className="flex items-center gap-4">
                             <button
                                 onClick={() => setIsSidebarOpen(true)}
-                                className="p-2 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors"
+                                className="p-2 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors mr-2"
                             >
                                 <Menu className="w-6 h-6" />
                             </button>
-                            <div className="flex items-center gap-2">
+
+                            <div className="flex items-center gap-2 ml-4 hidden md:flex">
                                 <div className="bg-primary p-1.5 rounded-lg shadow-lg shadow-primary/20">
                                     <ClipboardList className="w-5 h-5 text-white" />
                                 </div>
@@ -73,6 +75,15 @@ export default function RootLayout({
                                     HDB<span className="text-primary">Planner</span>
                                 </span>
                             </div>
+                        </div>
+                        {/* Mobile Logo version if needed or right-aligned items can go here */}
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2 md:hidden">
+                                <span className="text-xl font-bold tracking-tight text-slate-800">
+                                    HDB<span className="text-primary">Planner</span>
+                                </span>
+                            </div>
+                            <NotificationsDropdown user={currentUser} />
                         </div>
                     </div>
                 </header>

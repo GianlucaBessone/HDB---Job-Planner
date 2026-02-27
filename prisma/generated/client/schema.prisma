@@ -41,14 +41,15 @@ model ClientDelay {
 }
 
 model Operator {
-  id             String      @id @default(cuid())
+  id             String         @id @default(cuid())
   nombreCompleto String
-  activo         Boolean     @default(true)
+  activo         Boolean        @default(true)
   etiquetas      Json // Now using native Json type
-  pin            String      @default("1234")
-  role           String      @default("operador") // operador | supervisor | admin
-  createdAt      DateTime    @default(now())
+  pin            String         @default("1234")
+  role           String         @default("operador") // operador | supervisor | admin
+  createdAt      DateTime       @default(now())
   timeEntries    TimeEntry[]
+  notifications  Notification[]
 }
 
 model FavoriteBlock {
@@ -94,10 +95,28 @@ model TimeEntry {
   horasTrabajadas         Float    @default(0)
   estadoConfirmado        Boolean  @default(false)
   confirmadoPorSupervisor String?
+  isExtra                 Boolean  @default(false)
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 
   @@index([fecha])
   @@index([projectId])
   @@index([operatorId])
+}
+
+model Notification {
+  id             String    @id @default(cuid())
+  operatorId     String? // If null and forSupervisors=true, it goes to all supervisors
+  operator       Operator? @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  forSupervisors Boolean   @default(false)
+  title          String
+  message        String
+  type           String // TIME_EDIT_REQUEST, PLANNING_ASSIGNMENT
+  relatedId      String? // ID of TimeEntry or Planning block
+  metadata       Json? // To store requested modifications or planning block details
+  read           Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+
+  @@index([operatorId])
+  @@index([createdAt])
 }

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Play, Square, Clock, Calendar, User, Layout, CheckCircle2, ShieldAlert, Plus, Trash2, Edit3, X, AlertCircle, Activity } from 'lucide-react';
 import Link from 'next/link';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { showToast } from '@/components/Toast';
 
 interface Project {
     id: string;
@@ -28,6 +29,7 @@ interface TimeEntry {
     horasTrabajadas: number;
     estadoConfirmado: boolean;
     confirmadoPorSupervisor: string | null;
+    isExtra: boolean;
 }
 
 export default function TimesheetsPage() {
@@ -39,6 +41,18 @@ export default function TimesheetsPage() {
     // Quick Actions State
     const [selectedOperator, setSelectedOperator] = useState('');
     const [selectedProject, setSelectedProject] = useState('');
+    const [isExtraQuick, setIsExtraQuick] = useState(false);
+
+    // Filters and View Mode
+    const [viewMode, setViewMode] = useState<'tarjetas' | 'planilla' | 'resumen'>('tarjetas');
+    const [filterDateFrom, setFilterDateFrom] = useState(() => {
+        const d = new Date();
+        d.setDate(1);
+        return d.toISOString().split('T')[0];
+    });
+    const [filterDateTo, setFilterDateTo] = useState(new Date().toISOString().split('T')[0]);
+    const [filterOperator, setFilterOperator] = useState('');
+    const [currentUser, setCurrentUser] = useState<any>(null);
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -48,26 +62,46 @@ export default function TimesheetsPage() {
         projectId: '',
         fecha: new Date().toISOString().split('T')[0],
         horaIngreso: '',
-        horaEgreso: ''
+        horaEgreso: '',
+        isExtra: false
     });
 
-    const [adminPin, setAdminPin] = useState('');
-    const [isPinModalOpen, setIsPinModalOpen] = useState(false);
     const [pendingAction, setPendingAction] = useState<any>(null);
+
+    // Request Modification Modal
+    const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+    const [requestMessage, setRequestMessage] = useState('');
 
     // Confirm dialog
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [entryToDelete, setEntryToDelete] = useState<string | null>(null);
 
     useEffect(() => {
-        loadData();
+        const stored = localStorage.getItem('currentUser');
+        let parsedUser = null;
+        if (stored) {
+            try {
+                parsedUser = JSON.parse(stored);
+                setCurrentUser(parsedUser);
+                if (parsedUser.role === 'operador') {
+                    setSelectedOperator(parsedUser.id);
+                }
+            } catch (e) { }
+        }
+        loadData(parsedUser);
     }, []);
 
-    const loadData = async () => {
+    const loadData = async (userObj?: any) => {
         setIsLoading(true);
         try {
+            const user = userObj || currentUser;
+            let entriesUrl = '/api/time-entries';
+            if (user?.role === 'operador') {
+                entriesUrl += `?operatorId=${user.id}`;
+            }
+
             const [entriesData, projectsData, operatorsData] = await Promise.all([
-                fetch('/api/time-entries').then(res => res.json()),
+                fetch(entriesUrl).then(res => res.json()),
                 fetch('/api/projects').then(res => res.json()),
                 fetch('/api/operators').then(res => res.json())
             ]);
@@ -83,7 +117,7 @@ export default function TimesheetsPage() {
 
     const handleClockIn = async () => {
         if (!selectedOperator || !selectedProject) {
-            alert('Por favor selecciona operador y proyecto para iniciar jornada.');
+            showToast('Por favor selecciona operador y proyecto para iniciar jornada.', 'error');
             return;
         }
 
@@ -91,7 +125,7 @@ export default function TimesheetsPage() {
         const today = new Date().toISOString().split('T')[0];
         const hasOpen = entries.find(e => e.operatorId === selectedOperator && e.fecha === today && !e.horaEgreso);
         if (hasOpen) {
-            alert('El operador ya tiene una jornada iniciada sin finalizar hoy.');
+            showToast('El operador ya tiene una jornada iniciada sin finalizar hoy.', 'error');
             return;
         }
 
@@ -107,24 +141,24 @@ export default function TimesheetsPage() {
                     projectId: selectedProject,
                     fecha: today,
                     horaIngreso: timeString,
-                    horaEgreso: null
+                    horaEgreso: null,
+                    isExtra: isExtraQuick,
+                    requestUserId: currentUser?.id,
+                    requestUserRole: currentUser?.role
                 })
             });
             loadData();
-            setSelectedOperator('');
+            if (currentUser?.role !== 'operador') {
+                setSelectedOperator('');
+            }
             setSelectedProject('');
+            setIsExtraQuick(false);
         } catch (error) {
             console.error(error);
         }
     };
 
-    const handleClockOut = async (id: string, requiresPin = false) => {
-        if (requiresPin) {
-            setPendingAction({ type: 'clockOut', id });
-            setIsPinModalOpen(true);
-            return;
-        }
-
+    const handleClockOut = async (id: string, requiereAutorizacion = false) => {
         const now = new Date();
         const timeString = now.toTimeString().slice(0, 5);
 
@@ -135,7 +169,8 @@ export default function TimesheetsPage() {
                 body: JSON.stringify({
                     id,
                     horaEgreso: timeString,
-                    adminPin: pendingAction?.type === 'clockOut' ? adminPin : undefined
+                    requestUserId: currentUser?.id,
+                    requestUserRole: currentUser?.role
                 })
             });
 
@@ -145,8 +180,6 @@ export default function TimesheetsPage() {
                 return;
             }
 
-            setIsPinModalOpen(false);
-            setAdminPin('');
             setPendingAction(null);
             loadData();
         } catch (error) {
@@ -159,7 +192,12 @@ export default function TimesheetsPage() {
             await fetch('/api/time-entries', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id, estadoConfirmado: true })
+                body: JSON.stringify({
+                    id,
+                    estadoConfirmado: true,
+                    requestUserId: currentUser?.id,
+                    requestUserRole: currentUser?.role
+                })
             });
             loadData();
         } catch (error) {
@@ -168,12 +206,6 @@ export default function TimesheetsPage() {
     };
 
     const openEditModal = (entry?: TimeEntry) => {
-        if (entry && entry.estadoConfirmado) {
-            setPendingAction({ type: 'edit', entry });
-            setIsPinModalOpen(true);
-            return;
-        }
-
         if (entry) {
             setEditingEntry(entry);
             setFormData({
@@ -181,16 +213,26 @@ export default function TimesheetsPage() {
                 projectId: entry.projectId,
                 fecha: entry.fecha,
                 horaIngreso: entry.horaIngreso || '',
-                horaEgreso: entry.horaEgreso || ''
+                horaEgreso: entry.horaEgreso || '',
+                isExtra: entry.isExtra || false
             });
+
+            if (entry.estadoConfirmado) {
+                if (currentUser?.role === 'operador') {
+                    setPendingAction({ type: 'request_modification', entry });
+                    setIsRequestModalOpen(true);
+                    return;
+                }
+            }
         } else {
             setEditingEntry(null);
             setFormData({
-                operatorId: '',
+                operatorId: currentUser?.role === 'operador' ? currentUser.id : '',
                 projectId: '',
                 fecha: new Date().toISOString().split('T')[0],
                 horaIngreso: '',
-                horaEgreso: ''
+                horaEgreso: '',
+                isExtra: false
             });
         }
         setIsModalOpen(true);
@@ -201,14 +243,17 @@ export default function TimesheetsPage() {
 
         if (formData.horaIngreso && formData.horaEgreso) {
             if (formData.horaEgreso < formData.horaIngreso) {
-                alert('La hora de egreso no puede ser menor a la de ingreso');
+                showToast('La hora de egreso no puede ser menor a la de ingreso', 'error');
                 return;
             }
         }
 
         try {
-            const payload: any = { ...formData };
-            if (adminPin) payload.adminPin = adminPin;
+            const payload: any = {
+                ...formData,
+                requestUserId: currentUser?.id,
+                requestUserRole: currentUser?.role
+            };
 
             let url = '/api/time-entries';
             let method = 'POST';
@@ -226,12 +271,11 @@ export default function TimesheetsPage() {
 
             if (!res.ok) {
                 const errorData = await res.json();
-                alert(errorData.error);
+                showToast(errorData.error, 'error');
                 return;
             }
 
             setIsModalOpen(false);
-            setAdminPin('');
             loadData();
         } catch (error) {
             console.error(error);
@@ -240,9 +284,12 @@ export default function TimesheetsPage() {
 
     const handleDeleteClick = (entry: TimeEntry) => {
         if (entry.estadoConfirmado) {
-            setPendingAction({ type: 'delete', id: entry.id });
-            setIsPinModalOpen(true);
-            return;
+            if (currentUser?.role === 'operador') {
+                setPendingAction({ type: 'request_deletion', entry });
+                setIsRequestModalOpen(true);
+                return;
+            }
+            // Admin/Supervisor can delete directly without PIN
         }
         setEntryToDelete(entry.id);
         setIsConfirmOpen(true);
@@ -253,49 +300,121 @@ export default function TimesheetsPage() {
         if (!id) return;
         try {
             let url = `/api/time-entries?id=${id}`;
-            if (adminPin) url += `&adminPin=${adminPin}`;
+            if (currentUser?.id) url += `&requestUserId=${currentUser.id}`;
+            if (currentUser?.role) url += `&requestUserRole=${currentUser.role}`;
 
             const res = await fetch(url, { method: 'DELETE' });
             if (!res.ok) {
                 const data = await res.json();
-                alert(data.error);
+                showToast(data.error, 'error');
                 return;
             }
 
             loadData();
             setIsConfirmOpen(false);
             setEntryToDelete(null);
-            setIsPinModalOpen(false);
-            setAdminPin('');
             setPendingAction(null);
         } catch (error) {
             console.error(error);
         }
     };
 
-    const handlePinSubmit = (e: React.FormEvent) => {
+    const submitModificationRequest = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (pendingAction?.type === 'edit') {
-            setIsPinModalOpen(false);
-            setEditingEntry(pendingAction.entry);
-            setFormData({
-                operatorId: pendingAction.entry.operatorId,
-                projectId: pendingAction.entry.projectId,
-                fecha: pendingAction.entry.fecha,
-                horaIngreso: pendingAction.entry.horaIngreso || '',
-                horaEgreso: pendingAction.entry.horaEgreso || ''
+        if (!pendingAction || !pendingAction.entry || !currentUser) return;
+
+        try {
+            const isDelete = pendingAction.type === 'request_deletion';
+            const actionText = isDelete ? 'eliminar' : 'modificar';
+
+            const metadata = isDelete ? null : {
+                horaIngreso: formData.horaIngreso,
+                horaEgreso: formData.horaEgreso,
+                isExtra: formData.isExtra
+            };
+
+            await fetch('/api/notifications', {
+                method: 'POST',
+                body: JSON.stringify({
+                    operatorId: currentUser.id,
+                    forSupervisors: true,
+                    title: `Solicitud para ${actionText} registro`,
+                    message: `El operador ${currentUser.nombreCompleto} solicita ${actionText} su registro de horas del ${pendingAction.entry.fecha} (${pendingAction.entry.project?.nombre || 'Sin proyecto'}).\nMotivo: ${requestMessage}`,
+                    type: 'TIME_MODIFICATION_REQUEST',
+                    relatedId: pendingAction.entry.id,
+                    metadata
+                }),
+                headers: { 'Content-Type': 'application/json' }
             });
-            setIsModalOpen(true);
-        } else if (pendingAction?.type === 'delete') {
-            confirmDelete();
-        } else if (pendingAction?.type === 'clockOut') {
-            handleClockOut(pendingAction.id);
+
+            showToast('Solicitud enviada a los supervisores exitosamente.', 'success');
+            setIsRequestModalOpen(false);
+            setRequestMessage('');
+            setPendingAction(null);
+        } catch (error) {
+            console.error('Error enviando solicitud:', error);
+            showToast('Error al enviar la solicitud.', 'error');
         }
     };
+
 
     // Derived Data
     const activeProjects = projects.filter(p => !['finalizado', 'por_hacer'].includes(p.estado));
     const activeOperators = operators;
+
+    // Compute View Data
+    const completedEntries = entries.filter(e => e.horaEgreso);
+    let filteredCompleted = completedEntries;
+    if (viewMode !== 'tarjetas') {
+        filteredCompleted = completedEntries.filter(e => {
+            if (filterDateFrom && e.fecha < filterDateFrom) return false;
+            if (filterDateTo && e.fecha > filterDateTo) return false;
+            if (filterOperator && e.operatorId !== filterOperator) return false;
+            return true;
+        });
+    }
+
+    const groupedPlanilla = Object.values(filteredCompleted.reduce((acc, entry) => {
+        const key = `${entry.fecha}_${entry.operatorId}_${entry.projectId}`;
+        if (!acc[key]) {
+            acc[key] = {
+                id: key,
+                fecha: entry.fecha,
+                operatorName: entry.operator.nombreCompleto,
+                projectName: entry.project.nombre,
+                normalStart: "-", normalEnd: "-", normalTotal: 0,
+                extraStart: "-", extraEnd: "-", extraTotal: 0,
+            };
+        }
+        if (entry.isExtra) {
+            acc[key].extraStart = entry.horaIngreso || "-";
+            acc[key].extraEnd = entry.horaEgreso || "-";
+            acc[key].extraTotal += entry.horasTrabajadas;
+        } else {
+            acc[key].normalStart = entry.horaIngreso || "-";
+            acc[key].normalEnd = entry.horaEgreso || "-";
+            acc[key].normalTotal += entry.horasTrabajadas;
+        }
+        return acc;
+    }, {} as Record<string, any>));
+
+    const groupedResumen = Object.values(filteredCompleted.reduce((acc, entry) => {
+        const key = `${entry.fecha}`;
+        if (!acc[key]) {
+            acc[key] = {
+                id: key,
+                fecha: entry.fecha,
+                normalTotal: 0,
+                extraTotal: 0,
+            };
+        }
+        if (entry.isExtra) {
+            acc[key].extraTotal += entry.horasTrabajadas;
+        } else {
+            acc[key].normalTotal += entry.horasTrabajadas;
+        }
+        return acc;
+    }, {} as Record<string, any>));
 
     return (
         <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
@@ -324,9 +443,10 @@ export default function TimesheetsPage() {
                         <User className="w-3 h-3" /> Operador
                     </label>
                     <select
-                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700 disabled:opacity-50"
                         value={selectedOperator}
                         onChange={(e) => setSelectedOperator(e.target.value)}
+                        disabled={currentUser?.role === 'operador'}
                     >
                         <option value="">— Seleccionar —</option>
                         {activeOperators.map(op => <option key={op.id} value={op.id}>{op.nombreCompleto}</option>)}
@@ -345,6 +465,17 @@ export default function TimesheetsPage() {
                         <option value="">— Seleccionar —</option>
                         {activeProjects.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
                     </select>
+                </div>
+
+                <div className="w-full md:w-auto pt-4 md:pt-0 shrink-0">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1 mb-2">Horas Extras</label>
+                    <button
+                        onClick={() => setIsExtraQuick(!isExtraQuick)}
+                        className={`w-full py-3 px-6 rounded-2xl font-bold transition-colors ${isExtraQuick ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 text-slate-500 border-2 border-slate-200'
+                            }`}
+                    >
+                        {isExtraQuick ? 'Sí' : 'No'}
+                    </button>
                 </div>
 
                 <div className="w-full md:w-auto pt-4 md:pt-0 shrink-0">
@@ -389,76 +520,201 @@ export default function TimesheetsPage() {
                 </div>
             )}
 
-            {/* Past Entries List */}
+            {/* Past Entries / Reports Content */}
             <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
-                <div className="p-6 md:p-8 border-b border-slate-100 flex items-center justify-between">
-                    <h3 className="font-bold text-slate-800 text-lg">Historial de Registros</h3>
+                <div className="p-6 md:p-8 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <h3 className="font-bold text-slate-800 text-lg">Historial y Reportes</h3>
+
+                    <div className="flex flex-wrap items-center gap-3">
+                        <select
+                            value={viewMode}
+                            onChange={(e) => setViewMode(e.target.value as any)}
+                            className="bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700 text-sm"
+                        >
+                            <option value="tarjetas">Vista Detallada (Tarjetas)</option>
+                            <option value="planilla">Formato Planilla</option>
+                            <option value="resumen">Resumen Rápido</option>
+                        </select>
+                    </div>
                 </div>
+
+                {viewMode !== 'tarjetas' && (
+                    <div className="p-4 bg-slate-50/50 border-b border-slate-100 flex flex-wrap gap-4 items-center">
+                        <div className="flex items-center gap-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Desde:</label>
+                            <input
+                                type="date"
+                                value={filterDateFrom}
+                                onChange={e => setFilterDateFrom(e.target.value)}
+                                className="bg-white border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 outline-none focus:border-indigo-500"
+                            />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hasta:</label>
+                            <input
+                                type="date"
+                                value={filterDateTo}
+                                onChange={e => setFilterDateTo(e.target.value)}
+                                className="bg-white border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 outline-none focus:border-indigo-500"
+                            />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Operador:</label>
+                            <select
+                                value={filterOperator}
+                                onChange={e => setFilterOperator(e.target.value)}
+                                className="bg-white border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 outline-none focus:border-indigo-500"
+                            >
+                                <option value="">Todos</option>
+                                {activeOperators.map(op => <option key={op.id} value={op.id}>{op.nombreCompleto}</option>)}
+                            </select>
+                        </div>
+                    </div>
+                )}
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-slate-50 border-b border-slate-100">
-                                <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha</th>
-                                <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Operador</th>
-                                <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Proyecto</th>
-                                <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Horario</th>
-                                <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Horas</th>
-                                <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Estado</th>
-                                <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {entries.filter(e => e.horaEgreso).length === 0 ? (
-                                <tr>
-                                    <td colSpan={7} className="p-8 text-center text-slate-400 font-bold text-sm uppercase tracking-widest">No hay registros completados</td>
+                    {viewMode === 'tarjetas' && (
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-slate-50 border-b border-slate-100">
+                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Operador</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Proyecto</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Horario</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Horas</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Tipo</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Estado</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Acciones</th>
                                 </tr>
-                            ) : (
-                                entries.filter(e => e.horaEgreso).map(entry => (
-                                    <tr key={entry.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                                        <td className="p-4 text-xs font-bold text-slate-600">{entry.fecha}</td>
-                                        <td className="p-4 text-sm font-bold text-primary">{entry.operator.nombreCompleto}</td>
-                                        <td className="p-4 text-xs font-bold text-slate-600 line-clamp-1 truncate max-w-[200px]">{entry.project.nombre}</td>
-                                        <td className="p-4 text-xs font-bold text-slate-500 text-center">
-                                            {entry.horaIngreso} - {entry.horaEgreso}
-                                        </td>
-                                        <td className="p-4 text-center">
-                                            <span className="px-3 py-1 bg-indigo-50 text-indigo-600 font-black rounded-xl text-sm border border-indigo-100">{entry.horasTrabajadas}h</span>
-                                        </td>
-                                        <td className="p-4 text-center">
-                                            {entry.estadoConfirmado ? (
-                                                <span className="inline-flex items-center gap-1 text-emerald-600 text-[10px] font-black uppercase tracking-widest bg-emerald-50 px-2 py-1 rounded-lg">
-                                                    <CheckCircle2 className="w-3 h-3" /> Confirmado
-                                                </span>
-                                            ) : (
-                                                <button
-                                                    onClick={() => handleConfirmDay(entry.id)}
-                                                    className="inline-flex items-center gap-1 text-slate-400 hover:text-emerald-500 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border border-slate-200 hover:border-emerald-200 hover:bg-emerald-50 transition-all"
-                                                >
-                                                    <ShieldAlert className="w-3 h-3" /> Pendiente
-                                                </button>
-                                            )}
-                                        </td>
-                                        <td className="p-4 flex items-center justify-end gap-2">
-                                            <button
-                                                onClick={() => openEditModal(entry)}
-                                                className={`p-2 rounded-xl transition-all ${entry.estadoConfirmado ? 'text-amber-500 hover:bg-amber-50' : 'text-slate-400 hover:text-indigo-500 hover:bg-indigo-50'}`}
-                                                title={entry.estadoConfirmado ? "Requiere Clave Supervisor" : "Editar"}
-                                            >
-                                                <Edit3 className="w-4 h-4" />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteClick(entry)}
-                                                className={`p-2 rounded-xl transition-all ${entry.estadoConfirmado ? 'text-amber-500 hover:bg-amber-50' : 'text-rose-400 hover:bg-rose-50 hover:text-rose-600'}`}
-                                                title={entry.estadoConfirmado ? "Requiere Clave Supervisor" : "Eliminar"}
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </td>
+                            </thead>
+                            <tbody>
+                                {completedEntries.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={8} className="p-8 text-center text-slate-400 font-bold text-sm uppercase tracking-widest">No hay registros completados</td>
                                     </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+                                ) : (
+                                    completedEntries.map(entry => (
+                                        <tr key={entry.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                                            <td className="p-4 text-xs font-bold text-slate-600">{entry.fecha}</td>
+                                            <td className="p-4 text-sm font-bold text-primary">{entry.operator.nombreCompleto}</td>
+                                            <td className="p-4 text-xs font-bold text-slate-600 line-clamp-1 truncate max-w-[200px]">{entry.project.nombre}</td>
+                                            <td className="p-4 text-xs font-bold text-slate-500 text-center">
+                                                {entry.horaIngreso} - {entry.horaEgreso}
+                                            </td>
+                                            <td className="p-4 text-center">
+                                                <span className="px-3 py-1 bg-indigo-50 text-indigo-600 font-black rounded-xl text-sm border border-indigo-100">{entry.horasTrabajadas}h</span>
+                                            </td>
+                                            <td className="p-4 text-center">
+                                                {entry.isExtra ? (
+                                                    <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-1 rounded-md">EXTRA</span>
+                                                ) : (
+                                                    <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-1 rounded-md">NORMAL</span>
+                                                )}
+                                            </td>
+                                            <td className="p-4 text-center">
+                                                {entry.estadoConfirmado ? (
+                                                    <span className="inline-flex items-center gap-1 text-emerald-600 text-[10px] font-black uppercase tracking-widest bg-emerald-50 px-2 py-1 rounded-lg">
+                                                        <CheckCircle2 className="w-3 h-3" /> Confirmado
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleConfirmDay(entry.id)}
+                                                        className="inline-flex items-center gap-1 text-slate-400 hover:text-emerald-500 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border border-slate-200 hover:border-emerald-200 hover:bg-emerald-50 transition-all"
+                                                    >
+                                                        <ShieldAlert className="w-3 h-3" /> Pendiente
+                                                    </button>
+                                                )}
+                                            </td>
+                                            <td className="p-4 flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={() => openEditModal(entry)}
+                                                    className={`p-2 rounded-xl transition-all ${entry.estadoConfirmado ? 'text-amber-500 hover:bg-amber-50' : 'text-slate-400 hover:text-indigo-500 hover:bg-indigo-50'}`}
+                                                    title={entry.estadoConfirmado ? "Requiere Clave Supervisor" : "Editar"}
+                                                >
+                                                    <Edit3 className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteClick(entry)}
+                                                    className={`p-2 rounded-xl transition-all ${entry.estadoConfirmado ? 'text-amber-500 hover:bg-amber-50' : 'text-rose-400 hover:bg-rose-50 hover:text-rose-600'}`}
+                                                    title={entry.estadoConfirmado ? "Requiere Clave Supervisor" : "Eliminar"}
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    )}
+
+                    {viewMode === 'planilla' && (
+                        <table className="w-full text-left border-collapse min-w-[1000px]">
+                            <thead>
+                                <tr className="bg-slate-50 border-b border-slate-100">
+                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Operador</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Obra</th>
+                                    <th className="p-4 border-l border-slate-200 text-center bg-indigo-50/30 text-[10px] font-black text-indigo-400 uppercase tracking-widest" colSpan={3}>Normales</th>
+                                    <th className="p-4 border-l border-slate-200 text-center bg-amber-50/30 text-[10px] font-black text-amber-400 uppercase tracking-widest" colSpan={3}>Extras</th>
+                                </tr>
+                                <tr className="bg-slate-50 border-b border-slate-200">
+                                    <th colSpan={3}></th>
+                                    <th className="p-2 border-l border-slate-200 text-center text-xs font-bold text-slate-500">Inicio</th>
+                                    <th className="p-2 text-center text-xs font-bold text-slate-500">Fin</th>
+                                    <th className="p-2 text-center text-xs font-black text-slate-800">Subtotal</th>
+                                    <th className="p-2 border-l border-slate-200 text-center text-xs font-bold text-slate-500">Inicio</th>
+                                    <th className="p-2 text-center text-xs font-bold text-slate-500">Fin</th>
+                                    <th className="p-2 text-center text-xs font-black text-slate-800">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {groupedPlanilla.length === 0 ? (
+                                    <tr><td colSpan={9} className="p-8 text-center text-slate-400 font-bold text-sm uppercase">Sin resultados</td></tr>
+                                ) : (
+                                    groupedPlanilla.map((row: any) => (
+                                        <tr key={row.id} className="border-b border-slate-100 hover:bg-slate-50/50">
+                                            <td className="p-4 text-xs font-bold text-slate-600">{row.fecha}</td>
+                                            <td className="p-4 text-sm font-bold text-primary">{row.operatorName}</td>
+                                            <td className="p-4 text-xs font-bold text-slate-600">{row.projectName}</td>
+                                            <td className="p-4 border-l border-slate-100 text-center text-xs text-slate-500">{row.normalStart}</td>
+                                            <td className="p-4 text-center text-xs text-slate-500">{row.normalEnd}</td>
+                                            <td className="p-4 text-center font-black text-indigo-600 bg-indigo-50/30">{row.normalTotal > 0 ? `${row.normalTotal}h` : '-'}</td>
+                                            <td className="p-4 border-l border-slate-100 text-center text-xs text-slate-500">{row.extraStart}</td>
+                                            <td className="p-4 text-center text-xs text-slate-500">{row.extraEnd}</td>
+                                            <td className="p-4 text-center font-black text-amber-600 bg-amber-50/30">{row.extraTotal > 0 ? `${row.extraTotal}h` : '-'}</td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    )}
+
+                    {viewMode === 'resumen' && (
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-slate-50 border-b border-slate-100">
+                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Total Normales</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Total Extras</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Total Día</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {groupedResumen.length === 0 ? (
+                                    <tr><td colSpan={4} className="p-8 text-center text-slate-400 font-bold text-sm uppercase">Sin resultados</td></tr>
+                                ) : (
+                                    groupedResumen.map((row: any) => (
+                                        <tr key={row.id} className="border-b border-slate-100 hover:bg-slate-50/50">
+                                            <td className="p-4 text-sm font-bold text-slate-700">{row.fecha}</td>
+                                            <td className="p-4 text-right font-black text-indigo-600">{row.normalTotal > 0 ? `${row.normalTotal}h` : '-'}</td>
+                                            <td className="p-4 text-right font-black text-amber-600">{row.extraTotal > 0 ? `${row.extraTotal}h` : '-'}</td>
+                                            <td className="p-4 text-right font-black text-slate-800 bg-slate-50/50">{row.normalTotal + row.extraTotal}h</td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
             </div>
 
@@ -472,7 +728,7 @@ export default function TimesheetsPage() {
                                     <Clock className="w-6 h-6 text-indigo-500" />
                                     {editingEntry ? 'Editar Registro' : 'Carga Manual'}
                                 </h3>
-                                <button type="button" onClick={() => { setIsModalOpen(false); setAdminPin(''); }} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400"><X className="w-5 h-5" /></button>
+                                <button type="button" onClick={() => { setIsModalOpen(false); }} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400"><X className="w-5 h-5" /></button>
                             </div>
 
                             {/* Alerta si está editando un registro confirmado (ya ingresó la clave) */}
@@ -488,11 +744,11 @@ export default function TimesheetsPage() {
                                 <div className="space-y-2 md:col-span-2">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Operador</label>
                                     <select
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700"
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700 disabled:opacity-50"
                                         required
                                         value={formData.operatorId}
                                         onChange={e => setFormData({ ...formData, operatorId: e.target.value })}
-                                        disabled={!!editingEntry} // Usualmente no se cambia el operador de un registro, pero por si acaso.
+                                        disabled={!!editingEntry || currentUser?.role === 'operador'}
                                     >
                                         <option value="">— Seleccionar —</option>
                                         {operators.map(op => <option key={op.id} value={op.id}>{op.nombreCompleto}</option>)}
@@ -550,10 +806,31 @@ export default function TimesheetsPage() {
                                         onChange={e => setFormData({ ...formData, horaEgreso: e.target.value })}
                                     />
                                 </div>
+
+                                {/* Horas Extras */}
+                                <div className="space-y-2 md:col-span-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">¿Son Horas Extras?</label>
+                                    <div className="flex gap-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData({ ...formData, isExtra: false })}
+                                            className={`flex-1 py-3 px-4 rounded-2xl font-bold transition-colors ${!formData.isExtra ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 text-slate-500 border-2 border-slate-200'}`}
+                                        >
+                                            No, Normales
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData({ ...formData, isExtra: true })}
+                                            className={`flex-1 py-3 px-4 rounded-2xl font-bold transition-colors ${formData.isExtra ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 text-slate-500 border-2 border-slate-200'}`}
+                                        >
+                                            Sí, Extras
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="pt-6 flex gap-3">
-                                <button type="button" onClick={() => { setIsModalOpen(false); setAdminPin(''); }} className="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95">Cancelar</button>
+                                <button type="button" onClick={() => { setIsModalOpen(false); }} className="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95">Cancelar</button>
                                 <button type="submit" className="flex-[2] bg-indigo-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-indigo-600 shadow-xl shadow-indigo-500/20 active:scale-95 transition-all">Guardar Registro</button>
                             </div>
                         </form>
@@ -561,33 +838,6 @@ export default function TimesheetsPage() {
                 </div>
             )}
 
-            {/* Modal PIN Supervisor */}
-            {isPinModalOpen && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-300 p-8">
-                        <div className="flex justify-between items-start mb-6">
-                            <div className="p-3 rounded-2xl bg-amber-50 text-amber-500">
-                                <ShieldAlert className="w-6 h-6" />
-                            </div>
-                            <button onClick={() => { setIsPinModalOpen(false); setPendingAction(null); }} className="p-2 hover:bg-slate-100 rounded-full text-slate-400"><X className="w-5 h-5" /></button>
-                        </div>
-                        <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-2">Autorización Requerida</h3>
-                        <p className="text-slate-500 text-sm font-medium mb-6">Esta acción afecta un registro confirmado. Ingrese el PIN de supervisor para continuar.</p>
-                        <form onSubmit={handlePinSubmit} className="space-y-6">
-                            <input
-                                type="password"
-                                placeholder="PIN"
-                                autoFocus
-                                required
-                                value={adminPin}
-                                onChange={e => setAdminPin(e.target.value)}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-center tracking-widest text-2xl font-black outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all"
-                            />
-                            <button type="submit" className="w-full px-6 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl active:scale-95 bg-amber-500 hover:bg-amber-600 text-white shadow-amber-500/20">Autorizar</button>
-                        </form>
-                    </div>
-                </div>
-            )}
 
             <ConfirmDialog
                 isOpen={isConfirmOpen}
@@ -601,6 +851,84 @@ export default function TimesheetsPage() {
                     setEntryToDelete(null);
                 }}
             />
+
+            {/* Modal de Solicitud de Modificación (Para Operadores) */}
+            {isRequestModalOpen && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-md rounded-[2rem] shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-300 p-8">
+                        <div className="flex justify-between items-start mb-6">
+                            <div className="p-3 rounded-2xl bg-indigo-50 text-indigo-500">
+                                <AlertCircle className="w-6 h-6" />
+                            </div>
+                            <button onClick={() => { setIsRequestModalOpen(false); setPendingAction(null); setRequestMessage(''); }} className="p-2 hover:bg-slate-100 rounded-full text-slate-400"><X className="w-5 h-5" /></button>
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-2">Solicitar {pendingAction?.type === 'request_deletion' ? 'Eliminación' : 'Modificación'}</h3>
+                        <p className="text-slate-500 text-sm font-medium mb-6">Este registro ya fue confirmado. Por favor, indica el motivo para solicitar la modificación a tus supervisores.</p>
+                        <form onSubmit={submitModificationRequest} className="space-y-6">
+                            {pendingAction?.type === 'request_modification' && (
+                                <>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Hora Inicio Sugerida</label>
+                                            <input
+                                                type="time"
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700"
+                                                required
+                                                value={formData.horaIngreso}
+                                                onChange={e => setFormData({ ...formData, horaIngreso: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Hora Fin Sugerida</label>
+                                            <input
+                                                type="time"
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700"
+                                                required
+                                                value={formData.horaEgreso}
+                                                onChange={e => setFormData({ ...formData, horaEgreso: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">¿Son Horas Extras?</label>
+                                        <div className="flex gap-4">
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, isExtra: false })}
+                                                className={`flex-1 py-3 px-4 rounded-2xl font-bold transition-colors ${!formData.isExtra ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 text-slate-500 border-2 border-slate-200'}`}
+                                            >
+                                                No
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, isExtra: true })}
+                                                className={`flex-1 py-3 px-4 rounded-2xl font-bold transition-colors ${formData.isExtra ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 text-slate-500 border-2 border-slate-200'}`}
+                                            >
+                                                Sí
+                                            </button>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Motivo / Detalles</label>
+                                <textarea
+                                    required
+                                    autoFocus
+                                    placeholder="Explica qué necesitas cambiar y por qué..."
+                                    value={requestMessage}
+                                    onChange={e => setRequestMessage(e.target.value)}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 resize-none h-24 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-medium text-slate-700 transition-all text-sm"
+                                />
+                            </div>
+                            <div className="flex justify-end gap-3 pt-4">
+                                <button type="button" onClick={() => { setIsRequestModalOpen(false); setPendingAction(null); setRequestMessage(''); }} className="flex-1 px-6 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all bg-slate-100 hover:bg-slate-200 text-slate-600 active:scale-95">Cancelar</button>
+                                <button type="submit" className="flex-1 px-6 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl active:scale-95 bg-indigo-500 hover:bg-indigo-600 text-white shadow-indigo-500/20">Enviar Solicitud</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

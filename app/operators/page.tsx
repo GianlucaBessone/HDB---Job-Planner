@@ -43,18 +43,24 @@ export default function OperatorsPage() {
 
     useEffect(() => {
         const stored = localStorage.getItem('currentUser');
+        let parsed = null;
         if (stored) {
             try {
-                setCurrentUser(JSON.parse(stored));
+                parsed = JSON.parse(stored);
+                setCurrentUser(parsed);
             } catch (e) { }
         }
-        loadOperators();
+        loadOperators(false, parsed);
     }, []);
 
-    const loadOperators = async (silent = false) => {
+    const loadOperators = async (silent = false, userObj?: any) => {
         if (!silent) setIsLoading(true);
         try {
-            const data = await fetch('/api/operators').then(res => res.json());
+            const user = userObj || currentUser;
+            let data = await fetch('/api/operators').then(res => res.json());
+            if (user?.role === 'operador') {
+                data = data.filter((op: any) => op.id === user.id);
+            }
             setOperators(data);
         } catch (e) {
             console.error(e);
