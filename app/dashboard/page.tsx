@@ -400,9 +400,9 @@ function KpiCard({ title, value, icon, color, trend, tooltip }: { title: string;
 
 function MetricTooltip({ def, purpose, calc }: { def: string; purpose: string; calc: string }) {
     return (
-        <div className="group relative">
+        <div className="group/tooltip relative">
             <Info className="w-5 h-5 text-slate-300 hover:text-primary transition-colors cursor-help" />
-            <div className="absolute top-0 right-full mr-3 w-64 p-4 bg-slate-900 text-white rounded-2xl text-[10px] leading-relaxed hidden group-hover:block z-50 shadow-2xl animate-in fade-in slide-in-from-right-2 duration-200">
+            <div className="absolute top-0 right-full mr-3 w-64 p-4 bg-slate-900 text-white rounded-2xl text-[10px] leading-relaxed hidden group-hover/tooltip:block z-50 shadow-2xl animate-in fade-in slide-in-from-right-2 duration-200">
                 <div className="space-y-3">
                     <div>
                         <span className="block font-black uppercase tracking-widest text-primary mb-1">¿Qué mide?</span>
