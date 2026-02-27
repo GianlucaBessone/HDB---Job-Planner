@@ -44,6 +44,65 @@ export default function RootLayout({
         }
     }, []);
 
+    let content;
+    if (isCheckingAuth) {
+        content = (
+            <div className="min-h-screen flex items-center justify-center bg-slate-50/50">
+                <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+            </div>
+        );
+    } else if (!currentUser) {
+        content = <LoginScreen onLoginSuccess={setCurrentUser} />;
+    } else {
+        content = (
+            <div className="flex flex-col min-h-screen">
+                <header className="sticky top-0 z-[60] w-full border-b bg-white/80 backdrop-blur-md safe-area-top">
+                    <div className="max-w-[1800px] mx-auto px-4 md:px-8 h-14 md:h-16 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={() => setIsSidebarOpen(true)}
+                                className="p-2 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors"
+                            >
+                                <Menu className="w-6 h-6" />
+                            </button>
+                            <div className="flex items-center gap-2">
+                                <div className="bg-primary p-1.5 rounded-lg shadow-lg shadow-primary/20">
+                                    <ClipboardList className="w-5 h-5 text-white" />
+                                </div>
+                                <span className="text-xl font-bold tracking-tight text-slate-800">
+                                    HDB<span className="text-primary">Planner</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <Sidebar
+                    isOpen={isSidebarOpen}
+                    onClose={() => setIsSidebarOpen(false)}
+                    user={currentUser}
+                    onLogout={() => {
+                        localStorage.removeItem('currentUser');
+                        setCurrentUser(null);
+                    }}
+                />
+
+                <main className="flex-1 max-w-[1800px] mx-auto w-full px-4 md:px-8 py-6 md:py-8 pb-24 md:pb-8">
+                    {children}
+                    <SpeedInsights />
+                </main>
+
+                <footer className="hidden md:block border-t bg-white py-6">
+                    <div className="container mx-auto px-4 text-center text-sm text-slate-500">
+                        © 2026 HDB Job Planner - Eficiencia en cada tarea
+                    </div>
+                </footer>
+
+                <ToastContainer />
+            </div>
+        );
+    }
+
     return (
         <html lang="es">
             <head>
@@ -58,59 +117,7 @@ export default function RootLayout({
                 <meta name="description" content="Sistema premium de planificación para técnicos" />
             </head>
             <body className={`${outfit.className} min-h-screen bg-slate-50/50`}>
-                {isCheckingAuth ? (
-                    <div className="min-h-screen flex items-center justify-center bg-slate-50/50">
-                        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-                    </div>
-                ) : !currentUser ? (
-                    <LoginScreen onLoginSuccess={setCurrentUser} />
-                ) : (
-                    <div className="flex flex-col min-h-screen">
-                        <header className="sticky top-0 z-[60] w-full border-b bg-white/80 backdrop-blur-md safe-area-top">
-                            <div className="max-w-[1800px] mx-auto px-4 md:px-8 h-14 md:h-16 flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <button
-                                        onClick={() => setIsSidebarOpen(true)}
-                                        className="p-2 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors"
-                                    >
-                                        <Menu className="w-6 h-6" />
-                                    </button>
-                                    <div className="flex items-center gap-2">
-                                        <div className="bg-primary p-1.5 rounded-lg shadow-lg shadow-primary/20">
-                                            <ClipboardList className="w-5 h-5 text-white" />
-                                        </div>
-                                        <span className="text-xl font-bold tracking-tight text-slate-800">
-                                            HDB<span className="text-primary">Planner</span>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </header>
-
-                        <Sidebar
-                            isOpen={isSidebarOpen}
-                            onClose={() => setIsSidebarOpen(false)}
-                            user={currentUser}
-                            onLogout={() => {
-                                localStorage.removeItem('currentUser');
-                                setCurrentUser(null);
-                            }}
-                        />
-
-                        <main className="flex-1 max-w-[1800px] mx-auto w-full px-4 md:px-8 py-6 md:py-8 pb-24 md:pb-8">
-                            {children}
-                            <SpeedInsights />
-                        </main>
-
-                        <footer className="hidden md:block border-t bg-white py-6">
-                            <div className="container mx-auto px-4 text-center text-sm text-slate-500">
-                                © 2026 HDB Job Planner - Eficiencia en cada tarea
-                            </div>
-                        </footer>
-
-                        <ToastContainer />
-                    </div>
-                )}
+                {content}
             </body>
         </html>
     );
