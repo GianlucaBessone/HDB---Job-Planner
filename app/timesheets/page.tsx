@@ -1,10 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Play, Square, Clock, Calendar, User, Layout, CheckCircle2, ShieldAlert, Plus, Trash2, Edit3, X, AlertCircle, Activity } from 'lucide-react';
+import { Play, Square, Clock, Calendar, User, Layout, CheckCircle2, ShieldAlert, Plus, Trash2, Edit3, X, AlertCircle, Activity, FileSpreadsheet } from 'lucide-react';
 import Link from 'next/link';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { showToast } from '@/components/Toast';
+import * as XLSX from 'xlsx';
 
 interface Project {
     id: string;
@@ -37,6 +40,17 @@ export default function TimesheetsPage() {
     const [projects, setProjects] = useState<Project[]>([]);
     const [operators, setOperators] = useState<Operator[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+
+    const formatEntryDate = (dateStr: string) => {
+        try {
+            const date = new Date(dateStr + 'T12:00:00');
+            const dayName = format(date, "EEEE", { locale: es });
+            const formatted = format(date, "dd/MM/yyyy");
+            return `${dayName.charAt(0).toUpperCase() + dayName.slice(1)} ${formatted}`;
+        } catch (e) {
+            return dateStr;
+        }
+    };
 
     // Quick Actions State
     const [selectedOperator, setSelectedOperator] = useState('');
@@ -364,15 +378,62 @@ export default function TimesheetsPage() {
 
     // Compute View Data
     const completedEntries = entries.filter(e => e.horaEgreso);
-    let filteredCompleted = completedEntries;
-    if (viewMode !== 'tarjetas') {
-        filteredCompleted = completedEntries.filter(e => {
-            if (filterDateFrom && e.fecha < filterDateFrom) return false;
-            if (filterDateTo && e.fecha > filterDateTo) return false;
-            if (filterOperator && e.operatorId !== filterOperator) return false;
-            return true;
-        });
-    }
+    let filteredCompleted = completedEntries.filter(e => {
+        if (filterDateFrom && e.fecha < filterDateFrom) return false;
+        if (filterDateTo && e.fecha > filterDateTo) return false;
+        if (filterOperator && e.operatorId !== filterOperator) return false;
+        return true;
+    });
+
+    const exportToExcel = () => {
+        const aoa: any[][] = [];
+
+        if (viewMode === 'tarjetas') {
+            aoa.push(['Fecha', 'Operador', 'Proyecto', 'Ingreso', 'Egreso', 'Horas', 'Tipo', 'Estado']);
+            filteredCompleted.forEach(e => {
+                aoa.push([
+                    e.fecha,
+                    e.operator?.nombreCompleto || '',
+                    e.project?.nombre || '',
+                    e.horaIngreso || '',
+                    e.horaEgreso || '',
+                    e.horasTrabajadas,
+                    e.isExtra ? 'EXTRA' : 'NORMAL',
+                    e.estadoConfirmado ? 'Confirmado' : 'Pendiente'
+                ]);
+            });
+        } else if (viewMode === 'planilla') {
+            aoa.push(['Fecha', 'Operador', 'Obra', 'Normal Inicio', 'Normal Fin', 'Normal Subtotal', 'Extra Inicio', 'Extra Fin', 'Extra Subtotal']);
+            groupedPlanilla.forEach((r: any) => {
+                aoa.push([
+                    r.fecha,
+                    r.operatorName,
+                    r.projectName,
+                    r.normalStart,
+                    r.normalEnd,
+                    r.normalTotal,
+                    r.extraStart,
+                    r.extraEnd,
+                    r.extraTotal
+                ]);
+            });
+        } else if (viewMode === 'resumen') {
+            aoa.push(['Fecha', 'Total Normales', 'Total Extras', 'Total Día']);
+            groupedResumen.forEach((r: any) => {
+                aoa.push([
+                    r.fecha,
+                    r.normalTotal,
+                    r.extraTotal,
+                    r.normalTotal + r.extraTotal
+                ]);
+            });
+        }
+
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, `Reporte-${viewMode.toUpperCase()}`);
+        XLSX.writeFile(wb, `Reporte_Jornadas_${filterDateFrom}_${filterDateTo}.xlsx`);
+    };
 
     const groupedPlanilla = Object.values(filteredCompleted.reduce((acc, entry) => {
         const key = `${entry.fecha}_${entry.operatorId}_${entry.projectId}`;
@@ -415,6 +476,9 @@ export default function TimesheetsPage() {
         }
         return acc;
     }, {} as Record<string, any>));
+
+    const totalFilteredNormales = filteredCompleted.filter(e => !e.isExtra).reduce((sum, e) => sum + e.horasTrabajadas, 0);
+    const totalFilteredExtras = filteredCompleted.filter(e => e.isExtra).reduce((sum, e) => sum + e.horasTrabajadas, 0);
 
     return (
         <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
@@ -538,26 +602,27 @@ export default function TimesheetsPage() {
                     </div>
                 </div>
 
-                {viewMode !== 'tarjetas' && (
-                    <div className="p-4 bg-slate-50/50 border-b border-slate-100 flex flex-wrap gap-4 items-center">
-                        <div className="flex items-center gap-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Desde:</label>
-                            <input
-                                type="date"
-                                value={filterDateFrom}
-                                onChange={e => setFilterDateFrom(e.target.value)}
-                                className="bg-white border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 outline-none focus:border-indigo-500"
-                            />
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hasta:</label>
-                            <input
-                                type="date"
-                                value={filterDateTo}
-                                onChange={e => setFilterDateTo(e.target.value)}
-                                className="bg-white border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 outline-none focus:border-indigo-500"
-                            />
-                        </div>
+                <div className="p-4 bg-slate-50/50 border-b border-slate-100 flex flex-wrap gap-4 items-center">
+                    <div className="flex items-center gap-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Desde:</label>
+                        <input
+                            type="date"
+                            value={filterDateFrom}
+                            onChange={e => setFilterDateFrom(e.target.value)}
+                            className="bg-white border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 outline-none focus:border-indigo-500"
+                        />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hasta:</label>
+                        <input
+                            type="date"
+                            value={filterDateTo}
+                            onChange={e => setFilterDateTo(e.target.value)}
+                            className="bg-white border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 outline-none focus:border-indigo-500"
+                        />
+                    </div>
+
+                    {currentUser?.role !== 'operador' && (
                         <div className="flex items-center gap-2">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Operador:</label>
                             <select
@@ -569,8 +634,17 @@ export default function TimesheetsPage() {
                                 {activeOperators.map(op => <option key={op.id} value={op.id}>{op.nombreCompleto}</option>)}
                             </select>
                         </div>
-                    </div>
-                )}
+                    )}
+
+                    {currentUser?.role !== 'operador' && (
+                        <button
+                            onClick={exportToExcel}
+                            className="ml-auto bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100 text-xs font-bold py-2 px-4 rounded-xl shadow-sm transition-colors flex items-center gap-2"
+                        >
+                            <FileSpreadsheet className="w-4 h-4" /> Exportar a Excel
+                        </button>
+                    )}
+                </div>
                 <div className="overflow-x-auto">
                     {viewMode === 'tarjetas' && (
                         <table className="w-full text-left border-collapse">
@@ -587,15 +661,15 @@ export default function TimesheetsPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {completedEntries.length === 0 ? (
+                                {filteredCompleted.length === 0 ? (
                                     <tr>
                                         <td colSpan={8} className="p-8 text-center text-slate-400 font-bold text-sm uppercase tracking-widest">No hay registros completados</td>
                                     </tr>
                                 ) : (
-                                    completedEntries.map(entry => (
+                                    filteredCompleted.map(entry => (
                                         <tr key={entry.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                                            <td className="p-4 text-xs font-bold text-slate-600">{entry.fecha}</td>
-                                            <td className="p-4 text-sm font-bold text-primary">{entry.operator.nombreCompleto}</td>
+                                            <td className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-tight whitespace-nowrap">{formatEntryDate(entry.fecha)}</td>
+                                            <td className="p-4 text-sm font-black text-primary">{entry.operator.nombreCompleto}</td>
                                             <td className="p-4 text-xs font-bold text-slate-600 line-clamp-1 truncate max-w-[200px]">{entry.project.nombre}</td>
                                             <td className="p-4 text-xs font-bold text-slate-500 text-center">
                                                 {entry.horaIngreso} - {entry.horaEgreso}
@@ -673,8 +747,8 @@ export default function TimesheetsPage() {
                                 ) : (
                                     groupedPlanilla.map((row: any) => (
                                         <tr key={row.id} className="border-b border-slate-100 hover:bg-slate-50/50">
-                                            <td className="p-4 text-xs font-bold text-slate-600">{row.fecha}</td>
-                                            <td className="p-4 text-sm font-bold text-primary">{row.operatorName}</td>
+                                            <td className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-tight whitespace-nowrap">{formatEntryDate(row.fecha)}</td>
+                                            <td className="p-4 text-sm font-black text-primary">{row.operatorName}</td>
                                             <td className="p-4 text-xs font-bold text-slate-600">{row.projectName}</td>
                                             <td className="p-4 border-l border-slate-100 text-center text-xs text-slate-500">{row.normalStart}</td>
                                             <td className="p-4 text-center text-xs text-slate-500">{row.normalEnd}</td>
@@ -684,6 +758,14 @@ export default function TimesheetsPage() {
                                             <td className="p-4 text-center font-black text-amber-600 bg-amber-50/30">{row.extraTotal > 0 ? `${row.extraTotal}h` : '-'}</td>
                                         </tr>
                                     ))
+                                )}
+                                {groupedPlanilla.length > 0 && (
+                                    <tr className="bg-slate-100 border-t-2 border-slate-300">
+                                        <td colSpan={5} className="p-4 text-right text-xs font-black text-slate-700 uppercase tracking-widest">Total Global Filtrado:</td>
+                                        <td className="p-4 text-center font-black text-indigo-700">{totalFilteredNormales > 0 ? `${totalFilteredNormales}h` : '-'}</td>
+                                        <td colSpan={2}></td>
+                                        <td className="p-4 text-center font-black text-amber-700">{totalFilteredExtras > 0 ? `${totalFilteredExtras}h` : '-'}</td>
+                                    </tr>
                                 )}
                             </tbody>
                         </table>
@@ -705,12 +787,20 @@ export default function TimesheetsPage() {
                                 ) : (
                                     groupedResumen.map((row: any) => (
                                         <tr key={row.id} className="border-b border-slate-100 hover:bg-slate-50/50">
-                                            <td className="p-4 text-sm font-bold text-slate-700">{row.fecha}</td>
+                                            <td className="p-4 text-xs font-bold text-slate-700 uppercase tracking-tight">{formatEntryDate(row.fecha)}</td>
                                             <td className="p-4 text-right font-black text-indigo-600">{row.normalTotal > 0 ? `${row.normalTotal}h` : '-'}</td>
                                             <td className="p-4 text-right font-black text-amber-600">{row.extraTotal > 0 ? `${row.extraTotal}h` : '-'}</td>
                                             <td className="p-4 text-right font-black text-slate-800 bg-slate-50/50">{row.normalTotal + row.extraTotal}h</td>
                                         </tr>
                                     ))
+                                )}
+                                {groupedResumen.length > 0 && (
+                                    <tr className="bg-slate-100 border-t-2 border-slate-300">
+                                        <td className="p-4 text-right text-xs font-black text-slate-700 uppercase tracking-widest">Total Global Filtrado:</td>
+                                        <td className="p-4 text-right font-black text-indigo-700">{totalFilteredNormales > 0 ? `${totalFilteredNormales}h` : '-'}</td>
+                                        <td className="p-4 text-right font-black text-amber-700">{totalFilteredExtras > 0 ? `${totalFilteredExtras}h` : '-'}</td>
+                                        <td className="p-4 text-right font-black text-slate-800">{totalFilteredNormales + totalFilteredExtras}h</td>
+                                    </tr>
                                 )}
                             </tbody>
                         </table>

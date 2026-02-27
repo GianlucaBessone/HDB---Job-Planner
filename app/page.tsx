@@ -237,12 +237,33 @@ export default function PlanningPage() {
     const copyToClipboard = () => { navigator.clipboard.writeText(whatsappMessage); showToast('Mensaje copiado al portapapeles', 'success'); };
     const openInWhatsApp = () => { const url = `https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`; window.open(url, '_blank'); };
 
+    const handleNotifyPlanning = async () => {
+        try {
+            const res = await fetch('/api/planning/notify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fecha, blocks })
+            }).then(r => r.json());
+
+            if (res.success) {
+                showToast(`Planificación enviada a ${res.notifiedCount} operadores: ${res.notifiedNames.join(', ')}`, 'success');
+            } else {
+                showToast('Error al enviar notificaciones', 'error');
+            }
+        } catch (error) {
+            showToast('Error de conexión al notificar', 'error');
+        }
+    };
+
     // Safety check for display date during hydration
     if (!isHydrated || !fecha) return <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
     </div>;
 
-    const displayDate = format(new Date(fecha + 'T12:00:00'), "EEEE d 'de' MMMM", { locale: es });
+    const dateObj = new Date(fecha + 'T12:00:00');
+    const dayName = format(dateObj, "EEEE", { locale: es });
+    const formattedDate = format(dateObj, "dd/MM/yyyy");
+    const displayDate = `${dayName.charAt(0).toUpperCase() + dayName.slice(1)} ${formattedDate}`;
 
     return (
         <div className="w-full space-y-4 md:space-y-8 animate-in fade-in duration-500 pb-20">
@@ -463,7 +484,10 @@ export default function PlanningPage() {
                         <div className="whatsapp-preview text-xs min-h-[150px]">{whatsappMessage}</div>
                         <div className="grid grid-cols-2 gap-2">
                             <button onClick={copyToClipboard} className="bg-slate-900 text-white p-3 rounded-xl font-bold hover:bg-slate-800 transition-all text-xs flex items-center justify-center gap-2"><Copy className="w-4 h-4" /> Copiar</button>
-                            <button onClick={openInWhatsApp} className="bg-[#25D366] text-white p-3 rounded-xl font-bold hover:bg-[#22c35e] transition-all text-xs flex items-center justify-center gap-2"><MessageCircle className="w-4 h-4" /> Abrir</button>
+                            <button onClick={handleNotifyPlanning} className="bg-indigo-600 text-white p-3 rounded-xl font-bold hover:bg-indigo-700 transition-all text-xs flex items-center justify-center gap-2"><Send className="w-4 h-4" /> Notificar</button>
+                        </div>
+                        <div className="pt-2">
+                            <button onClick={openInWhatsApp} className="w-full bg-[#25D366]/10 text-[#128C7E] p-2.5 rounded-xl font-bold hover:bg-[#25D366]/20 transition-all text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 border border-[#25D366]/20"><MessageCircle className="w-3.5 h-3.5" /> Abrir en WhatsApp</button>
                         </div>
                         <button onClick={handleSave} disabled={isSaving} className="w-full bg-green-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-green-600/10 hover:bg-green-700 transition-all flex items-center justify-center gap-3">
                             {isSaving ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div> : <Save className="w-5 h-5" />}
@@ -538,7 +562,10 @@ export default function PlanningPage() {
                             <div className="whatsapp-preview text-xs min-h-[120px]">{whatsappMessage}</div>
                             <div className="grid grid-cols-2 gap-2">
                                 <button onClick={copyToClipboard} className="bg-slate-900 text-white p-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition-all"><Copy className="w-4 h-4" /> Copiar</button>
-                                <button onClick={openInWhatsApp} className="bg-[#25D366] text-white p-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition-all"><MessageCircle className="w-4 h-4" /> Abrir WA</button>
+                                <button onClick={handleNotifyPlanning} className="bg-indigo-600 text-white p-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition-all"><Send className="w-4 h-4" /> Notificar</button>
+                            </div>
+                            <div className="pt-2">
+                                <button onClick={openInWhatsApp} className="w-full bg-[#25D366]/10 text-[#128C7E] p-3 rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all border border-[#25D366]/20"><MessageCircle className="w-4 h-4" /> Abrir WA</button>
                             </div>
                         </div>
                     </div>

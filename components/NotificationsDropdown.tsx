@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Bell, Check, X, Calendar, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Bell, Check, X, Calendar, Clock, CheckCircle2, AlertCircle, ShieldAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { showToast } from './Toast';
 
 export default function NotificationsDropdown({ user }: { user: any }) {
@@ -48,11 +50,11 @@ export default function NotificationsDropdown({ user }: { user: any }) {
     const handleNotificationClick = (notif: any) => {
         if (!notif.read) markAsRead(notif.id);
 
-        if (notif.type === 'TIME_MODIFICATION_REQUEST' || notif.type === 'PLANNING_ASSIGNMENT') {
+        if (notif.type === 'TIME_MODIFICATION_REQUEST' || notif.type === 'PLANNING_ASSIGNMENT' || notif.type === 'PLANNING_ASSIGNMENT_SUMMARY') {
             setSelectedNotification(notif);
         } else {
             if (notif.type === 'TIME_EDIT_REQUEST') router.push('/timesheets');
-            else if (notif.type === 'PLANNING_ASSIGNMENT') router.push('/');
+            else if (notif.type === 'PLANNING_ASSIGNMENT' || notif.type === 'PLANNING_ASSIGNMENT_SUMMARY') router.push('/');
         }
         setIsOpen(false);
     };
@@ -277,7 +279,17 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                                         <Calendar className="w-6 h-6 text-primary" />
                                         Planificación del Día
                                     </h3>
-                                    <p className="text-sm font-medium text-slate-500 mt-1">Fecha: {selectedNotification.metadata?.fecha}</p>
+                                    <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-wider">
+                                        {(() => {
+                                            try {
+                                                const d = new Date(selectedNotification.metadata.fecha + 'T12:00:00');
+                                                const day = format(d, 'EEEE', { locale: es });
+                                                return `${day.charAt(0).toUpperCase() + day.slice(1)} ${format(d, 'dd/MM/yyyy')}`;
+                                            } catch (e) {
+                                                return selectedNotification.metadata?.fecha;
+                                            }
+                                        })()}
+                                    </p>
                                 </div>
 
                                 {selectedNotification.metadata?.assignments?.length > 0 ? (
@@ -326,6 +338,43 @@ export default function NotificationsDropdown({ user }: { user: any }) {
 
                                 <div className="mt-8">
                                     <button onClick={() => setSelectedNotification(null)} className="w-full py-4 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-colors">Cerrar</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {selectedNotification && selectedNotification.type === 'PLANNING_ASSIGNMENT_SUMMARY' && (
+                        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
+                            <div className="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden p-8 relative max-h-[90vh] overflow-y-auto">
+                                <button onClick={() => setSelectedNotification(null)} className="absolute top-4 right-4 p-2 hover:bg-slate-100 rounded-full text-slate-400 z-10">
+                                    <X className="w-5 h-5" />
+                                </button>
+                                <div className="mb-6 pr-8">
+                                    <h3 className="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
+                                        <ShieldAlert className="w-6 h-6 text-indigo-500" />
+                                        Resumen de Planificación
+                                    </h3>
+                                    <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-wider">
+                                        {(() => {
+                                            try {
+                                                const d = new Date(selectedNotification.metadata.fecha + 'T12:00:00');
+                                                const day = format(d, 'EEEE', { locale: es });
+                                                return `${day.charAt(0).toUpperCase() + day.slice(1)} ${format(d, 'dd/MM/yyyy')}`;
+                                            } catch (e) {
+                                                return selectedNotification.metadata?.fecha;
+                                            }
+                                        })()}
+                                    </p>
+                                </div>
+
+                                <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 mb-6">
+                                    <pre className="text-sm text-indigo-900 font-mono whitespace-pre-wrap leading-relaxed">
+                                        {selectedNotification.message}
+                                    </pre>
+                                </div>
+
+                                <div className="mt-8">
+                                    <button onClick={() => setSelectedNotification(null)} className="w-full py-4 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-colors">Cerrar Resumen</button>
                                 </div>
                             </div>
                         </div>
