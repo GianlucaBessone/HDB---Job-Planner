@@ -21,12 +21,13 @@ import {
     TrendingUp,
     AlertTriangle,
     MinusCircle,
+    Activity,
     SlidersHorizontal,
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-type ProjectStatus = 'activo' | 'en_riesgo' | 'atrasado' | 'finalizado';
+type ProjectStatus = 'por_hacer' | 'planificado' | 'activo' | 'en_riesgo' | 'atrasado' | 'finalizado';
 
 interface Project {
     id: string;
@@ -68,6 +69,8 @@ interface Filters {
 
 // ── Status config ─────────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<ProjectStatus, { label: string; color: string; bg: string; ring: string; dot: string; Icon: React.ElementType }> = {
+    por_hacer: { label: 'Por Hacer', color: 'text-blue-700', bg: 'bg-blue-50', ring: 'ring-blue-200', dot: 'bg-blue-500', Icon: Clock },
+    planificado: { label: 'Planificado', color: 'text-violet-700', bg: 'bg-violet-50', ring: 'ring-violet-200', dot: 'bg-violet-500', Icon: Calendar },
     activo: { label: 'Activo', color: 'text-emerald-700', bg: 'bg-emerald-50', ring: 'ring-emerald-200', dot: 'bg-emerald-500', Icon: CheckCircle2 },
     en_riesgo: { label: 'En Riesgo', color: 'text-amber-700', bg: 'bg-amber-50', ring: 'ring-amber-200', dot: 'bg-amber-400', Icon: AlertTriangle },
     atrasado: { label: 'Atrasado', color: 'text-red-700', bg: 'bg-red-50', ring: 'ring-red-200', dot: 'bg-red-500', Icon: XCircle },
@@ -80,7 +83,7 @@ const getProgressColor = (progress: number): string => {
     return 'bg-emerald-500';
 };
 
-const ALL_STATUSES: ProjectStatus[] = ['activo', 'en_riesgo', 'atrasado', 'finalizado'];
+const ALL_STATUSES: ProjectStatus[] = ['por_hacer', 'planificado', 'activo', 'en_riesgo', 'atrasado', 'finalizado'];
 
 const EMPTY_FORM: FormData = {
     nombre: '',
@@ -520,6 +523,11 @@ function ProjectCard({
                     <StatusIcon className={`w-3.5 h-3.5 ${cfg.color}`} />
                     <span className={`text-xs font-bold ${cfg.color}`}>{cfg.label}</span>
                 </div>
+                {/* Metric Status indicator */}
+                <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border ${project.activo ? 'bg-indigo-50 border-indigo-100 text-indigo-600' : 'bg-slate-50 border-slate-100 text-slate-400'}`}>
+                    <Activity className="w-3.5 h-3.5" />
+                    <span className="text-[10px] font-black uppercase tracking-tight">{project.activo ? 'En Métricas' : 'Oculto de Métricas'}</span>
+                </div>
                 <div className="flex items-center gap-1.5">
                     <button
                         onClick={() => onEdit(project)}
@@ -577,17 +585,32 @@ function ProjectModal({
                     </div>
 
                     <form onSubmit={onSubmit} className="space-y-4">
-                        {/* Nombre */}
-                        <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nombre del Proyecto *</label>
-                            <input
-                                autoFocus
-                                type="text"
-                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
-                                value={formData.nombre}
-                                onChange={e => set('nombre', e.target.value)}
-                                required
-                            />
+                        {/* Nombre + Toggle Activo */}
+                        <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+                            <div className="flex-1 space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nombre del Proyecto *</label>
+                                <input
+                                    autoFocus
+                                    type="text"
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                    value={formData.nombre}
+                                    onChange={e => set('nombre', e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="flex flex-col space-y-2 pb-1">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Incluir en Dashboard</label>
+                                <button
+                                    type="button"
+                                    onClick={() => set('activo', !formData.activo)}
+                                    className={`relative inline-flex h-10 w-20 items-center rounded-xl transition-all duration-300 focus:outline-none ring-offset-2 focus:ring-2 focus:ring-primary/20 ${formData.activo ? 'bg-primary' : 'bg-slate-200'}`}
+                                >
+                                    <span className={`inline-block h-6 w-6 transform rounded-lg bg-white shadow-md transition-transform duration-300 ${formData.activo ? 'translate-x-11' : 'translate-x-3'}`} />
+                                    <span className={`absolute text-[9px] font-black uppercase tracking-tighter transition-opacity duration-300 ${formData.activo ? 'left-3 opacity-100 text-white' : 'right-3 opacity-100 text-slate-500'}`}>
+                                        {formData.activo ? 'SÍ' : 'NO'}
+                                    </span>
+                                </button>
+                            </div>
                         </div>
 
                         {/* Cliente + Responsable */}
