@@ -31,10 +31,14 @@ export const dataLayer = {
         });
     },
     async createProject(data: { nombre: string; activo?: boolean; observaciones?: string; horasEstimadas?: number; horasConsumidas?: number; cliente?: string; clientId?: string; responsable?: string; estado?: string; fechaInicio?: string; fechaFin?: string }) {
-        return await prisma.project.create({ data });
+        const sanitizedData = { ...data };
+        if (sanitizedData.clientId === "") delete sanitizedData.clientId;
+        return await prisma.project.create({ data: sanitizedData });
     },
     async updateProject(id: string, data: { nombre?: string; activo?: boolean; observaciones?: string; horasEstimadas?: number; horasConsumidas?: number; cliente?: string; clientId?: string; responsable?: string; estado?: string; fechaInicio?: string; fechaFin?: string }) {
-        return await prisma.project.update({ where: { id }, data });
+        const sanitizedData = { ...data };
+        if (sanitizedData.clientId === "") sanitizedData.clientId = null as any; // Allow unlinking client
+        return await prisma.project.update({ where: { id }, data: sanitizedData });
     },
     async deleteProject(id: string) {
         return await prisma.project.delete({ where: { id } });
