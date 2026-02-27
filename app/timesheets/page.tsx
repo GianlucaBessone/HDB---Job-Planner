@@ -418,10 +418,11 @@ export default function TimesheetsPage() {
                 ]);
             });
         } else if (viewMode === 'resumen') {
-            aoa.push(['Fecha', 'Total Normales', 'Total Extras', 'Total Día']);
+            aoa.push(['Fecha', 'Operador', 'Total Normales', 'Total Extras', 'Total Día']);
             groupedResumen.forEach((r: any) => {
                 aoa.push([
                     r.fecha,
+                    r.operatorName,
                     r.normalTotal,
                     r.extraTotal,
                     r.normalTotal + r.extraTotal
@@ -460,11 +461,12 @@ export default function TimesheetsPage() {
     }, {} as Record<string, any>));
 
     const groupedResumen = Object.values(filteredCompleted.reduce((acc, entry) => {
-        const key = `${entry.fecha}`;
+        const key = `${entry.fecha}_${entry.operatorId}`;
         if (!acc[key]) {
             acc[key] = {
                 id: key,
                 fecha: entry.fecha,
+                operatorName: entry.operator.nombreCompleto,
                 normalTotal: 0,
                 extraTotal: 0,
             };
@@ -776,6 +778,7 @@ export default function TimesheetsPage() {
                             <thead>
                                 <tr className="bg-slate-50 border-b border-slate-100">
                                     <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Operador</th>
                                     <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Total Normales</th>
                                     <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Total Extras</th>
                                     <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Total Día</th>
@@ -788,6 +791,7 @@ export default function TimesheetsPage() {
                                     groupedResumen.map((row: any) => (
                                         <tr key={row.id} className="border-b border-slate-100 hover:bg-slate-50/50">
                                             <td className="p-4 text-xs font-bold text-slate-700 uppercase tracking-tight">{formatEntryDate(row.fecha)}</td>
+                                            <td className="p-4 text-sm font-black text-primary">{row.operatorName}</td>
                                             <td className="p-4 text-right font-black text-indigo-600">{row.normalTotal > 0 ? `${row.normalTotal}h` : '-'}</td>
                                             <td className="p-4 text-right font-black text-amber-600">{row.extraTotal > 0 ? `${row.extraTotal}h` : '-'}</td>
                                             <td className="p-4 text-right font-black text-slate-800 bg-slate-50/50">{row.normalTotal + row.extraTotal}h</td>
@@ -796,7 +800,7 @@ export default function TimesheetsPage() {
                                 )}
                                 {groupedResumen.length > 0 && (
                                     <tr className="bg-slate-100 border-t-2 border-slate-300">
-                                        <td className="p-4 text-right text-xs font-black text-slate-700 uppercase tracking-widest">Total Global Filtrado:</td>
+                                        <td colSpan={2} className="p-4 text-right text-xs font-black text-slate-700 uppercase tracking-widest">Total Global Filtrado:</td>
                                         <td className="p-4 text-right font-black text-indigo-700">{totalFilteredNormales > 0 ? `${totalFilteredNormales}h` : '-'}</td>
                                         <td className="p-4 text-right font-black text-amber-700">{totalFilteredExtras > 0 ? `${totalFilteredExtras}h` : '-'}</td>
                                         <td className="p-4 text-right font-black text-slate-800">{totalFilteredNormales + totalFilteredExtras}h</td>

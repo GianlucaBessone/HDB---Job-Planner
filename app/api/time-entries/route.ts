@@ -7,16 +7,22 @@ function calculateHours(start: string, end: string): number {
     const [h1, m1] = start.split(':').map(Number);
     const [h2, m2] = end.split(':').map(Number);
 
-    const startMins = h1 * 60 + m1;
-    let endMins = h2 * 60 + m2;
+    // Round Entry (start) UP to the next multiple of 30 minutes
+    const startMinsTotal = h1 * 60 + m1;
+    const roundedStartMins = Math.ceil(startMinsTotal / 30) * 30;
 
-    // if end is before start, assume it means next day (overnight shift)
-    if (endMins < startMins) {
-        endMins += 24 * 60;
+    // Round Exit (end) DOWN to the previous multiple of 30 minutes
+    let endMinsTotal = h2 * 60 + m2;
+
+    // Handle overnight shifts for the purpose of rounding
+    if (endMinsTotal < startMinsTotal) {
+        endMinsTotal += 24 * 60;
     }
 
-    const diffHours = (endMins - startMins) / 60;
-    return Math.round(diffHours * 100) / 100;
+    const roundedEndMins = Math.floor(endMinsTotal / 30) * 30;
+
+    const diffHours = (roundedEndMins - roundedStartMins) / 60;
+    return Math.max(0, Math.round(diffHours * 100) / 100);
 }
 
 export async function GET(req: Request) {
