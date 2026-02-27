@@ -18,6 +18,7 @@ import {
     Layout
 } from 'lucide-react';
 import Link from 'next/link';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 interface Project {
     id: string;
@@ -45,6 +46,10 @@ export default function DelaysPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+
+    // Custom Confirm Dialog State
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [delayToDelete, setDelayToDelete] = useState<string | null>(null);
 
     const [formData, setFormData] = useState({
         projectId: '',
@@ -98,11 +103,18 @@ export default function DelaysPage() {
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm('¿Estás seguro de eliminar este registro?')) return;
+    const handleDeleteClick = (id: string) => {
+        setDelayToDelete(id);
+        setIsConfirmOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!delayToDelete) return;
         try {
-            await fetch(`/api/delays?id=${id}`, { method: 'DELETE' });
+            await fetch(`/api/delays?id=${delayToDelete}`, { method: 'DELETE' });
             loadData();
+            setIsConfirmOpen(false);
+            setDelayToDelete(null);
         } catch (error) {
             console.error('Error deleting delay:', error);
         }
@@ -213,7 +225,7 @@ export default function DelaysPage() {
                                         </div>
                                     </div>
                                     <button
-                                        onClick={() => handleDelete(delay.id)}
+                                        onClick={() => handleDeleteClick(delay.id)}
                                         className="p-3 bg-rose-50 text-rose-400 rounded-2xl hover:bg-rose-500 hover:text-white transition-all active:scale-90"
                                     >
                                         <Trash2 className="w-5 h-5" />
@@ -376,6 +388,19 @@ export default function DelaysPage() {
                     </div>
                 </div>
             )}
+            {/* Confirm Dialog */}
+            <ConfirmDialog
+                isOpen={isConfirmOpen}
+                title="Eliminar Registro de Demora"
+                message="¿Estás seguro de que deseas eliminar este registro de demora? Esta acción no se puede deshacer."
+                confirmLabel="Eliminar"
+                cancelLabel="Cancelar"
+                onConfirm={confirmDelete}
+                onCancel={() => {
+                    setIsConfirmOpen(false);
+                    setDelayToDelete(null);
+                }}
+            />
         </div>
     );
 }
