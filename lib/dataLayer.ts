@@ -44,12 +44,12 @@ export const dataLayer = {
             orderBy: { createdAt: 'desc' }
         });
     },
-    async createOperator(data: { nombreCompleto: string; activo?: boolean; etiquetas: string[] }) {
+    async createOperator(data: { nombreCompleto: string; activo?: boolean; etiquetas: string[]; pin?: string; role?: string }) {
         return await prisma.operator.create({
             data: { ...data, etiquetas: data.etiquetas as any }
         });
     },
-    async updateOperator(id: string, data: { nombreCompleto?: string; activo?: boolean; etiquetas?: string[] }) {
+    async updateOperator(id: string, data: { nombreCompleto?: string; activo?: boolean; etiquetas?: string[]; pin?: string; role?: string }) {
         const updateData: any = { ...data };
         if (data.etiquetas) updateData.etiquetas = data.etiquetas as any;
         return await prisma.operator.update({ where: { id }, data: updateData });

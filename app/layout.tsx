@@ -5,9 +5,10 @@ import { Outfit } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Calendar, LayoutGrid, Users, ClipboardList, Menu, X, Landmark, LayoutDashboard, Timer, Clock } from "lucide-react";
+import { Calendar, LayoutGrid, Users, ClipboardList, Menu, X, Landmark, LayoutDashboard, Timer, Clock, LogOut } from "lucide-react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import ToastContainer from "@/components/Toast";
+import LoginScreen from "@/components/LoginScreen";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
@@ -17,6 +18,20 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+    useEffect(() => {
+        const stored = localStorage.getItem('currentUser');
+        if (stored) {
+            try {
+                setCurrentUser(JSON.parse(stored));
+            } catch (e) {
+                localStorage.removeItem('currentUser');
+            }
+        }
+        setIsCheckingAuth(false);
+    }, []);
 
     useEffect(() => {
         if ('serviceWorker' in navigator) {
@@ -43,60 +58,78 @@ export default function RootLayout({
                 <meta name="description" content="Sistema premium de planificación para técnicos" />
             </head>
             <body className={`${outfit.className} min-h-screen bg-slate-50/50`}>
-                <div className="flex flex-col min-h-screen">
-                    <header className="sticky top-0 z-[60] w-full border-b bg-white/80 backdrop-blur-md safe-area-top">
-                        <div className="max-w-[1800px] mx-auto px-4 md:px-8 h-14 md:h-16 flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <button
-                                    onClick={() => setIsSidebarOpen(true)}
-                                    className="p-2 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors"
-                                >
-                                    <Menu className="w-6 h-6" />
-                                </button>
-                                <div className="flex items-center gap-2">
-                                    <div className="bg-primary p-1.5 rounded-lg shadow-lg shadow-primary/20">
-                                        <ClipboardList className="w-5 h-5 text-white" />
+                {isCheckingAuth ? (
+                    <div className="min-h-screen flex items-center justify-center bg-slate-50/50">
+                        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                    </div>
+                ) : !currentUser ? (
+                    <LoginScreen onLoginSuccess={setCurrentUser} />
+                ) : (
+                    <div className="flex flex-col min-h-screen">
+                        <header className="sticky top-0 z-[60] w-full border-b bg-white/80 backdrop-blur-md safe-area-top">
+                            <div className="max-w-[1800px] mx-auto px-4 md:px-8 h-14 md:h-16 flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <button
+                                        onClick={() => setIsSidebarOpen(true)}
+                                        className="p-2 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors"
+                                    >
+                                        <Menu className="w-6 h-6" />
+                                    </button>
+                                    <div className="flex items-center gap-2">
+                                        <div className="bg-primary p-1.5 rounded-lg shadow-lg shadow-primary/20">
+                                            <ClipboardList className="w-5 h-5 text-white" />
+                                        </div>
+                                        <span className="text-xl font-bold tracking-tight text-slate-800">
+                                            HDB<span className="text-primary">Planner</span>
+                                        </span>
                                     </div>
-                                    <span className="text-xl font-bold tracking-tight text-slate-800">
-                                        HDB<span className="text-primary">Planner</span>
-                                    </span>
                                 </div>
                             </div>
-                        </div>
-                    </header>
+                        </header>
 
-                    <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+                        <Sidebar
+                            isOpen={isSidebarOpen}
+                            onClose={() => setIsSidebarOpen(false)}
+                            user={currentUser}
+                            onLogout={() => {
+                                localStorage.removeItem('currentUser');
+                                setCurrentUser(null);
+                            }}
+                        />
 
-                    <main className="flex-1 max-w-[1800px] mx-auto w-full px-4 md:px-8 py-6 md:py-8 pb-24 md:pb-8">
-                        {children}
-                        <SpeedInsights />
-                    </main>
+                        <main className="flex-1 max-w-[1800px] mx-auto w-full px-4 md:px-8 py-6 md:py-8 pb-24 md:pb-8">
+                            {children}
+                            <SpeedInsights />
+                        </main>
 
-                    <footer className="hidden md:block border-t bg-white py-6">
-                        <div className="container mx-auto px-4 text-center text-sm text-slate-500">
-                            © 2026 HDB Job Planner - Eficiencia en cada tarea
-                        </div>
-                    </footer>
+                        <footer className="hidden md:block border-t bg-white py-6">
+                            <div className="container mx-auto px-4 text-center text-sm text-slate-500">
+                                © 2026 HDB Job Planner - Eficiencia en cada tarea
+                            </div>
+                        </footer>
 
-                    <ToastContainer />
-                </div>
+                        <ToastContainer />
+                    </div>
+                )}
             </body>
         </html>
     );
 }
 
-function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose: () => void; user: any; onLogout: () => void }) {
     const pathname = usePathname();
 
     const menuItems = [
-        { href: '/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, label: 'Panel de Análisis' },
-        { href: '/', icon: <Calendar className="w-5 h-5" />, label: 'Planificación' },
-        { href: '/timesheets', icon: <Clock className="w-5 h-5" />, label: 'Registro de Tiempos' },
-        { href: '/projects', icon: <LayoutGrid className="w-5 h-5" />, label: 'Gestión de Proyectos' },
-        { href: '/delays', icon: <Timer className="w-5 h-5" />, label: 'Demoras del Cliente' },
-        { href: '/operators', icon: <Users className="w-5 h-5" />, label: 'Gestión de Operadores' },
-        { href: '/clients', icon: <Landmark className="w-5 h-5" />, label: 'Gestión de Clientes' },
+        { href: '/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, label: 'Panel de Análisis', roles: ['supervisor', 'admin'] },
+        { href: '/', icon: <Calendar className="w-5 h-5" />, label: 'Planificación', roles: ['supervisor', 'admin'] },
+        { href: '/timesheets', icon: <Clock className="w-5 h-5" />, label: 'Registro de Tiempos', roles: ['operador', 'supervisor', 'admin'] },
+        { href: '/projects', icon: <LayoutGrid className="w-5 h-5" />, label: 'Gestión de Proyectos', roles: ['supervisor', 'admin'] },
+        { href: '/delays', icon: <Timer className="w-5 h-5" />, label: 'Demoras del Cliente', roles: ['supervisor', 'admin'] },
+        { href: '/operators', icon: <Users className="w-5 h-5" />, label: 'Gestión de Usuarios / Operadores', roles: ['operador', 'supervisor', 'admin'] },
+        { href: '/clients', icon: <Landmark className="w-5 h-5" />, label: 'Gestión de Clientes', roles: ['supervisor', 'admin'] },
     ];
+
+    const allowedMenu = menuItems.filter(item => item.roles.includes(user?.role || 'operador'));
 
     return (
         <>
@@ -121,7 +154,7 @@ function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) 
                 </div>
 
                 <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-                    {menuItems.map(item => {
+                    {allowedMenu.map(item => {
                         const isActive = pathname === item.href;
                         return (
                             <Link
@@ -140,10 +173,24 @@ function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) 
                     })}
                 </nav>
 
-                <div className="p-6 border-t border-slate-100">
-                    <div className="bg-slate-50 rounded-2xl p-4">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Versión</p>
-                        <p className="text-xs font-bold text-slate-600">v2.0.4 Premium</p>
+                <div className="p-6 border-t border-slate-100 space-y-4">
+                    <div className="bg-slate-50 rounded-2xl p-4 flex items-center justify-between">
+                        <div>
+                            <p className="text-[10px] font-black text-slate-400 py-[2px] px-1.5 uppercase tracking-widest bg-white border border-slate-200 inline-block rounded-md mb-1">{user?.role}</p>
+                            <p className="text-xs font-bold text-slate-700 truncate max-w-[150px]" title={user?.nombreCompleto}>{user?.nombreCompleto}</p>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={onLogout}
+                        className="w-full flex items-center justify-center gap-2 bg-rose-50 text-rose-500 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-rose-100 transition-all active:scale-95"
+                    >
+                        <LogOut className="w-4 h-4" />
+                        Cerrar Sesión
+                    </button>
+
+                    <div className="text-center">
+                        <p className="text-[10px] font-bold text-slate-400">v2.0.4 Premium</p>
                     </div>
                 </div>
             </aside>

@@ -155,6 +155,8 @@ exports.Prisma.OperatorScalarFieldEnum = {
   nombreCompleto: 'nombreCompleto',
   activo: 'activo',
   etiquetas: 'etiquetas',
+  pin: 'pin',
+  role: 'role',
   createdAt: 'createdAt'
 };
 
@@ -185,14 +187,6 @@ exports.Prisma.HdbClientScalarFieldEnum = {
   telefono: 'telefono',
   direccion: 'direccion',
   activo: 'activo',
-  createdAt: 'createdAt'
-};
-
-exports.Prisma.UserScalarFieldEnum = {
-  id: 'id',
-  username: 'username',
-  password: 'password',
-  role: 'role',
   createdAt: 'createdAt'
 };
 
@@ -248,7 +242,6 @@ exports.Prisma.ModelName = {
   FavoriteBlock: 'FavoriteBlock',
   Planning: 'Planning',
   HdbClient: 'HdbClient',
-  User: 'User',
   TimeEntry: 'TimeEntry'
 };
 

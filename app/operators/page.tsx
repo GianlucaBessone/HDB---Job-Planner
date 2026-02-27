@@ -26,10 +26,13 @@ export default function OperatorsPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [currentUser, setCurrentUser] = useState<any>(null);
     const [editingOperator, setEditingOperator] = useState<any>(null);
     const [formData, setFormData] = useState({
         nombreCompleto: '',
         activo: true,
+        role: 'operador',
+        pin: '1234',
         etiquetas: [] as string[]
     });
     const [customTag, setCustomTag] = useState('');
@@ -39,6 +42,12 @@ export default function OperatorsPage() {
     const [operatorToDelete, setOperatorToDelete] = useState<string | null>(null);
 
     useEffect(() => {
+        const stored = localStorage.getItem('currentUser');
+        if (stored) {
+            try {
+                setCurrentUser(JSON.parse(stored));
+            } catch (e) { }
+        }
         loadOperators();
     }, []);
 
@@ -56,7 +65,7 @@ export default function OperatorsPage() {
 
     const openCreate = () => {
         setEditingOperator(null);
-        setFormData({ nombreCompleto: '', activo: true, etiquetas: [] });
+        setFormData({ nombreCompleto: '', activo: true, etiquetas: [], role: 'operador', pin: '1234' });
         setIsModalOpen(true);
     };
 
@@ -65,7 +74,9 @@ export default function OperatorsPage() {
         setFormData({
             nombreCompleto: op.nombreCompleto,
             activo: op.activo,
-            etiquetas: op.etiquetas || []
+            etiquetas: op.etiquetas || [],
+            role: op.role || 'operador',
+            pin: op.pin || '1234'
         });
         setIsModalOpen(true);
     };
@@ -197,41 +208,72 @@ export default function OperatorsPage() {
                                     <input
                                         autoFocus
                                         type="text"
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium disabled:opacity-50"
                                         value={formData.nombreCompleto}
                                         onChange={e => setFormData({ ...formData, nombreCompleto: e.target.value })}
+                                        disabled={currentUser?.role === 'operador'}
+                                        required
                                     />
                                 </div>
 
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 flex items-center gap-2">
-                                        <TagIcon className="w-3 h-3" />
-                                        Especialidades (Presiona Enter para nueva)
-                                    </label>
-                                    <input
-                                        type="text"
-                                        placeholder="Escribe y presiona Enter..."
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-sm outline-none focus:ring-1 focus:ring-primary/20"
-                                        value={customTag}
-                                        onChange={e => setCustomTag(e.target.value)}
-                                        onKeyDown={handleAddCustomTag}
-                                    />
-                                    <div className="flex flex-wrap gap-2 pt-2">
-                                        {Array.from(new Set([...PREDEFINED_TAGS, ...formData.etiquetas])).map(tag => (
-                                            <button
-                                                key={tag}
-                                                type="button"
-                                                onClick={() => toggleTag(tag)}
-                                                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${formData.etiquetas.includes(tag)
-                                                    ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
-                                                    : 'bg-white border-slate-200 text-slate-600 hover:border-primary/40'
-                                                    }`}
-                                            >
-                                                {tag}
-                                            </button>
-                                        ))}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Rol</label>
+                                        <select
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium disabled:opacity-50"
+                                            value={formData.role}
+                                            onChange={e => setFormData({ ...formData, role: e.target.value })}
+                                            disabled={currentUser?.role === 'operador'}
+                                        >
+                                            <option value="operador">Operador (Solo tiempo)</option>
+                                            <option value="supervisor">Supervisor</option>
+                                            <option value="admin">Administrador</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">PIN / Contraseña</label>
+                                        <input
+                                            type="text"
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium tracking-widest"
+                                            value={formData.pin}
+                                            onChange={e => setFormData({ ...formData, pin: e.target.value })}
+                                            placeholder="Ej: 1234"
+                                            required
+                                        />
                                     </div>
                                 </div>
+
+                                {currentUser?.role !== 'operador' && (
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 flex items-center gap-2">
+                                            <TagIcon className="w-3 h-3" />
+                                            Especialidades (Presiona Enter para nueva)
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="Escribe y presiona Enter..."
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-4 text-sm outline-none focus:ring-1 focus:ring-primary/20"
+                                            value={customTag}
+                                            onChange={e => setCustomTag(e.target.value)}
+                                            onKeyDown={handleAddCustomTag}
+                                        />
+                                        <div className="flex flex-wrap gap-2 pt-2">
+                                            {Array.from(new Set([...PREDEFINED_TAGS, ...formData.etiquetas])).map(tag => (
+                                                <button
+                                                    key={tag}
+                                                    type="button"
+                                                    onClick={() => toggleTag(tag)}
+                                                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${formData.etiquetas.includes(tag)
+                                                        ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
+                                                        : 'bg-white border-slate-200 text-slate-600 hover:border-primary/40'
+                                                        }`}
+                                                >
+                                                    {tag}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div className="pt-4 flex gap-3">
                                     <button
@@ -272,6 +314,11 @@ export default function OperatorsPage() {
                                             </div>
                                             <div className="min-w-0">
                                                 <h4 className="font-bold text-slate-800 truncate">{op.nombreCompleto}</h4>
+                                                <div className="flex flex-wrap gap-1 mt-1 mb-1">
+                                                    <span className={`px-2 py-[2px] rounded-md text-[9px] font-bold uppercase tracking-wider ${op.role === 'admin' || op.role === 'supervisor' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500'}`}>
+                                                        {op.role || 'operador'}
+                                                    </span>
+                                                </div>
                                                 <div className="flex gap-1 overflow-hidden">
                                                     {tags.slice(0, 2).map((t: string) => (
                                                         <span key={t} className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">{t}</span>
@@ -287,18 +334,22 @@ export default function OperatorsPage() {
                                             >
                                                 <Edit3 className="w-4 h-4 md:w-5 md:h-5" />
                                             </button>
-                                            <button
-                                                onClick={() => toggleStatus(op.id, op.activo)}
-                                                className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 transition-all active:scale-95"
-                                            >
-                                                {op.activo ? <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 text-green-500" /> : <XCircle className="w-4 h-4 md:w-5 md:h-5 text-slate-300" />}
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteClick(op.id)}
-                                                className="p-2 hover:bg-red-50 rounded-xl text-slate-300 hover:text-red-500 transition-all active:scale-95"
-                                            >
-                                                <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
-                                            </button>
+                                            {currentUser?.role !== 'operador' && (
+                                                <>
+                                                    <button
+                                                        onClick={() => toggleStatus(op.id, op.activo)}
+                                                        className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 transition-all active:scale-95"
+                                                    >
+                                                        {op.activo ? <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 text-green-500" /> : <XCircle className="w-4 h-4 md:w-5 md:h-5 text-slate-300" />}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteClick(op.id)}
+                                                        className="p-2 hover:bg-red-50 rounded-xl text-slate-300 hover:text-red-500 transition-all active:scale-95"
+                                                    >
+                                                        <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+                                                    </button>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                 );
@@ -317,22 +368,31 @@ export default function OperatorsPage() {
                                             >
                                                 <Edit3 className="w-5 h-5" />
                                             </button>
-                                            <button
-                                                onClick={() => toggleStatus(op.id, op.activo)}
-                                                className="p-2.5 hover:bg-slate-100 rounded-xl text-slate-400 transition-all active:scale-90"
-                                            >
-                                                {op.activo ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <XCircle className="w-5 h-5 text-slate-300" />}
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteClick(op.id)}
-                                                className="p-2.5 hover:bg-red-50 rounded-xl text-slate-300 hover:text-red-500 transition-all active:scale-90"
-                                            >
-                                                <Trash2 className="w-5 h-5" />
-                                            </button>
+                                            {currentUser?.role !== 'operador' && (
+                                                <>
+                                                    <button
+                                                        onClick={() => toggleStatus(op.id, op.activo)}
+                                                        className="p-2.5 hover:bg-slate-100 rounded-xl text-slate-400 transition-all active:scale-90"
+                                                    >
+                                                        {op.activo ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <XCircle className="w-5 h-5 text-slate-300" />}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteClick(op.id)}
+                                                        className="p-2.5 hover:bg-red-50 rounded-xl text-slate-300 hover:text-red-500 transition-all active:scale-90"
+                                                    >
+                                                        <Trash2 className="w-5 h-5" />
+                                                    </button>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
 
                                     <div className="relative z-10">
+                                        <div className="flex flex-wrap gap-1 mt-1 mb-2">
+                                            <span className={`px-2 py-[2px] rounded-md text-[9px] font-bold uppercase tracking-wider ${op.role === 'admin' || op.role === 'supervisor' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500'}`}>
+                                                {op.role || 'operador'}
+                                            </span>
+                                        </div>
                                         <h4 className="font-bold text-lg text-slate-800 line-clamp-1 group-hover:text-primary transition-colors">{op.nombreCompleto}</h4>
                                         <div className="flex flex-wrap gap-1.5 mt-3 min-h-[32px]">
                                             {tags.map((t: string) => (
