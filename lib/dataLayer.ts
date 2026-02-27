@@ -1,20 +1,9 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../prisma/generated/client';
+// Triggering reload to pick up new Prisma Client generation
 
 const getPrisma = () => {
     const g = global as any;
-    if (process.env.NODE_ENV === 'production') return new PrismaClient();
-
-    // Aggressive check for stale instance in development
-    if (g.prisma) {
-        const models = Object.keys(g.prisma);
-        if (!models.includes('hdbClient')) {
-            console.log('--- PRISMA STALE: hdbClient missing. Recreating... ---');
-            delete g.prisma;
-        }
-    }
-
     if (!g.prisma) {
-        console.log('--- PRISMA: Initializing new instance ---');
         g.prisma = new PrismaClient();
     }
     return g.prisma;
@@ -26,7 +15,12 @@ export const dataLayer = {
     // Projects
     async getProjects() {
         return await prisma.project.findMany({
-            include: { client: true },
+            include: {
+                client: true,
+                _count: {
+                    select: { clientDelays: true }
+                }
+            },
             orderBy: { createdAt: 'desc' }
         });
     },
@@ -111,6 +105,20 @@ export const dataLayer = {
     },
     async deleteClient(id: string) {
         return await prisma.hdbClient.delete({ where: { id } });
+    },
+
+    // Client Delays
+    async getClientDelays() {
+        return await prisma.clientDelay.findMany({
+            include: { project: true },
+            orderBy: { fecha: 'desc' }
+        });
+    },
+    async createClientDelay(data: { projectId: string; fecha: string; hora: string; operador: string; area: string; motivo: string; duracion: number }) {
+        return await prisma.clientDelay.create({ data });
+    },
+    async deleteClientDelay(id: string) {
+        return await prisma.clientDelay.delete({ where: { id } });
     }
 
 

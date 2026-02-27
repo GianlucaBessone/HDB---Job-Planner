@@ -6,7 +6,8 @@ export async function GET() {
         const projects = await dataLayer.getProjects();
         return NextResponse.json(projects);
     } catch (e) {
-        return NextResponse.json({ error: 'Failed to fetch projects' }, { status: 500 });
+        console.error('Fetch Projects Error:', e);
+        return NextResponse.json({ error: 'Failed to fetch projects', details: String(e) }, { status: 500 });
     }
 }
 

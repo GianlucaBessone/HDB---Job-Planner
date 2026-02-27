@@ -18,7 +18,8 @@ import {
     Info,
     TrendingDown,
     Activity,
-    Target
+    Target,
+    Timer
 } from 'lucide-react';
 
 interface DashboardData {
@@ -58,6 +59,14 @@ interface DashboardData {
         };
         trend: { label: string; ipt: number }[];
     };
+    delays: {
+        totalHours: number;
+        impactPercent: number;
+        totalEvents: number;
+        topAreas: { name: string; hours: number }[];
+        reasons: { name: string; value: number }[];
+        trend: { label: string; hours: number }[];
+    };
 }
 
 export default function DashboardPage() {
@@ -80,7 +89,7 @@ export default function DashboardPage() {
         );
     }
 
-    if (!data) return <div>Error loading dashboard</div>;
+    if (!data || !data.kpis) return <div className="p-8 text-center text-rose-500 font-bold">Error loading dashboard data. Please verify database connection.</div>;
 
     return (
         <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
@@ -176,48 +185,27 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Performance Trend */}
-                <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm relative overflow-hidden group">
-                    <div className="flex items-center justify-between mb-8">
-                        <div className="flex items-center gap-3">
-                            <TrendingUp className="w-5 h-5 text-indigo-500" />
-                            <h3 className="text-xl font-bold text-slate-800">Tendencia de Performance</h3>
-                        </div>
-                        <MetricTooltip
-                            def="Evolución del IPT promedio en el tiempo."
-                            purpose="Detectar si la eficiencia operativa está mejorando o deteriorándose mes a mes."
-                            calc="Promedio de IPT de todos los proyectos por mes (últimos 6 meses)."
-                        />
-                    </div>
-                    <div className="h-64 relative mt-4">
-                        <svg className="w-full h-full p-2" viewBox="0 0 100 100" preserveAspectRatio="none">
-                            <path
-                                d={`M ${data.performance.trend.map((t, i) => `${(i / Math.max(data.performance.trend.length - 1, 1)) * 100},${100 - (Math.min(t.ipt, 2) * 50)}`).join(' L ')}`}
-                                fill="none"
-                                stroke="url(#lineGradient)"
-                                strokeWidth="4"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="drop-shadow-xl"
-                            />
-                            <defs>
-                                <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                    <stop offset="0%" stopColor="#6366f1" />
-                                    <stop offset="100%" stopColor="#8b5cf6" />
-                                </linearGradient>
-                            </defs>
-                        </svg>
-                        <div className="absolute inset-x-0 bottom-[-1.5rem] flex justify-between px-2">
-                            {data.performance.trend.map((t, i) => (
-                                <span key={i} className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{t.label.split('-')[1]}</span>
-                            ))}
-                        </div>
-                    </div>
-                </div>
+                <ElegantTrendChart
+                    title="Tendencia de Performance"
+                    data={data.performance.trend.map(t => ({ label: t.label, value: t.ipt }))}
+                    color="#6366f1"
+                    icon={<TrendingUp className="w-5 h-5 text-indigo-500" />}
+                    tooltip={{
+                        def: "Evolución del IPT promedio en el tiempo.",
+                        purpose: "Detectar si la eficiencia operativa está mejorando o deteriorándose mes a mes.",
+                        calc: "Promedio de IPT de todos los proyectos por mes (últimos 6 meses)."
+                    }}
+                    valuePrefix=""
+                    valueSuffix=""
+                    minY={0}
+                    maxY={2}
+                    yScale={50}
+                />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 overflow-visible">
                 {/* Classification Donut */}
-                <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col items-center">
+                <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col items-center overflow-visible">
                     <div className="flex items-center justify-between w-full mb-8">
                         <div className="flex items-center gap-3">
                             <PieChart className="w-5 h-5 text-emerald-500" />
@@ -230,8 +218,8 @@ export default function DashboardPage() {
                         />
                     </div>
 
-                    <div className="relative w-48 h-48 mb-6 group/donut">
-                        <svg className="w-full h-full -rotate-90" viewBox="0 0 32 32">
+                    <div className="relative w-48 h-48 mb-6 mt-6 group/donut overflow-visible rounded-none z-10">
+                        <svg className="w-full h-full -rotate-90" viewBox="-4 -4 40 40">
                             <circle r="16" cx="16" cy="16" fill="transparent" stroke="#f1f5f9" strokeWidth="6" />
                             <circle r="16" cx="16" cy="16" fill="transparent" stroke="#10b981" strokeWidth="6"
                                 strokeDasharray={`${(data.performance.classification.eficiente / Math.max(data.kpis.totalProjects, 1)) * 100} 100`}
@@ -368,6 +356,117 @@ export default function DashboardPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Client Delays Analysis Section (NEW) */}
+            <div className="space-y-6 pt-12 border-t border-slate-200">
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-amber-500 rounded-2xl text-white shadow-lg shadow-amber-500/20">
+                        <Timer className="w-8 h-8" />
+                    </div>
+                    <div>
+                        <h3 className="text-3xl font-black text-slate-800 tracking-tight leading-none">Análisis de Demoras Externas</h3>
+                        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mt-2 px-0.5">Responsabilidad del Cliente</p>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <KpiCard
+                        title="Total Tiempo Perdido"
+                        value={`${data.delays.totalHours}h`}
+                        icon={<Timer className="w-6 h-6" />}
+                        color="bg-amber-500"
+                        trend="Horas acumuladas"
+                        tooltip={{
+                            def: "Suma total de horas demoradas atribuidas al cliente.",
+                            purpose: "Cuantificar el costo en tiempo de las fricciones externas.",
+                            calc: "Sumatoria de todos los eventos de demora del cliente realizados."
+                        }}
+                    />
+                    <KpiCard
+                        title="Impacto en Proyecto"
+                        value={`${data.delays.impactPercent}%`}
+                        icon={<AlertTriangle className="w-6 h-6" />}
+                        color="bg-rose-500"
+                        trend="Carga sobre ejecución"
+                        tooltip={{
+                            def: "Proporción de tiempo que el proyecto estuvo detenido por el cliente.",
+                            purpose: "Entender qué tanto peso tiene la burocracia/demora del cliente en el cronograma.",
+                            calc: "(Horas Demora / (Horas Consumidas + Horas Demora)) * 100."
+                        }}
+                    />
+                    <KpiCard
+                        title="Frecuencia de Eventos"
+                        value={data.delays.totalEvents}
+                        icon={<Activity className="w-6 h-6" />}
+                        color="bg-slate-700"
+                        trend="Incidentes registrados"
+                        tooltip={{
+                            def: "Cantidad absoluta de reportes de demora.",
+                            purpose: "Medir la recurrencia de los problemas externos.",
+                            calc: "Conteo simple de registros en la base de demoras."
+                        }}
+                    />
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Delays by Area */}
+                    <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm relative group overflow-hidden">
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center gap-3">
+                                <Building2 className="w-5 h-5 text-amber-500" />
+                                <h3 className="text-xl font-bold text-slate-800">Demoras por Área del Cliente</h3>
+                            </div>
+                            <MetricTooltip
+                                def="Distribución de horas perdidas según el departamento responsable del cliente."
+                                purpose="Identificar qué áreas del cliente son los cuellos de botella más críticos."
+                                calc="Horas totales acumuladas por cada etiqueta de área."
+                            />
+                        </div>
+                        <div className="space-y-4">
+                            {data.delays.topAreas.length === 0 ? (
+                                <div className="h-48 flex items-center justify-center text-slate-400 font-bold uppercase tracking-widest text-[10px]">Sin datos de áreas</div>
+                            ) : (
+                                data.delays.topAreas.slice(0, 5).map((area, idx) => {
+                                    const maxHours = Math.max(...data.delays.topAreas.map(a => a.hours), 1);
+                                    const percentage = (area.hours / maxHours) * 100;
+                                    return (
+                                        <div key={idx} className="space-y-1.5">
+                                            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
+                                                <span className="text-slate-500">{area.name}</span>
+                                                <span className="text-amber-600 font-black">{area.hours}h</span>
+                                            </div>
+                                            <div className="h-4 bg-slate-50 rounded-lg overflow-hidden border border-slate-100 p-0.5">
+                                                <div
+                                                    className="h-full bg-amber-400 rounded-md transition-all duration-1000 shadow-[0_0_10px_rgba(245,158,11,0.2)]"
+                                                    style={{ width: `${percentage}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Delay Evolution */}
+                    <ElegantTrendChart
+                        title="Evolución de Demoras"
+                        data={data.delays.trend.map(t => ({ label: t.label, value: t.hours }))}
+                        color="#f59e0b"
+                        icon={<TrendingUp className="w-5 h-5 text-amber-500" />}
+                        tooltip={{
+                            def: "Muestra si las demoras del cliente están aumentando o disminuyendo mensualmente.",
+                            purpose: "Validar si las gestiones para reducir tiempos muertos externos están siendo efectivas.",
+                            calc: "Suma de horas de demora agrupadas por mes."
+                        }}
+                        valuePrefix=""
+                        valueSuffix="h"
+                        minY={0}
+                        maxY={Math.max(...data.delays.trend.map(d => d.hours), 1)}
+                        yScale={80}
+                    />
+                </div>
+            </div>
         </div>
     );
 }
@@ -450,6 +549,146 @@ function StatusPill({ label, count, color }: { label: string; count: number; col
         <div className={`p-4 rounded-2xl border ${colors[color]} flex flex-col items-center justify-center gap-1 hover:scale-105 transition-transform cursor-default`}>
             <span className="text-2xl font-black leading-none">{count}</span>
             <span className="text-[10px] font-bold uppercase tracking-widest text-center">{label}</span>
+        </div>
+    );
+}
+
+function ElegantTrendChart({ title, data, color, icon, tooltip, valuePrefix = '', valueSuffix = '', minY = 0, maxY = 100, yScale = 80 }: {
+    title: string;
+    data: { label: string; value: number }[];
+    color: string;
+    icon: any;
+    tooltip: { def: string; purpose: string; calc: string };
+    valuePrefix?: string;
+    valueSuffix?: string;
+    minY?: number;
+    maxY?: number;
+    yScale?: number;
+}) {
+    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+    const maxVal = Math.max(...data.map(d => d.value), maxY || 1);
+    const points = data.map((d, i) => ({
+        x: (i / Math.max(data.length - 1, 1)) * 100,
+        y: 100 - ((d.value / maxVal) * yScale)
+    }));
+
+    // Cubic Bezier smoothing
+    const getSmoothingPath = () => {
+        if (points.length < 2) return '';
+        let d = `M ${points[0].x} ${points[0].y}`;
+
+        for (let i = 0; i < points.length - 1; i++) {
+            const p0 = points[i];
+            const p1 = points[i + 1];
+            // Smoothing factor
+            const dx = (p1.x - p0.x) / 3;
+            d += ` C ${p0.x + dx} ${p0.y}, ${p1.x - dx} ${p1.y}, ${p1.x} ${p1.y}`;
+        }
+        return d;
+    };
+
+    const linePath = getSmoothingPath();
+    const areaPath = points.length >= 2 ? `${linePath} L ${points[points.length - 1].x} 100 L ${points[0].x} 100 Z` : '';
+
+    return (
+        <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm relative overflow-hidden group">
+            <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                    {icon}
+                    <h3 className="text-xl font-bold text-slate-800">{title}</h3>
+                </div>
+                <MetricTooltip {...tooltip} />
+            </div>
+
+            <div className="h-56 relative mt-4 cursor-crosshair" onMouseLeave={() => setHoveredIndex(null)}>
+                {data.length === 0 ? (
+                    <div className="h-full flex items-center justify-center text-slate-400 font-bold uppercase tracking-widest text-[10px]">Sin datos históricos</div>
+                ) : (
+                    <>
+                        <svg className="w-full h-full overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
+                            {/* Area fill */}
+                            {areaPath && (
+                                <path
+                                    d={areaPath}
+                                    fill={color}
+                                    fillOpacity="0.05"
+                                    className="transition-all duration-700"
+                                />
+                            )}
+                            {/* Main line */}
+                            <path
+                                d={linePath}
+                                fill="none"
+                                stroke={color}
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="transition-all duration-700"
+                            />
+
+
+
+                            {/* Interaction zones */}
+                            {points.map((p, i) => (
+                                <rect
+                                    key={i}
+                                    x={p.x - 5}
+                                    y={0}
+                                    width={10}
+                                    height={100}
+                                    fill="transparent"
+                                    className="cursor-pointer"
+                                    onMouseEnter={() => setHoveredIndex(i)}
+                                />
+                            ))}
+                        </svg>
+
+                        {/* Hover point – rendered as HTML div to avoid SVG stretching */}
+                        {hoveredIndex !== null && points[hoveredIndex] && (
+                            <div
+                                className="absolute w-[10px] h-[10px] rounded-full border-2 bg-white pointer-events-none animate-in zoom-in duration-200"
+                                style={{
+                                    borderColor: color,
+                                    left: `${points[hoveredIndex].x}%`,
+                                    top: `${points[hoveredIndex].y}%`,
+                                    transform: 'translate(-50%, -50%)',
+                                    boxShadow: `0 0 6px ${color}40`
+                                }}
+                            />
+                        )}
+
+                        {/* Labels */}
+                        <div className="absolute inset-x-0 bottom-[-1.5rem] flex justify-between px-2">
+                            {data.map((t, i) => (
+                                <span key={i} className={`text-[9px] font-black uppercase tracking-tighter transition-colors ${hoveredIndex === i ? 'text-slate-900 scale-110' : 'text-slate-400'}`}>
+                                    {t.label.split('-').length > 1 ? t.label.split('-')[1] : t.label}
+                                </span>
+                            ))}
+                        </div>
+
+                        {/* Floating Tooltip */}
+                        {hoveredIndex !== null && (
+                            <div
+                                className="absolute p-3 bg-slate-900 text-white rounded-xl shadow-2xl z-50 pointer-events-none animate-in fade-in zoom-in-95 duration-200"
+                                style={{
+                                    left: `${points[hoveredIndex].x}%`,
+                                    top: `${points[hoveredIndex].y}%`,
+                                    transform: `translate(${points[hoveredIndex].x > 80 ? '-100%' : points[hoveredIndex].x < 20 ? '0%' : '-50%'}, -130%)`
+                                }}
+                            >
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{data[hoveredIndex].label}</p>
+                                    <p className="text-sm font-black flex items-center gap-2">
+                                        <span style={{ color }}>{valuePrefix}{data[hoveredIndex].value}{valueSuffix}</span>
+                                    </p>
+                                </div>
+                                <div className={`absolute bottom-[-4px] w-2 h-2 bg-slate-900 rotate-45 ${points[hoveredIndex].x > 80 ? 'right-4' : points[hoveredIndex].x < 20 ? 'left-4' : 'left-1/2 -translate-x-1/2'}`} />
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
         </div>
     );
 }

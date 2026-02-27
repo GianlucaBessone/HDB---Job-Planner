@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "./generated/client"
 }
 
 datasource db {
@@ -22,6 +23,20 @@ model Project {
   fechaInicio     String?
   fechaFin        String?
   createdAt       DateTime @default(now())
+  clientDelays    ClientDelay[]
+}
+
+model ClientDelay {
+  id           String   @id @default(cuid())
+  projectId    String
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  fecha        String   // YYYY-MM-DD
+  hora         String   // HH:mm
+  operador     String   // Operador interno que registra
+  area         String   // Control Documentario, Calidad, Compras, IT
+  motivo       String   // Motivo de la demora
+  duracion     Float    // Tiempo demorado en horas
+  createdAt    DateTime @default(now())
 }
 
 model Operator {

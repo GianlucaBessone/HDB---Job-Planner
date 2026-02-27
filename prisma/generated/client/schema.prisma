@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id              String        @id @default(cuid())
+  nombre          String
+  activo          Boolean       @default(true)
+  observaciones   String?
+  horasEstimadas  Int           @default(0)
+  horasConsumidas Int           @default(0)
+  cliente         String? // Keeping this for legacy text
+  clientId        String?
+  client          HdbClient?    @relation(fields: [clientId], references: [id])
+  responsable     String?
+  estado          String        @default("activo") // por_hacer | planificado | activo | en_riesgo | atrasado | finalizado
+  fechaInicio     String?
+  fechaFin        String?
+  createdAt       DateTime      @default(now())
+  clientDelays    ClientDelay[]
+}
+
+model ClientDelay {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  fecha     String // YYYY-MM-DD
+  hora      String // HH:mm
+  operador  String // Operador interno que registra
+  area      String // Control Documentario, Calidad, Compras, IT
+  motivo    String // Motivo de la demora
+  duracion  Float // Tiempo demorado en horas
+  createdAt DateTime @default(now())
+}
+
+model Operator {
+  id             String   @id @default(cuid())
+  nombreCompleto String
+  activo         Boolean  @default(true)
+  etiquetas      Json // Now using native Json type
+  createdAt      DateTime @default(now())
+}
+
+model FavoriteBlock {
+  id            String  @id @default(cuid())
+  name          String
+  projectId     String?
+  projectName   String?
+  startTime     String?
+  endTime       String?
+  note          String?
+  operatorIds   Json? // Now using native Json type
+  operatorNames Json? // Now using native Json type
+  isNoteOnly    Boolean @default(false)
+}
+
+model Planning {
+  id        String   @id @default(cuid())
+  fecha     String   @unique // YYYY-MM-DD
+  blocks    Json // Now using native Json type
+  createdAt DateTime @default(now())
+}
+
+model HdbClient {
+  id        String    @id @default(cuid())
+  nombre    String
+  email     String?
+  telefono  String?
+  direccion String?
+  activo    Boolean   @default(true)
+  projects  Project[]
+  createdAt DateTime  @default(now())
+}

@@ -23,6 +23,7 @@ import {
     MinusCircle,
     Activity,
     SlidersHorizontal,
+    Timer,
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
 
@@ -38,7 +39,10 @@ interface Project {
     horasConsumidas: number;
     cliente?: string;
     clientId?: string;
-    client?: { id: string; nombre: string };
+    client?: { nombre: string }; // Relational client
+    _count?: {
+        clientDelays: number;
+    };
     responsable?: string;
     estado: ProjectStatus;
     fechaInicio?: string;
@@ -528,6 +532,12 @@ function ProjectCard({
                     <Activity className="w-3.5 h-3.5" />
                     <span className="text-[10px] font-black uppercase tracking-tight">{project.activo ? 'En Métricas' : 'Oculto de Métricas'}</span>
                 </div>
+                {project._count && project._count.clientDelays > 0 && (
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-100 text-amber-600">
+                        <Timer className="w-3.5 h-3.5" />
+                        <span className="text-[10px] font-black uppercase tracking-tight">{project._count.clientDelays} Demoras</span>
+                    </div>
+                )}
                 <div className="flex items-center gap-1.5">
                     <button
                         onClick={() => onEdit(project)}
