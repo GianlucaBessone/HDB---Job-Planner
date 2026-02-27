@@ -18,7 +18,7 @@ model Project {
   clientId        String?
   client          HdbClient? @relation(fields: [clientId], references: [id])
   responsable     String?
-  estado          String   @default("activo") // activo | en_riesgo | atrasado | finalizado
+  estado          String   @default("activo") // por_hacer | planificado | activo | en_riesgo | atrasado | finalizado
   fechaInicio     String?
   fechaFin        String?
   createdAt       DateTime @default(now())
