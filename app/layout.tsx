@@ -10,6 +10,8 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import ToastContainer from "@/components/Toast";
 import LoginScreen from "@/components/LoginScreen";
 import NotificationsDropdown from "@/components/NotificationsDropdown";
+import OneSignalInit from "@/components/OneSignalInit";
+import { Loader2 } from "lucide-react";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
@@ -34,6 +36,8 @@ export default function RootLayout({
         setIsCheckingAuth(false);
     }, []);
 
+    // OneSignal handles service worker registration
+    /*
     useEffect(() => {
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -44,6 +48,7 @@ export default function RootLayout({
             });
         }
     }, []);
+    */
 
     let content;
     if (isCheckingAuth) {
@@ -77,13 +82,16 @@ export default function RootLayout({
                             </div>
                         </div>
                         {/* Mobile Logo version if needed or right-aligned items can go here */}
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 md:gap-4">
                             <div className="flex items-center gap-2 md:hidden">
                                 <span className="text-xl font-bold tracking-tight text-slate-800">
                                     HDB<span className="text-primary">Planner</span>
                                 </span>
                             </div>
-                            <NotificationsDropdown user={currentUser} />
+                            <div className="flex items-center gap-2">
+                                <OneSignalInit appId={process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID || "180b43cd-8aef-4131-b844-482457816ecd"} />
+                                <NotificationsDropdown user={currentUser} />
+                            </div>
                         </div>
                     </div>
                 </header>
