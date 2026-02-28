@@ -50,55 +50,62 @@ export default async function ProjectReportPage({ params }: { params: { id: stri
         delaysByArea[d.area] = (delaysByArea[d.area] || 0) + d.duracion;
     });
 
+    // Final formatting for the PDF component
+    const operatorArray = Object.values(operatorMap);
+    const delaysArray = Object.entries(delaysByArea).map(([area, horas]) => ({ area, horas }));
+
     return (
         <div className="min-h-screen bg-slate-50 py-8 print:p-0 print:bg-white text-slate-800 font-sans mx-auto max-w-[900px]">
             {/* Control Bar (hidden in print) */}
             <div className="flex justify-end mb-8 print:hidden px-4 md:px-0">
-                <button
-                    onClick={() => window.print()} // Note: onClick only works in Client components. Wait, this is a Server component! We need to make a small client wrapper, or inline script. See below.
-                    className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-indigo-700 shadow-xl transition-all"
-                >
-                    <Download className="w-5 h-5" />
-                    Generar / Imprimir PDF
-                </button>
+                <ReportPrintButton
+                    project={project}
+                    totalRealHours={totalRealHours}
+                    savedHours={savedHours}
+                    IPT={IPT}
+                    operatorMap={operatorArray}
+                    delaysByArea={delaysArray}
+                />
             </div>
 
-            <div className="bg-white p-10 md:p-14 md:rounded-[2.5rem] shadow-sm print:shadow-none print:p-0">
+            <div id="report-content" className="bg-white p-10 md:p-14 md:rounded-[2.5rem] shadow-sm print:shadow-none print:p-0">
                 {/* Header */}
                 <div className="flex justify-between items-start border-b-2 border-slate-900 pb-8 mb-8">
                     <div>
                         <h1 className="text-4xl font-black text-slate-900 tracking-tighter mb-2">Reporte de Proyecto</h1>
-                        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                            <ShieldCheck className="w-4 h-4 text-emerald-500" /> PROYECTO FINALIZADO
-                        </p>
+                        <div className="flex items-center">
+                            <ShieldCheck className="w-4 h-4 text-emerald-500 mr-2" />
+                            <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">PROYECTO FINALIZADO</span>
+                        </div>
                     </div>
-                    <div className="text-right">
-                        <h2 className="text-2xl font-black text-indigo-600 tracking-tight">{project.nombre}</h2>
-                        <p className="text-sm font-bold text-slate-500 flex items-center justify-end gap-1 mt-1">
-                            {hasClientStr} <Building2 className="w-4 h-4" />
-                        </p>
+                    <div className="text-right flex flex-col items-end">
+                        <h2 className="text-2xl font-black text-indigo-600 tracking-tight leading-none mb-1">{project.nombre}</h2>
+                        <div className="flex items-center justify-end text-slate-500">
+                            <span className="text-sm font-bold">{hasClientStr}</span>
+                            <Building2 className="w-4 h-4 ml-1.5" />
+                        </div>
                     </div>
                 </div>
 
                 {/* Metrics Grid */}
-                <div className="grid grid-cols-4 gap-4 mb-10">
-                    <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Horas Estimadas</p>
-                        <p className="text-2xl font-black text-slate-800">{project.horasEstimadas}h</p>
+                <div className="flex justify-between items-stretch gap-4 mb-10">
+                    <div className="flex-1 bg-slate-50 p-5 rounded-2xl border border-slate-100 flex flex-col justify-center min-h-[100px]">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 text-center">Horas Estimadas</p>
+                        <p className="text-2xl font-black text-slate-800 text-center">{project.horasEstimadas}h</p>
                     </div>
-                    <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Horas Reales</p>
-                        <p className={`text-2xl font-black ${totalRealHours > project.horasEstimadas ? 'text-rose-500' : 'text-emerald-500'}`}>{totalRealHours.toFixed(1)}h</p>
+                    <div className="flex-1 bg-slate-50 p-5 rounded-2xl border border-slate-100 flex flex-col justify-center min-h-[100px]">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 text-center">Horas Reales</p>
+                        <p className={`text-2xl font-black text-center ${totalRealHours > project.horasEstimadas ? 'text-rose-500' : 'text-emerald-500'}`}>{totalRealHours.toFixed(1)}h</p>
                     </div>
-                    <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Ahorro / Desvío</p>
-                        <p className={`text-2xl font-black ${savedHours >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                    <div className="flex-1 bg-slate-50 p-5 rounded-2xl border border-slate-100 flex flex-col justify-center min-h-[100px]">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 text-center">Ahorro / Desvío</p>
+                        <p className={`text-2xl font-black text-center ${savedHours >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                             {savedHours > 0 ? '+' : ''}{savedHours.toFixed(1)}h
                         </p>
                     </div>
-                    <div className="bg-indigo-50 p-5 rounded-2xl border border-indigo-100">
-                        <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Eficiencia (IPT)</p>
-                        <p className="text-2xl font-black text-indigo-600">{IPT}</p>
+                    <div className="flex-1 bg-indigo-50 p-5 rounded-2xl border border-indigo-100 flex flex-col justify-center min-h-[100px]">
+                        <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1 text-center">Eficiencia (IPT)</p>
+                        <p className="text-2xl font-black text-indigo-600 text-center">{IPT}</p>
                     </div>
                 </div>
 
@@ -107,8 +114,8 @@ export default async function ProjectReportPage({ params }: { params: { id: stri
                     {/* Left Col */}
                     <div className="space-y-8">
                         <div>
-                            <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                                <Users className="w-5 h-5 text-indigo-500" />
+                            <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
+                                <Users className="w-5 h-5 text-indigo-500 mr-2.5" />
                                 Resumen por Operador
                             </h3>
                             <div className="space-y-3">
@@ -134,9 +141,9 @@ export default async function ProjectReportPage({ params }: { params: { id: stri
                     {/* Right Col */}
                     <div className="space-y-8">
                         <div>
-                            <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                                <Timer className="w-5 h-5 text-amber-500" />
-                                Demoras del Cliente: <span className="text-amber-500">{totalDelaysHours}h</span>
+                            <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
+                                <Timer className="w-5 h-5 text-amber-500 mr-2.5" />
+                                Demoras del Cliente: <span className="text-amber-500 ml-2">{totalDelaysHours}h</span>
                             </h3>
                             <div className="space-y-3">
                                 {Object.entries(delaysByArea).map(([area, horas], idx) => {
