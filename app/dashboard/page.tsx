@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
     LayoutDashboard,
     Briefcase,
@@ -81,6 +82,17 @@ export default function DashboardPage() {
     const [filterTo, setFilterTo] = useState('');
     const [filterClientId, setFilterClientId] = useState('');
     const [filterStatus, setFilterStatus] = useState('active'); // active | finished | all
+    const router = useRouter();
+
+    useEffect(() => {
+        const stored = localStorage.getItem('currentUser');
+        if (stored) {
+            const user = JSON.parse(stored);
+            if (user.role?.toLowerCase() === 'operador') {
+                router.replace('/timesheets');
+            }
+        }
+    }, [router]);
 
     useEffect(() => {
         // Load clients once

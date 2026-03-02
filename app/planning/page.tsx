@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { formatWhatsAppMessage } from '@/lib/whatsappFormatter';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -45,6 +46,17 @@ export default function PlanningPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [duplicateDate, setDuplicateDate] = useState('');
+    const router = useRouter();
+
+    useEffect(() => {
+        const stored = localStorage.getItem('currentUser');
+        if (stored) {
+            const user = JSON.parse(stored);
+            if (user.role?.toLowerCase() === 'operador') {
+                router.replace('/timesheets');
+            }
+        }
+    }, [router]);
 
     // Hydration fix for client-side persistence
     useEffect(() => {

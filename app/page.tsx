@@ -11,13 +11,15 @@ export default function RootPage() {
         if (stored) {
             try {
                 const user = JSON.parse(stored);
-                if (user.role === 'operador') {
+                if (user.role?.toLowerCase() === 'operador') {
                     router.replace('/timesheets');
-                } else {
+                } else if (user.role?.toLowerCase() === 'admin' || user.role?.toLowerCase() === 'supervisor') {
                     router.replace('/dashboard');
+                } else {
+                    router.replace('/timesheets'); // Fallback
                 }
             } catch (e) {
-                // Should be handled by layout auth check
+                // Auth check handled in layout
             }
         }
     }, [router]);

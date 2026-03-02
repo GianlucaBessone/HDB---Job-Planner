@@ -27,6 +27,16 @@ export default function RootLayout({
     const router = useRouter();
     const pathname = usePathname();
 
+    // Auto-close sidebar on navigation
+    useEffect(() => {
+        setIsSidebarOpen(false);
+    }, [pathname]);
+
+    const handleLoginSuccess = (user: any) => {
+        setCurrentUser(user);
+        setIsSidebarOpen(false);
+    };
+
     useEffect(() => {
         const stored = localStorage.getItem('currentUser');
         if (stored) {
@@ -61,7 +71,7 @@ export default function RootLayout({
             </div>
         );
     } else if (!currentUser) {
-        content = <LoginScreen onLoginSuccess={setCurrentUser} />;
+        content = <LoginScreen onLoginSuccess={handleLoginSuccess} />;
     } else {
         content = (
             <div className="flex flex-col min-h-screen">
