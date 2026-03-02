@@ -119,7 +119,8 @@ export const dataLayer = {
     },
     async deleteClientDelay(id: string) {
         return await prisma.clientDelay.delete({ where: { id } });
+    },
+    async updateClientDelay(id: string, data: { projectId?: string; fecha?: string; hora?: string; operador?: string; area?: string; responsableArea?: string; motivo?: string; duracion?: number }) {
+        return await prisma.clientDelay.update({ where: { id }, data });
     }
-
-
 };

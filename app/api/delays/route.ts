@@ -24,6 +24,20 @@ export async function POST(req: Request) {
     }
 }
 
+export async function PATCH(req: Request) {
+    try {
+        const url = new URL(req.url);
+        const id = url.searchParams.get('id');
+        if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
+        const data = await req.json();
+        const delay = await dataLayer.updateClientDelay(id, data);
+        return NextResponse.json(delay);
+    } catch (e) {
+        console.error('Update Delay Error:', e);
+        return NextResponse.json({ error: 'Failed to update delay', details: String(e) }, { status: 500 });
+    }
+}
+
 export async function DELETE(req: Request) {
     try {
         const url = new URL(req.url);

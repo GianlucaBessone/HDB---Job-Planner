@@ -17,7 +17,8 @@ import {
     Layout,
     FileSpreadsheet,
     LayoutGrid,
-    X
+    X,
+    Edit2
 } from 'lucide-react';
 import Link from 'next/link';
 import ConfirmDialog from '@/components/ConfirmDialog';
@@ -70,6 +71,7 @@ export default function DelaysPage() {
 
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [delayToDelete, setDelayToDelete] = useState<string | null>(null);
+    const [editingDelayId, setEditingDelayId] = useState<string | null>(null);
 
     const [formData, setFormData] = useState({
         projectId: '',
@@ -117,16 +119,35 @@ export default function DelaysPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await fetch('/api/delays', {
-                method: 'POST',
+            const method = editingDelayId ? 'PATCH' : 'POST';
+            const url = editingDelayId ? `/api/delays?id=${editingDelayId}` : '/api/delays';
+
+            await fetch(url, {
+                method,
                 body: JSON.stringify(formData)
             });
             setIsModalOpen(false);
+            setEditingDelayId(null);
             setFormData(prev => ({ ...prev, projectId: '', motivo: '', duracion: 0, area: '', responsableArea: '' }));
             loadData();
         } catch (error) {
             console.error('Error saving delay:', error);
         }
+    };
+
+    const handleEditClick = (delay: ClientDelay) => {
+        setEditingDelayId(delay.id);
+        setFormData({
+            projectId: delay.projectId,
+            fecha: delay.fecha,
+            hora: delay.hora,
+            operador: delay.operador,
+            area: delay.area,
+            responsableArea: delay.responsableArea || '',
+            motivo: delay.motivo,
+            duracion: delay.duracion
+        });
+        setIsModalOpen(true);
     };
 
     const handleDeleteClick = (id: string) => {
@@ -199,7 +220,11 @@ export default function DelaysPage() {
                     <p className="text-slate-500 font-medium italic">Registro de tiempos externos para análisis de causa raíz</p>
                 </div>
                 <button
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => {
+                        setEditingDelayId(null);
+                        setFormData(prev => ({ ...prev, projectId: '', motivo: '', duracion: 0, area: '', responsableArea: '' }));
+                        setIsModalOpen(true);
+                    }}
                     className="bg-amber-500 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-amber-600 shadow-xl shadow-amber-500/20 active:scale-95 transition-all w-full md:w-auto justify-center"
                 >
                     <Plus className="w-5 h-5" /> Registrar Demora
@@ -353,9 +378,16 @@ export default function DelaysPage() {
                                             <span className="px-3 py-1 bg-amber-50 text-amber-600 font-black rounded-xl text-sm border border-amber-100">{delay.duracion}h</span>
                                         </td>
                                         <td className="p-4 text-right">
-                                            <button onClick={() => handleDeleteClick(delay.id)} className="p-2 rounded-xl text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all">
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
+                                            <div className="flex items-center justify-end gap-1">
+                                                {(currentUser?.role === 'admin' || currentUser?.role === 'supervisor') && (
+                                                    <button onClick={() => handleEditClick(delay)} className="p-2 rounded-xl text-slate-300 hover:text-indigo-500 hover:bg-indigo-50 transition-all">
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                                <button onClick={() => handleDeleteClick(delay.id)} className="p-2 rounded-xl text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all">
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -383,9 +415,16 @@ export default function DelaysPage() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <button onClick={() => handleDeleteClick(delay.id)} className="p-1.5 text-slate-300 hover:text-rose-500 transition-colors shrink-0">
-                                            <Trash2 className="w-3.5 h-3.5" />
-                                        </button>
+                                        <div className="flex items-center gap-1 shrink-0">
+                                            {(currentUser?.role === 'admin' || currentUser?.role === 'supervisor') && (
+                                                <button onClick={() => handleEditClick(delay)} className="p-1.5 text-slate-300 hover:text-indigo-500 transition-colors">
+                                                    <Edit2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            )}
+                                            <button onClick={() => handleDeleteClick(delay.id)} className="p-1.5 text-slate-300 hover:text-rose-500 transition-colors">
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
                                     </div>
                                     <span className="text-[10px] font-black bg-amber-50 text-amber-700 px-2 py-1 rounded-lg uppercase tracking-widest w-fit">{delay.area}</span>
                                     <div className="bg-slate-50 px-3 py-2.5 rounded-xl">
@@ -421,11 +460,13 @@ export default function DelaysPage() {
                                         <Timer className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <h3 className="text-2xl font-black text-slate-800 tracking-tight leading-none">Registrar Demora</h3>
+                                        <h3 className="text-2xl font-black text-slate-800 tracking-tight leading-none">
+                                            {editingDelayId ? 'Editar Registro' : 'Registrar Demora'}
+                                        </h3>
                                         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Responsabilidad del Cliente</p>
                                     </div>
                                 </div>
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400">
+                                <button type="button" onClick={() => { setIsModalOpen(false); setEditingDelayId(null); }} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400">
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
@@ -555,7 +596,7 @@ export default function DelaysPage() {
                                 </button>
                                 <button type="submit"
                                     className="flex-[2] bg-amber-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-amber-600 shadow-xl shadow-amber-500/20 transition-all active:scale-95">
-                                    Registrar Evento
+                                    {editingDelayId ? 'Guardar Cambios' : 'Registrar Evento'}
                                 </button>
                             </div>
                         </form>
