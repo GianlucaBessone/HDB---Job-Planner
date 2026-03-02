@@ -57,6 +57,7 @@ export default function TimesheetsPage() {
     const [selectedOperator, setSelectedOperator] = useState('');
     const [selectedProject, setSelectedProject] = useState('');
     const [isExtraQuick, setIsExtraQuick] = useState(false);
+    const [isSubmittingQuick, setIsSubmittingQuick] = useState(false);
 
     // Filters and View Mode
     const [viewMode, setViewMode] = useState<'tarjetas' | 'planilla' | 'resumen'>('tarjetas');
@@ -136,19 +137,22 @@ export default function TimesheetsPage() {
             return;
         }
 
-        // Check if operator already has an open entry today
-        const today = new Date().toISOString().split('T')[0];
-        const hasOpen = entries.find(e => e.operatorId === selectedOperator && e.fecha === today && !e.horaEgreso);
-        if (hasOpen) {
-            showToast('El operador ya tiene una jornada iniciada sin finalizar hoy.', 'error');
-            return;
-        }
-
-        const now = new Date();
-        const timeString = now.toTimeString().slice(0, 5);
+        setIsSubmittingQuick(true);
 
         try {
-            await fetch('/api/time-entries', {
+            // Check if operator already has an open entry today
+            const today = new Date().toISOString().split('T')[0];
+            const hasOpen = entries.find(e => e.operatorId === selectedOperator && e.fecha === today && !e.horaEgreso);
+            if (hasOpen) {
+                showToast('El operador ya tiene una jornada iniciada sin finalizar hoy.', 'error');
+                setIsSubmittingQuick(false);
+                return;
+            }
+
+            const now = new Date();
+            const timeString = now.toTimeString().slice(0, 5);
+
+            const res = await fetch('/api/time-entries', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -162,14 +166,25 @@ export default function TimesheetsPage() {
                     requestUserRole: currentUser?.role
                 })
             });
-            loadData();
+
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.error || 'Error al iniciar jornada');
+            }
+
+            showToast('Jornada iniciada con éxito', 'success');
+            await loadData();
+
             if (currentUser?.role !== 'operador') {
                 setSelectedOperator('');
             }
             setSelectedProject('');
             setIsExtraQuick(false);
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
+            showToast(error.message || 'Error de conexión', 'error');
+        } finally {
+            setIsSubmittingQuick(false);
         }
     };
 
@@ -504,7 +519,7 @@ export default function TimesheetsPage() {
             </div>
 
             {/* Quick Logging Box */}
-            <div className="bg-white border border-slate-200 shadow-sm p-6 md:p-8 rounded-[2.5rem] flex flex-col md:flex-row items-end md:items-center gap-4 md:gap-8">
+            <div className="bg-white border border-slate-200 shadow-sm p-6 md:p-8 rounded-[2.5rem] flex flex-col md:flex-row items-stretch md:items-center gap-4 md:gap-8">
                 <div className="w-full md:w-1/3">
                     <SearchableSelect
                         label="Operador"
@@ -528,25 +543,29 @@ export default function TimesheetsPage() {
                     />
                 </div>
 
-                <div className="w-full md:w-auto pt-4 md:pt-0 shrink-0">
+                <div className="w-full md:w-auto shrink-0">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1 mb-2">Horas Extras</label>
                     <button
                         onClick={() => setIsExtraQuick(!isExtraQuick)}
-                        className={`w-full py-3 px-6 rounded-2xl font-bold transition-colors ${isExtraQuick ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 text-slate-500 border-2 border-slate-200'
+                        className={`w-full py-3.5 px-6 rounded-2xl font-bold transition-all active:scale-95 ${isExtraQuick ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500 shadow-sm' : 'bg-slate-50 text-slate-500 border-2 border-slate-200'
                             }`}
                     >
                         {isExtraQuick ? 'Sí' : 'No'}
                     </button>
                 </div>
 
-                <div className="w-full md:w-auto pt-4 md:pt-0 shrink-0">
+                <div className="w-full md:w-auto shrink-0 flex items-end">
                     <button
                         onClick={handleClockIn}
-                        disabled={!selectedOperator || !selectedProject}
-                        className="w-full md:w-auto bg-emerald-500 disabled:opacity-50 text-white px-8 py-3 rounded-2xl font-black uppercase tracking-widest flex items-center gap-2 hover:bg-emerald-600 shadow-xl shadow-emerald-500/20 active:scale-95 transition-all justify-center"
+                        disabled={!selectedOperator || !selectedProject || isSubmittingQuick}
+                        className="w-full md:w-auto bg-emerald-500 disabled:opacity-50 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest flex items-center gap-2 hover:bg-emerald-600 shadow-xl shadow-emerald-500/20 active:scale-95 transition-all justify-center disabled:shadow-none"
                     >
-                        <Play className="w-5 h-5 fill-current" />
-                        Iniciar Jornada
+                        {isSubmittingQuick ? (
+                            <Activity className="w-5 h-5 animate-spin" />
+                        ) : (
+                            <Play className="w-5 h-5 fill-current" />
+                        )}
+                        {isSubmittingQuick ? 'Iniciando...' : 'Iniciar Jornada'}
                     </button>
                 </div>
             </div>
