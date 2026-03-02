@@ -143,7 +143,7 @@ export default function RootLayout({
         <html lang="es">
             <head>
                 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-                <meta name="apple-mobile-web-app-capable" content="yes" />
+                <meta name="mobile-web-app-capable" content="yes" />
                 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
                 <meta name="apple-mobile-web-app-title" content="HDB Planner" />
                 <meta name="theme-color" content="#2563eb" />
@@ -151,8 +151,6 @@ export default function RootLayout({
                 <link rel="apple-touch-icon" href="/icon-192x192.png" />
                 <title>HDB | Job Planner</title>
                 <meta name="description" content="Sistema premium de planificación para técnicos" />
-
-
             </head>
             <body className={`${outfit.className} min-h-screen bg-slate-50/50`}>
                 {content}

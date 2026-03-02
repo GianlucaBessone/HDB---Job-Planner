@@ -85,9 +85,12 @@ export async function POST(req: Request) {
         }
 
         return NextResponse.json(notification);
-    } catch (e) {
+    } catch (e: any) {
         console.error('Error creating notification:', e);
-        return NextResponse.json({ error: 'Error del servidor' }, { status: 500 });
+        return NextResponse.json({
+            error: 'Error del servidor al crear notificación',
+            details: e?.message || String(e)
+        }, { status: 500 });
     }
 }
 
