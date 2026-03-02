@@ -32,10 +32,12 @@ export default function OneSignalInit({ appId }: { appId: string }) {
                         }
 
                         // Automatic subscription prompt if not already decided
-                        const isSubscribed = OneSignal.Notifications.permission;
+                        // In OneSignal v16, Notifications.permission can be boolean or 'default'/'granted'/'denied'
+                        // using the library's recommended way:
+                        const permission = OneSignal.Notifications.permission;
                         const hasPrompted = localStorage.getItem('onesignal_prompted');
 
-                        if (!isSubscribed && !hasPrompted) {
+                        if (permission !== true && permission !== 'granted' && !hasPrompted) {
                             // Small delay to ensure smooth UX after login
                             setTimeout(async () => {
                                 try {

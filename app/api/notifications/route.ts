@@ -12,14 +12,22 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: 'Falta operatorId' }, { status: 400 });
         }
 
-        const whereClause: any = {
-            OR: [
-                { operatorId: operatorId }
-            ]
-        };
+        let whereClause: any;
 
         if (role === 'supervisor' || role === 'admin') {
-            whereClause.OR.push({ forSupervisors: true });
+            // Supervisors/Admins see notifications for them OR notifications for all supervisors
+            whereClause = {
+                OR: [
+                    { operatorId: operatorId },
+                    { forSupervisors: true }
+                ]
+            };
+        } else {
+            // Regular operators see ONLY notifications specifically for them AND that are not for supervisors only
+            whereClause = {
+                operatorId: operatorId,
+                forSupervisors: false
+            };
         }
 
         const notifications = await prisma.notification.findMany({

@@ -18,19 +18,28 @@ export default function NotificationsDropdown({ user }: { user: any }) {
     useEffect(() => {
         setMounted(true);
         if (!user) return;
-        const fetchNotifications = async () => {
+        const fetchNotifications = async (isPoll = false) => {
             try {
                 const res = await fetch(`/api/notifications?operatorId=${user.id}&role=${user.role}`);
                 const data = await res.json();
-                if (Array.isArray(data)) setNotifications(data);
+                if (Array.isArray(data)) {
+                    if (isPoll && data.length > notifications.length) {
+                        // Find the newest unread notification
+                        const latest = data[0];
+                        if (latest && !notifications.find(n => n.id === latest.id)) {
+                            // Notify the user visually
+                            showToast(`Nueva notificación: ${latest.title}`, 'success');
+                        }
+                    }
+                    setNotifications(data);
+                }
             } catch (err) {
                 console.error(err);
             }
         };
 
         fetchNotifications();
-        // Optional: poll every X seconds
-        const interval = setInterval(fetchNotifications, 60000);
+        const interval = setInterval(() => fetchNotifications(true), 120000); // Poll every 2 minutes for light load
         return () => clearInterval(interval);
     }, [user]);
 
@@ -60,7 +69,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
     };
 
     const handleAcceptModification = async () => {
-        if (!selectedNotification) return;
+        if (!selectedNotification || (user.role === 'operador')) return;
         try {
             const notif = selectedNotification;
             const resData = notif.metadata;
@@ -123,7 +132,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
     };
 
     const handleRejectModification = async () => {
-        if (!selectedNotification) return;
+        if (!selectedNotification || (user.role === 'operador')) return;
         try {
             const notif = selectedNotification;
             const resData = notif.metadata;
@@ -260,10 +269,17 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                                     </div>
                                 )}
 
-                                <div className="flex gap-3">
-                                    <button onClick={handleRejectModification} className="flex-1 py-4 bg-rose-50 text-rose-600 rounded-xl font-bold hover:bg-rose-100 transition-colors">Rechazar</button>
-                                    <button onClick={handleAcceptModification} className="flex-1 py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95">Aprobar</button>
-                                </div>
+                                {(user?.role === 'supervisor' || user?.role === 'admin') && (
+                                    <div className="flex gap-3">
+                                        <button onClick={handleRejectModification} className="flex-1 py-4 bg-rose-50 text-rose-600 rounded-xl font-bold hover:bg-rose-100 transition-colors">Rechazar</button>
+                                        <button onClick={handleAcceptModification} className="flex-1 py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95">Aprobar</button>
+                                    </div>
+                                )}
+                                {user?.role === 'operador' && (
+                                    <div className="p-4 bg-slate-50 rounded-xl border border-dashed border-slate-200 text-center">
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Pendiente de aprobación</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
