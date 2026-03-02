@@ -67,22 +67,24 @@ export async function POST(req: Request) {
 
         if (pushTargets.length > 0 || body.forSupervisors) {
             console.log(`API Notifications: Triggering push. operatorId=${body.operatorId}, forSupervisors=${body.forSupervisors}`);
-            sendPushNotification({
-                userIds: pushTargets.length > 0 ? pushTargets : undefined,
-                forSupervisors: body.forSupervisors || false,
-                title: body.title,
-                message: body.message,
-                data: {
-                    type: body.type,
-                    relatedId: body.relatedId,
-                    metadata: body.metadata
-                }
-            }).then(res => {
+            try {
+                const res = await sendPushNotification({
+                    userIds: pushTargets.length > 0 ? pushTargets : undefined,
+                    forSupervisors: body.forSupervisors || false,
+                    title: body.title,
+                    message: body.message,
+                    data: {
+                        type: body.type,
+                        relatedId: body.relatedId,
+                        metadata: body.metadata
+                    }
+                });
                 console.log("API Notifications: OneSignal Response:", JSON.stringify(res));
-            }).catch(e => {
-                console.error("API Notifications: OneSignal Error:", e);
-            });
+            } catch (pushError) {
+                console.error("API Notifications: OneSignal Push Error (Non-blocking):", pushError);
+            }
         }
+
 
         return NextResponse.json(notification);
     } catch (e: any) {

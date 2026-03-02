@@ -53,6 +53,7 @@ export async function sendPushNotification({
             });
             const resData = await response.json();
             console.log("OneSignal Supervisor Result:", JSON.stringify(resData));
+            results.push(resData);
         } catch (e) {
             console.error("OneSignal supervisor filter push error:", e);
         }
@@ -62,24 +63,31 @@ export async function sendPushNotification({
     if (userIds && userIds.length > 0) {
         console.log("OneSignal: Sending push to specific external user IDs:", userIds);
         try {
+            const body: any = {
+                ...baseBody,
+                include_external_user_ids: userIds,
+                target_channel: "push"
+            };
+
             const response = await fetch("https://onesignal.com/api/v1/notifications", {
                 method: "POST",
                 headers,
-                body: JSON.stringify({
-                    ...baseBody,
-                    include_external_user_ids: userIds,
-                    include_aliases: {
-                        external_id: userIds
-                    },
-                    target_channel: "push"
-                }),
+                body: JSON.stringify(body),
             });
+
             const resData = await response.json();
             console.log("OneSignal Targeted Users Result:", JSON.stringify(resData));
+            results.push(resData);
+
+            if (resData.errors) {
+                console.warn("OneSignal API reported errors for targeted users:", resData.errors);
+            }
         } catch (e) {
             console.error("OneSignal targeted push error:", e);
         }
     }
+
+
 
 
 

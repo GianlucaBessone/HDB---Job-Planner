@@ -58,6 +58,11 @@ export async function POST(req: Request) {
 
         const { operatorId, projectId, fecha, horaIngreso, horaEgreso, isExtra, requestUserId, requestUserRole } = data;
 
+        if (!operatorId || !projectId || !fecha) {
+            console.error("POST Error: Missing required fields", { operatorId, projectId, fecha });
+            return NextResponse.json({ error: 'Faltan campos obligatorios (Operador, Proyecto o Fecha).' }, { status: 400 });
+        }
+
         if (requestUserRole === 'operador' && requestUserId !== operatorId) {
             return NextResponse.json({ error: 'No tienes permisos para crear registros para otros operadores.' }, { status: 403 });
         }
@@ -67,6 +72,7 @@ export async function POST(req: Request) {
             horasTrabajadas = calculateHours(horaIngreso, horaEgreso);
         }
 
+        console.log("Creating time entry in Prisma...", { operatorId, projectId, fecha });
         const entry = await prisma.timeEntry.create({
             data: {
                 operatorId,
@@ -78,6 +84,7 @@ export async function POST(req: Request) {
                 isExtra: isExtra || false
             }
         });
+
 
         // Also update project total hours roughly, though normally this is kept separate or aggregated upon need.
         // If we want to automatically add consumed hours to the project:
