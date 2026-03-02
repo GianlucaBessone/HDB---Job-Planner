@@ -5,6 +5,7 @@ import { Outfit } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import Script from "next/script";
 import { Calendar, LayoutGrid, Users, ClipboardList, Menu, X, Landmark, LayoutDashboard, Timer, Clock, LogOut } from "lucide-react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import ToastContainer from "@/components/Toast";
@@ -102,7 +103,7 @@ export default function RootLayout({
                                 </span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <OneSignalInit appId={process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID || "180b43cd-8aef-4131-b844-482457816ecd"} />
+                                <OneSignalInit appId={process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID || "35ce6a9c-c4c7-4645-98dc-b363dc91642b"} />
                                 <NotificationsDropdown user={currentUser} />
                             </div>
                         </div>
@@ -147,6 +148,18 @@ export default function RootLayout({
                 <link rel="apple-touch-icon" href="/icon-192x192.png" />
                 <title>HDB | Job Planner</title>
                 <meta name="description" content="Sistema premium de planificación para técnicos" />
+
+                <Script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" strategy="beforeInteractive" />
+                <Script id="onesignal-init" strategy="afterInteractive">
+                    {`
+                        window.OneSignalDeferred = window.OneSignalDeferred || [];
+                        OneSignalDeferred.push(async function(OneSignal) {
+                            await OneSignal.init({
+                                appId: "35ce6a9c-c4c7-4645-98dc-b363dc91642b",
+                            });
+                        });
+                    `}
+                </Script>
             </head>
             <body className={`${outfit.className} min-h-screen bg-slate-50/50`}>
                 {content}
