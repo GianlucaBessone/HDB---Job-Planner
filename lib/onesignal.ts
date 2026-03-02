@@ -36,8 +36,8 @@ export async function sendPushNotification({
 
     // 1. If for supervisors, send using filters
     if (forSupervisors) {
+        console.log("OneSignal: Sending push to supervisors/admins via filters...");
         try {
-            console.log("OneSignal: Sending push to supervisors/admins via filters...");
             const response = await fetch("https://onesignal.com/api/v1/notifications", {
                 method: "POST",
                 headers,
@@ -47,12 +47,12 @@ export async function sendPushNotification({
                         { field: "tag", key: "role", relation: "=", value: "supervisor" },
                         { operator: "OR" },
                         { field: "tag", key: "role", relation: "=", value: "admin" }
-                    ]
+                    ],
+                    target_channel: "push"
                 }),
             });
             const resData = await response.json();
             console.log("OneSignal Supervisor Result:", JSON.stringify(resData));
-            results.push(resData);
         } catch (e) {
             console.error("OneSignal supervisor filter push error:", e);
         }
@@ -60,20 +60,28 @@ export async function sendPushNotification({
 
     // 2. If there are specific users, send to them
     if (userIds && userIds.length > 0) {
+        console.log("OneSignal: Sending push to specific external user IDs:", userIds);
         try {
-            console.log(`OneSignal: Sending push to specific external user IDs:`, userIds);
             const response = await fetch("https://onesignal.com/api/v1/notifications", {
                 method: "POST",
                 headers,
-                body: JSON.stringify({ ...baseBody, include_external_user_ids: userIds }),
+                body: JSON.stringify({
+                    ...baseBody,
+                    include_external_user_ids: userIds,
+                    include_aliases: {
+                        external_id: userIds
+                    },
+                    target_channel: "push"
+                }),
             });
             const resData = await response.json();
             console.log("OneSignal Targeted Users Result:", JSON.stringify(resData));
-            results.push(resData);
         } catch (e) {
             console.error("OneSignal targeted push error:", e);
         }
     }
+
+
 
     return results.length === 1 ? results[0] : results;
 }

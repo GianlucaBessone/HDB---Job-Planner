@@ -152,7 +152,7 @@ export default function RootLayout({
                 <title>HDB | Job Planner</title>
                 <meta name="description" content="Sistema premium de planificación para técnicos" />
 
-                <Script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" strategy="afterInteractive" />
+
             </head>
             <body className={`${outfit.className} min-h-screen bg-slate-50/50`}>
                 {content}
