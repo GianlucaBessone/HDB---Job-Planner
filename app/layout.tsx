@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Outfit } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Calendar, LayoutGrid, Users, ClipboardList, Menu, X, Landmark, LayoutDashboard, Timer, Clock, LogOut } from "lucide-react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import ToastContainer from "@/components/Toast";
@@ -23,6 +23,9 @@ export default function RootLayout({
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+    const router = useRouter();
+    const pathname = usePathname();
 
     useEffect(() => {
         const stored = localStorage.getItem('currentUser');
@@ -147,10 +150,10 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
 
     const menuItems = [
         { href: '/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, label: 'Panel de Análisis', roles: ['supervisor', 'admin'] },
-        { href: '/', icon: <Calendar className="w-5 h-5" />, label: 'Planificación', roles: ['supervisor', 'admin'] },
+        { href: '/planning', icon: <Calendar className="w-5 h-5" />, label: 'Planificación', roles: ['supervisor', 'admin'] },
         { href: '/timesheets', icon: <Clock className="w-5 h-5" />, label: 'Registro de Tiempos', roles: ['operador', 'supervisor', 'admin'] },
         { href: '/projects', icon: <LayoutGrid className="w-5 h-5" />, label: 'Gestión de Proyectos', roles: ['supervisor', 'admin'] },
-        { href: '/delays', icon: <Timer className="w-5 h-5" />, label: 'Demoras del Cliente', roles: ['supervisor', 'admin'] },
+        { href: '/delays', icon: <Timer className="w-5 h-5" />, label: 'Demoras del Cliente', roles: ['operador', 'supervisor', 'admin'] },
         { href: '/operators', icon: <Users className="w-5 h-5" />, label: 'Gestión de Usuarios / Operadores', roles: ['operador', 'supervisor', 'admin'] },
         { href: '/clients', icon: <Landmark className="w-5 h-5" />, label: 'Gestión de Clientes', roles: ['supervisor', 'admin'] },
     ];

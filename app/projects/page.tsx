@@ -553,7 +553,7 @@ function ProjectCard({
                         <ChevronRight className="w-3 h-3" />
                     </button>
                     <Link
-                        href="/"
+                        href="/planning"
                         className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200 hover:border-primary/40 hover:text-primary transition-all active:scale-95 whitespace-nowrap"
                     >
                         <Calendar className="w-3 h-3" />
