@@ -124,7 +124,10 @@ export default function DelaysPage() {
 
             await fetch(url, {
                 method,
-                body: JSON.stringify(formData)
+                body: JSON.stringify({
+                    ...formData,
+                    duracion: Number(formData.duracion) || 0
+                })
             });
             setIsModalOpen(false);
             setEditingDelayId(null);
@@ -575,10 +578,25 @@ export default function DelaysPage() {
                                             step="0.25"
                                             value={formData.duracion}
                                             onChange={e => {
-                                                const v = parseFloat(e.target.value);
-                                                if (!isNaN(v) && v >= 0 && v <= 24) {
-                                                    // Round to nearest 0.25
-                                                    setFormData({ ...formData, duracion: Math.round(v * 4) / 4 });
+                                                const val = e.target.value;
+                                                if (val === '') {
+                                                    setFormData({ ...formData, duracion: '' as any });
+                                                    return;
+                                                }
+                                                const v = parseFloat(val);
+                                                if (!isNaN(v)) {
+                                                    // No redondear mientras escribe para permitir borrar y cambiar decimales
+                                                    setFormData({ ...formData, duracion: v });
+                                                }
+                                            }}
+                                            onBlur={() => {
+                                                const v = parseFloat(formData.duracion as any);
+                                                if (!isNaN(v)) {
+                                                    // Redondear al tramo de 15 min al salir del campo
+                                                    const rounded = Math.round(v * 4) / 4;
+                                                    setFormData({ ...formData, duracion: Math.max(0, Math.min(24, rounded)) });
+                                                } else {
+                                                    setFormData({ ...formData, duracion: 0 });
                                                 }
                                             }}
                                             className="w-24 bg-amber-50 border border-amber-200 rounded-xl py-2 px-3 text-xl font-black text-amber-500 text-center outline-none focus:border-amber-400 focus:ring-4 focus:ring-amber-500/10 shrink-0"
