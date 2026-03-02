@@ -1,9 +1,19 @@
 import { prisma } from '@/lib/dataLayer';
 import { notFound } from 'next/navigation';
-import { Building2, Calendar, Clock, Activity, Timer, Users, Download, ShieldCheck } from 'lucide-react';
+import { Building2, Calendar, Clock, Activity, Timer, Users, ShieldCheck, FileText } from 'lucide-react';
 import ReportPrintButton from '@/components/ReportPrintButton';
 
 export const dynamic = 'force-dynamic';
+
+function formatDate(dateStr: string | null | undefined) {
+    if (!dateStr) return '—';
+    try {
+        const d = new Date(dateStr + 'T12:00:00');
+        return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    } catch {
+        return dateStr;
+    }
+}
 
 export default async function ProjectReportPage({ params }: { params: { id: string } }) {
     const project = await prisma.project.findUnique({
@@ -11,7 +21,7 @@ export default async function ProjectReportPage({ params }: { params: { id: stri
         include: {
             client: true,
             timeEntries: {
-                where: { estadoConfirmado: true }, // we probably only want to report confirmed entries
+                where: { estadoConfirmado: true },
                 include: { operator: true },
                 orderBy: { fecha: 'asc' }
             },
@@ -23,20 +33,23 @@ export default async function ProjectReportPage({ params }: { params: { id: stri
 
     if (!project) return notFound();
 
-    // Calculos rápidos
     const hasClientStr = project.client?.nombre || project.cliente || 'Sin cliente';
     const totalDelaysHours = project.clientDelays.reduce((acc, d) => acc + d.duracion, 0);
     const totalRealHours = project.timeEntries.reduce((acc, t) => acc + t.horasTrabajadas, 0);
 
-    // We display 'horasConsumidas' directly from the project, or the aggregated sum of timeEntries. The aggregated sum is more accurate.
     const IPT = project.horasEstimadas > 0 && totalRealHours > 0
         ? (project.horasEstimadas / totalRealHours).toFixed(2)
-        : project.horasEstimadas > 0 ? "Perfect" : "N/A";
+        : project.horasEstimadas > 0 ? 'N/A' : 'N/A';
 
     const savedHours = project.horasEstimadas - totalRealHours;
 
-    // Agrupar Tiempos por Operador
-    const operatorMap: Record<string, { nombre: string, horas: number }> = {};
+    // Impacto de demoras sobre lo ejecutado
+    const delayImpactPct = totalRealHours > 0
+        ? ((totalDelaysHours / totalRealHours) * 100).toFixed(1)
+        : '0.0';
+
+    // Agrupar por operador
+    const operatorMap: Record<string, { nombre: string; horas: number }> = {};
     project.timeEntries.forEach(entry => {
         if (!operatorMap[entry.operatorId]) {
             operatorMap[entry.operatorId] = { nombre: entry.operator.nombreCompleto, horas: 0 };
@@ -44,13 +57,12 @@ export default async function ProjectReportPage({ params }: { params: { id: stri
         operatorMap[entry.operatorId].horas += entry.horasTrabajadas;
     });
 
-    // Agrupar Demoras por Área
+    // Agrupar demoras por área (para gráfica)
     const delaysByArea: Record<string, number> = {};
     project.clientDelays.forEach(d => {
         delaysByArea[d.area] = (delaysByArea[d.area] || 0) + d.duracion;
     });
 
-    // Final formatting for the PDF component
     const operatorArray = Object.values(operatorMap);
     const delaysArray = Object.entries(delaysByArea).map(([area, horas]) => ({ area, horas }));
 
@@ -69,7 +81,8 @@ export default async function ProjectReportPage({ params }: { params: { id: stri
             </div>
 
             <div id="report-content" className="bg-white p-10 md:p-14 md:rounded-[2.5rem] shadow-sm print:shadow-none print:p-0">
-                {/* Header */}
+
+                {/* ── Header ── */}
                 <div className="flex justify-between items-start border-b-2 border-slate-900 pb-8 mb-8">
                     <div>
                         <h1 className="text-4xl font-black text-slate-900 tracking-tighter mb-2">Reporte de Proyecto</h1>
@@ -78,141 +91,195 @@ export default async function ProjectReportPage({ params }: { params: { id: stri
                             <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">PROYECTO FINALIZADO</span>
                         </div>
                     </div>
-                    <div className="text-right flex flex-col items-end">
-                        <h2 className="text-2xl font-black text-indigo-600 tracking-tight leading-none mb-1">{project.nombre}</h2>
+                    <div className="text-right flex flex-col items-end gap-1">
+                        <h2 className="text-2xl font-black text-indigo-600 tracking-tight leading-none">{project.nombre}</h2>
                         <div className="flex items-center justify-end text-slate-500">
                             <span className="text-sm font-bold">{hasClientStr}</span>
                             <Building2 className="w-4 h-4 ml-1.5" />
                         </div>
+                        {/* Fechas del proyecto */}
+                        <div className="flex items-center gap-3 mt-1 text-xs font-bold text-slate-400">
+                            <div className="flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                <span>Inicio: {formatDate(project.fechaInicio)}</span>
+                            </div>
+                            <span>→</span>
+                            <div className="flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                <span>Fin: {formatDate(project.fechaFin)}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {/* Metrics Grid */}
-                <div className="flex justify-between items-stretch gap-4 mb-10">
-                    <div className="flex-1 bg-slate-50 p-5 rounded-2xl border border-slate-100 flex flex-col justify-center min-h-[100px]">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 text-center">Horas Estimadas</p>
-                        <p className="text-2xl font-black text-slate-800 text-center">{project.horasEstimadas}h</p>
+                {/* ── KPI Cards ── */}
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-10">
+                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col justify-center items-center text-center">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Hs Estimadas</p>
+                        <p className="text-2xl font-black text-slate-800">{project.horasEstimadas}h</p>
                     </div>
-                    <div className="flex-1 bg-slate-50 p-5 rounded-2xl border border-slate-100 flex flex-col justify-center min-h-[100px]">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 text-center">Horas Reales</p>
-                        <p className={`text-2xl font-black text-center ${totalRealHours > project.horasEstimadas ? 'text-rose-500' : 'text-emerald-500'}`}>{totalRealHours.toFixed(1)}h</p>
+                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col justify-center items-center text-center">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Hs Reales</p>
+                        <p className={`text-2xl font-black ${totalRealHours > project.horasEstimadas ? 'text-rose-500' : 'text-emerald-500'}`}>
+                            {totalRealHours.toFixed(1)}h
+                        </p>
                     </div>
-                    <div className="flex-1 bg-slate-50 p-5 rounded-2xl border border-slate-100 flex flex-col justify-center min-h-[100px]">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 text-center">Ahorro / Desvío</p>
-                        <p className={`text-2xl font-black text-center ${savedHours >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col justify-center items-center text-center">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Ahorro / Desvío</p>
+                        <p className={`text-2xl font-black ${savedHours >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                             {savedHours > 0 ? '+' : ''}{savedHours.toFixed(1)}h
                         </p>
                     </div>
-                    <div className="flex-1 bg-indigo-50 p-5 rounded-2xl border border-indigo-100 flex flex-col justify-center min-h-[100px]">
-                        <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1 text-center">Eficiencia (IPT)</p>
-                        <p className="text-2xl font-black text-indigo-600 text-center">{IPT}</p>
+                    <div className="bg-indigo-50 p-4 rounded-2xl border border-indigo-100 flex flex-col justify-center items-center text-center">
+                        <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1">Eficiencia (IPT)</p>
+                        <p className="text-2xl font-black text-indigo-600">{IPT}</p>
+                    </div>
+                    <div className={`p-4 rounded-2xl border flex flex-col justify-center items-center text-center ${parseFloat(delayImpactPct) > 20 ? 'bg-rose-50 border-rose-100' : parseFloat(delayImpactPct) > 10 ? 'bg-amber-50 border-amber-100' : 'bg-slate-50 border-slate-100'}`}>
+                        <p className={`text-[9px] font-black uppercase tracking-widest mb-1 ${parseFloat(delayImpactPct) > 20 ? 'text-rose-400' : parseFloat(delayImpactPct) > 10 ? 'text-amber-500' : 'text-slate-400'}`}>
+                            Impacto Demoras
+                        </p>
+                        <p className={`text-2xl font-black ${parseFloat(delayImpactPct) > 20 ? 'text-rose-500' : parseFloat(delayImpactPct) > 10 ? 'text-amber-500' : 'text-slate-600'}`}>
+                            {delayImpactPct}%
+                        </p>
+                        <p className={`text-[8px] font-bold uppercase mt-0.5 ${parseFloat(delayImpactPct) > 20 ? 'text-rose-400' : 'text-slate-400'}`}>
+                            sobre ejecutado
+                        </p>
                     </div>
                 </div>
 
-                {/* Content columns */}
+                {/* ── Observaciones ── */}
+                {project.observaciones && (
+                    <div className="mb-8 p-5 bg-amber-50 border border-amber-100 rounded-2xl">
+                        <div className="flex items-center gap-2 mb-2">
+                            <FileText className="w-4 h-4 text-amber-500" />
+                            <h3 className="text-xs font-black text-amber-700 uppercase tracking-widest">Observaciones del Proyecto</h3>
+                        </div>
+                        <p className="text-sm font-medium text-slate-700 leading-relaxed whitespace-pre-wrap">{project.observaciones}</p>
+                    </div>
+                )}
+
+                {/* ── Resúmenes laterales ── */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10 border-b border-slate-100 pb-10 mb-10">
-                    {/* Left Col */}
-                    <div className="space-y-8">
-                        <div>
-                            <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
-                                <Users className="w-5 h-5 text-indigo-500 mr-2.5" />
-                                Resumen por Operador
-                            </h3>
-                            <div className="space-y-3">
-                                {Object.values(operatorMap).map((op, idx) => {
-                                    const percentage = totalRealHours > 0 ? (Math.min(op.horas / totalRealHours, 1)) * 100 : 0;
-                                    return (
-                                        <div key={idx} className="bg-white">
-                                            <div className="flex justify-between text-xs font-bold text-slate-600 mb-1">
-                                                <span>{op.nombre}</span>
-                                                <span>{op.horas.toFixed(1)}h</span>
-                                            </div>
-                                            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                                                <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${percentage}%` }}></div>
-                                            </div>
+                    {/* Operadores */}
+                    <div>
+                        <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center">
+                            <Users className="w-5 h-5 text-indigo-500 mr-2.5" />
+                            Resumen por Operador
+                        </h3>
+                        <div className="space-y-3">
+                            {operatorArray.map((op, idx) => {
+                                const pct = totalRealHours > 0 ? Math.min(op.horas / totalRealHours, 1) * 100 : 0;
+                                return (
+                                    <div key={idx}>
+                                        <div className="flex justify-between text-xs font-bold text-slate-600 mb-1">
+                                            <span>{op.nombre}</span>
+                                            <span>{op.horas.toFixed(1)}h</span>
                                         </div>
-                                    );
-                                })}
-                                {Object.values(operatorMap).length === 0 && <p className="text-sm font-bold text-slate-400 italic">No hay registros de tiempo confirmados.</p>}
-                            </div>
+                                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                                            <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${pct}%` }} />
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                            {operatorArray.length === 0 && (
+                                <p className="text-sm font-bold text-slate-400 italic">No hay registros de tiempo confirmados.</p>
+                            )}
                         </div>
                     </div>
 
-                    {/* Right Col */}
-                    <div className="space-y-8">
-                        <div>
-                            <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
-                                <Timer className="w-5 h-5 text-amber-500 mr-2.5" />
-                                Demoras del Cliente: <span className="text-amber-500 ml-2">{totalDelaysHours}h</span>
-                            </h3>
-                            <div className="space-y-3">
-                                {Object.entries(delaysByArea).map(([area, horas], idx) => {
-                                    const percentage = totalDelaysHours > 0 ? (horas / totalDelaysHours) * 100 : 0;
-                                    return (
-                                        <div key={idx} className="bg-white">
-                                            <div className="flex justify-between text-xs font-bold text-slate-600 mb-1">
-                                                <span>{area}</span>
-                                                <span className="text-amber-500">{horas}h</span>
-                                            </div>
-                                            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                                                <div className="h-full bg-amber-400 rounded-full" style={{ width: `${percentage}%` }}></div>
-                                            </div>
+                    {/* Demoras por area */}
+                    <div>
+                        <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center">
+                            <Timer className="w-5 h-5 text-amber-500 mr-2.5" />
+                            Demoras del Cliente:&nbsp;<span className="text-amber-500">{totalDelaysHours}h</span>
+                            <span className="ml-2 text-xs font-bold text-slate-400">({delayImpactPct}% carga)</span>
+                        </h3>
+                        <div className="space-y-3">
+                            {delaysArray.map(({ area, horas }, idx) => {
+                                const pct = totalDelaysHours > 0 ? (horas / totalDelaysHours) * 100 : 0;
+                                return (
+                                    <div key={idx}>
+                                        <div className="flex justify-between text-xs font-bold text-slate-600 mb-1">
+                                            <span>{area}</span>
+                                            <span className="text-amber-500">{horas}h</span>
                                         </div>
-                                    );
-                                })}
-                                {Object.keys(delaysByArea).length === 0 && <p className="text-sm font-bold text-slate-400 italic">Sin demoras registradas.</p>}
-                            </div>
+                                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                                            <div className="h-full bg-amber-400 rounded-full" style={{ width: `${pct}%` }} />
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                            {delaysArray.length === 0 && (
+                                <p className="text-sm font-bold text-slate-400 italic">Sin demoras registradas.</p>
+                            )}
                         </div>
                     </div>
                 </div>
 
-                {/* History Tables */}
+                {/* ── Tablas de Detalle ── */}
                 <div className="space-y-10">
-                    <div>
-                        <h3 className="text-lg font-bold text-slate-800 mb-4">Desglose de Tiempos Operativos</h3>
-                        <table className="w-full text-left text-sm">
-                            <thead>
-                                <tr className="border-b border-slate-200">
-                                    <th className="py-2 font-bold text-slate-400 uppercase text-[10px] tracking-widest">Fecha</th>
-                                    <th className="py-2 font-bold text-slate-400 uppercase text-[10px] tracking-widest">Operador</th>
-                                    <th className="py-2 font-bold text-slate-400 uppercase text-[10px] tracking-widest">Horario</th>
-                                    <th className="py-2 font-bold text-slate-400 uppercase text-[10px] tracking-widest text-right">Horas</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {project.timeEntries.map(e => (
-                                    <tr key={e.id} className="border-b border-slate-50 text-slate-600 font-medium">
-                                        <td className="py-2">{e.fecha}</td>
-                                        <td className="py-2">{e.operator.nombreCompleto}</td>
-                                        <td className="py-2">{e.horaIngreso} - {e.horaEgreso}</td>
-                                        <td className="py-2 text-right font-bold">{e.horasTrabajadas}h</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
 
-                    {project.clientDelays.length > 0 && (
-                        <div>
-                            <h3 className="text-lg font-bold text-slate-800 mb-4">Detalle de Demoras Externas</h3>
+                    {/* Desglose Tiempos Operativos — sin columna Horas, solo Horario */}
+                    <div>
+                        <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <Clock className="w-4 h-4 text-indigo-500" />
+                            Desglose de Tiempos Operativos
+                        </h3>
+                        {project.timeEntries.length === 0 ? (
+                            <p className="text-sm text-slate-400 italic">Sin registros de tiempo confirmados.</p>
+                        ) : (
                             <table className="w-full text-left text-sm">
                                 <thead>
                                     <tr className="border-b border-slate-200">
-                                        <th className="py-2 font-bold text-slate-400 uppercase text-[10px] tracking-widest">Fecha</th>
-                                        <th className="py-2 font-bold text-slate-400 uppercase text-[10px] tracking-widest">Área</th>
-                                        <th className="py-2 font-bold text-slate-400 uppercase text-[10px] tracking-widest">Motivo</th>
-                                        <th className="py-2 font-bold text-slate-400 uppercase text-[10px] tracking-widest text-right">Horas Perdidas</th>
+                                        <th className="py-2 pr-4 font-bold text-slate-400 uppercase text-[10px] tracking-widest">Fecha</th>
+                                        <th className="py-2 pr-4 font-bold text-slate-400 uppercase text-[10px] tracking-widest">Operador</th>
+                                        <th className="py-2 font-bold text-slate-400 uppercase text-[10px] tracking-widest">Horario</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {project.timeEntries.map(e => (
+                                        <tr key={e.id} className="border-b border-slate-50 text-slate-600 font-medium">
+                                            <td className="py-2 pr-4">{formatDate(e.fecha)}</td>
+                                            <td className="py-2 pr-4">{e.operator.nombreCompleto}</td>
+                                            <td className="py-2 font-bold">{e.horaIngreso} → {e.horaEgreso}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+
+                    {/* Detalle Demoras Externas — con columna Responsable Área */}
+                    {project.clientDelays.length > 0 && (
+                        <div>
+                            <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <Timer className="w-4 h-4 text-amber-500" />
+                                Detalle de Demoras Externas
+                            </h3>
+                            <table className="w-full text-left text-sm">
+                                <thead>
+                                    <tr className="border-b border-slate-200">
+                                        <th className="py-2 pr-3 font-bold text-slate-400 uppercase text-[10px] tracking-widest">Fecha</th>
+                                        <th className="py-2 pr-3 font-bold text-slate-400 uppercase text-[10px] tracking-widest">Área</th>
+                                        <th className="py-2 pr-3 font-bold text-slate-400 uppercase text-[10px] tracking-widest">Resp. Área</th>
+                                        <th className="py-2 pr-3 font-bold text-slate-400 uppercase text-[10px] tracking-widest">Motivo</th>
+                                        <th className="py-2 font-bold text-slate-400 uppercase text-[10px] tracking-widest text-right">Hs</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {project.clientDelays.map(d => (
                                         <tr key={d.id} className="border-b border-slate-50 text-slate-600 font-medium">
-                                            <td className="py-2">{d.fecha}</td>
-                                            <td className="py-2">{d.area}</td>
-                                            <td className="py-2 italic max-w-xs truncate" title={d.motivo}>"{d.motivo}"</td>
-                                            <td className="py-2 text-right font-bold text-amber-500">{d.duracion}h</td>
+                                            <td className="py-2 pr-3">{formatDate(d.fecha)}</td>
+                                            <td className="py-2 pr-3 text-amber-600 font-bold text-xs uppercase">{d.area}</td>
+                                            <td className="py-2 pr-3 text-slate-500 text-xs">{(d as any).responsableArea || '—'}</td>
+                                            <td className="py-2 pr-3 italic max-w-[200px] truncate" title={d.motivo}>"{d.motivo}"</td>
+                                            <td className="py-2 text-right font-black text-amber-500">{d.duracion}h</td>
                                         </tr>
                                     ))}
+                                    <tr className="border-t-2 border-slate-200 font-black">
+                                        <td colSpan={4} className="py-2 pr-3 text-right text-[10px] uppercase tracking-widest text-slate-400">Total Demoras:</td>
+                                        <td className="py-2 text-right text-amber-500">{totalDelaysHours}h</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>

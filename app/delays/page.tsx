@@ -522,16 +522,29 @@ export default function DelaysPage() {
                                         <Timer className="w-3 h-3" /> Tiempo perdido (Horas)
                                     </label>
                                     <div className="flex items-center gap-4">
-                                        <input type="range" min="0" max="24" step="0.5"
+                                        <input type="range" min="0" max="24" step="0.25"
                                             className="flex-1 accent-amber-500"
                                             value={formData.duracion}
                                             onChange={e => setFormData({ ...formData, duracion: parseFloat(e.target.value) })}
                                         />
-                                        <div className="w-20 bg-amber-50 border border-amber-100 rounded-xl py-2 flex flex-col items-center shrink-0">
-                                            <span className="text-xl font-black text-amber-500">{formData.duracion}</span>
-                                            <span className="text-[9px] font-black text-amber-600 uppercase">Hs</span>
-                                        </div>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            max="24"
+                                            step="0.25"
+                                            value={formData.duracion}
+                                            onChange={e => {
+                                                const v = parseFloat(e.target.value);
+                                                if (!isNaN(v) && v >= 0 && v <= 24) {
+                                                    // Round to nearest 0.25
+                                                    setFormData({ ...formData, duracion: Math.round(v * 4) / 4 });
+                                                }
+                                            }}
+                                            className="w-24 bg-amber-50 border border-amber-200 rounded-xl py-2 px-3 text-xl font-black text-amber-500 text-center outline-none focus:border-amber-400 focus:ring-4 focus:ring-amber-500/10 shrink-0"
+                                        />
+                                        <span className="text-xs font-black text-amber-600 uppercase shrink-0">Hs</span>
                                     </div>
+                                    <p className="text-[10px] text-slate-400 font-medium pl-1">Ajuste en tramos de 15 minutos (0.25h)</p>
                                 </div>
                             </div>
 
