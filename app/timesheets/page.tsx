@@ -582,7 +582,7 @@ export default function TimesheetsPage() {
             )}
 
             {/* Past Entries / Reports Content */}
-            <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm relative">
                 <div className="p-6 md:p-8 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h3 className="font-bold text-slate-800 text-lg">Historial y Reportes</h3>
 
@@ -663,10 +663,14 @@ export default function TimesheetsPage() {
                                     </tr>
                                 ) : (
                                     filteredCompleted.map(entry => (
-                                        <tr key={entry.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                                        <tr key={entry.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors [&>td]:align-middle">
                                             <td className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-tight whitespace-nowrap">{formatEntryDate(entry.fecha)}</td>
                                             <td className="p-4 text-sm font-black text-primary">{entry.operator.nombreCompleto}</td>
-                                            <td className="p-4 text-xs font-bold text-slate-600 line-clamp-1 truncate max-w-[200px]">{entry.project.nombre}</td>
+                                            <td className="p-4">
+                                                <div className="text-xs font-bold text-slate-600 truncate max-w-[200px]" title={entry.project.nombre}>
+                                                    {entry.project.nombre}
+                                                </div>
+                                            </td>
                                             <td className="p-4 text-xs font-bold text-slate-500 text-center">
                                                 {entry.horaIngreso} - {entry.horaEgreso}
                                             </td>
@@ -742,10 +746,10 @@ export default function TimesheetsPage() {
                                     <tr><td colSpan={9} className="p-8 text-center text-slate-400 font-bold text-sm uppercase">Sin resultados</td></tr>
                                 ) : (
                                     groupedPlanilla.map((row: any) => (
-                                        <tr key={row.id} className="border-b border-slate-100 hover:bg-slate-50/50">
+                                        <tr key={row.id} className="border-b border-slate-100 hover:bg-slate-50/50 [&>td]:align-middle">
                                             <td className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-tight whitespace-nowrap">{formatEntryDate(row.fecha)}</td>
                                             <td className="p-4 text-sm font-black text-primary">{row.operatorName}</td>
-                                            <td className="p-4 text-xs font-bold text-slate-600">{row.projectName}</td>
+                                            <td className="p-4 text-xs font-bold text-slate-600 truncate max-w-[200px]" title={row.projectName}>{row.projectName}</td>
                                             <td className="p-4 border-l border-slate-100 text-center text-xs text-slate-500">{row.normalStart}</td>
                                             <td className="p-4 text-center text-xs text-slate-500">{row.normalEnd}</td>
                                             <td className="p-4 text-center font-black text-indigo-600 bg-indigo-50/30">{row.normalTotal > 0 ? `${row.normalTotal}h` : '-'}</td>
@@ -783,7 +787,7 @@ export default function TimesheetsPage() {
                                     <tr><td colSpan={4} className="p-8 text-center text-slate-400 font-bold text-sm uppercase">Sin resultados</td></tr>
                                 ) : (
                                     groupedResumen.map((row: any) => (
-                                        <tr key={row.id} className="border-b border-slate-100 hover:bg-slate-50/50">
+                                        <tr key={row.id} className="border-b border-slate-100 hover:bg-slate-50/50 [&>td]:align-middle">
                                             <td className="p-4 text-xs font-bold text-slate-700 uppercase tracking-tight">{formatEntryDate(row.fecha)}</td>
                                             <td className="p-4 text-sm font-black text-primary">{row.operatorName}</td>
                                             <td className="p-4 text-right font-black text-indigo-600">{row.normalTotal > 0 ? `${row.normalTotal}h` : '-'}</td>
