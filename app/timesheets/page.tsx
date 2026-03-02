@@ -363,7 +363,7 @@ export default function TimesheetsPage() {
                 isExtra: formData.isExtra
             };
 
-            await fetch('/api/notifications', {
+            const res = await fetch('/api/notifications', {
                 method: 'POST',
                 body: JSON.stringify({
                     operatorId: currentUser.id,
@@ -377,13 +377,18 @@ export default function TimesheetsPage() {
                 headers: { 'Content-Type': 'application/json' }
             });
 
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Error al crear notificación interna');
+            }
+
             showToast('Solicitud enviada a los supervisores exitosamente.', 'success');
             setIsRequestModalOpen(false);
             setRequestMessage('');
             setPendingAction(null);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error enviando solicitud:', error);
-            showToast('Error al enviar la solicitud.', 'error');
+            showToast(error.message || 'Error al enviar la solicitud.', 'error');
         }
     };
 

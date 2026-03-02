@@ -108,7 +108,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                 return;
             }
 
-            await fetch('/api/notifications', {
+            const feedbackRes = await fetch('/api/notifications', {
                 method: 'POST',
                 body: JSON.stringify({
                     operatorId: notif.operatorId,
@@ -119,6 +119,10 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                 }),
                 headers: { 'Content-Type': 'application/json' }
             });
+
+            if (!feedbackRes.ok) {
+                console.warn('Feedback notification failed to send');
+            }
 
             await fetch(`/api/notifications/${notif.id}`, { method: 'DELETE' });
             setNotifications(prev => prev.filter(n => n.id !== notif.id));
@@ -137,7 +141,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
             const notif = selectedNotification;
             const resData = notif.metadata;
 
-            await fetch('/api/notifications', {
+            const feedbackRes = await fetch('/api/notifications', {
                 method: 'POST',
                 body: JSON.stringify({
                     operatorId: notif.operatorId,
@@ -148,6 +152,10 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                 }),
                 headers: { 'Content-Type': 'application/json' }
             });
+
+            if (!feedbackRes.ok) {
+                console.warn('Feedback notification failed to send');
+            }
 
             await fetch(`/api/notifications/${notif.id}`, { method: 'DELETE' });
             setNotifications(prev => prev.filter(n => n.id !== notif.id));

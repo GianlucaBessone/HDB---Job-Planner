@@ -29,15 +29,18 @@ export async function sendPushNotification({
 
     const results = [];
 
+    const headers = {
+        "Content-Type": "application/json; charset=utf-8",
+        "Authorization": `Basic ${apiKey}`,
+    };
+
     // 1. If for supervisors, send using filters
     if (forSupervisors) {
         try {
+            console.log("OneSignal: Sending push to supervisors/admins via filters...");
             const response = await fetch("https://onesignal.com/api/v1/notifications", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json; charset=utf-8",
-                    Authorization: `Basic ${apiKey}`,
-                },
+                headers,
                 body: JSON.stringify({
                     ...baseBody,
                     filters: [
@@ -47,27 +50,26 @@ export async function sendPushNotification({
                     ]
                 }),
             });
-            results.push(await response.json());
+            const resData = await response.json();
+            console.log("OneSignal Supervisor Result:", JSON.stringify(resData));
+            results.push(resData);
         } catch (e) {
             console.error("OneSignal supervisor filter push error:", e);
         }
     }
 
     // 2. If there are specific users, send to them
-    // If forSupervisors was true, we only send to userIds if they are NOT redundant, 
-    // but for simplicity we can send both or just skip if userIds is already covered.
-    // Actually, usually it's cleaner to just push to both targets. 
     if (userIds && userIds.length > 0) {
         try {
+            console.log(`OneSignal: Sending push to specific external user IDs:`, userIds);
             const response = await fetch("https://onesignal.com/api/v1/notifications", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json; charset=utf-8",
-                    Authorization: `Basic ${apiKey}`,
-                },
+                headers,
                 body: JSON.stringify({ ...baseBody, include_external_user_ids: userIds }),
             });
-            results.push(await response.json());
+            const resData = await response.json();
+            console.log("OneSignal Targeted Users Result:", JSON.stringify(resData));
+            results.push(resData);
         } catch (e) {
             console.error("OneSignal targeted push error:", e);
         }
@@ -75,3 +77,4 @@ export async function sendPushNotification({
 
     return results.length === 1 ? results[0] : results;
 }
+

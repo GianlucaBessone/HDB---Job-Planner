@@ -103,7 +103,10 @@ export default function RootLayout({
                                 </span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <OneSignalInit appId={process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID || "35ce6a9c-c4c7-4645-98dc-b363dc91642b"} />
+                                <OneSignalInit
+                                    appId={process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID || "35ce6a9c-c4c7-4645-98dc-b363dc91642b"}
+                                    user={currentUser}
+                                />
                                 <NotificationsDropdown user={currentUser} />
                             </div>
                         </div>
@@ -149,17 +152,7 @@ export default function RootLayout({
                 <title>HDB | Job Planner</title>
                 <meta name="description" content="Sistema premium de planificación para técnicos" />
 
-                <Script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" strategy="beforeInteractive" />
-                <Script id="onesignal-init" strategy="afterInteractive">
-                    {`
-                        window.OneSignalDeferred = window.OneSignalDeferred || [];
-                        OneSignalDeferred.push(async function(OneSignal) {
-                            await OneSignal.init({
-                                appId: "35ce6a9c-c4c7-4645-98dc-b363dc91642b",
-                            });
-                        });
-                    `}
-                </Script>
+                <Script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" strategy="afterInteractive" />
             </head>
             <body className={`${outfit.className} min-h-screen bg-slate-50/50`}>
                 {content}

@@ -46,6 +46,8 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
     try {
         const body = await req.json();
+        console.log("API Notifications POST received:", JSON.stringify(body));
+
         const notification = await prisma.notification.create({
             data: {
                 operatorId: body.operatorId,
@@ -59,10 +61,14 @@ export async function POST(req: Request) {
         });
 
         // Trigger push notification asynchronously (don't block the internal response)
-        const pushTargets = body.operatorId ? [body.operatorId] : [];
+        // If it's for supervisors, we target supervisors via filters.
+        // If it's for an operator (and NOT for supervisors), we target them by ID.
+        const pushTargets = (body.operatorId && !body.forSupervisors) ? [body.operatorId] : [];
+
         if (pushTargets.length > 0 || body.forSupervisors) {
+            console.log(`API Notifications: Triggering push. operatorId=${body.operatorId}, forSupervisors=${body.forSupervisors}`);
             sendPushNotification({
-                userIds: pushTargets,
+                userIds: pushTargets.length > 0 ? pushTargets : undefined,
                 forSupervisors: body.forSupervisors || false,
                 title: body.title,
                 message: body.message,
@@ -71,7 +77,11 @@ export async function POST(req: Request) {
                     relatedId: body.relatedId,
                     metadata: body.metadata
                 }
-            }).catch(e => console.error("Error sending push notification from route: ", e));
+            }).then(res => {
+                console.log("API Notifications: OneSignal Response:", JSON.stringify(res));
+            }).catch(e => {
+                console.error("API Notifications: OneSignal Error:", e);
+            });
         }
 
         return NextResponse.json(notification);

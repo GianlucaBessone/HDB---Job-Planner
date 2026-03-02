@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import OneSignal from 'react-onesignal';
 
-export default function OneSignalInit({ appId }: { appId: string }) {
+export default function OneSignalInit({ appId, user }: { appId: string, user?: any }) {
     const [isInitialized, setIsInitialized] = useState(false);
 
     useEffect(() => {
@@ -18,41 +18,38 @@ export default function OneSignalInit({ appId }: { appId: string }) {
                 setIsInitialized(true);
 
                 // Set external user ID if user is logged in
-                const storedUser = localStorage.getItem('currentUser');
-                if (storedUser) {
-                    const user = JSON.parse(storedUser);
-                    if (user && user.id) {
-                        // Login to OneSignal with our User ID
-                        await OneSignal.login(user.id);
+                if (user && user.id) {
+                    // Login to OneSignal with our User ID
+                    console.log(`OneSignal: Logging in with external user ID: ${user.id}`);
+                    await OneSignal.login(user.id);
 
-                        if (user.nombreCompleto) {
-                            // Tag the user for better segmentation
-                            OneSignal.User.addTag("name", user.nombreCompleto);
-                            OneSignal.User.addTag("role", user.role);
-                        }
-
-                        // Automatic subscription prompt if not already decided
-                        // In OneSignal v16, Notifications.permission can be boolean or 'default'/'granted'/'denied'
-                        // using the library's recommended way:
-                        const permission = OneSignal.Notifications.permission;
-                        const hasPrompted = localStorage.getItem('onesignal_prompted');
-
-                        // permission can be boolean according to some versions of react-onesignal typing
-                        // or string. We check if it is not granted specifically.
-                        const isGranted = (permission === true || (permission as any) === 'granted');
-
-                        if (!isGranted && !hasPrompted) {
-                            // Small delay to ensure smooth UX after login
-                            setTimeout(async () => {
-                                try {
-                                    await OneSignal.Slidedown.promptPush();
-                                    localStorage.setItem('onesignal_prompted', 'true');
-                                } catch (e) {
-                                    console.error("Error prompting for push:", e);
-                                }
-                            }, 3000);
-                        }
+                    if (user.nombreCompleto) {
+                        // Tag the user for better segmentation
+                        console.log(`OneSignal: Tagging user with role: ${user.role}`);
+                        OneSignal.User.addTag("name", user.nombreCompleto);
+                        OneSignal.User.addTag("role", user.role);
                     }
+
+                    // Automatic subscription prompt if not already decided
+                    const permission = OneSignal.Notifications.permission;
+                    const hasPrompted = localStorage.getItem('onesignal_prompted');
+
+                    const isGranted = (permission === true || (permission as any) === 'granted');
+
+                    if (!isGranted && !hasPrompted) {
+                        setTimeout(async () => {
+                            try {
+                                await OneSignal.Slidedown.promptPush();
+                                localStorage.setItem('onesignal_prompted', 'true');
+                            } catch (e) {
+                                console.error("Error prompting for push:", e);
+                            }
+                        }, 3000);
+                    }
+                } else if (!user) {
+                    // Logout from OneSignal if no user is present
+                    console.log("OneSignal: Logging out because user is missing");
+                    await OneSignal.logout();
                 }
             } catch (error) {
                 console.error('OneSignal Init Error:', error);
@@ -62,7 +59,8 @@ export default function OneSignalInit({ appId }: { appId: string }) {
         if (typeof window !== 'undefined') {
             initOneSignal();
         }
-    }, [appId]);
+    }, [appId, user]);
+
 
     // This component now only handles logic, no UI
     return null;
