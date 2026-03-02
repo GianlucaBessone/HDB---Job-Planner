@@ -77,6 +77,8 @@ export default async function ProjectReportPage({ params }: { params: { id: stri
                     IPT={IPT}
                     operatorMap={operatorArray}
                     delaysByArea={delaysArray}
+                    delayImpactPct={delayImpactPct}
+                    clientDelays={project.clientDelays}
                 />
             </div>
 

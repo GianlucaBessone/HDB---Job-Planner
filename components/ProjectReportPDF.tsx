@@ -1,272 +1,272 @@
 'use client';
-import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 
-// Register fonts if needed, otherwise use defaults
-// Font.register({ family: 'Inter', src: '...' });
-
-const styles = StyleSheet.create({
-    page: {
-        padding: 40,
-        backgroundColor: '#FFFFFF',
-        fontFamily: 'Helvetica',
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        borderBottomWidth: 2,
-        borderBottomColor: '#0F172A',
-        paddingBottom: 20,
-        marginBottom: 30,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'extrabold',
-        color: '#0F172A',
-    },
-    status: {
-        fontSize: 10,
-        color: '#94A3B8',
-        marginTop: 4,
-        textTransform: 'uppercase',
-        letterSpacing: 1,
-    },
-    projectInfo: {
-        textAlign: 'right',
-    },
-    projectName: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#4F46E5',
-    },
-    clientName: {
-        fontSize: 12,
-        color: '#64748B',
-        marginTop: 4,
-    },
-    metricsGrid: {
-        flexDirection: 'row',
-        gap: 10,
-        marginBottom: 30,
-    },
-    metricBox: {
-        flex: 1,
-        backgroundColor: '#F8FAFC',
-        padding: 15,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#F1F5F9',
-        alignItems: 'center',
-    },
-    metricBoxIndigo: {
-        backgroundColor: '#EEF2FF',
-        borderColor: '#E0E7FF',
-    },
-    metricLabel: {
-        fontSize: 8,
-        color: '#94A3B8',
-        textTransform: 'uppercase',
-        marginBottom: 4,
-    },
-    metricLabelIndigo: {
-        color: '#818CF8',
-    },
-    metricValue: {
-        fontSize: 16,
-        fontWeight: 'black',
-        color: '#1E293B',
-    },
-    metricValueIndigo: {
-        color: '#4F46E5',
-    },
-    contentRow: {
-        flexDirection: 'row',
-        gap: 30,
-        marginBottom: 30,
-    },
-    column: {
-        flex: 1,
-    },
-    sectionTitle: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        color: '#1E293B',
-        marginBottom: 10,
-        paddingBottom: 4,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F1F5F9',
-    },
-    row: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 6,
-        fontSize: 10,
-        color: '#475569',
-    },
-    progressBarContainer: {
-        height: 4,
-        backgroundColor: '#F1F5F9',
-        borderRadius: 2,
-        marginTop: 2,
-        marginBottom: 8,
-    },
-    progressBarEffect: {
-        height: '100%',
-        backgroundColor: '#6366F1',
-        borderRadius: 2,
-    },
-    table: {
-        marginTop: 20,
-    },
-    tableHeader: {
-        flexDirection: 'row',
-        borderBottomWidth: 1,
-        borderBottomColor: '#E2E8F0',
-        paddingBottom: 4,
-        marginBottom: 8,
-    },
-    tableHeaderColumn: {
-        fontSize: 8,
-        color: '#94A3B8',
-        textTransform: 'uppercase',
-        fontWeight: 'bold',
-    },
-    tableRow: {
-        flexDirection: 'row',
-        borderBottomWidth: 1,
-        borderBottomColor: '#F8FAFC',
-        paddingVertical: 6,
-    },
-    tableCell: {
-        fontSize: 9,
-        color: '#475569',
-    },
-    footer: {
-        position: 'absolute',
-        bottom: 30,
-        left: 0,
-        right: 0,
-        textAlign: 'center',
-        fontSize: 8,
-        color: '#94A3B8',
-        borderTopWidth: 1,
-        borderTopColor: '#F1F5F9',
-        paddingTop: 10,
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function fmtDate(dateStr: string | null | undefined): string {
+    if (!dateStr) return '—';
+    try {
+        const d = new Date(dateStr + 'T12:00:00');
+        return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    } catch {
+        return dateStr ?? '—';
     }
+}
+
+// ── Styles ────────────────────────────────────────────────────────────────────
+const S = StyleSheet.create({
+    page: { padding: 36, backgroundColor: '#FFFFFF', fontFamily: 'Helvetica', fontSize: 9 },
+
+    // Header
+    header: { flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 2, borderBottomColor: '#0F172A', paddingBottom: 16, marginBottom: 20 },
+    title: { fontSize: 20, fontFamily: 'Helvetica-Bold', color: '#0F172A' },
+    statusBadge: { fontSize: 8, color: '#10B981', marginTop: 4, letterSpacing: 1 },
+    projectInfo: { alignItems: 'flex-end' },
+    projectName: { fontSize: 15, fontFamily: 'Helvetica-Bold', color: '#4F46E5' },
+    clientName: { fontSize: 9, color: '#64748B', marginTop: 3 },
+    dateRow: { flexDirection: 'row', gap: 10, marginTop: 4 },
+    dateLabel: { fontSize: 8, color: '#94A3B8' },
+
+    // KPI row (5 boxes)
+    kpiRow: { flexDirection: 'row', gap: 6, marginBottom: 16 },
+    kpiBox: { flex: 1, backgroundColor: '#F8FAFC', padding: 10, borderRadius: 8, borderWidth: 1, borderColor: '#F1F5F9', alignItems: 'center' },
+    kpiBoxIndigo: { backgroundColor: '#EEF2FF', borderColor: '#E0E7FF' },
+    kpiBoxAmber: { backgroundColor: '#FFFBEB', borderColor: '#FDE68A' },
+    kpiBoxRose: { backgroundColor: '#FFF1F2', borderColor: '#FEE2E2' },
+    kpiLabel: { fontSize: 7, color: '#94A3B8', marginBottom: 3, textAlign: 'center' },
+    kpiValue: { fontSize: 13, fontFamily: 'Helvetica-Bold', color: '#1E293B', textAlign: 'center' },
+    kpiSub: { fontSize: 6, color: '#94A3B8', marginTop: 1, textAlign: 'center' },
+
+    // Observaciones
+    obsBox: { backgroundColor: '#FFFBEB', borderWidth: 1, borderColor: '#FDE68A', borderRadius: 8, padding: 10, marginBottom: 14 },
+    obsTitleRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
+    obsTitle: { fontSize: 8, fontFamily: 'Helvetica-Bold', color: '#92400E', letterSpacing: 0.5 },
+    obsText: { fontSize: 8, color: '#44403C', lineHeight: 1.5 },
+
+    // Summary columns
+    contentRow: { flexDirection: 'row', gap: 20, marginBottom: 16, borderBottomWidth: 1, borderBottomColor: '#F1F5F9', paddingBottom: 14 },
+    column: { flex: 1 },
+    sectionTitle: { fontSize: 10, fontFamily: 'Helvetica-Bold', color: '#1E293B', marginBottom: 8, borderBottomWidth: 1, borderBottomColor: '#F1F5F9', paddingBottom: 3 },
+    sectionSubtitle: { fontSize: 7, color: '#94A3B8', marginBottom: 6 },
+    row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4, fontSize: 8, color: '#475569' },
+    barContainer: { height: 3, backgroundColor: '#F1F5F9', borderRadius: 2, marginBottom: 7 },
+    barFill: { height: '100%', borderRadius: 2 },
+    emptyText: { fontSize: 8, color: '#94A3B8', fontStyle: 'italic' },
+
+    // Tables
+    tableWrapper: { marginBottom: 18 },
+    tableTitle: { fontSize: 10, fontFamily: 'Helvetica-Bold', color: '#1E293B', marginBottom: 7, borderBottomWidth: 1, borderBottomColor: '#F1F5F9', paddingBottom: 3 },
+    tableHeader: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#CBD5E1', paddingBottom: 4, marginBottom: 2 },
+    thCell: { fontSize: 7, fontFamily: 'Helvetica-Bold', color: '#94A3B8' },
+    tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#F8FAFC', paddingVertical: 4 },
+    tdCell: { fontSize: 8, color: '#475569' },
+    tdBold: { fontFamily: 'Helvetica-Bold' },
+    totalRow: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: '#CBD5E1', paddingTop: 4, marginTop: 2 },
+
+    // Footer
+    footer: { position: 'absolute', bottom: 24, left: 36, right: 36, textAlign: 'center', fontSize: 7, color: '#94A3B8', borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingTop: 8 },
 });
 
+// ── Props ─────────────────────────────────────────────────────────────────────
 interface PDFProps {
     project: any;
     totalRealHours: number;
     savedHours: number;
     IPT: string;
-    operatorMap: any[];
-    delaysByArea: any[];
+    operatorMap: { nombre: string; horas: number }[];
+    delaysByArea: { area: string; horas: number }[];
+    delayImpactPct: string;
+    clientDelays: any[];
 }
 
-export const ProjectReportPDF = ({ project, totalRealHours, savedHours, IPT, operatorMap, delaysByArea }: PDFProps) => (
-    <Document>
-        <Page size="A4" style={styles.page}>
-            {/* Header */}
-            <View style={styles.header}>
-                <View>
-                    <Text style={styles.title}>Reporte de Proyecto</Text>
-                    <Text style={styles.status}>PROYECTO FINALIZADO</Text>
-                </View>
-                <View style={styles.projectInfo}>
-                    <Text style={styles.projectName}>{project.nombre}</Text>
-                    <Text style={styles.clientName}>{project.client?.nombre || project.cliente || 'Sin Cliente'}</Text>
-                </View>
-            </View>
+// ── Component ─────────────────────────────────────────────────────────────────
+export const ProjectReportPDF = ({
+    project,
+    totalRealHours,
+    savedHours,
+    IPT,
+    operatorMap,
+    delaysByArea,
+    delayImpactPct,
+    clientDelays,
+}: PDFProps) => {
+    const totalDelaysHours = delaysByArea.reduce((a, d) => a + d.horas, 0);
+    const impact = parseFloat(delayImpactPct);
+    const hasClientStr = project.client?.nombre || project.cliente || 'Sin cliente';
+    const hasObs = !!project.observaciones;
 
-            {/* Metrics */}
-            <View style={styles.metricsGrid}>
-                <View style={styles.metricBox}>
-                    <Text style={styles.metricLabel}>Horas Estimadas</Text>
-                    <Text style={styles.metricValue}>{project.horasEstimadas}h</Text>
-                </View>
-                <View style={styles.metricBox}>
-                    <Text style={styles.metricLabel}>Horas Reales</Text>
-                    <Text style={[styles.metricValue, { color: totalRealHours > project.horasEstimadas ? '#F43F5E' : '#10B981' }]}>
-                        {totalRealHours.toFixed(1)}h
-                    </Text>
-                </View>
-                <View style={styles.metricBox}>
-                    <Text style={styles.metricLabel}>Ahorro / Desvío</Text>
-                    <Text style={[styles.metricValue, { color: savedHours >= 0 ? '#10B981' : '#F43F5E' }]}>
-                        {savedHours > 0 ? '+' : ''}{savedHours.toFixed(1)}h
-                    </Text>
-                </View>
-                <View style={[styles.metricBox, styles.metricBoxIndigo]}>
-                    <Text style={[styles.metricLabel, styles.metricLabelIndigo]}>Eficiencia (IPT)</Text>
-                    <Text style={[styles.metricValue, styles.metricValueIndigo]}>{IPT}</Text>
-                </View>
-            </View>
+    // KPI impact colour
+    const impactColor = impact > 20 ? '#F43F5E' : impact > 10 ? '#F59E0B' : '#10B981';
+    const impactBoxStyle = impact > 20 ? S.kpiBoxRose : impact > 10 ? S.kpiBoxAmber : S.kpiBox;
 
-            {/* Summary Content */}
-            <View style={styles.contentRow}>
-                {/* Operators */}
-                <View style={styles.column}>
-                    <Text style={styles.sectionTitle}>Resumen por Operador</Text>
-                    {operatorMap.map((op, idx) => {
-                        const percentage = totalRealHours > 0 ? (Math.min(op.horas / totalRealHours, 1)) * 100 : 0;
-                        return (
-                            <View key={idx}>
-                                <View style={styles.row}>
-                                    <Text>{op.nombre}</Text>
-                                    <Text>{op.horas.toFixed(1)}h</Text>
-                                </View>
-                                <View style={styles.progressBarContainer}>
-                                    <View style={[styles.progressBarEffect, { width: `${percentage}%` }]} />
-                                </View>
-                            </View>
-                        );
-                    })}
-                </View>
+    return (
+        <Document>
+            <Page size="A4" style={S.page}>
 
-                {/* Delays */}
-                <View style={styles.column}>
-                    <Text style={styles.sectionTitle}>Demoras del Cliente</Text>
-                    {delaysByArea.map((d, idx) => {
-                        const totalDelays = delaysByArea.reduce((acc, curr) => acc + curr.horas, 0);
-                        const percentage = totalDelays > 0 ? (d.horas / totalDelays) * 100 : 0;
-                        return (
-                            <View key={idx}>
-                                <View style={styles.row}>
-                                    <Text>{d.area}</Text>
-                                    <Text style={{ color: '#F59E0B' }}>{d.horas.toFixed(1)}h</Text>
-                                </View>
-                                <View style={styles.progressBarContainer}>
-                                    <View style={[styles.progressBarEffect, { backgroundColor: '#FBBF24', width: `${percentage}%` }]} />
-                                </View>
-                            </View>
-                        );
-                    })}
-                </View>
-            </View>
-
-            {/* Breakdown Table */}
-            <View style={styles.table}>
-                <Text style={styles.sectionTitle}>Desglose de Tiempos Operativos</Text>
-                <View style={styles.tableHeader}>
-                    <Text style={[styles.tableHeaderColumn, { flex: 2 }]}>Fecha</Text>
-                    <Text style={[styles.tableHeaderColumn, { flex: 3 }]}>Operador</Text>
-                    <Text style={[styles.tableHeaderColumn, { flex: 2 }]}>Horario</Text>
-                    <Text style={[styles.tableHeaderColumn, { flex: 1, textAlign: 'right' }]}>Horas</Text>
-                </View>
-                {project.timeEntries.map((e: any) => (
-                    <View key={e.id} style={styles.tableRow}>
-                        <Text style={[styles.tableCell, { flex: 2 }]}>{e.fecha}</Text>
-                        <Text style={[styles.tableCell, { flex: 3 }]}>{e.operator.nombreCompleto}</Text>
-                        <Text style={[styles.tableCell, { flex: 2 }]}>{e.horaIngreso} - {e.horaEgreso}</Text>
-                        <Text style={[styles.tableCell, { flex: 1, textAlign: 'right', fontWeight: 'bold' }]}>{e.horasTrabajadas}h</Text>
+                {/* ── Header ── */}
+                <View style={S.header}>
+                    <View>
+                        <Text style={S.title}>Reporte de Proyecto</Text>
+                        <Text style={S.statusBadge}>✓  PROYECTO FINALIZADO</Text>
                     </View>
-                ))}
-            </View>
+                    <View style={S.projectInfo}>
+                        <Text style={S.projectName}>{project.nombre}</Text>
+                        <Text style={S.clientName}>{hasClientStr}</Text>
+                        <View style={S.dateRow}>
+                            <Text style={S.dateLabel}>Inicio: {fmtDate(project.fechaInicio)}</Text>
+                            <Text style={S.dateLabel}>  →  </Text>
+                            <Text style={S.dateLabel}>Fin: {fmtDate(project.fechaFin)}</Text>
+                        </View>
+                    </View>
+                </View>
 
-            {/* Footer */}
-            <Text style={styles.footer}>
-                Reporte Oficial | Generado automáticamente por HDB Job Planner el {new Date().toLocaleDateString('es-AR')}
-            </Text>
-        </Page>
-    </Document>
-);
+                {/* ── KPI Cards ── */}
+                <View style={S.kpiRow}>
+                    <View style={S.kpiBox}>
+                        <Text style={S.kpiLabel}>Hs. Estimadas</Text>
+                        <Text style={S.kpiValue}>{project.horasEstimadas}h</Text>
+                    </View>
+                    <View style={S.kpiBox}>
+                        <Text style={S.kpiLabel}>Hs. Reales</Text>
+                        <Text style={[S.kpiValue, { color: totalRealHours > project.horasEstimadas ? '#F43F5E' : '#10B981' }]}>
+                            {totalRealHours.toFixed(1)}h
+                        </Text>
+                    </View>
+                    <View style={S.kpiBox}>
+                        <Text style={S.kpiLabel}>Ahorro / Desvío</Text>
+                        <Text style={[S.kpiValue, { color: savedHours >= 0 ? '#10B981' : '#F43F5E' }]}>
+                            {savedHours > 0 ? '+' : ''}{savedHours.toFixed(1)}h
+                        </Text>
+                    </View>
+                    <View style={[S.kpiBox, S.kpiBoxIndigo]}>
+                        <Text style={[S.kpiLabel, { color: '#818CF8' }]}>Eficiencia (IPT)</Text>
+                        <Text style={[S.kpiValue, { color: '#4F46E5' }]}>{IPT}</Text>
+                    </View>
+                    <View style={[S.kpiBox, impactBoxStyle]}>
+                        <Text style={[S.kpiLabel, { color: impactColor }]}>Impacto Demoras</Text>
+                        <Text style={[S.kpiValue, { color: impactColor }]}>{delayImpactPct}%</Text>
+                        <Text style={[S.kpiSub, { color: impactColor }]}>sobre ejecutado</Text>
+                    </View>
+                </View>
+
+                {/* ── Observaciones ── */}
+                {hasObs && (
+                    <View style={S.obsBox}>
+                        <View style={S.obsTitleRow}>
+                            <Text style={S.obsTitle}>OBSERVACIONES DEL PROYECTO</Text>
+                        </View>
+                        <Text style={S.obsText}>{project.observaciones}</Text>
+                    </View>
+                )}
+
+                {/* ── Resúmenes ── */}
+                <View style={S.contentRow}>
+                    {/* Operadores */}
+                    <View style={S.column}>
+                        <Text style={S.sectionTitle}>Resumen por Operador</Text>
+                        {operatorMap.length === 0 && <Text style={S.emptyText}>Sin registros confirmados.</Text>}
+                        {operatorMap.map((op, idx) => {
+                            const pct = totalRealHours > 0 ? Math.min(op.horas / totalRealHours, 1) * 100 : 0;
+                            return (
+                                <View key={idx}>
+                                    <View style={S.row}>
+                                        <Text>{op.nombre}</Text>
+                                        <Text>{op.horas.toFixed(1)}h</Text>
+                                    </View>
+                                    <View style={S.barContainer}>
+                                        <View style={[S.barFill, { backgroundColor: '#6366F1', width: `${pct}%` }]} />
+                                    </View>
+                                </View>
+                            );
+                        })}
+                    </View>
+
+                    {/* Demoras resumen */}
+                    <View style={S.column}>
+                        <Text style={S.sectionTitle}>
+                            Demoras del Cliente — {totalDelaysHours}h ({delayImpactPct}% carga)
+                        </Text>
+                        {delaysByArea.length === 0 && <Text style={S.emptyText}>Sin demoras registradas.</Text>}
+                        {delaysByArea.map((d, idx) => {
+                            const pct = totalDelaysHours > 0 ? (d.horas / totalDelaysHours) * 100 : 0;
+                            return (
+                                <View key={idx}>
+                                    <View style={S.row}>
+                                        <Text>{d.area}</Text>
+                                        <Text style={{ color: '#F59E0B' }}>{d.horas.toFixed(1)}h</Text>
+                                    </View>
+                                    <View style={S.barContainer}>
+                                        <View style={[S.barFill, { backgroundColor: '#FBBF24', width: `${pct}%` }]} />
+                                    </View>
+                                </View>
+                            );
+                        })}
+                    </View>
+                </View>
+
+                {/* ── Tabla Tiempos Operativos (sin columna Horas) ── */}
+                <View style={S.tableWrapper}>
+                    <Text style={S.tableTitle}>Desglose de Tiempos Operativos</Text>
+                    {project.timeEntries.length === 0 ? (
+                        <Text style={S.emptyText}>Sin registros de tiempo confirmados.</Text>
+                    ) : (
+                        <>
+                            <View style={S.tableHeader}>
+                                <Text style={[S.thCell, { flex: 2 }]}>FECHA</Text>
+                                <Text style={[S.thCell, { flex: 3 }]}>OPERADOR</Text>
+                                <Text style={[S.thCell, { flex: 2 }]}>HORARIO</Text>
+                            </View>
+                            {project.timeEntries.map((e: any) => (
+                                <View key={e.id} style={S.tableRow}>
+                                    <Text style={[S.tdCell, { flex: 2 }]}>{fmtDate(e.fecha)}</Text>
+                                    <Text style={[S.tdCell, { flex: 3 }]}>{e.operator.nombreCompleto}</Text>
+                                    <Text style={[S.tdCell, S.tdBold, { flex: 2 }]}>{e.horaIngreso} → {e.horaEgreso}</Text>
+                                </View>
+                            ))}
+                        </>
+                    )}
+                </View>
+
+                {/* ── Tabla Demoras Detallada (con Responsable Área) ── */}
+                {clientDelays.length > 0 && (
+                    <View style={S.tableWrapper}>
+                        <Text style={S.tableTitle}>Detalle de Demoras Externas</Text>
+                        <View style={S.tableHeader}>
+                            <Text style={[S.thCell, { flex: 1.5 }]}>FECHA</Text>
+                            <Text style={[S.thCell, { flex: 2 }]}>ÁREA</Text>
+                            <Text style={[S.thCell, { flex: 2 }]}>RESP. ÁREA</Text>
+                            <Text style={[S.thCell, { flex: 4 }]}>MOTIVO</Text>
+                            <Text style={[S.thCell, { flex: 1, textAlign: 'right' }]}>HS</Text>
+                        </View>
+                        {clientDelays.map((d: any) => (
+                            <View key={d.id} style={S.tableRow}>
+                                <Text style={[S.tdCell, { flex: 1.5 }]}>{fmtDate(d.fecha)}</Text>
+                                <Text style={[S.tdCell, { flex: 2, color: '#D97706' }]}>{d.area}</Text>
+                                <Text style={[S.tdCell, { flex: 2 }]}>{d.responsableArea || '—'}</Text>
+                                <Text style={[S.tdCell, { flex: 4 }]}>
+                                    &quot;{d.motivo}&quot;
+                                </Text>
+                                <Text style={[S.tdCell, S.tdBold, { flex: 1, textAlign: 'right', color: '#D97706' }]}>
+                                    {d.duracion}h
+                                </Text>
+                            </View>
+                        ))}
+                        {/* Total row */}
+                        <View style={S.totalRow}>
+                            <Text style={[S.tdCell, { flex: 9.5, textAlign: 'right', color: '#94A3B8', fontSize: 7 }]}>
+                                TOTAL DEMORAS
+                            </Text>
+                            <Text style={[S.tdCell, S.tdBold, { flex: 1, textAlign: 'right', color: '#D97706' }]}>
+                                {totalDelaysHours}h
+                            </Text>
+                        </View>
+                    </View>
+                )}
+
+                {/* ── Footer ── */}
+                <Text style={S.footer}>
+                    Reporte Oficial · Generado por HDB Job Planner el {new Date().toLocaleDateString('es-AR')}
+                </Text>
+            </Page>
+        </Document>
+    );
+};
