@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/dataLayer';
+import { sendPushNotification } from '@/lib/onesignal';
 
 export async function GET(req: Request) {
     try {
@@ -48,9 +49,27 @@ export async function POST(req: Request) {
                 metadata: body.metadata,
             }
         });
+
+        // Trigger push notification asynchronously (don't block the internal response)
+        const pushTargets = body.operatorId ? [body.operatorId] : [];
+        if (pushTargets.length > 0 || body.forSupervisors) {
+            sendPushNotification({
+                userIds: pushTargets,
+                forSupervisors: body.forSupervisors || false,
+                title: body.title,
+                message: body.message,
+                data: {
+                    type: body.type,
+                    relatedId: body.relatedId,
+                    metadata: body.metadata
+                }
+            }).catch(e => console.error("Error sending push notification from route: ", e));
+        }
+
         return NextResponse.json(notification);
     } catch (e) {
         console.error('Error creating notification:', e);
         return NextResponse.json({ error: 'Error del servidor' }, { status: 500 });
     }
 }
+

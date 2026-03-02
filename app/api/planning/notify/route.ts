@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/dataLayer';
+import { sendPushNotification } from '@/lib/onesignal';
 
 export async function POST(req: Request) {
     const { fecha, blocks } = await req.json();
@@ -104,7 +105,24 @@ export async function POST(req: Request) {
             await prisma.notification.createMany({
                 data: notificationsData
             });
+
+            // Trigger push notifications
+            // For planning, each user has a personalized message (different number of assignments)
+            // So we send them individually to ensure consistency
+            Promise.all(notificationsData.map(notif =>
+                sendPushNotification({
+                    userIds: [notif.operatorId],
+                    title: notif.title,
+                    message: notif.message,
+                    data: {
+                        type: notif.type,
+                        relatedId: notif.relatedId,
+                        metadata: notif.metadata
+                    }
+                })
+            )).catch(e => console.error("Error sending push notifications for planning: ", e));
         }
+
 
         // Return the names of notified operators for the toast
         const notifiedNames = operatorIds.length > 0
