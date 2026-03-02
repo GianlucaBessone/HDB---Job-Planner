@@ -90,13 +90,8 @@ export const ProjectReportPDF = ({
     clientDelays,
 }: PDFProps) => {
     const totalDelaysHours = delaysByArea.reduce((a, d) => a + d.horas, 0);
-    const impact = parseFloat(delayImpactPct);
     const hasClientStr = project.client?.nombre || project.cliente || 'Sin cliente';
     const hasObs = !!project.observaciones;
-
-    // KPI impact colour
-    const impactColor = impact > 20 ? '#F43F5E' : impact > 10 ? '#F59E0B' : '#10B981';
-    const impactBoxStyle = impact > 20 ? S.kpiBoxRose : impact > 10 ? S.kpiBoxAmber : S.kpiBox;
 
     return (
         <Document>
@@ -141,10 +136,9 @@ export const ProjectReportPDF = ({
                         <Text style={[S.kpiLabel, { color: '#818CF8' }]}>Eficiencia (IPT)</Text>
                         <Text style={[S.kpiValue, { color: '#4F46E5' }]}>{IPT}</Text>
                     </View>
-                    <View style={[S.kpiBox, impactBoxStyle]}>
-                        <Text style={[S.kpiLabel, { color: impactColor }]}>Impacto Demoras</Text>
-                        <Text style={[S.kpiValue, { color: impactColor }]}>{delayImpactPct}%</Text>
-                        <Text style={[S.kpiSub, { color: impactColor }]}>sobre ejecutado</Text>
+                    <View style={[S.kpiBox, S.kpiBoxAmber]}>
+                        <Text style={[S.kpiLabel, { color: '#F59E0B' }]}>Impacto Demoras</Text>
+                        <Text style={[S.kpiValue, { color: '#F59E0B' }]}>{delayImpactPct}%</Text>
                     </View>
                 </View>
 

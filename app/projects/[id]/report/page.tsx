@@ -136,16 +136,9 @@ export default async function ProjectReportPage({ params }: { params: { id: stri
                         <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1">Eficiencia (IPT)</p>
                         <p className="text-2xl font-black text-indigo-600">{IPT}</p>
                     </div>
-                    <div className={`p-4 rounded-2xl border flex flex-col justify-center items-center text-center ${parseFloat(delayImpactPct) > 20 ? 'bg-rose-50 border-rose-100' : parseFloat(delayImpactPct) > 10 ? 'bg-amber-50 border-amber-100' : 'bg-slate-50 border-slate-100'}`}>
-                        <p className={`text-[9px] font-black uppercase tracking-widest mb-1 ${parseFloat(delayImpactPct) > 20 ? 'text-rose-400' : parseFloat(delayImpactPct) > 10 ? 'text-amber-500' : 'text-slate-400'}`}>
-                            Impacto Demoras
-                        </p>
-                        <p className={`text-2xl font-black ${parseFloat(delayImpactPct) > 20 ? 'text-rose-500' : parseFloat(delayImpactPct) > 10 ? 'text-amber-500' : 'text-slate-600'}`}>
-                            {delayImpactPct}%
-                        </p>
-                        <p className={`text-[8px] font-bold uppercase mt-0.5 ${parseFloat(delayImpactPct) > 20 ? 'text-rose-400' : 'text-slate-400'}`}>
-                            sobre ejecutado
-                        </p>
+                    <div className="bg-amber-50 p-4 rounded-2xl border border-amber-200 flex flex-col justify-center items-center text-center">
+                        <p className="text-[9px] font-black text-amber-500 uppercase tracking-widest mb-1">Impacto Demoras</p>
+                        <p className="text-2xl font-black text-amber-500">{delayImpactPct}%</p>
                     </div>
                 </div>
 
