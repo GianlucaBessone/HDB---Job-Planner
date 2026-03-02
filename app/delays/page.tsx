@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
     Clock,
     Calendar,
@@ -11,18 +11,26 @@ import {
     Trash2,
     History,
     Search,
-    ChevronRight,
     ArrowLeft,
     Timer,
     Info,
-    Layout
+    Layout,
+    FileSpreadsheet,
+    LayoutGrid,
+    X
 } from 'lucide-react';
 import Link from 'next/link';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import * as XLSX from 'xlsx';
+import SearchableSelect from '@/components/SearchableSelect';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 interface Project {
     id: string;
     nombre: string;
+    clientId?: string;
+    client?: { id: string; nombre: string };
 }
 
 interface ClientDelay {
@@ -40,18 +48,26 @@ interface ClientDelay {
 
 const AREAS = ['Control Documentario', 'Calidad', 'Compras', 'IT', 'Producción', 'Logística', 'Seguridad', 'MAPHI', 'Portería', 'Otro'];
 
-import SearchableSelect from '@/components/SearchableSelect';
-
 export default function DelaysPage() {
     const [delays, setDelays] = useState<ClientDelay[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
     const [operators, setOperators] = useState<{ nombreCompleto: string }[]>([]);
+    const [clients, setClients] = useState<{ id: string; nombre: string }[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentUser, setCurrentUser] = useState<any>(null);
 
-    // Custom Confirm Dialog State
+    const [viewMode, setViewMode] = useState<'tarjetas' | 'tabla'>('tabla');
+    const [filterDateFrom, setFilterDateFrom] = useState(() => {
+        const d = new Date();
+        d.setMonth(d.getMonth() - 1);
+        return d.toISOString().split('T')[0];
+    });
+    const [filterDateTo, setFilterDateTo] = useState(new Date().toISOString().split('T')[0]);
+    const [filterClientId, setFilterClientId] = useState('');
+    const [filterProjectId, setFilterProjectId] = useState('');
+
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [delayToDelete, setDelayToDelete] = useState<string | null>(null);
 
@@ -61,7 +77,7 @@ export default function DelaysPage() {
         hora: new Date().toTimeString().slice(0, 5),
         operador: '',
         area: '',
-        responsableArea: '', // NEW
+        responsableArea: '',
         motivo: '',
         duracion: 0
     });
@@ -72,7 +88,6 @@ export default function DelaysPage() {
             try {
                 const user = JSON.parse(stored);
                 setCurrentUser(user);
-                // Pre-fill operator (Requirement 3)
                 setFormData(prev => ({ ...prev, operador: user.nombreCompleto }));
             } catch (e) { }
         }
@@ -82,14 +97,16 @@ export default function DelaysPage() {
     const loadData = async () => {
         setIsLoading(true);
         try {
-            const [delaysData, projectsData, operatorsData] = await Promise.all([
+            const [delaysData, projectsData, operatorsData, clientsData] = await Promise.all([
                 fetch('/api/delays').then(res => res.json()),
                 fetch('/api/projects').then(res => res.json()),
-                fetch('/api/operators').then(res => res.json())
+                fetch('/api/operators').then(res => res.json()),
+                fetch('/api/clients').then(res => res.json())
             ]);
             setDelays(Array.isArray(delaysData) ? delaysData : []);
             setProjects(Array.isArray(projectsData) ? projectsData : []);
             setOperators(Array.isArray(operatorsData) ? operatorsData : []);
+            setClients(Array.isArray(clientsData) ? clientsData : []);
         } catch (error) {
             console.error('Error loading delays data:', error);
         } finally {
@@ -105,13 +122,7 @@ export default function DelaysPage() {
                 body: JSON.stringify(formData)
             });
             setIsModalOpen(false);
-            setFormData({
-                ...formData,
-                motivo: '',
-                duracion: 0,
-                area: '',
-                responsableArea: ''
-            });
+            setFormData(prev => ({ ...prev, projectId: '', motivo: '', duracion: 0, area: '', responsableArea: '' }));
             loadData();
         } catch (error) {
             console.error('Error saving delay:', error);
@@ -135,21 +146,50 @@ export default function DelaysPage() {
         }
     };
 
-    const filteredDelays = delays.filter(d =>
-        d.project.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        d.motivo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        d.area.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredDelays = useMemo(() => {
+        return delays.filter(d => {
+            const search = searchTerm.toLowerCase();
+            const matchesSearch = !searchTerm ||
+                d.project.nombre.toLowerCase().includes(search) ||
+                d.motivo.toLowerCase().includes(search) ||
+                d.area.toLowerCase().includes(search) ||
+                d.operador.toLowerCase().includes(search);
+            const matchesDateFrom = !filterDateFrom || d.fecha >= filterDateFrom;
+            const matchesDateTo = !filterDateTo || d.fecha <= filterDateTo;
+            const matchesClient = !filterClientId || d.project.clientId === filterClientId;
+            const matchesProject = !filterProjectId || d.projectId === filterProjectId;
+            return matchesSearch && matchesDateFrom && matchesDateTo && matchesClient && matchesProject;
+        });
+    }, [delays, searchTerm, filterDateFrom, filterDateTo, filterClientId, filterProjectId]);
+
+    const totalHours = filteredDelays.reduce((sum, d) => sum + d.duracion, 0);
+
+    const exportToExcel = () => {
+        const aoa: any[][] = [['Fecha', 'Hora', 'Proyecto', 'Operador', 'Área Cliente', 'Responsable Área', 'Motivo', 'Duración (Hs)']];
+        filteredDelays.forEach(d => {
+            aoa.push([d.fecha, d.hora, d.project.nombre, d.operador, d.area, d.responsableArea || '-', d.motivo, d.duracion]);
+        });
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Demoras Cliente');
+        XLSX.writeFile(wb, `Demoras_Cliente_${filterDateFrom}_${filterDateTo}.xlsx`);
+    };
+
+    const formatDate = (dateStr: string) => {
+        try { return format(new Date(dateStr + 'T12:00:00'), 'dd/MM/yyyy', { locale: es }); }
+        catch { return dateStr; }
+    };
+
+    const hasActiveFilters = !!(filterClientId || filterProjectId || searchTerm);
 
     return (
-        <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
+        <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="space-y-1">
                     <div className="flex items-center gap-2 text-slate-400 mb-1">
                         <Link href="/projects" className="hover:text-primary transition-colors flex items-center gap-1 text-xs font-bold uppercase tracking-widest">
-                            <ArrowLeft className="w-3 h-3" />
-                            Gestión de Proyectos
+                            <ArrowLeft className="w-3 h-3" /> Regresar a Proyectos
                         </Link>
                     </div>
                     <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
@@ -158,102 +198,214 @@ export default function DelaysPage() {
                     </h2>
                     <p className="text-slate-500 font-medium italic">Registro de tiempos externos para análisis de causa raíz</p>
                 </div>
-                {/* Accessible for Operators (Requirement 3) */}
                 <button
                     onClick={() => setIsModalOpen(true)}
                     className="bg-amber-500 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-amber-600 shadow-xl shadow-amber-500/20 active:scale-95 transition-all w-full md:w-auto justify-center"
                 >
-                    <Plus className="w-5 h-5" />
-                    Registrar Demora
+                    <Plus className="w-5 h-5" /> Registrar Demora
                 </button>
             </div>
 
             {/* Info Box */}
-            <div className="bg-amber-50 border border-amber-100 rounded-[2rem] p-6 flex items-start gap-4 text-amber-800">
-                <div className="p-2 bg-white rounded-xl shadow-sm">
-                    <Info className="w-5 h-5 text-amber-500" />
+            <div className="bg-amber-50 border border-amber-100 rounded-[2rem] p-5 flex items-start gap-4 text-amber-800">
+                <div className="p-2 bg-white rounded-xl shadow-sm mt-0.5">
+                    <Info className="w-4 h-4 text-amber-500" />
                 </div>
-                <div className="space-y-1 text-sm">
-                    <p className="font-bold uppercase tracking-widest text-[10px]">Nota Conceptual</p>
-                    <p className="font-medium">
-                        Estos registros representan tiempos muertos atribuidos al cliente.
-                        <strong> No afectan el IPT ni el ahorro de horas operativo</strong>, se analizan por separado para reportes de responsabilidad.
-                    </p>
-                </div>
+                <p className="text-sm font-medium">
+                    Estos registros representan tiempos muertos atribuidos al cliente.
+                    <strong> No afectan el IPT ni el ahorro de horas operativo</strong>, se analizan por separado para reportes de responsabilidad.
+                </p>
             </div>
 
-            {/* Content List */}
-            <div className="space-y-4">
-                <div className="flex items-center justify-between gap-4 flex-wrap">
+            {/* Main Content Card */}
+            <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
+                {/* Toolbar */}
+                <div className="p-5 md:p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
                         <History className="w-5 h-5 text-slate-400" />
                         <h3 className="font-bold text-slate-700">Historial de Registros</h3>
+                        <span className="ml-1 bg-amber-100 text-amber-700 text-[10px] font-black px-2 py-0.5 rounded-lg uppercase tracking-widest">
+                            {filteredDelays.length} registros · {totalHours.toFixed(1)}h
+                        </span>
                     </div>
-                    <div className="relative w-full md:w-72">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <div className="flex flex-wrap items-center gap-2">
+                        {/* View Toggle */}
+                        <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-1">
+                            <button
+                                onClick={() => setViewMode('tabla')}
+                                title="Vista Tabla"
+                                className={`p-2 rounded-lg transition-all ${viewMode === 'tabla' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                            >
+                                <svg className="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
+                                    <path d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1z" />
+                                </svg>
+                            </button>
+                            <button
+                                onClick={() => setViewMode('tarjetas')}
+                                title="Vista Tarjetas"
+                                className={`p-2 rounded-lg transition-all ${viewMode === 'tarjetas' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                            >
+                                <LayoutGrid className="w-4 h-4" />
+                            </button>
+                        </div>
+                        <button
+                            onClick={exportToExcel}
+                            className="bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100 text-xs font-bold py-2.5 px-4 rounded-xl shadow-sm transition-colors flex items-center gap-2"
+                        >
+                            <FileSpreadsheet className="w-4 h-4" /> Exportar Excel
+                        </button>
+                    </div>
+                </div>
+
+                {/* Filters Bar */}
+                <div className="p-4 md:p-5 bg-slate-50/60 border-b border-slate-100 flex flex-wrap gap-3 items-end">
+                    {/* Search */}
+                    <div className="relative flex-1 min-w-[200px]">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         <input
                             type="text"
-                            placeholder="Buscar en historial..."
-                            className="w-full bg-white border border-slate-200 rounded-2xl py-2.5 pl-11 pr-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-medium"
+                            placeholder="Buscar..."
+                            className="w-full bg-white border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-medium"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
                     </div>
+
+                    <div className="flex items-center gap-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Desde</label>
+                        <input type="date" value={filterDateFrom} onChange={e => setFilterDateFrom(e.target.value)}
+                            className="bg-white border border-slate-200 rounded-xl py-2.5 px-3 text-sm font-bold text-slate-700 outline-none focus:border-primary h-10" />
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Hasta</label>
+                        <input type="date" value={filterDateTo} onChange={e => setFilterDateTo(e.target.value)}
+                            className="bg-white border border-slate-200 rounded-xl py-2.5 px-3 text-sm font-bold text-slate-700 outline-none focus:border-primary h-10" />
+                    </div>
+
+                    <div className="min-w-[160px]">
+                        <SearchableSelect
+                            options={clients.map(c => ({ id: c.id, label: c.nombre }))}
+                            value={filterClientId}
+                            onChange={setFilterClientId}
+                            placeholder="Todos los clientes"
+                            className="!space-y-0"
+                        />
+                    </div>
+
+                    <div className="min-w-[160px]">
+                        <SearchableSelect
+                            options={projects.map(p => ({ id: p.id, label: p.nombre }))}
+                            value={filterProjectId}
+                            onChange={setFilterProjectId}
+                            placeholder="Todos los proyectos"
+                            className="!space-y-0"
+                        />
+                    </div>
+
+                    {hasActiveFilters && (
+                        <button
+                            onClick={() => { setFilterClientId(''); setFilterProjectId(''); setSearchTerm(''); }}
+                            className="flex items-center gap-1 text-xs font-bold text-rose-500 hover:underline h-10 px-2"
+                        >
+                            <X className="w-3 h-3" /> Limpiar
+                        </button>
+                    )}
                 </div>
 
-                <div className="grid grid-cols-1 gap-4">
+                {/* Content */}
+                <div className="overflow-x-auto">
                     {isLoading ? (
-                        Array(3).fill(0).map((_, i) => (
-                            <div key={i} className="h-24 bg-slate-100 rounded-2xl animate-pulse" />
-                        ))
-                    ) : filteredDelays.length === 0 ? (
-                        <div className="py-20 flex flex-col items-center justify-center bg-white border border-slate-200 border-dashed rounded-[2.5rem] text-slate-400">
-                            <Clock className="w-12 h-12 mb-4 opacity-10" />
-                            <p className="font-bold uppercase tracking-widest text-xs">Sin registros de demora</p>
+                        <div className="p-8 space-y-3">
+                            {Array(4).fill(0).map((_, i) => <div key={i} className="h-14 bg-slate-100 rounded-xl animate-pulse" />)}
                         </div>
+                    ) : filteredDelays.length === 0 ? (
+                        <div className="py-24 flex flex-col items-center justify-center text-slate-400">
+                            <Clock className="w-12 h-12 mb-4 opacity-10" />
+                            <p className="font-bold uppercase tracking-widest text-xs">Sin registros que coincidan</p>
+                        </div>
+                    ) : viewMode === 'tabla' ? (
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-slate-50 border-b border-slate-100">
+                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Fecha</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Proyecto</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Área</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Motivo</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden lg:table-cell">Resp. Área</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden md:table-cell">Operador</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Duración</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredDelays.map(delay => (
+                                    <tr key={delay.id} className="border-b border-slate-50 hover:bg-slate-50/60 transition-colors">
+                                        <td className="p-4 text-xs font-bold text-slate-500 whitespace-nowrap">{formatDate(delay.fecha)}</td>
+                                        <td className="p-4 text-sm font-black text-slate-800 max-w-[200px] truncate">{delay.project.nombre}</td>
+                                        <td className="p-4">
+                                            <span className="text-[10px] font-black bg-amber-50 text-amber-700 px-2 py-1 rounded-lg uppercase tracking-widest whitespace-nowrap">{delay.area}</span>
+                                        </td>
+                                        <td className="p-4 text-xs font-medium text-slate-500 italic max-w-[250px] truncate" title={delay.motivo}>"{delay.motivo}"</td>
+                                        <td className="p-4 text-xs font-bold text-slate-400 hidden lg:table-cell">{delay.responsableArea || '—'}</td>
+                                        <td className="p-4 text-xs font-bold text-primary hidden md:table-cell">{delay.operador}</td>
+                                        <td className="p-4 text-center">
+                                            <span className="px-3 py-1 bg-amber-50 text-amber-600 font-black rounded-xl text-sm border border-amber-100">{delay.duracion}h</span>
+                                        </td>
+                                        <td className="p-4 text-right">
+                                            <button onClick={() => handleDeleteClick(delay.id)} className="p-2 rounded-xl text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all">
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                                <tr className="bg-slate-50 font-black border-t-2 border-slate-200">
+                                    <td colSpan={6} className="p-4 text-right text-[10px] uppercase tracking-widest text-slate-500">Total Horas en Rango:</td>
+                                    <td className="p-4 text-center text-amber-600 text-base font-black">{totalHours.toFixed(1)}h</td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
                     ) : (
-                        filteredDelays.map(delay => (
-                            <div key={delay.id} className="bg-white p-5 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-md transition-shadow group">
-                                <div className="flex items-start gap-5">
-                                    <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center shrink-0">
-                                        <Building2 className="w-6 h-6 text-amber-500" />
+                        /* Card Grid View */
+                        <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {filteredDelays.map(delay => (
+                                <div key={delay.id} className="bg-white border border-slate-200 rounded-[2rem] shadow-sm p-5 flex flex-col gap-3 hover:shadow-md transition-all group">
+                                    <div className="flex items-start gap-3 justify-between">
+                                        <div className="flex items-start gap-3 min-w-0">
+                                            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+                                                <Building2 className="w-5 h-5 text-amber-500" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <h4 className="font-black text-slate-800 text-sm leading-tight truncate">{delay.project.nombre}</h4>
+                                                <div className="flex flex-wrap items-center gap-2 mt-1">
+                                                    <span className="text-[10px] font-bold text-slate-400">{formatDate(delay.fecha)} · {delay.hora}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button onClick={() => handleDeleteClick(delay.id)} className="p-1.5 text-slate-300 hover:text-rose-500 transition-colors shrink-0">
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
                                     </div>
-                                    <div className="space-y-1">
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                            <span className="font-black text-slate-800 text-lg leading-none">{delay.project.nombre}</span>
-                                            <span className="px-2 py-0.5 bg-slate-100 rounded-lg text-[9px] font-black text-slate-500 uppercase tracking-tight">#{delay.id.slice(-4).toUpperCase()}</span>
+                                    <span className="text-[10px] font-black bg-amber-50 text-amber-700 px-2 py-1 rounded-lg uppercase tracking-widest w-fit">{delay.area}</span>
+                                    <div className="bg-slate-50 px-3 py-2.5 rounded-xl">
+                                        <p className="text-xs font-medium text-slate-600 italic line-clamp-2">"{delay.motivo}"</p>
+                                    </div>
+                                    <div className="flex items-center justify-between pt-2 border-t border-slate-50">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary">
+                                                {delay.operador.charAt(0)}
+                                            </div>
+                                            <span className="text-[10px] font-bold text-slate-500 truncate max-w-[100px]">{delay.operador}</span>
                                         </div>
-                                        <div className="flex items-center gap-4 text-xs font-bold text-slate-400 uppercase tracking-tighter">
-                                            <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {delay.fecha}</span>
-                                            <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {delay.hora}hs</span>
-                                            <span className="flex items-center gap-1 text-primary"><User className="w-3 h-3" /> {delay.operador}</span>
+                                        <div className="flex items-baseline gap-1">
+                                            <span className="text-2xl font-black text-amber-500 tracking-tighter">{delay.duracion}</span>
+                                            <span className="text-[9px] font-black text-slate-400 uppercase">Hs</span>
                                         </div>
-                                        <p className="text-sm font-medium text-slate-600 line-clamp-1 italic">"{delay.motivo}"</p>
-                                        {delay.responsableArea && (
-                                            <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">
-                                                Resp. Área: {delay.responsableArea}
-                                            </p>
-                                        )}
                                     </div>
                                 </div>
-
-                                <div className="flex items-center gap-8 justify-between md:justify-end">
-                                    <div className="text-right space-y-0.5">
-                                        <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Área: {delay.area}</span>
-                                        <div className="flex items-baseline justify-end gap-1">
-                                            <span className="text-3xl font-black text-amber-500 tracking-tighter">{delay.duracion}</span>
-                                            <span className="text-xs font-black text-slate-500 uppercase tracking-tighter">Horas</span>
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={() => handleDeleteClick(delay.id)}
-                                        className="p-3 bg-rose-50 text-rose-400 rounded-2xl hover:bg-rose-500 hover:text-white transition-all active:scale-90"
-                                    >
-                                        <Trash2 className="w-5 h-5" />
-                                    </button>
-                                </div>
-                            </div>
-                        ))
+                            ))}
+                        </div>
                     )}
                 </div>
             </div>
@@ -261,8 +413,8 @@ export default function DelaysPage() {
             {/* Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-xl rounded-[3rem] shadow-2xl border border-white/20 overflow-hidden animate-in zoom-in-95 duration-300 max-h-[95vh] overflow-y-auto">
-                        <form onSubmit={handleSubmit} className="p-8 md:p-10 space-y-8">
+                    <div className="bg-white w-full max-w-xl rounded-[3rem] shadow-2xl border border-white/20 animate-in zoom-in-95 duration-300 max-h-[95vh] overflow-y-auto">
+                        <form onSubmit={handleSubmit} className="p-8 md:p-10 space-y-6">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-amber-500/30">
@@ -270,14 +422,16 @@ export default function DelaysPage() {
                                     </div>
                                     <div>
                                         <h3 className="text-2xl font-black text-slate-800 tracking-tight leading-none">Registrar Demora</h3>
-                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2 ml-0.5">Responsabilidad del Cliente</p>
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Responsabilidad del Cliente</p>
                                     </div>
                                 </div>
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400"><Trash2 className="w-5 h-5 rotate-45" /></button>
+                                <button type="button" onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400">
+                                    <X className="w-5 h-5" />
+                                </button>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Proyecto (Requirement 4: Autocomplete/Search) */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                {/* Proyecto */}
                                 <div className="md:col-span-2">
                                     <SearchableSelect
                                         label="Proyecto afectado"
@@ -289,49 +443,38 @@ export default function DelaysPage() {
                                     />
                                 </div>
 
-                                {/* Fecha */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                         <Calendar className="w-3 h-3" /> Fecha
                                     </label>
-                                    <input
-                                        type="date"
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700"
-                                        required
-                                        value={formData.fecha}
+                                    <input type="date" required value={formData.fecha}
                                         onChange={e => setFormData({ ...formData, fecha: e.target.value })}
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 h-[50px]"
                                     />
                                 </div>
 
-                                {/* Hora */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                         <Clock className="w-3 h-3" /> Hora
                                     </label>
-                                    <input
-                                        type="time"
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700"
-                                        required
-                                        value={formData.hora}
+                                    <input type="time" required value={formData.hora}
                                         onChange={e => setFormData({ ...formData, hora: e.target.value })}
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 h-[50px]"
                                     />
                                 </div>
 
-                                {/* Operador (Requirement 3: Automatic/Non-editable for operator) */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
-                                        <User className="w-3 h-3" /> Quien registra (Interno)
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                        <User className="w-3 h-3" /> Quien registra
                                     </label>
                                     {currentUser?.role === 'operador' ? (
-                                        <div className="w-full bg-slate-100 border border-slate-200 rounded-2xl py-3 px-4 font-bold text-slate-500 cursor-not-allowed">
+                                        <div className="w-full bg-slate-100 border border-slate-200 rounded-2xl py-3 px-4 font-bold text-slate-500 h-[50px] flex items-center">
                                             {formData.operador}
                                         </div>
                                     ) : (
-                                        <select
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700"
-                                            required
-                                            value={formData.operador}
+                                        <select required value={formData.operador}
                                             onChange={e => setFormData({ ...formData, operador: e.target.value })}
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 h-[50px]"
                                         >
                                             <option value="">— Seleccionar operador —</option>
                                             {operators.map(op => <option key={op.nombreCompleto} value={op.nombreCompleto}>{op.nombreCompleto}</option>)}
@@ -339,85 +482,66 @@ export default function DelaysPage() {
                                     )}
                                 </div>
 
-                                {/* Área del Cliente (Requirement 3: MAPHI and Portería added) */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                         <Building2 className="w-3 h-3" /> Área del Cliente
                                     </label>
-                                    <select
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700"
-                                        required
-                                        value={formData.area}
+                                    <select required value={formData.area}
                                         onChange={e => setFormData({ ...formData, area: e.target.value })}
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 h-[50px]"
                                     >
                                         <option value="">— Seleccionar área —</option>
                                         {AREAS.map(a => <option key={a} value={a}>{a}</option>)}
                                     </select>
                                 </div>
 
-                                {/* Nombre del Responsable del Área (Requirement 3: NEW) */}
                                 <div className="md:col-span-2 space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
-                                        <User className="w-3 h-3" /> Nombre del Responsable del Área (Opcional)
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                        <User className="w-3 h-3" /> Responsable del Área (Opcional)
                                     </label>
-                                    <input
-                                        type="text"
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-medium text-slate-700"
-                                        placeholder="Ingrese el nombre del responsable si lo conoce..."
-                                        value={formData.responsableArea}
+                                    <input type="text" value={formData.responsableArea}
                                         onChange={e => setFormData({ ...formData, responsableArea: e.target.value })}
+                                        placeholder="Nombre del responsable si lo conoce..."
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-medium text-slate-700"
                                     />
                                 </div>
 
-                                {/* Motivo */}
                                 <div className="md:col-span-2 space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                         <AlertCircle className="w-3 h-3" /> Motivo de la demora
                                     </label>
-                                    <textarea
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-medium text-slate-700 resize-none h-24"
-                                        required
-                                        placeholder="Describa el motivo de la demora externa..."
-                                        value={formData.motivo}
+                                    <textarea required value={formData.motivo}
                                         onChange={e => setFormData({ ...formData, motivo: e.target.value })}
+                                        placeholder="Describa el motivo de la demora externa..."
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-medium text-slate-700 resize-none h-24"
                                     />
                                 </div>
 
-                                {/* Duración */}
                                 <div className="md:col-span-2 space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                         <Timer className="w-3 h-3" /> Tiempo perdido (Horas)
                                     </label>
                                     <div className="flex items-center gap-4">
-                                        <input
-                                            type="range"
-                                            min="0"
-                                            max="24"
-                                            step="0.5"
+                                        <input type="range" min="0" max="24" step="0.5"
                                             className="flex-1 accent-amber-500"
                                             value={formData.duracion}
                                             onChange={e => setFormData({ ...formData, duracion: parseFloat(e.target.value) })}
                                         />
-                                        <div className="w-20 bg-amber-50 border border-amber-100 rounded-xl py-2 flex flex-col items-center">
+                                        <div className="w-20 bg-amber-50 border border-amber-100 rounded-xl py-2 flex flex-col items-center shrink-0">
                                             <span className="text-xl font-black text-amber-500">{formData.duracion}</span>
-                                            <span className="text-[8px] font-black text-amber-600 uppercase">Hs</span>
+                                            <span className="text-[9px] font-black text-amber-600 uppercase">Hs</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex gap-4">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsModalOpen(false)}
-                                    className="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95"
-                                >
+                            <div className="flex gap-4 pt-2">
+                                <button type="button" onClick={() => setIsModalOpen(false)}
+                                    className="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95">
                                     Cancelar
                                 </button>
-                                <button
-                                    type="submit"
-                                    className="flex-[2] bg-amber-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-amber-600 shadow-xl shadow-amber-500/20 shadow-xl transition-all active:scale-95"
-                                >
+                                <button type="submit"
+                                    className="flex-[2] bg-amber-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-amber-600 shadow-xl shadow-amber-500/20 transition-all active:scale-95">
                                     Registrar Evento
                                 </button>
                             </div>
@@ -425,18 +549,15 @@ export default function DelaysPage() {
                     </div>
                 </div>
             )}
-            {/* Confirm Dialog */}
+
             <ConfirmDialog
                 isOpen={isConfirmOpen}
                 title="Eliminar Registro de Demora"
-                message="¿Estás seguro de que deseas eliminar este registro de demora? Esta acción no se puede deshacer."
+                message="¿Estás seguro de que deseas eliminar este registro? Esta acción no se puede deshacer."
                 confirmLabel="Eliminar"
                 cancelLabel="Cancelar"
                 onConfirm={confirmDelete}
-                onCancel={() => {
-                    setIsConfirmOpen(false);
-                    setDelayToDelete(null);
-                }}
+                onCancel={() => { setIsConfirmOpen(false); setDelayToDelete(null); }}
             />
         </div>
     );

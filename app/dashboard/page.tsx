@@ -216,7 +216,7 @@ export default function DashboardPage() {
             </div>
 
             {/* KPI Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-fr">
                 <KpiCard
                     title="Eficiencia de Tiempo (IPT)"
                     value={data.kpis.avgIPT}
@@ -263,10 +263,10 @@ export default function DashboardPage() {
             </div>
 
             {/* Performance Visualizations Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* IPT Comparison Chart */}
                 <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm relative group overflow-hidden">
-                    <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
                             <BarChart3 className="w-5 h-5 text-primary" />
                             <h3 className="text-xl font-bold text-slate-800">IPT por Proyecto</h3>
@@ -277,22 +277,26 @@ export default function DashboardPage() {
                             calc="La línea roja indica el punto neutro (IPT = 1.0)."
                         />
                     </div>
-                    <div className="h-64 flex items-end justify-between gap-3 px-2 relative px-4">
-                        <div className="absolute w-full h-[1px] bg-rose-500/20 border-t border-dashed border-rose-500 z-0 left-0" style={{ bottom: '50%' }} />
+                    {data.performance.projects.length === 0 ? (
+                        <div className="h-56 flex items-center justify-center text-slate-400 font-bold uppercase tracking-widest text-[10px]">Sin datos de proyectos</div>
+                    ) : (
+                        <div className="h-56 flex items-end justify-between gap-3 px-2 relative px-4">
+                            <div className="absolute w-full h-[1px] bg-rose-500/20 border-t border-dashed border-rose-500 z-0 left-0" style={{ bottom: '50%' }} />
 
-                        {data.performance.projects.map((p, idx) => (
-                            <div key={idx} className="flex-1 flex flex-col items-center gap-2 group/bar relative h-full justify-end z-10">
-                                <div className="absolute bottom-full mb-2 hidden group-hover/bar:block bg-slate-900 text-white text-[10px] py-1.5 px-3 rounded-xl whitespace-nowrap z-50 font-bold shadow-xl border border-white/10">
-                                    {p.nombre}: <span className="text-primary">{p.ipt.toFixed(2)}</span>
+                            {data.performance.projects.map((p, idx) => (
+                                <div key={idx} className="flex-1 flex flex-col items-center gap-2 group/bar relative h-full justify-end z-10">
+                                    <div className="absolute bottom-full mb-2 hidden group-hover/bar:block bg-slate-900 text-white text-[10px] py-1.5 px-3 rounded-xl whitespace-nowrap z-50 font-bold shadow-xl border border-white/10">
+                                        {p.nombre}: <span className="text-primary">{p.ipt.toFixed(2)}</span>
+                                    </div>
+                                    <div
+                                        className={`w-full rounded-t-xl transition-all duration-700 hover:brightness-110 shadow-sm ${p.ipt >= 1 ? 'bg-primary' : 'bg-rose-400'}`}
+                                        style={{ height: `${Math.min(p.ipt * 50, 100)}%` }}
+                                    />
+                                    <span className="text-[9px] font-black text-slate-400 rotate-45 origin-left truncate max-w-[50px] mt-4 translate-x-1">{p.nombre}</span>
                                 </div>
-                                <div
-                                    className={`w-full rounded-t-xl transition-all duration-700 hover:brightness-110 shadow-sm ${p.ipt >= 1 ? 'bg-primary' : 'bg-rose-400'}`}
-                                    style={{ height: `${Math.min(p.ipt * 50, 100)}%` }}
-                                />
-                                <span className="text-[9px] font-black text-slate-400 rotate-45 origin-left truncate max-w-[50px] mt-4 translate-x-1">{p.nombre}</span>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* Performance Trend */}
@@ -314,10 +318,10 @@ export default function DashboardPage() {
                 />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 overflow-visible">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 overflow-visible">
                 {/* Classification Donut */}
                 <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col items-center overflow-visible">
-                    <div className="flex items-center justify-between w-full mb-8">
+                    <div className="flex items-center justify-between w-full mb-6">
                         <div className="flex items-center gap-3">
                             <PieChart className="w-5 h-5 text-emerald-500" />
                             <h3 className="text-xl font-bold text-slate-800">Clasificación</h3>
@@ -352,7 +356,7 @@ export default function DashboardPage() {
 
                 {/* Savings Deviation (Bar Divergent) */}
                 <div className="lg:col-span-2 bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
-                    <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
                             <Briefcase className="w-5 h-5 text-primary" />
                             <h3 className="text-xl font-bold text-slate-800">Balance de Horas por Proyecto</h3>
@@ -389,15 +393,15 @@ export default function DashboardPage() {
             </div>
 
             {/* Operational Foundations Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                <div className="lg:col-span-8 flex flex-col gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div className="lg:col-span-8 flex flex-col gap-6">
                     {/* Status Distribution */}
-                    <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
-                        <h3 className="text-xl font-bold text-slate-800 flex items-center gap-3 mb-8">
+                    <div className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                        <h3 className="text-xl font-bold text-slate-800 flex items-center gap-3 mb-5">
                             <Activity className="w-5 h-5 text-primary" />
                             Estado Operativo
                         </h3>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
                             <StatusPill label="Por Hacer" count={data.statusDistribution.por_hacer} color="blue" />
                             <StatusPill label="Planificado" count={data.statusDistribution.planificado} color="violet" />
                             <StatusPill label="Activos" count={data.statusDistribution.activo} color="primary" />
@@ -408,79 +412,92 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Alert List */}
-                    <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
-                        <h3 className="text-xl font-bold text-slate-800 flex items-center gap-3 mb-6">
+                    <div className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                        <h3 className="text-xl font-bold text-slate-800 flex items-center gap-3 mb-5">
                             <AlertTriangle className="w-5 h-5 text-rose-500" />
                             Alertas de Consumo
                         </h3>
-                        <div className="space-y-5">
-                            {data.criticalProjects.map((project, idx) => (
-                                <div key={idx} className="space-y-2">
-                                    <div className="flex justify-between items-center px-1">
-                                        <span className="font-bold text-slate-700 text-sm">{project.nombre}</span>
-                                        <span className={`text-xs font-black px-2 py-1 rounded-lg ${project.percentage > 100 ? 'bg-rose-50 text-rose-500' : 'bg-amber-50 text-amber-600'}`}>
-                                            {Math.round(project.percentage)}%
-                                        </span>
+                        {data.criticalProjects.length === 0 ? (
+                            <div className="py-8 text-center text-slate-400 font-bold text-[10px] uppercase tracking-widest">Sin proyectos críticos activos</div>
+                        ) : (
+                            <div className="space-y-4">
+                                {data.criticalProjects.map((project, idx) => (
+                                    <div key={idx} className="space-y-1.5">
+                                        <div className="flex justify-between items-center px-1">
+                                            <span className="font-bold text-slate-700 text-sm truncate max-w-[70%]">{project.nombre}</span>
+                                            <span className={`text-xs font-black px-2 py-1 rounded-lg ${project.percentage > 100 ? 'bg-rose-50 text-rose-500' : 'bg-amber-50 text-amber-600'}`}>
+                                                {Math.round(project.percentage)}%
+                                            </span>
+                                        </div>
+                                        <div className="h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-50">
+                                            <div
+                                                className={`h-full rounded-full transition-all duration-1000 ${project.percentage > 100 ? 'bg-rose-500' : project.percentage > 80 ? 'bg-amber-500' : 'bg-primary'}`}
+                                                style={{ width: `${Math.min(project.percentage, 100)}%` }}
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-50">
-                                        <div
-                                            className={`h-full rounded-full transition-all duration-1000 ${project.percentage > 100 ? 'bg-rose-500' : project.percentage > 80 ? 'bg-amber-500' : 'bg-primary'}`}
-                                            style={{ width: `${Math.min(project.percentage, 100)}%` }}
-                                        />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                <div className="lg:col-span-4 space-y-8">
-                    {/* Concentration Metrics */}
-                    <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
-                        <h3 className="text-xl font-bold text-slate-800 flex items-center gap-3 mb-6">
+                <div className="lg:col-span-4 flex flex-col gap-6">
+                    {/* Top Clients */}
+                    <div className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-3 mb-4">
                             <Building2 className="w-5 h-5 text-slate-400" />
                             Top Clientes
                         </h3>
-                        <div className="space-y-4">
-                            {data.topClients.map((client, idx) => (
-                                <div key={idx} className="flex items-center justify-between p-3 rounded-2xl bg-slate-50/50 hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-100 transition-all group">
-                                    <span className="font-bold text-slate-600 group-hover:text-primary transition-colors text-sm truncate">{client.name}</span>
-                                    <span className="px-3 py-1 bg-white border border-slate-100 text-primary text-[10px] font-black rounded-xl shadow-sm">{client.count} Proj</span>
-                                </div>
-                            ))}
-                        </div>
+                        {data.topClients.length === 0 ? (
+                            <div className="py-6 text-center text-slate-400 font-bold text-[10px] uppercase tracking-widest">Sin datos</div>
+                        ) : (
+                            <div className="space-y-2.5">
+                                {data.topClients.map((client, idx) => (
+                                    <div key={idx} className="flex items-center justify-between p-3 rounded-2xl bg-slate-50/50 hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-100 transition-all group">
+                                        <span className="font-bold text-slate-600 group-hover:text-primary transition-colors text-sm truncate">{client.name}</span>
+                                        <span className="px-3 py-1 bg-white border border-slate-100 text-primary text-[10px] font-black rounded-xl shadow-sm shrink-0">{client.count} Proj</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
-                    <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
-                        <h3 className="text-xl font-bold text-slate-800 flex items-center gap-3 mb-6">
+                    {/* Top Operators */}
+                    <div className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-3 mb-4">
                             <Users className="w-5 h-5 text-slate-400" />
                             Mayor Actividad
                         </h3>
-                        <div className="space-y-4">
-                            {data.topOperators.map((op, idx) => (
-                                <div key={idx} className="flex items-center justify-between p-3 rounded-2xl bg-indigo-50/30 hover:bg-white hover:shadow-sm border border-transparent hover:border-indigo-100 transition-all group">
-                                    <span className="font-bold text-slate-600 group-hover:text-indigo-600 transition-colors text-sm truncate">{op.name}</span>
-                                    <span className="px-3 py-1 bg-white border border-indigo-100 text-indigo-600 text-[10px] font-black rounded-xl shadow-sm">{op.count} Asig</span>
-                                </div>
-                            ))}
-                        </div>
+                        {data.topOperators.length === 0 ? (
+                            <div className="py-6 text-center text-slate-400 font-bold text-[10px] uppercase tracking-widest">Sin datos</div>
+                        ) : (
+                            <div className="space-y-2.5">
+                                {data.topOperators.map((op, idx) => (
+                                    <div key={idx} className="flex items-center justify-between p-3 rounded-2xl bg-indigo-50/30 hover:bg-white hover:shadow-sm border border-transparent hover:border-indigo-100 transition-all group">
+                                        <span className="font-bold text-slate-600 group-hover:text-indigo-600 transition-colors text-sm truncate">{op.name}</span>
+                                        <span className="px-3 py-1 bg-white border border-indigo-100 text-indigo-600 text-[10px] font-black rounded-xl shadow-sm shrink-0">{op.count} Asig</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
 
             {/* Client Delays Analysis Section (NEW) */}
-            <div className="space-y-6 pt-12 border-t border-slate-200">
+            <div className="space-y-6 pt-8 border-t border-slate-200">
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-amber-500 rounded-2xl text-white shadow-lg shadow-amber-500/20">
-                        <Timer className="w-8 h-8" />
+                        <Timer className="w-7 h-7" />
                     </div>
                     <div>
-                        <h3 className="text-3xl font-black text-slate-800 tracking-tight leading-none">Análisis de Demoras Externas</h3>
-                        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mt-2 px-0.5">Responsabilidad del Cliente</p>
+                        <h3 className="text-2xl font-black text-slate-800 tracking-tight leading-none">Análisis de Demoras Externas</h3>
+                        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mt-1 px-0.5">Responsabilidad del Cliente</p>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 auto-rows-fr">
                     <KpiCard
                         title="Total Tiempo Perdido"
                         value={`${data.delays.totalHours}h`}
@@ -519,10 +536,10 @@ export default function DashboardPage() {
                     />
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Delays by Area */}
                     <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm relative group overflow-hidden">
-                        <div className="flex items-center justify-between mb-8">
+                        <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
                                 <Building2 className="w-5 h-5 text-amber-500" />
                                 <h3 className="text-xl font-bold text-slate-800">Demoras por Área del Cliente</h3>
@@ -584,7 +601,7 @@ export default function DashboardPage() {
 
 function KpiCard({ title, value, icon, color, trend, tooltip }: { title: string; value: string | number; icon: any; color: string; trend: string; tooltip?: { def: string; purpose: string; calc: string } }) {
     return (
-        <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 group relative">
+        <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 group relative flex flex-col h-full">
             <div className="flex justify-between items-start mb-4">
                 <div className={`p-3 rounded-2xl ${color} text-white shadow-lg group-hover:scale-110 transition-transform`}>
                     {icon}
@@ -596,7 +613,7 @@ function KpiCard({ title, value, icon, color, trend, tooltip }: { title: string;
                     </div>
                 )}
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 flex-1">
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">{title}</p>
                 <h4 className="text-3xl font-black text-slate-800 tracking-tighter">{value}</h4>
             </div>

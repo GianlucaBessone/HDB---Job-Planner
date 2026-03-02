@@ -282,6 +282,15 @@ export default function PlanningPage() {
 
     return (
         <div className="w-full space-y-4 md:space-y-8 animate-in fade-in duration-500 pb-20">
+            {/* Page Title */}
+            <div className="space-y-1">
+                <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
+                    <CalendarIcon className="w-8 h-8 text-primary" />
+                    Planificación Diaria
+                </h2>
+                <p className="text-slate-500 font-medium">Gestiona y organiza el cronograma de trabajo</p>
+            </div>
+
             {/* Header / Date Selector — compact on mobile */}
             <div className="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm shadow-slate-200/50">
                 <div className="space-y-1 mb-3">
