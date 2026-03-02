@@ -23,25 +23,32 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                 const res = await fetch(`/api/notifications?operatorId=${user.id}&role=${user.role}`);
                 const data = await res.json();
                 if (Array.isArray(data)) {
-                    if (isPoll && data.length > notifications.length) {
-                        // Find the newest unread notification
-                        const latest = data[0];
-                        if (latest && !notifications.find(n => n.id === latest.id)) {
-                            // Notify the user visually
-                            showToast(`Nueva notificación: ${latest.title}`, 'success');
+                    setNotifications(prev => {
+                        if (isPoll && data.length > prev.length) {
+                            const latest = data[0];
+                            if (latest && !prev.find(n => n.id === latest.id)) {
+                                showToast(`Nueva notificación: ${latest.title}`, 'success');
+                            }
                         }
-                    }
-                    setNotifications(data);
+                        return data;
+                    });
                 }
             } catch (err) {
-                console.error(err);
+                console.error('Error fetching notifications:', err);
             }
         };
 
         fetchNotifications();
-        const interval = setInterval(() => fetchNotifications(true), 120000); // Poll every 2 minutes for light load
-        return () => clearInterval(interval);
-    }, [user]);
+        const interval = setInterval(() => fetchNotifications(true), 10000); // Poll every 10 seconds
+
+        const handleFocus = () => fetchNotifications(true);
+        window.addEventListener('focus', handleFocus);
+
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('focus', handleFocus);
+        };
+    }, [user.id, user.role]);
 
     const markAsRead = async (id: string, e?: React.MouseEvent) => {
         if (e) e.stopPropagation();
