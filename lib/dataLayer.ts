@@ -24,12 +24,12 @@ export const dataLayer = {
             orderBy: { createdAt: 'desc' }
         });
     },
-    async createProject(data: { nombre: string; activo?: boolean; observaciones?: string; horasEstimadas?: number; horasConsumidas?: number; cliente?: string; clientId?: string; responsable?: string; estado?: string; fechaInicio?: string; fechaFin?: string }) {
+    async createProject(data: { nombre: string; activo?: boolean; noEnMetricas?: boolean; observaciones?: string; horasEstimadas?: number; horasConsumidas?: number; cliente?: string; clientId?: string; responsable?: string; estado?: string; fechaInicio?: string; fechaFin?: string }) {
         const sanitizedData = { ...data };
         if (sanitizedData.clientId === "") delete sanitizedData.clientId;
         return await prisma.project.create({ data: sanitizedData });
     },
-    async updateProject(id: string, data: { nombre?: string; activo?: boolean; observaciones?: string; horasEstimadas?: number; horasConsumidas?: number; cliente?: string; clientId?: string; responsable?: string; estado?: string; fechaInicio?: string; fechaFin?: string }) {
+    async updateProject(id: string, data: { nombre?: string; activo?: boolean; noEnMetricas?: boolean; observaciones?: string; horasEstimadas?: number; horasConsumidas?: number; cliente?: string; clientId?: string; responsable?: string; estado?: string; fechaInicio?: string; fechaFin?: string }) {
         const sanitizedData = { ...data };
         if (sanitizedData.clientId === "") sanitizedData.clientId = null as any; // Allow unlinking client
         return await prisma.project.update({ where: { id }, data: sanitizedData });
@@ -114,7 +114,7 @@ export const dataLayer = {
             orderBy: { fecha: 'desc' }
         });
     },
-    async createClientDelay(data: { projectId: string; fecha: string; hora: string; operador: string; area: string; motivo: string; duracion: number }) {
+    async createClientDelay(data: { projectId: string; fecha: string; hora: string; operador: string; area: string; responsableArea?: string; motivo: string; duracion: number }) {
         return await prisma.clientDelay.create({ data });
     },
     async deleteClientDelay(id: string) {

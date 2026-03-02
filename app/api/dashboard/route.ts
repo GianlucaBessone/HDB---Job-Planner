@@ -2,8 +2,14 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/dataLayer';
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
+        const { searchParams } = new URL(request.url);
+        const from = searchParams.get('from');
+        const to = searchParams.get('to');
+        const clientId = searchParams.get('clientId');
+        const status = searchParams.get('status'); // all | finished | active
+
         let [projects, operators, plannings, clientDelays] = await Promise.all([
             prisma.project.findMany(),
             prisma.operator.findMany(),
@@ -11,9 +17,36 @@ export async function GET() {
             prisma.clientDelay.findMany()
         ]);
 
-        // Filter out inactive projects for dashboard metrics
-        projects = projects.filter(p => p.activo !== false);
+        // 1. Exclude projects marked as "NO en métricas" (Requirement 1)
+        // And filter by activity status. We only show projects where active is not explicitly false
+        // and noEnMetricas is not explicitly true.
+        projects = projects.filter(p => p.activo !== false && p.noEnMetricas !== true);
+
+        // 2. Filter by Client (Requirement 2)
+        if (clientId) {
+            projects = projects.filter(p => p.clientId === clientId);
+        }
+
+        // 3. Filter by Finished Status (Requirement 2)
+        if (status === 'finished') {
+            projects = projects.filter(p => p.estado === 'finalizado');
+        } else if (status === 'active') {
+            projects = projects.filter(p => p.estado !== 'finalizado');
+        }
+
         const activeProjectIds = new Set(projects.map(p => p.id));
+
+        // 4. Filter Delays and Metrics by Date Range (Requirement 2)
+        if (from || to) {
+            if (from) {
+                clientDelays = clientDelays.filter(d => d.fecha >= from);
+            }
+            if (to) {
+                clientDelays = clientDelays.filter(d => d.fecha <= to);
+            }
+            // Note: Project creation date filtering for metrics can be complex if we want "snapshot" metrics.
+            // For now, let's filter the data points in trends and perhaps projects by createdAt if requested.
+        }
 
         // Health Metrics
         const totalProjects = projects.length;
@@ -78,7 +111,7 @@ export async function GET() {
             .slice(0, 5);
 
         // Performance Metrics (New)
-        const projectPerformance = projects
+        let projectPerformance = projects
             .filter(p => p.horasEstimadas > 0 && p.horasConsumidas > 0)
             .map(p => {
                 const ipt = p.horasEstimadas / p.horasConsumidas;
@@ -99,6 +132,14 @@ export async function GET() {
                     createdAt: p.createdAt
                 };
             });
+
+        // Apply date filter to performance trend
+        if (from) {
+            projectPerformance = projectPerformance.filter(p => p.createdAt >= new Date(from));
+        }
+        if (to) {
+            projectPerformance = projectPerformance.filter(p => p.createdAt <= new Date(to));
+        }
 
         const avgIPT = projectPerformance.length > 0
             ? projectPerformance.reduce((acc, p) => acc + p.ipt, 0) / projectPerformance.length

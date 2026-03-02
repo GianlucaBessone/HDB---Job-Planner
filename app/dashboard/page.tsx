@@ -19,8 +19,10 @@ import {
     TrendingDown,
     Activity,
     Target,
-    Timer
+    Timer,
+    SlidersHorizontal
 } from 'lucide-react';
+import SearchableSelect from '@/components/SearchableSelect';
 
 interface DashboardData {
     kpis: {
@@ -72,16 +74,49 @@ interface DashboardData {
 export default function DashboardPage() {
     const [data, setData] = useState<DashboardData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [clients, setClients] = useState<{ id: string; nombre: string }[]>([]);
+
+    // Filter States (Requirement 2)
+    const [filterFrom, setFilterFrom] = useState('');
+    const [filterTo, setFilterTo] = useState('');
+    const [filterClientId, setFilterClientId] = useState('');
+    const [filterStatus, setFilterStatus] = useState('active'); // active | finished | all
 
     useEffect(() => {
-        fetch('/api/dashboard')
+        // Load clients once
+        fetch('/api/clients')
+            .then(res => res.json())
+            .then(setClients)
+            .catch(console.error);
+    }, []);
+
+    useEffect(() => {
+        loadDashboardData();
+    }, [filterFrom, filterTo, filterClientId, filterStatus]);
+
+    const loadDashboardData = () => {
+        setIsLoading(true);
+        const params = new URLSearchParams();
+        if (filterFrom) params.append('from', filterFrom);
+        if (filterTo) params.append('to', filterTo);
+        if (filterClientId) params.append('clientId', filterClientId);
+        if (filterStatus) params.append('status', filterStatus);
+
+        fetch(`/api/dashboard?${params.toString()}`)
             .then(res => res.json())
             .then(setData)
             .catch(console.error)
             .finally(() => setIsLoading(false));
-    }, []);
+    };
 
-    if (isLoading) {
+    const clearFilters = () => {
+        setFilterFrom('');
+        setFilterTo('');
+        setFilterClientId('');
+        setFilterStatus('active');
+    };
+
+    if (isLoading && !data) {
         return (
             <div className="w-full h-[60vh] flex items-center justify-center">
                 <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
@@ -101,6 +136,70 @@ export default function DashboardPage() {
                         Panel de Análisis
                     </h2>
                     <p className="text-slate-500 font-medium">Resumen del estado operativo y métricas de rendimiento</p>
+                </div>
+            </div>
+
+            {/* Advanced Filters (Requirement 2) */}
+            <div className="bg-white border border-slate-200 rounded-[2rem] p-6 shadow-sm space-y-4">
+                <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-bold text-slate-700 flex items-center gap-2 text-sm">
+                        <SlidersHorizontal className="w-4 h-4 text-primary" />
+                        Filtros de Análisis
+                    </h3>
+                    {(filterFrom || filterTo || filterClientId || filterStatus !== 'active') && (
+                        <button onClick={clearFilters} className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">
+                            Limpiar Filtros
+                        </button>
+                    )}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 flex items-center gap-1">
+                            <Calendar className="w-3 h-3" /> Desde
+                        </label>
+                        <input
+                            type="date"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                            value={filterFrom}
+                            onChange={e => setFilterFrom(e.target.value)}
+                        />
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 flex items-center gap-1">
+                            <Calendar className="w-3 h-3" /> Hasta
+                        </label>
+                        <input
+                            type="date"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                            value={filterTo}
+                            onChange={e => setFilterTo(e.target.value)}
+                        />
+                    </div>
+                    <div className="space-y-1.5 pt-0.5">
+                        <SearchableSelect
+                            label="Cliente"
+                            icon={<Building2 className="w-3 h-3" />}
+                            options={clients.map(c => ({ id: c.id, label: c.nombre }))}
+                            value={filterClientId}
+                            onChange={setFilterClientId}
+                            placeholder="Todos los Clientes"
+                            className="!space-y-1.5"
+                        />
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 flex items-center gap-1">
+                            <Activity className="w-3 h-3" /> Estado <MetricTooltip def="Filtra proyectos por su estado de finalización." purpose="Permite comparar el rendimiento histórico con el operativo actual." calc="N/A" />
+                        </label>
+                        <select
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                            value={filterStatus}
+                            onChange={e => setFilterStatus(e.target.value)}
+                        >
+                            <option value="active">Proyectos No Finalizados</option>
+                            <option value="finished">Proyectos Finalizados</option>
+                            <option value="all">Ver Todos</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -501,7 +600,7 @@ function MetricTooltip({ def, purpose, calc }: { def: string; purpose: string; c
     return (
         <div className="group/tooltip relative">
             <Info className="w-5 h-5 text-slate-300 hover:text-primary transition-colors cursor-help" />
-            <div className="absolute top-0 right-full mr-3 w-64 p-4 bg-slate-900 text-white rounded-2xl text-[10px] leading-relaxed hidden group-hover/tooltip:block z-50 shadow-2xl animate-in fade-in slide-in-from-right-2 duration-200">
+            <div className="absolute top-0 right-full mr-3 w-64 p-4 bg-slate-900 text-white rounded-2xl text-[10px] leading-relaxed hidden group-hover/tooltip:block z-[9999] shadow-2xl animate-in fade-in slide-in-from-right-2 duration-200">
                 <div className="space-y-3">
                     <div>
                         <span className="block font-black uppercase tracking-widest text-primary mb-1">¿Qué mide?</span>

@@ -33,11 +33,14 @@ interface ClientDelay {
     hora: string;
     operador: string;
     area: string;
+    responsableArea?: string;
     motivo: string;
     duracion: number;
 }
 
-const AREAS = ['Control Documentario', 'Calidad', 'Compras', 'IT', 'Producción', 'Logística', 'Seguridad', 'Otro'];
+const AREAS = ['Control Documentario', 'Calidad', 'Compras', 'IT', 'Producción', 'Logística', 'Seguridad', 'MAPHI', 'Portería', 'Otro'];
+
+import SearchableSelect from '@/components/SearchableSelect';
 
 export default function DelaysPage() {
     const [delays, setDelays] = useState<ClientDelay[]>([]);
@@ -46,6 +49,7 @@ export default function DelaysPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [currentUser, setCurrentUser] = useState<any>(null);
 
     // Custom Confirm Dialog State
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -57,11 +61,21 @@ export default function DelaysPage() {
         hora: new Date().toTimeString().slice(0, 5),
         operador: '',
         area: '',
+        responsableArea: '', // NEW
         motivo: '',
         duracion: 0
     });
 
     useEffect(() => {
+        const stored = localStorage.getItem('currentUser');
+        if (stored) {
+            try {
+                const user = JSON.parse(stored);
+                setCurrentUser(user);
+                // Pre-fill operator (Requirement 3)
+                setFormData(prev => ({ ...prev, operador: user.nombreCompleto }));
+            } catch (e) { }
+        }
         loadData();
     }, []);
 
@@ -95,7 +109,8 @@ export default function DelaysPage() {
                 ...formData,
                 motivo: '',
                 duracion: 0,
-                area: ''
+                area: '',
+                responsableArea: ''
             });
             loadData();
         } catch (error) {
@@ -143,6 +158,7 @@ export default function DelaysPage() {
                     </h2>
                     <p className="text-slate-500 font-medium italic">Registro de tiempos externos para análisis de causa raíz</p>
                 </div>
+                {/* Accessible for Operators (Requirement 3) */}
                 <button
                     onClick={() => setIsModalOpen(true)}
                     className="bg-amber-500 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-amber-600 shadow-xl shadow-amber-500/20 active:scale-95 transition-all w-full md:w-auto justify-center"
@@ -213,6 +229,11 @@ export default function DelaysPage() {
                                             <span className="flex items-center gap-1 text-primary"><User className="w-3 h-3" /> {delay.operador}</span>
                                         </div>
                                         <p className="text-sm font-medium text-slate-600 line-clamp-1 italic">"{delay.motivo}"</p>
+                                        {delay.responsableArea && (
+                                            <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">
+                                                Resp. Área: {delay.responsableArea}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
 
@@ -256,20 +277,16 @@ export default function DelaysPage() {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Proyecto */}
-                                <div className="md:col-span-2 space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
-                                        <Layout className="w-3 h-3" /> Proyecto afectado
-                                    </label>
-                                    <select
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700"
-                                        required
+                                {/* Proyecto (Requirement 4: Autocomplete/Search) */}
+                                <div className="md:col-span-2">
+                                    <SearchableSelect
+                                        label="Proyecto afectado"
+                                        icon={<Layout className="w-3 h-3" />}
+                                        options={projects.map(p => ({ id: p.id, label: p.nombre }))}
                                         value={formData.projectId}
-                                        onChange={e => setFormData({ ...formData, projectId: e.target.value })}
-                                    >
-                                        <option value="">— Seleccionar proyecto —</option>
-                                        {projects.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
-                                    </select>
+                                        onChange={(val) => setFormData({ ...formData, projectId: val })}
+                                        placeholder="Seleccionar proyecto..."
+                                    />
                                 </div>
 
                                 {/* Fecha */}
@@ -300,23 +317,29 @@ export default function DelaysPage() {
                                     />
                                 </div>
 
-                                {/* Operador */}
+                                {/* Operador (Requirement 3: Automatic/Non-editable for operator) */}
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
                                         <User className="w-3 h-3" /> Quien registra (Interno)
                                     </label>
-                                    <select
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700"
-                                        required
-                                        value={formData.operador}
-                                        onChange={e => setFormData({ ...formData, operador: e.target.value })}
-                                    >
-                                        <option value="">— Seleccionar operador —</option>
-                                        {operators.map(op => <option key={op.nombreCompleto} value={op.nombreCompleto}>{op.nombreCompleto}</option>)}
-                                    </select>
+                                    {currentUser?.role === 'operador' ? (
+                                        <div className="w-full bg-slate-100 border border-slate-200 rounded-2xl py-3 px-4 font-bold text-slate-500 cursor-not-allowed">
+                                            {formData.operador}
+                                        </div>
+                                    ) : (
+                                        <select
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700"
+                                            required
+                                            value={formData.operador}
+                                            onChange={e => setFormData({ ...formData, operador: e.target.value })}
+                                        >
+                                            <option value="">— Seleccionar operador —</option>
+                                            {operators.map(op => <option key={op.nombreCompleto} value={op.nombreCompleto}>{op.nombreCompleto}</option>)}
+                                        </select>
+                                    )}
                                 </div>
 
-                                {/* Área del Cliente */}
+                                {/* Área del Cliente (Requirement 3: MAPHI and Portería added) */}
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
                                         <Building2 className="w-3 h-3" /> Área del Cliente
@@ -330,6 +353,20 @@ export default function DelaysPage() {
                                         <option value="">— Seleccionar área —</option>
                                         {AREAS.map(a => <option key={a} value={a}>{a}</option>)}
                                     </select>
+                                </div>
+
+                                {/* Nombre del Responsable del Área (Requirement 3: NEW) */}
+                                <div className="md:col-span-2 space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                                        <User className="w-3 h-3" /> Nombre del Responsable del Área (Opcional)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-medium text-slate-700"
+                                        placeholder="Ingrese el nombre del responsable si lo conoce..."
+                                        value={formData.responsableArea}
+                                        onChange={e => setFormData({ ...formData, responsableArea: e.target.value })}
+                                    />
                                 </div>
 
                                 {/* Motivo */}

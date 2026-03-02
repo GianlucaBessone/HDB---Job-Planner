@@ -1581,6 +1581,7 @@ export namespace Prisma {
     id: string | null
     nombre: string | null
     activo: boolean | null
+    noEnMetricas: boolean | null
     observaciones: string | null
     horasEstimadas: number | null
     horasConsumidas: number | null
@@ -1597,6 +1598,7 @@ export namespace Prisma {
     id: string | null
     nombre: string | null
     activo: boolean | null
+    noEnMetricas: boolean | null
     observaciones: string | null
     horasEstimadas: number | null
     horasConsumidas: number | null
@@ -1613,6 +1615,7 @@ export namespace Prisma {
     id: number
     nombre: number
     activo: number
+    noEnMetricas: number
     observaciones: number
     horasEstimadas: number
     horasConsumidas: number
@@ -1641,6 +1644,7 @@ export namespace Prisma {
     id?: true
     nombre?: true
     activo?: true
+    noEnMetricas?: true
     observaciones?: true
     horasEstimadas?: true
     horasConsumidas?: true
@@ -1657,6 +1661,7 @@ export namespace Prisma {
     id?: true
     nombre?: true
     activo?: true
+    noEnMetricas?: true
     observaciones?: true
     horasEstimadas?: true
     horasConsumidas?: true
@@ -1673,6 +1678,7 @@ export namespace Prisma {
     id?: true
     nombre?: true
     activo?: true
+    noEnMetricas?: true
     observaciones?: true
     horasEstimadas?: true
     horasConsumidas?: true
@@ -1776,6 +1782,7 @@ export namespace Prisma {
     id: string
     nombre: string
     activo: boolean
+    noEnMetricas: boolean
     observaciones: string | null
     horasEstimadas: number
     horasConsumidas: number
@@ -1811,6 +1818,7 @@ export namespace Prisma {
     id?: boolean
     nombre?: boolean
     activo?: boolean
+    noEnMetricas?: boolean
     observaciones?: boolean
     horasEstimadas?: boolean
     horasConsumidas?: boolean
@@ -1831,6 +1839,7 @@ export namespace Prisma {
     id?: boolean
     nombre?: boolean
     activo?: boolean
+    noEnMetricas?: boolean
     observaciones?: boolean
     horasEstimadas?: boolean
     horasConsumidas?: boolean
@@ -1848,6 +1857,7 @@ export namespace Prisma {
     id?: boolean
     nombre?: boolean
     activo?: boolean
+    noEnMetricas?: boolean
     observaciones?: boolean
     horasEstimadas?: boolean
     horasConsumidas?: boolean
@@ -1881,6 +1891,7 @@ export namespace Prisma {
       id: string
       nombre: string
       activo: boolean
+      noEnMetricas: boolean
       observaciones: string | null
       horasEstimadas: number
       horasConsumidas: number
@@ -2290,6 +2301,7 @@ export namespace Prisma {
     readonly id: FieldRef<"Project", 'String'>
     readonly nombre: FieldRef<"Project", 'String'>
     readonly activo: FieldRef<"Project", 'Boolean'>
+    readonly noEnMetricas: FieldRef<"Project", 'Boolean'>
     readonly observaciones: FieldRef<"Project", 'String'>
     readonly horasEstimadas: FieldRef<"Project", 'Int'>
     readonly horasConsumidas: FieldRef<"Project", 'Int'>
@@ -2714,6 +2726,7 @@ export namespace Prisma {
     hora: string | null
     operador: string | null
     area: string | null
+    responsableArea: string | null
     motivo: string | null
     duracion: number | null
     createdAt: Date | null
@@ -2726,6 +2739,7 @@ export namespace Prisma {
     hora: string | null
     operador: string | null
     area: string | null
+    responsableArea: string | null
     motivo: string | null
     duracion: number | null
     createdAt: Date | null
@@ -2738,6 +2752,7 @@ export namespace Prisma {
     hora: number
     operador: number
     area: number
+    responsableArea: number
     motivo: number
     duracion: number
     createdAt: number
@@ -2760,6 +2775,7 @@ export namespace Prisma {
     hora?: true
     operador?: true
     area?: true
+    responsableArea?: true
     motivo?: true
     duracion?: true
     createdAt?: true
@@ -2772,6 +2788,7 @@ export namespace Prisma {
     hora?: true
     operador?: true
     area?: true
+    responsableArea?: true
     motivo?: true
     duracion?: true
     createdAt?: true
@@ -2784,6 +2801,7 @@ export namespace Prisma {
     hora?: true
     operador?: true
     area?: true
+    responsableArea?: true
     motivo?: true
     duracion?: true
     createdAt?: true
@@ -2883,6 +2901,7 @@ export namespace Prisma {
     hora: string
     operador: string
     area: string
+    responsableArea: string | null
     motivo: string
     duracion: number
     createdAt: Date
@@ -2914,6 +2933,7 @@ export namespace Prisma {
     hora?: boolean
     operador?: boolean
     area?: boolean
+    responsableArea?: boolean
     motivo?: boolean
     duracion?: boolean
     createdAt?: boolean
@@ -2927,6 +2947,7 @@ export namespace Prisma {
     hora?: boolean
     operador?: boolean
     area?: boolean
+    responsableArea?: boolean
     motivo?: boolean
     duracion?: boolean
     createdAt?: boolean
@@ -2940,6 +2961,7 @@ export namespace Prisma {
     hora?: boolean
     operador?: boolean
     area?: boolean
+    responsableArea?: boolean
     motivo?: boolean
     duracion?: boolean
     createdAt?: boolean
@@ -2964,6 +2986,7 @@ export namespace Prisma {
       hora: string
       operador: string
       area: string
+      responsableArea: string | null
       motivo: string
       duracion: number
       createdAt: Date
@@ -3367,6 +3390,7 @@ export namespace Prisma {
     readonly hora: FieldRef<"ClientDelay", 'String'>
     readonly operador: FieldRef<"ClientDelay", 'String'>
     readonly area: FieldRef<"ClientDelay", 'String'>
+    readonly responsableArea: FieldRef<"ClientDelay", 'String'>
     readonly motivo: FieldRef<"ClientDelay", 'String'>
     readonly duracion: FieldRef<"ClientDelay", 'Float'>
     readonly createdAt: FieldRef<"ClientDelay", 'DateTime'>
@@ -9537,6 +9561,7 @@ export namespace Prisma {
     id: 'id',
     nombre: 'nombre',
     activo: 'activo',
+    noEnMetricas: 'noEnMetricas',
     observaciones: 'observaciones',
     horasEstimadas: 'horasEstimadas',
     horasConsumidas: 'horasConsumidas',
@@ -9559,6 +9584,7 @@ export namespace Prisma {
     hora: 'hora',
     operador: 'operador',
     area: 'area',
+    responsableArea: 'responsableArea',
     motivo: 'motivo',
     duracion: 'duracion',
     createdAt: 'createdAt'
@@ -9786,6 +9812,7 @@ export namespace Prisma {
     id?: StringFilter<"Project"> | string
     nombre?: StringFilter<"Project"> | string
     activo?: BoolFilter<"Project"> | boolean
+    noEnMetricas?: BoolFilter<"Project"> | boolean
     observaciones?: StringNullableFilter<"Project"> | string | null
     horasEstimadas?: IntFilter<"Project"> | number
     horasConsumidas?: IntFilter<"Project"> | number
@@ -9805,6 +9832,7 @@ export namespace Prisma {
     id?: SortOrder
     nombre?: SortOrder
     activo?: SortOrder
+    noEnMetricas?: SortOrder
     observaciones?: SortOrderInput | SortOrder
     horasEstimadas?: SortOrder
     horasConsumidas?: SortOrder
@@ -9827,6 +9855,7 @@ export namespace Prisma {
     NOT?: ProjectWhereInput | ProjectWhereInput[]
     nombre?: StringFilter<"Project"> | string
     activo?: BoolFilter<"Project"> | boolean
+    noEnMetricas?: BoolFilter<"Project"> | boolean
     observaciones?: StringNullableFilter<"Project"> | string | null
     horasEstimadas?: IntFilter<"Project"> | number
     horasConsumidas?: IntFilter<"Project"> | number
@@ -9846,6 +9875,7 @@ export namespace Prisma {
     id?: SortOrder
     nombre?: SortOrder
     activo?: SortOrder
+    noEnMetricas?: SortOrder
     observaciones?: SortOrderInput | SortOrder
     horasEstimadas?: SortOrder
     horasConsumidas?: SortOrder
@@ -9870,6 +9900,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"Project"> | string
     nombre?: StringWithAggregatesFilter<"Project"> | string
     activo?: BoolWithAggregatesFilter<"Project"> | boolean
+    noEnMetricas?: BoolWithAggregatesFilter<"Project"> | boolean
     observaciones?: StringNullableWithAggregatesFilter<"Project"> | string | null
     horasEstimadas?: IntWithAggregatesFilter<"Project"> | number
     horasConsumidas?: IntWithAggregatesFilter<"Project"> | number
@@ -9892,6 +9923,7 @@ export namespace Prisma {
     hora?: StringFilter<"ClientDelay"> | string
     operador?: StringFilter<"ClientDelay"> | string
     area?: StringFilter<"ClientDelay"> | string
+    responsableArea?: StringNullableFilter<"ClientDelay"> | string | null
     motivo?: StringFilter<"ClientDelay"> | string
     duracion?: FloatFilter<"ClientDelay"> | number
     createdAt?: DateTimeFilter<"ClientDelay"> | Date | string
@@ -9905,6 +9937,7 @@ export namespace Prisma {
     hora?: SortOrder
     operador?: SortOrder
     area?: SortOrder
+    responsableArea?: SortOrderInput | SortOrder
     motivo?: SortOrder
     duracion?: SortOrder
     createdAt?: SortOrder
@@ -9921,6 +9954,7 @@ export namespace Prisma {
     hora?: StringFilter<"ClientDelay"> | string
     operador?: StringFilter<"ClientDelay"> | string
     area?: StringFilter<"ClientDelay"> | string
+    responsableArea?: StringNullableFilter<"ClientDelay"> | string | null
     motivo?: StringFilter<"ClientDelay"> | string
     duracion?: FloatFilter<"ClientDelay"> | number
     createdAt?: DateTimeFilter<"ClientDelay"> | Date | string
@@ -9934,6 +9968,7 @@ export namespace Prisma {
     hora?: SortOrder
     operador?: SortOrder
     area?: SortOrder
+    responsableArea?: SortOrderInput | SortOrder
     motivo?: SortOrder
     duracion?: SortOrder
     createdAt?: SortOrder
@@ -9954,6 +9989,7 @@ export namespace Prisma {
     hora?: StringWithAggregatesFilter<"ClientDelay"> | string
     operador?: StringWithAggregatesFilter<"ClientDelay"> | string
     area?: StringWithAggregatesFilter<"ClientDelay"> | string
+    responsableArea?: StringNullableWithAggregatesFilter<"ClientDelay"> | string | null
     motivo?: StringWithAggregatesFilter<"ClientDelay"> | string
     duracion?: FloatWithAggregatesFilter<"ClientDelay"> | number
     createdAt?: DateTimeWithAggregatesFilter<"ClientDelay"> | Date | string
@@ -10395,6 +10431,7 @@ export namespace Prisma {
     id?: string
     nombre: string
     activo?: boolean
+    noEnMetricas?: boolean
     observaciones?: string | null
     horasEstimadas?: number
     horasConsumidas?: number
@@ -10413,6 +10450,7 @@ export namespace Prisma {
     id?: string
     nombre: string
     activo?: boolean
+    noEnMetricas?: boolean
     observaciones?: string | null
     horasEstimadas?: number
     horasConsumidas?: number
@@ -10431,6 +10469,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     nombre?: StringFieldUpdateOperationsInput | string
     activo?: BoolFieldUpdateOperationsInput | boolean
+    noEnMetricas?: BoolFieldUpdateOperationsInput | boolean
     observaciones?: NullableStringFieldUpdateOperationsInput | string | null
     horasEstimadas?: IntFieldUpdateOperationsInput | number
     horasConsumidas?: IntFieldUpdateOperationsInput | number
@@ -10449,6 +10488,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     nombre?: StringFieldUpdateOperationsInput | string
     activo?: BoolFieldUpdateOperationsInput | boolean
+    noEnMetricas?: BoolFieldUpdateOperationsInput | boolean
     observaciones?: NullableStringFieldUpdateOperationsInput | string | null
     horasEstimadas?: IntFieldUpdateOperationsInput | number
     horasConsumidas?: IntFieldUpdateOperationsInput | number
@@ -10467,6 +10507,7 @@ export namespace Prisma {
     id?: string
     nombre: string
     activo?: boolean
+    noEnMetricas?: boolean
     observaciones?: string | null
     horasEstimadas?: number
     horasConsumidas?: number
@@ -10483,6 +10524,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     nombre?: StringFieldUpdateOperationsInput | string
     activo?: BoolFieldUpdateOperationsInput | boolean
+    noEnMetricas?: BoolFieldUpdateOperationsInput | boolean
     observaciones?: NullableStringFieldUpdateOperationsInput | string | null
     horasEstimadas?: IntFieldUpdateOperationsInput | number
     horasConsumidas?: IntFieldUpdateOperationsInput | number
@@ -10498,6 +10540,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     nombre?: StringFieldUpdateOperationsInput | string
     activo?: BoolFieldUpdateOperationsInput | boolean
+    noEnMetricas?: BoolFieldUpdateOperationsInput | boolean
     observaciones?: NullableStringFieldUpdateOperationsInput | string | null
     horasEstimadas?: IntFieldUpdateOperationsInput | number
     horasConsumidas?: IntFieldUpdateOperationsInput | number
@@ -10516,6 +10559,7 @@ export namespace Prisma {
     hora: string
     operador: string
     area: string
+    responsableArea?: string | null
     motivo: string
     duracion: number
     createdAt?: Date | string
@@ -10529,6 +10573,7 @@ export namespace Prisma {
     hora: string
     operador: string
     area: string
+    responsableArea?: string | null
     motivo: string
     duracion: number
     createdAt?: Date | string
@@ -10540,6 +10585,7 @@ export namespace Prisma {
     hora?: StringFieldUpdateOperationsInput | string
     operador?: StringFieldUpdateOperationsInput | string
     area?: StringFieldUpdateOperationsInput | string
+    responsableArea?: NullableStringFieldUpdateOperationsInput | string | null
     motivo?: StringFieldUpdateOperationsInput | string
     duracion?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10553,6 +10599,7 @@ export namespace Prisma {
     hora?: StringFieldUpdateOperationsInput | string
     operador?: StringFieldUpdateOperationsInput | string
     area?: StringFieldUpdateOperationsInput | string
+    responsableArea?: NullableStringFieldUpdateOperationsInput | string | null
     motivo?: StringFieldUpdateOperationsInput | string
     duracion?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10565,6 +10612,7 @@ export namespace Prisma {
     hora: string
     operador: string
     area: string
+    responsableArea?: string | null
     motivo: string
     duracion: number
     createdAt?: Date | string
@@ -10576,6 +10624,7 @@ export namespace Prisma {
     hora?: StringFieldUpdateOperationsInput | string
     operador?: StringFieldUpdateOperationsInput | string
     area?: StringFieldUpdateOperationsInput | string
+    responsableArea?: NullableStringFieldUpdateOperationsInput | string | null
     motivo?: StringFieldUpdateOperationsInput | string
     duracion?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -10588,6 +10637,7 @@ export namespace Prisma {
     hora?: StringFieldUpdateOperationsInput | string
     operador?: StringFieldUpdateOperationsInput | string
     area?: StringFieldUpdateOperationsInput | string
+    responsableArea?: NullableStringFieldUpdateOperationsInput | string | null
     motivo?: StringFieldUpdateOperationsInput | string
     duracion?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11169,6 +11219,7 @@ export namespace Prisma {
     id?: SortOrder
     nombre?: SortOrder
     activo?: SortOrder
+    noEnMetricas?: SortOrder
     observaciones?: SortOrder
     horasEstimadas?: SortOrder
     horasConsumidas?: SortOrder
@@ -11190,6 +11241,7 @@ export namespace Prisma {
     id?: SortOrder
     nombre?: SortOrder
     activo?: SortOrder
+    noEnMetricas?: SortOrder
     observaciones?: SortOrder
     horasEstimadas?: SortOrder
     horasConsumidas?: SortOrder
@@ -11206,6 +11258,7 @@ export namespace Prisma {
     id?: SortOrder
     nombre?: SortOrder
     activo?: SortOrder
+    noEnMetricas?: SortOrder
     observaciones?: SortOrder
     horasEstimadas?: SortOrder
     horasConsumidas?: SortOrder
@@ -11320,6 +11373,7 @@ export namespace Prisma {
     hora?: SortOrder
     operador?: SortOrder
     area?: SortOrder
+    responsableArea?: SortOrder
     motivo?: SortOrder
     duracion?: SortOrder
     createdAt?: SortOrder
@@ -11336,6 +11390,7 @@ export namespace Prisma {
     hora?: SortOrder
     operador?: SortOrder
     area?: SortOrder
+    responsableArea?: SortOrder
     motivo?: SortOrder
     duracion?: SortOrder
     createdAt?: SortOrder
@@ -11348,6 +11403,7 @@ export namespace Prisma {
     hora?: SortOrder
     operador?: SortOrder
     area?: SortOrder
+    responsableArea?: SortOrder
     motivo?: SortOrder
     duracion?: SortOrder
     createdAt?: SortOrder
@@ -12255,6 +12311,7 @@ export namespace Prisma {
     hora: string
     operador: string
     area: string
+    responsableArea?: string | null
     motivo: string
     duracion: number
     createdAt?: Date | string
@@ -12266,6 +12323,7 @@ export namespace Prisma {
     hora: string
     operador: string
     area: string
+    responsableArea?: string | null
     motivo: string
     duracion: number
     createdAt?: Date | string
@@ -12376,6 +12434,7 @@ export namespace Prisma {
     hora?: StringFilter<"ClientDelay"> | string
     operador?: StringFilter<"ClientDelay"> | string
     area?: StringFilter<"ClientDelay"> | string
+    responsableArea?: StringNullableFilter<"ClientDelay"> | string | null
     motivo?: StringFilter<"ClientDelay"> | string
     duracion?: FloatFilter<"ClientDelay"> | number
     createdAt?: DateTimeFilter<"ClientDelay"> | Date | string
@@ -12419,6 +12478,7 @@ export namespace Prisma {
     id?: string
     nombre: string
     activo?: boolean
+    noEnMetricas?: boolean
     observaciones?: string | null
     horasEstimadas?: number
     horasConsumidas?: number
@@ -12436,6 +12496,7 @@ export namespace Prisma {
     id?: string
     nombre: string
     activo?: boolean
+    noEnMetricas?: boolean
     observaciones?: string | null
     horasEstimadas?: number
     horasConsumidas?: number
@@ -12469,6 +12530,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     nombre?: StringFieldUpdateOperationsInput | string
     activo?: BoolFieldUpdateOperationsInput | boolean
+    noEnMetricas?: BoolFieldUpdateOperationsInput | boolean
     observaciones?: NullableStringFieldUpdateOperationsInput | string | null
     horasEstimadas?: IntFieldUpdateOperationsInput | number
     horasConsumidas?: IntFieldUpdateOperationsInput | number
@@ -12486,6 +12548,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     nombre?: StringFieldUpdateOperationsInput | string
     activo?: BoolFieldUpdateOperationsInput | boolean
+    noEnMetricas?: BoolFieldUpdateOperationsInput | boolean
     observaciones?: NullableStringFieldUpdateOperationsInput | string | null
     horasEstimadas?: IntFieldUpdateOperationsInput | number
     horasConsumidas?: IntFieldUpdateOperationsInput | number
@@ -12623,6 +12686,7 @@ export namespace Prisma {
     id?: string
     nombre: string
     activo?: boolean
+    noEnMetricas?: boolean
     observaciones?: string | null
     horasEstimadas?: number
     horasConsumidas?: number
@@ -12640,6 +12704,7 @@ export namespace Prisma {
     id?: string
     nombre: string
     activo?: boolean
+    noEnMetricas?: boolean
     observaciones?: string | null
     horasEstimadas?: number
     horasConsumidas?: number
@@ -12686,6 +12751,7 @@ export namespace Prisma {
     id?: StringFilter<"Project"> | string
     nombre?: StringFilter<"Project"> | string
     activo?: BoolFilter<"Project"> | boolean
+    noEnMetricas?: BoolFilter<"Project"> | boolean
     observaciones?: StringNullableFilter<"Project"> | string | null
     horasEstimadas?: IntFilter<"Project"> | number
     horasConsumidas?: IntFilter<"Project"> | number
@@ -12729,6 +12795,7 @@ export namespace Prisma {
     id?: string
     nombre: string
     activo?: boolean
+    noEnMetricas?: boolean
     observaciones?: string | null
     horasEstimadas?: number
     horasConsumidas?: number
@@ -12746,6 +12813,7 @@ export namespace Prisma {
     id?: string
     nombre: string
     activo?: boolean
+    noEnMetricas?: boolean
     observaciones?: string | null
     horasEstimadas?: number
     horasConsumidas?: number
@@ -12812,6 +12880,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     nombre?: StringFieldUpdateOperationsInput | string
     activo?: BoolFieldUpdateOperationsInput | boolean
+    noEnMetricas?: BoolFieldUpdateOperationsInput | boolean
     observaciones?: NullableStringFieldUpdateOperationsInput | string | null
     horasEstimadas?: IntFieldUpdateOperationsInput | number
     horasConsumidas?: IntFieldUpdateOperationsInput | number
@@ -12829,6 +12898,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     nombre?: StringFieldUpdateOperationsInput | string
     activo?: BoolFieldUpdateOperationsInput | boolean
+    noEnMetricas?: BoolFieldUpdateOperationsInput | boolean
     observaciones?: NullableStringFieldUpdateOperationsInput | string | null
     horasEstimadas?: IntFieldUpdateOperationsInput | number
     horasConsumidas?: IntFieldUpdateOperationsInput | number
@@ -12908,6 +12978,7 @@ export namespace Prisma {
     hora: string
     operador: string
     area: string
+    responsableArea?: string | null
     motivo: string
     duracion: number
     createdAt?: Date | string
@@ -12933,6 +13004,7 @@ export namespace Prisma {
     hora?: StringFieldUpdateOperationsInput | string
     operador?: StringFieldUpdateOperationsInput | string
     area?: StringFieldUpdateOperationsInput | string
+    responsableArea?: NullableStringFieldUpdateOperationsInput | string | null
     motivo?: StringFieldUpdateOperationsInput | string
     duracion?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -12944,6 +13016,7 @@ export namespace Prisma {
     hora?: StringFieldUpdateOperationsInput | string
     operador?: StringFieldUpdateOperationsInput | string
     area?: StringFieldUpdateOperationsInput | string
+    responsableArea?: NullableStringFieldUpdateOperationsInput | string | null
     motivo?: StringFieldUpdateOperationsInput | string
     duracion?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -12955,6 +13028,7 @@ export namespace Prisma {
     hora?: StringFieldUpdateOperationsInput | string
     operador?: StringFieldUpdateOperationsInput | string
     area?: StringFieldUpdateOperationsInput | string
+    responsableArea?: NullableStringFieldUpdateOperationsInput | string | null
     motivo?: StringFieldUpdateOperationsInput | string
     duracion?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -13110,6 +13184,7 @@ export namespace Prisma {
     id?: string
     nombre: string
     activo?: boolean
+    noEnMetricas?: boolean
     observaciones?: string | null
     horasEstimadas?: number
     horasConsumidas?: number
@@ -13125,6 +13200,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     nombre?: StringFieldUpdateOperationsInput | string
     activo?: BoolFieldUpdateOperationsInput | boolean
+    noEnMetricas?: BoolFieldUpdateOperationsInput | boolean
     observaciones?: NullableStringFieldUpdateOperationsInput | string | null
     horasEstimadas?: IntFieldUpdateOperationsInput | number
     horasConsumidas?: IntFieldUpdateOperationsInput | number
@@ -13142,6 +13218,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     nombre?: StringFieldUpdateOperationsInput | string
     activo?: BoolFieldUpdateOperationsInput | boolean
+    noEnMetricas?: BoolFieldUpdateOperationsInput | boolean
     observaciones?: NullableStringFieldUpdateOperationsInput | string | null
     horasEstimadas?: IntFieldUpdateOperationsInput | number
     horasConsumidas?: IntFieldUpdateOperationsInput | number
@@ -13159,6 +13236,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     nombre?: StringFieldUpdateOperationsInput | string
     activo?: BoolFieldUpdateOperationsInput | boolean
+    noEnMetricas?: BoolFieldUpdateOperationsInput | boolean
     observaciones?: NullableStringFieldUpdateOperationsInput | string | null
     horasEstimadas?: IntFieldUpdateOperationsInput | number
     horasConsumidas?: IntFieldUpdateOperationsInput | number

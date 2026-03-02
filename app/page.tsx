@@ -27,6 +27,9 @@ import {
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
 
+import SearchableSelect from '@/components/SearchableSelect';
+import { Layout } from 'lucide-react';
+
 export default function PlanningPage() {
     const {
         fecha: storeFecha,
@@ -397,10 +400,12 @@ export default function PlanningPage() {
                                                                     <StickyNote className="w-4 h-4" /> NOTA LIBRE
                                                                 </div>
                                                             ) : (
-                                                                <select className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-primary/20 appearance-auto" value={block.projectId || ''} onChange={e => updateBlock(index, 'projectId', e.target.value)}>
-                                                                    <option value="">Seleccionar Proyecto</option>
-                                                                    {projects.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
-                                                                </select>
+                                                                <SearchableSelect
+                                                                    options={projects.map(p => ({ id: p.id, label: p.nombre }))}
+                                                                    value={block.projectId || ''}
+                                                                    onChange={(val) => updateBlock(index, 'projectId', val)}
+                                                                    placeholder="Seleccionar Proyecto"
+                                                                />
                                                             )}
                                                         </div>
 

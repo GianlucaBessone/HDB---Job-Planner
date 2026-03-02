@@ -24,7 +24,8 @@ import {
     Activity,
     SlidersHorizontal,
     Timer,
-    FileText
+    FileText,
+    Info
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
 
@@ -35,6 +36,7 @@ interface Project {
     id: string;
     nombre: string;
     activo: boolean;
+    noEnMetricas: boolean;
     observaciones?: string;
     horasEstimadas: number;
     horasConsumidas: number;
@@ -53,6 +55,7 @@ interface Project {
 interface FormData {
     nombre: string;
     activo: boolean;
+    noEnMetricas: boolean;
     observaciones: string;
     horasEstimadas: number;
     horasConsumidas: number;
@@ -93,6 +96,7 @@ const ALL_STATUSES: ProjectStatus[] = ['por_hacer', 'planificado', 'activo', 'en
 const EMPTY_FORM: FormData = {
     nombre: '',
     activo: true,
+    noEnMetricas: false,
     observaciones: '',
     horasEstimadas: 0,
     horasConsumidas: 0,
@@ -177,6 +181,7 @@ export default function ProjectsPage() {
         setFormData({
             nombre: project.nombre,
             activo: project.activo,
+            noEnMetricas: project.noEnMetricas || false,
             observaciones: project.observaciones || '',
             horasEstimadas: project.horasEstimadas || 0,
             horasConsumidas: project.horasConsumidas || 0,
@@ -529,9 +534,9 @@ function ProjectCard({
                     <span className={`text-xs font-bold ${cfg.color}`}>{cfg.label}</span>
                 </div>
                 {/* Metric Status indicator */}
-                <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border ${project.activo ? 'bg-indigo-50 border-indigo-100 text-indigo-600' : 'bg-slate-50 border-slate-100 text-slate-400'}`}>
+                <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border ${!(project as any).noEnMetricas ? 'bg-indigo-50 border-indigo-100 text-indigo-600' : 'bg-slate-50 border-slate-100 text-slate-400'}`}>
                     <Activity className="w-3.5 h-3.5" />
-                    <span className="text-[10px] font-black uppercase tracking-tight">{project.activo ? 'En Métricas' : 'Oculto de Métricas'}</span>
+                    <span className="text-[10px] font-black uppercase tracking-tight">{!(project as any).noEnMetricas ? 'En Métricas' : 'Excluido de Métricas'}</span>
                 </div>
                 {project._count && project._count.clientDelays > 0 && (
                     <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-100 text-amber-600">
@@ -594,7 +599,13 @@ function ProjectModal({
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
+            <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto overflow-x-visible style-for-tooltips">
+                <style>{`
+                    .style-for-tooltips { overflow: visible !important; max-height: none !important; }
+                    @media (max-height: 800px) {
+                        .style-for-tooltips { overflow-y: auto !important; max-height: 90vh !important; overflow-x: visible !important; }
+                    }
+                `}</style>
                 <div className="p-7 space-y-6">
                     {/* Header */}
                     <div className="flex items-center justify-between border-b border-slate-100 pb-4">
@@ -607,7 +618,7 @@ function ProjectModal({
                     </div>
 
                     <form onSubmit={onSubmit} className="space-y-4">
-                        {/* Nombre + Toggle Activo */}
+                        {/* Nombre + Toggle Metricas */}
                         <div className="flex flex-col sm:flex-row sm:items-end gap-4">
                             <div className="flex-1 space-y-1.5">
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nombre del Proyecto *</label>
@@ -621,7 +632,7 @@ function ProjectModal({
                                 />
                             </div>
                             <div className="flex flex-col space-y-2 pb-1">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Incluir en Dashboard</label>
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Activo</label>
                                 <button
                                     type="button"
                                     onClick={() => set('activo', !formData.activo)}
@@ -630,6 +641,21 @@ function ProjectModal({
                                     <span className={`inline-block h-6 w-6 transform rounded-lg bg-white shadow-md transition-transform duration-300 ${formData.activo ? 'translate-x-11' : 'translate-x-3'}`} />
                                     <span className={`absolute text-[9px] font-black uppercase tracking-tighter transition-opacity duration-300 ${formData.activo ? 'left-3 opacity-100 text-white' : 'right-3 opacity-100 text-slate-500'}`}>
                                         {formData.activo ? 'SÍ' : 'NO'}
+                                    </span>
+                                </button>
+                            </div>
+                            <div className="flex flex-col space-y-2 pb-1">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                                    En Métricas <MetricTooltip def="Define si el proyecto se incluye en los cálculos del Panel de Análisis." />
+                                </label>
+                                <button
+                                    type="button"
+                                    onClick={() => set('noEnMetricas', !formData.noEnMetricas)}
+                                    className={`relative inline-flex h-10 w-20 items-center rounded-xl transition-all duration-300 focus:outline-none ring-offset-2 focus:ring-2 focus:ring-primary/20 ${!formData.noEnMetricas ? 'bg-indigo-500' : 'bg-slate-200'}`}
+                                >
+                                    <span className={`inline-block h-6 w-6 transform rounded-lg bg-white shadow-md transition-transform duration-300 ${!formData.noEnMetricas ? 'translate-x-11' : 'translate-x-3'}`} />
+                                    <span className={`absolute text-[9px] font-black uppercase tracking-tighter transition-opacity duration-300 ${!formData.noEnMetricas ? 'left-3 opacity-100 text-white' : 'right-3 opacity-100 text-slate-500'}`}>
+                                        {!formData.noEnMetricas ? 'SÍ' : 'NO'}
                                     </span>
                                 </button>
                             </div>
@@ -774,6 +800,18 @@ function ProjectModal({
                         </div>
                     </form>
                 </div>
+            </div>
+        </div>
+    );
+}
+
+function MetricTooltip({ def }: { def: string }) {
+    return (
+        <div className="group/tooltip relative inline-block">
+            <Info className="w-3.5 h-3.5 text-slate-300 hover:text-primary transition-colors cursor-help" />
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-slate-900 text-white rounded-xl text-[10px] leading-snug hidden group-hover/tooltip:block z-[9999] shadow-2xl animate-in zoom-in-95 duration-200 pointer-events-none">
+                <p className="font-medium">{def}</p>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-slate-900" />
             </div>
         </div>
     );

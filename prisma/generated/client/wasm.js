@@ -126,6 +126,7 @@ exports.Prisma.ProjectScalarFieldEnum = {
   id: 'id',
   nombre: 'nombre',
   activo: 'activo',
+  noEnMetricas: 'noEnMetricas',
   observaciones: 'observaciones',
   horasEstimadas: 'horasEstimadas',
   horasConsumidas: 'horasConsumidas',
@@ -145,6 +146,7 @@ exports.Prisma.ClientDelayScalarFieldEnum = {
   hora: 'hora',
   operador: 'operador',
   area: 'area',
+  responsableArea: 'responsableArea',
   motivo: 'motivo',
   duracion: 'duracion',
   createdAt: 'createdAt'

@@ -8,6 +8,7 @@ import { es } from 'date-fns/locale';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { showToast } from '@/components/Toast';
 import * as XLSX from 'xlsx';
+import SearchableSelect from '@/components/SearchableSelect';
 
 interface Project {
     id: string;
@@ -373,7 +374,7 @@ export default function TimesheetsPage() {
 
 
     // Derived Data
-    const activeProjects = projects.filter(p => !['finalizado', 'por_hacer'].includes(p.estado));
+    const activeProjects = projects.filter(p => p.estado !== 'finalizado');
     const activeOperators = operators;
 
     // Compute View Data
@@ -504,33 +505,27 @@ export default function TimesheetsPage() {
 
             {/* Quick Logging Box */}
             <div className="bg-white border border-slate-200 shadow-sm p-6 md:p-8 rounded-[2.5rem] flex flex-col md:flex-row items-end md:items-center gap-4 md:gap-8">
-                <div className="w-full md:w-1/3 space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
-                        <User className="w-3 h-3" /> Operador
-                    </label>
-                    <select
-                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700 disabled:opacity-50"
+                <div className="w-full md:w-1/3">
+                    <SearchableSelect
+                        label="Operador"
+                        icon={<User className="w-3 h-3" />}
+                        options={activeOperators.map(op => ({ id: op.id, label: op.nombreCompleto }))}
                         value={selectedOperator}
-                        onChange={(e) => setSelectedOperator(e.target.value)}
+                        onChange={(val) => setSelectedOperator(val)}
+                        placeholder="Seleccionar operador..."
                         disabled={currentUser?.role === 'operador'}
-                    >
-                        <option value="">— Seleccionar —</option>
-                        {activeOperators.map(op => <option key={op.id} value={op.id}>{op.nombreCompleto}</option>)}
-                    </select>
+                    />
                 </div>
 
-                <div className="w-full md:w-1/3 space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
-                        <Layout className="w-3 h-3" /> Proyecto Activo
-                    </label>
-                    <select
-                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700"
+                <div className="w-full md:w-1/3">
+                    <SearchableSelect
+                        label="Proyecto Activo"
+                        icon={<Layout className="w-3 h-3" />}
+                        options={activeProjects.map(p => ({ id: p.id, label: p.nombre }))}
                         value={selectedProject}
-                        onChange={(e) => setSelectedProject(e.target.value)}
-                    >
-                        <option value="">— Seleccionar —</option>
-                        {activeProjects.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
-                    </select>
+                        onChange={(val) => setSelectedProject(val)}
+                        placeholder="Buscar proyecto..."
+                    />
                 </div>
 
                 <div className="w-full md:w-auto pt-4 md:pt-0 shrink-0">
@@ -625,16 +620,15 @@ export default function TimesheetsPage() {
                     </div>
 
                     {currentUser?.role !== 'operador' && (
-                        <div className="flex items-center gap-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Operador:</label>
-                            <select
+                        <div className="flex items-center gap-2 min-w-[200px]">
+                            <SearchableSelect
+                                label="Filtrar Operador"
+                                options={activeOperators.map(op => ({ id: op.id, label: op.nombreCompleto }))}
                                 value={filterOperator}
-                                onChange={e => setFilterOperator(e.target.value)}
-                                className="bg-white border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 outline-none focus:border-indigo-500"
-                            >
-                                <option value="">Todos</option>
-                                {activeOperators.map(op => <option key={op.id} value={op.id}>{op.nombreCompleto}</option>)}
-                            </select>
+                                onChange={setFilterOperator}
+                                placeholder="Todos"
+                                className="!space-y-1 w-full"
+                            />
                         </div>
                     )}
 
@@ -834,34 +828,27 @@ export default function TimesheetsPage() {
                             )}
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Operador */}
                                 <div className="space-y-2 md:col-span-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Operador</label>
-                                    <select
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700 disabled:opacity-50"
-                                        required
+                                    <SearchableSelect
+                                        label="Operador"
+                                        options={operators.map(op => ({ id: op.id, label: op.nombreCompleto }))}
                                         value={formData.operatorId}
-                                        onChange={e => setFormData({ ...formData, operatorId: e.target.value })}
+                                        onChange={(val) => setFormData({ ...formData, operatorId: val })}
+                                        placeholder="Seleccionar operador..."
                                         disabled={!!editingEntry || currentUser?.role === 'operador'}
-                                    >
-                                        <option value="">— Seleccionar —</option>
-                                        {operators.map(op => <option key={op.id} value={op.id}>{op.nombreCompleto}</option>)}
-                                    </select>
+                                    />
                                 </div>
 
                                 {/* Proyecto */}
                                 <div className="space-y-2 md:col-span-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Proyecto</label>
-                                    <select
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700"
-                                        required
+                                    <SearchableSelect
+                                        label="Proyecto"
+                                        options={activeProjects.map(p => ({ id: p.id, label: p.nombre }))}
                                         value={formData.projectId}
-                                        onChange={e => setFormData({ ...formData, projectId: e.target.value })}
-                                        disabled={!!editingEntry && editingEntry.estadoConfirmado} // Si está firmado no conviene cambiar el proyecto sin más
-                                    >
-                                        <option value="">— Seleccionar —</option>
-                                        {projects.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
-                                    </select>
+                                        onChange={(val) => setFormData({ ...formData, projectId: val })}
+                                        placeholder="Seleccionar proyecto..."
+                                        disabled={!!editingEntry && editingEntry.estadoConfirmado}
+                                    />
                                 </div>
 
                                 {/* Fecha */}
