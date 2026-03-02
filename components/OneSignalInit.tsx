@@ -37,7 +37,11 @@ export default function OneSignalInit({ appId }: { appId: string }) {
                         const permission = OneSignal.Notifications.permission;
                         const hasPrompted = localStorage.getItem('onesignal_prompted');
 
-                        if (permission !== true && permission !== 'granted' && !hasPrompted) {
+                        // permission can be boolean according to some versions of react-onesignal typing
+                        // or string. We check if it is not granted specifically.
+                        const isGranted = (permission === true || (permission as any) === 'granted');
+
+                        if (!isGranted && !hasPrompted) {
                             // Small delay to ensure smooth UX after login
                             setTimeout(async () => {
                                 try {
