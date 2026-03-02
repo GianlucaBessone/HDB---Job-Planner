@@ -1,5 +1,5 @@
-import { PrismaClient } from '../prisma/generated/client';
-// Triggering reload to pick up new Prisma Client generation
+import { PrismaClient } from '@prisma/client';
+
 
 const getPrisma = () => {
     const g = global as any;
