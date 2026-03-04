@@ -82,15 +82,17 @@ export async function POST(req: Request) {
 
         console.log("✅ [INTERNAL_NOTIFICATION] Guardadas en DB correctamente");
 
-        // Trigger push notification asynchronously (don't block the internal response)
-        // If it's for supervisors, we target supervisors via filters.
-        // If it's for an operator (and NOT for supervisors), we target them by ID.
+        // Trigger push notification - MUST await before returning response (Vercel compatibility)
         const pushTargets = (operatorIdToUse && !body.forSupervisors) ? [operatorIdToUse] : [];
 
         if (pushTargets.length > 0 || body.forSupervisors) {
-            console.log(`API Notifications: Triggering push. operatorId=${body.operatorId}, forSupervisors=${body.forSupervisors}`);
+            console.log("📡 [PUSH_DISPATCH]", {
+                operatorId: body.operatorId,
+                forSupervisors: body.forSupervisors,
+                pushTargets,
+            });
             try {
-                const res = await sendPushNotification({
+                const pushResult = await sendPushNotification({
                     userIds: pushTargets.length > 0 ? pushTargets : undefined,
                     forSupervisors: body.forSupervisors || false,
                     title: body.title,
@@ -101,10 +103,16 @@ export async function POST(req: Request) {
                         metadata: body.metadata
                     }
                 });
-                console.log("API Notifications: OneSignal Response:", JSON.stringify(res));
-            } catch (pushError) {
-                console.error("API Notifications: OneSignal Push Error (Non-blocking):", pushError);
+                console.log("✅ [PUSH_DISPATCH_RESULT]", JSON.stringify(pushResult));
+            } catch (pushError: any) {
+                console.error("❌ [PUSH_DISPATCH_ERROR]", pushError?.message || pushError);
             }
+        } else {
+            console.warn("⚠️ [PUSH_DISPATCH_SKIPPED] No targets for push notification", {
+                operatorId: body.operatorId,
+                operatorIdToUse,
+                forSupervisors: body.forSupervisors,
+            });
         }
 
 

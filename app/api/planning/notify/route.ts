@@ -115,17 +115,19 @@ export async function POST(req: Request) {
 
             console.log("✅ [INTERNAL_NOTIFICATION] Guardadas en DB correctamente");
 
-            // Trigger push notifications
-            // For planning, each user has a personalized message (different number of assignments)
-            // So we send them individually to ensure consistency
-            try {
-                await Promise.all(notificationsData.map(notif => {
-                    console.log("📢 [PLANNING_NOTIFY_TRIGGER]", {
-                        operatorId: notif.operatorId,
-                        type: notif.type,
-                        relatedId: notif.relatedId
-                    });
-                    return sendPushNotification({
+            // Send push notifications - MUST await before returning response (Vercel compatibility)
+            console.log("📡 [PUSH_DISPATCH_START] Sending", notificationsData.length, "push notifications");
+
+            const pushResults = [];
+            for (const notif of notificationsData) {
+                console.log("📢 [PLANNING_NOTIFY_TRIGGER]", {
+                    operatorId: notif.operatorId,
+                    type: notif.type,
+                    relatedId: notif.relatedId
+                });
+
+                try {
+                    const result = await sendPushNotification({
                         userIds: notif.operatorId ? [notif.operatorId] : undefined,
                         forSupervisors: notif.forSupervisors || false,
                         title: notif.title,
@@ -136,10 +138,21 @@ export async function POST(req: Request) {
                             metadata: notif.metadata
                         }
                     });
-                }));
-            } catch (e) {
-                console.error("Error sending push notifications for planning: ", e);
+                    pushResults.push({ operatorId: notif.operatorId, success: true, result });
+                } catch (e: any) {
+                    console.error("❌ [PUSH_DISPATCH_ERROR]", {
+                        operatorId: notif.operatorId,
+                        error: e?.message || String(e)
+                    });
+                    pushResults.push({ operatorId: notif.operatorId, success: false, error: e?.message });
+                }
             }
+
+            console.log("📡 [PUSH_DISPATCH_COMPLETE]", {
+                total: pushResults.length,
+                successful: pushResults.filter(r => r.success).length,
+                failed: pushResults.filter(r => !r.success).length,
+            });
         }
 
 
