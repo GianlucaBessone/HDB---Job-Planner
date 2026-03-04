@@ -23,6 +23,7 @@ import {
     MinusCircle,
     Activity,
     SlidersHorizontal,
+    Layout,
     Timer,
     FileText,
     Info
@@ -281,7 +282,10 @@ export default function ProjectsPage() {
             <div className="flex flex-col gap-4 mb-6">
                 {/* Title row */}
                 <div className="space-y-1">
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">Gestión de Proyectos</h2>
+                    <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
+                        <Layout className="w-8 h-8 text-primary" />
+                        Gestión de Proyectos
+                    </h2>
                     <p className="text-sm text-slate-500 font-medium">Control y seguimiento de proyectos activos</p>
                 </div>
                 {/* Actions row */}

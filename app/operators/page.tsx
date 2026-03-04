@@ -155,7 +155,10 @@ export default function OperatorsPage() {
         <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div className="space-y-1">
-                    <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Gestión de Operadores</h2>
+                    <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
+                        <UsersIcon className="w-8 h-8 text-primary" />
+                        Gestión de Operadores
+                    </h2>
                     <p className="text-slate-500 font-medium">Controla el equipo técnico disponible</p>
                 </div>
                 <button

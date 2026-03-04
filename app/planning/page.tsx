@@ -293,9 +293,8 @@ export default function PlanningPage() {
 
             {/* Header / Date Selector — compact on mobile */}
             <div className="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm shadow-slate-200/50">
-                <div className="space-y-1 mb-3">
+                <div className="mb-4">
                     <h2 className="text-lg md:text-2xl font-bold text-slate-900 capitalize italic">{displayDate}</h2>
-                    <p className="text-slate-500 text-xs md:text-sm">Gestiona el cronograma de hoy</p>
                 </div>
 
                 <div className="flex items-center gap-2">

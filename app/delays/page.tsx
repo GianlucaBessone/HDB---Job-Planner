@@ -235,11 +235,11 @@ export default function DelaysPage() {
             </div>
 
             {/* Info Box */}
-            <div className="bg-amber-50 border border-amber-100 rounded-[2rem] p-5 flex items-start gap-4 text-amber-800">
-                <div className="p-2 bg-white rounded-xl shadow-sm mt-0.5">
-                    <Info className="w-4 h-4 text-amber-500" />
+            <div className="bg-amber-50 border border-amber-100 rounded-3xl p-4 md:p-5 flex items-center gap-4 text-amber-800">
+                <div className="p-2.5 bg-white rounded-xl shadow-sm shrink-0">
+                    <Info className="w-5 h-5 text-amber-500" />
                 </div>
-                <p className="text-sm font-medium">
+                <p className="text-sm font-medium leading-relaxed">
                     Estos registros representan tiempos muertos atribuidos al cliente.
                     <strong> No afectan el IPT ni el ahorro de horas operativo</strong>, se analizan por separado para reportes de responsabilidad.
                 </p>

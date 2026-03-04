@@ -120,7 +120,15 @@ export default function MyProjectsPage() {
             });
 
             if (res.ok) {
-                setChecklistItems(prev => prev.map(i => i.id === item.id ? { ...i, completed: !item.completed } : i));
+                const newStatus = !item.completed;
+                const updatedChecklist = checklistItems.map(i => i.id === item.id ? { ...i, completed: newStatus } : i);
+                setChecklistItems(updatedChecklist);
+
+                const mappedChecklist = updatedChecklist.map(c => ({ completed: c.completed }));
+                setSelectedProject(prev => prev ? { ...prev, checklistItems: mappedChecklist } : prev);
+                setProjects(prevProjects => prevProjects.map(p =>
+                    p.id === selectedProject?.id ? { ...p, checklistItems: mappedChecklist } : p
+                ));
             } else {
                 const err = await res.json();
                 showToast(err.error || 'Error al actualizar', 'error');
@@ -213,8 +221,11 @@ export default function MyProjectsPage() {
             {!selectedProject ? (
                 <>
                     <header className="space-y-1">
-                        <h1 className="text-2xl font-extrabold text-slate-800">Mis Proyectos</h1>
-                        <p className="text-sm text-slate-500">Gestión técnica y cierre de obra</p>
+                        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
+                            <ClipboardCheck className="w-8 h-8 text-primary" />
+                            Mis Proyectos
+                        </h2>
+                        <p className="text-sm text-slate-500 font-medium">Gestión técnica y cierre de obra</p>
                     </header>
 
                     <div className="relative group">

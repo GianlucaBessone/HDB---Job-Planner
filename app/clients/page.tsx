@@ -136,7 +136,10 @@ export default function ClientsPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                 <div className="space-y-1">
-                    <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Gestión de Clientes</h2>
+                    <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
+                        <UserCircle2 className="w-8 h-8 text-primary" />
+                        Gestión de Clientes
+                    </h2>
                     <p className="text-slate-500 font-medium">Administra la base de datos de tus clientes</p>
                 </div>
                 <div className="flex items-center gap-3 w-full md:w-auto">
