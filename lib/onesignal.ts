@@ -66,15 +66,13 @@ export async function sendPushNotification({
         await sendRequest(payload, "supervisor filter push");
     }
 
-    // 2. Specific users via external_id aliases
+    // 2. Specific users via external_user_ids
     if (userIds && userIds.length > 0) {
         const payload = {
             ...baseBody,
-            include_aliases: {
-                external_id: userIds
-            }
+            include_external_user_ids: userIds
         };
-        await sendRequest(payload, "targeted user push (aliases)");
+        await sendRequest(payload, "targeted user push (external_ids)");
     }
 
     if (results.length === 0) {

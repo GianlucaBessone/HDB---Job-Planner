@@ -1,78 +1,73 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import OneSignal from 'react-onesignal';
 
 export default function OneSignalInit({ appId, user }: { appId: string, user?: any }) {
-    const [isInitialized, setIsInitialized] = useState(false);
+    const initializedRef = useRef(false);
+    const lastUserIdRef = useRef<string | null>(null);
 
     useEffect(() => {
         const initOneSignal = async () => {
+            // Only run on client side
+            if (typeof window === 'undefined') return;
+
             try {
-                // Initialize OneSignal
-                await OneSignal.init({
-                    appId: appId,
-                    allowLocalhostAsSecureOrigin: true,
-                });
+                // Initialize if not already done
+                if (!initializedRef.current) {
+                    await OneSignal.init({
+                        appId: appId,
+                        allowLocalhostAsSecureOrigin: true,
+                    });
+                    initializedRef.current = true;
+                    console.log("OneSignal: Initialized successfully");
+                }
 
-                setIsInitialized(true);
+                const currentUserId = user?.id || null;
 
-                // Set external user ID if user is logged in
-                if (user && user.id) {
-                    try {
-                        // Login to OneSignal with our User ID
-                        console.log(`OneSignal: Logging in with external user ID: ${user.id}`);
-                        await OneSignal.login(user.id);
+                // Handle Login / Logout logic
+                if (currentUserId && currentUserId !== lastUserIdRef.current) {
+                    console.log(`OneSignal: Logging in user ${currentUserId}`);
+                    await OneSignal.login(currentUserId);
+                    lastUserIdRef.current = currentUserId;
 
-                        if (user.nombreCompleto) {
-                            // Tag the user for better segmentation
-                            console.log(`OneSignal: Tagging user with role: ${user.role}`);
-                            await OneSignal.User.addTag("name", user.nombreCompleto);
-                            await OneSignal.User.addTag("role", user.role);
-                        }
-                    } catch (loginError) {
-                        console.warn("OneSignal Login/Tagging error:", loginError);
+                    if (user.nombreCompleto) {
+                        console.log(`OneSignal: Updating user tags`);
+                        await OneSignal.User.addTag("name", user.nombreCompleto);
+                        await OneSignal.User.addTag("role", user.role);
                     }
 
-                    // Automatic subscription prompt if not already decided
+                    // Check subscription and prompt if needed
                     const permission = OneSignal.Notifications.permission;
                     const hasPrompted = localStorage.getItem('onesignal_prompted');
 
-                    // If permission is denied/blocked, don't even try to prompt
                     if (permission === false || (permission as any) === 'denied') {
-                        console.log("OneSignal: Notifications are blocked by the user.");
-                        return;
-                    }
-
-                    const isGranted = (permission === true || (permission as any) === 'granted');
-
-                    if (!isGranted && !hasPrompted) {
+                        console.log("OneSignal: Notifications blocked by user");
+                    } else if (permission !== true && (permission as any) !== 'granted' && !hasPrompted) {
+                        // Delay prompt slightly for better UX
                         setTimeout(async () => {
                             try {
+                                console.log("OneSignal: Prompting for push subscription");
                                 await OneSignal.Slidedown.promptPush();
                                 localStorage.setItem('onesignal_prompted', 'true');
                             } catch (e) {
-                                console.error("Error prompting for push:", e);
+                                console.error("OneSignal: Prompt error", e);
                             }
-                        }, 3000);
+                        }, 5000);
                     }
-                } else if (!user) {
-                    // Logout from OneSignal if no user is present
-                    console.log("OneSignal: Logging out because user is missing");
+                } else if (!currentUserId && lastUserIdRef.current) {
+                    console.log("OneSignal: Logging out user");
                     await OneSignal.logout();
+                    lastUserIdRef.current = null;
                 }
             } catch (error) {
-                console.error('OneSignal Init Error:', error);
+                console.error('OneSignal: Integration error', error);
             }
         };
 
-        if (typeof window !== 'undefined') {
-            initOneSignal();
-        }
-    }, [appId, user]);
+        initOneSignal();
+    }, [appId, user?.id, user?.nombreCompleto]);
 
-
-    // This component now only handles logic, no UI
     return null;
 }
 
