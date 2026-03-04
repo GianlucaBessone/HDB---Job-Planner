@@ -47,7 +47,10 @@ export default function OneSignalInit({ appId, user }: { appId: string, user?: a
                     console.log("🔐 [ONESIGNAL_PERMISSION]:", permission);
 
                     const isSubscribed = OneSignal.User.PushSubscription.optedIn;
+                    const subId = OneSignal.User.PushSubscription.id;
                     console.log("📲 [ONESIGNAL_SUBSCRIBED]:", isSubscribed);
+                    console.log("🆔 [ONESIGNAL_EXTERNAL_ID]:", currentUserId);
+                    console.log("📡 [ONESIGNAL_SUB_ID]:", subId || "Aún sin token asignado");
 
                     // Add foreground and click listeners (only once)
                     if (!listenersAddedRef.current) {

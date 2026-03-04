@@ -67,7 +67,7 @@ export default function RootLayout({
     let content;
     if (isCheckingAuth) {
         content = (
-            <div className="min-h-screen flex items-center justify-center bg-slate-50/50">
+            <div className="min-h-[100dvh] flex items-center justify-center bg-slate-50/50">
                 <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
             </div>
         );
@@ -75,7 +75,7 @@ export default function RootLayout({
         content = <LoginScreen onLoginSuccess={handleLoginSuccess} />;
     } else {
         content = (
-            <div className="flex flex-col min-h-screen">
+            <div className="flex flex-col min-h-[100dvh] overflow-x-hidden">
                 <header className="sticky top-0 z-[60] w-full border-b bg-white/80 backdrop-blur-md safe-area-top">
                     <div className="max-w-[1800px] mx-auto px-4 md:px-8 h-14 md:h-16 flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -123,7 +123,7 @@ export default function RootLayout({
                     }}
                 />
 
-                <main className="flex-1 max-w-[1800px] mx-auto w-full px-4 md:px-8 py-6 md:py-8 pb-24 md:pb-8">
+                <main className="flex-1 max-w-[1800px] mx-auto w-full px-4 md:px-8 py-6 md:py-8 pb-32 md:pb-8">
                     {children}
                     <SpeedInsights />
                 </main>
@@ -152,7 +152,7 @@ export default function RootLayout({
                 <title>HDB | Job Planner</title>
                 <meta name="description" content="Sistema premium de planificación para técnicos" />
             </head>
-            <body className={`${outfit.className} min-h-screen bg-slate-50/50`}>
+            <body className={`${outfit.className} min-h-[100dvh] bg-slate-50/50 overscroll-none`}>
                 {content}
             </body>
         </html>
