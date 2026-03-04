@@ -4,7 +4,7 @@ export async function sendPushNotification({
     title,
     message,
     data,
-    forSupervisors = false
+    forSupervisors = false,
 }: {
     userIds?: string[],
     title: string,
@@ -13,12 +13,11 @@ export async function sendPushNotification({
     forSupervisors?: boolean
 }) {
     const appId = "35ce6a9c-c4c7-4645-98dc-b363dc91642b";
-    // Strip surrounding quotes if present in env var
     const rawKey = process.env.ONESIGNAL_REST_API_KEY;
     const apiKey = rawKey ? rawKey.replace(/^"|"$/g, "") : undefined;
 
     if (!apiKey) {
-        console.warn("OneSignal API Key not found or empty. Push notification not sent.");
+        console.warn("OneSignal API Key not found. Push notification not sent.");
         return;
     }
 
@@ -29,69 +28,58 @@ export async function sendPushNotification({
         data: data || {},
     };
 
-    const results = [];
-
+    const results: any[] = [];
     const headers = {
         "Content-Type": "application/json; charset=utf-8",
         "Authorization": `Basic ${apiKey}`,
     };
 
-    // 1. If for supervisors, send using filters
-    if (forSupervisors) {
-        console.log("OneSignal: Sending push to supervisors/admins via filters...");
+    const sendRequest = async (payload: any, description: string) => {
+        console.log(`OneSignal: Sending ${description}`, JSON.stringify(payload));
         try {
             const response = await fetch("https://onesignal.com/api/v1/notifications", {
                 method: "POST",
                 headers,
-                body: JSON.stringify({
-                    ...baseBody,
-                    filters: [
-                        { field: "tag", key: "role", relation: "=", value: "supervisor" },
-                        { operator: "OR" },
-                        { field: "tag", key: "role", relation: "=", value: "admin" }
-                    ],
-                    target_channel: "push"
-                }),
+                body: JSON.stringify(payload),
             });
             const resData = await response.json();
-            console.log("OneSignal Supervisor Result:", JSON.stringify(resData));
+            console.log(`OneSignal ${description} Result:`, JSON.stringify(resData));
             results.push(resData);
-        } catch (e) {
-            console.error("OneSignal supervisor filter push error:", e);
-        }
-    }
-
-    // 2. If there are specific users, send to them
-    if (userIds && userIds.length > 0) {
-        console.log("OneSignal: Sending push to specific external user IDs:", userIds);
-        try {
-            const body: any = {
-                ...baseBody,
-                include_external_user_ids: userIds,
-                target_channel: "push"
-            };
-
-            const response = await fetch("https://onesignal.com/api/v1/notifications", {
-                method: "POST",
-                headers,
-                body: JSON.stringify(body),
-            });
-
-            const resData = await response.json();
-            console.log("OneSignal Targeted Users Result:", JSON.stringify(resData));
-            results.push(resData);
-
-            if (resData.errors) {
-                console.warn("OneSignal API reported errors for targeted users:", resData.errors);
+            if (!response.ok) {
+                console.warn(`OneSignal ${description} returned status ${response.status}`);
             }
         } catch (e) {
-            console.error("OneSignal targeted push error:", e);
+            console.error(`OneSignal ${description} error:`, e);
         }
+    };
+
+    // 1. Supervisors via filters
+    if (forSupervisors) {
+        const payload = {
+            ...baseBody,
+            filters: [
+                { field: "tag", key: "role", relation: "=", value: "supervisor" },
+                { operator: "OR" },
+                { field: "tag", key: "role", relation: "=", value: "admin" },
+            ],
+        };
+        await sendRequest(payload, "supervisor filter push");
     }
 
+    // 2. Specific users via external_id aliases
+    if (userIds && userIds.length > 0) {
+        const payload = {
+            ...baseBody,
+            include_aliases: {
+                external_id: userIds
+            }
+        };
+        await sendRequest(payload, "targeted user push (aliases)");
+    }
 
-
-
+    if (results.length === 0) {
+        console.warn("OneSignal: No targets defined for push.");
+    }
 
     return results.length === 1 ? results[0] : results;
 }

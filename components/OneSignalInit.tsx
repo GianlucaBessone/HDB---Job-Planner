@@ -19,20 +19,30 @@ export default function OneSignalInit({ appId, user }: { appId: string, user?: a
 
                 // Set external user ID if user is logged in
                 if (user && user.id) {
-                    // Login to OneSignal with our User ID
-                    console.log(`OneSignal: Logging in with external user ID: ${user.id}`);
-                    await OneSignal.login(user.id);
+                    try {
+                        // Login to OneSignal with our User ID
+                        console.log(`OneSignal: Logging in with external user ID: ${user.id}`);
+                        await OneSignal.login(user.id);
 
-                    if (user.nombreCompleto) {
-                        // Tag the user for better segmentation
-                        console.log(`OneSignal: Tagging user with role: ${user.role}`);
-                        OneSignal.User.addTag("name", user.nombreCompleto);
-                        OneSignal.User.addTag("role", user.role);
+                        if (user.nombreCompleto) {
+                            // Tag the user for better segmentation
+                            console.log(`OneSignal: Tagging user with role: ${user.role}`);
+                            await OneSignal.User.addTag("name", user.nombreCompleto);
+                            await OneSignal.User.addTag("role", user.role);
+                        }
+                    } catch (loginError) {
+                        console.warn("OneSignal Login/Tagging error:", loginError);
                     }
 
                     // Automatic subscription prompt if not already decided
                     const permission = OneSignal.Notifications.permission;
                     const hasPrompted = localStorage.getItem('onesignal_prompted');
+
+                    // If permission is denied/blocked, don't even try to prompt
+                    if (permission === false || (permission as any) === 'denied') {
+                        console.log("OneSignal: Notifications are blocked by the user.");
+                        return;
+                    }
 
                     const isGranted = (permission === true || (permission as any) === 'granted');
 
