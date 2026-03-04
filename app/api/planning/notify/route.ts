@@ -109,18 +109,23 @@ export async function POST(req: Request) {
             // Trigger push notifications
             // For planning, each user has a personalized message (different number of assignments)
             // So we send them individually to ensure consistency
-            Promise.all(notificationsData.map(notif =>
-                sendPushNotification({
-                    userIds: [notif.operatorId],
-                    title: notif.title,
-                    message: notif.message,
-                    data: {
-                        type: notif.type,
-                        relatedId: notif.relatedId,
-                        metadata: notif.metadata
-                    }
-                })
-            )).catch(e => console.error("Error sending push notifications for planning: ", e));
+            try {
+                await Promise.all(notificationsData.map(notif =>
+                    sendPushNotification({
+                        userIds: notif.operatorId ? [notif.operatorId] : undefined,
+                        forSupervisors: notif.forSupervisors || false,
+                        title: notif.title,
+                        message: notif.message,
+                        data: {
+                            type: notif.type,
+                            relatedId: notif.relatedId,
+                            metadata: notif.metadata
+                        }
+                    })
+                ));
+            } catch (e) {
+                console.error("Error sending push notifications for planning: ", e);
+            }
         }
 
 
