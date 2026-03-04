@@ -9,24 +9,47 @@ datasource db {
 }
 
 model Project {
-  id              String        @id @default(cuid())
+  id              String          @id @default(cuid())
   nombre          String
-  activo          Boolean       @default(true)
-  noEnMetricas    Boolean       @default(false)
+  activo          Boolean         @default(true)
+  noEnMetricas    Boolean         @default(false)
   observaciones   String?
-  horasEstimadas  Int           @default(0)
-  horasConsumidas Int           @default(0)
+  horasEstimadas  Int             @default(0)
+  horasConsumidas Int             @default(0)
   cliente         String? // Keeping this for legacy text
   clientId        String?
-  client          HdbClient?    @relation(fields: [clientId], references: [id])
-  responsable     String?
-  estado          String        @default("activo") // por_hacer | planificado | activo | en_riesgo | atrasado | finalizado
+  client          HdbClient?      @relation(fields: [clientId], references: [id])
+  responsable     String? // Legacy name field
+  responsableId   String?
+  responsableUser Operator?       @relation("ProjectResponsable", fields: [responsableId], references: [id])
+  tags            Json            @default("[]") // Technical tags: "Montaje", "Tendido", etc.
+  estado          String          @default("activo") // por_hacer | planificado | activo | en_riesgo | atrasado | finalizado
   fechaInicio     String?
   fechaFin        String?
-  createdAt       DateTime      @default(now())
+  finalizadoConPendientes Boolean @default(false)
+  pendientesSnapshot      Json?   // Snapshot of incomplete items if forced finish
+  createdAt       DateTime        @default(now())
   clientDelays    ClientDelay[]
   timeEntries     TimeEntry[]
+  checklistItems  ChecklistItem[]
 }
+
+model ChecklistItem {
+  id                   String   @id @default(cuid())
+  projectId            String
+  project              Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tag                  String
+  description          String
+  completed            Boolean  @default(false)
+  confirmedBySupervisor Boolean @default(false)
+  pendingChange        Boolean  @default(false) // Request to unmark or similar
+  justification        String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([projectId])
+}
+
 
 model ClientDelay {
   id              String   @id @default(cuid())
@@ -49,7 +72,8 @@ model Operator {
   etiquetas      Json // Now using native Json type
   pin            String         @default("1234")
   role           String         @default("operador") // operador | supervisor | admin
-  createdAt      DateTime       @default(now())
+  responsibleProjects Project[]      @relation("ProjectResponsable")
+  createdAt           DateTime       @default(now())
   timeEntries    TimeEntry[]
   notifications  Notification[]
 }

@@ -17,23 +17,59 @@ export const dataLayer = {
         return await prisma.project.findMany({
             include: {
                 client: true,
+                responsableUser: { select: { id: true, nombreCompleto: true, role: true } },
                 _count: {
-                    select: { clientDelays: true }
+                    select: { clientDelays: true, checklistItems: true }
                 }
             },
             orderBy: { createdAt: 'desc' }
         });
     },
-    async createProject(data: { nombre: string; activo?: boolean; noEnMetricas?: boolean; observaciones?: string; horasEstimadas?: number; horasConsumidas?: number; cliente?: string; clientId?: string; responsable?: string; estado?: string; fechaInicio?: string; fechaFin?: string }) {
+    async createProject(data: {
+        nombre: string;
+        activo?: boolean;
+        noEnMetricas?: boolean;
+        observaciones?: string;
+        horasEstimadas?: number;
+        horasConsumidas?: number;
+        cliente?: string;
+        clientId?: string;
+        responsable?: string;
+        responsableId?: string;
+        tags?: string[];
+        estado?: string;
+        fechaInicio?: string;
+        fechaFin?: string
+    }) {
         const sanitizedData = { ...data };
         if (sanitizedData.clientId === "") delete sanitizedData.clientId;
-        return await prisma.project.create({ data: sanitizedData });
+        if (sanitizedData.responsableId === "") delete sanitizedData.responsableId;
+        return await prisma.project.create({ data: sanitizedData as any });
     },
-    async updateProject(id: string, data: { nombre?: string; activo?: boolean; noEnMetricas?: boolean; observaciones?: string; horasEstimadas?: number; horasConsumidas?: number; cliente?: string; clientId?: string; responsable?: string; estado?: string; fechaInicio?: string; fechaFin?: string }) {
+    async updateProject(id: string, data: {
+        nombre?: string;
+        activo?: boolean;
+        noEnMetricas?: boolean;
+        observaciones?: string;
+        horasEstimadas?: number;
+        horasConsumidas?: number;
+        cliente?: string;
+        clientId?: string;
+        responsable?: string;
+        responsableId?: string;
+        tags?: string[];
+        estado?: string;
+        fechaInicio?: string;
+        fechaFin?: string;
+        finalizadoConPendientes?: boolean;
+        pendientesSnapshot?: any;
+    }) {
         const sanitizedData = { ...data };
-        if (sanitizedData.clientId === "") sanitizedData.clientId = null as any; // Allow unlinking client
-        return await prisma.project.update({ where: { id }, data: sanitizedData });
+        if (sanitizedData.clientId === "") sanitizedData.clientId = null as any;
+        if (sanitizedData.responsableId === "") sanitizedData.responsableId = null as any;
+        return await prisma.project.update({ where: { id }, data: sanitizedData as any });
     },
+
     async deleteProject(id: string) {
         return await prisma.project.delete({ where: { id } });
     },
@@ -122,5 +158,23 @@ export const dataLayer = {
     },
     async updateClientDelay(id: string, data: { projectId?: string; fecha?: string; hora?: string; operador?: string; area?: string; responsableArea?: string; motivo?: string; duracion?: number }) {
         return await prisma.clientDelay.update({ where: { id }, data });
+    },
+
+    // Checklist
+    async getChecklist(projectId: string) {
+        return await prisma.checklistItem.findMany({
+            where: { projectId },
+            orderBy: { createdAt: 'asc' }
+        });
+    },
+    async createChecklistItem(data: { projectId: string; tag: string; description: string }) {
+        return await prisma.checklistItem.create({ data });
+    },
+    async updateChecklistItem(id: string, data: { completed?: boolean; confirmedBySupervisor?: boolean; pendingChange?: boolean; justification?: string }) {
+        return await prisma.checklistItem.update({ where: { id }, data });
+    },
+    async deleteChecklistItem(id: string) {
+        return await prisma.checklistItem.delete({ where: { id } });
     }
 };
+

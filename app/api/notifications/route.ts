@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/dataLayer';
 import { sendPushNotification } from '@/lib/onesignal';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: Request) {
     try {
         const url = new URL(req.url);
@@ -48,9 +50,20 @@ export async function POST(req: Request) {
         const body = await req.json();
         console.log("API Notifications POST received:", JSON.stringify(body));
 
+        // Validate operatorId if provided
+        let operatorIdToUse: string | undefined = undefined;
+        if (body.operatorId) {
+            const operatorExists = await prisma.operator.findUnique({ where: { id: body.operatorId } });
+            if (!operatorExists) {
+                console.warn(`Operator ID ${body.operatorId} not found. Creating notification without operator reference.`);
+            } else {
+                operatorIdToUse = body.operatorId;
+            }
+        }
+
         const notification = await prisma.notification.create({
             data: {
-                operatorId: body.operatorId,
+                operatorId: operatorIdToUse,
                 forSupervisors: body.forSupervisors || false,
                 title: body.title,
                 message: body.message,
@@ -63,7 +76,7 @@ export async function POST(req: Request) {
         // Trigger push notification asynchronously (don't block the internal response)
         // If it's for supervisors, we target supervisors via filters.
         // If it's for an operator (and NOT for supervisors), we target them by ID.
-        const pushTargets = (body.operatorId && !body.forSupervisors) ? [body.operatorId] : [];
+        const pushTargets = (operatorIdToUse && !body.forSupervisors) ? [operatorIdToUse] : [];
 
         if (pushTargets.length > 0 || body.forSupervisors) {
             console.log(`API Notifications: Triggering push. operatorId=${body.operatorId}, forSupervisors=${body.forSupervisors}`);

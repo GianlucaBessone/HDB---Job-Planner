@@ -28,6 +28,7 @@ import {
     Info
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { CHECKLIST_TEMPLATES } from '@/lib/checklistTemplates';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type ProjectStatus = 'por_hacer' | 'planificado' | 'activo' | 'en_riesgo' | 'atrasado' | 'finalizado';
@@ -45,12 +46,20 @@ interface Project {
     client?: { nombre: string }; // Relational client
     _count?: {
         clientDelays: number;
+        checklistItems: number;
     };
     responsable?: string;
+    responsableId?: string;
+    responsableUser?: { nombreCompleto: string };
+    tags?: string[];
+    checklistItems?: { completed: boolean; tag: string }[];
+    finalizadoConPendientes?: boolean;
     estado: ProjectStatus;
+
     fechaInicio?: string;
     fechaFin?: string;
 }
+
 
 interface FormData {
     nombre: string;
@@ -62,10 +71,13 @@ interface FormData {
     cliente: string;
     clientId: string;
     responsable: string;
+    responsableId: string;
+    tags: string[];
     estado: ProjectStatus;
     fechaInicio: string;
     fechaFin: string;
 }
+
 
 interface Filters {
     estados: ProjectStatus[];
@@ -103,10 +115,13 @@ const EMPTY_FORM: FormData = {
     cliente: '',
     clientId: '',
     responsable: '',
+    responsableId: '',
+    tags: [],
     estado: 'activo',
     fechaInicio: '',
     fechaFin: '',
 };
+
 
 const EMPTY_FILTERS: Filters = {
     estados: [],
@@ -188,10 +203,13 @@ export default function ProjectsPage() {
             cliente: project.cliente || '',
             clientId: project.clientId || '',
             responsable: project.responsable || '',
+            responsableId: project.responsableId || '',
+            tags: (project.tags as string[]) || [],
             estado: project.estado || 'activo',
             fechaInicio: project.fechaInicio || '',
             fechaFin: project.fechaFin || '',
         });
+
         setIsModalOpen(true);
     };
 
@@ -459,15 +477,17 @@ function ProjectCard({
     handleDeleteClick: (id: string) => void;
 }) {
     const { horasConsumidas, horasEstimadas, estado } = project;
-    const progress = horasEstimadas > 0 ? Math.min(100, Math.round((horasConsumidas / horasEstimadas) * 100)) : 0;
+    const progress = (horasEstimadas || 0) > 0 ? Math.min(100, Math.round((horasConsumidas / horasEstimadas) * 100)) : 0;
     const cfg = STATUS_CONFIG[estado] || STATUS_CONFIG.activo;
     const StatusIcon = cfg.Icon;
     const progressColor = getProgressColor(progress);
 
+    const checklistTotal = project.checklistItems?.length || 0;
+    const checklistCompleted = project.checklistItems?.filter((i: any) => i.completed).length || 0;
+    const checklistPercent = checklistTotal > 0 ? Math.round((checklistCompleted / checklistTotal) * 100) : 0;
+
     return (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-slate-300 transition-all duration-300 p-5 flex flex-col gap-4 group">
-
-            {/* Top row: name + actions */}
             <div className="flex items-start justify-between gap-3">
                 <h4 className="font-bold text-lg text-slate-800 leading-tight line-clamp-2 group-hover:text-primary transition-colors">
                     {project.nombre}
@@ -490,7 +510,6 @@ function ProjectCard({
                 </div>
             </div>
 
-            {/* Meta: cliente + responsable */}
             <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
                 <div className="flex items-center gap-1.5 min-w-0">
                     <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -502,72 +521,78 @@ function ProjectCard({
                 <div className="flex items-center gap-1.5 min-w-0">
                     <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     <span className="text-slate-400 shrink-0">Resp:</span>
-                    <span className="font-semibold text-slate-700 truncate">{project.responsable || '—'}</span>
+                    <span className="font-semibold text-slate-700 truncate">{project.responsableUser?.nombreCompleto || project.responsable || '—'}</span>
                 </div>
             </div>
 
-            {/* Progress */}
+            <div className="flex flex-wrap gap-1.5">
+                {project.tags && project.tags.length > 0 ? (
+                    project.tags.map((tag: any) => (
+                        <span key={tag} className="px-2 py-0.5 rounded-full bg-slate-100 text-[10px] font-bold text-slate-600 border border-slate-200 uppercase tracking-tighter">
+                            {tag}
+                        </span>
+                    ))
+                ) : (
+                    <span className="text-[10px] font-medium text-slate-400 italic">Sin etiquetas técnicas</span>
+                )}
+            </div>
+
             <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-1.5 text-slate-500">
                         <TrendingUp className="w-3.5 h-3.5" />
-                        <span>Avance:</span>
-                        <span className="font-bold text-slate-700">{progress}%</span>
+                        <span>Avance: {progress}%</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-slate-500">
                         <Clock className="w-3.5 h-3.5" />
-                        <span className="font-semibold text-slate-600">{horasConsumidas}h / {horasEstimadas}h</span>
+                        <span>{horasConsumidas}h / {horasEstimadas}h</span>
                     </div>
                 </div>
                 <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                    <div
-                        className={`h-full rounded-full transition-all duration-700 ${progressColor}`}
-                        style={{ width: `${progress}%` }}
-                    />
+                    <div className={`h-full rounded-full transition-all duration-700 ${progressColor}`} style={{ width: `${progress}%` }} />
                 </div>
             </div>
 
-            {/* Footer: status + actions */}
+            <div className="space-y-1.5 pt-1 border-t border-slate-50">
+                <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    <span>Avance Técnico (Checklist)</span>
+                    <span className="text-slate-600">{checklistCompleted} / {checklistTotal}</span>
+                </div>
+                <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                    <div className="h-full bg-primary rounded-full transition-all duration-700" style={{ width: `${checklistPercent}%` }} />
+                </div>
+            </div>
+
             <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-50">
-                <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg ${cfg.bg} ring-1 ${cfg.ring}`}>
-                    <StatusIcon className={`w-3.5 h-3.5 ${cfg.color}`} />
-                    <span className={`text-xs font-bold ${cfg.color}`}>{cfg.label}</span>
-                </div>
-                {/* Metric Status indicator */}
-                <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border ${!(project as any).noEnMetricas ? 'bg-indigo-50 border-indigo-100 text-indigo-600' : 'bg-slate-50 border-slate-100 text-slate-400'}`}>
-                    <Activity className="w-3.5 h-3.5" />
-                    <span className="text-[10px] font-black uppercase tracking-tight">{!(project as any).noEnMetricas ? 'En Métricas' : 'Excluido de Métricas'}</span>
-                </div>
-                {project._count && project._count.clientDelays > 0 && (
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-100 text-amber-600">
-                        <Timer className="w-3.5 h-3.5" />
-                        <span className="text-[10px] font-black uppercase tracking-tight">{project._count.clientDelays} Demoras</span>
+                <div className="flex flex-wrap gap-2">
+                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg ${cfg.bg} ring-1 ${cfg.ring}`}>
+                        <StatusIcon className={`w-3.5 h-3.5 ${cfg.color}`} />
+                        <span className={`text-xs font-bold ${cfg.color}`}>{cfg.label}</span>
                     </div>
-                )}
+                    {project._count && (project._count.clientDelays || 0) > 0 && (
+                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-100 text-amber-600">
+                            <Timer className="w-3.5 h-3.5" />
+                            <span className="text-[10px] font-black uppercase tracking-tight">{project._count.clientDelays} Demoras</span>
+                        </div>
+                    )}
+                    {project.finalizadoConPendientes && (
+                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-50 border border-red-100 text-red-600">
+                            <AlertTriangle className="w-3.5 h-3.5" />
+                            <span className="text-[10px] font-black uppercase tracking-tight">Cierre con Pendientes</span>
+                        </div>
+                    )}
+                </div>
+
                 <div className="flex items-center gap-1.5">
-                    <button
-                        onClick={() => onEdit(project)}
-                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200 hover:border-primary/40 hover:text-primary transition-all active:scale-95 whitespace-nowrap"
-                    >
-                        Ver Detalle
-                        <ChevronRight className="w-3 h-3" />
+                    <button onClick={() => onEdit(project)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200 hover:border-primary/40 hover:text-primary transition-all whitespace-nowrap">
+                        Ver Detalle <ChevronRight className="w-3 h-3" />
                     </button>
-                    <Link
-                        href="/planning"
-                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200 hover:border-primary/40 hover:text-primary transition-all active:scale-95 whitespace-nowrap"
-                    >
-                        <Calendar className="w-3 h-3" />
-                        Planificación
+                    <Link href="/planning" className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200 hover:border-primary/40 hover:text-primary transition-all whitespace-nowrap">
+                        <Calendar className="w-3 h-3" /> Planificación
                     </Link>
                     {project.estado === 'finalizado' && (
-                        <Link
-                            href={`/projects/${project.id}/report`}
-                            target="_blank"
-                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-100 hover:bg-rose-100 transition-all active:scale-95 whitespace-nowrap"
-                            title="Descargar Reporte PDF"
-                        >
-                            <FileText className="w-3 h-3" />
-                            PDF
+                        <Link href={`/projects/${project.id}/report`} target="_blank" className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-100 hover:bg-rose-100 transition-all whitespace-nowrap" title="Descargar Reporte PDF">
+                            <FileText className="w-3 h-3" /> PDF
                         </Link>
                     )}
                 </div>
@@ -575,6 +600,7 @@ function ProjectCard({
         </div>
     );
 }
+
 
 // ── ProjectModal ──────────────────────────────────────────────────────────────
 function ProjectModal({
@@ -688,14 +714,49 @@ function ProjectModal({
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Responsable</label>
                                 <select
                                     className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
-                                    value={formData.responsable}
-                                    onChange={e => set('responsable', e.target.value)}
+                                    value={formData.responsableId}
+                                    onChange={e => {
+                                        const op = operators.find(o => o.id === e.target.value);
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            responsableId: e.target.value,
+                                            responsable: op ? op.nombreCompleto : ''
+                                        }));
+                                    }}
                                 >
                                     <option value="">— Sin asignar —</option>
                                     {operators.map(op => (
-                                        <option key={op.id} value={op.nombreCompleto}>{op.nombreCompleto}</option>
+                                        <option key={op.id} value={op.id}>{op.nombreCompleto}</option>
                                     ))}
                                 </select>
+                            </div>
+                        </div>
+
+                        {/* Etiquetas Técnicas */}
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Etiquetas Técnicas (Checklist)</label>
+                            <div className="flex flex-wrap gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-200">
+                                {Object.keys(CHECKLIST_TEMPLATES).map(tag => {
+                                    const active = formData.tags.includes(tag);
+                                    return (
+                                        <button
+                                            key={tag}
+                                            type="button"
+                                            onClick={() => {
+                                                const newTags = active
+                                                    ? formData.tags.filter(t => t !== tag)
+                                                    : [...formData.tags, tag];
+                                                set('tags', newTags);
+                                            }}
+                                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${active
+                                                ? 'bg-primary text-white border-primary shadow-sm'
+                                                : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
+                                                }`}
+                                        >
+                                            {tag}
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
 

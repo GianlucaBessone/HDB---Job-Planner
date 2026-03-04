@@ -13,10 +13,12 @@ export async function sendPushNotification({
     forSupervisors?: boolean
 }) {
     const appId = "35ce6a9c-c4c7-4645-98dc-b363dc91642b";
-    const apiKey = process.env.ONESIGNAL_REST_API_KEY;
+    // Strip surrounding quotes if present in env var
+    const rawKey = process.env.ONESIGNAL_REST_API_KEY;
+    const apiKey = rawKey ? rawKey.replace(/^"|"$/g, "") : undefined;
 
     if (!apiKey) {
-        console.warn("OneSignal API Key not found in environment variables. Push notification not sent.");
+        console.warn("OneSignal API Key not found or empty. Push notification not sent.");
         return;
     }
 

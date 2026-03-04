@@ -24,10 +24,10 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                 const data = await res.json();
                 if (Array.isArray(data)) {
                     setNotifications(prev => {
-                        if (isPoll && data.length > prev.length) {
-                            const latest = data[0];
-                            if (latest && !prev.find(n => n.id === latest.id)) {
-                                showToast(`Nueva notificación: ${latest.title}`, 'success');
+                        if (isPoll && prev.length > 0) {
+                            const newNotifs = data.filter(d => !prev.some(p => p.id === d.id));
+                            if (newNotifs.length > 0) {
+                                showToast(`Nueva notificación: ${newNotifs[0].title}`, 'success');
                             }
                         }
                         return data;
