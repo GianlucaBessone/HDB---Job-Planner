@@ -27,6 +27,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                         if (isPoll && prev.length > 0) {
                             const newNotifs = data.filter(d => !prev.some(p => p.id === d.id));
                             if (newNotifs.length > 0) {
+                                console.log("📬 [INTERNAL_NOTIFICATION_RECEIVED]:", newNotifs[0]);
                                 showToast(`Nueva notificación: ${newNotifs[0].title}`, 'success');
                             }
                         }

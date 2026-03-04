@@ -27,7 +27,7 @@ export default function OneSignalInit({ appId, user }: { appId: string, user?: a
 
                 // Handle Login / Logout logic
                 if (currentUserId && currentUserId !== lastUserIdRef.current) {
-                    console.log(`OneSignal: Logging in user ${currentUserId}`);
+                    console.log("👤 [ONESIGNAL_LOGIN] Logging with external ID:", currentUserId);
                     await OneSignal.login(currentUserId);
                     lastUserIdRef.current = currentUserId;
 
@@ -37,8 +37,22 @@ export default function OneSignalInit({ appId, user }: { appId: string, user?: a
                         await OneSignal.User.addTag("role", user.role);
                     }
 
-                    // Check subscription and prompt if needed
+                    // Log permission and subscription status
                     const permission = OneSignal.Notifications.permission;
+                    console.log("🔐 [ONESIGNAL_PERMISSION]:", permission);
+
+                    const isSubscribed = OneSignal.User.PushSubscription.optedIn;
+                    console.log("📲 [ONESIGNAL_SUBSCRIBED]:", isSubscribed);
+
+                    // Add foreground and click listeners
+                    OneSignal.Notifications.addEventListener("foregroundWillDisplay", (event) => {
+                        console.log("📩 [PUSH_RECEIVED_FOREGROUND]:", event);
+                    });
+
+                    OneSignal.Notifications.addEventListener("click", (event) => {
+                        console.log("🖱️ [PUSH_CLICKED]:", event);
+                    });
+
                     const hasPrompted = localStorage.getItem('onesignal_prompted');
 
                     if (permission === false || (permission as any) === 'denied') {

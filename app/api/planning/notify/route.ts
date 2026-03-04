@@ -102,9 +102,18 @@ export async function POST(req: Request) {
         }
 
         if (notificationsData.length > 0) {
+            console.log("🔔 [INTERNAL_NOTIFICATION] Generando notificaciones:", {
+                fecha,
+                total: notificationsData.length,
+                operatorIds: notificationsData.map(n => n.operatorId),
+                types: notificationsData.map(n => n.type)
+            });
+
             await prisma.notification.createMany({
                 data: notificationsData
             });
+
+            console.log("✅ [INTERNAL_NOTIFICATION] Guardadas en DB correctamente");
 
             // Trigger push notifications
             // For planning, each user has a personalized message (different number of assignments)

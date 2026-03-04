@@ -12,6 +12,14 @@ export async function sendPushNotification({
     data?: any,
     forSupervisors?: boolean
 }) {
+    console.log("🚀 [ONESIGNAL_SEND] Enviando push:", {
+        userIds,
+        forSupervisors,
+        title,
+        message,
+        data
+    });
+
     const appId = "35ce6a9c-c4c7-4645-98dc-b363dc91642b";
     const rawKey = process.env.ONESIGNAL_REST_API_KEY;
     const apiKey = rawKey ? rawKey.replace(/^"|"$/g, "") : undefined;
@@ -35,7 +43,11 @@ export async function sendPushNotification({
     };
 
     const sendRequest = async (payload: any, description: string) => {
-        console.log(`OneSignal: Sending ${description}`, JSON.stringify(payload));
+        console.log("📦 [ONESIGNAL_PAYLOAD]:", JSON.stringify(payload, null, 2));
+        if (payload.include_external_user_ids) {
+            console.log("🎯 [TARGETING] Using external_user_ids:", payload.include_external_user_ids);
+        }
+
         try {
             const response = await fetch("https://onesignal.com/api/v1/notifications", {
                 method: "POST",
@@ -43,13 +55,14 @@ export async function sendPushNotification({
                 body: JSON.stringify(payload),
             });
             const resData = await response.json();
-            console.log(`OneSignal ${description} Result:`, JSON.stringify(resData));
+            console.log("📨 [ONESIGNAL_RESPONSE]:", {
+                status: response.status,
+                statusText: response.statusText,
+                body: resData
+            });
             results.push(resData);
-            if (!response.ok) {
-                console.warn(`OneSignal ${description} returned status ${response.status}`);
-            }
-        } catch (e) {
-            console.error(`OneSignal ${description} error:`, e);
+        } catch (error) {
+            console.error("❌ [ONESIGNAL_ERROR]:", error);
         }
     };
 

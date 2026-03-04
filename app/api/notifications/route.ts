@@ -61,6 +61,13 @@ export async function POST(req: Request) {
             }
         }
 
+        console.log("🔔 [INTERNAL_NOTIFICATION] Generando notificación:", {
+            operatorId: operatorIdToUse,
+            forSupervisors: body.forSupervisors,
+            type: body.type,
+            title: body.title
+        });
+
         const notification = await prisma.notification.create({
             data: {
                 operatorId: operatorIdToUse,
@@ -72,6 +79,8 @@ export async function POST(req: Request) {
                 metadata: body.metadata,
             }
         });
+
+        console.log("✅ [INTERNAL_NOTIFICATION] Guardadas en DB correctamente");
 
         // Trigger push notification asynchronously (don't block the internal response)
         // If it's for supervisors, we target supervisors via filters.
