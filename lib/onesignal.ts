@@ -12,12 +12,18 @@ export async function sendPushNotification({
     data?: any,
     forSupervisors?: boolean
 }) {
-    console.log("🚀 [ONESIGNAL_SEND] Enviando push:", {
+    console.log("🚀 [ONESIGNAL_SEND_START]", {
+        timestamp: new Date().toISOString(),
         userIds,
         forSupervisors,
         title,
-        message,
-        data
+        message
+    });
+
+    console.log("🔑 [ENV_CHECK]", {
+        hasAppId: !!process.env.ONESIGNAL_APP_ID,
+        hasApiKey: !!process.env.ONESIGNAL_REST_API_KEY,
+        appId: process.env.ONESIGNAL_APP_ID || "not_set"
     });
 
     const appId = "35ce6a9c-c4c7-4645-98dc-b363dc91642b";
@@ -43,10 +49,14 @@ export async function sendPushNotification({
     };
 
     const sendRequest = async (payload: any, description: string) => {
-        console.log("📦 [ONESIGNAL_PAYLOAD]:", JSON.stringify(payload, null, 2));
+        console.log("📦 [ONESIGNAL_PAYLOAD_FULL]");
+        console.log(JSON.stringify(payload, null, 2));
+
         if (payload.include_external_user_ids) {
             console.log("🎯 [TARGETING] Using external_user_ids:", payload.include_external_user_ids);
         }
+
+        console.log("🌍 [ONESIGNAL_ENDPOINT]", "https://onesignal.com/api/v1/notifications");
 
         try {
             const response = await fetch("https://onesignal.com/api/v1/notifications", {
@@ -54,12 +64,22 @@ export async function sendPushNotification({
                 headers,
                 body: JSON.stringify(payload),
             });
-            const resData = await response.json();
-            console.log("📨 [ONESIGNAL_RESPONSE]:", {
-                status: response.status,
-                statusText: response.statusText,
-                body: resData
-            });
+
+            const rawText = await response.text();
+            console.log("📨 [ONESIGNAL_RESPONSE_STATUS]", response.status);
+            console.log("📨 [ONESIGNAL_RESPONSE_TEXT]", rawText);
+
+            let resData;
+            try {
+                resData = JSON.parse(rawText);
+            } catch (e) {
+                resData = { parse_error: true, text: rawText };
+            }
+
+            if (resData.errors || (resData.recipients === 0)) {
+                console.error("⚠️ [ONESIGNAL_NO_RECIPIENTS]", rawText);
+            }
+
             results.push(resData);
         } catch (error) {
             console.error("❌ [ONESIGNAL_ERROR]:", error);

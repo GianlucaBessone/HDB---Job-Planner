@@ -119,8 +119,13 @@ export async function POST(req: Request) {
             // For planning, each user has a personalized message (different number of assignments)
             // So we send them individually to ensure consistency
             try {
-                await Promise.all(notificationsData.map(notif =>
-                    sendPushNotification({
+                await Promise.all(notificationsData.map(notif => {
+                    console.log("📢 [PLANNING_NOTIFY_TRIGGER]", {
+                        operatorId: notif.operatorId,
+                        type: notif.type,
+                        relatedId: notif.relatedId
+                    });
+                    return sendPushNotification({
                         userIds: notif.operatorId ? [notif.operatorId] : undefined,
                         forSupervisors: notif.forSupervisors || false,
                         title: notif.title,
@@ -130,8 +135,8 @@ export async function POST(req: Request) {
                             relatedId: notif.relatedId,
                             metadata: notif.metadata
                         }
-                    })
-                ));
+                    });
+                }));
             } catch (e) {
                 console.error("Error sending push notifications for planning: ", e);
             }
