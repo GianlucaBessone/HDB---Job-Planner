@@ -146,3 +146,38 @@ model Notification {
   @@index([operatorId])
   @@index([createdAt])
 }
+
+model ProjectTag {
+  id              String             @id @default(cuid())
+  name            String             @unique
+  active          Boolean            @default(true)
+  impactsMetrics  Boolean            @default(false)
+  checklists      TagChecklistItem[]
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+}
+
+model TagChecklistItem {
+  id          String     @id @default(cuid())
+  tagId       String
+  tag         ProjectTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  description String
+  active      Boolean    @default(true)
+  order       Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([tagId])
+}
+
+model ConfigOption {
+  id          String   @id @default(cuid())
+  category    String   // e.g "AREA_DEMORA", "MOTIVO_DEMORA", "CATEGORIA", "TIPO_ACTIVIDAD"
+  value       String   
+  active      Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+}

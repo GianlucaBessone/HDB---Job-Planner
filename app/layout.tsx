@@ -6,7 +6,7 @@ import "./globals.css";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Script from "next/script";
-import { Calendar, LayoutGrid, Users, ClipboardList, Menu, X, Landmark, LayoutDashboard, Timer, Clock, LogOut } from "lucide-react";
+import { Calendar, LayoutGrid, Users, ClipboardList, Menu, X, Landmark, LayoutDashboard, Timer, Clock, LogOut, Home, Settings } from "lucide-react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import ToastContainer from "@/components/Toast";
 import LoginScreen from "@/components/LoginScreen";
@@ -36,6 +36,7 @@ export default function RootLayout({
     const handleLoginSuccess = (user: any) => {
         setCurrentUser(user);
         setIsSidebarOpen(false);
+        router.push('/');
     };
 
     useEffect(() => {
@@ -86,22 +87,22 @@ export default function RootLayout({
                                 <Menu className="w-6 h-6" />
                             </button>
 
-                            <div className="flex items-center gap-2 ml-4 hidden md:flex">
+                            <Link href="/" className="flex items-center gap-2 ml-4 hidden md:flex hover:opacity-80 transition-opacity">
                                 <div className="bg-primary p-1.5 rounded-lg shadow-lg shadow-primary/20">
                                     <ClipboardList className="w-5 h-5 text-white" />
                                 </div>
                                 <span className="text-xl font-bold tracking-tight text-slate-800">
                                     HDB<span className="text-primary">Planner</span>
                                 </span>
-                            </div>
+                            </Link>
                         </div>
                         {/* Mobile Logo version if needed or right-aligned items can go here */}
                         <div className="flex items-center gap-2 md:gap-4">
-                            <div className="flex items-center gap-2 md:hidden">
+                            <Link href="/" className="flex items-center gap-2 md:hidden hover:opacity-80 transition-opacity">
                                 <span className="text-xl font-bold tracking-tight text-slate-800">
                                     HDB<span className="text-primary">Planner</span>
                                 </span>
-                            </div>
+                            </Link>
                             <div className="flex items-center gap-2">
                                 <OneSignalInit
                                     appId={process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID || "35ce6a9c-c4c7-4645-98dc-b363dc91642b"}
@@ -163,6 +164,7 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
     const pathname = usePathname();
 
     const menuItems = [
+        { href: '/', icon: <Home className="w-5 h-5" />, label: 'Inicio', roles: ['operador', 'supervisor', 'admin'] },
         { href: '/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, label: 'Panel de Análisis', roles: ['supervisor', 'admin'] },
         { href: '/planning', icon: <Calendar className="w-5 h-5" />, label: 'Planificación', roles: ['supervisor', 'admin'] },
         { href: '/timesheets', icon: <Clock className="w-5 h-5" />, label: 'Registro de Tiempos', roles: ['operador', 'supervisor', 'admin'] },
@@ -171,10 +173,11 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
         { href: '/delays', icon: <Timer className="w-5 h-5" />, label: 'Demoras del Cliente', roles: ['operador', 'supervisor', 'admin'] },
         { href: '/operators', icon: <Users className="w-5 h-5" />, label: 'Gestión de Usuarios / Operadores', roles: ['operador', 'supervisor', 'admin'] },
         { href: '/clients', icon: <Landmark className="w-5 h-5" />, label: 'Gestión de Clientes', roles: ['supervisor', 'admin'] },
+        { href: '/configuracion', icon: <Settings className="w-5 h-5" />, label: 'Configuración', roles: ['admin', 'supervisor'] },
 
     ];
 
-    const allowedMenu = menuItems.filter(item => item.roles.includes(user?.role || 'operador'));
+    const allowedMenu = menuItems.filter(item => item.roles.includes(user?.role?.toLowerCase() || 'operador'));
 
     return (
         <>

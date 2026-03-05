@@ -206,7 +206,7 @@ export default function TimesheetsPage() {
 
             if (!res.ok) {
                 const data = await res.json();
-                alert(data.error);
+                showToast(data.error, 'error');
                 return;
             }
 
