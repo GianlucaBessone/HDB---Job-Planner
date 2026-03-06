@@ -13,6 +13,8 @@ model Project {
   nombre          String
   activo          Boolean         @default(true)
   noEnMetricas    Boolean         @default(false)
+  categoria       String?
+  tipoActividad   String?
   observaciones   String?
   horasEstimadas  Int             @default(0)
   horasConsumidas Int             @default(0)

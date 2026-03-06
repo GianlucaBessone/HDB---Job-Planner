@@ -59,6 +59,8 @@ interface Project {
     responsable?: string;
     responsableId?: string;
     responsableUser?: { nombreCompleto: string };
+    categoria?: string;
+    tipoActividad?: string;
     tags?: string[];
     checklistItems?: { completed: boolean; tag: string }[];
     finalizadoConPendientes?: boolean;
@@ -82,6 +84,8 @@ interface FormData {
     responsable: string;
     responsableId: string;
     tags: string[];
+    categoria: string;
+    tipoActividad: string;
     estado: ProjectStatus;
     fechaInicio: string;
     fechaFin: string;
@@ -126,6 +130,8 @@ const EMPTY_FORM: FormData = {
     responsable: '',
     responsableId: '',
     tags: [],
+    categoria: '',
+    tipoActividad: '',
     estado: 'activo',
     fechaInicio: '',
     fechaFin: '',
@@ -168,13 +174,15 @@ function ProjectsContent() {
     const [projectEntries, setProjectEntries] = useState<any[]>([]);
     const [projectChecklist, setProjectChecklist] = useState<any[]>([]);
     const [projectLogs, setProjectLogs] = useState<any[]>([]);
+    const [configOptions, setConfigOptions] = useState<any[]>([]);
+
+    const categoryOptions = configOptions.filter((o: any) => o.category === 'CATEGORIA' && o.active).map((o: any) => o.value);
+    const activityOptions = configOptions.filter((o: any) => o.category === 'TIPO_ACTIVIDAD' && o.active).map((o: any) => o.value);
     const [isDetailsLoading, setIsDetailsLoading] = useState(false);
     const [isSavingLog, setIsSavingLog] = useState(false);
 
     useEffect(() => {
-        loadProjects();
-        loadOperators();
-        loadClients();
+        loadData();
     }, []);
 
     useEffect(() => {
@@ -186,30 +194,24 @@ function ProjectsContent() {
         }
     }, [searchParams]);
 
-    const loadClients = async () => {
-        try {
-            const data = await fetch('/api/clients').then(res => res.json());
-            if (Array.isArray(data)) setClients(data);
-        } catch (e) { /* ignore */ }
-    };
-
-    const loadProjects = async (silent = false) => {
+    const loadData = async (silent = false) => {
         if (!silent) setIsLoading(true);
         try {
-            const data = await fetch('/api/projects').then(res => res.json());
-            setProjects(data);
+            const [projectsData, operatorsData, clientsData, configOptionsData] = await Promise.all([
+                fetch('/api/projects').then(res => res.json()),
+                fetch('/api/operators').then(res => res.json()),
+                fetch('/api/clients').then(res => res.json()),
+                fetch('/api/config/options').then(res => res.json()), // Fixed path
+            ]);
+            setProjects(projectsData);
+            setOperators(operatorsData);
+            setClients(clientsData);
+            setConfigOptions(configOptionsData);
         } catch (e) {
             console.error(e);
         } finally {
             if (!silent) setIsLoading(false);
         }
-    };
-
-    const loadOperators = async () => {
-        try {
-            const data = await fetch('/api/operators').then(res => res.json());
-            setOperators(data);
-        } catch (e) { /* ignore */ }
     };
 
     // ── CRUD ──────────────────────────────────────────────────────────────────
@@ -232,8 +234,10 @@ function ProjectsContent() {
             clientId: project.clientId || '',
             responsable: project.responsable || '',
             responsableId: project.responsableId || '',
-            tags: (project.tags as string[]) || [],
-            estado: project.estado || 'activo',
+            tags: project.tags || [],
+            categoria: project.categoria || '',
+            tipoActividad: project.tipoActividad || '',
+            estado: project.estado,
             fechaInicio: project.fechaInicio || '',
             fechaFin: project.fechaFin || '',
         });
@@ -294,7 +298,7 @@ function ProjectsContent() {
         };
         await fetch(url, { method, body: JSON.stringify(submissionData) });
         setIsModalOpen(false);
-        loadProjects(true);
+        loadData(true);
     };
 
     const handleDeleteClick = (id: string) => {
@@ -538,6 +542,8 @@ function ProjectsContent() {
                     editingProject={editingProject}
                     operators={operators}
                     clients={clients}
+                    categoryOptions={categoryOptions}
+                    activityOptions={activityOptions}
                     onSubmit={handleSubmit}
                     onClose={() => setIsModalOpen(false)}
                 />
@@ -1078,6 +1084,8 @@ function ProjectModal({
     editingProject,
     operators,
     clients,
+    categoryOptions,
+    activityOptions,
     onSubmit,
     onClose,
 }: {
@@ -1086,6 +1094,8 @@ function ProjectModal({
     editingProject: Project | null;
     operators: { id: string; nombreCompleto: string }[];
     clients: { id: string; nombre: string }[];
+    categoryOptions: string[];
+    activityOptions: string[];
     onSubmit: (e: React.FormEvent) => void;
     onClose: () => void;
 }) {
@@ -1153,6 +1163,30 @@ function ProjectModal({
                                         {!formData.noEnMetricas ? 'SÍ' : 'NO'}
                                     </span>
                                 </button>
+                            </div>
+                        </div>
+
+                        {/* Categoria + Tipo Actividad */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Categoría del Proyecto</label>
+                                <SearchableSelect
+                                    options={categoryOptions.map(c => ({ id: c, label: c }))}
+                                    value={formData.categoria}
+                                    onChange={(val) => set('categoria', val)}
+                                    placeholder="Seleccionar..."
+                                    className="!space-y-0"
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tipo de Actividad</label>
+                                <SearchableSelect
+                                    options={activityOptions.map(t => ({ id: t, label: t }))}
+                                    value={formData.tipoActividad}
+                                    onChange={(val) => set('tipoActividad', val)}
+                                    placeholder="Seleccionar..."
+                                    className="!space-y-0"
+                                />
                             </div>
                         </div>
 

@@ -54,6 +54,8 @@ export default function DelaysPage() {
     const [projects, setProjects] = useState<Project[]>([]);
     const [operators, setOperators] = useState<{ nombreCompleto: string }[]>([]);
     const [clients, setClients] = useState<{ id: string; nombre: string }[]>([]);
+    const [areaOptions, setAreaOptions] = useState<string[]>([]);
+    const [motivoOptions, setMotivoOptions] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -99,16 +101,22 @@ export default function DelaysPage() {
     const loadData = async () => {
         setIsLoading(true);
         try {
-            const [delaysData, projectsData, operatorsData, clientsData] = await Promise.all([
+            const [delaysData, projectsData, operatorsData, clientsData, configOptions] = await Promise.all([
                 fetch('/api/delays').then(res => res.json()),
                 fetch('/api/projects').then(res => res.json()),
                 fetch('/api/operators').then(res => res.json()),
-                fetch('/api/clients').then(res => res.json())
+                fetch('/api/clients').then(res => res.json()),
+                fetch('/api/config/options').then(res => res.json())
             ]);
             setDelays(Array.isArray(delaysData) ? delaysData : []);
             setProjects(Array.isArray(projectsData) ? projectsData : []);
             setOperators(Array.isArray(operatorsData) ? operatorsData : []);
             setClients(Array.isArray(clientsData) ? clientsData : []);
+
+            if (Array.isArray(configOptions)) {
+                setAreaOptions(configOptions.filter((o: any) => o.category === 'AREA_DEMORA' && o.active).map((o: any) => o.value));
+                setMotivoOptions(configOptions.filter((o: any) => o.category === 'MOTIVO_DEMORA' && o.active).map((o: any) => o.value));
+            }
         } catch (error) {
             console.error('Error loading delays data:', error);
         } finally {
@@ -508,6 +516,26 @@ export default function DelaysPage() {
                                     />
                                 </div>
 
+                                <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Motivo Frecuente</label>
+                                        <SearchableSelect
+                                            options={motivoOptions.map(m => ({ id: m, label: m }))}
+                                            value={motivoOptions.includes(formData.motivo) ? formData.motivo : ''}
+                                            onChange={(val) => setFormData({ ...formData, motivo: val })}
+                                            placeholder="Seleccionar motivo predefinido..."
+                                            className="!space-y-0"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Detalle / Motivo Específico</label>
+                                        <textarea required value={formData.motivo} onChange={e => setFormData({ ...formData, motivo: e.target.value })}
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 min-h-[50px] max-h-[150px]"
+                                            placeholder="Describe o amplía el motivo de la demora..."
+                                        />
+                                    </div>
+                                </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                         <User className="w-3 h-3" /> Quien registra
@@ -532,7 +560,7 @@ export default function DelaysPage() {
                                         <Building2 className="w-3 h-3" /> Área del Cliente
                                     </label>
                                     <SearchableSelect
-                                        options={AREAS.map(a => ({ id: a, label: a }))}
+                                        options={(areaOptions.length > 0 ? areaOptions : AREAS).map(a => ({ id: a, label: a }))}
                                         value={formData.area}
                                         onChange={(val) => setFormData({ ...formData, area: val })}
                                         placeholder="Seleccionar área..."

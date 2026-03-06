@@ -41,6 +41,8 @@ export const dataLayer = {
         fechaInicio?: string;
         fechaFin?: string;
         publicToken?: string;
+        categoria?: string;
+        tipoActividad?: string;
     }) {
         const sanitizedData = { ...data };
         if (sanitizedData.clientId === "") delete sanitizedData.clientId;
@@ -93,6 +95,8 @@ export const dataLayer = {
         fechaFin?: string;
         finalizadoConPendientes?: boolean;
         pendientesSnapshot?: any;
+        categoria?: string;
+        tipoActividad?: string;
     }) {
         const sanitizedData = { ...data };
         if (sanitizedData.clientId === "") sanitizedData.clientId = null as any;
