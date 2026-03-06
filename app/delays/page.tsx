@@ -463,180 +463,182 @@ export default function DelaysPage() {
             {/* Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-xl rounded-[3rem] shadow-2xl border border-white/20 animate-in zoom-in-95 duration-300 max-h-[95vh] overflow-y-auto">
-                        <form onSubmit={handleSubmit} className="p-8 md:p-10 space-y-6">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-amber-500/30">
-                                        <Timer className="w-6 h-6" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-2xl font-black text-slate-800 tracking-tight leading-none">
-                                            {editingDelayId ? 'Editar Registro' : 'Registrar Demora'}
-                                        </h3>
-                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Responsabilidad del Cliente</p>
-                                    </div>
+                    <div className="bg-white w-full max-w-xl rounded-[3rem] shadow-2xl border border-white/20 animate-in zoom-in-95 duration-300 max-h-[95vh] flex flex-col overflow-hidden">
+                        {/* Header - Fixed */}
+                        <div className="p-8 md:p-10 pb-4 flex items-center justify-between border-b border-slate-50 flex-shrink-0">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-amber-500/30">
+                                    <Timer className="w-6 h-6" />
                                 </div>
-                                <button type="button" onClick={() => { setIsModalOpen(false); setEditingDelayId(null); }} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400">
-                                    <X className="w-5 h-5" />
-                                </button>
+                                <div>
+                                    <h3 className="text-2xl font-black text-slate-800 tracking-tight leading-none">
+                                        {editingDelayId ? 'Editar Registro' : 'Registrar Demora'}
+                                    </h3>
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Responsabilidad del Cliente</p>
+                                </div>
                             </div>
+                            <button type="button" onClick={() => { setIsModalOpen(false); setEditingDelayId(null); }} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                {/* Proyecto */}
-                                <div className="md:col-span-2">
-                                    <SearchableSelect
-                                        label="Proyecto afectado"
-                                        icon={<Layout className="w-3 h-3" />}
-                                        options={projects.map(p => ({ id: p.id, label: p.nombre }))}
-                                        value={formData.projectId}
-                                        onChange={(val) => setFormData({ ...formData, projectId: val })}
-                                        placeholder="Buscar proyecto..."
-                                        className="!space-y-0"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                        <Calendar className="w-3 h-3" /> Fecha
-                                    </label>
-                                    <input type="date" required value={formData.fecha}
-                                        onChange={e => setFormData({ ...formData, fecha: e.target.value })}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 h-[50px]"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                        <Clock className="w-3 h-3" /> Hora
-                                    </label>
-                                    <input type="time" required value={formData.hora}
-                                        onChange={e => setFormData({ ...formData, hora: e.target.value })}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 h-[50px]"
-                                    />
-                                </div>
-
-                                <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Motivo Frecuente</label>
+                        <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
+                            {/* Scrollable Content */}
+                            <div className="flex-1 overflow-y-auto p-8 md:p-10 pt-6 space-y-6 custom-scrollbar">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    {/* Proyecto */}
+                                    <div className="md:col-span-2">
                                         <SearchableSelect
-                                            options={motivoOptions.map(m => ({ id: m, label: m }))}
-                                            value={motivoOptions.includes(formData.motivo) ? formData.motivo : ''}
-                                            onChange={(val) => setFormData({ ...formData, motivo: val })}
-                                            placeholder="Seleccionar motivo predefinido..."
+                                            label="Proyecto afectado"
+                                            icon={<Layout className="w-3 h-3" />}
+                                            options={projects.map(p => ({ id: p.id, label: p.nombre }))}
+                                            value={formData.projectId}
+                                            onChange={(val) => setFormData({ ...formData, projectId: val })}
+                                            placeholder="Buscar proyecto..."
                                             className="!space-y-0"
                                         />
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Detalle / Motivo Específico</label>
-                                        <textarea required value={formData.motivo} onChange={e => setFormData({ ...formData, motivo: e.target.value })}
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 min-h-[50px] max-h-[150px]"
-                                            placeholder="Describe o amplía el motivo de la demora..."
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                            <Calendar className="w-3 h-3" /> Fecha
+                                        </label>
+                                        <input type="date" required value={formData.fecha}
+                                            onChange={e => setFormData({ ...formData, fecha: e.target.value })}
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 h-[50px]"
                                         />
                                     </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                        <User className="w-3 h-3" /> Quien registra
-                                    </label>
-                                    {currentUser?.role === 'operador' ? (
-                                        <div className="w-full bg-slate-100 border border-slate-200 rounded-2xl py-3 px-4 font-bold text-slate-500 h-[50px] flex items-center">
-                                            {formData.operador}
+
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                            <Clock className="w-3 h-3" /> Hora
+                                        </label>
+                                        <input type="time" required value={formData.hora}
+                                            onChange={e => setFormData({ ...formData, hora: e.target.value })}
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 h-[50px]"
+                                        />
+                                    </div>
+
+                                    <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Motivo Frecuente</label>
+                                            <SearchableSelect
+                                                options={motivoOptions.map(m => ({ id: m, label: m }))}
+                                                value={motivoOptions.includes(formData.motivo) ? formData.motivo : ''}
+                                                onChange={(val) => setFormData({ ...formData, motivo: val })}
+                                                placeholder="Seleccionar motivo predefinido..."
+                                                className="!space-y-0"
+                                            />
                                         </div>
-                                    ) : (
+
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Detalle / Motivo Específico</label>
+                                            <textarea required value={formData.motivo} onChange={e => setFormData({ ...formData, motivo: e.target.value })}
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 min-h-[50px] max-h-[150px]"
+                                                placeholder="Describe o amplía el motivo de la demora..."
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                            <User className="w-3 h-3" /> Quien registra
+                                        </label>
+                                        {currentUser?.role === 'operador' ? (
+                                            <div className="w-full bg-slate-100 border border-slate-200 rounded-2xl py-3 px-4 font-bold text-slate-500 h-[50px] flex items-center">
+                                                {formData.operador}
+                                            </div>
+                                        ) : (
+                                            <SearchableSelect
+                                                options={operators.map(op => ({ id: op.nombreCompleto, label: op.nombreCompleto }))}
+                                                value={formData.operador}
+                                                onChange={(val) => setFormData({ ...formData, operador: val })}
+                                                placeholder="Seleccionar operador..."
+                                                className="!space-y-0"
+                                            />
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                            <Building2 className="w-3 h-3" /> Área del Cliente
+                                        </label>
                                         <SearchableSelect
-                                            options={operators.map(op => ({ id: op.nombreCompleto, label: op.nombreCompleto }))}
-                                            value={formData.operador}
-                                            onChange={(val) => setFormData({ ...formData, operador: val })}
-                                            placeholder="Seleccionar operador..."
+                                            options={(areaOptions.length > 0 ? areaOptions : AREAS).map(a => ({ id: a, label: a }))}
+                                            value={formData.area}
+                                            onChange={(val) => setFormData({ ...formData, area: val })}
+                                            placeholder="Seleccionar área..."
                                             className="!space-y-0"
                                         />
-                                    )}
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                        <Building2 className="w-3 h-3" /> Área del Cliente
-                                    </label>
-                                    <SearchableSelect
-                                        options={(areaOptions.length > 0 ? areaOptions : AREAS).map(a => ({ id: a, label: a }))}
-                                        value={formData.area}
-                                        onChange={(val) => setFormData({ ...formData, area: val })}
-                                        placeholder="Seleccionar área..."
-                                        className="!space-y-0"
-                                    />
-                                </div>
-
-                                <div className="md:col-span-2 space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                        <User className="w-3 h-3" /> Responsable del Área (Opcional)
-                                    </label>
-                                    <input type="text" value={formData.responsableArea}
-                                        onChange={e => setFormData({ ...formData, responsableArea: e.target.value })}
-                                        placeholder="Nombre del responsable si lo conoce..."
-                                        className="w-full h-[50px] bg-slate-50 border border-slate-200 rounded-2xl px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 text-sm"
-                                    />
-                                </div>
-
-                                <div className="md:col-span-2 space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                        <AlertCircle className="w-3 h-3" /> Motivo de la demora
-                                    </label>
-                                    <textarea required value={formData.motivo}
-                                        onChange={e => setFormData({ ...formData, motivo: e.target.value })}
-                                        placeholder="Describa el motivo de la demora externa..."
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-medium text-slate-700 resize-none h-24"
-                                    />
-                                </div>
-
-                                <div className="md:col-span-2 space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                        <Timer className="w-3 h-3" /> Tiempo perdido (Horas)
-                                    </label>
-                                    <div className="flex items-center gap-4">
-                                        <input type="range" min="0" max="24" step="0.25"
-                                            className="flex-1 accent-amber-500"
-                                            value={formData.duracion}
-                                            onChange={e => setFormData({ ...formData, duracion: parseFloat(e.target.value) })}
-                                        />
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            max="24"
-                                            step="0.25"
-                                            value={formData.duracion}
-                                            onChange={e => {
-                                                const val = e.target.value;
-                                                if (val === '') {
-                                                    setFormData({ ...formData, duracion: '' as any });
-                                                    return;
-                                                }
-                                                const v = parseFloat(val);
-                                                if (!isNaN(v)) {
-                                                    // No redondear mientras escribe para permitir borrar y cambiar decimales
-                                                    setFormData({ ...formData, duracion: v });
-                                                }
-                                            }}
-                                            onBlur={() => {
-                                                const v = parseFloat(formData.duracion as any);
-                                                if (!isNaN(v)) {
-                                                    // Redondear al tramo de 15 min al salir del campo
-                                                    const rounded = Math.round(v * 4) / 4;
-                                                    setFormData({ ...formData, duracion: Math.max(0, Math.min(24, rounded)) });
-                                                } else {
-                                                    setFormData({ ...formData, duracion: 0 });
-                                                }
-                                            }}
-                                            className="w-24 bg-amber-50 border border-amber-200 rounded-xl py-2 px-3 text-xl font-black text-amber-500 text-center outline-none focus:border-amber-400 focus:ring-4 focus:ring-amber-500/10 shrink-0"
-                                        />
-                                        <span className="text-xs font-black text-amber-600 uppercase shrink-0">Hs</span>
                                     </div>
-                                    <p className="text-[10px] text-slate-400 font-medium pl-1">Ajuste en tramos de 15 minutos (0.25h)</p>
+
+                                    <div className="md:col-span-2 space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                            <User className="w-3 h-3" /> Responsable del Área (Opcional)
+                                        </label>
+                                        <input type="text" value={formData.responsableArea}
+                                            onChange={e => setFormData({ ...formData, responsableArea: e.target.value })}
+                                            placeholder="Nombre del responsable si lo conoce..."
+                                            className="w-full h-[50px] bg-slate-50 border border-slate-200 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 text-sm rounded-2xl"
+                                        />
+                                    </div>
+
+                                    <div className="md:col-span-2 space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                            <AlertCircle className="w-3 h-3" /> Motivo de la demora
+                                        </label>
+                                        <textarea required value={formData.motivo}
+                                            onChange={e => setFormData({ ...formData, motivo: e.target.value })}
+                                            placeholder="Describa el motivo de la demora externa..."
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-medium text-slate-700 resize-none h-24"
+                                        />
+                                    </div>
+
+                                    <div className="md:col-span-2 space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                            <Timer className="w-3 h-3" /> Tiempo perdido (Horas)
+                                        </label>
+                                        <div className="flex items-center gap-4">
+                                            <input type="range" min="0" max="24" step="0.25"
+                                                className="flex-1 accent-amber-500"
+                                                value={formData.duracion}
+                                                onChange={e => setFormData({ ...formData, duracion: parseFloat(e.target.value) })}
+                                            />
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max="24"
+                                                step="0.25"
+                                                value={formData.duracion}
+                                                onChange={e => {
+                                                    const val = e.target.value;
+                                                    if (val === '') {
+                                                        setFormData({ ...formData, duracion: '' as any });
+                                                        return;
+                                                    }
+                                                    const v = parseFloat(val);
+                                                    if (!isNaN(v)) {
+                                                        setFormData({ ...formData, duracion: v });
+                                                    }
+                                                }}
+                                                onBlur={() => {
+                                                    const v = parseFloat(formData.duracion as any);
+                                                    if (!isNaN(v)) {
+                                                        const rounded = Math.round(v * 4) / 4;
+                                                        setFormData({ ...formData, duracion: Math.max(0, Math.min(24, rounded)) });
+                                                    } else {
+                                                        setFormData({ ...formData, duracion: 0 });
+                                                    }
+                                                }}
+                                                className="w-24 bg-amber-50 border border-amber-200 rounded-xl py-2 px-3 text-xl font-black text-amber-500 text-center outline-none focus:border-amber-400 focus:ring-4 focus:ring-amber-500/10 shrink-0"
+                                            />
+                                            <span className="text-xs font-black text-amber-600 uppercase shrink-0">Hs</span>
+                                        </div>
+                                        <p className="text-[10px] text-slate-400 font-medium pl-1">Ajuste en tramos de 15 minutos (0.25h)</p>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="flex gap-4 pt-2">
+                            <div className="flex gap-4 p-8 md:p-10 border-t border-slate-50 flex-shrink-0">
                                 <button type="button" onClick={() => setIsModalOpen(false)}
                                     className="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95">
                                     Cancelar

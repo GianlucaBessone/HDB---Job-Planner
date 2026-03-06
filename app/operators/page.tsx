@@ -201,18 +201,20 @@ export default function OperatorsPage() {
             {/* Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-300">
-                        <div className="p-8 space-y-6">
-                            <div className="flex justify-between items-center border-b pb-4">
-                                <h3 className="text-xl font-bold text-slate-800">
-                                    {editingOperator ? 'Editar Operador' : 'Alta de Operador'}
-                                </h3>
-                                <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 trasition-all">
-                                    <X className="w-6 h-6" />
-                                </button>
-                            </div>
+                    <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-300 max-h-[95vh] flex flex-col">
+                        {/* Header - Fixed */}
+                        <div className="p-8 flex justify-between items-center border-b flex-shrink-0">
+                            <h3 className="text-xl font-bold text-slate-800">
+                                {editingOperator ? 'Editar Operador' : 'Alta de Operador'}
+                            </h3>
+                            <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-all">
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
 
-                            <form onSubmit={handleSubmit} className="space-y-6">
+                        <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
+                            {/* Scrollable Content */}
+                            <div className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Nombre Completo</label>
                                     <input
@@ -285,24 +287,25 @@ export default function OperatorsPage() {
                                         </div>
                                     </div>
                                 )}
+                            </div>
 
-                                <div className="pt-4 flex gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsModalOpen(false)}
-                                        className="flex-1 px-6 py-4 rounded-2xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all"
-                                    >
-                                        Cancelar
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        className="flex-[2] bg-primary text-white px-6 py-4 rounded-2xl font-bold hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all"
-                                    >
-                                        {editingOperator ? 'Guardar Cambios' : 'Registrar Operador'}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+                            {/* Footer - Fixed */}
+                            <div className="p-8 border-t flex gap-3 flex-shrink-0">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsModalOpen(false)}
+                                    className="flex-1 px-6 py-4 rounded-2xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-[2] bg-primary text-white px-6 py-4 rounded-2xl font-bold hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all"
+                                >
+                                    {editingOperator ? 'Guardar Cambios' : 'Registrar Operador'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

@@ -1104,25 +1104,20 @@ function ProjectModal({
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto overflow-x-visible style-for-tooltips">
-                <style>{`
-                    .style-for-tooltips { overflow: visible !important; max-height: none !important; }
-                    @media (max-height: 800px) {
-                        .style-for-tooltips { overflow-y: auto !important; max-height: 90vh !important; overflow-x: visible !important; }
-                    }
-                `}</style>
-                <div className="p-7 space-y-6">
-                    {/* Header */}
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                        <h3 className="text-xl font-bold text-slate-800">
-                            {editingProject ? 'Editar Proyecto' : 'Nuevo Proyecto'}
-                        </h3>
-                        <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-all">
-                            <X className="w-5 h-5" />
-                        </button>
-                    </div>
+            <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-300 max-h-[95vh] flex flex-col overflow-hidden">
+                {/* Header - Fixed */}
+                <div className="p-7 flex items-center justify-between border-b border-slate-100 flex-shrink-0">
+                    <h3 className="text-xl font-bold text-slate-800">
+                        {editingProject ? 'Editar Proyecto' : 'Nuevo Proyecto'}
+                    </h3>
+                    <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-all">
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
 
-                    <form onSubmit={onSubmit} className="space-y-4">
+                <form onSubmit={onSubmit} className="flex-1 flex flex-col min-h-0">
+                    {/* Scrollable Content */}
+                    <div className="flex-1 overflow-y-auto p-7 space-y-4 custom-scrollbar">
                         {/* Nombre + Toggle Metricas */}
                         <div className="flex flex-col sm:flex-row sm:items-end gap-4">
                             <div className="flex-1 space-y-1.5">
@@ -1338,25 +1333,25 @@ function ProjectModal({
                                 placeholder="Notas adicionales..."
                             />
                         </div>
+                    </div>
 
-                        {/* Actions */}
-                        <div className="flex gap-3 pt-2">
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                className="flex-1 px-6 py-3 rounded-2xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                type="submit"
-                                className="flex-[2] bg-primary text-white px-6 py-3 rounded-2xl font-bold hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all"
-                            >
-                                {editingProject ? 'Guardar Cambios' : 'Crear Proyecto'}
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    {/* Footer - Fixed */}
+                    <div className="p-7 border-t border-slate-100 flex gap-3 flex-shrink-0">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="flex-1 px-6 py-3 rounded-2xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            className="flex-[2] bg-primary text-white px-6 py-3 rounded-2xl font-bold hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all"
+                        >
+                            {editingProject ? 'Guardar Cambios' : 'Crear Proyecto'}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     );

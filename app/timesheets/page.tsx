@@ -837,106 +837,112 @@ export default function TimesheetsPage() {
             {/* Modal de Carga Manual / Edición */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-xl rounded-[3rem] shadow-2xl border border-white/20 overflow-hidden animate-in zoom-in-95 duration-300">
-                        <form onSubmit={handleSubmitForm} className="p-8 md:p-10 space-y-8">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-3">
-                                    <Clock className="w-6 h-6 text-indigo-500" />
-                                    {editingEntry ? 'Editar Registro' : 'Carga Manual'}
-                                </h3>
-                                <button type="button" onClick={() => { setIsModalOpen(false); }} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400"><X className="w-5 h-5" /></button>
-                            </div>
+                    <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-300 max-h-[95vh] flex flex-col overflow-hidden">
+                        {/* Header - Fixed */}
+                        <div className="p-7 flex items-center justify-between border-b border-slate-100 flex-shrink-0">
+                            <h3 className="text-xl font-bold text-slate-800">
+                                {editingEntry ? 'Editar Registro de Tiempo' : 'Nuevo Registro de Tiempo'}
+                            </h3>
+                            <button onClick={() => { setIsModalOpen(false); }} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-all">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
 
-                            {/* Alerta si está editando un registro confirmado (ya ingresó la clave) */}
-                            {editingEntry?.estadoConfirmado && (
-                                <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3">
-                                    <ShieldAlert className="w-5 h-5 text-amber-500 shrink-0" />
-                                    <p className="text-xs font-bold text-amber-800">Modificando registro confirmado mediante override de supervisor.</p>
-                                </div>
-                            )}
+                        <form onSubmit={handleSubmitForm} className="flex-1 flex flex-col min-h-0">
+                            {/* Scrollable Content */}
+                            <div className="flex-1 overflow-y-auto p-7 space-y-6 custom-scrollbar">
+                                {/* Alerta si está editando un registro confirmado (ya ingresó la clave) */}
+                                {editingEntry?.estadoConfirmado && (
+                                    <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3">
+                                        <ShieldAlert className="w-5 h-5 text-amber-500 shrink-0" />
+                                        <p className="text-xs font-bold text-amber-800">Modificando registro confirmado mediante override de supervisor.</p>
+                                    </div>
+                                )}
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2 md:col-span-2">
-                                    <SearchableSelect
-                                        label="Operador"
-                                        options={operators.map(op => ({ id: op.id, label: op.nombreCompleto }))}
-                                        value={formData.operatorId}
-                                        onChange={(val) => setFormData({ ...formData, operatorId: val })}
-                                        placeholder="Seleccionar operador..."
-                                        disabled={!!editingEntry || currentUser?.role === 'operador'}
-                                    />
-                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2 md:col-span-2">
+                                        <SearchableSelect
+                                            label="Operador"
+                                            options={operators.map(op => ({ id: op.id, label: op.nombreCompleto }))}
+                                            value={formData.operatorId}
+                                            onChange={(val) => setFormData({ ...formData, operatorId: val })}
+                                            placeholder="Seleccionar operador..."
+                                            disabled={!!editingEntry || currentUser?.role === 'operador'}
+                                        />
+                                    </div>
 
-                                {/* Proyecto */}
-                                <div className="space-y-2 md:col-span-2">
-                                    <SearchableSelect
-                                        label="Proyecto"
-                                        options={activeProjects.map(p => ({ id: p.id, label: p.nombre }))}
-                                        value={formData.projectId}
-                                        onChange={(val) => setFormData({ ...formData, projectId: val })}
-                                        placeholder="Seleccionar proyecto..."
-                                    />
-                                </div>
+                                    {/* Proyecto */}
+                                    <div className="space-y-2 md:col-span-2">
+                                        <SearchableSelect
+                                            label="Proyecto"
+                                            options={activeProjects.map(p => ({ id: p.id, label: p.nombre }))}
+                                            value={formData.projectId}
+                                            onChange={(val) => setFormData({ ...formData, projectId: val })}
+                                            placeholder="Seleccionar proyecto..."
+                                        />
+                                    </div>
 
-                                {/* Fecha */}
-                                <div className="space-y-2 md:col-span-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Fecha</label>
-                                    <input
-                                        type="date"
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700"
-                                        required
-                                        value={formData.fecha}
-                                        onChange={e => setFormData({ ...formData, fecha: e.target.value })}
-                                    />
-                                </div>
+                                    {/* Fecha */}
+                                    <div className="space-y-2 md:col-span-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Fecha</label>
+                                        <input
+                                            type="date"
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700"
+                                            required
+                                            value={formData.fecha}
+                                            onChange={e => setFormData({ ...formData, fecha: e.target.value })}
+                                        />
+                                    </div>
 
-                                {/* Hora Ingreso */}
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Hora Inicio</label>
-                                    <input
-                                        type="time"
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700"
-                                        required
-                                        value={formData.horaIngreso}
-                                        onChange={e => setFormData({ ...formData, horaIngreso: e.target.value })}
-                                    />
-                                </div>
+                                    {/* Hora Ingreso */}
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Hora Inicio</label>
+                                        <input
+                                            type="time"
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700"
+                                            required
+                                            value={formData.horaIngreso}
+                                            onChange={e => setFormData({ ...formData, horaIngreso: e.target.value })}
+                                        />
+                                    </div>
 
-                                {/* Hora Egreso */}
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Hora Fin</label>
-                                    <input
-                                        type="time"
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700"
-                                        required
-                                        value={formData.horaEgreso}
-                                        onChange={e => setFormData({ ...formData, horaEgreso: e.target.value })}
-                                    />
-                                </div>
+                                    {/* Hora Egreso */}
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Hora Fin</label>
+                                        <input
+                                            type="time"
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700"
+                                            required
+                                            value={formData.horaEgreso}
+                                            onChange={e => setFormData({ ...formData, horaEgreso: e.target.value })}
+                                        />
+                                    </div>
 
-                                {/* Horas Extras */}
-                                <div className="space-y-2 md:col-span-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">¿Son Horas Extras?</label>
-                                    <div className="flex gap-4">
-                                        <button
-                                            type="button"
-                                            onClick={() => setFormData({ ...formData, isExtra: false })}
-                                            className={`flex-1 py-3 px-4 rounded-2xl font-bold transition-colors ${!formData.isExtra ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 text-slate-500 border-2 border-slate-200'}`}
-                                        >
-                                            No, Normales
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setFormData({ ...formData, isExtra: true })}
-                                            className={`flex-1 py-3 px-4 rounded-2xl font-bold transition-colors ${formData.isExtra ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 text-slate-500 border-2 border-slate-200'}`}
-                                        >
-                                            Sí, Extras
-                                        </button>
+                                    {/* Horas Extras */}
+                                    <div className="space-y-2 md:col-span-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">¿Son Horas Extras?</label>
+                                        <div className="flex gap-4">
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, isExtra: false })}
+                                                className={`flex-1 py-3 px-4 rounded-2xl font-bold transition-colors ${!formData.isExtra ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 text-slate-500 border-2 border-slate-200'}`}
+                                            >
+                                                No, Normales
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, isExtra: true })}
+                                                className={`flex-1 py-3 px-4 rounded-2xl font-bold transition-colors ${formData.isExtra ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 text-slate-500 border-2 border-slate-200'}`}
+                                            >
+                                                Sí, Extras
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="pt-6 flex gap-3">
+                            {/* Footer - Fixed */}
+                            <div className="p-7 border-t border-slate-100 flex gap-3 flex-shrink-0">
                                 <button type="button" onClick={() => { setIsModalOpen(false); }} className="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95">Cancelar</button>
                                 <button type="submit" className="flex-[2] bg-indigo-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-indigo-600 shadow-xl shadow-indigo-500/20 active:scale-95 transition-all">Guardar Registro</button>
                             </div>
