@@ -30,7 +30,9 @@ import {
     Info,
     Users,
     CheckSquare,
-    PieChart
+    PieChart,
+    MessageSquare,
+    ClipboardList
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { CHECKLIST_TEMPLATES } from '@/lib/checklistTemplates';
@@ -63,6 +65,7 @@ interface Project {
 
     fechaInicio?: string;
     fechaFin?: string;
+    publicToken?: string;
 }
 
 
@@ -163,7 +166,9 @@ function ProjectsContent() {
     const [selectedProjectForDetails, setSelectedProjectForDetails] = useState<Project | null>(null);
     const [projectEntries, setProjectEntries] = useState<any[]>([]);
     const [projectChecklist, setProjectChecklist] = useState<any[]>([]);
+    const [projectLogs, setProjectLogs] = useState<any[]>([]);
     const [isDetailsLoading, setIsDetailsLoading] = useState(false);
+    const [isSavingLog, setIsSavingLog] = useState(false);
 
     useEffect(() => {
         loadProjects();
@@ -240,16 +245,38 @@ function ProjectsContent() {
         setIsDetailsOpen(true);
         setIsDetailsLoading(true);
         try {
-            const [entries, checklist] = await Promise.all([
+            const [entries, checklist, logs] = await Promise.all([
                 fetch(`/api/time-entries?projectId=${project.id}`).then(res => res.json()),
-                fetch(`/api/projects/${project.id}/checklist`).then(res => res.json())
+                fetch(`/api/projects/${project.id}/checklist`).then(res => res.json()),
+                fetch(`/api/projects/${project.id}/logs`).then(res => res.json())
             ]);
             setProjectEntries(Array.isArray(entries) ? entries : []);
             setProjectChecklist(Array.isArray(checklist) ? checklist : []);
+            setProjectLogs(Array.isArray(logs) ? logs : []);
         } catch (e) {
             console.error(e);
         } finally {
             setIsDetailsLoading(false);
+        }
+    };
+
+    const handleSaveLog = async (logData: { fecha: string; responsable: string; observacion: string }) => {
+        if (!selectedProjectForDetails) return;
+        setIsSavingLog(true);
+        try {
+            const res = await fetch(`/api/projects/${selectedProjectForDetails.id}/logs`, {
+                method: 'POST',
+                body: JSON.stringify(logData),
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (res.ok) {
+                const newLog = await res.json();
+                setProjectLogs(prev => [newLog, ...prev]);
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsSavingLog(false);
         }
     };
 
@@ -487,10 +514,13 @@ function ProjectsContent() {
 
             {isDetailsOpen && selectedProjectForDetails && (
                 <ProjectDetailsModal
-                    project={selectedProjectForDetails}
+                    project={selectedProjectForDetails!}
                     entries={projectEntries}
                     checklist={projectChecklist}
+                    logs={projectLogs}
                     isLoading={isDetailsLoading}
+                    isSavingLog={isSavingLog}
+                    onSaveLog={handleSaveLog}
                     onClose={() => setIsDetailsOpen(false)}
                 />
             )}
@@ -536,15 +566,23 @@ function ProjectDetailsModal({
     project,
     entries,
     checklist,
+    logs,
     isLoading,
+    isSavingLog,
+    onSaveLog,
     onClose,
 }: {
     project: Project;
     entries: any[];
     checklist: any[];
+    logs: any[];
     isLoading: boolean;
+    isSavingLog: boolean;
+    onSaveLog: (data: { fecha: string; responsable: string; observacion: string }) => void;
     onClose: () => void;
 }) {
+    const [newLog, setNewLog] = useState({ fecha: new Date().toISOString().split('T')[0], responsable: '', observacion: '' });
+
     const hoursRemaining = Math.max(0, project.horasEstimadas - project.horasConsumidas);
     const progress = project.horasEstimadas > 0 ? Math.min(100, Math.round((project.horasConsumidas / project.horasEstimadas) * 100)) : 0;
 
@@ -740,6 +778,118 @@ function ProjectDetailsModal({
                             </div>
 
 
+                            {/* Public Tracking Link & Logs */}
+                            <div className="space-y-6 lg:col-span-2">
+                                <div className="bg-primary/5 border border-primary/10 rounded-3xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                                    <div className="space-y-1 text-center md:text-left">
+                                        <h4 className="text-sm font-black text-primary uppercase tracking-widest flex items-center gap-2 justify-center md:justify-start">
+                                            <TrendingUp className="w-4 h-4" /> Link de Seguimiento Público
+                                        </h4>
+                                        <p className="text-xs text-slate-500 font-medium">Comparte este enlace con el cliente para que vea los avances en tiempo real.</p>
+                                    </div>
+                                    <div className="flex items-center gap-2 w-full md:w-auto overflow-hidden">
+                                        <input
+                                            readOnly
+                                            value={`${typeof window !== 'undefined' ? window.location.origin : ''}/projects/${project.id}/report?token=${project.publicToken || ''}`}
+                                            className="bg-white border border-slate-200 rounded-xl px-4 py-2 text-[10px] font-medium text-slate-500 flex-1 md:w-64 outline-none truncate"
+                                        />
+                                        <button
+                                            onClick={() => {
+                                                const url = `${window.location.origin}/projects/${project.id}/report?token=${project.publicToken || ''}`;
+                                                navigator.clipboard.writeText(url);
+                                                alert('Link copiado al portapapeles');
+                                            }}
+                                            className="bg-white hover:bg-slate-50 text-primary border border-primary/20 p-2 rounded-xl transition-all shadow-sm active:scale-90 shrink-0"
+                                            title="Copiar Link"
+                                        >
+                                            <ClipboardList className="w-5 h-5" />
+                                        </button>
+                                        <Link
+                                            href={`/projects/${project.id}/report?token=${project.publicToken || ''}`}
+                                            target="_blank"
+                                            className="bg-primary text-white p-2 rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-90 shrink-0"
+                                            title="Ver Vista Pública"
+                                        >
+                                            <ChevronRight className="w-5 h-5" />
+                                        </Link>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                    {/* Add Log Form */}
+                                    <div className="space-y-4">
+                                        <h4 className="flex items-center gap-2 font-black text-slate-800 uppercase tracking-widest text-xs">
+                                            <MessageSquare className="w-4 h-4 text-primary" /> Registrar Seguimiento / Observación
+                                        </h4>
+                                        <div className="bg-slate-50 rounded-3xl p-6 space-y-4 border border-slate-100">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Fecha</label>
+                                                    <input
+                                                        type="date"
+                                                        value={newLog.fecha}
+                                                        onChange={e => setNewLog(prev => ({ ...prev, fecha: e.target.value }))}
+                                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-primary/20 outline-none"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Responsable</label>
+                                                    <input
+                                                        type="text"
+                                                        value={newLog.responsable}
+                                                        placeholder="Nombre..."
+                                                        onChange={e => setNewLog(prev => ({ ...prev, responsable: e.target.value }))}
+                                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-primary/20 outline-none"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Observación</label>
+                                                <textarea
+                                                    value={newLog.observacion}
+                                                    placeholder="Describe el avance o comentario..."
+                                                    onChange={e => setNewLog(prev => ({ ...prev, observacion: e.target.value }))}
+                                                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-primary/20 outline-none min-h-[100px] resize-none"
+                                                />
+                                            </div>
+                                            <button
+                                                disabled={isSavingLog || !newLog.responsable || !newLog.observacion}
+                                                onClick={() => {
+                                                    onSaveLog(newLog);
+                                                    setNewLog({ fecha: new Date().toISOString().split('T')[0], responsable: '', observacion: '' });
+                                                }}
+                                                className="w-full bg-primary text-white py-3 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 disabled:opacity-50"
+                                            >
+                                                {isSavingLog ? 'Guardando...' : 'Registrar Comentario'}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Logs List */}
+                                    <div className="space-y-4">
+                                        <h4 className="flex items-center gap-2 font-black text-slate-800 uppercase tracking-widest text-xs">
+                                            <Activity className="w-4 h-4 text-primary" /> Historial de Seguimiento
+                                        </h4>
+                                        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin">
+                                            {logs.length === 0 ? (
+                                                <div className="bg-slate-50 border border-dashed border-slate-200 rounded-3xl p-10 text-center text-slate-400 text-xs font-bold uppercase tracking-widest">No hay registros aún</div>
+                                            ) : (
+                                                logs.map((log: any) => (
+                                                    <div key={log.id} className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm space-y-2">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded-md">{log.fecha}</span>
+                                                            <span className="text-[9px] font-bold text-slate-400">Por: {log.responsable}</span>
+                                                        </div>
+                                                        <p className="text-xs font-medium text-slate-600 leading-relaxed italic">"{log.observacion}"</p>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
                             {/* Observations */}
                             {project.observaciones && (
                                 <div className="space-y-3">
@@ -899,6 +1049,14 @@ function ProjectCard({
                             <FileText className="w-3 h-3" /> PDF
                         </Link>
                     )}
+                    <Link
+                        href={`/projects/${project.id}/report?token=${project.publicToken || ''}`}
+                        target="_blank"
+                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 hover:bg-indigo-100 transition-all whitespace-nowrap"
+                        title="Seguimiento Público"
+                    >
+                        <PieChart className="w-3 h-3" /> Seguimiento
+                    </Link>
                 </div>
             </div>
         </div>

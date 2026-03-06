@@ -39,11 +39,18 @@ export const dataLayer = {
         tags?: string[];
         estado?: string;
         fechaInicio?: string;
-        fechaFin?: string
+        fechaFin?: string;
+        publicToken?: string;
     }) {
         const sanitizedData = { ...data };
         if (sanitizedData.clientId === "") delete sanitizedData.clientId;
         if (sanitizedData.responsableId === "") delete sanitizedData.responsableId;
+
+        // Generate publicToken if not provided
+        if (!sanitizedData.publicToken) {
+            sanitizedData.publicToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        }
+
         return await prisma.project.create({ data: sanitizedData as any });
     },
     async updateProject(id: string, data: {
@@ -175,6 +182,20 @@ export const dataLayer = {
     },
     async deleteChecklistItem(id: string) {
         return await prisma.checklistItem.delete({ where: { id } });
+    },
+
+    // Project Logs (Follow-up comments)
+    async getProjectLogs(projectId: string) {
+        return await prisma.projectLog.findMany({
+            where: { projectId },
+            orderBy: { fecha: 'desc' }
+        });
+    },
+    async createProjectLog(data: { projectId: string; fecha: string; responsable: string; observacion: string }) {
+        return await prisma.projectLog.create({ data });
+    },
+    async deleteProjectLog(id: string) {
+        return await prisma.projectLog.delete({ where: { id } });
     }
 };
 

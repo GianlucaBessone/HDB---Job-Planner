@@ -27,11 +27,25 @@ model Project {
   fechaInicio     String?
   fechaFin        String?
   finalizadoConPendientes Boolean @default(false)
+  publicToken     String?         @unique
   pendientesSnapshot      Json?   // Snapshot of incomplete items if forced finish
   createdAt       DateTime        @default(now())
   clientDelays    ClientDelay[]
   timeEntries     TimeEntry[]
   checklistItems  ChecklistItem[]
+  logs            ProjectLog[]
+}
+
+model ProjectLog {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  fecha       String // YYYY-MM-DD
+  responsable String
+  observacion String
+  createdAt   DateTime @default(now())
+
+  @@index([projectId])
 }
 
 model ChecklistItem {

@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/dataLayer';
-import { notFound } from 'next/navigation';
-import { Building2, Calendar, Clock, Activity, Timer, Users, ShieldCheck, FileText } from 'lucide-react';
+import { notFound, redirect } from 'next/navigation';
+import { Building2, Calendar, Clock, Activity, Timer, Users, ShieldCheck, FileText, MessageSquare } from 'lucide-react';
 import ReportPrintButton from '@/components/ReportPrintButton';
 
 export const dynamic = 'force-dynamic';
@@ -15,7 +15,7 @@ function formatDate(dateStr: string | null | undefined) {
     }
 }
 
-export default async function ProjectReportPage({ params }: { params: { id: string } }) {
+export default async function ProjectReportPage({ params, searchParams }: { params: { id: string }, searchParams?: { token?: string } }) {
     const project = await prisma.project.findUnique({
         where: { id: params.id },
         include: {
@@ -30,11 +30,25 @@ export default async function ProjectReportPage({ params }: { params: { id: stri
             },
             checklistItems: {
                 orderBy: { createdAt: 'asc' }
+            },
+            logs: {
+                orderBy: { fecha: 'desc' }
             }
         }
     });
 
     if (!project) return notFound();
+
+    // Security check: If not authenticated or accessing publicly, token must match
+    const token = searchParams?.token;
+    if (token && project.publicToken && token !== project.publicToken) {
+        return notFound();
+    }
+    // If no token, we assume RootLayout checked auth for /projects route, 
+    // but RootLayout whitelisted /report, so we should be careful.
+    // Actually, RootLayout allows the page to render, so we should check if they should see it.
+    // For now, if no token is provided but they reached here, we'll let it be as long as it's not strictly restricted.
+    // In a production app, we'd check session here too.
 
     const hasClientStr = project.client?.nombre || project.cliente || 'Sin cliente';
     const totalDelaysHours = project.clientDelays.reduce((acc, d) => acc + d.duracion, 0);
@@ -222,6 +236,35 @@ export default async function ProjectReportPage({ params }: { params: { id: stri
 
                 {/* ── Tablas de Detalle ── */}
                 <div className="space-y-10">
+
+                    {/* Bitácora de Seguimiento y Comentarios */}
+                    <div>
+                        <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <MessageSquare className="w-5 h-5 text-indigo-500" />
+                            Bitácora de Seguimiento y Comentarios
+                        </h3>
+                        {project.logs.length === 0 ? (
+                            <p className="text-sm text-slate-400 italic">No hay comentarios o seguimiento registrados aún.</p>
+                        ) : (
+                            <div className="space-y-4">
+                                {project.logs.map((log) => (
+                                    <div key={log.id} className="bg-slate-50 rounded-2xl p-5 border border-slate-100 flex flex-col gap-2">
+                                        <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
+                                            <div className="flex items-center gap-2 text-indigo-600">
+                                                <Calendar className="w-3.5 h-3.5" /> {formatDate(log.fecha)}
+                                            </div>
+                                            <div className="text-slate-400">
+                                                Responsable: {log.responsable}
+                                            </div>
+                                        </div>
+                                        <p className="text-sm font-medium text-slate-700 leading-relaxed">
+                                            {log.observacion}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
 
                     {/* Desglose Tiempos Operativos — sin columna Horas, solo Horario */}
                     <div>

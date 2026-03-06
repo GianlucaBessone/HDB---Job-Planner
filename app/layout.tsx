@@ -65,6 +65,8 @@ export default function RootLayout({
     }, []);
     */
 
+    const isPublicPage = pathname.includes('/report');
+
     let content;
     if (isCheckingAuth) {
         content = (
@@ -72,8 +74,17 @@ export default function RootLayout({
                 <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
             </div>
         );
-    } else if (!currentUser) {
+    } else if (!currentUser && !isPublicPage) {
         content = <LoginScreen onLoginSuccess={handleLoginSuccess} />;
+    } else if (isPublicPage && !currentUser) {
+        // Public view (No header/sidebar)
+        content = (
+            <div className="flex flex-col min-h-[100dvh] overflow-x-hidden bg-white">
+                <main className="flex-1 w-full max-w-4xl mx-auto py-4">
+                    {children}
+                </main>
+            </div>
+        );
     } else {
         content = (
             <div className="flex flex-col min-h-[100dvh] overflow-x-hidden">

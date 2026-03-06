@@ -62,6 +62,12 @@ const S = StyleSheet.create({
     tdBold: { fontFamily: 'Helvetica-Bold' },
     totalRow: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: '#CBD5E1', paddingTop: 4, marginTop: 2 },
 
+    // Logs
+    logItem: { backgroundColor: '#F8FAFC', borderRadius: 8, padding: 10, borderLeftWidth: 3, borderLeftColor: '#6366F1', marginBottom: 8 },
+    logHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 },
+    logMeta: { fontSize: 6, color: '#94A3B8', fontFamily: 'Helvetica-Bold' },
+    logText: { fontSize: 8, color: '#334155', lineHeight: 1.4 },
+
     // Checklist
     checklistGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
     checklistItem: { width: '48%', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 8, padding: 8, flexDirection: 'row', gap: 6 },
@@ -169,6 +175,24 @@ export const ProjectReportPDF = ({
                             <Text style={S.obsTitle}>OBSERVACIONES DEL PROYECTO</Text>
                         </View>
                         <Text style={S.obsText}>{project.observaciones}</Text>
+                    </View>
+                )}
+
+                {/* ── Bitácora de Seguimiento ── */}
+                {project.logs && project.logs.length > 0 && (
+                    <View style={S.tableWrapper} wrap={false}>
+                        <Text style={S.tableTitle}>Bitácora de Seguimiento y Comentarios</Text>
+                        <View style={{ gap: 6 }}>
+                            {project.logs.map((log: any) => (
+                                <View key={log.id} style={S.logItem} wrap={false}>
+                                    <View style={S.logHeader}>
+                                        <Text style={[S.logMeta, { color: '#6366F1' }]}>{fmtDate(log.fecha)}</Text>
+                                        <Text style={S.logMeta}>Responsable: {log.responsable}</Text>
+                                    </View>
+                                    <Text style={S.logText}>{log.observacion}</Text>
+                                </View>
+                            ))}
+                        </View>
                     </View>
                 )}
 
