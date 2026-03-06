@@ -172,6 +172,28 @@ export const dataLayer = {
                     }
                 });
             }
+
+            // Re-evaluate pending items if project is finalized and flagged
+            if (project.estado === 'finalizado' && project.finalizadoConPendientes) {
+                const projCheck = await prisma.project.findUnique({
+                    where: { id },
+                    include: { checklistItems: true }
+                });
+                if (projCheck) {
+                    const activeTags = (projCheck.tags as string[]) || [];
+                    const activeChecklist = projCheck.checklistItems.filter(i => activeTags.includes(i.tag) && !i.excluded);
+                    const pendingItems = activeChecklist.filter(i => !i.completed);
+
+                    if (pendingItems.length === 0) {
+                        await prisma.project.update({
+                            where: { id },
+                            data: { finalizadoConPendientes: false, pendientesSnapshot: null }
+                        });
+                        project.finalizadoConPendientes = false;
+                        project.pendientesSnapshot = null;
+                    }
+                }
+            }
         }
 
         return project;

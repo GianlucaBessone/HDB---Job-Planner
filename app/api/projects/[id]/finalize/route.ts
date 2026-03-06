@@ -16,7 +16,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
         // 2. Filter checklist by active tags (Requirement 2.2: items of removed tags shouldn't block)
         const activeTags = (project.tags as string[]) || [];
-        const activeChecklist = checklist.filter(item => activeTags.includes(item.tag));
+        const activeChecklist = checklist.filter(item => activeTags.includes(item.tag) && !item.excluded);
 
         const pendingItems = activeChecklist.filter(item => !item.completed);
 

@@ -92,6 +92,26 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
             }
         });
 
+        // If the project is already finalized and flagged with pending items, 
+        // we re-evaluate in case this change resolved the pending status (e.g. was excluded or completed)
+        const project = await prisma.project.findUnique({
+            where: { id: params.id },
+            include: { checklistItems: true }
+        });
+
+        if (project && project.estado === 'finalizado' && project.finalizadoConPendientes) {
+            const activeTags = (project.tags as string[]) || [];
+            const activeChecklist = project.checklistItems.filter(i => activeTags.includes(i.tag) && !i.excluded);
+            const pendingItems = activeChecklist.filter(i => !i.completed);
+
+            if (pendingItems.length === 0) {
+                await prisma.project.update({
+                    where: { id: project.id },
+                    data: { finalizadoConPendientes: false, pendientesSnapshot: null }
+                });
+            }
+        }
+
         return NextResponse.json(updated);
     } catch (error) {
         console.error('Checklist PATCH error:', error);
