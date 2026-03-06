@@ -176,7 +176,7 @@ export default function OperatorsPage() {
                     <input
                         type="text"
                         placeholder="Buscar por nombre de operador..."
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-12 pr-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                        className="w-full h-[50px] bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-4 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-slate-700 text-sm"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                     />

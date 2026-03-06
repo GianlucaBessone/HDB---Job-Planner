@@ -65,7 +65,7 @@ export default function SearchableSelect({
 
             <div
                 onClick={() => !disabled && setIsOpen(!isOpen)}
-                className={`w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 flex items-center justify-between cursor-pointer transition-all ${isOpen ? 'ring-4 ring-primary/10 border-primary' : 'hover:border-slate-300'
+                className={`w-full h-[50px] bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 flex items-center justify-between cursor-pointer transition-all ${isOpen ? 'ring-4 ring-primary/10 border-primary' : 'hover:border-slate-300'
                     } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
                 <span className={`font-bold truncate ${selectedOption ? 'text-slate-700' : 'text-slate-400'}`}>
@@ -107,8 +107,8 @@ export default function SearchableSelect({
                                         handleSelect(opt.id);
                                     }}
                                     className={`p-3 rounded-xl text-sm font-bold cursor-pointer transition-colors ${value === opt.id
-                                            ? 'bg-primary/10 text-primary'
-                                            : 'text-slate-600 hover:bg-slate-50'
+                                        ? 'bg-primary/10 text-primary'
+                                        : 'text-slate-600 hover:bg-slate-50'
                                         }`}
                                 >
                                     {opt.label}

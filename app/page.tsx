@@ -99,14 +99,14 @@ export default function HomePage() {
                             title="Proyectos en Curso"
                             description="Ver todos los activos"
                             icon={<Activity className="w-6 h-6" />}
-                            href="/projects"
+                            href="/projects?status=activo"
                             color="bg-emerald-500"
                         />
                         <ActionCard
                             title="Con Retraso"
                             description="Proyectos críticos"
                             icon={<AlertTriangle className="w-6 h-6" />}
-                            href="/projects"
+                            href="/projects?status=atrasado"
                             color="bg-rose-500"
                         />
                         <ActionCard

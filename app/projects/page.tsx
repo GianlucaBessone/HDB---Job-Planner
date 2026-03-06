@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
     Plus,
     Search,
@@ -26,7 +27,10 @@ import {
     Layout,
     Timer,
     FileText,
-    Info
+    Info,
+    Users,
+    CheckSquare,
+    PieChart
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { CHECKLIST_TEMPLATES } from '@/lib/checklistTemplates';
@@ -136,8 +140,9 @@ const EMPTY_FILTERS: Filters = {
 const normalize = (s: string) =>
     s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
-// ── Main Component ─────────────────────────────────────────────────────────────
-export default function ProjectsPage() {
+// ── Content Component ──────────────────────────────────────────────────────────
+function ProjectsContent() {
+    const searchParams = useSearchParams();
     const [projects, setProjects] = useState<Project[]>([]);
     const [operators, setOperators] = useState<{ id: string; nombreCompleto: string }[]>([]);
     const [clients, setClients] = useState<{ id: string; nombre: string }[]>([]);
@@ -153,11 +158,27 @@ export default function ProjectsPage() {
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
 
+    // Details Modal State
+    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+    const [selectedProjectForDetails, setSelectedProjectForDetails] = useState<Project | null>(null);
+    const [projectEntries, setProjectEntries] = useState<any[]>([]);
+    const [projectChecklist, setProjectChecklist] = useState<any[]>([]);
+    const [isDetailsLoading, setIsDetailsLoading] = useState(false);
+
     useEffect(() => {
         loadProjects();
         loadOperators();
         loadClients();
     }, []);
+
+    useEffect(() => {
+        const status = searchParams.get('status');
+        if (status && ALL_STATUSES.includes(status as ProjectStatus)) {
+            const filterStatus = status as ProjectStatus;
+            setAppliedFilters(prev => ({ ...prev, estados: [filterStatus] }));
+            setPendingFilters(prev => ({ ...prev, estados: [filterStatus] }));
+        }
+    }, [searchParams]);
 
     const loadClients = async () => {
         try {
@@ -212,6 +233,24 @@ export default function ProjectsPage() {
         });
 
         setIsModalOpen(true);
+    };
+
+    const openDetails = async (project: Project) => {
+        setSelectedProjectForDetails(project);
+        setIsDetailsOpen(true);
+        setIsDetailsLoading(true);
+        try {
+            const [entries, checklist] = await Promise.all([
+                fetch(`/api/time-entries?projectId=${project.id}`).then(res => res.json()),
+                fetch(`/api/projects/${project.id}/checklist`).then(res => res.json())
+            ]);
+            setProjectEntries(Array.isArray(entries) ? entries : []);
+            setProjectChecklist(Array.isArray(checklist) ? checklist : []);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsDetailsLoading(false);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -371,11 +410,11 @@ export default function ProjectsPage() {
                         <div className="space-y-2">
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Responsable</p>
                             <select
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-2xl px-4 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none cursor-pointer"
                                 value={pendingFilters.responsable}
                                 onChange={e => setPendingFilters(f => ({ ...f, responsable: e.target.value }))}
                             >
-                                <option value="">Todos</option>
+                                <option value="">Todos los Responsables</option>
                                 {operators.map(op => (
                                     <option key={op.id} value={op.nombreCompleto}>{op.nombreCompleto}</option>
                                 ))}
@@ -388,7 +427,7 @@ export default function ProjectsPage() {
                             <input
                                 type="text"
                                 placeholder="Buscar cliente..."
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-2xl px-4 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary/10 transition-all"
                                 value={pendingFilters.cliente}
                                 onChange={e => setPendingFilters(f => ({ ...f, cliente: e.target.value }))}
                             />
@@ -399,13 +438,13 @@ export default function ProjectsPage() {
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fechas</p>
                             <input
                                 type="date"
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-2xl px-4 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none"
                                 value={pendingFilters.fechaInicio}
                                 onChange={e => setPendingFilters(f => ({ ...f, fechaInicio: e.target.value }))}
                             />
                             <input
                                 type="date"
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-2xl px-4 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none"
                                 value={pendingFilters.fechaFin}
                                 onChange={e => setPendingFilters(f => ({ ...f, fechaFin: e.target.value }))}
                             />
@@ -439,14 +478,22 @@ export default function ProjectsPage() {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {filteredProjects.map(p => (
-                                <ProjectCard key={p.id} project={p} onEdit={openEdit} handleDeleteClick={handleDeleteClick} />
+                                <ProjectCard key={p.id} project={p} onEdit={openEdit} onDetails={openDetails} handleDeleteClick={handleDeleteClick} />
                             ))}
                         </div>
                     )}
                 </div>
             </div>
 
-            {/* ── Modal ── */}
+            {isDetailsOpen && selectedProjectForDetails && (
+                <ProjectDetailsModal
+                    project={selectedProjectForDetails}
+                    entries={projectEntries}
+                    checklist={projectChecklist}
+                    isLoading={isDetailsLoading}
+                    onClose={() => setIsDetailsOpen(false)}
+                />
+            )}
             {isModalOpen && (
                 <ProjectModal
                     formData={formData}
@@ -470,14 +517,267 @@ export default function ProjectsPage() {
     );
 }
 
+// ── Main Component ─────────────────────────────────────────────────────────────
+export default function ProjectsPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4">
+                <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Cargando Proyectos...</p>
+            </div>
+        }>
+            <ProjectsContent />
+        </Suspense>
+    );
+}
+
+// ── ProjectDetailsModal ──────────────────────────────────────────────────────
+function ProjectDetailsModal({
+    project,
+    entries,
+    checklist,
+    isLoading,
+    onClose,
+}: {
+    project: Project;
+    entries: any[];
+    checklist: any[];
+    isLoading: boolean;
+    onClose: () => void;
+}) {
+    const hoursRemaining = Math.max(0, project.horasEstimadas - project.horasConsumidas);
+    const progress = project.horasEstimadas > 0 ? Math.min(100, Math.round((project.horasConsumidas / project.horasEstimadas) * 100)) : 0;
+
+    // Group entries by operator
+    const operatorStats = entries.reduce((acc: any, entry: any) => {
+        const opId = entry.operatorId;
+        if (!acc[opId]) {
+            acc[opId] = {
+                name: entry.operator?.nombreCompleto || 'Desconocido',
+                totalHours: 0,
+                lastSeen: entry.fecha
+            };
+        }
+        acc[opId].totalHours += entry.horasTrabajadas;
+        if (entry.fecha > acc[opId].lastSeen) acc[opId].lastSeen = entry.fecha;
+        return acc;
+    }, {});
+
+    const statsArray = Object.values(operatorStats);
+
+    return (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white w-full max-w-4xl rounded-[2.5rem] shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-hidden flex flex-col">
+                {/* Header */}
+                <div className="p-6 md:p-8 border-b border-slate-100 flex items-center justify-between shrink-0">
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${STATUS_CONFIG[project.estado]?.bg || 'bg-slate-100'} ${STATUS_CONFIG[project.estado]?.color || 'text-slate-500'}`}>
+                                {STATUS_CONFIG[project.estado]?.label || project.estado}
+                            </span>
+                            <span className="text-slate-400 text-xs font-medium">#{project.id.slice(-6).toUpperCase()}</span>
+                        </div>
+                        <h3 className="text-2xl font-black text-slate-800 tracking-tight">{project.nombre}</h3>
+                        <p className="text-sm text-slate-500 font-medium flex items-center gap-1.5">
+                            <Building2 className="w-4 h-4" /> {project.client?.nombre || project.cliente || 'Sin cliente'}
+                        </p>
+                    </div>
+                    <button onClick={onClose} className="p-3 hover:bg-slate-100 rounded-full text-slate-400 transition-all active:scale-95">
+                        <X className="w-6 h-6" />
+                    </button>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
+                    {isLoading ? (
+                        <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                            <Activity className="w-12 h-12 text-primary animate-spin" />
+                            <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Cargando detalles...</p>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Summary Cards */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="bg-indigo-50/50 border border-indigo-100 p-5 rounded-3xl space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <Clock className="w-5 h-5 text-indigo-500" />
+                                        <span className="text-xs font-black text-indigo-400 uppercase tracking-widest">Horas</span>
+                                    </div>
+                                    <div>
+                                        <p className="text-2xl font-black text-indigo-900">{project.horasConsumidas}h / {project.horasEstimadas}h</p>
+                                        <p className="text-xs font-bold text-indigo-600/70 uppercase">Consumidas vs Estimadas</p>
+                                    </div>
+                                    <div className="w-full bg-indigo-100 h-1.5 rounded-full overflow-hidden">
+                                        <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${progress}%` }} />
+                                    </div>
+                                </div>
+
+                                <div className="bg-emerald-50/50 border border-emerald-100 p-5 rounded-3xl space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <Timer className="w-5 h-5 text-emerald-500" />
+                                        <span className="text-xs font-black text-emerald-400 uppercase tracking-widest">Restante</span>
+                                    </div>
+                                    <div>
+                                        <p className="text-2xl font-black text-emerald-900">{hoursRemaining}h</p>
+                                        <p className="text-xs font-bold text-emerald-600/70 uppercase">Tiempo disponible</p>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-[10px] font-black text-emerald-600/50 uppercase tracking-tight">
+                                        <Activity className="w-3 h-3" /> Eficiencia: {100 - progress > 0 ? 'En rango' : 'Límite'}
+                                    </div>
+                                </div>
+
+                                <div className="bg-amber-50/50 border border-amber-100 p-5 rounded-3xl space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <CheckSquare className="w-5 h-5 text-amber-500" />
+                                        <span className="text-xs font-black text-amber-400 uppercase tracking-widest">Tareas</span>
+                                    </div>
+                                    <div>
+                                        <p className="text-2xl font-black text-amber-900">
+                                            {checklist.filter(i => i.completed).length} / {checklist.length}
+                                        </p>
+                                        <p className="text-xs font-bold text-amber-600/70 uppercase">Checklist completado</p>
+                                    </div>
+                                    <div className="w-full bg-amber-100 h-1.5 rounded-full overflow-hidden">
+                                        <div className="h-full bg-amber-500 rounded-full" style={{ width: `${checklist.length > 0 ? (checklist.filter(i => i.completed).length / checklist.length) * 100 : 0}%` }} />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                {/* Personnel List */}
+                                <div className="space-y-4">
+                                    <h4 className="flex items-center gap-2 font-black text-slate-800 uppercase tracking-widest text-xs">
+                                        <Users className="w-4 h-4 text-primary" /> Personal Asignado
+                                    </h4>
+                                    <div className="bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-sm">
+                                        <table className="w-full text-left">
+                                            <thead>
+                                                <tr className="bg-slate-50 border-b border-slate-100">
+                                                    <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Operador</th>
+                                                    <th className="px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Horas Totales</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-50">
+                                                {statsArray.length === 0 ? (
+                                                    <tr>
+                                                        <td colSpan={2} className="px-4 py-8 text-center text-slate-300 text-xs font-bold uppercase tracking-widest">No hay registros aún</td>
+                                                    </tr>
+                                                ) : (
+                                                    statsArray.map((stat: any) => (
+                                                        <tr key={stat.name} className="hover:bg-slate-50 transition-colors">
+                                                            <td className="px-4 py-3">
+                                                                <div className="font-bold text-slate-700 text-sm">{stat.name}</div>
+                                                                <div className="text-[10px] text-slate-400 font-medium">Carga: {stat.lastSeen}</div>
+                                                            </td>
+                                                            <td className="px-4 py-3 text-right">
+                                                                <span className="inline-block px-3 py-1 rounded-xl bg-primary/5 text-primary font-black text-sm border border-primary/10">
+                                                                    {stat.totalHours.toLocaleString()}h
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    {/* Recent Activity Table */}
+                                    {entries.length > 0 && (
+                                        <div className="space-y-4 pt-4">
+                                            <h4 className="flex items-center gap-2 font-black text-slate-800 uppercase tracking-widest text-xs">
+                                                <Activity className="w-4 h-4 text-primary" /> Historial Reciente
+                                            </h4>
+                                            <div className="bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-sm">
+                                                <table className="w-full text-left text-xs">
+                                                    <thead className="bg-slate-50 border-b border-slate-100 font-black text-slate-400 uppercase tracking-widest">
+                                                        <tr>
+                                                            <th className="px-4 py-3">Fecha</th>
+                                                            <th className="px-4 py-3">Operador</th>
+                                                            <th className="px-4 py-3 text-right">Horas</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-slate-50">
+                                                        {entries.slice(0, 10).map((entry: any) => (
+                                                            <tr key={entry.id}>
+                                                                <td className="px-4 py-2 text-slate-500 font-medium">{entry.fecha}</td>
+                                                                <td className="px-4 py-2 font-bold text-slate-700">{entry.operator.nombreCompleto}</td>
+                                                                <td className="px-4 py-2 text-right font-black text-slate-900">{entry.horasTrabajadas}h</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Checklist Detail */}
+                                <div className="space-y-4">
+                                    <h4 className="flex items-center gap-2 font-black text-slate-800 uppercase tracking-widest text-xs">
+                                        <CheckCircle2 className="w-4 h-4 text-primary" /> Avance Técnico (Checklist)
+                                    </h4>
+                                    <div className="space-y-2 max-h-[600px] overflow-y-auto pr-2 scrollbar-thin">
+                                        {checklist.length === 0 ? (
+                                            <div className="bg-slate-50 rounded-3xl p-8 border border-dashed border-slate-200 text-center text-slate-400 text-xs font-bold uppercase tracking-widest">Sin tareas definidas para este proyecto</div>
+                                        ) : (
+                                            checklist.map((item: any) => (
+                                                <div key={item.id} className={`flex items-start gap-4 p-4 rounded-3xl border transition-all ${item.completed ? 'bg-emerald-50/40 border-emerald-100 shadow-sm' : 'bg-slate-50/50 border-slate-100 hover:border-slate-200'}`}>
+                                                    <div className={`mt-0.5 shrink-0 w-6 h-6 rounded-xl border-2 flex items-center justify-center transition-all ${item.completed ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-200' : 'border-slate-200 bg-white'}`}>
+                                                        {item.completed && <CheckCircle2 className="w-4 h-4" />}
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className={`text-sm font-bold leading-snug ${item.completed ? 'text-emerald-900' : 'text-slate-700'}`}>{item.description}</p>
+                                                        <div className="flex items-center gap-2 mt-1.5">
+                                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">{item.tag}</span>
+                                                            {item.updatedAt && <span className="text-[9px] text-slate-400 font-medium">Actualizado: {new Date(item.updatedAt).toLocaleDateString()}</span>}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            {/* Observations */}
+                            {project.observaciones && (
+                                <div className="space-y-3">
+                                    <h4 className="flex items-center gap-2 font-black text-slate-800 uppercase tracking-widest text-xs">
+                                        <FileText className="w-4 h-4 text-primary" /> Observaciones y Notas
+                                    </h4>
+                                    <div className="bg-slate-50 rounded-3xl p-5 border border-slate-100">
+                                        <p className="text-slate-600 text-sm italic font-medium leading-relaxed">
+                                            "{project.observaciones}"
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
+
+                {/* Footer */}
+                <div className="p-6 border-t border-slate-100 flex justify-end shrink-0">
+                    <button onClick={onClose} className="px-8 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-black uppercase tracking-widest text-xs rounded-2xl transition-all active:scale-95">
+                        Cerrar Ventana
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 // ── ProjectCard ───────────────────────────────────────────────────────────────
 function ProjectCard({
     project,
     onEdit,
+    onDetails,
     handleDeleteClick,
 }: {
     project: Project;
     onEdit: (p: Project) => void;
+    onDetails: (p: Project) => void;
     handleDeleteClick: (id: string) => void;
 }) {
     const { horasConsumidas, horasEstimadas, estado } = project;
@@ -588,7 +888,7 @@ function ProjectCard({
                 </div>
 
                 <div className="flex items-center gap-1.5">
-                    <button onClick={() => onEdit(project)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200 hover:border-primary/40 hover:text-primary transition-all whitespace-nowrap">
+                    <button onClick={() => onDetails(project)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200 hover:border-primary/40 hover:text-primary transition-all whitespace-nowrap">
                         Ver Detalle <ChevronRight className="w-3 h-3" />
                     </button>
                     <Link href="/planning" className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200 hover:border-primary/40 hover:text-primary transition-all whitespace-nowrap">

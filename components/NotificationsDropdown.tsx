@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { showToast } from './Toast';
+import ProjectFinalizeAuthModal from './ProjectFinalizeAuthModal';
 
 export default function NotificationsDropdown({ user }: { user: any }) {
     const [notifications, setNotifications] = useState<any[]>([]);
@@ -67,7 +68,11 @@ export default function NotificationsDropdown({ user }: { user: any }) {
     const handleNotificationClick = (notif: any) => {
         if (!notif.read) markAsRead(notif.id);
 
-        if (notif.type === 'TIME_MODIFICATION_REQUEST' || notif.type === 'PLANNING_ASSIGNMENT' || notif.type === 'PLANNING_ASSIGNMENT_SUMMARY') {
+        if (notif.type === 'TIME_MODIFICATION_REQUEST' ||
+            notif.type === 'PLANNING_ASSIGNMENT' ||
+            notif.type === 'PLANNING_ASSIGNMENT_SUMMARY' ||
+            notif.type === 'PROJECT_FINALIZE_REQUEST'
+        ) {
             setSelectedNotification(notif);
         } else {
             if (notif.type === 'TIME_EDIT_REQUEST') router.push('/timesheets');
@@ -410,6 +415,17 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                                 </div>
                             </div>
                         </div>
+                    )}
+
+                    {selectedNotification && selectedNotification.type === 'PROJECT_FINALIZE_REQUEST' && (
+                        <ProjectFinalizeAuthModal
+                            notification={selectedNotification}
+                            user={user}
+                            onClose={() => setSelectedNotification(null)}
+                            onSuccess={() => {
+                                setNotifications(prev => prev.filter(n => n.id !== selectedNotification.id));
+                            }}
+                        />
                     )}
                 </>,
                 document.body

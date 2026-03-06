@@ -293,7 +293,7 @@ export default function DelaysPage() {
                         <input
                             type="text"
                             placeholder="Buscar..."
-                            className="w-full bg-white border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-medium"
+                            className="w-full h-[50px] bg-white border border-slate-200 rounded-2xl pl-10 pr-4 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-bold text-slate-700"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
@@ -302,13 +302,13 @@ export default function DelaysPage() {
                     <div className="flex items-center gap-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Desde</label>
                         <input type="date" value={filterDateFrom} onChange={e => setFilterDateFrom(e.target.value)}
-                            className="bg-white border border-slate-200 rounded-xl py-2.5 px-3 text-sm font-bold text-slate-700 outline-none focus:border-primary h-10" />
+                            className="h-[50px] bg-white border border-slate-200 rounded-2xl px-4 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none" />
                     </div>
 
                     <div className="flex items-center gap-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Hasta</label>
                         <input type="date" value={filterDateTo} onChange={e => setFilterDateTo(e.target.value)}
-                            className="bg-white border border-slate-200 rounded-xl py-2.5 px-3 text-sm font-bold text-slate-700 outline-none focus:border-primary h-10" />
+                            className="h-[50px] bg-white border border-slate-200 rounded-2xl px-4 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none" />
                     </div>
 
                     <div className="min-w-[160px]">
@@ -546,7 +546,7 @@ export default function DelaysPage() {
                                     <input type="text" value={formData.responsableArea}
                                         onChange={e => setFormData({ ...formData, responsableArea: e.target.value })}
                                         placeholder="Nombre del responsable si lo conoce..."
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-medium text-slate-700"
+                                        className="w-full h-[50px] bg-slate-50 border border-slate-200 rounded-2xl px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 text-sm"
                                     />
                                 </div>
 

@@ -171,7 +171,7 @@ export default function DashboardPage() {
                         </label>
                         <input
                             type="date"
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                            className="w-full h-[50px] bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none"
                             value={filterFrom}
                             onChange={e => setFilterFrom(e.target.value)}
                         />
@@ -182,7 +182,7 @@ export default function DashboardPage() {
                         </label>
                         <input
                             type="date"
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                            className="w-full h-[50px] bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none"
                             value={filterTo}
                             onChange={e => setFilterTo(e.target.value)}
                         />
@@ -203,7 +203,7 @@ export default function DashboardPage() {
                             <Activity className="w-3 h-3" /> Estado <MetricTooltip def="Filtra proyectos por su estado de finalización." purpose="Permite comparar el rendimiento histórico con el operativo actual." calc="N/A" />
                         </label>
                         <select
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                            className="w-full h-[50px] bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none cursor-pointer"
                             value={filterStatus}
                             onChange={e => setFilterStatus(e.target.value)}
                         >

@@ -34,6 +34,7 @@ interface Project {
     tags: string[];
     estado: string;
     client?: { nombre: string };
+    responsableUser?: { nombreCompleto: string };
     _count?: {
         checklistItems: number;
     };
@@ -59,19 +60,24 @@ export default function MyProjectsPage() {
     const [pendingItemsForFinalize, setPendingItemsForFinalize] = useState<{ tag: string, description: string }[]>([]);
     const [isFinalizing, setIsFinalizing] = useState(false);
 
+    const [viewAll, setViewAll] = useState(false);
+
     useEffect(() => {
         const storedUser = localStorage.getItem('currentUser');
         if (storedUser) {
             const parsed = JSON.parse(storedUser);
             setUser(parsed);
-            loadMyProjects(parsed.id);
+            loadMyProjects(parsed.id, viewAll);
         }
-    }, []);
+    }, [viewAll]);
 
-    const loadMyProjects = async (userId: string) => {
+    const loadMyProjects = async (userId: string, all = false) => {
         setLoading(true);
         try {
-            const res = await fetch(`/api/projects/my-projects?responsableId=${userId}`);
+            const url = all
+                ? `/api/projects/my-projects?all=true`
+                : `/api/projects/my-projects?responsableId=${userId}`;
+            const res = await fetch(url);
             const data = await res.json();
             if (Array.isArray(data)) setProjects(data);
         } catch (error) {
@@ -102,7 +108,9 @@ export default function MyProjectsPage() {
     };
 
     const handleToggleItem = async (item: ChecklistItem) => {
-        if (item.confirmedBySupervisor) {
+        const isSupervisorOrAdmin = user?.role === 'supervisor' || user?.role === 'admin';
+
+        if (item.confirmedBySupervisor && !isSupervisorOrAdmin) {
             setItemToChange(item);
             setJustification('');
             setIsJustifyModalOpen(true);
@@ -164,8 +172,45 @@ export default function MyProjectsPage() {
         }
     };
 
+    const handleRequestFinalization = async () => {
+        if (!selectedProject || !user) return;
+        setIsFinalizing(true);
+        try {
+            const res = await fetch('/api/notifications', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    operatorId: user.id,
+                    forSupervisors: true,
+                    title: 'Solicitud de Finalización de Proyecto',
+                    message: `El responsable ${user.nombreCompleto} solicita finalizar el proyecto "${selectedProject.nombre}".\nPor favor, revise el avance técnico para autorizar el cierre.`,
+                    type: 'PROJECT_FINALIZE_REQUEST',
+                    relatedId: selectedProject.id
+                })
+            });
+
+            if (res.ok) {
+                showToast('Solicitud enviada a los supervisores', 'success');
+                setSelectedProject(null);
+            } else {
+                showToast('Error al enviar solicitud', 'error');
+            }
+        } catch (error) {
+            showToast('Error de conexión', 'error');
+        } finally {
+            setIsFinalizing(false);
+        }
+    };
+
     const handleFinalizeProject = async (force = false) => {
         if (!selectedProject) return;
+
+        const isSupervisorOrAdmin = user?.role === 'supervisor' || user?.role === 'admin';
+        if (!isSupervisorOrAdmin && !force) {
+            handleRequestFinalization();
+            return;
+        }
+
         setIsFinalizing(true);
         try {
             const res = await fetch(`/api/projects/${selectedProject.id}/finalize`, {
@@ -178,7 +223,7 @@ export default function MyProjectsPage() {
                 showToast('Proyecto finalizado con éxito', 'success');
                 setIsFinalizeModalOpen(false);
                 setSelectedProject(null);
-                loadMyProjects(user.id);
+                loadMyProjects(user.id, viewAll);
             } else {
                 const data = await res.json();
                 if (data.pendingItems) {
@@ -220,12 +265,29 @@ export default function MyProjectsPage() {
         <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
             {!selectedProject ? (
                 <>
-                    <header className="space-y-1">
-                        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
-                            <ClipboardCheck className="w-8 h-8 text-primary" />
-                            Mis Proyectos
-                        </h2>
-                        <p className="text-sm text-slate-500 font-medium">Gestión técnica y cierre de obra</p>
+                    <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                        <div className="space-y-1">
+                            <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
+                                <ClipboardCheck className="w-8 h-8 text-primary" />
+                                {viewAll ? 'Todos los Proyectos' : 'Mis Proyectos'}
+                            </h2>
+                            <p className="text-sm text-slate-500 font-medium">Gestión técnica y cierre de obra</p>
+                        </div>
+
+                        {(user?.role === 'supervisor' || user?.role === 'admin') && (
+                            <div className="flex items-center gap-3 bg-white border border-slate-200 px-4 py-2.5 rounded-2xl shadow-sm self-start md:self-auto">
+                                <span className={`text-[10px] font-black uppercase tracking-widest ${!viewAll ? 'text-primary' : 'text-slate-400'}`}>Mis Proyectos</span>
+                                <button
+                                    onClick={() => setViewAll(!viewAll)}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${viewAll ? 'bg-primary' : 'bg-slate-200'}`}
+                                >
+                                    <span
+                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${viewAll ? 'translate-x-6' : 'translate-x-1'}`}
+                                    />
+                                </button>
+                                <span className={`text-[10px] font-black uppercase tracking-widest ${viewAll ? 'text-primary' : 'text-slate-400'}`}>Ver Todos</span>
+                            </div>
+                        )}
                     </header>
 
                     <div className="relative group">
@@ -256,7 +318,15 @@ export default function MyProjectsPage() {
                                         <div className="flex justify-between items-start mb-4">
                                             <div className="space-y-1">
                                                 <h3 className="font-bold text-slate-800 group-hover:text-primary transition-colors">{p.nombre}</h3>
-                                                <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">{p.client?.nombre || 'Sin cliente'}</p>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">{p.client?.nombre || 'Sin cliente'}</p>
+                                                    {viewAll && p.responsableUser && (
+                                                        <>
+                                                            <div className="w-1 h-1 rounded-full bg-slate-300" />
+                                                            <p className="text-[10px] text-primary font-bold uppercase tracking-tight">PM: {p.responsableUser.nombreCompleto}</p>
+                                                        </>
+                                                    )}
+                                                </div>
                                             </div>
                                             <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${p.estado === 'activo' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-50 text-slate-500 border border-slate-100'}`}>
                                                 {p.estado}
@@ -378,10 +448,15 @@ export default function MyProjectsPage() {
                             <button
                                 onClick={() => handleFinalizeProject()}
                                 disabled={isFinalizing}
-                                className="w-full bg-primary text-white py-4 rounded-2xl font-black text-base shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                                className={`w-full text-white py-4 rounded-2xl font-black text-base shadow-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${(user?.role === 'supervisor' || user?.role === 'admin')
+                                        ? 'bg-primary shadow-primary/20 hover:bg-primary/90'
+                                        : 'bg-indigo-600 shadow-indigo-200 hover:bg-indigo-700'
+                                    }`}
                             >
                                 {isFinalizing ? <Loader2 className="w-5 h-5 animate-spin" /> : <ClipboardCheck className="w-6 h-6" />}
-                                FINALIZAR PROYECTO
+                                {(user?.role === 'supervisor' || user?.role === 'admin')
+                                    ? 'FINALIZAR PROYECTO'
+                                    : 'SOLICITAR FINALIZACIÓN'}
                             </button>
                         </div>
                     </div>

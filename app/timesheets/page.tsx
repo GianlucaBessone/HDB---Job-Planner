@@ -552,7 +552,7 @@ export default function TimesheetsPage() {
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1 mb-2">Horas Extras</label>
                     <button
                         onClick={() => setIsExtraQuick(!isExtraQuick)}
-                        className={`w-full py-3.5 px-6 rounded-2xl font-bold transition-all active:scale-95 ${isExtraQuick ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500 shadow-sm' : 'bg-slate-50 text-slate-500 border-2 border-slate-200'
+                        className={`w-full h-[50px] px-6 rounded-2xl font-bold transition-all active:scale-95 ${isExtraQuick ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500 shadow-sm' : 'bg-slate-50 text-slate-500 border-2 border-slate-200'
                             }`}
                     >
                         {isExtraQuick ? 'Sí' : 'No'}
@@ -614,7 +614,7 @@ export default function TimesheetsPage() {
                         <select
                             value={viewMode}
                             onChange={(e) => setViewMode(e.target.value as any)}
-                            className="bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700 text-sm"
+                            className="bg-slate-50 border border-slate-200 rounded-2xl h-[50px] px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700 text-sm appearance-none cursor-pointer"
                         >
                             <option value="tarjetas">Vista Detallada (Tarjetas)</option>
                             <option value="planilla">Formato Planilla</option>
@@ -630,7 +630,7 @@ export default function TimesheetsPage() {
                             type="date"
                             value={filterDateFrom}
                             onChange={e => setFilterDateFrom(e.target.value)}
-                            className="bg-white border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 outline-none focus:border-indigo-500"
+                            className="h-[50px] bg-white border border-slate-200 rounded-2xl px-4 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all appearance-none"
                         />
                     </div>
                     <div className="flex items-center gap-2">
@@ -639,7 +639,7 @@ export default function TimesheetsPage() {
                             type="date"
                             value={filterDateTo}
                             onChange={e => setFilterDateTo(e.target.value)}
-                            className="bg-white border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 outline-none focus:border-indigo-500"
+                            className="h-[50px] bg-white border border-slate-200 rounded-2xl px-4 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all appearance-none"
                         />
                     </div>
 

@@ -26,9 +26,9 @@ const S = StyleSheet.create({
     dateRow: { flexDirection: 'row', gap: 10, marginTop: 4 },
     dateLabel: { fontSize: 8, color: '#94A3B8' },
 
-    // KPI row (5 boxes)
-    kpiRow: { flexDirection: 'row', gap: 6, marginBottom: 16 },
-    kpiBox: { flex: 1, backgroundColor: '#F8FAFC', padding: 10, borderRadius: 8, borderWidth: 1, borderColor: '#F1F5F9', alignItems: 'center' },
+    // KPI row (6 boxes)
+    kpiRow: { flexDirection: 'row', gap: 4, marginBottom: 16 },
+    kpiBox: { flex: 1, backgroundColor: '#F8FAFC', padding: 8, borderRadius: 8, borderWidth: 1, borderColor: '#F1F5F9', alignItems: 'center' },
     kpiBoxIndigo: { backgroundColor: '#EEF2FF', borderColor: '#E0E7FF' },
     kpiBoxAmber: { backgroundColor: '#FFFBEB', borderColor: '#FDE68A' },
     kpiBoxRose: { backgroundColor: '#FFF1F2', borderColor: '#FEE2E2' },
@@ -61,6 +61,20 @@ const S = StyleSheet.create({
     tdCell: { fontSize: 8, color: '#475569' },
     tdBold: { fontFamily: 'Helvetica-Bold' },
     totalRow: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: '#CBD5E1', paddingTop: 4, marginTop: 2 },
+
+    // Checklist
+    checklistGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+    checklistItem: { width: '48%', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 8, padding: 8, flexDirection: 'row', gap: 6 },
+    checklistItemDone: { backgroundColor: '#ECFDF5', borderColor: '#D1FAE5' },
+    checkIcon: { width: 10, height: 10, borderRadius: 5, borderWidth: 1, borderColor: '#CBD5E1', backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
+    checkIconDone: { backgroundColor: '#10B981', borderColor: '#10B981' },
+    checkMark: { color: '#FFFFFF', fontSize: 6, fontFamily: 'Helvetica-Bold' },
+    checkText: { flex: 1 },
+    checkDesc: { fontSize: 7, fontFamily: 'Helvetica-Bold', color: '#334155' },
+    checkDescDone: { color: '#064E3B' },
+    checkTagRow: { flexDirection: 'row', gap: 4, marginTop: 3, alignItems: 'center' },
+    checkTag: { fontSize: 5, color: '#94A3B8', backgroundColor: '#FFFFFF', paddingHorizontal: 4, paddingVertical: 1, borderRadius: 3, borderWidth: 0.5, borderColor: '#E2E8F0' },
+    checkStatus: { fontSize: 5, fontFamily: 'Helvetica-Bold' },
 
     // Footer
     footer: { position: 'absolute', bottom: 24, left: 36, right: 36, textAlign: 'center', fontSize: 7, color: '#94A3B8', borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingTop: 8 },
@@ -140,11 +154,17 @@ export const ProjectReportPDF = ({
                         <Text style={[S.kpiLabel, { color: '#F59E0B' }]}>Impacto Demoras</Text>
                         <Text style={[S.kpiValue, { color: '#F59E0B' }]}>{delayImpactPct}%</Text>
                     </View>
+                    <View style={[S.kpiBox, { backgroundColor: '#ECFDF5', borderColor: '#D1FAE5' }]}>
+                        <Text style={[S.kpiLabel, { color: '#10B981' }]}>Avance Técnico</Text>
+                        <Text style={[S.kpiValue, { color: '#059669', fontSize: 10 }]}>
+                            {project.checklistItems?.filter((i: any) => i.completed).length || 0} / {project.checklistItems?.length || 0}
+                        </Text>
+                    </View>
                 </View>
 
                 {/* ── Observaciones ── */}
                 {hasObs && (
-                    <View style={S.obsBox}>
+                    <View style={S.obsBox} wrap={false}>
                         <View style={S.obsTitleRow}>
                             <Text style={S.obsTitle}>OBSERVACIONES DEL PROYECTO</Text>
                         </View>
@@ -210,7 +230,7 @@ export const ProjectReportPDF = ({
                                 <Text style={[S.thCell, { flex: 2 }]}>HORARIO</Text>
                             </View>
                             {project.timeEntries.map((e: any) => (
-                                <View key={e.id} style={S.tableRow}>
+                                <View key={e.id} style={S.tableRow} wrap={false}>
                                     <Text style={[S.tdCell, { flex: 2 }]}>{fmtDate(e.fecha)}</Text>
                                     <Text style={[S.tdCell, { flex: 3 }]}>{e.operator.nombreCompleto}</Text>
                                     <Text style={[S.tdCell, S.tdBold, { flex: 2 }]}>{e.horaIngreso} → {e.horaEgreso}</Text>
@@ -232,7 +252,7 @@ export const ProjectReportPDF = ({
                             <Text style={[S.thCell, { flex: 1, textAlign: 'right' }]}>HS</Text>
                         </View>
                         {clientDelays.map((d: any) => (
-                            <View key={d.id} style={S.tableRow}>
+                            <View key={d.id} style={S.tableRow} wrap={false}>
                                 <Text style={[S.tdCell, { flex: 1.5 }]}>{fmtDate(d.fecha)}</Text>
                                 <Text style={[S.tdCell, { flex: 2, color: '#D97706' }]}>{d.area}</Text>
                                 <Text style={[S.tdCell, { flex: 2 }]}>{d.responsableArea || '—'}</Text>
@@ -255,6 +275,35 @@ export const ProjectReportPDF = ({
                         </View>
                     </View>
                 )}
+
+                {/* ── Checklist Técnico ── */}
+                <View style={S.tableWrapper}>
+                    <Text style={S.tableTitle}>Avance Técnico (Checklist)</Text>
+                    {project.checklistItems?.length === 0 ? (
+                        <Text style={S.emptyText}>Sin tareas documentadas en el checklist.</Text>
+                    ) : (
+                        <View style={S.checklistGrid}>
+                            {project.checklistItems.map((item: any) => (
+                                <View key={item.id} style={[S.checklistItem, item.completed && S.checklistItemDone]} wrap={false}>
+                                    <View style={[S.checkIcon, item.completed && S.checkIconDone]}>
+                                        {item.completed && <Text style={S.checkMark}>L</Text>}
+                                    </View>
+                                    <View style={S.checkText}>
+                                        <Text style={[S.checkDesc, item.completed && S.checkDescDone]}>
+                                            {item.description}
+                                        </Text>
+                                        <View style={S.checkTagRow}>
+                                            <Text style={S.checkTag}>{item.tag}</Text>
+                                            <Text style={[S.checkStatus, { color: item.completed ? '#10B981' : '#CBD5E1' }]}>
+                                                {item.completed ? 'COMPLETADO' : 'PENDIENTE'}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                </View>
+                            ))}
+                        </View>
+                    )}
+                </View>
 
                 {/* ── Footer ── */}
                 <Text style={S.footer}>

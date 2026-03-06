@@ -302,13 +302,13 @@ export default function PlanningPage() {
                         <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
                         <input
                             type="date"
-                            className="bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all w-full"
+                            className="h-[50px] bg-white border border-slate-200 rounded-2xl pl-10 pr-2 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all w-full appearance-none"
                             value={fecha}
                             onChange={e => setStoreFecha(e.target.value)}
                         />
                     </div>
                     <div className="h-8 w-[1px] bg-slate-200 hidden md:block"></div>
-                    <input type="date" className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-2 text-xs outline-none flex-1 md:flex-none md:w-40" value={duplicateDate} onChange={e => setDuplicateDate(e.target.value)} />
+                    <input type="date" className="h-[50px] bg-white border border-slate-200 rounded-2xl px-3 text-sm font-bold text-slate-700 outline-none flex-1 md:flex-none md:w-44 appearance-none" value={duplicateDate} onChange={e => setDuplicateDate(e.target.value)} />
                     <button onClick={handleDuplicate} className="p-2 text-slate-500 hover:text-primary hover:bg-primary/5 rounded-xl border border-slate-200 transition-colors shrink-0 active:scale-90" title="Copiar de otra fecha">
                         <Files className="w-4 h-4" />
                     </button>
@@ -433,11 +433,11 @@ export default function PlanningPage() {
                                                             <div className="grid grid-cols-2 gap-3">
                                                                 <div className="space-y-1.5">
                                                                     <label className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider px-1">Inicio</label>
-                                                                    <input type="time" className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm text-slate-700 outline-none" value={block.startTime || ''} onChange={e => updateBlock(index, 'startTime', e.target.value)} />
+                                                                    <input type="time" className="w-full h-[50px] bg-slate-50 border border-slate-200 rounded-2xl px-4 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none" value={block.startTime || ''} onChange={e => updateBlock(index, 'startTime', e.target.value)} />
                                                                 </div>
                                                                 <div className="space-y-1.5">
                                                                     <label className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider px-1">Fin</label>
-                                                                    <input type="time" className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm text-slate-700 outline-none" value={block.endTime || ''} onChange={e => updateBlock(index, 'endTime', e.target.value)} />
+                                                                    <input type="time" className="w-full h-[50px] bg-slate-50 border border-slate-200 rounded-2xl px-4 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none" value={block.endTime || ''} onChange={e => updateBlock(index, 'endTime', e.target.value)} />
                                                                 </div>
                                                             </div>
                                                         )}
