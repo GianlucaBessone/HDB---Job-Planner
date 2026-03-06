@@ -105,7 +105,7 @@ export async function POST(req: Request) {
 export async function PUT(req: Request) {
     try {
         const data = await req.json();
-        const { id, horaIngreso, horaEgreso, estadoConfirmado, isExtra, requestUserId, requestUserRole } = data;
+        const { id, projectId, fecha, horaIngreso, horaEgreso, estadoConfirmado, isExtra, requestUserId, requestUserRole } = data;
 
         // Check if existing
         const existing = await prisma.timeEntry.findUnique({ where: { id } });
@@ -122,6 +122,9 @@ export async function PUT(req: Request) {
             }
         }
 
+        const oldProjectId = existing.projectId;
+        const newProjectId = projectId !== undefined ? projectId : oldProjectId;
+
         let horasTrabajadas = existing.horasTrabajadas;
         let newHoraIngreso = horaIngreso !== undefined ? horaIngreso : existing.horaIngreso;
         let newHoraEgreso = horaEgreso !== undefined ? horaEgreso : existing.horaEgreso;
@@ -130,12 +133,11 @@ export async function PUT(req: Request) {
             horasTrabajadas = calculateHours(newHoraIngreso, newHoraEgreso);
         }
 
-        // Calculate delta for project consumed hours update
-        const deltaHours = horasTrabajadas - existing.horasTrabajadas;
-
         const updated = await prisma.timeEntry.update({
             where: { id },
             data: {
+                projectId: newProjectId,
+                fecha: fecha !== undefined ? fecha : existing.fecha,
                 horaIngreso: newHoraIngreso,
                 horaEgreso: newHoraEgreso,
                 horasTrabajadas,
@@ -145,11 +147,28 @@ export async function PUT(req: Request) {
             }
         });
 
-        if (deltaHours !== 0) {
-            await prisma.project.update({
-                where: { id: existing.projectId },
-                data: { horasConsumidas: { increment: Math.ceil(deltaHours) } }
-            });
+        if (oldProjectId === newProjectId) {
+            const deltaHours = horasTrabajadas - existing.horasTrabajadas;
+            if (deltaHours !== 0) {
+                await prisma.project.update({
+                    where: { id: oldProjectId },
+                    data: { horasConsumidas: { increment: Math.ceil(deltaHours) } }
+                });
+            }
+        } else {
+            // Project changed
+            if (existing.horasTrabajadas > 0) {
+                await prisma.project.update({
+                    where: { id: oldProjectId },
+                    data: { horasConsumidas: { decrement: Math.ceil(existing.horasTrabajadas) } }
+                });
+            }
+            if (horasTrabajadas > 0) {
+                await prisma.project.update({
+                    where: { id: newProjectId },
+                    data: { horasConsumidas: { increment: Math.ceil(horasTrabajadas) } }
+                });
+            }
         }
 
         return NextResponse.json(updated);

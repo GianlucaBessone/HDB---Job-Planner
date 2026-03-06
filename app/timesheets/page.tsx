@@ -875,7 +875,6 @@ export default function TimesheetsPage() {
                                         value={formData.projectId}
                                         onChange={(val) => setFormData({ ...formData, projectId: val })}
                                         placeholder="Seleccionar proyecto..."
-                                        disabled={!!editingEntry && editingEntry.estadoConfirmado}
                                     />
                                 </div>
 
@@ -888,7 +887,6 @@ export default function TimesheetsPage() {
                                         required
                                         value={formData.fecha}
                                         onChange={e => setFormData({ ...formData, fecha: e.target.value })}
-                                        disabled={!!editingEntry && editingEntry.estadoConfirmado}
                                     />
                                 </div>
 
