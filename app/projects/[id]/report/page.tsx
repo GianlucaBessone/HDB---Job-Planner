@@ -160,7 +160,7 @@ export default async function ProjectReportPage({ params, searchParams }: { para
                     <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 flex flex-col justify-center items-center text-center">
                         <p className="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-1">Avance Técnico</p>
                         <p className="text-base font-black text-emerald-600">
-                            {project.checklistItems.filter(i => i.completed).length} / {project.checklistItems.length}
+                            {project.checklistItems.filter(i => i.completed && !i.excluded).length} / {project.checklistItems.filter(i => !i.excluded).length}
                         </p>
                     </div>
                 </div>
@@ -338,11 +338,11 @@ export default async function ProjectReportPage({ params, searchParams }: { para
                             <ShieldCheck className="w-4 h-4 text-emerald-500" />
                             Avance Técnico (Checklist)
                         </h3>
-                        {project.checklistItems.length === 0 ? (
+                        {project.checklistItems.filter(i => !i.excluded).length === 0 ? (
                             <p className="text-sm text-slate-400 italic">Sin tareas documentadas en el checklist.</p>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {project.checklistItems.map((item) => (
+                                {project.checklistItems.filter(i => !i.excluded).map((item) => (
                                     <div key={item.id} className={`p-4 rounded-2xl border flex items-start gap-4 transition-all ${item.completed ? 'bg-emerald-50/40 border-emerald-100' : 'bg-slate-50/50 border-slate-100'}`}>
                                         <div className={`mt-0.5 shrink-0 w-6 h-6 rounded-xl border-2 flex items-center justify-center ${item.completed ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-200 bg-white'}`}>
                                             {item.completed && <Activity className="w-3 h-3" />}

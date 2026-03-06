@@ -248,7 +248,7 @@ export const dataLayer = {
     async createChecklistItem(data: { projectId: string; tag: string; description: string }) {
         return await prisma.checklistItem.create({ data });
     },
-    async updateChecklistItem(id: string, data: { completed?: boolean; confirmedBySupervisor?: boolean; pendingChange?: boolean; justification?: string }) {
+    async updateChecklistItem(id: string, data: { completed?: boolean; excluded?: boolean; confirmedBySupervisor?: boolean; pendingChange?: boolean; justification?: string }) {
         return await prisma.checklistItem.update({ where: { id }, data });
     },
     async deleteChecklistItem(id: string) {

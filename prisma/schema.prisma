@@ -57,6 +57,7 @@ model ChecklistItem {
   tag                  String
   description          String
   completed            Boolean  @default(false)
+  excluded             Boolean  @default(false)
   confirmedBySupervisor Boolean @default(false)
   pendingChange        Boolean  @default(false) // Request to unmark or similar
   justification        String?

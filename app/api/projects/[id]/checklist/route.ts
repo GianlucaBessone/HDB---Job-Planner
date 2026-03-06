@@ -56,13 +56,16 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
     try {
         const body = await req.json();
-        const { itemId, completed, justification, requestChange } = body;
+        const { itemId, completed, excluded, justification, requestChange } = body;
 
         const item = await prisma.checklistItem.findUnique({ where: { id: itemId } });
         if (!item) return NextResponse.json({ error: 'Item no encontrado' }, { status: 404 });
 
         // Logic for confirmation/locking
-        if (item.confirmedBySupervisor && !requestChange) {
+        // Excluded items can be toggled by supervisors even if confirmed?
+        // Let's allow excluding even if confirmed for now, as it's a supervisor action.
+
+        if (item.confirmedBySupervisor && !requestChange && excluded === undefined) {
             return NextResponse.json({ error: 'Este ítem ya fue confirmado y no puede modificarse directamente.' }, { status: 403 });
         }
 
@@ -84,6 +87,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
             where: { id: itemId },
             data: {
                 completed: completed !== undefined ? completed : item.completed,
+                excluded: excluded !== undefined ? excluded : item.excluded,
                 updatedAt: new Date()
             }
         });

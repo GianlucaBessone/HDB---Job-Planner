@@ -62,7 +62,7 @@ interface Project {
     categoria?: string;
     tipoActividad?: string;
     tags?: string[];
-    checklistItems?: { completed: boolean; tag: string }[];
+    checklistItems?: { id: string; completed: boolean; excluded: boolean; tag: string }[];
     finalizadoConPendientes?: boolean;
     estado: ProjectStatus;
 
@@ -167,6 +167,12 @@ function ProjectsContent() {
 
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
+    const [currentUser, setCurrentUser] = useState<any>(null);
+
+    useEffect(() => {
+        const user = localStorage.getItem('currentUser');
+        if (user) setCurrentUser(JSON.parse(user));
+    }, []);
 
     // Details Modal State
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -282,6 +288,24 @@ function ProjectsContent() {
             console.error(e);
         } finally {
             setIsSavingLog(false);
+        }
+    };
+
+    const handleUpdateChecklist = async (itemId: string, updates: any) => {
+        if (!selectedProjectForDetails) return;
+        try {
+            const res = await fetch(`/api/projects/${selectedProjectForDetails.id}/checklist`, {
+                method: 'PATCH',
+                body: JSON.stringify({ itemId, ...updates }),
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (res.ok) {
+                const updatedItem = await res.json();
+                setProjectChecklist(prev => prev.map(item => item.id === updatedItem.id ? updatedItem : item));
+                loadData(true); // reload to update main card metrics
+            }
+        } catch (e) {
+            console.error(e);
         }
     };
 
@@ -532,7 +556,9 @@ function ProjectsContent() {
                     logs={projectLogs}
                     isLoading={isDetailsLoading}
                     isSavingLog={isSavingLog}
+                    currentUser={currentUser}
                     onSaveLog={handleSaveLog}
+                    onUpdateChecklist={handleUpdateChecklist}
                     onClose={() => setIsDetailsOpen(false)}
                 />
             )}
@@ -584,7 +610,9 @@ function ProjectDetailsModal({
     logs,
     isLoading,
     isSavingLog,
+    currentUser,
     onSaveLog,
+    onUpdateChecklist,
     onClose,
 }: {
     project: Project;
@@ -594,10 +622,18 @@ function ProjectDetailsModal({
     logs: any[];
     isLoading: boolean;
     isSavingLog: boolean;
+    currentUser: any;
     onSaveLog: (data: { fecha: string; responsable: string; observacion: string }) => void;
+    onUpdateChecklist: (itemId: string, updates: any) => void;
     onClose: () => void;
 }) {
+    const isSupervisor = currentUser?.role === 'supervisor' || currentUser?.role === 'admin';
     const [newLog, setNewLog] = useState({ fecha: new Date().toISOString().split('T')[0], responsable: '', observacion: '' });
+
+    const visibleItems = checklist.filter(i => !i.excluded || isSupervisor);
+    const completedVisible = checklist.filter(i => i.completed && !i.excluded).length;
+    const totalVisible = checklist.filter(i => !i.excluded).length;
+    const checklistProgress = totalVisible > 0 ? Math.round((completedVisible / totalVisible) * 100) : 0;
 
     const hoursRemaining = Math.max(0, project.horasEstimadas - project.horasConsumidas);
     const progress = project.horasEstimadas > 0 ? Math.min(100, Math.round((project.horasConsumidas / project.horasEstimadas) * 100)) : 0;
@@ -687,12 +723,12 @@ function ProjectDetailsModal({
                                     </div>
                                     <div>
                                         <p className="text-2xl font-black text-amber-900">
-                                            {checklist.filter(i => i.completed).length} / {checklist.length}
+                                            {completedVisible} / {totalVisible}
                                         </p>
                                         <p className="text-xs font-bold text-amber-600/70 uppercase">Checklist completado</p>
                                     </div>
                                     <div className="w-full bg-amber-100 h-1.5 rounded-full overflow-hidden">
-                                        <div className="h-full bg-amber-500 rounded-full" style={{ width: `${checklist.length > 0 ? (checklist.filter(i => i.completed).length / checklist.length) * 100 : 0}%` }} />
+                                        <div className="h-full bg-amber-500 rounded-full transition-all duration-700" style={{ width: `${checklistProgress}%` }} />
                                     </div>
                                 </div>
                             </div>
@@ -771,21 +807,40 @@ function ProjectDetailsModal({
                                         <CheckCircle2 className="w-4 h-4 text-primary" /> Avance Técnico (Checklist)
                                     </h4>
                                     <div className="space-y-2 max-h-[600px] overflow-y-auto pr-2 scrollbar-thin">
-                                        {checklist.length === 0 ? (
+                                        {visibleItems.length === 0 ? (
                                             <div className="bg-slate-50 rounded-3xl p-8 border border-dashed border-slate-200 text-center text-slate-400 text-xs font-bold uppercase tracking-widest">Sin tareas definidas para este proyecto</div>
                                         ) : (
-                                            checklist.map((item: any) => (
-                                                <div key={item.id} className={`flex items-start gap-4 p-4 rounded-3xl border transition-all ${item.completed ? 'bg-emerald-50/40 border-emerald-100 shadow-sm' : 'bg-slate-50/50 border-slate-100 hover:border-slate-200'}`}>
-                                                    <div className={`mt-0.5 shrink-0 w-6 h-6 rounded-xl border-2 flex items-center justify-center transition-all ${item.completed ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-200' : 'border-slate-200 bg-white'}`}>
-                                                        {item.completed && <CheckCircle2 className="w-4 h-4" />}
-                                                    </div>
+                                            visibleItems.map((item: any) => (
+                                                <div key={item.id} className={`flex items-start gap-3 p-3 rounded-2xl border transition-all ${item.excluded ? 'opacity-40 grayscale border-dashed border-slate-300' : item.completed ? 'bg-emerald-50/40 border-emerald-100 shadow-sm' : 'bg-slate-50/50 border-slate-100 hover:border-slate-200'}`}>
+                                                    {!item.excluded ? (
+                                                        <button
+                                                            disabled={item.confirmedBySupervisor}
+                                                            onClick={() => onUpdateChecklist(item.id, { completed: !item.completed })}
+                                                            className={`mt-0.5 shrink-0 w-6 h-6 rounded-xl border-2 flex items-center justify-center transition-all ${item.completed ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-200' : 'border-slate-200 bg-white hover:border-primary/40'}`}
+                                                        >
+                                                            {item.completed && <CheckCircle2 className="w-4 h-4" />}
+                                                        </button>
+                                                    ) : (
+                                                        <div className="mt-0.5 shrink-0 w-6 h-6 flex items-center justify-center">
+                                                            <MinusCircle className="w-5 h-5 text-slate-400" />
+                                                        </div>
+                                                    )}
                                                     <div className="min-w-0 flex-1">
-                                                        <p className={`text-sm font-bold leading-snug ${item.completed ? 'text-emerald-900' : 'text-slate-700'}`}>{item.description}</p>
-                                                        <div className="flex items-center gap-2 mt-1.5">
-                                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">{item.tag}</span>
-                                                            {item.updatedAt && <span className="text-[9px] text-slate-400 font-medium">Actualizado: {new Date(item.updatedAt).toLocaleDateString()}</span>}
+                                                        <p className={`text-sm font-bold leading-snug ${item.excluded ? 'text-slate-400 line-through' : item.completed ? 'text-emerald-900' : 'text-slate-700'}`}>{item.description}</p>
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">{item.tag}</span>
+                                                            {item.excluded && <span className="text-[9px] font-black text-slate-400 uppercase italic">(Excluido)</span>}
                                                         </div>
                                                     </div>
+                                                    {isSupervisor && (
+                                                        <button
+                                                            onClick={() => onUpdateChecklist(item.id, { excluded: !item.excluded })}
+                                                            className={`shrink-0 p-1.5 rounded-lg transition-all ${item.excluded ? 'text-blue-500 hover:bg-blue-50' : 'text-slate-300 hover:text-red-500 hover:bg-red-50'}`}
+                                                            title={item.excluded ? "Incluir en proyecto" : "Excluir de proyecto"}
+                                                        >
+                                                            {item.excluded ? <Plus className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                                                        </button>
+                                                    )}
                                                 </div>
                                             ))
                                         )}
@@ -954,10 +1009,6 @@ function ProjectCard({
     const StatusIcon = cfg.Icon;
     const progressColor = getProgressColor(progress);
 
-    const checklistTotal = project.checklistItems?.length || 0;
-    const checklistCompleted = project.checklistItems?.filter((i: any) => i.completed).length || 0;
-    const checklistPercent = checklistTotal > 0 ? Math.round((checklistCompleted / checklistTotal) * 100) : 0;
-
     return (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-slate-300 transition-all duration-300 p-5 flex flex-col gap-4 group">
             <div className="flex items-start justify-between gap-3">
@@ -1028,10 +1079,18 @@ function ProjectCard({
             <div className="space-y-1.5 pt-1 border-t border-slate-50">
                 <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                     <span>Avance Técnico (Checklist)</span>
-                    <span className="text-slate-600">{checklistCompleted} / {checklistTotal}</span>
+                    <span className="text-slate-600">
+                        {project.checklistItems?.filter((i: any) => i.completed && !i.excluded).length} / {project.checklistItems?.filter((i: any) => !i.excluded).length}
+                    </span>
                 </div>
                 <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                    <div className="h-full bg-primary rounded-full transition-all duration-700" style={{ width: `${checklistPercent}%` }} />
+                    <div className="h-full bg-primary rounded-full transition-all duration-700"
+                        style={{
+                            width: `${(project.checklistItems?.filter((i: any) => !i.excluded).length || 0) > 0
+                                ? Math.round((project.checklistItems?.filter((i: any) => i.completed && !i.excluded).length || 0) / (project.checklistItems?.filter((i: any) => !i.excluded).length || 0) * 100)
+                                : 0}%`
+                        }}
+                    />
                 </div>
             </div>
 
