@@ -74,8 +74,8 @@ interface FormData {
     activo: boolean;
     noEnMetricas: boolean;
     observaciones: string;
-    horasEstimadas: number;
-    horasConsumidas: number;
+    horasEstimadas: number | string;
+    horasConsumidas: number | string;
     cliente: string;
     clientId: string;
     responsable: string;
@@ -118,8 +118,8 @@ const EMPTY_FORM: FormData = {
     activo: true,
     noEnMetricas: false,
     observaciones: '',
-    horasEstimadas: 0,
-    horasConsumidas: 0,
+    horasEstimadas: '',
+    horasConsumidas: '',
     cliente: '',
     clientId: '',
     responsable: '',
@@ -285,7 +285,13 @@ function ProjectsContent() {
         if (!formData.nombre.trim()) return;
         const method = editingProject ? 'PATCH' : 'POST';
         const url = editingProject ? `/api/projects?id=${editingProject.id}` : '/api/projects';
-        await fetch(url, { method, body: JSON.stringify(formData) });
+
+        const submissionData = {
+            ...formData,
+            horasEstimadas: Number(formData.horasEstimadas) || 0,
+            horasConsumidas: Number(formData.horasConsumidas) || 0,
+        };
+        await fetch(url, { method, body: JSON.stringify(submissionData) });
         setIsModalOpen(false);
         loadProjects(true);
     };
@@ -1256,7 +1262,7 @@ function ProjectModal({
                                     min={0}
                                     className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                     value={formData.horasEstimadas}
-                                    onChange={e => set('horasEstimadas', parseInt(e.target.value) || 0)}
+                                    onChange={e => set('horasEstimadas', e.target.value)}
                                 />
                             </div>
                             <div className="space-y-1.5">
@@ -1266,7 +1272,7 @@ function ProjectModal({
                                     min={0}
                                     className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                     value={formData.horasConsumidas}
-                                    onChange={e => set('horasConsumidas', parseInt(e.target.value) || 0)}
+                                    onChange={e => set('horasConsumidas', e.target.value)}
                                 />
                             </div>
                         </div>

@@ -51,7 +51,30 @@ export const dataLayer = {
             sanitizedData.publicToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         }
 
-        return await prisma.project.create({ data: sanitizedData as any });
+        const project = await prisma.project.create({ data: sanitizedData as any });
+
+        // Automated checklist based on tags
+        if (data.tags && data.tags.length > 0) {
+            const tagTemplates = await prisma.projectTag.findMany({
+                where: { name: { in: data.tags } },
+                include: { checklists: { where: { active: true } } }
+            });
+
+            for (const tag of tagTemplates) {
+                for (const item of tag.checklists) {
+                    await prisma.checklistItem.create({
+                        data: {
+                            projectId: project.id,
+                            tag: tag.name,
+                            description: item.description,
+                            completed: false
+                        }
+                    });
+                }
+            }
+        }
+
+        return project;
     },
     async updateProject(id: string, data: {
         nombre?: string;
@@ -74,7 +97,51 @@ export const dataLayer = {
         const sanitizedData = { ...data };
         if (sanitizedData.clientId === "") sanitizedData.clientId = null as any;
         if (sanitizedData.responsableId === "") sanitizedData.responsableId = null as any;
-        return await prisma.project.update({ where: { id }, data: sanitizedData as any });
+        const oldProject = await prisma.project.findUnique({ where: { id }, select: { tags: true } });
+        const project = await prisma.project.update({ where: { id }, data: sanitizedData as any });
+
+        // Sync checklists if tags changed
+        if (data.tags) {
+            const oldTags = (oldProject?.tags as string[]) || [];
+            const newTags = data.tags;
+
+            // Tags to add
+            const tagsToAdd = newTags.filter(t => !oldTags.includes(t));
+            const tagsToRemove = oldTags.filter(t => !newTags.includes(t));
+
+            // Add new items
+            if (tagsToAdd.length > 0) {
+                const tagTemplates = await prisma.projectTag.findMany({
+                    where: { name: { in: tagsToAdd } },
+                    include: { checklists: { where: { active: true } } }
+                });
+                for (const tag of tagTemplates) {
+                    for (const item of tag.checklists) {
+                        await prisma.checklistItem.create({
+                            data: {
+                                projectId: id,
+                                tag: tag.name,
+                                description: item.description,
+                                completed: false
+                            }
+                        });
+                    }
+                }
+            }
+
+            // Remove removed items (only those that are NOT completed to preserve history if desired?)
+            // Usually, if a tag is removed, its items should disappear from the list.
+            if (tagsToRemove.length > 0) {
+                await prisma.checklistItem.deleteMany({
+                    where: {
+                        projectId: id,
+                        tag: { in: tagsToRemove }
+                    }
+                });
+            }
+        }
+
+        return project;
     },
 
     async deleteProject(id: string) {
