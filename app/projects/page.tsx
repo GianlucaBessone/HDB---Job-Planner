@@ -154,7 +154,7 @@ const normalize = (s: string) =>
 function ProjectsContent() {
     const searchParams = useSearchParams();
     const [projects, setProjects] = useState<Project[]>([]);
-    const [operators, setOperators] = useState<{ id: string; nombreCompleto: string }[]>([]);
+    const [operators, setOperators] = useState<{ id: string; nombreCompleto: string; role?: string }[]>([]);
     const [clients, setClients] = useState<{ id: string; nombre: string }[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -526,6 +526,7 @@ function ProjectsContent() {
             {isDetailsOpen && selectedProjectForDetails && (
                 <ProjectDetailsModal
                     project={selectedProjectForDetails!}
+                    operators={operators}
                     entries={projectEntries}
                     checklist={projectChecklist}
                     logs={projectLogs}
@@ -577,6 +578,7 @@ export default function ProjectsPage() {
 // ── ProjectDetailsModal ──────────────────────────────────────────────────────
 function ProjectDetailsModal({
     project,
+    operators,
     entries,
     checklist,
     logs,
@@ -586,6 +588,7 @@ function ProjectDetailsModal({
     onClose,
 }: {
     project: Project;
+    operators: { id: string; nombreCompleto: string; role?: string }[];
     entries: any[];
     checklist: any[];
     logs: any[];
@@ -847,12 +850,14 @@ function ProjectDetailsModal({
                                                 </div>
                                                 <div className="space-y-1.5">
                                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Responsable</label>
-                                                    <input
-                                                        type="text"
+                                                    <SearchableSelect
+                                                        options={operators
+                                                            .filter(op => op.role !== 'admin')
+                                                            .map(op => ({ id: op.nombreCompleto, label: op.nombreCompleto }))}
                                                         value={newLog.responsable}
-                                                        placeholder="Nombre..."
-                                                        onChange={e => setNewLog(prev => ({ ...prev, responsable: e.target.value }))}
-                                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-primary/20 outline-none"
+                                                        onChange={(val) => setNewLog(prev => ({ ...prev, responsable: val }))}
+                                                        placeholder="Cargado por..."
+                                                        className="!space-y-0 h-10"
                                                     />
                                                 </div>
                                             </div>
