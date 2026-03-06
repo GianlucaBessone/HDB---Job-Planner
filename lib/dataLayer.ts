@@ -18,8 +18,12 @@ export const dataLayer = {
             include: {
                 client: true,
                 responsableUser: { select: { id: true, nombreCompleto: true, role: true } },
+                checklistItems: {
+                    select: { id: true, completed: true, excluded: true, tag: true },
+                    orderBy: { createdAt: 'asc' }
+                },
                 _count: {
-                    select: { clientDelays: true, checklistItems: true }
+                    select: { clientDelays: true }
                 }
             },
             orderBy: { createdAt: 'desc' }
@@ -55,20 +59,30 @@ export const dataLayer = {
 
         const project = await prisma.project.create({ data: sanitizedData as any });
 
-        // Automated checklist based on tags
+        // Automated checklist based on tags — merge static templates + DB templates
         if (data.tags && data.tags.length > 0) {
+            // Import static templates
+            const { CHECKLIST_TEMPLATES } = require('@/lib/checklistTemplates');
+
+            // Get DB-defined templates
             const tagTemplates = await prisma.projectTag.findMany({
                 where: { name: { in: data.tags } },
                 include: { checklists: { where: { active: true } } }
             });
 
-            for (const tag of tagTemplates) {
-                for (const item of tag.checklists) {
+            for (const tagName of data.tags) {
+                // Merge: static + DB (deduplicate)
+                const staticItems: string[] = CHECKLIST_TEMPLATES[tagName] || [];
+                const dbTag = tagTemplates.find(t => t.name === tagName);
+                const dbItems: string[] = dbTag ? dbTag.checklists.map((c: any) => c.description) : [];
+                const allDescriptions = Array.from(new Set([...staticItems, ...dbItems]));
+
+                for (const desc of allDescriptions) {
                     await prisma.checklistItem.create({
                         data: {
                             projectId: project.id,
-                            tag: tag.name,
-                            description: item.description,
+                            tag: tagName,
+                            description: desc,
                             completed: false
                         }
                     });
@@ -115,20 +129,35 @@ export const dataLayer = {
 
             // Add new items
             if (tagsToAdd.length > 0) {
+                const { CHECKLIST_TEMPLATES } = require('@/lib/checklistTemplates');
+                const existingItems = await prisma.checklistItem.findMany({
+                    where: { projectId: id },
+                    select: { tag: true, description: true }
+                });
+
                 const tagTemplates = await prisma.projectTag.findMany({
                     where: { name: { in: tagsToAdd } },
                     include: { checklists: { where: { active: true } } }
                 });
-                for (const tag of tagTemplates) {
-                    for (const item of tag.checklists) {
-                        await prisma.checklistItem.create({
-                            data: {
-                                projectId: id,
-                                tag: tag.name,
-                                description: item.description,
-                                completed: false
-                            }
-                        });
+
+                for (const tagName of tagsToAdd) {
+                    const staticItems: string[] = CHECKLIST_TEMPLATES[tagName] || [];
+                    const dbTag = tagTemplates.find(t => t.name === tagName);
+                    const dbItems: string[] = dbTag ? dbTag.checklists.map((c: any) => c.description) : [];
+                    const allDescriptions = Array.from(new Set([...staticItems, ...dbItems]));
+
+                    for (const desc of allDescriptions) {
+                        const already = existingItems.find(i => i.tag === tagName && i.description === desc);
+                        if (!already) {
+                            await prisma.checklistItem.create({
+                                data: {
+                                    projectId: id,
+                                    tag: tagName,
+                                    description: desc,
+                                    completed: false
+                                }
+                            });
+                        }
                     }
                 }
             }
