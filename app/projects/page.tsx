@@ -35,6 +35,7 @@ import {
     ClipboardList
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { showToast } from '@/components/Toast';
 import SearchableSelect from '@/components/SearchableSelect';
 import { CHECKLIST_TEMPLATES } from '@/lib/checklistTemplates';
 
@@ -868,7 +869,7 @@ function ProjectDetailsModal({
                                             onClick={() => {
                                                 const url = `${window.location.origin}/projects/${project.id}/report?token=${project.publicToken || ''}`;
                                                 navigator.clipboard.writeText(url);
-                                                alert('Link copiado al portapapeles');
+                                                showToast('Link copiado al portapapeles', 'success');
                                             }}
                                             className="bg-white hover:bg-slate-50 text-primary border border-primary/20 p-2 rounded-xl transition-all shadow-sm active:scale-90 shrink-0"
                                             title="Copiar Link"
