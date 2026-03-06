@@ -273,8 +273,9 @@ export const dataLayer = {
     },
 
     // Client Delays
-    async getClientDelays() {
+    async getClientDelays(projectId?: string) {
         return await prisma.clientDelay.findMany({
+            where: projectId ? { projectId } : undefined,
             include: { project: true },
             orderBy: { fecha: 'desc' }
         });

@@ -95,6 +95,13 @@ export default function DelaysPage() {
                 setFormData(prev => ({ ...prev, operador: user.nombreCompleto }));
             } catch (e) { }
         }
+
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const proy = params.get('proyecto');
+            if (proy) setSearchTerm(proy);
+        }
+
         loadData();
     }, []);
 

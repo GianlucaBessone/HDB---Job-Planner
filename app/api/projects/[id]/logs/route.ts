@@ -22,3 +22,15 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         return NextResponse.json({ error: String(e) }, { status: 500 });
     }
 }
+
+export async function DELETE(req: Request) {
+    try {
+        const url = new URL(req.url);
+        const logId = url.searchParams.get('logId');
+        if (!logId) return NextResponse.json({ error: 'Missing logId' }, { status: 400 });
+        await dataLayer.deleteProjectLog(logId);
+        return NextResponse.json({ success: true });
+    } catch (e) {
+        return NextResponse.json({ error: String(e) }, { status: 500 });
+    }
+}

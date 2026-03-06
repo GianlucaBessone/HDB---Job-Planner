@@ -47,6 +47,20 @@ export default function MyProjectsPage() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const search = params.get('search');
+            if (search) {
+                setSearchTerm(search);
+                // Also set it to view all by default if coming from a link to find any project
+                if (params.get('all') === 'true') {
+                    setViewAll(true);
+                }
+            }
+        }
+    }, []);
+
     const [selectedProject, setSelectedProject] = useState<Project | null>(null);
     const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]);
     const [loadingChecklist, setLoadingChecklist] = useState(false);
@@ -449,8 +463,8 @@ export default function MyProjectsPage() {
                                 onClick={() => handleFinalizeProject()}
                                 disabled={isFinalizing}
                                 className={`w-full text-white py-4 rounded-2xl font-black text-base shadow-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${(user?.role === 'supervisor' || user?.role === 'admin')
-                                        ? 'bg-primary shadow-primary/20 hover:bg-primary/90'
-                                        : 'bg-indigo-600 shadow-indigo-200 hover:bg-indigo-700'
+                                    ? 'bg-primary shadow-primary/20 hover:bg-primary/90'
+                                    : 'bg-indigo-600 shadow-indigo-200 hover:bg-indigo-700'
                                     }`}
                             >
                                 {isFinalizing ? <Loader2 className="w-5 h-5 animate-spin" /> : <ClipboardCheck className="w-6 h-6" />}

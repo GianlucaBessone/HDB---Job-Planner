@@ -181,6 +181,7 @@ function ProjectsContent() {
     const [projectEntries, setProjectEntries] = useState<any[]>([]);
     const [projectChecklist, setProjectChecklist] = useState<any[]>([]);
     const [projectLogs, setProjectLogs] = useState<any[]>([]);
+    const [projectDelays, setProjectDelays] = useState<any[]>([]);
     const [configOptions, setConfigOptions] = useState<any[]>([]);
 
     const categoryOptions = configOptions.filter((o: any) => o.category === 'CATEGORIA' && o.active).map((o: any) => o.value);
@@ -257,14 +258,16 @@ function ProjectsContent() {
         setIsDetailsOpen(true);
         setIsDetailsLoading(true);
         try {
-            const [entries, checklist, logs] = await Promise.all([
+            const [entries, checklist, logs, delays] = await Promise.all([
                 fetch(`/api/time-entries?projectId=${project.id}`).then(res => res.json()),
                 fetch(`/api/projects/${project.id}/checklist`).then(res => res.json()),
-                fetch(`/api/projects/${project.id}/logs`).then(res => res.json())
+                fetch(`/api/projects/${project.id}/logs`).then(res => res.json()),
+                fetch(`/api/delays?projectId=${project.id}`).then(res => res.json())
             ]);
             setProjectEntries(Array.isArray(entries) ? entries : []);
             setProjectChecklist(Array.isArray(checklist) ? checklist : []);
             setProjectLogs(Array.isArray(logs) ? logs : []);
+            setProjectDelays(Array.isArray(delays) ? delays : []);
         } catch (e) {
             console.error(e);
         } finally {
@@ -289,6 +292,21 @@ function ProjectsContent() {
             console.error(e);
         } finally {
             setIsSavingLog(false);
+        }
+    };
+
+    const handleDeleteLog = async (logId: string) => {
+        if (!selectedProjectForDetails) return;
+        try {
+            const res = await fetch(`/api/projects/${selectedProjectForDetails.id}/logs?logId=${logId}`, { method: 'DELETE' });
+            if (res.ok) {
+                setProjectLogs(prev => prev.filter(l => l.id !== logId));
+                showToast('Comentario eliminado', 'success');
+            } else {
+                showToast('Error al eliminar comentario', 'error');
+            }
+        } catch (e) {
+            showToast('Error de conexión', 'error');
         }
     };
 
@@ -555,10 +573,12 @@ function ProjectsContent() {
                     entries={projectEntries}
                     checklist={projectChecklist}
                     logs={projectLogs}
+                    delays={projectDelays}
                     isLoading={isDetailsLoading}
                     isSavingLog={isSavingLog}
                     currentUser={currentUser}
                     onSaveLog={handleSaveLog}
+                    onDeleteLog={handleDeleteLog}
                     onUpdateChecklist={handleUpdateChecklist}
                     onClose={() => setIsDetailsOpen(false)}
                 />
@@ -609,10 +629,12 @@ function ProjectDetailsModal({
     entries,
     checklist,
     logs,
+    delays,
     isLoading,
     isSavingLog,
     currentUser,
     onSaveLog,
+    onDeleteLog,
     onUpdateChecklist,
     onClose,
 }: {
@@ -621,10 +643,12 @@ function ProjectDetailsModal({
     entries: any[];
     checklist: any[];
     logs: any[];
+    delays: any[];
     isLoading: boolean;
     isSavingLog: boolean;
     currentUser: any;
     onSaveLog: (data: { fecha: string; responsable: string; observacion: string }) => void;
+    onDeleteLog: (logId: string) => void;
     onUpdateChecklist: (itemId: string, updates: any) => void;
     onClose: () => void;
 }) {
@@ -638,6 +662,8 @@ function ProjectDetailsModal({
 
     const hoursRemaining = Math.max(0, project.horasEstimadas - project.horasConsumidas);
     const progress = project.horasEstimadas > 0 ? Math.min(100, Math.round((project.horasConsumidas / project.horasEstimadas) * 100)) : 0;
+    const totalDemoras = delays?.length || 0;
+    const hoursDemoras = delays?.reduce((acc: number, d: any) => acc + (d.duracion || 0), 0) || 0;
 
     // Group entries by operator
     const operatorStats = entries.reduce((acc: any, entry: any) => {
@@ -688,8 +714,8 @@ function ProjectDetailsModal({
                     ) : (
                         <>
                             {/* Summary Cards */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="bg-indigo-50/50 border border-indigo-100 p-5 rounded-3xl space-y-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                                <Link href={`/timesheets?proyecto=${encodeURIComponent(project.nombre)}`} className="bg-indigo-50/50 border border-indigo-100 p-5 rounded-3xl space-y-2 hover:bg-indigo-100 transition-colors shadow-sm block">
                                     <div className="flex items-center justify-between">
                                         <Clock className="w-5 h-5 text-indigo-500" />
                                         <span className="text-xs font-black text-indigo-400 uppercase tracking-widest">Horas</span>
@@ -701,9 +727,9 @@ function ProjectDetailsModal({
                                     <div className="w-full bg-indigo-100 h-1.5 rounded-full overflow-hidden">
                                         <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${progress}%` }} />
                                     </div>
-                                </div>
+                                </Link>
 
-                                <div className="bg-emerald-50/50 border border-emerald-100 p-5 rounded-3xl space-y-2">
+                                <Link href={`/timesheets?proyecto=${encodeURIComponent(project.nombre)}`} className="bg-emerald-50/50 border border-emerald-100 p-5 rounded-3xl space-y-2 hover:bg-emerald-100 transition-colors shadow-sm block">
                                     <div className="flex items-center justify-between">
                                         <Timer className="w-5 h-5 text-emerald-500" />
                                         <span className="text-xs font-black text-emerald-400 uppercase tracking-widest">Restante</span>
@@ -715,9 +741,9 @@ function ProjectDetailsModal({
                                     <div className="flex items-center gap-1.5 text-[10px] font-black text-emerald-600/50 uppercase tracking-tight">
                                         <Activity className="w-3 h-3" /> Eficiencia: {100 - progress > 0 ? 'En rango' : 'Límite'}
                                     </div>
-                                </div>
+                                </Link>
 
-                                <div className="bg-amber-50/50 border border-amber-100 p-5 rounded-3xl space-y-2">
+                                <Link href={`/my-projects?search=${encodeURIComponent(project.nombre)}&all=true`} className="bg-amber-50/50 border border-amber-100 p-5 rounded-3xl space-y-2 hover:bg-amber-100 transition-colors shadow-sm block">
                                     <div className="flex items-center justify-between">
                                         <CheckSquare className="w-5 h-5 text-amber-500" />
                                         <span className="text-xs font-black text-amber-400 uppercase tracking-widest">Tareas</span>
@@ -731,7 +757,21 @@ function ProjectDetailsModal({
                                     <div className="w-full bg-amber-100 h-1.5 rounded-full overflow-hidden">
                                         <div className="h-full bg-amber-500 rounded-full transition-all duration-700" style={{ width: `${checklistProgress}%` }} />
                                     </div>
-                                </div>
+                                </Link>
+
+                                <Link href={`/delays?proyecto=${encodeURIComponent(project.nombre)}`} className="bg-red-50/50 border border-red-100 p-5 rounded-3xl space-y-2 hover:bg-red-100 transition-colors shadow-sm block">
+                                    <div className="flex items-center justify-between">
+                                        <AlertCircle className="w-5 h-5 text-red-500" />
+                                        <span className="text-xs font-black text-red-400 uppercase tracking-widest">Demoras</span>
+                                    </div>
+                                    <div>
+                                        <p className="text-2xl font-black text-red-900">{totalDemoras}</p>
+                                        <p className="text-xs font-bold text-red-600/70 uppercase">{hoursDemoras}h en total</p>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-[10px] font-black text-red-600/50 uppercase tracking-tight">
+                                        <MessageSquare className="w-3 h-3" /> {totalDemoras > 0 ? 'Con incidencias' : 'Sin demoras'}
+                                    </div>
+                                </Link>
                             </div>
 
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

@@ -3,9 +3,11 @@ import { dataLayer } from '@/lib/dataLayer';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: Request) {
     try {
-        const delays = await dataLayer.getClientDelays();
+        const url = new URL(req.url);
+        const projectId = url.searchParams.get('projectId');
+        const delays = await dataLayer.getClientDelays(projectId || undefined);
         return NextResponse.json(delays);
     } catch (e) {
         console.error('Fetch Delays Error:', e);
