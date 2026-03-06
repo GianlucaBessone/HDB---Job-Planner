@@ -35,6 +35,7 @@ import {
     ClipboardList
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import SearchableSelect from '@/components/SearchableSelect';
 import { CHECKLIST_TEMPLATES } from '@/lib/checklistTemplates';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -1159,44 +1160,37 @@ function ProjectModal({
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Cliente</label>
-                                <select
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                <SearchableSelect
+                                    options={clients.map(c => ({ id: c.id, label: c.nombre }))}
                                     value={formData.clientId}
-                                    onChange={e => {
-                                        const selectedId = e.target.value;
-                                        const client = clients.find(c => c.id === selectedId);
+                                    onChange={(val) => {
+                                        const client = clients.find(c => c.id === val);
                                         setFormData(prev => ({
                                             ...prev,
-                                            clientId: selectedId,
+                                            clientId: val,
                                             cliente: client ? client.nombre : ''
                                         }));
                                     }}
-                                >
-                                    <option value="">— Seleccionar cliente —</option>
-                                    {clients.map(c => (
-                                        <option key={c.id} value={c.id}>{c.nombre}</option>
-                                    ))}
-                                </select>
+                                    placeholder="Seleccionar cliente..."
+                                    className="!space-y-0"
+                                />
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Responsable</label>
-                                <select
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                <SearchableSelect
+                                    options={operators.map(o => ({ id: o.id, label: o.nombreCompleto }))}
                                     value={formData.responsableId}
-                                    onChange={e => {
-                                        const op = operators.find(o => o.id === e.target.value);
+                                    onChange={(val) => {
+                                        const op = operators.find(o => o.id === val);
                                         setFormData(prev => ({
                                             ...prev,
-                                            responsableId: e.target.value,
+                                            responsableId: val,
                                             responsable: op ? op.nombreCompleto : ''
                                         }));
                                     }}
-                                >
-                                    <option value="">— Sin asignar —</option>
-                                    {operators.map(op => (
-                                        <option key={op.id} value={op.id}>{op.nombreCompleto}</option>
-                                    ))}
-                                </select>
+                                    placeholder="Sin asignar"
+                                    className="!space-y-0"
+                                />
                             </div>
                         </div>
 

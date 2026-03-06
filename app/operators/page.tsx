@@ -18,6 +18,7 @@ import {
     List
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import SearchableSelect from '@/components/SearchableSelect';
 
 const PREDEFINED_TAGS = ['Electricista', 'Ayudante', 'Técnico CCTV', 'Supervisor', 'Otro'];
 
@@ -228,16 +229,17 @@ export default function OperatorsPage() {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Rol</label>
-                                        <select
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium disabled:opacity-50"
+                                        <SearchableSelect
+                                            options={[
+                                                { id: 'operador', label: 'Operador (Solo tiempo)' },
+                                                { id: 'supervisor', label: 'Supervisor' },
+                                                { id: 'admin', label: 'Administrador' }
+                                            ]}
                                             value={formData.role}
-                                            onChange={e => setFormData({ ...formData, role: e.target.value })}
+                                            onChange={(val) => setFormData({ ...formData, role: val })}
                                             disabled={currentUser?.role === 'operador'}
-                                        >
-                                            <option value="operador">Operador (Solo tiempo)</option>
-                                            <option value="supervisor">Supervisor</option>
-                                            <option value="admin">Administrador</option>
-                                        </select>
+                                            className="!space-y-0"
+                                        />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">PIN / Contraseña</label>

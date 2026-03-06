@@ -47,7 +47,7 @@ interface ClientDelay {
     duracion: number;
 }
 
-const AREAS = ['Control Documentario', 'Calidad', 'Compras', 'IT', 'Producción', 'Logística', 'Seguridad', 'MAPHI', 'Portería', 'Otro'];
+const AREAS = ['Control Documentario', 'Calidad', 'Compras', 'IT', 'Producción', 'Logística', 'Seguridad', 'MAPHI', 'Portería', 'Mantenimiento', 'Ingeniería', 'Gerencia', 'Otro'];
 
 export default function DelaysPage() {
     const [delays, setDelays] = useState<ClientDelay[]>([]);
@@ -483,7 +483,8 @@ export default function DelaysPage() {
                                         options={projects.map(p => ({ id: p.id, label: p.nombre }))}
                                         value={formData.projectId}
                                         onChange={(val) => setFormData({ ...formData, projectId: val })}
-                                        placeholder="Seleccionar proyecto..."
+                                        placeholder="Buscar proyecto..."
+                                        className="!space-y-0"
                                     />
                                 </div>
 
@@ -516,13 +517,13 @@ export default function DelaysPage() {
                                             {formData.operador}
                                         </div>
                                     ) : (
-                                        <select required value={formData.operador}
-                                            onChange={e => setFormData({ ...formData, operador: e.target.value })}
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 h-[50px]"
-                                        >
-                                            <option value="">— Seleccionar operador —</option>
-                                            {operators.map(op => <option key={op.nombreCompleto} value={op.nombreCompleto}>{op.nombreCompleto}</option>)}
-                                        </select>
+                                        <SearchableSelect
+                                            options={operators.map(op => ({ id: op.nombreCompleto, label: op.nombreCompleto }))}
+                                            value={formData.operador}
+                                            onChange={(val) => setFormData({ ...formData, operador: val })}
+                                            placeholder="Seleccionar operador..."
+                                            className="!space-y-0"
+                                        />
                                     )}
                                 </div>
 
@@ -530,13 +531,13 @@ export default function DelaysPage() {
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                         <Building2 className="w-3 h-3" /> Área del Cliente
                                     </label>
-                                    <select required value={formData.area}
-                                        onChange={e => setFormData({ ...formData, area: e.target.value })}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 h-[50px]"
-                                    >
-                                        <option value="">— Seleccionar área —</option>
-                                        {AREAS.map(a => <option key={a} value={a}>{a}</option>)}
-                                    </select>
+                                    <SearchableSelect
+                                        options={AREAS.map(a => ({ id: a, label: a }))}
+                                        value={formData.area}
+                                        onChange={(val) => setFormData({ ...formData, area: val })}
+                                        placeholder="Seleccionar área..."
+                                        className="!space-y-0"
+                                    />
                                 </div>
 
                                 <div className="md:col-span-2 space-y-2">
