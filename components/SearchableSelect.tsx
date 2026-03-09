@@ -137,18 +137,18 @@ export default function SearchableSelect({
 
             <div
                 onClick={() => !disabled && setIsOpen(!isOpen)}
-                className={`w-full h-[50px] bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 flex items-center justify-between cursor-pointer transition-all ${isOpen ? 'ring-4 ring-primary/10 border-primary' : 'hover:border-slate-300'
+                className={`w-full h-[42px] md:h-[50px] bg-slate-50 border border-slate-200 rounded-xl md:rounded-2xl py-2 md:py-3 px-3 md:px-4 flex items-center justify-between cursor-pointer transition-all text-sm ${isOpen ? 'ring-4 ring-primary/10 border-primary' : 'hover:border-slate-300'
                     } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                 tabIndex={disabled ? -1 : 0}
             >
                 <span className={`font-bold truncate ${selectedOption ? 'text-slate-700' : 'text-slate-400'}`}>
                     {selectedOption ? selectedOption.label : placeholder}
                 </span>
-                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
             </div>
 
             {isOpen && (
-                <div className="absolute z-[110] w-full mt-2 bg-white border border-slate-200 rounded-[2rem] shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden">
+                <div className="absolute z-[110] w-full mt-1.5 bg-white border border-slate-200 rounded-2xl md:rounded-[2rem] shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden">
                     <div className="p-3 border-b border-slate-100 flex items-center gap-2">
                         <Search className="w-4 h-4 text-slate-400" />
                         <input

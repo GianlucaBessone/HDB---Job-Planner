@@ -104,4 +104,39 @@
   .whatsapp-preview {
     @apply p-4 max-h-[300px];
   }
+
+  /* ── Compact inputs on mobile ── */
+  input[type="date"],
+  input[type="time"],
+  select {
+    height: 42px !important;
+    @apply text-sm rounded-xl px-3;
+  }
+
+  /* ── Compact buttons on mobile ── */
+  button {
+    @apply text-sm;
+  }
+
+  /* ── Reduce oversized rounded corners on mobile ── */
+  .rounded-\[2\.5rem\],
+  .rounded-\[2rem\] {
+    @apply rounded-2xl;
+  }
+
+  /* ── Tables: readable on mobile ── */
+  table th,
+  table td {
+    @apply px-2.5 py-2.5 text-xs;
+  }
+}
+
+/* Small phones (iPhone SE, Xiaomi Redmi, etc.) */
+@media (max-width: 390px) {
+  input[type="date"],
+  input[type="time"],
+  select {
+    height: 40px !important;
+    @apply text-xs px-2;
+  }
 }

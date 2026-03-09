@@ -50,34 +50,34 @@ export default function ConfigPage() {
 
     return (
         <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div className="space-y-1">
-                    <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
-                        <Settings className="w-8 h-8 text-slate-700" />
-                        Configuración del Sistema
+                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 md:gap-3">
+                        <Settings className="w-6 h-6 md:w-8 md:h-8 text-slate-700" />
+                        Configuración
                     </h2>
-                    <p className="text-slate-500 font-medium">Administra catálogos y valores globales del sistema</p>
+                    <p className="text-sm text-slate-500 font-medium hidden md:block">Administra catálogos y valores globales del sistema</p>
                 </div>
             </div>
 
-            <div className="flex border-b border-slate-200">
+            <div className="flex border-b border-slate-200 overflow-x-auto">
                 <button
                     onClick={() => setActiveTab('tags')}
-                    className={`flex items-center gap-2 px-6 py-4 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'tags' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
+                    className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'tags' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
                 >
                     <Tags className="w-4 h-4" />
                     Etiquetas
                 </button>
                 <button
                     onClick={() => setActiveTab('checklists')}
-                    className={`flex items-center gap-2 px-6 py-4 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'checklists' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
+                    className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'checklists' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
                 >
                     <ListChecks className="w-4 h-4" />
                     Checklists
                 </button>
                 <button
                     onClick={() => setActiveTab('options')}
-                    className={`flex items-center gap-2 px-6 py-4 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'options' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
+                    className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'options' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
                 >
                     <Folders className="w-4 h-4" />
                     Desplegables

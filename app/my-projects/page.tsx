@@ -282,11 +282,11 @@ export default function MyProjectsPage() {
                 <>
                     <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                         <div className="space-y-1">
-                            <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
-                                <ClipboardCheck className="w-8 h-8 text-primary" />
+                            <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 md:gap-3">
+                                <ClipboardCheck className="w-6 h-6 md:w-8 md:h-8 text-primary" />
                                 {viewAll ? 'Todos los Proyectos' : 'Mis Proyectos'}
                             </h2>
-                            <p className="text-sm text-slate-500 font-medium">Gestión técnica y cierre de obra</p>
+                            <p className="text-sm text-slate-500 font-medium hidden md:block">Gestión técnica y cierre de obra</p>
                         </div>
 
                         {(user?.role === 'supervisor' || user?.role === 'admin') && (

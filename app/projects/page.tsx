@@ -403,11 +403,11 @@ function ProjectsContent() {
             <div className="flex flex-col gap-4 mb-6">
                 {/* Title row */}
                 <div className="space-y-1">
-                    <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
-                        <Layout className="w-8 h-8 text-primary" />
+                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 md:gap-3">
+                        <Layout className="w-6 h-6 md:w-8 md:h-8 text-primary" />
                         Gestión de Proyectos
                     </h2>
-                    <p className="text-sm text-slate-500 font-medium">Control y seguimiento de proyectos activos</p>
+                    <p className="text-sm text-slate-500 font-medium hidden md:block">Control y seguimiento de proyectos activos</p>
                 </div>
                 {/* Actions row */}
                 <div className="flex items-center gap-2">
@@ -416,8 +416,8 @@ function ProjectsContent() {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
                         <input
                             type="text"
-                            placeholder="Buscar proyectos..."
-                            className="w-full bg-white border border-slate-200 rounded-xl py-2.5 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium shadow-sm"
+                            placeholder="Buscar..."
+                            className="w-full bg-white border border-slate-200 rounded-xl py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium shadow-sm"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
@@ -441,7 +441,7 @@ function ProjectsContent() {
                     {/* New project – icon + short label on mobile */}
                     <button
                         onClick={openCreate}
-                        className="flex items-center gap-1.5 bg-primary text-white px-3 md:px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-primary/90 shadow-lg shadow-primary/20 active:scale-95 transition-all shrink-0"
+                        className="flex items-center gap-1.5 bg-primary text-white px-3 md:px-5 py-2 md:py-2.5 rounded-xl text-sm font-bold hover:bg-primary/90 shadow-lg shadow-primary/20 active:scale-95 transition-all shrink-0"
                     >
                         <Plus className="w-4 h-4" />
                         <span className="hidden sm:inline">Nuevo Proyecto</span>

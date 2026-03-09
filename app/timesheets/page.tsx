@@ -514,27 +514,27 @@ export default function TimesheetsPage() {
     const totalFilteredExtras = filteredCompleted.filter(e => e.isExtra).reduce((sum, e) => sum + e.horasTrabajadas, 0);
 
     return (
-        <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
+        <div className="w-full space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div className="space-y-1">
-                    <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
-                        <Clock className="w-8 h-8 text-indigo-500" />
+                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 md:gap-3">
+                        <Clock className="w-6 h-6 md:w-8 md:h-8 text-indigo-500" />
                         Registro de Tiempos
                     </h2>
-                    <p className="text-slate-500 font-medium italic">Gestión de jornadas de los operadores e ingresos por proyecto</p>
+                    <p className="text-sm text-slate-500 font-medium italic hidden md:block">Gestión de jornadas de los operadores e ingresos por proyecto</p>
                 </div>
                 <button
                     onClick={() => openEditModal()}
-                    className="bg-indigo-500 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-indigo-600 shadow-xl shadow-indigo-500/20 active:scale-95 transition-all w-full md:w-auto justify-center"
+                    className="bg-indigo-500 text-white px-4 py-2.5 md:px-6 md:py-3 rounded-xl md:rounded-2xl font-bold flex items-center gap-2 hover:bg-indigo-600 shadow-lg shadow-indigo-500/20 active:scale-95 transition-all text-sm w-full md:w-auto justify-center"
                 >
-                    <Plus className="w-5 h-5" />
+                    <Plus className="w-4 h-4" />
                     Carga Manual
                 </button>
             </div>
 
             {/* Quick Logging Box */}
-            <div className="bg-white border border-slate-200 shadow-sm p-6 md:p-8 rounded-[2.5rem] flex flex-col md:flex-row items-stretch md:items-center gap-4 md:gap-8">
+            <div className="bg-white border border-slate-200 shadow-sm p-4 md:p-8 rounded-2xl md:rounded-[2.5rem] flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-8">
                 <div className="w-full md:w-1/3">
                     <SearchableSelect
                         label="Operador"
@@ -558,30 +558,32 @@ export default function TimesheetsPage() {
                     />
                 </div>
 
-                <div className="w-full md:w-auto shrink-0">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1 mb-2">Horas Extras</label>
-                    <button
-                        onClick={() => setIsExtraQuick(!isExtraQuick)}
-                        className={`w-full h-[50px] px-6 rounded-2xl font-bold transition-all active:scale-95 ${isExtraQuick ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500 shadow-sm' : 'bg-slate-50 text-slate-500 border-2 border-slate-200'
-                            }`}
-                    >
-                        {isExtraQuick ? 'Sí' : 'No'}
-                    </button>
-                </div>
+                <div className="flex gap-3 w-full md:w-auto">
+                    <div className="shrink-0">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1 mb-1.5">Extra</label>
+                        <button
+                            onClick={() => setIsExtraQuick(!isExtraQuick)}
+                            className={`h-[42px] px-5 rounded-xl font-bold transition-all active:scale-95 text-sm ${isExtraQuick ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500 shadow-sm' : 'bg-slate-50 text-slate-500 border-2 border-slate-200'
+                                }`}
+                        >
+                            {isExtraQuick ? 'Sí' : 'No'}
+                        </button>
+                    </div>
 
-                <div className="w-full md:w-auto shrink-0 flex items-end">
-                    <button
-                        onClick={handleClockIn}
-                        disabled={!selectedOperator || !selectedProject || isSubmittingQuick}
-                        className="w-full md:w-auto bg-emerald-500 disabled:opacity-50 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest flex items-center gap-2 hover:bg-emerald-600 shadow-xl shadow-emerald-500/20 active:scale-95 transition-all justify-center disabled:shadow-none"
-                    >
-                        {isSubmittingQuick ? (
-                            <Activity className="w-5 h-5 animate-spin" />
-                        ) : (
-                            <Play className="w-5 h-5 fill-current" />
-                        )}
-                        {isSubmittingQuick ? 'Iniciando...' : 'Iniciar Jornada'}
-                    </button>
+                    <div className="flex-1 flex items-end">
+                        <button
+                            onClick={handleClockIn}
+                            disabled={!selectedOperator || !selectedProject || isSubmittingQuick}
+                            className="w-full md:w-auto bg-emerald-500 disabled:opacity-50 text-white px-4 md:px-8 py-2.5 md:py-4 rounded-xl md:rounded-2xl font-black uppercase tracking-wider md:tracking-widest flex items-center gap-2 hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all justify-center disabled:shadow-none text-xs md:text-sm whitespace-nowrap"
+                        >
+                            {isSubmittingQuick ? (
+                                <Activity className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <Play className="w-4 h-4 fill-current" />
+                            )}
+                            {isSubmittingQuick ? 'Iniciando...' : 'Iniciar'}
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -617,14 +619,14 @@ export default function TimesheetsPage() {
 
             {/* Past Entries / Reports Content */}
             <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm relative">
-                <div className="p-6 md:p-8 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <h3 className="font-bold text-slate-800 text-lg">Historial y Reportes</h3>
+                <div className="p-4 md:p-8 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <h3 className="font-bold text-slate-800 text-base md:text-lg">Historial y Reportes</h3>
 
-                    <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
                         <select
                             value={viewMode}
                             onChange={(e) => setViewMode(e.target.value as any)}
-                            className="bg-slate-50 border border-slate-200 rounded-2xl h-[50px] px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700 text-sm appearance-none cursor-pointer"
+                            className="bg-slate-50 border border-slate-200 rounded-xl h-[42px] px-3 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700 text-xs md:text-sm appearance-none cursor-pointer flex-1 md:flex-none"
                         >
                             <option value="tarjetas">Vista Detallada (Tarjetas)</option>
                             <option value="planilla">Formato Planilla</option>
@@ -633,27 +635,27 @@ export default function TimesheetsPage() {
                     </div>
                 </div>
 
-                <div className="p-4 bg-slate-50/50 border-b border-slate-100 flex flex-wrap gap-4 items-center">
-                    <div className="flex items-center gap-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Desde:</label>
+                <div className="p-3 md:p-4 bg-slate-50/50 border-b border-slate-100 flex flex-wrap gap-2 md:gap-4 items-end">
+                    <div className="flex items-center gap-1.5 w-[calc(50%-4px)] md:w-auto">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0">Desde:</label>
                         <input
                             type="date"
                             value={filterDateFrom}
                             onChange={e => setFilterDateFrom(e.target.value)}
-                            className="h-[50px] bg-white border border-slate-200 rounded-2xl px-4 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all appearance-none"
+                            className="h-[42px] bg-white border border-slate-200 rounded-xl px-2 md:px-4 text-xs md:text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all appearance-none flex-1 min-w-0"
                         />
                     </div>
-                    <div className="flex items-center gap-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hasta:</label>
+                    <div className="flex items-center gap-1.5 w-[calc(50%-4px)] md:w-auto">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0">Hasta:</label>
                         <input
                             type="date"
                             value={filterDateTo}
                             onChange={e => setFilterDateTo(e.target.value)}
-                            className="h-[50px] bg-white border border-slate-200 rounded-2xl px-4 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all appearance-none"
+                            className="h-[42px] bg-white border border-slate-200 rounded-xl px-2 md:px-4 text-xs md:text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all appearance-none flex-1 min-w-0"
                         />
                     </div>
                     {currentUser?.role !== 'operador' && (
-                        <div className="flex items-center gap-2 min-w-[200px]">
+                        <div className="flex items-center gap-2 w-full md:w-auto md:min-w-[200px]">
                             <SearchableSelect
                                 label="Filtrar Operador"
                                 options={activeOperators.map(op => ({ id: op.id, label: op.nombreCompleto }))}
@@ -665,7 +667,7 @@ export default function TimesheetsPage() {
                         </div>
                     )}
 
-                    <div className="flex items-center gap-2 min-w-[200px]">
+                    <div className="flex items-center gap-2 w-full md:w-auto md:min-w-[200px]">
                         <SearchableSelect
                             label="Filtrar Proyecto"
                             options={activeProjects.map(p => ({ id: p.nombre, label: p.nombre }))}
@@ -679,9 +681,9 @@ export default function TimesheetsPage() {
                     {currentUser?.role !== 'operador' && (
                         <button
                             onClick={exportToExcel}
-                            className="ml-auto bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100 text-xs font-bold py-2 px-4 rounded-xl shadow-sm transition-colors flex items-center gap-2"
+                            className="ml-auto bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100 text-xs font-bold py-2 px-3 rounded-xl shadow-sm transition-colors flex items-center gap-1.5 whitespace-nowrap"
                         >
-                            <FileSpreadsheet className="w-4 h-4" /> Exportar a Excel
+                            <FileSpreadsheet className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Exportar</span> Excel
                         </button>
                     )}
                 </div>

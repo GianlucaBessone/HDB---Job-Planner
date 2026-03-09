@@ -225,18 +225,18 @@ export default function DelaysPage() {
     return (
         <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div className="space-y-1">
                     <div className="flex items-center gap-2 text-slate-400 mb-1">
                         <Link href="/projects" className="hover:text-primary transition-colors flex items-center gap-1 text-xs font-bold uppercase tracking-widest">
                             <ArrowLeft className="w-3 h-3" /> Regresar a Proyectos
                         </Link>
                     </div>
-                    <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
-                        <Timer className="w-8 h-8 text-amber-500" />
+                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 md:gap-3">
+                        <Timer className="w-6 h-6 md:w-8 md:h-8 text-amber-500" />
                         Demoras del Cliente
                     </h2>
-                    <p className="text-slate-500 font-medium italic">Registro de tiempos externos para análisis de causa raíz</p>
+                    <p className="text-sm text-slate-500 font-medium italic hidden md:block">Registro de tiempos externos para análisis de causa raíz</p>
                 </div>
                 <button
                     onClick={() => {
@@ -244,9 +244,9 @@ export default function DelaysPage() {
                         setFormData(prev => ({ ...prev, projectId: '', motivo: '', duracion: 0, area: '', responsableArea: '' }));
                         setIsModalOpen(true);
                     }}
-                    className="bg-amber-500 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-amber-600 shadow-xl shadow-amber-500/20 active:scale-95 transition-all w-full md:w-auto justify-center"
+                    className="bg-amber-500 text-white px-4 py-2.5 md:px-6 md:py-3 rounded-xl md:rounded-2xl font-bold flex items-center gap-2 hover:bg-amber-600 shadow-lg shadow-amber-500/20 active:scale-95 transition-all w-full md:w-auto justify-center text-sm"
                 >
-                    <Plus className="w-5 h-5" /> Registrar Demora
+                    <Plus className="w-4 h-4" /> Registrar Demora
                 </button>
             </div>
 
@@ -264,12 +264,12 @@ export default function DelaysPage() {
             {/* Main Content Card */}
             <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
                 {/* Toolbar */}
-                <div className="p-5 md:p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="p-4 md:p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
-                        <History className="w-5 h-5 text-slate-400" />
-                        <h3 className="font-bold text-slate-700">Historial de Registros</h3>
-                        <span className="ml-1 bg-amber-100 text-amber-700 text-[10px] font-black px-2 py-0.5 rounded-lg uppercase tracking-widest">
-                            {filteredDelays.length} registros · {totalHours.toFixed(1)}h
+                        <History className="w-4 h-4 md:w-5 md:h-5 text-slate-400" />
+                        <h3 className="font-bold text-slate-700 text-sm md:text-base">Historial</h3>
+                        <span className="bg-amber-100 text-amber-700 text-[9px] md:text-[10px] font-black px-2 py-0.5 rounded-lg uppercase tracking-widest">
+                            {filteredDelays.length} · {totalHours.toFixed(1)}h
                         </span>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -278,7 +278,7 @@ export default function DelaysPage() {
                             <button
                                 onClick={() => setViewMode('tabla')}
                                 title="Vista Tabla"
-                                className={`p-2 rounded-lg transition-all ${viewMode === 'tabla' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                className={`p-1.5 md:p-2 rounded-lg transition-all ${viewMode === 'tabla' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                             >
                                 <svg className="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
                                     <path d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1z" />
@@ -287,47 +287,47 @@ export default function DelaysPage() {
                             <button
                                 onClick={() => setViewMode('tarjetas')}
                                 title="Vista Tarjetas"
-                                className={`p-2 rounded-lg transition-all ${viewMode === 'tarjetas' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                className={`p-1.5 md:p-2 rounded-lg transition-all ${viewMode === 'tarjetas' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                             >
                                 <LayoutGrid className="w-4 h-4" />
                             </button>
                         </div>
                         <button
                             onClick={exportToExcel}
-                            className="bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100 text-xs font-bold py-2.5 px-4 rounded-xl shadow-sm transition-colors flex items-center gap-2"
+                            className="bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100 text-xs font-bold py-2 px-3 rounded-xl shadow-sm transition-colors flex items-center gap-1.5 whitespace-nowrap"
                         >
-                            <FileSpreadsheet className="w-4 h-4" /> Exportar Excel
+                            <FileSpreadsheet className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Exportar</span> Excel
                         </button>
                     </div>
                 </div>
 
                 {/* Filters Bar */}
-                <div className="p-4 md:p-5 bg-slate-50/60 border-b border-slate-100 flex flex-wrap gap-3 items-end">
+                <div className="p-3 md:p-5 bg-slate-50/60 border-b border-slate-100 flex flex-wrap gap-2 md:gap-3 items-end">
                     {/* Search */}
-                    <div className="relative flex-1 min-w-[200px]">
+                    <div className="relative w-full md:flex-1 md:min-w-[200px]">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         <input
                             type="text"
                             placeholder="Buscar..."
-                            className="w-full h-[50px] bg-white border border-slate-200 rounded-2xl pl-10 pr-4 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-bold text-slate-700"
+                            className="w-full h-[42px] bg-white border border-slate-200 rounded-xl pl-9 pr-3 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-bold text-slate-700"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Desde</label>
+                    <div className="flex items-center gap-1.5 w-[calc(50%-4px)] md:w-auto">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap shrink-0">Desde</label>
                         <input type="date" value={filterDateFrom} onChange={e => setFilterDateFrom(e.target.value)}
-                            className="h-[50px] bg-white border border-slate-200 rounded-2xl px-4 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none" />
+                            className="h-[42px] bg-white border border-slate-200 rounded-xl px-2 md:px-4 text-xs md:text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none flex-1 min-w-0" />
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Hasta</label>
+                    <div className="flex items-center gap-1.5 w-[calc(50%-4px)] md:w-auto">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap shrink-0">Hasta</label>
                         <input type="date" value={filterDateTo} onChange={e => setFilterDateTo(e.target.value)}
-                            className="h-[50px] bg-white border border-slate-200 rounded-2xl px-4 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none" />
+                            className="h-[42px] bg-white border border-slate-200 rounded-xl px-2 md:px-4 text-xs md:text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none flex-1 min-w-0" />
                     </div>
 
-                    <div className="min-w-[160px]">
+                    <div className="w-[calc(50%-4px)] md:w-auto md:min-w-[160px]">
                         <SearchableSelect
                             options={clients.map(c => ({ id: c.id, label: c.nombre }))}
                             value={filterClientId}
@@ -337,7 +337,7 @@ export default function DelaysPage() {
                         />
                     </div>
 
-                    <div className="min-w-[160px]">
+                    <div className="w-[calc(50%-4px)] md:w-auto md:min-w-[160px]">
                         <SearchableSelect
                             options={projects.map(p => ({ id: p.id, label: p.nombre }))}
                             value={filterProjectId}

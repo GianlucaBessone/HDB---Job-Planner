@@ -135,13 +135,13 @@ export default function ClientsPage() {
     return (
         <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-6 md:mb-8">
                 <div className="space-y-1">
-                    <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
-                        <UserCircle2 className="w-8 h-8 text-primary" />
+                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 md:gap-3">
+                        <UserCircle2 className="w-6 h-6 md:w-8 md:h-8 text-primary" />
                         Gestión de Clientes
                     </h2>
-                    <p className="text-slate-500 font-medium">Administra la base de datos de tus clientes</p>
+                    <p className="text-sm text-slate-500 font-medium hidden md:block">Administra la base de datos de tus clientes</p>
                 </div>
                 <div className="flex items-center gap-3 w-full md:w-auto">
                     <div className="relative flex-1 md:w-64 group">

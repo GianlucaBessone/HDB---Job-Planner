@@ -47,19 +47,19 @@ export default function HomePage() {
 
     return (
         <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div className="space-y-1">
-                    <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
-                        <Home className="w-8 h-8 text-primary" />
+                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 md:gap-3">
+                        <Home className="w-6 h-6 md:w-8 md:h-8 text-primary" />
                         Hola, {userName.split(' ')[0]}
                     </h2>
-                    <p className="text-slate-500 font-medium">¿Qué te gustaría hacer hoy?</p>
+                    <p className="text-sm text-slate-500 font-medium">¿Qué te gustaría hacer hoy?</p>
                 </div>
             </div>
 
             <div className="space-y-6">
                 <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest px-1">Tus Acciones Rápidas</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
                     <ActionCard
                         title="Cargar Horario"
                         description="Registra tus horas del día"
@@ -85,9 +85,9 @@ export default function HomePage() {
             </div>
 
             {isSupervisorOrAdmin && (
-                <div className="space-y-6 pt-6 border-t border-slate-200">
+                <div className="space-y-6 pt-4 border-t border-slate-200">
                     <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest px-1">Gestión y Supervisión</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                         <ActionCard
                             title="Métricas Generales"
                             description="Panel de análisis global"
@@ -133,13 +133,13 @@ export default function HomePage() {
 function ActionCard({ title, description, icon, href, color }: { title: string, description: string, icon: React.ReactNode, href: string, color: string }) {
     return (
         <Link href={href} className="group relative block focus:outline-none">
-            <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-slate-300 transition-all duration-300 flex items-start gap-4 h-full outline-primary focus-visible:ring-4 focus-visible:ring-primary/20">
-                <div className={`p-4 rounded-2xl ${color} text-white shadow-lg group-hover:scale-110 transition-transform`}>
+            <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-slate-300 transition-all duration-300 flex flex-col md:flex-row items-start gap-3 md:gap-4 h-full outline-primary focus-visible:ring-4 focus-visible:ring-primary/20">
+                <div className={`p-2.5 md:p-4 rounded-xl md:rounded-2xl ${color} text-white shadow-lg group-hover:scale-110 transition-transform shrink-0`}>
                     {icon}
                 </div>
-                <div className="flex-1 space-y-1 pt-1">
-                    <h4 className="font-extrabold text-slate-800 text-lg leading-tight group-hover:text-primary transition-colors">{title}</h4>
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{description}</p>
+                <div className="flex-1 space-y-0.5 md:space-y-1 min-w-0">
+                    <h4 className="font-extrabold text-slate-800 text-sm md:text-lg leading-tight group-hover:text-primary transition-colors">{title}</h4>
+                    <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest truncate">{description}</p>
                 </div>
             </div>
         </Link>

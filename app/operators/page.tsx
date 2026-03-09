@@ -155,19 +155,19 @@ export default function OperatorsPage() {
 
     return (
         <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div className="space-y-1">
-                    <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
-                        <UsersIcon className="w-8 h-8 text-primary" />
+                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 md:gap-3">
+                        <UsersIcon className="w-6 h-6 md:w-8 md:h-8 text-primary" />
                         Gestión de Operadores
                     </h2>
-                    <p className="text-slate-500 font-medium">Controla el equipo técnico disponible</p>
+                    <p className="text-sm text-slate-500 font-medium hidden md:block">Controla el equipo técnico disponible</p>
                 </div>
                 <button
                     onClick={openCreate}
-                    className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-2xl font-bold hover:bg-primary/90 shadow-xl shadow-primary/20 active:scale-95 transition-all w-full md:w-auto justify-center"
+                    className="flex items-center gap-2 bg-primary text-white px-4 py-2.5 md:px-6 md:py-3 rounded-xl md:rounded-2xl font-bold hover:bg-primary/90 shadow-lg shadow-primary/20 active:scale-95 transition-all w-full md:w-auto justify-center text-sm"
                 >
-                    <UserPlus className="w-5 h-5" />
+                    <UserPlus className="w-4 h-4" />
                     Nuevo Operador
                 </button>
             </div>
@@ -177,8 +177,8 @@ export default function OperatorsPage() {
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors" />
                     <input
                         type="text"
-                        placeholder="Buscar por nombre de operador..."
-                        className="w-full h-[50px] bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-4 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-slate-700 text-sm"
+                        placeholder="Buscar por nombre..."
+                        className="w-full h-[42px] bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-slate-700 text-sm"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                     />

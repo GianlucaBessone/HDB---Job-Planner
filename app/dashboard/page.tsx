@@ -142,18 +142,18 @@ export default function DashboardPage() {
     return (
         <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div className="space-y-1">
-                    <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
-                        <LayoutDashboard className="w-8 h-8 text-primary" />
+                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 md:gap-3">
+                        <LayoutDashboard className="w-6 h-6 md:w-8 md:h-8 text-primary" />
                         Panel de Análisis
                     </h2>
-                    <p className="text-slate-500 font-medium">Resumen del estado operativo y métricas de rendimiento</p>
+                    <p className="text-sm text-slate-500 font-medium hidden md:block">Resumen del estado operativo y métricas de rendimiento</p>
                 </div>
             </div>
 
             {/* Advanced Filters (Requirement 2) */}
-            <div className="bg-white border border-slate-200 rounded-[2rem] p-6 shadow-sm space-y-4">
+            <div className="bg-white border border-slate-200 rounded-2xl md:rounded-[2rem] p-4 md:p-6 shadow-sm space-y-3 md:space-y-4">
                 <div className="flex items-center justify-between mb-2">
                     <h3 className="font-bold text-slate-700 flex items-center gap-2 text-sm">
                         <SlidersHorizontal className="w-4 h-4 text-primary" />
@@ -172,7 +172,7 @@ export default function DashboardPage() {
                         </label>
                         <input
                             type="date"
-                            className="w-full h-[50px] bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none"
+                            className="w-full h-[42px] bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none"
                             value={filterFrom}
                             onChange={e => setFilterFrom(e.target.value)}
                         />
@@ -183,7 +183,7 @@ export default function DashboardPage() {
                         </label>
                         <input
                             type="date"
-                            className="w-full h-[50px] bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none"
+                            className="w-full h-[42px] bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none"
                             value={filterTo}
                             onChange={e => setFilterTo(e.target.value)}
                         />
@@ -204,7 +204,7 @@ export default function DashboardPage() {
                             <Activity className="w-3 h-3" /> Estado <MetricTooltip def="Filtra proyectos por su estado de finalización." purpose="Permite comparar el rendimiento histórico con el operativo actual." calc="N/A" />
                         </label>
                         <select
-                            className="w-full h-[50px] bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none cursor-pointer"
+                            className="w-full h-[42px] bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none cursor-pointer"
                             value={filterStatus}
                             onChange={e => setFilterStatus(e.target.value)}
                         >
