@@ -103,11 +103,6 @@ export default function RootLayout({
     } else {
         content = (
             <div className="flex flex-col min-h-[100dvh] overflow-x-hidden">
-                {!isOnline && (
-                    <div className="bg-amber-500 text-white text-[10px] font-black uppercase tracking-[0.2em] py-2 text-center sticky top-0 z-[100] animate-in slide-in-from-top duration-500 shadow-lg">
-                        ⚠️ Estás en modo offline. Los cambios se sincronizarán al volver la conexión.
-                    </div>
-                )}
                 <header className="sticky top-0 z-[60] w-full border-b bg-white/80 backdrop-blur-md safe-area-top">
                     <div className="max-w-[1800px] mx-auto px-4 md:px-8 h-14 md:h-16 flex items-center justify-between">
                         <div className="flex items-center gap-4">
