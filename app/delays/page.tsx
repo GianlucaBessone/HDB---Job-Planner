@@ -26,6 +26,7 @@ import * as XLSX from 'xlsx';
 import SearchableSelect from '@/components/SearchableSelect';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { safeApiRequest } from '@/lib/offline';
 
 interface Project {
     id: string;
@@ -109,11 +110,11 @@ export default function DelaysPage() {
         setIsLoading(true);
         try {
             const [delaysData, projectsData, operatorsData, clientsData, configOptions] = await Promise.all([
-                fetch('/api/delays').then(res => res.json()),
-                fetch('/api/projects').then(res => res.json()),
-                fetch('/api/operators').then(res => res.json()),
-                fetch('/api/clients').then(res => res.json()),
-                fetch('/api/config/options').then(res => res.json())
+                safeApiRequest('/api/delays').then(res => res.json()),
+                safeApiRequest('/api/projects').then(res => res.json()),
+                safeApiRequest('/api/operators').then(res => res.json()),
+                safeApiRequest('/api/clients').then(res => res.json()),
+                safeApiRequest('/api/config/options').then(res => res.json())
             ]);
             setDelays(Array.isArray(delaysData) ? delaysData : []);
             setProjects(Array.isArray(projectsData) ? projectsData : []);
@@ -137,7 +138,7 @@ export default function DelaysPage() {
             const method = editingDelayId ? 'PATCH' : 'POST';
             const url = editingDelayId ? `/api/delays?id=${editingDelayId}` : '/api/delays';
 
-            await fetch(url, {
+            await safeApiRequest(url, {
                 method,
                 body: JSON.stringify({
                     ...formData,
@@ -176,7 +177,7 @@ export default function DelaysPage() {
     const confirmDelete = async () => {
         if (!delayToDelete) return;
         try {
-            await fetch(`/api/delays?id=${delayToDelete}`, { method: 'DELETE' });
+            await safeApiRequest(`/api/delays?id=${delayToDelete}`, { method: 'DELETE' });
             loadData();
             setIsConfirmOpen(false);
             setDelayToDelete(null);

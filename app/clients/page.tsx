@@ -16,6 +16,7 @@ import {
     AlertCircle,
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { safeApiRequest } from '@/lib/offline';
 
 interface Client {
     id: string;
@@ -55,7 +56,7 @@ export default function ClientsPage() {
     const loadClients = async (silent = false) => {
         if (!silent) setIsLoading(true);
         try {
-            const data = await fetch('/api/clients').then(res => res.json());
+            const data = await safeApiRequest('/api/clients').then(res => res.json());
             if (Array.isArray(data)) {
                 setClients(data);
             } else {
@@ -93,7 +94,7 @@ export default function ClientsPage() {
         if (!formData.nombre.trim()) return;
         const method = editingClient ? 'PATCH' : 'POST';
         const url = editingClient ? `/api/clients?id=${editingClient.id}` : '/api/clients';
-        await fetch(url, { method, body: JSON.stringify(formData) });
+        await safeApiRequest(url, { method, body: JSON.stringify(formData) });
         setIsModalOpen(false);
         loadClients(true);
     };
@@ -107,14 +108,14 @@ export default function ClientsPage() {
         if (!clientToDelete) return;
         const id = clientToDelete;
         setClients(prev => prev.filter(c => c.id !== id));
-        await fetch(`/api/clients?id=${id}`, { method: 'DELETE' });
+        await safeApiRequest(`/api/clients?id=${id}`, { method: 'DELETE' });
         setIsConfirmOpen(false);
         setClientToDelete(null);
     };
 
     const toggleStatus = async (id: string, currentStatus: boolean) => {
         setClients(prev => prev.map(c => c.id === id ? { ...c, activo: !currentStatus } : c));
-        await fetch(`/api/clients?id=${id}`, {
+        await safeApiRequest(`/api/clients?id=${id}`, {
             method: 'PATCH',
             body: JSON.stringify({ activo: !currentStatus })
         });

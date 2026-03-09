@@ -15,6 +15,7 @@ import {
     Loader2
 } from 'lucide-react';
 import { showToast } from './Toast';
+import { safeApiRequest } from '@/lib/offline';
 
 interface Project {
     id: string;
@@ -59,9 +60,9 @@ export default function ProjectFinalizeAuthModal({
             try {
                 const projectId = notification.relatedId;
                 const [pRes, eRes, cRes] = await Promise.all([
-                    fetch(`/api/projects/${projectId}`).then(res => res.json()),
-                    fetch(`/api/time-entries?projectId=${projectId}`).then(res => res.json()),
-                    fetch(`/api/projects/${projectId}/checklist`).then(res => res.json())
+                    safeApiRequest(`/api/projects/${projectId}`).then(res => res.json()),
+                    safeApiRequest(`/api/time-entries?projectId=${projectId}`).then(res => res.json()),
+                    safeApiRequest(`/api/projects/${projectId}/checklist`).then(res => res.json())
                 ]);
 
                 setProject(pRes);
@@ -82,7 +83,7 @@ export default function ProjectFinalizeAuthModal({
         if (!project || isActionLoading) return;
         setIsActionLoading(true);
         try {
-            const res = await fetch(`/api/projects/${project.id}/finalize`, {
+            const res = await safeApiRequest(`/api/projects/${project.id}/finalize`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ force: true, userId: user.id })
@@ -90,10 +91,10 @@ export default function ProjectFinalizeAuthModal({
 
             if (res.ok) {
                 // Delete the notification
-                await fetch(`/api/notifications/${notification.id}`, { method: 'DELETE' });
+                await safeApiRequest(`/api/notifications/${notification.id}`, { method: 'DELETE' });
 
                 // Notify the operator
-                await fetch('/api/notifications', {
+                await safeApiRequest('/api/notifications', {
                     method: 'POST',
                     body: JSON.stringify({
                         operatorId: notification.operatorId,
@@ -124,10 +125,10 @@ export default function ProjectFinalizeAuthModal({
         setIsActionLoading(true);
         try {
             // Delete the notification
-            await fetch(`/api/notifications/${notification.id}`, { method: 'DELETE' });
+            await safeApiRequest(`/api/notifications/${notification.id}`, { method: 'DELETE' });
 
             // Notify the operator
-            await fetch('/api/notifications', {
+            await safeApiRequest('/api/notifications', {
                 method: 'POST',
                 body: JSON.stringify({
                     operatorId: notification.operatorId,

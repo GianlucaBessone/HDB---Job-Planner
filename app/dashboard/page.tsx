@@ -24,6 +24,7 @@ import {
     SlidersHorizontal
 } from 'lucide-react';
 import SearchableSelect from '@/components/SearchableSelect';
+import { safeApiRequest } from '@/lib/offline';
 
 interface DashboardData {
     kpis: {
@@ -96,7 +97,7 @@ export default function DashboardPage() {
 
     useEffect(() => {
         // Load clients once
-        fetch('/api/clients')
+        safeApiRequest('/api/clients')
             .then(res => res.json())
             .then(setClients)
             .catch(console.error);
@@ -114,7 +115,7 @@ export default function DashboardPage() {
         if (filterClientId) params.append('clientId', filterClientId);
         if (filterStatus) params.append('status', filterStatus);
 
-        fetch(`/api/dashboard?${params.toString()}`)
+        safeApiRequest(`/api/dashboard?${params.toString()}`)
             .then(res => res.json())
             .then(setData)
             .catch(console.error)

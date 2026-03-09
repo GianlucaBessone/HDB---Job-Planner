@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/dataLayer';
+import { withIdempotency } from '@/lib/idempotency';
 
 
 function calculateHours(start: string, end: string): number {
@@ -53,54 +54,57 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-    try {
-        const data = await req.json();
+    return withIdempotency(req, async () => {
+        try {
+            const data = await req.json();
 
-        const { operatorId, projectId, fecha, horaIngreso, horaEgreso, isExtra, requestUserId, requestUserRole } = data;
+            const { operatorId, projectId, fecha, horaIngreso, horaEgreso, isExtra, requestUserId, requestUserRole } = data;
 
-        if (!operatorId || !projectId || !fecha) {
-            console.error("POST Error: Missing required fields", { operatorId, projectId, fecha });
-            return NextResponse.json({ error: 'Faltan campos obligatorios (Operador, Proyecto o Fecha).' }, { status: 400 });
-        }
-
-        if (requestUserRole === 'operador' && requestUserId !== operatorId) {
-            return NextResponse.json({ error: 'No tienes permisos para crear registros para otros operadores.' }, { status: 403 });
-        }
-
-        let horasTrabajadas = 0;
-        if (horaIngreso && horaEgreso) {
-            horasTrabajadas = calculateHours(horaIngreso, horaEgreso);
-        }
-
-        console.log("Creating time entry in Prisma...", { operatorId, projectId, fecha });
-        const entry = await prisma.timeEntry.create({
-            data: {
-                operatorId,
-                projectId,
-                fecha,
-                horaIngreso,
-                horaEgreso,
-                horasTrabajadas,
-                isExtra: isExtra || false
+            if (!operatorId || !projectId || !fecha) {
+                console.error("POST Error: Missing required fields", { operatorId, projectId, fecha });
+                return NextResponse.json({ error: 'Faltan campos obligatorios (Operador, Proyecto o Fecha).' }, { status: 400 });
             }
-        });
 
+            if (requestUserRole === 'operador' && requestUserId !== operatorId) {
+                return NextResponse.json({ error: 'No tienes permisos para crear registros para otros operadores.' }, { status: 403 });
+            }
 
-        // Also update project total hours roughly, though normally this is kept separate or aggregated upon need.
-        // If we want to automatically add consumed hours to the project:
-        if (horasTrabajadas > 0) {
-            await prisma.project.update({
-                where: { id: projectId },
-                data: { horasConsumidas: { increment: Math.ceil(horasTrabajadas) } }
+            let horasTrabajadas = 0;
+            if (horaIngreso && horaEgreso) {
+                horasTrabajadas = calculateHours(horaIngreso, horaEgreso);
+            }
+
+            console.log("Creating time entry in Prisma...", { operatorId, projectId, fecha });
+            const entry = await prisma.timeEntry.create({
+                data: {
+                    operatorId,
+                    projectId,
+                    fecha,
+                    horaIngreso,
+                    horaEgreso,
+                    horasTrabajadas,
+                    isExtra: isExtra || false
+                }
             });
-        }
 
-        return NextResponse.json(entry, { status: 201 });
-    } catch (error: any) {
-        console.error("POST Error: ", error);
-        return NextResponse.json({ error: error?.message || 'Failed to create time entry' }, { status: 500 });
-    }
+
+            // Also update project total hours roughly, though normally this is kept separate or aggregated upon need.
+            // If we want to automatically add consumed hours to the project:
+            if (horasTrabajadas > 0) {
+                await prisma.project.update({
+                    where: { id: projectId },
+                    data: { horasConsumidas: { increment: Math.ceil(horasTrabajadas) } }
+                });
+            }
+
+            return NextResponse.json(entry, { status: 201 });
+        } catch (error: any) {
+            console.error("POST Error: ", error);
+            return NextResponse.json({ error: error?.message || 'Failed to create time entry' }, { status: 500 });
+        }
+    });
 }
+
 
 export async function PUT(req: Request) {
     try {

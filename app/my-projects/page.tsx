@@ -17,6 +17,7 @@ import {
     Loader2
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
+import { safeApiRequest } from '@/lib/offline';
 
 interface ChecklistItem {
     id: string;
@@ -91,7 +92,7 @@ export default function MyProjectsPage() {
             const url = all
                 ? `/api/projects/my-projects?all=true`
                 : `/api/projects/my-projects?responsableId=${userId}`;
-            const res = await fetch(url);
+            const res = await safeApiRequest(url);
             const data = await res.json();
             if (Array.isArray(data)) setProjects(data);
         } catch (error) {
@@ -105,7 +106,7 @@ export default function MyProjectsPage() {
     const loadChecklist = async (projectId: string) => {
         setLoadingChecklist(true);
         try {
-            const res = await fetch(`/api/projects/${projectId}/checklist`);
+            const res = await safeApiRequest(`/api/projects/${projectId}/checklist`);
             const data = await res.json();
             if (Array.isArray(data)) setChecklistItems(data);
         } catch (error) {
@@ -132,7 +133,7 @@ export default function MyProjectsPage() {
         }
 
         try {
-            const res = await fetch(`/api/projects/${selectedProject?.id}/checklist`, {
+            const res = await safeApiRequest(`/api/projects/${selectedProject?.id}/checklist`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -164,7 +165,7 @@ export default function MyProjectsPage() {
         if (!justification.trim() || !itemToChange) return;
         setIsSubmittingChange(true);
         try {
-            const res = await fetch(`/api/projects/${selectedProject?.id}/checklist`, {
+            const res = await safeApiRequest(`/api/projects/${selectedProject?.id}/checklist`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -190,7 +191,7 @@ export default function MyProjectsPage() {
         if (!selectedProject || !user) return;
         setIsFinalizing(true);
         try {
-            const res = await fetch('/api/notifications', {
+            const res = await safeApiRequest('/api/notifications', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -227,7 +228,7 @@ export default function MyProjectsPage() {
 
         setIsFinalizing(true);
         try {
-            const res = await fetch(`/api/projects/${selectedProject.id}/finalize`, {
+            const res = await safeApiRequest(`/api/projects/${selectedProject.id}/finalize`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ force, userId: user?.id })

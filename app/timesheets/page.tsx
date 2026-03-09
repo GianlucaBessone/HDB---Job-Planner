@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { showToast } from '@/components/Toast';
+import { safeApiRequest } from '@/lib/offline';
 import * as XLSX from 'xlsx';
 import SearchableSelect from '@/components/SearchableSelect';
 
@@ -125,9 +126,9 @@ export default function TimesheetsPage() {
             }
 
             const [entriesData, projectsData, operatorsData] = await Promise.all([
-                fetch(entriesUrl).then(res => res.json()),
-                fetch('/api/projects').then(res => res.json()),
-                fetch('/api/operators').then(res => res.json())
+                safeApiRequest(entriesUrl).then(res => res.json()),
+                safeApiRequest('/api/projects').then(res => res.json()),
+                safeApiRequest('/api/operators').then(res => res.json())
             ]);
             setEntries(Array.isArray(entriesData) ? entriesData : []);
             setProjects(Array.isArray(projectsData) ? projectsData : []);
@@ -160,7 +161,7 @@ export default function TimesheetsPage() {
             const now = new Date();
             const timeString = now.toTimeString().slice(0, 5);
 
-            const res = await fetch('/api/time-entries', {
+            const res = await safeApiRequest('/api/time-entries', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -201,7 +202,7 @@ export default function TimesheetsPage() {
         const timeString = now.toTimeString().slice(0, 5);
 
         try {
-            const res = await fetch('/api/time-entries', {
+            const res = await safeApiRequest('/api/time-entries', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -227,7 +228,7 @@ export default function TimesheetsPage() {
 
     const handleConfirmDay = async (id: string) => {
         try {
-            await fetch('/api/time-entries', {
+            await safeApiRequest('/api/time-entries', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -301,7 +302,7 @@ export default function TimesheetsPage() {
                 method = 'PUT';
             }
 
-            const res = await fetch(url, {
+            const res = await safeApiRequest(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -341,7 +342,7 @@ export default function TimesheetsPage() {
             if (currentUser?.id) url += `&requestUserId=${currentUser.id}`;
             if (currentUser?.role) url += `&requestUserRole=${currentUser.role}`;
 
-            const res = await fetch(url, { method: 'DELETE' });
+            const res = await safeApiRequest(url, { method: 'DELETE' });
             if (!res.ok) {
                 const data = await res.json();
                 showToast(data.error, 'error');
@@ -371,7 +372,7 @@ export default function TimesheetsPage() {
                 isExtra: formData.isExtra
             };
 
-            const res = await fetch('/api/notifications', {
+            const res = await safeApiRequest('/api/notifications', {
                 method: 'POST',
                 body: JSON.stringify({
                     operatorId: currentUser.id,

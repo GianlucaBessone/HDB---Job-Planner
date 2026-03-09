@@ -18,6 +18,7 @@ import {
     List
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { safeApiRequest } from '@/lib/offline';
 import SearchableSelect from '@/components/SearchableSelect';
 
 const PREDEFINED_TAGS = ['Electricista', 'Ayudante', 'Técnico CCTV', 'Supervisor', 'Otro'];
@@ -58,7 +59,7 @@ export default function OperatorsPage() {
         if (!silent) setIsLoading(true);
         try {
             const user = userObj || currentUser;
-            let data = await fetch('/api/operators').then(res => res.json());
+            let data = await safeApiRequest('/api/operators').then(res => res.json());
             if (user?.role === 'operador') {
                 data = data.filter((op: any) => op.id === user.id);
             }
@@ -95,7 +96,7 @@ export default function OperatorsPage() {
         const method = editingOperator ? 'PATCH' : 'POST';
         const url = editingOperator ? `/api/operators?id=${editingOperator.id}` : '/api/operators';
 
-        await fetch(url, {
+        await safeApiRequest(url, {
             method,
             body: JSON.stringify(formData)
         });
@@ -126,7 +127,7 @@ export default function OperatorsPage() {
     const toggleStatus = async (id: string, currentStatus: boolean) => {
         // Optimistic update
         setOperators(prev => prev.map(op => op.id === id ? { ...op, activo: !currentStatus } : op));
-        await fetch(`/api/operators?id=${id}`, {
+        await safeApiRequest(`/api/operators?id=${id}`, {
             method: 'PATCH',
             body: JSON.stringify({ activo: !currentStatus })
         });
@@ -141,7 +142,7 @@ export default function OperatorsPage() {
         if (!operatorToDelete) return;
         const id = operatorToDelete;
         setOperators(prev => prev.filter(op => op.id !== id));
-        await fetch(`/api/operators?id=${id}`, { method: 'DELETE' });
+        await safeApiRequest(`/api/operators?id=${id}`, { method: 'DELETE' });
         setIsConfirmOpen(false);
         setOperatorToDelete(null);
     };

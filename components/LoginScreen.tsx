@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { ClipboardList, Lock, LogIn, User as UserIcon } from 'lucide-react';
+import { safeApiRequest } from '@/lib/offline';
 
 export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user: any) => void }) {
     const [operators, setOperators] = useState<any[]>([]);
@@ -14,7 +15,7 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
 
     useEffect(() => {
         // Load operators
-        fetch('/api/operators')
+        safeApiRequest('/api/operators')
             .then(res => res.json())
             .then(data => {
                 setOperators(data);
@@ -37,7 +38,7 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
         setIsSubmitting(true);
 
         try {
-            const res = await fetch('/api/auth/login', {
+            const res = await safeApiRequest('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ operatorId: selectedOperatorId, pin })

@@ -16,6 +16,7 @@ import {
     AlertCircle
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { safeApiRequest } from '@/lib/offline';
 
 export default function ConfigPage() {
     const router = useRouter();
@@ -107,7 +108,7 @@ function TagsSection() {
 
     const loadTags = () => {
         setLoading(true);
-        fetch('/api/config/tags')
+        safeApiRequest('/api/config/tags')
             .then(res => res.json())
             .then(data => { setTags(Array.isArray(data) ? data : []); setLoading(false); })
             .catch(() => setLoading(false));
@@ -118,7 +119,7 @@ function TagsSection() {
         const method = id ? 'PUT' : 'POST';
         const body = id ? { id, ...form } : form;
 
-        await fetch('/api/config/tags', {
+        await safeApiRequest('/api/config/tags', {
             method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
@@ -135,7 +136,7 @@ function TagsSection() {
 
     const confirmDelete = async () => {
         if (!itemToDelete) return;
-        await fetch(`/api/config/tags?id=${itemToDelete}`, { method: 'DELETE' });
+        await safeApiRequest(`/api/config/tags?id=${itemToDelete}`, { method: 'DELETE' });
         setIsConfirmOpen(false);
         setItemToDelete(null);
         loadTags();
@@ -243,7 +244,7 @@ function ChecklistSection() {
 
     const loadTags = () => {
         setLoading(true);
-        fetch('/api/config/tags')
+        safeApiRequest('/api/config/tags')
             .then(res => res.json())
             .then(data => { setTags(Array.isArray(data) ? data : []); setLoading(false); })
             .catch(() => setLoading(false));
@@ -254,7 +255,7 @@ function ChecklistSection() {
         const method = id ? 'PUT' : 'POST';
         const body = id ? { id, tagId: selectedTag, ...form } : { tagId: selectedTag, ...form };
 
-        await fetch('/api/config/checklists', {
+        await safeApiRequest('/api/config/checklists', {
             method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
@@ -271,7 +272,7 @@ function ChecklistSection() {
 
     const confirmDelete = async () => {
         if (!itemToDelete) return;
-        await fetch(`/api/config/checklists?id=${itemToDelete}`, { method: 'DELETE' });
+        await safeApiRequest(`/api/config/checklists?id=${itemToDelete}`, { method: 'DELETE' });
         setIsConfirmOpen(false);
         setItemToDelete(null);
         loadTags();
@@ -406,7 +407,7 @@ function OptionsSection() {
 
     const loadOptions = () => {
         setLoading(true);
-        fetch(`/api/config/options?category=${selectedCategory}`)
+        safeApiRequest(`/api/config/options?category=${selectedCategory}`)
             .then(res => res.json())
             .then(data => { setOptions(Array.isArray(data) ? data : []); setLoading(false); })
             .catch(() => setLoading(false));
@@ -417,7 +418,7 @@ function OptionsSection() {
         const method = id ? 'PUT' : 'POST';
         const body = id ? { id, category: selectedCategory, ...form } : { category: selectedCategory, ...form };
 
-        await fetch('/api/config/options', {
+        await safeApiRequest('/api/config/options', {
             method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
@@ -434,7 +435,7 @@ function OptionsSection() {
 
     const confirmDelete = async () => {
         if (!itemToDelete) return;
-        await fetch(`/api/config/options?id=${itemToDelete}`, { method: 'DELETE' });
+        await safeApiRequest(`/api/config/options?id=${itemToDelete}`, { method: 'DELETE' });
         setIsConfirmOpen(false);
         setItemToDelete(null);
         loadOptions();

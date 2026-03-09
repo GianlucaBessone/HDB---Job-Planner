@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { dataLayer } from '@/lib/dataLayer';
 import { prisma } from '@/lib/dataLayer';
+import { withIdempotency } from '@/lib/idempotency';
 
 export async function GET(req: Request) {
     const url = new URL(req.url);
@@ -11,8 +12,11 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-    const { fecha, blocks } = await req.json();
-    const planning = await dataLayer.savePlanning(fecha, blocks);
+    return withIdempotency(req, async () => {
+        const { fecha, blocks } = await req.json();
+        const planning = await dataLayer.savePlanning(fecha, blocks);
 
-    return NextResponse.json(planning);
+        return NextResponse.json(planning);
+    });
 }
+

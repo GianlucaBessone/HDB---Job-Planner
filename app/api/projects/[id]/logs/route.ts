@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { dataLayer } from '@/lib/dataLayer';
+import { withIdempotency } from '@/lib/idempotency';
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
     try {
@@ -11,17 +12,20 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 }
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
-    try {
-        const data = await req.json();
-        const log = await dataLayer.createProjectLog({
-            ...data,
-            projectId: params.id
-        });
-        return NextResponse.json(log);
-    } catch (e) {
-        return NextResponse.json({ error: String(e) }, { status: 500 });
-    }
+    return withIdempotency(req, async () => {
+        try {
+            const data = await req.json();
+            const log = await dataLayer.createProjectLog({
+                ...data,
+                projectId: params.id
+            });
+            return NextResponse.json(log);
+        } catch (e) {
+            return NextResponse.json({ error: String(e) }, { status: 500 });
+        }
+    });
 }
+
 
 export async function DELETE(req: Request) {
     try {

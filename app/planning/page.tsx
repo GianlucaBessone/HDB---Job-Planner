@@ -6,6 +6,7 @@ import { formatWhatsAppMessage } from '@/lib/whatsappFormatter';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { showToast } from '@/components/Toast';
+import { safeApiRequest } from '@/lib/offline';
 import { usePlanningStore } from '@/lib/store/usePlanningStore';
 import {
     Calendar as CalendarIcon,
@@ -98,7 +99,7 @@ export default function PlanningPage() {
 
         setIsLoading(true);
         try {
-            const data = await fetch(`/api/planning?fecha=${fecha}&t=${Date.now()}`).then(res => res.json());
+            const data = await safeApiRequest(`/api/planning?fecha=${fecha}&t=${Date.now()}`).then(res => res.json());
             if (data && data.blocks) {
                 setBlocks(data.blocks);
             } else {
@@ -115,9 +116,9 @@ export default function PlanningPage() {
     const loadData = useCallback(async () => {
         try {
             const [p, o, f] = await Promise.all([
-                fetch('/api/projects').then(res => res.json()),
-                fetch('/api/operators').then(res => res.json()),
-                fetch('/api/favorites').then(res => res.json())
+                safeApiRequest('/api/projects').then(res => res.json()),
+                safeApiRequest('/api/operators').then(res => res.json()),
+                safeApiRequest('/api/favorites').then(res => res.json())
             ]);
             setProjects(p.filter((x: any) => x.activo));
             setOperators(o.filter((x: any) => x.activo));
@@ -189,7 +190,7 @@ export default function PlanningPage() {
         const name = prompt('Nombre del favorito:', block.projectName || 'Bloc de nota');
         if (!name) return;
         const data = { ...block, name };
-        const res = await fetch('/api/favorites', {
+        const res = await safeApiRequest('/api/favorites', {
             method: 'POST',
             body: JSON.stringify(data)
         }).then(res => res.json());
@@ -216,7 +217,7 @@ export default function PlanningPage() {
     const confirmDeleteFavorite = async () => {
         if (!favoriteToDelete) return;
         const id = favoriteToDelete;
-        await fetch(`/api/favorites?id=${id}`, { method: 'DELETE' });
+        await safeApiRequest(`/api/favorites?id=${id}`, { method: 'DELETE' });
         setFavorites(prev => prev.filter(f => f.id !== id));
         setIsConfirmOpen(false);
         setFavoriteToDelete(null);
@@ -225,7 +226,7 @@ export default function PlanningPage() {
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            await fetch('/api/planning', {
+            await safeApiRequest('/api/planning', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ fecha, blocks })
@@ -240,7 +241,7 @@ export default function PlanningPage() {
         if (!duplicateDate) return;
         setIsLoading(true);
         try {
-            const data = await fetch(`/api/planning?fecha=${duplicateDate}&t=${Date.now()}`).then(res => res.json());
+            const data = await safeApiRequest(`/api/planning?fecha=${duplicateDate}&t=${Date.now()}`).then(res => res.json());
             if (data && data.blocks && data.blocks.length > 0) {
                 setBlocks(data.blocks);
                 showToast(`Planificación copiada de ${duplicateDate}`, 'success');
@@ -254,7 +255,7 @@ export default function PlanningPage() {
 
     const handleNotifyPlanning = async () => {
         try {
-            const res = await fetch('/api/planning/notify', {
+            const res = await safeApiRequest('/api/planning/notify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ fecha, blocks })

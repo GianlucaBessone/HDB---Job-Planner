@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { showToast } from './Toast';
+import { safeApiRequest } from '@/lib/offline';
 import ProjectFinalizeAuthModal from './ProjectFinalizeAuthModal';
 
 export default function NotificationsDropdown({ user }: { user: any }) {
@@ -21,7 +22,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
         if (!user) return;
         const fetchNotifications = async (isPoll = false) => {
             try {
-                const res = await fetch(`/api/notifications?operatorId=${user.id}&role=${user.role}`);
+                const res = await safeApiRequest(`/api/notifications?operatorId=${user.id}&role=${user.role}`);
                 const data = await res.json();
                 if (Array.isArray(data)) {
                     setNotifications(prev => {
@@ -56,7 +57,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
         if (e) e.stopPropagation();
         setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
         try {
-            await fetch(`/api/notifications/${id}`, {
+            await safeApiRequest(`/api/notifications/${id}`, {
                 method: 'PATCH',
                 body: JSON.stringify({ read: true })
             });
@@ -95,7 +96,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                     return;
                 }
                 // Modify existing entry
-                const res = await fetch('/api/time-entries', {
+                const res = await safeApiRequest('/api/time-entries', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -110,7 +111,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                 if (!res.ok) success = false;
             } else {
                 // Delete request
-                const res = await fetch(`/api/time-entries?id=${notif.relatedId}&requestUserId=${user.id}&requestUserRole=${user.role}`, {
+                const res = await safeApiRequest(`/api/time-entries?id=${notif.relatedId}&requestUserId=${user.id}&requestUserRole=${user.role}`, {
                     method: 'DELETE'
                 });
                 if (!res.ok) success = false;
@@ -121,7 +122,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                 return;
             }
 
-            const feedbackRes = await fetch('/api/notifications', {
+            const feedbackRes = await safeApiRequest('/api/notifications', {
                 method: 'POST',
                 body: JSON.stringify({
                     operatorId: notif.operatorId,
@@ -137,7 +138,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                 console.warn('Feedback notification failed to send');
             }
 
-            await fetch(`/api/notifications/${notif.id}`, { method: 'DELETE' });
+            await safeApiRequest(`/api/notifications/${notif.id}`, { method: 'DELETE' });
             setNotifications(prev => prev.filter(n => n.id !== notif.id));
             setSelectedNotification(null);
             showToast('Modificación aprobada y aplicada.', 'success');
@@ -154,7 +155,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
             const notif = selectedNotification;
             const resData = notif.metadata;
 
-            const feedbackRes = await fetch('/api/notifications', {
+            const feedbackRes = await safeApiRequest('/api/notifications', {
                 method: 'POST',
                 body: JSON.stringify({
                     operatorId: notif.operatorId,
@@ -170,7 +171,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                 console.warn('Feedback notification failed to send');
             }
 
-            await fetch(`/api/notifications/${notif.id}`, { method: 'DELETE' });
+            await safeApiRequest(`/api/notifications/${notif.id}`, { method: 'DELETE' });
             setNotifications(prev => prev.filter(n => n.id !== notif.id));
             setSelectedNotification(null);
             showToast('Solicitud rechazada.', 'success');

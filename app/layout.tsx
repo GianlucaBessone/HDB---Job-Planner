@@ -12,6 +12,7 @@ import ToastContainer from "@/components/Toast";
 import LoginScreen from "@/components/LoginScreen";
 import NotificationsDropdown from "@/components/NotificationsDropdown";
 import OneSignalInit from "@/components/OneSignalInit";
+import SyncIndicator from "@/components/SyncIndicator";
 import { Loader2 } from "lucide-react";
 
 const outfit = Outfit({ subsets: ["latin"] });
@@ -115,6 +116,7 @@ export default function RootLayout({
                                 </span>
                             </Link>
                             <div className="flex items-center gap-2">
+                                <SyncIndicator />
                                 <OneSignalInit
                                     appId={process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID || "35ce6a9c-c4c7-4645-98dc-b363dc91642b"}
                                     user={currentUser}

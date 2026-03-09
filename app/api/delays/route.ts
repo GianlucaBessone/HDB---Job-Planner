@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { dataLayer } from '@/lib/dataLayer';
+import { withIdempotency } from '@/lib/idempotency';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,15 +17,18 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-    try {
-        const data = await req.json();
-        const delay = await dataLayer.createClientDelay(data);
-        return NextResponse.json(delay);
-    } catch (e) {
-        console.error('Create Delay Error:', e);
-        return NextResponse.json({ error: 'Failed to create delay', details: String(e) }, { status: 500 });
-    }
+    return withIdempotency(req, async () => {
+        try {
+            const data = await req.json();
+            const delay = await dataLayer.createClientDelay(data);
+            return NextResponse.json(delay);
+        } catch (e) {
+            console.error('Create Delay Error:', e);
+            return NextResponse.json({ error: 'Failed to create delay', details: String(e) }, { status: 500 });
+        }
+    });
 }
+
 
 export async function PATCH(req: Request) {
     try {

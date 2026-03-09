@@ -198,3 +198,10 @@ model ConfigOption {
 
   @@index([category])
 }
+
+model IdempotencyKey {
+  key       String   @id
+  response  Json?
+  createdAt DateTime @default(now())
+}
+

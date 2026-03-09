@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { showToast } from '@/components/Toast';
+import { safeApiRequest } from '@/lib/offline';
 import SearchableSelect from '@/components/SearchableSelect';
 import { CHECKLIST_TEMPLATES } from '@/lib/checklistTemplates';
 
@@ -206,10 +207,10 @@ function ProjectsContent() {
         if (!silent) setIsLoading(true);
         try {
             const [projectsData, operatorsData, clientsData, configOptionsData] = await Promise.all([
-                fetch('/api/projects').then(res => res.json()),
-                fetch('/api/operators').then(res => res.json()),
-                fetch('/api/clients').then(res => res.json()),
-                fetch('/api/config/options').then(res => res.json()), // Fixed path
+                safeApiRequest('/api/projects').then(res => res.json()),
+                safeApiRequest('/api/operators').then(res => res.json()),
+                safeApiRequest('/api/clients').then(res => res.json()),
+                safeApiRequest('/api/config/options').then(res => res.json()), // Fixed path
             ]);
             setProjects(projectsData);
             setOperators(operatorsData);
@@ -259,10 +260,10 @@ function ProjectsContent() {
         setIsDetailsLoading(true);
         try {
             const [entries, checklist, logs, delays] = await Promise.all([
-                fetch(`/api/time-entries?projectId=${project.id}`).then(res => res.json()),
-                fetch(`/api/projects/${project.id}/checklist`).then(res => res.json()),
-                fetch(`/api/projects/${project.id}/logs`).then(res => res.json()),
-                fetch(`/api/delays?projectId=${project.id}`).then(res => res.json())
+                safeApiRequest(`/api/time-entries?projectId=${project.id}`).then(res => res.json()),
+                safeApiRequest(`/api/projects/${project.id}/checklist`).then(res => res.json()),
+                safeApiRequest(`/api/projects/${project.id}/logs`).then(res => res.json()),
+                safeApiRequest(`/api/delays?projectId=${project.id}`).then(res => res.json())
             ]);
             setProjectEntries(Array.isArray(entries) ? entries : []);
             setProjectChecklist(Array.isArray(checklist) ? checklist : []);
@@ -279,7 +280,7 @@ function ProjectsContent() {
         if (!selectedProjectForDetails) return;
         setIsSavingLog(true);
         try {
-            const res = await fetch(`/api/projects/${selectedProjectForDetails.id}/logs`, {
+            const res = await safeApiRequest(`/api/projects/${selectedProjectForDetails.id}/logs`, {
                 method: 'POST',
                 body: JSON.stringify(logData),
                 headers: { 'Content-Type': 'application/json' }
@@ -298,7 +299,7 @@ function ProjectsContent() {
     const handleDeleteLog = async (logId: string) => {
         if (!selectedProjectForDetails) return;
         try {
-            const res = await fetch(`/api/projects/${selectedProjectForDetails.id}/logs?logId=${logId}`, { method: 'DELETE' });
+            const res = await safeApiRequest(`/api/projects/${selectedProjectForDetails.id}/logs?logId=${logId}`, { method: 'DELETE' });
             if (res.ok) {
                 setProjectLogs(prev => prev.filter(l => l.id !== logId));
                 showToast('Comentario eliminado', 'success');
@@ -313,7 +314,7 @@ function ProjectsContent() {
     const handleUpdateChecklist = async (itemId: string, updates: any) => {
         if (!selectedProjectForDetails) return;
         try {
-            const res = await fetch(`/api/projects/${selectedProjectForDetails.id}/checklist`, {
+            const res = await safeApiRequest(`/api/projects/${selectedProjectForDetails.id}/checklist`, {
                 method: 'PATCH',
                 body: JSON.stringify({ itemId, ...updates }),
                 headers: { 'Content-Type': 'application/json' }
@@ -339,7 +340,7 @@ function ProjectsContent() {
             horasEstimadas: Number(formData.horasEstimadas) || 0,
             horasConsumidas: Number(formData.horasConsumidas) || 0,
         };
-        await fetch(url, { method, body: JSON.stringify(submissionData) });
+        await safeApiRequest(url, { method, body: JSON.stringify(submissionData) });
         setIsModalOpen(false);
         loadData(true);
     };
@@ -353,7 +354,7 @@ function ProjectsContent() {
         if (!projectToDelete) return;
         const id = projectToDelete;
         setProjects(prev => prev.filter(p => p.id !== id));
-        await fetch(`/api/projects?id=${id}`, { method: 'DELETE' });
+        await safeApiRequest(`/api/projects?id=${id}`, { method: 'DELETE' });
         setIsConfirmOpen(false);
         setProjectToDelete(null);
     };
