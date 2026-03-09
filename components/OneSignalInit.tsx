@@ -23,6 +23,7 @@ export default function OneSignalInit({ appId, user }: { appId: string, user?: a
                     await OneSignal.init({
                         appId: appId,
                         allowLocalhostAsSecureOrigin: true,
+                        serviceWorkerPath: 'sw.js',
                     });
                     initializedRef.current = true;
                     console.log("OneSignal: Initialized successfully");
