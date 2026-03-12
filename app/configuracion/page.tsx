@@ -606,12 +606,17 @@ function SystemSection() {
 
                 {setting.dailyReminderEnabled && (
                     <div className="space-y-2 pt-4 border-t border-slate-200">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Horario de Disparo (Automático)</label>
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
+                            Horario de Disparo (Nativo Vercel una vez por día)
+                        </label>
+                        <p className="text-[9px] text-amber-600 font-bold px-1 -mt-1">
+                            Nota: En Vercel Free el cron corre una vez al día (Configurado a las 18:00hs ART).
+                        </p>
                         <input
                             type="time"
-                            value={setting.dailyReminderTime}
-                            onChange={e => setSetting({ ...setting, dailyReminderTime: e.target.value })}
-                            className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-bold text-slate-700"
+                            disabled
+                            value="18:00"
+                            className="w-full bg-slate-100 border border-slate-200 rounded-xl py-3 px-4 outline-none font-bold text-slate-500 cursor-not-allowed"
                         />
                     </div>
                 )}

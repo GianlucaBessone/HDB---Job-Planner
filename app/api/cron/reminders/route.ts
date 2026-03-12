@@ -27,15 +27,6 @@ export async function GET(req: Request) {
         const currentHHmm = format(nowZoned, 'HH:mm');
         const todayStr = format(nowZoned, 'yyyy-MM-dd'); // YYYY-MM-DD
 
-        // Wait to be hit at or after the configured time
-        if (currentHHmm < setting.dailyReminderTime) {
-            return NextResponse.json({ 
-                message: 'Aún no es hora de ejecutar el recordatorio', 
-                currentHHmm, 
-                target: setting.dailyReminderTime 
-            });
-        }
-
         const idempotencyKey = `daily-reminder-${todayStr}`;
         const alreadySent = await prisma.idempotencyKey.findUnique({ where: { key: idempotencyKey } });
         
