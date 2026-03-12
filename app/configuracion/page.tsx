@@ -174,8 +174,8 @@ function TagsSection() {
                             Impacta Métricas
                         </label>
                         <div className="flex items-center gap-2">
-                            <button onClick={() => handleSave()} className="text-emerald-600 hover:text-emerald-700 p-2"><Save className="w-5 h-5" /></button>
-                            <button onClick={() => setEditingId(null)} className="text-slate-400 hover:text-rose-500 p-2"><X className="w-5 h-5" /></button>
+                            <button onClick={() => handleSave()} className="btn-icon-inline text-emerald-600 hover:text-emerald-700 p-2"><Save className="w-5 h-5" /></button>
+                            <button onClick={() => setEditingId(null)} className="btn-icon-inline text-slate-400 hover:text-rose-500 p-2"><X className="w-5 h-5" /></button>
                         </div>
                     </div>
                 )}
@@ -197,8 +197,8 @@ function TagsSection() {
                                 Impacta Métricas
                             </label>
                             <div className="flex items-center gap-2">
-                                <button onClick={() => handleSave(tag.id)} className="text-emerald-600 hover:text-emerald-700 p-2"><Save className="w-5 h-5" /></button>
-                                <button onClick={() => setEditingId(null)} className="text-slate-400 hover:text-rose-500 p-2"><X className="w-5 h-5" /></button>
+                                <button onClick={() => handleSave(tag.id)} className="btn-icon-inline text-emerald-600 hover:text-emerald-700 p-2"><Save className="w-5 h-5" /></button>
+                                <button onClick={() => setEditingId(null)} className="btn-icon-inline text-slate-400 hover:text-rose-500 p-2"><X className="w-5 h-5" /></button>
                             </div>
                         </div>
                     ) : (
@@ -209,8 +209,8 @@ function TagsSection() {
                                 {tag.impactsMetrics && <span className="px-2 py-0.5 bg-indigo-100 text-indigo-600 text-[10px] uppercase font-black tracking-widest rounded-md">Métricas</span>}
                             </div>
                             <div className="flex items-center gap-2">
-                                <button onClick={() => { setEditingId(tag.id); setForm({ name: tag.name, active: tag.active, impactsMetrics: tag.impactsMetrics }); }} className="text-slate-400 hover:text-primary p-2 transition-colors"><Edit2 className="w-4 h-4" /></button>
-                                <button onClick={() => handleDelete(tag.id)} className="text-slate-400 hover:text-rose-500 p-2 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                <button onClick={() => { setEditingId(tag.id); setForm({ name: tag.name, active: tag.active, impactsMetrics: tag.impactsMetrics }); }} className="btn-icon-inline text-slate-400 hover:text-primary p-2 transition-colors"><Edit2 className="w-4 h-4" /></button>
+                                <button onClick={() => handleDelete(tag.id)} className="btn-icon-inline text-slate-400 hover:text-rose-500 p-2 transition-colors"><Trash2 className="w-4 h-4" /></button>
                             </div>
                         </div>
                     )
@@ -325,8 +325,8 @@ function ChecklistSection() {
                                 Activo
                             </label>
                             <div className="flex items-center gap-2 shrink-0">
-                                <button onClick={() => handleSave()} className="text-emerald-600 hover:text-emerald-700 p-2 bg-white rounded-lg shadow-sm border border-emerald-100"><Save className="w-4 h-4" /></button>
-                                <button onClick={() => setEditingId(null)} className="text-slate-400 hover:text-rose-500 p-2 bg-white rounded-lg shadow-sm border border-slate-100"><X className="w-4 h-4" /></button>
+                                <button onClick={() => handleSave()} className="btn-icon-inline text-emerald-600 hover:text-emerald-700 p-2 bg-white rounded-lg shadow-sm border border-emerald-100"><Save className="w-4 h-4" /></button>
+                                <button onClick={() => setEditingId(null)} className="btn-icon-inline text-slate-400 hover:text-rose-500 p-2 bg-white rounded-lg shadow-sm border border-slate-100"><X className="w-4 h-4" /></button>
                             </div>
                         </div>
                     )}
@@ -348,8 +348,8 @@ function ChecklistSection() {
                                     Activo
                                 </label>
                                 <div className="flex items-center gap-2 shrink-0">
-                                    <button onClick={() => handleSave(item.id)} className="text-emerald-600 hover:text-emerald-700 p-2 bg-emerald-50 rounded-lg"><Save className="w-4 h-4" /></button>
-                                    <button onClick={() => setEditingId(null)} className="text-slate-400 hover:text-rose-500 p-2 bg-slate-50 rounded-lg"><X className="w-4 h-4" /></button>
+                                    <button onClick={() => handleSave(item.id)} className="btn-icon-inline text-emerald-600 hover:text-emerald-700 p-2 bg-emerald-50 rounded-lg"><Save className="w-4 h-4" /></button>
+                                    <button onClick={() => setEditingId(null)} className="btn-icon-inline text-slate-400 hover:text-rose-500 p-2 bg-slate-50 rounded-lg"><X className="w-4 h-4" /></button>
                                 </div>
                             </div>
                         ) : (
@@ -360,8 +360,8 @@ function ChecklistSection() {
                                     {!item.active && <span className="px-2 py-0.5 bg-rose-100 text-rose-600 text-[10px] uppercase font-black tracking-widest rounded-md shrink-0">Inactivo</span>}
                                 </div>
                                 <div className="flex items-center gap-1 ml-4 shrink-0">
-                                    <button onClick={() => { setEditingId(item.id); setForm({ description: item.description, active: item.active, order: item.order }); }} className="text-slate-400 hover:text-primary p-2 transition-colors"><Edit2 className="w-4 h-4" /></button>
-                                    <button onClick={() => handleDelete(item.id)} className="text-slate-400 hover:text-rose-500 p-2 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                    <button onClick={() => { setEditingId(item.id); setForm({ description: item.description, active: item.active, order: item.order }); }} className="btn-icon-inline text-slate-400 hover:text-primary p-2 transition-colors"><Edit2 className="w-4 h-4" /></button>
+                                    <button onClick={() => handleDelete(item.id)} className="btn-icon-inline text-slate-400 hover:text-rose-500 p-2 transition-colors"><Trash2 className="w-4 h-4" /></button>
                                 </div>
                             </div>
                         )
@@ -485,8 +485,8 @@ function OptionsSection() {
                             Activo
                         </label>
                         <div className="flex items-center gap-2 shrink-0">
-                            <button onClick={() => handleSave()} className="text-emerald-600 hover:text-emerald-700 p-2 bg-white rounded-lg shadow-sm border border-emerald-100"><Save className="w-4 h-4" /></button>
-                            <button onClick={() => setEditingId(null)} className="text-slate-400 hover:text-rose-500 p-2 bg-white rounded-lg shadow-sm border border-slate-100"><X className="w-4 h-4" /></button>
+                            <button onClick={() => handleSave()} className="btn-icon-inline text-emerald-600 hover:text-emerald-700 p-2 bg-white rounded-lg shadow-sm border border-emerald-100"><Save className="w-4 h-4" /></button>
+                            <button onClick={() => setEditingId(null)} className="btn-icon-inline text-slate-400 hover:text-rose-500 p-2 bg-white rounded-lg shadow-sm border border-slate-100"><X className="w-4 h-4" /></button>
                         </div>
                     </div>
                 )}
@@ -508,8 +508,8 @@ function OptionsSection() {
                                 Activo
                             </label>
                             <div className="flex items-center gap-2 shrink-0">
-                                <button onClick={() => handleSave(opt.id)} className="text-emerald-600 hover:text-emerald-700 p-2 bg-emerald-50 rounded-lg"><Save className="w-4 h-4" /></button>
-                                <button onClick={() => setEditingId(null)} className="text-slate-400 hover:text-rose-500 p-2 bg-slate-50 rounded-lg"><X className="w-4 h-4" /></button>
+                                <button onClick={() => handleSave(opt.id)} className="btn-icon-inline text-emerald-600 hover:text-emerald-700 p-2 bg-emerald-50 rounded-lg"><Save className="w-4 h-4" /></button>
+                                <button onClick={() => setEditingId(null)} className="btn-icon-inline text-slate-400 hover:text-rose-500 p-2 bg-slate-50 rounded-lg"><X className="w-4 h-4" /></button>
                             </div>
                         </div>
                     ) : (
@@ -520,8 +520,8 @@ function OptionsSection() {
                                 {!opt.active && <span className="px-2 py-0.5 bg-rose-100 text-rose-600 text-[10px] uppercase font-black tracking-widest rounded-md shrink-0">Inactivo</span>}
                             </div>
                             <div className="flex items-center gap-1 ml-4 shrink-0">
-                                <button onClick={() => { setEditingId(opt.id); setForm({ value: opt.value, active: opt.active, order: opt.order }); }} className="text-slate-400 hover:text-primary p-2 transition-colors"><Edit2 className="w-4 h-4" /></button>
-                                <button onClick={() => handleDelete(opt.id)} className="text-slate-400 hover:text-rose-500 p-2 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                <button onClick={() => { setEditingId(opt.id); setForm({ value: opt.value, active: opt.active, order: opt.order }); }} className="btn-icon-inline text-slate-400 hover:text-primary p-2 transition-colors"><Edit2 className="w-4 h-4" /></button>
+                                <button onClick={() => handleDelete(opt.id)} className="btn-icon-inline text-slate-400 hover:text-rose-500 p-2 transition-colors"><Trash2 className="w-4 h-4" /></button>
                             </div>
                         </div>
                     )

@@ -684,8 +684,8 @@ function ProjectDetailsModal({
     const statsArray = Object.values(operatorStats);
 
     return (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white w-full max-w-4xl rounded-[2.5rem] shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white w-full max-w-4xl rounded-t-3xl md:rounded-[2.5rem] shadow-2xl border border-slate-200 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] overflow-hidden flex flex-col">
                 {/* Header */}
                 <div className="p-6 md:p-8 border-b border-slate-100 flex items-center justify-between shrink-0">
                     <div className="space-y-1">
@@ -700,7 +700,7 @@ function ProjectDetailsModal({
                             <Building2 className="w-4 h-4" /> {project.client?.nombre || project.cliente || 'Sin cliente'}
                         </p>
                     </div>
-                    <button onClick={onClose} className="p-3 hover:bg-slate-100 rounded-full text-slate-400 transition-all active:scale-95">
+                    <button onClick={onClose} className="btn-icon-inline p-3 hover:bg-slate-100 rounded-full text-slate-400 transition-all active:scale-95">
                         <X className="w-6 h-6" />
                     </button>
                 </div>
@@ -781,7 +781,7 @@ function ProjectDetailsModal({
                                     <h4 className="flex items-center gap-2 font-black text-slate-800 uppercase tracking-widest text-xs">
                                         <Users className="w-4 h-4 text-primary" /> Personal Asignado
                                     </h4>
-                                    <div className="bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-sm">
+                                    <div className="bg-white border border-slate-100 rounded-3xl overflow-x-auto shadow-sm">
                                         <table className="w-full text-left">
                                             <thead>
                                                 <tr className="bg-slate-50 border-b border-slate-100">
@@ -819,7 +819,7 @@ function ProjectDetailsModal({
                                             <h4 className="flex items-center gap-2 font-black text-slate-800 uppercase tracking-widest text-xs">
                                                 <Activity className="w-4 h-4 text-primary" /> Historial Reciente
                                             </h4>
-                                            <div className="bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-sm">
+                                            <div className="bg-white border border-slate-100 rounded-3xl overflow-x-auto shadow-sm">
                                                 <table className="w-full text-left text-xs">
                                                     <thead className="bg-slate-50 border-b border-slate-100 font-black text-slate-400 uppercase tracking-widest">
                                                         <tr>
@@ -858,7 +858,7 @@ function ProjectDetailsModal({
                                                         <button
                                                             disabled={item.confirmedBySupervisor}
                                                             onClick={() => onUpdateChecklist(item.id, { completed: !item.completed })}
-                                                            className={`mt-0.5 shrink-0 w-6 h-6 rounded-xl border-2 flex items-center justify-center transition-all ${item.completed ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-200' : 'border-slate-200 bg-white hover:border-primary/40'}`}
+                                                            className={`btn-icon-inline mt-0.5 shrink-0 w-6 h-6 rounded-xl border-2 flex items-center justify-center transition-all ${item.completed ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-200' : 'border-slate-200 bg-white hover:border-primary/40'}`}
                                                         >
                                                             {item.completed && <CheckCircle2 className="w-4 h-4" />}
                                                         </button>
@@ -877,7 +877,7 @@ function ProjectDetailsModal({
                                                     {isSupervisor && (
                                                         <button
                                                             onClick={() => onUpdateChecklist(item.id, { excluded: !item.excluded })}
-                                                            className={`shrink-0 p-1.5 rounded-lg transition-all ${item.excluded ? 'text-blue-500 hover:bg-blue-50' : 'text-slate-300 hover:text-red-500 hover:bg-red-50'}`}
+                                                            className={`btn-icon-inline shrink-0 p-1.5 rounded-lg transition-all ${item.excluded ? 'text-blue-500 hover:bg-blue-50' : 'text-slate-300 hover:text-red-500 hover:bg-red-50'}`}
                                                             title={item.excluded ? "Incluir en proyecto" : "Excluir de proyecto"}
                                                         >
                                                             {item.excluded ? <Plus className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
@@ -912,7 +912,7 @@ function ProjectDetailsModal({
                                                 navigator.clipboard.writeText(url);
                                                 showToast('Link copiado al portapapeles', 'success');
                                             }}
-                                            className="bg-white hover:bg-slate-50 text-primary border border-primary/20 p-2 rounded-xl transition-all shadow-sm active:scale-90 shrink-0"
+                                            className="btn-icon-inline bg-white hover:bg-slate-50 text-primary border border-primary/20 p-2 rounded-xl transition-all shadow-sm active:scale-90 shrink-0"
                                             title="Copiar Link"
                                         >
                                             <ClipboardList className="w-5 h-5" />
@@ -920,7 +920,7 @@ function ProjectDetailsModal({
                                         <Link
                                             href={`/projects/${project.id}/report?token=${project.publicToken || ''}`}
                                             target="_blank"
-                                            className="bg-primary text-white p-2 rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-90 shrink-0"
+                                            className="btn-icon-inline bg-primary text-white p-2 rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-90 shrink-0"
                                             title="Ver Vista Pública"
                                         >
                                             <ChevronRight className="w-5 h-5" />
@@ -1060,14 +1060,14 @@ function ProjectCard({
                 <div className="flex items-center gap-0.5 shrink-0">
                     <button
                         onClick={() => onEdit(project)}
-                        className="p-2 rounded-xl text-slate-400 hover:text-primary hover:bg-primary/5 transition-all active:scale-90"
+                        className="btn-icon-inline p-2 rounded-xl text-slate-400 hover:text-primary hover:bg-primary/5 transition-all active:scale-90"
                         title="Editar"
                     >
                         <Edit3 className="w-4 h-4" />
                     </button>
                     <button
                         onClick={() => handleDeleteClick(project.id)}
-                        className="p-2 rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all active:scale-90"
+                        className="btn-icon-inline p-2 rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all active:scale-90"
                         title="Eliminar"
                     >
                         <Trash2 className="w-4 h-4" />
@@ -1209,21 +1209,21 @@ function ProjectModal({
         setFormData(prev => ({ ...prev, [field]: value }));
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-300 max-h-[95vh] flex flex-col overflow-hidden">
+        <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white w-full max-w-xl rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] flex flex-col overflow-hidden">
                 {/* Header - Fixed */}
-                <div className="p-7 flex items-center justify-between border-b border-slate-100 flex-shrink-0">
-                    <h3 className="text-xl font-bold text-slate-800">
+                <div className="p-5 md:p-7 flex items-center justify-between border-b border-slate-100 flex-shrink-0">
+                    <h3 className="text-lg md:text-xl font-bold text-slate-800">
                         {editingProject ? 'Editar Proyecto' : 'Nuevo Proyecto'}
                     </h3>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-all">
+                    <button onClick={onClose} className="btn-icon-inline p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-all">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
 
                 <form onSubmit={onSubmit} className="flex-1 flex flex-col min-h-0">
                     {/* Scrollable Content */}
-                    <div className="flex-1 overflow-y-auto p-7 space-y-4 custom-scrollbar">
+                    <div className="flex-1 overflow-y-auto p-5 md:p-7 space-y-4 custom-scrollbar">
                         {/* Nombre + Toggle Metricas */}
                         <div className="flex flex-col sm:flex-row sm:items-end gap-4">
                             <div className="flex-1 space-y-1.5">
@@ -1389,6 +1389,7 @@ function ProjectModal({
                                 <input
                                     type="number"
                                     min={0}
+                                    inputMode="decimal"
                                     className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                     value={formData.horasEstimadas}
                                     onChange={e => set('horasEstimadas', e.target.value)}
@@ -1399,6 +1400,7 @@ function ProjectModal({
                                 <input
                                     type="number"
                                     min={0}
+                                    inputMode="decimal"
                                     className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                     value={formData.horasConsumidas}
                                     onChange={e => set('horasConsumidas', e.target.value)}
@@ -1442,17 +1444,17 @@ function ProjectModal({
                     </div>
 
                     {/* Footer - Fixed */}
-                    <div className="p-7 border-t border-slate-100 flex gap-3 flex-shrink-0">
+                    <div className="p-5 md:p-7 border-t border-slate-100 flex gap-3 flex-shrink-0">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-6 py-3 rounded-2xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all"
+                            className="flex-1 px-6 py-3 rounded-2xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all active:scale-95"
                         >
                             Cancelar
                         </button>
                         <button
                             type="submit"
-                            className="flex-[2] bg-primary text-white px-6 py-3 rounded-2xl font-bold hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all"
+                            className="flex-[2] bg-primary text-white px-6 py-3 rounded-2xl font-bold hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all active:scale-95"
                         >
                             {editingProject ? 'Guardar Cambios' : 'Crear Proyecto'}
                         </button>

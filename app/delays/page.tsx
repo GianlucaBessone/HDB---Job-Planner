@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { showToast } from '@/components/Toast';
 import * as XLSX from 'xlsx';
 import SearchableSelect from '@/components/SearchableSelect';
 import { format } from 'date-fns';
@@ -138,19 +139,25 @@ export default function DelaysPage() {
             const method = editingDelayId ? 'PATCH' : 'POST';
             const url = editingDelayId ? `/api/delays?id=${editingDelayId}` : '/api/delays';
 
-            await safeApiRequest(url, {
+            const res = await safeApiRequest(url, {
                 method,
                 body: JSON.stringify({
                     ...formData,
                     duracion: Number(formData.duracion) || 0
                 })
             });
+            if (res.ok) {
+                showToast(editingDelayId ? 'Registro actualizado correctamente' : 'Demora registrada correctamente', 'success');
+            } else {
+                showToast('Error al guardar el registro', 'error');
+            }
             setIsModalOpen(false);
             setEditingDelayId(null);
             setFormData(prev => ({ ...prev, projectId: '', motivo: '', duracion: '' as any, area: '', responsableArea: '' }));
             loadData();
         } catch (error) {
             console.error('Error saving delay:', error);
+            showToast('Error al guardar el registro', 'error');
         }
     };
 
@@ -177,12 +184,18 @@ export default function DelaysPage() {
     const confirmDelete = async () => {
         if (!delayToDelete) return;
         try {
-            await safeApiRequest(`/api/delays?id=${delayToDelete}`, { method: 'DELETE' });
+            const res = await safeApiRequest(`/api/delays?id=${delayToDelete}`, { method: 'DELETE' });
+            if (res.ok) {
+                showToast('Registro eliminado', 'success');
+            } else {
+                showToast('Error al eliminar el registro', 'error');
+            }
             loadData();
             setIsConfirmOpen(false);
             setDelayToDelete(null);
         } catch (error) {
             console.error('Error deleting delay:', error);
+            showToast('Error al eliminar el registro', 'error');
         }
     };
 
@@ -274,7 +287,7 @@ export default function DelaysPage() {
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                         {/* View Toggle */}
-                        <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-1">
+                        <div className="hidden md:flex bg-slate-100 p-1 rounded-xl items-center gap-1">
                             <button
                                 onClick={() => setViewMode('tabla')}
                                 title="Vista Tabla"
@@ -368,131 +381,135 @@ export default function DelaysPage() {
                             <Clock className="w-12 h-12 mb-4 opacity-10" />
                             <p className="font-bold uppercase tracking-widest text-xs">Sin registros que coincidan</p>
                         </div>
-                    ) : viewMode === 'tabla' ? (
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-slate-50 border-b border-slate-100">
-                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Fecha</th>
-                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Proyecto</th>
-                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Área</th>
-                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Motivo</th>
-                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden lg:table-cell">Resp. Área</th>
-                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden md:table-cell">Operador</th>
-                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Duración</th>
-                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredDelays.map(delay => (
-                                    <tr key={delay.id} className="border-b border-slate-50 hover:bg-slate-50/60 transition-colors">
-                                        <td className="p-4 text-xs font-bold text-slate-500 whitespace-nowrap">{formatDate(delay.fecha)}</td>
-                                        <td className="p-4 text-sm font-black text-slate-800 max-w-[200px] truncate">{delay.project.nombre}</td>
-                                        <td className="p-4">
-                                            <span className="text-[10px] font-black bg-amber-50 text-amber-700 px-2 py-1 rounded-lg uppercase tracking-widest whitespace-nowrap">{delay.area}</span>
-                                        </td>
-                                        <td className="p-4 text-xs font-medium text-slate-500 italic max-w-[250px] truncate" title={delay.motivo}>"{delay.motivo}"</td>
-                                        <td className="p-4 text-xs font-bold text-slate-400 hidden lg:table-cell">{delay.responsableArea || '—'}</td>
-                                        <td className="p-4 text-xs font-bold text-primary hidden md:table-cell">{delay.operador}</td>
-                                        <td className="p-4 text-center">
-                                            <span className="px-3 py-1 bg-amber-50 text-amber-600 font-black rounded-xl text-sm border border-amber-100">{delay.duracion}h</span>
-                                        </td>
-                                        <td className="p-4 text-right">
-                                            <div className="flex items-center justify-end gap-1">
-                                                {(currentUser?.role === 'admin' || currentUser?.role === 'supervisor') && (
-                                                    <button onClick={() => handleEditClick(delay)} className="p-2 rounded-xl text-slate-300 hover:text-indigo-500 hover:bg-indigo-50 transition-all">
-                                                        <Edit2 className="w-4 h-4" />
-                                                    </button>
-                                                )}
-                                                <button onClick={() => handleDeleteClick(delay.id)} className="p-2 rounded-xl text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all">
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                                <tr className="bg-slate-50 font-black border-t-2 border-slate-200">
-                                    <td colSpan={6} className="p-4 text-right text-[10px] uppercase tracking-widest text-slate-500">Total Horas en Rango:</td>
-                                    <td className="p-4 text-center text-amber-600 text-base font-black">{totalHours.toFixed(1)}h</td>
-                                    <td></td>
-                                </tr>
-                            </tbody>
-                        </table>
                     ) : (
-                        /* Card Grid View */
-                        <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {filteredDelays.map(delay => (
-                                <div key={delay.id} className="bg-white border border-slate-200 rounded-[2rem] shadow-sm p-5 flex flex-col gap-3 hover:shadow-md transition-all group">
-                                    <div className="flex items-start gap-3 justify-between">
-                                        <div className="flex items-start gap-3 min-w-0">
-                                            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
-                                                <Building2 className="w-5 h-5 text-amber-500" />
-                                            </div>
-                                            <div className="min-w-0">
-                                                <h4 className="font-black text-slate-800 text-sm leading-tight truncate">{delay.project.nombre}</h4>
-                                                <div className="flex flex-wrap items-center gap-2 mt-1">
-                                                    <span className="text-[10px] font-bold text-slate-400">{formatDate(delay.fecha)} · {delay.hora}</span>
+                        <>
+                            {viewMode === 'tabla' && (
+                                <table className="w-full text-left border-collapse hidden md:table">
+                                    <thead>
+                                        <tr className="bg-slate-50 border-b border-slate-100">
+                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Fecha</th>
+                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Proyecto</th>
+                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Área</th>
+                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Motivo</th>
+                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden lg:table-cell">Resp. Área</th>
+                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden md:table-cell">Operador</th>
+                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Duración</th>
+                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredDelays.map(delay => (
+                                            <tr key={delay.id} className="border-b border-slate-50 hover:bg-slate-50/60 transition-colors">
+                                                <td className="p-4 text-xs font-bold text-slate-500 whitespace-nowrap">{formatDate(delay.fecha)}</td>
+                                                <td className="p-4 text-sm font-black text-slate-800 max-w-[200px] truncate">{delay.project.nombre}</td>
+                                                <td className="p-4">
+                                                    <span className="text-[10px] font-black bg-amber-50 text-amber-700 px-2 py-1 rounded-lg uppercase tracking-widest whitespace-nowrap">{delay.area}</span>
+                                                </td>
+                                                <td className="p-4 text-xs font-medium text-slate-500 italic max-w-[250px] truncate" title={delay.motivo}>"{delay.motivo}"</td>
+                                                <td className="p-4 text-xs font-bold text-slate-400 hidden lg:table-cell">{delay.responsableArea || '—'}</td>
+                                                <td className="p-4 text-xs font-bold text-primary hidden md:table-cell">{delay.operador}</td>
+                                                <td className="p-4 text-center">
+                                                    <span className="px-3 py-1 bg-amber-50 text-amber-600 font-black rounded-xl text-sm border border-amber-100">{delay.duracion}h</span>
+                                                </td>
+                                                <td className="p-4 text-right">
+                                                    <div className="flex items-center justify-end gap-1">
+                                                        {(currentUser?.role === 'admin' || currentUser?.role === 'supervisor') && (
+                                                            <button onClick={() => handleEditClick(delay)} className="btn-icon-inline p-2 rounded-xl text-slate-300 hover:text-indigo-500 hover:bg-indigo-50 transition-all">
+                                                                <Edit2 className="w-4 h-4" />
+                                                            </button>
+                                                        )}
+                                                        <button onClick={() => handleDeleteClick(delay.id)} className="btn-icon-inline p-2 rounded-xl text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all">
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        <tr className="bg-slate-50 font-black border-t-2 border-slate-200">
+                                            <td colSpan={6} className="p-4 text-right text-[10px] uppercase tracking-widest text-slate-500 hidden md:table-cell">Total Horas en Rango:</td>
+                                            <td className="p-4 text-center text-amber-600 text-base font-black">{totalHours.toFixed(1)}h</td>
+                                            <td className="hidden md:table-cell"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            )}
+
+                            {/* Cards View (Mobile Fallback + Explicit Card View) */}
+                            <div className={`p-4 md:p-6 grid gap-4 ${viewMode === 'tabla' ? 'grid-cols-1 md:hidden' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}>
+                                {filteredDelays.map(delay => (
+                                    <div key={delay.id} className="bg-white border border-slate-200 rounded-2xl md:rounded-[2rem] shadow-sm p-4 md:p-5 flex flex-col gap-3 hover:shadow-md transition-all group animate-card-in">
+                                        <div className="flex items-start gap-3 justify-between">
+                                            <div className="flex items-start gap-3 min-w-0">
+                                                <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+                                                    <Building2 className="w-5 h-5 text-amber-500" />
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <h4 className="font-black text-slate-800 text-sm leading-tight truncate">{delay.project.nombre}</h4>
+                                                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                                                        <span className="text-[10px] font-bold text-slate-400">{formatDate(delay.fecha)} · {delay.hora}</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div className="flex items-center gap-1 shrink-0">
-                                            {(currentUser?.role === 'admin' || currentUser?.role === 'supervisor') && (
-                                                <button onClick={() => handleEditClick(delay)} className="p-1.5 text-slate-300 hover:text-indigo-500 transition-colors">
-                                                    <Edit2 className="w-3.5 h-3.5" />
+                                            <div className="flex items-center gap-1 shrink-0">
+                                                {(currentUser?.role === 'admin' || currentUser?.role === 'supervisor') && (
+                                                    <button onClick={() => handleEditClick(delay)} className="btn-icon-inline p-2 md:p-1.5 text-slate-400 hover:text-indigo-500 transition-colors">
+                                                        <Edit2 className="w-4 h-4 md:w-3.5 md:h-3.5" />
+                                                    </button>
+                                                )}
+                                                <button onClick={() => handleDeleteClick(delay.id)} className="btn-icon-inline p-2 md:p-1.5 text-slate-400 hover:text-rose-500 transition-colors">
+                                                    <Trash2 className="w-4 h-4 md:w-3.5 md:h-3.5" />
                                                 </button>
-                                            )}
-                                            <button onClick={() => handleDeleteClick(delay.id)} className="p-1.5 text-slate-300 hover:text-rose-500 transition-colors">
-                                                <Trash2 className="w-3.5 h-3.5" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <span className="text-[10px] font-black bg-amber-50 text-amber-700 px-2 py-1 rounded-lg uppercase tracking-widest w-fit">{delay.area}</span>
-                                    <div className="bg-slate-50 px-3 py-2.5 rounded-xl">
-                                        <p className="text-xs font-medium text-slate-600 italic line-clamp-2">"{delay.motivo}"</p>
-                                    </div>
-                                    <div className="flex items-center justify-between pt-2 border-t border-slate-50">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary">
-                                                {delay.operador.charAt(0)}
                                             </div>
-                                            <span className="text-[10px] font-bold text-slate-500 truncate max-w-[100px]">{delay.operador}</span>
                                         </div>
-                                        <div className="flex items-baseline gap-1">
-                                            <span className="text-2xl font-black text-amber-500 tracking-tighter">{delay.duracion}</span>
-                                            <span className="text-[9px] font-black text-slate-400 uppercase">Hs</span>
+                                        <span className="text-[10px] font-black bg-amber-50 text-amber-700 px-2 py-1 rounded-lg uppercase tracking-widest w-fit">{delay.area}</span>
+                                        <div className="bg-slate-50 px-3 py-2.5 rounded-xl">
+                                            <p className="text-xs font-medium text-slate-600 italic line-clamp-2">"{delay.motivo}"</p>
+                                        </div>
+                                        <div className="flex items-center justify-between pt-2 border-t border-slate-50">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary">
+                                                    {delay.operador.charAt(0)}
+                                                </div>
+                                                <span className="text-[10px] font-bold text-slate-500 truncate max-w-[100px]">{delay.operador}</span>
+                                            </div>
+                                            <div className="flex items-baseline gap-1">
+                                                <span className="text-2xl font-black text-amber-500 tracking-tighter">{delay.duracion}</span>
+                                                <span className="text-[9px] font-black text-slate-400 uppercase">Hs</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        </>
                     )}
                 </div>
             </div>
 
             {/* Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-xl rounded-[3rem] shadow-2xl border border-white/20 animate-in zoom-in-95 duration-300 max-h-[95vh] flex flex-col overflow-hidden">
+                <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-xl rounded-t-3xl md:rounded-[3rem] shadow-2xl border border-white/20 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] flex flex-col overflow-hidden">
                         {/* Header - Fixed */}
-                        <div className="p-8 md:p-10 pb-4 flex items-center justify-between border-b border-slate-50 flex-shrink-0">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-amber-500/30">
-                                    <Timer className="w-6 h-6" />
+                        <div className="p-5 md:p-8 pb-4 flex items-center justify-between border-b border-slate-50 flex-shrink-0">
+                            <div className="flex items-center gap-3 md:gap-4">
+                                <div className="w-10 h-10 md:w-12 md:h-12 bg-amber-500 rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-lg shadow-amber-500/30">
+                                    <Timer className="w-5 h-5 md:w-6 md:h-6" />
                                 </div>
                                 <div>
-                                    <h3 className="text-2xl font-black text-slate-800 tracking-tight leading-none">
+                                    <h3 className="text-lg md:text-2xl font-black text-slate-800 tracking-tight leading-none">
                                         {editingDelayId ? 'Editar Registro' : 'Registrar Demora'}
                                     </h3>
-                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Responsabilidad del Cliente</p>
+                                    <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5 md:mt-1">Responsabilidad del Cliente</p>
                                 </div>
                             </div>
-                            <button type="button" onClick={() => { setIsModalOpen(false); setEditingDelayId(null); }} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400">
+                            <button type="button" onClick={() => { setIsModalOpen(false); setEditingDelayId(null); }} className="btn-icon-inline p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
                         <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
                             {/* Scrollable Content */}
-                            <div className="flex-1 overflow-y-auto p-8 md:p-10 pt-6 space-y-6 custom-scrollbar">
+                            <div className="flex-1 overflow-y-auto p-5 md:p-8 pt-4 md:pt-6 space-y-5 md:space-y-6 custom-scrollbar">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     {/* Proyecto */}
                                     <div className="md:col-span-2">
@@ -632,6 +649,7 @@ export default function DelaysPage() {
                                                         setFormData({ ...formData, duracion: '' as any });
                                                     }
                                                 }}
+                                                inputMode="decimal"
                                                 placeholder=""
                                                 className="w-28 bg-amber-50 border border-amber-200 rounded-xl py-3 px-4 text-xl font-black text-amber-500 text-center outline-none focus:border-amber-400 focus:ring-4 focus:ring-amber-500/10"
                                             />
@@ -642,13 +660,13 @@ export default function DelaysPage() {
                                 </div>
                             </div>
 
-                            <div className="flex gap-4 p-8 md:p-10 border-t border-slate-50 flex-shrink-0">
+                            <div className="flex gap-3 md:gap-4 p-5 md:p-8 border-t border-slate-50 flex-shrink-0">
                                 <button type="button" onClick={() => setIsModalOpen(false)}
-                                    className="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95">
+                                    className="flex-1 bg-slate-100 text-slate-600 py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95">
                                     Cancelar
                                 </button>
                                 <button type="submit"
-                                    className="flex-[2] bg-amber-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-amber-600 shadow-xl shadow-amber-500/20 transition-all active:scale-95">
+                                    className="flex-[2] bg-amber-500 text-white py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-amber-600 shadow-xl shadow-amber-500/20 transition-all active:scale-95">
                                     {editingDelayId ? 'Guardar Cambios' : 'Registrar Evento'}
                                 </button>
                             </div>

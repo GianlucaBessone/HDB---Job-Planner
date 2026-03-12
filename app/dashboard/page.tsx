@@ -217,7 +217,7 @@ export default function DashboardPage() {
             </div>
 
             {/* KPI Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-fr">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 auto-rows-fr">
                 <KpiCard
                     title="Eficiencia de Tiempo (IPT)"
                     value={data.kpis.avgIPT}
@@ -602,9 +602,9 @@ export default function DashboardPage() {
 
 function KpiCard({ title, value, icon, color, trend, tooltip }: { title: string; value: string | number; icon: any; color: string; trend: string; tooltip?: { def: string; purpose: string; calc: string } }) {
     return (
-        <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 group relative flex flex-col h-full">
-            <div className="flex justify-between items-start mb-4">
-                <div className={`p-3 rounded-2xl ${color} text-white shadow-lg group-hover:scale-110 transition-transform`}>
+        <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 group relative flex flex-col h-full">
+            <div className="flex justify-between items-start mb-3 md:mb-4">
+                <div className={`p-2.5 md:p-3 rounded-xl md:rounded-2xl ${color} text-white shadow-lg group-hover:scale-110 transition-transform`}>
                     {icon}
                 </div>
                 {tooltip && <MetricTooltip {...tooltip} />}
@@ -614,11 +614,11 @@ function KpiCard({ title, value, icon, color, trend, tooltip }: { title: string;
                     </div>
                 )}
             </div>
-            <div className="space-y-1 flex-1">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">{title}</p>
-                <h4 className="text-3xl font-black text-slate-800 tracking-tighter">{value}</h4>
+            <div className="space-y-0.5 md:space-y-1 flex-1">
+                <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest px-0.5 md:px-1 line-clamp-2">{title}</p>
+                <h4 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tighter">{value}</h4>
             </div>
-            <div className="mt-4 pt-4 border-t border-slate-50 flex items-center gap-1.5">
+            <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-slate-50 flex items-center gap-1.5">
                 <div className={`w-1.5 h-1.5 rounded-full ${color.replace('bg-', 'bg-').replace('500', '400')} animate-pulse`} />
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{trend}</p>
             </div>

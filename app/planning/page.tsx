@@ -310,7 +310,7 @@ export default function PlanningPage() {
                     </div>
                     <div className="h-8 w-[1px] bg-slate-200 hidden md:block"></div>
                     <input type="date" className="h-[50px] bg-white border border-slate-200 rounded-2xl px-3 text-sm font-bold text-slate-700 outline-none flex-1 md:flex-none md:w-44 appearance-none" value={duplicateDate} onChange={e => setDuplicateDate(e.target.value)} />
-                    <button onClick={handleDuplicate} className="p-2 text-slate-500 hover:text-primary hover:bg-primary/5 rounded-xl border border-slate-200 transition-colors shrink-0 active:scale-90" title="Copiar de otra fecha">
+                    <button onClick={handleDuplicate} className="btn-icon-inline p-2 text-slate-500 hover:text-primary hover:bg-primary/5 rounded-xl border border-slate-200 transition-colors shrink-0 active:scale-90" title="Copiar de otra fecha">
                         <Files className="w-4 h-4" />
                     </button>
                 </div>
@@ -364,14 +364,14 @@ export default function PlanningPage() {
                                                 <button
                                                     onClick={() => moveBlock(index, 'up')}
                                                     disabled={index === 0}
-                                                    className="p-1 text-slate-300 hover:text-primary hover:bg-primary/5 rounded-lg disabled:opacity-0 transition-all active:scale-90"
+                                                    className="btn-icon-inline p-1 text-slate-300 hover:text-primary hover:bg-primary/5 rounded-lg disabled:opacity-0 transition-all active:scale-90"
                                                 >
                                                     <ChevronUp className="w-4 h-4 md:w-5 md:h-5" />
                                                 </button>
                                                 <button
                                                     onClick={() => moveBlock(index, 'down')}
                                                     disabled={index === blocks.length - 1}
-                                                    className="p-1 text-slate-300 hover:text-primary hover:bg-primary/5 rounded-lg disabled:opacity-0 transition-all active:scale-90"
+                                                    className="btn-icon-inline p-1 text-slate-300 hover:text-primary hover:bg-primary/5 rounded-lg disabled:opacity-0 transition-all active:scale-90"
                                                 >
                                                     <ChevronDown className="w-4 h-4 md:w-5 md:h-5" />
                                                 </button>
@@ -397,13 +397,13 @@ export default function PlanningPage() {
                                             <div className="flex items-center gap-1 shrink-0">
                                                 <button
                                                     onClick={() => saveAsFavorite(block)}
-                                                    className="p-2 text-slate-300 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-all active:scale-90"
+                                                    className="btn-icon-inline p-2 text-slate-300 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-all active:scale-90"
                                                 >
                                                     <Star className="w-4 h-4 md:w-5 md:h-5" />
                                                 </button>
                                                 <button
                                                     onClick={() => removeBlock(index)}
-                                                    className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all active:scale-90"
+                                                    className="btn-icon-inline p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all active:scale-90"
                                                 >
                                                     <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
                                                 </button>
@@ -538,7 +538,7 @@ export default function PlanningPage() {
                                             <p className="text-[10px] text-slate-400 truncate">{fav.isNoteOnly ? 'Tipo: Nota' : `Ref: ${fav.projectName || 'Sin Proyecto'}`}</p>
                                         </div>
                                     </div>
-                                    <button onClick={(e) => handleDeleteFavoriteClick(fav.id, e)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all"><X className="w-4 h-4" /></button>
+                                    <button onClick={(e) => handleDeleteFavoriteClick(fav.id, e)} className="btn-icon-inline p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all"><X className="w-4 h-4" /></button>
                                 </div>
                             ))}
                             {favorites.length === 0 && <p className="text-[11px] text-slate-400 italic text-center py-4">No tienes plantillas guardadas</p>}
@@ -583,7 +583,7 @@ export default function PlanningPage() {
                         <div className="p-5 space-y-4 overflow-y-auto max-h-[calc(85vh-40px)]">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-sm font-extrabold text-slate-800 italic flex items-center gap-2">PREVIEW <span className="text-primary not-italic bg-primary/10 px-2 py-0.5 rounded text-[10px] tracking-widest uppercase">WhatsApp</span></h3>
-                                <button onClick={() => setShowWhatsApp(false)} className="p-2 hover:bg-slate-100 rounded-full text-slate-400"><X className="w-5 h-5" /></button>
+                                <button onClick={() => setShowWhatsApp(false)} className="btn-icon-inline p-2 hover:bg-slate-100 rounded-full text-slate-400"><X className="w-5 h-5" /></button>
                             </div>
                             <div className="whatsapp-preview text-xs min-h-[120px]">{whatsappMessage}</div>
                             <div className="grid grid-cols-2 gap-2">
@@ -609,7 +609,7 @@ export default function PlanningPage() {
                                 <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2 uppercase tracking-tight">
                                     <Star className="w-4 h-4 text-amber-500 fill-amber-500" /> Plantillas Favoritas
                                 </h3>
-                                <button onClick={() => setShowFavorites(false)} className="p-2 hover:bg-slate-100 rounded-full text-slate-400"><X className="w-5 h-5" /></button>
+                                <button onClick={() => setShowFavorites(false)} className="btn-icon-inline p-2 hover:bg-slate-100 rounded-full text-slate-400"><X className="w-5 h-5" /></button>
                             </div>
                             <div className="flex-1 overflow-y-auto space-y-2 overscroll-contain">
                                 {favorites.map(fav => (
@@ -623,7 +623,7 @@ export default function PlanningPage() {
                                                 <p className="text-[10px] text-slate-400 truncate">{fav.isNoteOnly ? 'Tipo: Nota' : `Ref: ${fav.projectName || 'Sin Proyecto'}`}</p>
                                             </div>
                                         </div>
-                                        <button onClick={(e) => handleDeleteFavoriteClick(fav.id, e)} className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all shrink-0"><X className="w-4 h-4" /></button>
+                                        <button onClick={(e) => handleDeleteFavoriteClick(fav.id, e)} className="btn-icon-inline p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all shrink-0"><X className="w-4 h-4" /></button>
                                     </div>
                                 ))}
                                 {favorites.length === 0 && (

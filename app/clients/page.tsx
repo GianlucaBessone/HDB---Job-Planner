@@ -241,13 +241,13 @@ function ClientCard({ client, onEdit, onDelete, onToggleStatus }: {
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                         onClick={() => onEdit(client)}
-                        className="p-2 rounded-xl text-slate-400 hover:text-primary hover:bg-primary/5 transition-all"
+                        className="btn-icon-inline p-2 rounded-xl text-slate-400 hover:text-primary hover:bg-primary/5 transition-all"
                     >
                         <Edit3 className="w-4 h-4" />
                     </button>
                     <button
                         onClick={() => onDelete(client.id)}
-                        className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
+                        className="btn-icon-inline p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
                     >
                         <Trash2 className="w-4 h-4" />
                     </button>
@@ -300,14 +300,14 @@ function ClientModal({ formData, setFormData, editingClient, onSubmit, onClose }
     const setField = (field: string, value: any) => setFormData((prev: any) => ({ ...prev, [field]: value }));
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-300">
-                <div className="p-7 space-y-6">
+        <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white w-full max-w-lg rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
+                <div className="p-5 md:p-7 space-y-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
                     <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                         <h3 className="text-xl font-bold text-slate-800">
                             {editingClient ? 'Editar Cliente' : 'Nuevo Cliente'}
                         </h3>
-                        <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors">
+                        <button onClick={onClose} className="btn-icon-inline p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors">
                             <X className="w-5 h-5" />
                         </button>
                     </div>
@@ -330,6 +330,7 @@ function ClientModal({ formData, setFormData, editingClient, onSubmit, onClose }
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Email</label>
                                 <input
                                     type="email"
+                                    inputMode="email"
                                     className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                     placeholder="contacto@empresa.com"
                                     value={formData.email}
@@ -339,7 +340,8 @@ function ClientModal({ formData, setFormData, editingClient, onSubmit, onClose }
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Teléfono</label>
                                 <input
-                                    type="text"
+                                    type="tel"
+                                    inputMode="tel"
                                     className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                     placeholder="+54 9 11 ..."
                                     value={formData.telefono}

@@ -186,13 +186,13 @@ export default function OperatorsPage() {
                 <div className="flex bg-slate-100 p-1.5 rounded-2xl shrink-0">
                     <button
                         onClick={() => setViewMode('grid')}
-                        className={`p-2 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-primary' : 'text-slate-400 hover:text-slate-600'}`}
+                        className={`btn-icon-inline p-2 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-primary' : 'text-slate-400 hover:text-slate-600'}`}
                     >
                         <LayoutGrid className="w-5 h-5" />
                     </button>
                     <button
                         onClick={() => setViewMode('list')}
-                        className={`p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-primary' : 'text-slate-400 hover:text-slate-600'}`}
+                        className={`btn-icon-inline p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-primary' : 'text-slate-400 hover:text-slate-600'}`}
                     >
                         <List className="w-5 h-5" />
                     </button>
@@ -201,21 +201,21 @@ export default function OperatorsPage() {
 
             {/* Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-300 max-h-[95vh] flex flex-col">
+                <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white w-full max-w-lg rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] flex flex-col">
                         {/* Header - Fixed */}
-                        <div className="p-8 flex justify-between items-center border-b flex-shrink-0">
+                        <div className="p-5 md:p-8 flex justify-between items-center border-b flex-shrink-0">
                             <h3 className="text-xl font-bold text-slate-800">
                                 {editingOperator ? 'Editar Operador' : 'Alta de Operador'}
                             </h3>
-                            <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-all">
+                            <button onClick={() => setIsModalOpen(false)} className="btn-icon-inline p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-all">
                                 <X className="w-6 h-6" />
                             </button>
                         </div>
 
                         <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
                             {/* Scrollable Content */}
-                            <div className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
+                            <div className="flex-1 overflow-y-auto p-5 md:p-8 space-y-6 custom-scrollbar">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Nombre Completo</label>
                                     <input
@@ -291,7 +291,7 @@ export default function OperatorsPage() {
                             </div>
 
                             {/* Footer - Fixed */}
-                            <div className="p-8 border-t flex gap-3 flex-shrink-0">
+                            <div className="p-5 md:p-8 border-t flex gap-3 flex-shrink-0">
                                 <button
                                     type="button"
                                     onClick={() => setIsModalOpen(false)}
@@ -345,7 +345,7 @@ export default function OperatorsPage() {
                                         <div className="flex items-center gap-1">
                                             <button
                                                 onClick={() => openEdit(op)}
-                                                className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-primary transition-all active:scale-95"
+                                                className="btn-icon-inline p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-primary transition-all active:scale-95"
                                             >
                                                 <Edit3 className="w-4 h-4 md:w-5 md:h-5" />
                                             </button>
@@ -353,13 +353,13 @@ export default function OperatorsPage() {
                                                 <>
                                                     <button
                                                         onClick={() => toggleStatus(op.id, op.activo)}
-                                                        className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 transition-all active:scale-95"
+                                                        className="btn-icon-inline p-2 hover:bg-slate-100 rounded-xl text-slate-400 transition-all active:scale-95"
                                                     >
                                                         {op.activo ? <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 text-green-500" /> : <XCircle className="w-4 h-4 md:w-5 md:h-5 text-slate-300" />}
                                                     </button>
                                                     <button
                                                         onClick={() => handleDeleteClick(op.id)}
-                                                        className="p-2 hover:bg-red-50 rounded-xl text-slate-300 hover:text-red-500 transition-all active:scale-95"
+                                                        className="btn-icon-inline p-2 hover:bg-red-50 rounded-xl text-slate-300 hover:text-red-500 transition-all active:scale-95"
                                                     >
                                                         <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
                                                     </button>
@@ -379,7 +379,7 @@ export default function OperatorsPage() {
                                         <div className="flex gap-0.5">
                                             <button
                                                 onClick={() => openEdit(op)}
-                                                className="p-2.5 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-primary transition-all active:scale-90"
+                                                className="btn-icon-inline p-2.5 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-primary transition-all active:scale-90"
                                             >
                                                 <Edit3 className="w-5 h-5" />
                                             </button>
@@ -387,13 +387,13 @@ export default function OperatorsPage() {
                                                 <>
                                                     <button
                                                         onClick={() => toggleStatus(op.id, op.activo)}
-                                                        className="p-2.5 hover:bg-slate-100 rounded-xl text-slate-400 transition-all active:scale-90"
+                                                        className="btn-icon-inline p-2.5 hover:bg-slate-100 rounded-xl text-slate-400 transition-all active:scale-90"
                                                     >
                                                         {op.activo ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <XCircle className="w-5 h-5 text-slate-300" />}
                                                     </button>
                                                     <button
                                                         onClick={() => handleDeleteClick(op.id)}
-                                                        className="p-2.5 hover:bg-red-50 rounded-xl text-slate-300 hover:text-red-500 transition-all active:scale-90"
+                                                        className="btn-icon-inline p-2.5 hover:bg-red-50 rounded-xl text-slate-300 hover:text-red-500 transition-all active:scale-90"
                                                     >
                                                         <Trash2 className="w-5 h-5" />
                                                     </button>

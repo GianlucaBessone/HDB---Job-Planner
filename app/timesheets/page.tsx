@@ -698,82 +698,132 @@ export default function TimesheetsPage() {
                 </div>
                 <div className="overflow-x-auto">
                     {viewMode === 'tarjetas' && (
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-slate-50 border-b border-slate-100">
-                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha</th>
-                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Operador</th>
-                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Proyecto</th>
-                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Horario</th>
-                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Horas</th>
-                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Tipo</th>
-                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Estado</th>
-                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredCompleted.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={8} className="p-8 text-center text-slate-400 font-bold text-sm uppercase tracking-widest">No hay registros completados</td>
+                        <>
+                            {/* Desktop: Table */}
+                            <table className="w-full text-left border-collapse hidden md:table">
+                                <thead>
+                                    <tr className="bg-slate-50 border-b border-slate-100">
+                                        <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Operador</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Proyecto</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Horario</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Horas</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Tipo</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Estado</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Acciones</th>
                                     </tr>
-                                ) : (
-                                    filteredCompleted.map(entry => (
-                                        <tr key={entry.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors [&>td]:align-middle">
-                                            <td className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-tight whitespace-nowrap">{formatEntryDate(entry.fecha)}</td>
-                                            <td className="p-4 text-sm font-black text-primary">{entry.operator.nombreCompleto}</td>
-                                            <td className="p-4">
-                                                <div className="text-xs font-bold text-slate-600 truncate max-w-[200px]" title={entry.project.nombre}>
-                                                    {entry.project.nombre}
-                                                </div>
-                                            </td>
-                                            <td className="p-4 text-xs font-bold text-slate-500 text-center">
-                                                {entry.horaIngreso} - {entry.horaEgreso}
-                                            </td>
-                                            <td className="p-4 text-center">
-                                                <span className="px-3 py-1 bg-indigo-50 text-indigo-600 font-black rounded-xl text-sm border border-indigo-100">{entry.horasTrabajadas}h</span>
-                                            </td>
-                                            <td className="p-4 text-center">
-                                                {entry.isExtra ? (
-                                                    <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-1 rounded-md">EXTRA</span>
-                                                ) : (
-                                                    <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-1 rounded-md">NORMAL</span>
-                                                )}
-                                            </td>
-                                            <td className="p-4 text-center">
-                                                {entry.estadoConfirmado ? (
-                                                    <span className="inline-flex items-center gap-1 text-emerald-600 text-[10px] font-black uppercase tracking-widest bg-emerald-50 px-2 py-1 rounded-lg">
-                                                        <CheckCircle2 className="w-3 h-3" /> Confirmado
-                                                    </span>
-                                                ) : (
-                                                    <button
-                                                        onClick={() => handleConfirmDay(entry.id)}
-                                                        className="inline-flex items-center gap-1 text-slate-400 hover:text-emerald-500 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border border-slate-200 hover:border-emerald-200 hover:bg-emerald-50 transition-all"
-                                                    >
-                                                        <ShieldAlert className="w-3 h-3" /> Pendiente
-                                                    </button>
-                                                )}
-                                            </td>
-                                            <td className="p-4 flex items-center justify-end gap-2">
-                                                <button
-                                                    onClick={() => openEditModal(entry)}
-                                                    className={`p-2 rounded-xl transition-all ${entry.estadoConfirmado ? 'text-amber-500 hover:bg-amber-50' : 'text-slate-400 hover:text-indigo-500 hover:bg-indigo-50'}`}
-                                                    title={entry.estadoConfirmado ? "Requiere Clave Supervisor" : "Editar"}
-                                                >
-                                                    <Edit3 className="w-4 h-4" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteClick(entry)}
-                                                    className={`p-2 rounded-xl transition-all ${entry.estadoConfirmado ? 'text-amber-500 hover:bg-amber-50' : 'text-rose-400 hover:bg-rose-50 hover:text-rose-600'}`}
-                                                    title={entry.estadoConfirmado ? "Requiere Clave Supervisor" : "Eliminar"}
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            </td>
+                                </thead>
+                                <tbody>
+                                    {filteredCompleted.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={8} className="p-8 text-center text-slate-400 font-bold text-sm uppercase tracking-widest">No hay registros completados</td>
                                         </tr>
+                                    ) : (
+                                        filteredCompleted.map(entry => (
+                                            <tr key={entry.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors [&>td]:align-middle">
+                                                <td className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-tight whitespace-nowrap">{formatEntryDate(entry.fecha)}</td>
+                                                <td className="p-4 text-sm font-black text-primary">{entry.operator.nombreCompleto}</td>
+                                                <td className="p-4">
+                                                    <div className="text-xs font-bold text-slate-600 truncate max-w-[200px]" title={entry.project.nombre}>
+                                                        {entry.project.nombre}
+                                                    </div>
+                                                </td>
+                                                <td className="p-4 text-xs font-bold text-slate-500 text-center">
+                                                    {entry.horaIngreso} - {entry.horaEgreso}
+                                                </td>
+                                                <td className="p-4 text-center">
+                                                    <span className="px-3 py-1 bg-indigo-50 text-indigo-600 font-black rounded-xl text-sm border border-indigo-100">{entry.horasTrabajadas}h</span>
+                                                </td>
+                                                <td className="p-4 text-center">
+                                                    {entry.isExtra ? (
+                                                        <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-1 rounded-md">EXTRA</span>
+                                                    ) : (
+                                                        <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-1 rounded-md">NORMAL</span>
+                                                    )}
+                                                </td>
+                                                <td className="p-4 text-center">
+                                                    {entry.estadoConfirmado ? (
+                                                        <span className="inline-flex items-center gap-1 text-emerald-600 text-[10px] font-black uppercase tracking-widest bg-emerald-50 px-2 py-1 rounded-lg">
+                                                            <CheckCircle2 className="w-3 h-3" /> Confirmado
+                                                        </span>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => handleConfirmDay(entry.id)}
+                                                            className="btn-icon-inline inline-flex items-center gap-1 text-slate-400 hover:text-emerald-500 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border border-slate-200 hover:border-emerald-200 hover:bg-emerald-50 transition-all"
+                                                        >
+                                                            <ShieldAlert className="w-3 h-3" /> Pendiente
+                                                        </button>
+                                                    )}
+                                                </td>
+                                                <td className="p-4 flex items-center justify-end gap-2">
+                                                    <button
+                                                        onClick={() => openEditModal(entry)}
+                                                        className={`btn-icon-inline p-2 rounded-xl transition-all ${entry.estadoConfirmado ? 'text-amber-500 hover:bg-amber-50' : 'text-slate-400 hover:text-indigo-500 hover:bg-indigo-50'}`}
+                                                        title={entry.estadoConfirmado ? "Requiere Clave Supervisor" : "Editar"}
+                                                    >
+                                                        <Edit3 className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteClick(entry)}
+                                                        className={`btn-icon-inline p-2 rounded-xl transition-all ${entry.estadoConfirmado ? 'text-amber-500 hover:bg-amber-50' : 'text-rose-400 hover:bg-rose-50 hover:text-rose-600'}`}
+                                                        title={entry.estadoConfirmado ? "Requiere Clave Supervisor" : "Eliminar"}
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+
+                            {/* Mobile: Cards */}
+                            <div className="md:hidden p-3 space-y-2.5">
+                                {filteredCompleted.length === 0 ? (
+                                    <div className="py-12 text-center text-slate-400 font-bold text-sm uppercase tracking-widest">No hay registros completados</div>
+                                ) : (
+                                    filteredCompleted.map((entry, idx) => (
+                                        <div key={entry.id} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm animate-card-in" style={{ animationDelay: `${idx * 30}ms` }}>
+                                            <div className="flex justify-between items-start mb-2">
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{formatEntryDate(entry.fecha)}</p>
+                                                    <h4 className="font-extrabold text-primary text-sm truncate">{entry.operator.nombreCompleto}</h4>
+                                                </div>
+                                                <div className="flex items-center gap-1 shrink-0 ml-2">
+                                                    <button
+                                                        onClick={() => openEditModal(entry)}
+                                                        className={`btn-icon-inline p-2 rounded-xl transition-all ${entry.estadoConfirmado ? 'text-amber-500' : 'text-slate-400'}`}
+                                                    >
+                                                        <Edit3 className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteClick(entry)}
+                                                        className={`btn-icon-inline p-2 rounded-xl transition-all ${entry.estadoConfirmado ? 'text-amber-500' : 'text-rose-400'}`}
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <p className="text-xs font-bold text-slate-600 truncate mb-2">{entry.project.nombre}</p>
+                                            <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
+                                                <span className="text-xs font-bold text-slate-500">{entry.horaIngreso} - {entry.horaEgreso}</span>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 font-black rounded-lg text-xs border border-indigo-100">{entry.horasTrabajadas}h</span>
+                                                    {entry.isExtra && <span className="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-md">EXTRA</span>}
+                                                    {entry.estadoConfirmado ? (
+                                                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                                                    ) : (
+                                                        <button onClick={() => handleConfirmDay(entry.id)} className="btn-icon-inline">
+                                                            <ShieldAlert className="w-4 h-4 text-slate-300" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
                                     ))
                                 )}
-                            </tbody>
-                        </table>
+                            </div>
+                        </>
                     )}
 
                     {viewMode === 'planilla' && (
@@ -867,21 +917,21 @@ export default function TimesheetsPage() {
 
             {/* Modal de Carga Manual / Edición */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-300 max-h-[95vh] flex flex-col overflow-hidden">
+                <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-xl rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] flex flex-col overflow-hidden">
                         {/* Header - Fixed */}
-                        <div className="p-7 flex items-center justify-between border-b border-slate-100 flex-shrink-0">
-                            <h3 className="text-xl font-bold text-slate-800">
+                        <div className="p-5 md:p-7 flex items-center justify-between border-b border-slate-100 flex-shrink-0">
+                            <h3 className="text-lg md:text-xl font-bold text-slate-800">
                                 {editingEntry ? 'Editar Registro de Tiempo' : 'Nuevo Registro de Tiempo'}
                             </h3>
-                            <button onClick={() => { setIsModalOpen(false); }} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-all">
+                            <button onClick={() => { setIsModalOpen(false); }} className="btn-icon-inline p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-all">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
                         <form onSubmit={handleSubmitForm} className="flex-1 flex flex-col min-h-0">
                             {/* Scrollable Content */}
-                            <div className="flex-1 overflow-y-auto p-7 space-y-6 custom-scrollbar">
+                            <div className="flex-1 overflow-y-auto p-5 md:p-7 space-y-5 md:space-y-6 custom-scrollbar">
                                 {/* Alerta si está editando un registro confirmado (ya ingresó la clave) */}
                                 {editingEntry?.estadoConfirmado && (
                                     <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3">
@@ -973,9 +1023,9 @@ export default function TimesheetsPage() {
                             </div>
 
                             {/* Footer - Fixed */}
-                            <div className="p-7 border-t border-slate-100 flex gap-3 flex-shrink-0">
-                                <button type="button" onClick={() => { setIsModalOpen(false); }} className="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95">Cancelar</button>
-                                <button type="submit" className="flex-[2] bg-indigo-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-indigo-600 shadow-xl shadow-indigo-500/20 active:scale-95 transition-all">Guardar Registro</button>
+                            <div className="p-5 md:p-7 border-t border-slate-100 flex gap-3 flex-shrink-0">
+                                <button type="button" onClick={() => { setIsModalOpen(false); }} className="flex-1 bg-slate-100 text-slate-600 py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95">Cancelar</button>
+                                <button type="submit" className="flex-[2] bg-indigo-500 text-white py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-indigo-600 shadow-xl shadow-indigo-500/20 active:scale-95 transition-all">Guardar Registro</button>
                             </div>
                         </form>
                     </div>

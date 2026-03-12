@@ -98,6 +98,7 @@
   /* Smoother scrolling */
   html {
     -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
   }
 
   /* WhatsApp preview mobile spacing */
@@ -109,17 +110,24 @@
   input[type="date"],
   input[type="time"],
   select {
-    height: 42px !important;
+    height: 44px !important;
     @apply text-sm rounded-xl px-3;
   }
 
-  /* ── Compact buttons on mobile ── */
+  /* ── Minimum touch target on mobile ── */
   button {
     @apply text-sm;
+    min-height: 44px;
+  }
+
+  /* Exception: inline icon-only buttons don't need 44px min-height */
+  button.btn-icon-inline {
+    min-height: unset;
   }
 
   /* ── Reduce oversized rounded corners on mobile ── */
   .rounded-\[2\.5rem\],
+  .rounded-\[3rem\],
   .rounded-\[2rem\] {
     @apply rounded-2xl;
   }
@@ -129,6 +137,11 @@
   table td {
     @apply px-2.5 py-2.5 text-xs;
   }
+
+  /* ── Reduce heavy animations on mobile ── */
+  .hover\:shadow-xl:hover {
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), 0 4px 10px -2px rgba(0,0,0,.06);
+  }
 }
 
 /* Small phones (iPhone SE, Xiaomi Redmi, etc.) */
@@ -136,7 +149,41 @@
   input[type="date"],
   input[type="time"],
   select {
-    height: 40px !important;
+    height: 44px !important;
     @apply text-xs px-2;
   }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Toast enter animation ── */
+@keyframes toastSlideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-toast-in {
+  animation: toastSlideIn 0.3s ease-out forwards;
+}
+
+/* ── Spinner animation ── */
+@keyframes spinSmooth {
+  to { transform: rotate(360deg); }
+}
+.animate-spin-smooth {
+  animation: spinSmooth 0.8s linear infinite;
+}
+
+/* ── Mobile card entry ── */
+@keyframes cardFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-card-in {
+  animation: cardFadeIn 0.25s ease-out forwards;
 }

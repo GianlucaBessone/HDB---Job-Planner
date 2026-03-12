@@ -480,8 +480,8 @@ export default function MyProjectsPage() {
 
             {/* Justification Modal */}
             {isJustifyModalOpen && (
-                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
-                    <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-7 space-y-6 animate-in zoom-in-95 duration-300">
+                <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
+                    <div className="bg-white w-full max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl p-6 md:p-7 space-y-6 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
                         <div className="flex items-center gap-4 text-amber-500">
                             <div className="p-3 bg-amber-50 rounded-2xl">
                                 <AlertTriangle className="w-6 h-6" />
@@ -508,14 +508,14 @@ export default function MyProjectsPage() {
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setIsJustifyModalOpen(false)}
-                                className="flex-1 py-3.5 rounded-2xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-all"
+                                className="flex-1 py-3.5 rounded-2xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-all active:scale-95"
                             >
                                 Cancelar
                             </button>
                             <button
                                 onClick={submitChangeRequest}
                                 disabled={!justification.trim() || isSubmittingChange}
-                                className="flex-[2] bg-primary text-white py-3.5 rounded-2xl font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                                className="flex-[2] bg-primary text-white py-3.5 rounded-2xl font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95"
                             >
                                 {isSubmittingChange ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                                 Enviar Solicitud
@@ -527,9 +527,9 @@ export default function MyProjectsPage() {
 
             {/* Finalize Warning Modal */}
             {isFinalizeModalOpen && (
-                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
-                    <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-7 space-y-6 animate-in zoom-in-95 duration-300 max-h-[85vh] overflow-y-auto">
-                        <div className="flex items-center gap-4 text-red-500">
+                <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
+                    <div className="bg-white w-full max-w-lg rounded-t-3xl md:rounded-3xl shadow-2xl p-6 md:p-7 space-y-6 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] flex flex-col overflow-hidden">
+                        <div className="flex items-center gap-4 text-red-500 shrink-0">
                             <div className="p-3 bg-red-50 rounded-2xl">
                                 <AlertTriangle className="w-7 h-7" />
                             </div>
@@ -539,9 +539,9 @@ export default function MyProjectsPage() {
                             </div>
                         </div>
 
-                        <div className="bg-red-50/50 rounded-2xl p-5 border border-red-100 space-y-4">
-                            <p className="text-sm font-bold text-red-800">No puedes finalizar formalmente porque faltan verificaciones:</p>
-                            <div className="space-y-4 max-h-64 overflow-y-auto pr-2">
+                        <div className="bg-red-50/50 rounded-2xl p-5 border border-red-100 flex flex-col min-h-0">
+                            <p className="text-sm font-bold text-red-800 shrink-0 mb-4">No puedes finalizar formalmente porque faltan verificaciones:</p>
+                            <div className="space-y-4 overflow-y-auto pr-2 custom-scrollbar">
                                 {Array.from(new Set(pendingItemsForFinalize.map(i => i.tag))).map(tag => (
                                     <div key={tag} className="space-y-1.5">
                                         <div className="text-[10px] font-black text-red-400 uppercase tracking-widest">{tag}</div>
@@ -558,22 +558,22 @@ export default function MyProjectsPage() {
                             </div>
                         </div>
 
-                        <div className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-3 shrink-0">
                             <button
                                 onClick={() => handleFinalizeProject(true)}
-                                className="w-full bg-red-600 text-white py-4 rounded-2xl font-black text-sm hover:bg-red-700 transition-all shadow-lg shadow-red-200 flex items-center justify-center gap-2"
+                                className="w-full bg-red-600 text-white py-4 rounded-2xl font-black text-sm hover:bg-red-700 transition-all shadow-lg shadow-red-200 flex items-center justify-center gap-2 active:scale-95"
                             >
                                 <AlertTriangle className="w-5 h-5" />
                                 FINALIZAR DE TODOS MODOS
                             </button>
                             <button
                                 onClick={() => setIsFinalizeModalOpen(false)}
-                                className="w-full py-4 rounded-2xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-all"
+                                className="w-full py-4 rounded-2xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-all active:scale-95"
                             >
                                 Volver y completar checklist
                             </button>
                         </div>
-                        <p className="text-[10px] text-center text-slate-400 font-medium">Si fuerza el cierre, se registrará trazabilidad completa de los pendientes.</p>
+                        <p className="text-[10px] text-center text-slate-400 font-medium shrink-0 pt-2">Si fuerza el cierre, se registrará trazabilidad completa de los pendientes.</p>
                     </div>
                 </div>
             )}
