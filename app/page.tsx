@@ -133,13 +133,13 @@ export default function HomePage() {
 function ActionCard({ title, description, icon, href, color }: { title: string, description: string, icon: React.ReactNode, href: string, color: string }) {
     return (
         <Link href={href} className="group relative block focus:outline-none">
-            <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-slate-300 transition-all duration-300 flex flex-col md:flex-row items-start gap-3 md:gap-4 h-full outline-primary focus-visible:ring-4 focus-visible:ring-primary/20">
+            <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-slate-300 transition-all duration-300 flex flex-col md:flex-row items-start gap-3 md:gap-4 h-full outline-primary focus-visible:ring-4 focus-visible:ring-primary/20 overflow-hidden">
                 <div className={`p-2.5 md:p-4 rounded-xl md:rounded-2xl ${color} text-white shadow-lg group-hover:scale-110 transition-transform shrink-0`}>
                     {icon}
                 </div>
-                <div className="flex-1 space-y-0.5 md:space-y-1 min-w-0">
-                    <h4 className="font-extrabold text-slate-800 text-sm md:text-lg leading-tight group-hover:text-primary transition-colors">{title}</h4>
-                    <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest truncate">{description}</p>
+                <div className="flex-1 space-y-0.5 md:space-y-1 min-w-0 w-full">
+                    <h4 className="font-extrabold text-slate-800 text-sm md:text-lg leading-tight group-hover:text-primary transition-colors break-words">{title}</h4>
+                    <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest break-words leading-relaxed">{description}</p>
                 </div>
             </div>
         </Link>

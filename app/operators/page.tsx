@@ -234,7 +234,7 @@ export default function OperatorsPage() {
                                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Rol</label>
                                         <SearchableSelect
                                             options={[
-                                                { id: 'operador', label: 'Operador (Solo tiempo)' },
+                                                { id: 'operador', label: 'Operador' },
                                                 { id: 'supervisor', label: 'Supervisor' },
                                                 { id: 'admin', label: 'Administrador' }
                                             ]}

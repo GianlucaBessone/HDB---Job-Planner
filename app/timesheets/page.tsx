@@ -678,6 +678,15 @@ export default function TimesheetsPage() {
                         />
                     </div>
 
+                    {(filterOperator || filterProject) && (
+                        <button
+                            onClick={() => { setFilterOperator(''); setFilterProject(''); }}
+                            className="flex items-center gap-1 text-xs font-bold text-rose-500 hover:underline h-10 px-2 whitespace-nowrap"
+                        >
+                            <X className="w-3 h-3" /> Limpiar filtros
+                        </button>
+                    )}
+
                     {currentUser?.role !== 'operador' && (
                         <button
                             onClick={exportToExcel}

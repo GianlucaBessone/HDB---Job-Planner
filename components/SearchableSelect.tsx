@@ -144,7 +144,18 @@ export default function SearchableSelect({
                 <span className={`font-bold truncate ${selectedOption ? 'text-slate-700' : 'text-slate-400'}`}>
                     {selectedOption ? selectedOption.label : placeholder}
                 </span>
-                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+                <div className="flex items-center gap-1 shrink-0">
+                    {selectedOption && !disabled && (
+                        <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); onChange(''); setIsOpen(false); }}
+                            className="p-0.5 hover:bg-slate-200 rounded-md transition-colors"
+                        >
+                            <X className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600" />
+                        </button>
+                    )}
+                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                </div>
             </div>
 
             {isOpen && (

@@ -90,10 +90,12 @@ export async function POST(req: Request) {
 
             // Also update project total hours roughly, though normally this is kept separate or aggregated upon need.
             // If we want to automatically add consumed hours to the project:
+            // Overtime hours (isExtra) count double for project consumption
             if (horasTrabajadas > 0) {
+                const projectHoursImpact = (isExtra || false) ? Math.ceil(horasTrabajadas) * 2 : Math.ceil(horasTrabajadas);
                 await prisma.project.update({
                     where: { id: projectId },
-                    data: { horasConsumidas: { increment: Math.ceil(horasTrabajadas) } }
+                    data: { horasConsumidas: { increment: projectHoursImpact } }
                 });
             }
 
@@ -151,26 +153,35 @@ export async function PUT(req: Request) {
             }
         });
 
+        // Overtime hours (isExtra) count double for project consumption
+        const oldIsExtra = existing.isExtra;
+        const newIsExtra = isExtra !== undefined ? isExtra : existing.isExtra;
+
         if (oldProjectId === newProjectId) {
-            const deltaHours = horasTrabajadas - existing.horasTrabajadas;
+            // Same project: compute delta considering overtime multiplier
+            const oldProjectImpact = oldIsExtra ? Math.ceil(existing.horasTrabajadas) * 2 : Math.ceil(existing.horasTrabajadas);
+            const newProjectImpact = newIsExtra ? Math.ceil(horasTrabajadas) * 2 : Math.ceil(horasTrabajadas);
+            const deltaHours = newProjectImpact - oldProjectImpact;
             if (deltaHours !== 0) {
                 await prisma.project.update({
                     where: { id: oldProjectId },
-                    data: { horasConsumidas: { increment: Math.ceil(deltaHours) } }
+                    data: { horasConsumidas: { increment: deltaHours } }
                 });
             }
         } else {
-            // Project changed
+            // Project changed - remove old impact, add new impact
             if (existing.horasTrabajadas > 0) {
+                const oldProjectImpact = oldIsExtra ? Math.ceil(existing.horasTrabajadas) * 2 : Math.ceil(existing.horasTrabajadas);
                 await prisma.project.update({
                     where: { id: oldProjectId },
-                    data: { horasConsumidas: { decrement: Math.ceil(existing.horasTrabajadas) } }
+                    data: { horasConsumidas: { decrement: oldProjectImpact } }
                 });
             }
             if (horasTrabajadas > 0) {
+                const newProjectImpact = newIsExtra ? Math.ceil(horasTrabajadas) * 2 : Math.ceil(horasTrabajadas);
                 await prisma.project.update({
                     where: { id: newProjectId },
-                    data: { horasConsumidas: { increment: Math.ceil(horasTrabajadas) } }
+                    data: { horasConsumidas: { increment: newProjectImpact } }
                 });
             }
         }
@@ -207,9 +218,11 @@ export async function DELETE(req: Request) {
         await prisma.timeEntry.delete({ where: { id } });
 
         if (existing.horasTrabajadas > 0) {
+            // Overtime hours (isExtra) count double for project consumption
+            const projectHoursImpact = existing.isExtra ? Math.ceil(existing.horasTrabajadas) * 2 : Math.ceil(existing.horasTrabajadas);
             await prisma.project.update({
                 where: { id: existing.projectId },
-                data: { horasConsumidas: { decrement: Math.ceil(existing.horasTrabajadas) } }
+                data: { horasConsumidas: { decrement: projectHoursImpact } }
             });
         }
 
