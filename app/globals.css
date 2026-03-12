@@ -85,8 +85,8 @@
 
 /* Mobile touch improvements */
 @media (max-width: 768px) {
-  /* Prevent iOS zoom on input focus */
-  input, select, textarea {
+  /* Prevent iOS zoom on input focus. Only target text-like inputs to avoid breaking native Android pickers scale */
+  input[type="text"], input[type="email"], input[type="number"], input[type="tel"], input[type="password"], input[type="search"], select, textarea {
     font-size: 16px !important;
   }
 
@@ -112,6 +112,13 @@
   select {
     height: 44px !important;
     @apply text-sm rounded-xl px-3;
+  }
+
+  /* ── Hide native calendar/time icons to avoid collisions with custom SVG icons ── */
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    display: none;
+    -webkit-appearance: none;
   }
 
   /* ── Minimum touch target on mobile ── */

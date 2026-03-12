@@ -294,7 +294,7 @@ export default function MyProjectsPage() {
                                 <span className={`text-[10px] font-black uppercase tracking-widest ${!viewAll ? 'text-primary' : 'text-slate-400'}`}>Mis Proyectos</span>
                                 <button
                                     onClick={() => setViewAll(!viewAll)}
-                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${viewAll ? 'bg-primary' : 'bg-slate-200'}`}
+                                    className={`btn-icon-inline relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${viewAll ? 'bg-primary' : 'bg-slate-200'}`}
                                 >
                                     <span
                                         className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${viewAll ? 'translate-x-6' : 'translate-x-1'}`}
