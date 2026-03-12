@@ -12,8 +12,9 @@ import ToastContainer from "@/components/Toast";
 import LoginScreen from "@/components/LoginScreen";
 import NotificationsDropdown from "@/components/NotificationsDropdown";
 import OneSignalInit from "@/components/OneSignalInit";
+import OneSignal from 'react-onesignal';
 import SyncIndicator from "@/components/SyncIndicator";
-import { Loader2 } from "lucide-react";
+import { Loader2, BellRing } from "lucide-react";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
@@ -255,6 +256,20 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
                             <p className="text-xs font-bold text-slate-700 truncate max-w-[150px]" title={user?.nombreCompleto}>{user?.nombreCompleto}</p>
                         </div>
                     </div>
+
+                    <button
+                        onClick={async () => {
+                            try {
+                                await OneSignal.Notifications.requestPermission();
+                            } catch (e) {
+                                console.error("Error al solicitar permiso:", e);
+                            }
+                        }}
+                        className="w-full flex items-center justify-center gap-2 bg-primary/5 text-primary py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-primary/10 transition-all active:scale-95 border border-primary/10"
+                    >
+                        <BellRing className="w-4 h-4" />
+                        Activar Notificaciones
+                    </button>
 
                     <button
                         onClick={onLogout}
