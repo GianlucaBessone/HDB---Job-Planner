@@ -13,7 +13,8 @@ import {
     Save,
     X,
     Check,
-    AlertCircle
+    AlertCircle,
+    Bell
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { safeApiRequest } from '@/lib/offline';
@@ -21,7 +22,7 @@ import { safeApiRequest } from '@/lib/offline';
 export default function ConfigPage() {
     const router = useRouter();
     const [userRole, setUserRole] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<'tags' | 'checklists' | 'options'>('tags');
+    const [activeTab, setActiveTab] = useState<'tags' | 'checklists' | 'options' | 'system'>('tags');
 
     useEffect(() => {
         const stored = localStorage.getItem('currentUser');
@@ -82,12 +83,20 @@ export default function ConfigPage() {
                     <Folders className="w-4 h-4" />
                     Desplegables
                 </button>
+                <button
+                    onClick={() => setActiveTab('system')}
+                    className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'system' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
+                >
+                    <Bell className="w-4 h-4" />
+                    Sistema
+                </button>
             </div>
 
             <div className="bg-white border border-slate-200 rounded-[2rem] p-6 md:p-8 shadow-sm">
                 {activeTab === 'tags' && <TagsSection />}
                 {activeTab === 'checklists' && <ChecklistSection />}
                 {activeTab === 'options' && <OptionsSection />}
+                {activeTab === 'system' && <SystemSection />}
             </div>
         </div>
     );
@@ -539,6 +548,82 @@ function OptionsSection() {
                 onConfirm={confirmDelete}
                 onCancel={() => setIsConfirmOpen(false)}
             />
+        </div>
+    );
+}
+
+// ----- SYSTEM SECTION -----
+function SystemSection() {
+    const [setting, setSetting] = useState({ dailyReminderEnabled: false, dailyReminderTime: '16:45' });
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        safeApiRequest('/api/config/system')
+            .then(res => res.json())
+            .then(data => { setSetting(data); setLoading(false); })
+            .catch(() => setLoading(false));
+    }, []);
+
+    const handleSave = async () => {
+        setSaving(true);
+        await safeApiRequest('/api/config/system', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(setting)
+        });
+        setSaving(false);
+        alert('Configuración guardada correctamente.');
+    };
+
+    if (loading) return <div>Cargando...</div>;
+
+    return (
+        <div className="space-y-6 max-w-lg">
+            <div>
+                <h3 className="text-xl font-bold text-slate-800">Alertas y Sistema</h3>
+                <p className="text-sm text-slate-500 font-medium">Configura opciones automáticas del sistema.</p>
+            </div>
+
+            <div className="space-y-4 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h4 className="font-bold text-slate-800">Alerta Diaria de Carga de Horas</h4>
+                        <p className="text-xs text-slate-500 mt-1">
+                            Notificar a operadores y ausentismos mayores a 5 días.
+                        </p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={setting.dailyReminderEnabled}
+                            onChange={e => setSetting({ ...setting, dailyReminderEnabled: e.target.checked })}
+                            className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                    </label>
+                </div>
+
+                {setting.dailyReminderEnabled && (
+                    <div className="space-y-2 pt-4 border-t border-slate-200">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Horario de Disparo (Automático)</label>
+                        <input
+                            type="time"
+                            value={setting.dailyReminderTime}
+                            onChange={e => setSetting({ ...setting, dailyReminderTime: e.target.value })}
+                            className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-bold text-slate-700"
+                        />
+                    </div>
+                )}
+
+                <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="w-full mt-4 bg-primary text-white font-bold rounded-xl py-3 hover:bg-primary/90 transition-all active:scale-95 disabled:opacity-50"
+                >
+                    {saving ? 'Guardando...' : 'Guardar Cambios'}
+                </button>
+            </div>
         </div>
     );
 }

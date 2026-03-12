@@ -33,6 +33,7 @@ export default function OperatorsPage() {
     const [formData, setFormData] = useState({
         nombreCompleto: '',
         activo: true,
+        enVacaciones: false,
         role: 'operador',
         pin: '1234',
         etiquetas: [] as string[]
@@ -73,7 +74,7 @@ export default function OperatorsPage() {
 
     const openCreate = () => {
         setEditingOperator(null);
-        setFormData({ nombreCompleto: '', activo: true, etiquetas: [], role: 'operador', pin: '1234' });
+        setFormData({ nombreCompleto: '', activo: true, enVacaciones: false, etiquetas: [], role: 'operador', pin: '1234' });
         setIsModalOpen(true);
     };
 
@@ -82,6 +83,7 @@ export default function OperatorsPage() {
         setFormData({
             nombreCompleto: op.nombreCompleto,
             activo: op.activo,
+            enVacaciones: op.enVacaciones || false,
             etiquetas: op.etiquetas || [],
             role: op.role || 'operador',
             pin: op.pin || '1234'
@@ -255,6 +257,24 @@ export default function OperatorsPage() {
                                             required
                                         />
                                     </div>
+                                </div>
+
+                                <div className="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                    <div>
+                                        <h4 className="font-bold text-slate-800 text-sm">Modo Ausente / Vacaciones</h4>
+                                        <p className="text-[10px] text-slate-500 mt-0.5">
+                                            Evita recibir alertas diarias de carga de horas.
+                                        </p>
+                                    </div>
+                                    <label className="relative inline-flex items-center cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.enVacaciones}
+                                            onChange={e => setFormData({ ...formData, enVacaciones: e.target.checked })}
+                                            className="sr-only peer"
+                                        />
+                                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                                    </label>
                                 </div>
 
                                 {currentUser?.role !== 'operador' && (
