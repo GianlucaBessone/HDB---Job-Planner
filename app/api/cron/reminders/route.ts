@@ -8,13 +8,18 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
     try {
-        const authHeader = req.headers.get('authorization');
-        if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-            console.error('Unauthorized cron access attempt');
-            return new Response('Unauthorized', { status: 401 });
+        const url = new URL(req.url);
+        const isManual = url.searchParams.get('manual') === 'true';
+
+        if (!isManual) {
+            const authHeader = req.headers.get('authorization');
+            if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+                console.error('Unauthorized cron access attempt');
+                return new Response('Unauthorized', { status: 401 });
+            }
         }
 
-        console.log("CRON RUN", new Date().toISOString());
+        console.log(isManual ? "MANUAL CRON RUN" : "CRON RUN", new Date().toISOString());
 
         const setting = await prisma.systemSetting.findUnique({ where: { id: 'default' } });
         
@@ -30,14 +35,16 @@ export async function GET(req: Request) {
         const idempotencyKey = `daily-reminder-${todayStr}`;
         const alreadySent = await prisma.idempotencyKey.findUnique({ where: { key: idempotencyKey } });
         
-        if (alreadySent) {
+        if (alreadySent && !isManual) {
             return NextResponse.json({ message: 'El recordatorio diario ya se envió hoy' });
         }
 
-        // Lock with idempotency key
-        await prisma.idempotencyKey.create({
-            data: { key: idempotencyKey, response: {} }
-        });
+        if (!alreadySent) {
+            // Lock with idempotency key only if it's the first time
+            await prisma.idempotencyKey.create({
+                data: { key: idempotencyKey, response: {} }
+            });
+        }
 
         // 1. Fetch active operators not on vacation
         const activeOperators = await prisma.operator.findMany({

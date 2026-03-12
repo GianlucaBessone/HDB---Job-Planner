@@ -12,11 +12,11 @@ import {
     Edit2,
     Save,
     X,
-    Check,
-    AlertCircle,
-    Bell
+    Bell,
+    Play
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
 
 export default function ConfigPage() {
@@ -557,6 +557,7 @@ function SystemSection() {
     const [setting, setSetting] = useState({ dailyReminderEnabled: false, dailyReminderTime: '16:45' });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [triggering, setTriggering] = useState(false);
 
     useEffect(() => {
         safeApiRequest('/api/config/system')
@@ -573,7 +574,32 @@ function SystemSection() {
             body: JSON.stringify(setting)
         });
         setSaving(false);
-        alert('Configuración guardada correctamente.');
+        showToast('Configuración guardada correctamente.', 'success');
+    };
+
+    const handleManualTrigger = async () => {
+        const confirmMsg = "¿Quieres disparar las alertas ahora mismo? Esto notificará a todos los operadores que no cargaron horas hoy.";
+        if (!confirm(confirmMsg)) return;
+
+        setTriggering(true);
+        try {
+            // We use a custom auth param for manual trigger from UI (since CRON_SECRET is server-only)
+            const res = await safeApiRequest('/api/cron/reminders?manual=true', {
+                method: 'GET'
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                showToast(`Alertas enviadas: ${data.reminded} recordatorios, ${data.absentAlerts} ausentismos.`, 'success');
+            } else {
+                const error = await res.text();
+                showToast(`Error: ${error}`, 'error');
+            }
+        } catch (e) {
+            showToast('Error al procesar las alertas.', 'error');
+        } finally {
+            setTriggering(false);
+        }
     };
 
     if (loading) return <div>Cargando...</div>;
@@ -627,6 +653,28 @@ function SystemSection() {
                     className="w-full mt-4 bg-primary text-white font-bold rounded-xl py-3 hover:bg-primary/90 transition-all active:scale-95 disabled:opacity-50"
                 >
                     {saving ? 'Guardando...' : 'Guardar Cambios'}
+                </button>
+            </div>
+
+            <div className="space-y-4 bg-indigo-50/50 p-6 rounded-2xl border border-indigo-100 mt-6">
+                <div>
+                    <h4 className="font-bold text-indigo-900 flex items-center gap-2">
+                        <Play className="w-4 h-4" /> Ejecución Manual
+                    </h4>
+                    <p className="text-xs text-indigo-700/70 mt-1">
+                        Dispara las alertas de carga de horas y ausentismo inmediatamente, sin esperar al proceso programado.
+                    </p>
+                </div>
+                <button
+                    onClick={handleManualTrigger}
+                    disabled={triggering}
+                    className="w-full bg-white border border-indigo-200 text-indigo-600 font-bold rounded-xl py-3 hover:bg-indigo-50 transition-all active:scale-95 disabled:opacity-50 shadow-sm flex items-center justify-center gap-2"
+                >
+                    {triggering ? (
+                        <div className="w-5 h-5 border-2 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin"></div>
+                    ) : (
+                        <>Disparar ahora</>
+                    )}
                 </button>
             </div>
         </div>
