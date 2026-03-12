@@ -167,47 +167,55 @@ function TagsSection() {
 
             <div className="space-y-3">
                 {editingId === 'new' && (
-                    <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-xl border border-primary/20">
-                        <input
-                            className="flex-1 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
-                            placeholder="Nombre de la etiqueta"
-                            value={form.name}
-                            onChange={e => setForm({ ...form, name: e.target.value })}
-                        />
-                        <label className="flex items-center gap-2 text-sm text-slate-600 font-bold">
-                            <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} className="rounded text-primary focus:ring-primary" />
-                            Activo
-                        </label>
-                        <label className="flex items-center gap-2 text-sm text-slate-600 font-bold">
-                            <input type="checkbox" checked={form.impactsMetrics} onChange={e => setForm({ ...form, impactsMetrics: e.target.checked })} className="rounded text-primary focus:ring-primary" />
-                            Impacta Métricas
-                        </label>
-                        <div className="flex items-center gap-2">
-                            <button onClick={() => handleSave()} className="btn-icon-inline text-emerald-600 hover:text-emerald-700 p-2"><Save className="w-5 h-5" /></button>
-                            <button onClick={() => setEditingId(null)} className="btn-icon-inline text-slate-400 hover:text-rose-500 p-2"><X className="w-5 h-5" /></button>
+                    <div className="flex flex-col gap-4 bg-slate-50 p-4 rounded-xl border border-primary/20">
+                        <div className="flex flex-col md:flex-row md:items-center gap-4">
+                            <input
+                                className="w-full md:flex-1 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
+                                placeholder="Nombre de la etiqueta"
+                                value={form.name}
+                                onChange={e => setForm({ ...form, name: e.target.value })}
+                            />
+                            <div className="flex items-center gap-6 flex-wrap px-1">
+                                <label className="flex items-center gap-2 text-sm text-slate-600 font-bold cursor-pointer">
+                                    <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} className="w-4 h-4 rounded text-primary focus:ring-primary" />
+                                    Activo
+                                </label>
+                                <label className="flex items-center gap-2 text-sm text-slate-600 font-bold cursor-pointer">
+                                    <input type="checkbox" checked={form.impactsMetrics} onChange={e => setForm({ ...form, impactsMetrics: e.target.checked })} className="w-4 h-4 rounded text-primary focus:ring-primary" />
+                                    Impacta Métricas
+                                </label>
+                            </div>
+                        </div>
+                        <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-3">
+                            <button onClick={() => handleSave()} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors"><Save className="w-4 h-4" /> Guardar</button>
+                            <button onClick={() => setEditingId(null)} className="flex items-center gap-2 px-4 py-2 bg-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors"><X className="w-4 h-4" /> Cancelar</button>
                         </div>
                     </div>
                 )}
 
                 {tags.map(tag => (
                     editingId === tag.id ? (
-                        <div key={tag.id} className="flex items-center gap-4 bg-white p-4 rounded-xl border border-primary/20">
-                            <input
-                                className="flex-1 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
-                                value={form.name}
-                                onChange={e => setForm({ ...form, name: e.target.value })}
-                            />
-                            <label className="flex items-center gap-2 text-sm text-slate-600 font-bold">
-                                <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} className="rounded text-primary focus:ring-primary" />
-                                Activo
-                            </label>
-                            <label className="flex items-center gap-2 text-sm text-slate-600 font-bold">
-                                <input type="checkbox" checked={form.impactsMetrics} onChange={e => setForm({ ...form, impactsMetrics: e.target.checked })} className="rounded text-primary focus:ring-primary" />
-                                Impacta Métricas
-                            </label>
-                            <div className="flex items-center gap-2">
-                                <button onClick={() => handleSave(tag.id)} className="btn-icon-inline text-emerald-600 hover:text-emerald-700 p-2"><Save className="w-5 h-5" /></button>
-                                <button onClick={() => setEditingId(null)} className="btn-icon-inline text-slate-400 hover:text-rose-500 p-2"><X className="w-5 h-5" /></button>
+                        <div key={tag.id} className="flex flex-col gap-4 bg-white p-4 rounded-xl border border-primary/20 shadow-lg">
+                            <div className="flex flex-col md:flex-row md:items-center gap-4">
+                                <input
+                                    className="w-full md:flex-1 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
+                                    value={form.name}
+                                    onChange={e => setForm({ ...form, name: e.target.value })}
+                                />
+                                <div className="flex items-center gap-6 flex-wrap px-1">
+                                    <label className="flex items-center gap-2 text-sm text-slate-600 font-bold cursor-pointer">
+                                        <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} className="w-4 h-4 rounded text-primary focus:ring-primary" />
+                                        Activo
+                                    </label>
+                                    <label className="flex items-center gap-2 text-sm text-slate-600 font-bold cursor-pointer">
+                                        <input type="checkbox" checked={form.impactsMetrics} onChange={e => setForm({ ...form, impactsMetrics: e.target.checked })} className="w-4 h-4 rounded text-primary focus:ring-primary" />
+                                        Impacta Métricas
+                                    </label>
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-end gap-3 border-t border-slate-50 pt-3">
+                                <button onClick={() => handleSave(tag.id)} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors"><Save className="w-4 h-4" /> Guardar</button>
+                                <button onClick={() => setEditingId(null)} className="flex items-center gap-2 px-4 py-2 bg-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors"><X className="w-4 h-4" /> Cancelar</button>
                             </div>
                         </div>
                     ) : (
@@ -318,54 +326,62 @@ function ChecklistSection() {
                     </button>
 
                     {editingId === 'new' && (
-                        <div className="flex flex-col sm:flex-row items-center gap-4 bg-slate-50 p-4 rounded-xl border border-primary/20">
-                            <input
-                                className="w-full sm:w-20 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
-                                type="number" placeholder="Orden"
-                                value={form.order} onChange={e => setForm({ ...form, order: Number(e.target.value) })}
-                            />
-                            <input
-                                className="flex-1 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold w-full"
-                                placeholder="Descripción del ítem"
-                                value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
-                            />
-                            <label className="flex items-center gap-2 text-sm text-slate-600 font-bold shrink-0">
-                                <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} className="rounded text-primary focus:ring-primary" />
-                                Activo
-                            </label>
-                            <div className="flex items-center gap-2 shrink-0">
-                                <button onClick={() => handleSave()} className="btn-icon-inline text-emerald-600 hover:text-emerald-700 p-2 bg-white rounded-lg shadow-sm border border-emerald-100"><Save className="w-4 h-4" /></button>
-                                <button onClick={() => setEditingId(null)} className="btn-icon-inline text-slate-400 hover:text-rose-500 p-2 bg-white rounded-lg shadow-sm border border-slate-100"><X className="w-4 h-4" /></button>
+                        <div className="flex flex-col gap-4 bg-slate-50 p-4 rounded-xl border border-primary/20">
+                            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                                <input
+                                    className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
+                                    type="number" placeholder="Orden"
+                                    value={form.order} onChange={e => setForm({ ...form, order: Number(e.target.value) })}
+                                />
+                                <input
+                                    className="w-full sm:col-span-2 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
+                                    placeholder="Descripción del ítem"
+                                    value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
+                                />
+                                <div className="flex items-center px-1">
+                                    <label className="flex items-center gap-2 text-sm text-slate-600 font-bold cursor-pointer">
+                                        <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} className="w-4 h-4 rounded text-primary focus:ring-primary" />
+                                        Activo
+                                    </label>
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-3">
+                                <button onClick={() => handleSave()} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors"><Save className="w-4 h-4" /> Guardar</button>
+                                <button onClick={() => setEditingId(null)} className="flex items-center gap-2 px-4 py-2 bg-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors"><X className="w-4 h-4" /> Cancelar</button>
                             </div>
                         </div>
                     )}
 
                     {checklists.map((item: any) => (
                         editingId === item.id ? (
-                            <div key={item.id} className="flex flex-col sm:flex-row items-center gap-4 bg-white p-4 rounded-xl border border-primary/20 shadow-sm">
-                                <input
-                                    className="w-full sm:w-20 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
-                                    type="number"
-                                    value={form.order} onChange={e => setForm({ ...form, order: Number(e.target.value) })}
-                                />
-                                <input
-                                    className="flex-1 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold w-full"
-                                    value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
-                                />
-                                <label className="flex items-center gap-2 text-sm text-slate-600 font-bold shrink-0">
-                                    <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} className="rounded text-primary focus:ring-primary" />
-                                    Activo
-                                </label>
-                                <div className="flex items-center gap-2 shrink-0">
-                                    <button onClick={() => handleSave(item.id)} className="btn-icon-inline text-emerald-600 hover:text-emerald-700 p-2 bg-emerald-50 rounded-lg"><Save className="w-4 h-4" /></button>
-                                    <button onClick={() => setEditingId(null)} className="btn-icon-inline text-slate-400 hover:text-rose-500 p-2 bg-slate-50 rounded-lg"><X className="w-4 h-4" /></button>
+                            <div key={item.id} className="flex flex-col gap-4 bg-white p-4 rounded-xl border border-primary/20 shadow-lg mb-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                                    <input
+                                        className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
+                                        type="number"
+                                        value={form.order} onChange={e => setForm({ ...form, order: Number(e.target.value) })}
+                                    />
+                                    <input
+                                        className="w-full sm:col-span-2 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
+                                        value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
+                                    />
+                                    <div className="flex items-center px-1">
+                                        <label className="flex items-center gap-2 text-sm text-slate-600 font-bold cursor-pointer">
+                                            <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} className="w-4 h-4 rounded text-primary focus:ring-primary" />
+                                            Activo
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-end gap-3 border-t border-slate-50 pt-3">
+                                    <button onClick={() => handleSave(item.id)} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors"><Save className="w-4 h-4" /> Guardar</button>
+                                    <button onClick={() => setEditingId(null)} className="flex items-center gap-2 px-4 py-2 bg-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors"><X className="w-4 h-4" /> Cancelar</button>
                                 </div>
                             </div>
                         ) : (
                             <div key={item.id} className="flex items-center justify-between bg-white hover:bg-slate-50 p-4 rounded-xl border border-slate-100 hover:border-slate-200 transition-all shadow-sm">
-                                <div className="flex items-center gap-4 flex-1">
+                                <div className="flex items-center gap-4 flex-1 overflow-hidden">
                                     <span className="w-8 h-8 flex items-center justify-center bg-slate-100 text-slate-500 font-black text-xs rounded-lg shrink-0">{item.order}</span>
-                                    <span className={`font-bold text-sm ${item.active ? 'text-slate-800' : 'text-slate-400 line-through'}`}>{item.description}</span>
+                                    <span className={`font-bold text-sm truncate ${item.active ? 'text-slate-800' : 'text-slate-400 line-through'}`}>{item.description}</span>
                                     {!item.active && <span className="px-2 py-0.5 bg-rose-100 text-rose-600 text-[10px] uppercase font-black tracking-widest rounded-md shrink-0">Inactivo</span>}
                                 </div>
                                 <div className="flex items-center gap-1 ml-4 shrink-0">
@@ -478,47 +494,55 @@ function OptionsSection() {
                 </button>
 
                 {editingId === 'new' && (
-                    <div className="flex flex-col sm:flex-row items-center gap-4 bg-slate-50 p-4 rounded-xl border border-primary/20">
-                        <input
-                            className="w-full sm:w-20 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
-                            type="number" placeholder="Orden"
-                            value={form.order} onChange={e => setForm({ ...form, order: Number(e.target.value) })}
-                        />
-                        <input
-                            className="flex-1 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold w-full"
-                            placeholder="Valor visible"
-                            value={form.value} onChange={e => setForm({ ...form, value: e.target.value })}
-                        />
-                        <label className="flex items-center gap-2 text-sm text-slate-600 font-bold shrink-0">
-                            <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} className="rounded text-primary focus:ring-primary" />
-                            Activo
-                        </label>
-                        <div className="flex items-center gap-2 shrink-0">
-                            <button onClick={() => handleSave()} className="btn-icon-inline text-emerald-600 hover:text-emerald-700 p-2 bg-white rounded-lg shadow-sm border border-emerald-100"><Save className="w-4 h-4" /></button>
-                            <button onClick={() => setEditingId(null)} className="btn-icon-inline text-slate-400 hover:text-rose-500 p-2 bg-white rounded-lg shadow-sm border border-slate-100"><X className="w-4 h-4" /></button>
+                    <div className="flex flex-col gap-4 bg-slate-50 p-4 rounded-xl border border-primary/20">
+                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                            <input
+                                className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
+                                type="number" placeholder="Orden"
+                                value={form.order} onChange={e => setForm({ ...form, order: Number(e.target.value) })}
+                            />
+                            <input
+                                className="w-full sm:col-span-2 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
+                                placeholder="Valor visible"
+                                value={form.value} onChange={e => setForm({ ...form, value: e.target.value })}
+                            />
+                            <div className="flex items-center px-1">
+                                <label className="flex items-center gap-2 text-sm text-slate-600 font-bold cursor-pointer">
+                                    <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} className="w-4 h-4 rounded text-primary focus:ring-primary" />
+                                    Activo
+                                </label>
+                            </div>
+                        </div>
+                        <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-3">
+                            <button onClick={() => handleSave()} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors"><Save className="w-4 h-4" /> Guardar</button>
+                            <button onClick={() => setEditingId(null)} className="flex items-center gap-2 px-4 py-2 bg-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors"><X className="w-4 h-4" /> Cancelar</button>
                         </div>
                     </div>
                 )}
 
                 {options.map((opt: any) => (
                     editingId === opt.id ? (
-                        <div key={opt.id} className="flex flex-col sm:flex-row items-center gap-4 bg-white p-4 rounded-xl border border-primary/20 shadow-sm">
-                            <input
-                                className="w-full sm:w-20 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
-                                type="number"
-                                value={form.order} onChange={e => setForm({ ...form, order: Number(e.target.value) })}
-                            />
-                            <input
-                                className="flex-1 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold w-full"
-                                value={form.value} onChange={e => setForm({ ...form, value: e.target.value })}
-                            />
-                            <label className="flex items-center gap-2 text-sm text-slate-600 font-bold shrink-0">
-                                <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} className="rounded text-primary focus:ring-primary" />
-                                Activo
-                            </label>
-                            <div className="flex items-center gap-2 shrink-0">
-                                <button onClick={() => handleSave(opt.id)} className="btn-icon-inline text-emerald-600 hover:text-emerald-700 p-2 bg-emerald-50 rounded-lg"><Save className="w-4 h-4" /></button>
-                                <button onClick={() => setEditingId(null)} className="btn-icon-inline text-slate-400 hover:text-rose-500 p-2 bg-slate-50 rounded-lg"><X className="w-4 h-4" /></button>
+                        <div key={opt.id} className="flex flex-col gap-4 bg-white p-4 rounded-xl border border-primary/20 shadow-lg">
+                            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                                <input
+                                    className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
+                                    type="number"
+                                    value={form.order} onChange={e => setForm({ ...form, order: Number(e.target.value) })}
+                                />
+                                <input
+                                    className="w-full sm:col-span-2 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
+                                    value={form.value} onChange={e => setForm({ ...form, value: e.target.value })}
+                                />
+                                <div className="flex items-center px-1">
+                                    <label className="flex items-center gap-2 text-sm text-slate-600 font-bold cursor-pointer">
+                                        <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} className="w-4 h-4 rounded text-primary focus:ring-primary" />
+                                        Activo
+                                    </label>
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-end gap-3 border-t border-slate-50 pt-3">
+                                <button onClick={() => handleSave(opt.id)} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors"><Save className="w-4 h-4" /> Guardar</button>
+                                <button onClick={() => setEditingId(null)} className="flex items-center gap-2 px-4 py-2 bg-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors"><X className="w-4 h-4" /> Cancelar</button>
                             </div>
                         </div>
                     ) : (
@@ -558,6 +582,7 @@ function SystemSection() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [triggering, setTriggering] = useState(false);
+    const [isConfirmTriggerOpen, setIsConfirmTriggerOpen] = useState(false);
 
     useEffect(() => {
         safeApiRequest('/api/config/system')
@@ -578,8 +603,11 @@ function SystemSection() {
     };
 
     const handleManualTrigger = async () => {
-        const confirmMsg = "¿Quieres disparar las alertas ahora mismo? Esto notificará a todos los operadores que no cargaron horas hoy.";
-        if (!confirm(confirmMsg)) return;
+        setIsConfirmTriggerOpen(true);
+    };
+
+    const confirmManualTrigger = async () => {
+        setIsConfirmTriggerOpen(false);
 
         setTriggering(true);
         try {
@@ -677,6 +705,16 @@ function SystemSection() {
                     )}
                 </button>
             </div>
+
+            <ConfirmDialog
+                isOpen={isConfirmTriggerOpen}
+                title="¿Disparar alertas ahora?"
+                message="Esto notificará a todos los operadores que no cargaron horas hoy mediante notificaciones PUSH inmediatamente."
+                onConfirm={confirmManualTrigger}
+                onCancel={() => setIsConfirmTriggerOpen(false)}
+                confirmLabel="Disparar ahora"
+                variant="info"
+            />
         </div>
     );
 }
