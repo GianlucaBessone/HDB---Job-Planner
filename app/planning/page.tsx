@@ -31,6 +31,7 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 
 import SearchableSelect from '@/components/SearchableSelect';
 import { Layout } from 'lucide-react';
+import { getProjectOptions } from '@/lib/projectSelectHelper';
 
 export default function PlanningPage() {
     const {
@@ -44,6 +45,7 @@ export default function PlanningPage() {
     const [projects, setProjects] = useState<any[]>([]);
     const [operators, setOperators] = useState<any[]>([]);
     const [favorites, setFavorites] = useState<any[]>([]);
+    const [recentProjects, setRecentProjects] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [duplicateDate, setDuplicateDate] = useState('');
@@ -123,6 +125,20 @@ export default function PlanningPage() {
             setProjects(p.filter((x: any) => x.activo));
             setOperators(o.filter((x: any) => x.activo));
             setFavorites(f);
+            
+            const stored = localStorage.getItem('currentUser');
+            if (stored) {
+                const user = JSON.parse(stored);
+                if (user?.id || user?.nombreCompleto) {
+                    try {
+                        const url = new URL('/api/projects/recent', window.location.origin);
+                        if (user.id) url.searchParams.append('userId', user.id);
+                        if (user.nombreCompleto) url.searchParams.append('userName', user.nombreCompleto);
+                        const recentData = await safeApiRequest(url.toString()).then(res => res.json());
+                        setRecentProjects(Array.isArray(recentData) ? recentData : []);
+                    } catch(e) {}
+                }
+            }
         } catch (error) {
             console.error('Error loading static data:', error);
         }
@@ -422,7 +438,7 @@ export default function PlanningPage() {
                                                                 </div>
                                                             ) : (
                                                                 <SearchableSelect
-                                                                    options={projects.map(p => ({ id: p.id, label: p.nombre }))}
+                                                                    options={getProjectOptions(projects, recentProjects)}
                                                                     value={block.projectId || ''}
                                                                     onChange={(val) => updateBlock(index, 'projectId', val)}
                                                                     placeholder="Seleccionar Proyecto"

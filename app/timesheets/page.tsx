@@ -11,6 +11,7 @@ import { safeApiRequest } from '@/lib/offline';
 import * as XLSX from 'xlsx';
 import SearchableSelect from '@/components/SearchableSelect';
 import { formatDate } from '@/lib/formatDate';
+import { getProjectOptions } from '@/lib/projectSelectHelper';
 
 interface Project {
     id: string;
@@ -42,6 +43,7 @@ export default function TimesheetsPage() {
     const [entries, setEntries] = useState<TimeEntry[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
     const [operators, setOperators] = useState<Operator[]>([]);
+    const [recentProjects, setRecentProjects] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     const formatEntryDate = (dateStr: string) => {
@@ -134,6 +136,16 @@ export default function TimesheetsPage() {
             setEntries(Array.isArray(entriesData) ? entriesData : []);
             setProjects(Array.isArray(projectsData) ? projectsData : []);
             setOperators(Array.isArray(operatorsData) ? operatorsData : []);
+            
+            if (user?.id || user?.nombreCompleto) {
+                try {
+                    const url = new URL('/api/projects/recent', window.location.origin);
+                    if (user.id) url.searchParams.append('userId', user.id);
+                    if (user.nombreCompleto) url.searchParams.append('userName', user.nombreCompleto);
+                    const recentData = await safeApiRequest(url.toString()).then(res => res.json());
+                    setRecentProjects(Array.isArray(recentData) ? recentData : []);
+                } catch(e) {}
+            }
         } catch (error) {
             console.error('Error loading data:', error);
         } finally {
@@ -552,7 +564,7 @@ export default function TimesheetsPage() {
                     <SearchableSelect
                         label="Proyecto Activo"
                         icon={<Layout className="w-3 h-3" />}
-                        options={activeProjects.map(p => ({ id: p.id, label: p.nombre }))}
+                        options={getProjectOptions(activeProjects, recentProjects)}
                         value={selectedProject}
                         onChange={(val) => setSelectedProject(val)}
                         placeholder="Buscar proyecto..."
@@ -671,7 +683,7 @@ export default function TimesheetsPage() {
                     <div className="flex items-center gap-2 w-full md:w-auto md:min-w-[200px]">
                         <SearchableSelect
                             label="Filtrar Proyecto"
-                            options={activeProjects.map(p => ({ id: p.nombre, label: p.nombre }))}
+                            options={getProjectOptions(activeProjects.map(p => ({ ...p, id: p.nombre })), recentProjects.map(id => projects.find(p => p.id === id)?.nombre || '').filter(Boolean))}
                             value={filterProject}
                             onChange={setFilterProject}
                             placeholder="Todos"
@@ -957,7 +969,7 @@ export default function TimesheetsPage() {
                                     <div className="space-y-2 md:col-span-2">
                                         <SearchableSelect
                                             label="Proyecto"
-                                            options={activeProjects.map(p => ({ id: p.id, label: p.nombre }))}
+                                            options={getProjectOptions(activeProjects, recentProjects)}
                                             value={formData.projectId}
                                             onChange={(val) => setFormData({ ...formData, projectId: val })}
                                             placeholder="Seleccionar proyecto..."

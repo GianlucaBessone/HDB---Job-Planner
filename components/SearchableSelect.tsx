@@ -6,6 +6,7 @@ import { Search, ChevronDown, X } from 'lucide-react';
 interface Option {
     id: string;
     label: string;
+    group?: string;
 }
 
 interface SearchableSelectProps {
@@ -189,24 +190,34 @@ export default function SearchableSelect({
                                 No se encontraron resultados
                             </div>
                         ) : (
-                            filteredOptions.map((opt, index) => (
-                                <div
-                                    key={opt.id}
-                                    onMouseMove={() => setHighlightedIndex(index)}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleSelect(opt.id);
-                                    }}
-                                    className={`p-3 md:p-3 rounded-xl text-sm font-bold cursor-pointer transition-colors min-h-[44px] flex items-center ${value === opt.id
-                                        ? 'bg-primary/20 text-primary'
-                                        : highlightedIndex === index
-                                            ? 'bg-slate-100 text-slate-900'
-                                            : 'text-slate-600 hover:bg-slate-50'
-                                        }`}
-                                >
-                                    {opt.label}
-                                </div>
-                            ))
+                            filteredOptions.map((opt, index) => {
+                                const showGroupHeader = opt.group && (index === 0 || opt.group !== filteredOptions[index - 1].group);
+                                return (
+                                    <div key={`container-${opt.id}`}>
+                                        {showGroupHeader && (
+                                            <div className="px-3 pt-3 pb-1 text-[10px] font-black text-primary/70 uppercase tracking-widest border-b border-primary/10 mb-1">
+                                                {opt.group}
+                                            </div>
+                                        )}
+                                        <div
+                                            key={opt.id}
+                                            onMouseMove={() => setHighlightedIndex(index)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleSelect(opt.id);
+                                            }}
+                                            className={`p-3 md:p-3 rounded-xl text-sm font-bold cursor-pointer transition-colors min-h-[44px] flex items-center ${value === opt.id
+                                                ? 'bg-primary/20 text-primary'
+                                                : highlightedIndex === index
+                                                    ? 'bg-slate-100 text-slate-900'
+                                                    : 'text-slate-600 hover:bg-slate-50'
+                                                }`}
+                                        >
+                                            {opt.label}
+                                        </div>
+                                    </div>
+                                );
+                            })
                         )}
                     </div>
                 </div>

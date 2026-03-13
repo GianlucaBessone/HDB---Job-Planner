@@ -28,6 +28,7 @@ import SearchableSelect from '@/components/SearchableSelect';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { safeApiRequest } from '@/lib/offline';
+import { getProjectOptions } from '@/lib/projectSelectHelper';
 
 interface Project {
     id: string;
@@ -62,6 +63,7 @@ export default function DelaysPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentUser, setCurrentUser] = useState<any>(null);
+    const [recentProjects, setRecentProjects] = useState<string[]>([]);
 
     const [viewMode, setViewMode] = useState<'tarjetas' | 'tabla'>('tabla');
     const [filterDateFrom, setFilterDateFrom] = useState(() => {
@@ -89,10 +91,11 @@ export default function DelaysPage() {
     });
 
     useEffect(() => {
+        let user = null;
         const stored = localStorage.getItem('currentUser');
         if (stored) {
             try {
-                const user = JSON.parse(stored);
+                user = JSON.parse(stored);
                 setCurrentUser(user);
                 setFormData(prev => ({ ...prev, operador: user.nombreCompleto }));
             } catch (e) { }
@@ -104,10 +107,11 @@ export default function DelaysPage() {
             if (proy) setSearchTerm(proy);
         }
 
-        loadData();
+        loadData(user);
     }, []);
 
-    const loadData = async () => {
+    const loadData = async (userObj?: any) => {
+        const user = userObj || currentUser;
         setIsLoading(true);
         try {
             const [delaysData, projectsData, operatorsData, clientsData, configOptions] = await Promise.all([
@@ -125,6 +129,16 @@ export default function DelaysPage() {
             if (Array.isArray(configOptions)) {
                 setAreaOptions(configOptions.filter((o: any) => o.category === 'AREA_DEMORA' && o.active).map((o: any) => o.value));
                 setMotivoOptions(configOptions.filter((o: any) => o.category === 'MOTIVO_DEMORA' && o.active).map((o: any) => o.value));
+            }
+            
+            if (user?.id || user?.nombreCompleto) {
+                try {
+                    const url = new URL('/api/projects/recent', window.location.origin);
+                    if (user.id) url.searchParams.append('userId', user.id);
+                    if (user.nombreCompleto) url.searchParams.append('userName', user.nombreCompleto);
+                    const recentData = await safeApiRequest(url.toString()).then(res => res.json());
+                    setRecentProjects(Array.isArray(recentData) ? recentData : []);
+                } catch(e) {}
             }
         } catch (error) {
             console.error('Error loading delays data:', error);
@@ -352,7 +366,7 @@ export default function DelaysPage() {
 
                     <div className="w-[calc(50%-4px)] md:w-auto md:min-w-[160px]">
                         <SearchableSelect
-                            options={projects.map(p => ({ id: p.id, label: p.nombre }))}
+                            options={getProjectOptions(projects.filter(p => !filterClientId || p.clientId === filterClientId), recentProjects)}
                             value={filterProjectId}
                             onChange={setFilterProjectId}
                             placeholder="Todos los proyectos"
@@ -516,7 +530,7 @@ export default function DelaysPage() {
                                         <SearchableSelect
                                             label="Proyecto afectado"
                                             icon={<Layout className="w-3 h-3" />}
-                                            options={projects.map(p => ({ id: p.id, label: p.nombre }))}
+                                            options={getProjectOptions(projects.filter(p => p.hasOwnProperty('activo') ? (p as any).activo : true), recentProjects)}
                                             value={formData.projectId}
                                             onChange={(val) => setFormData({ ...formData, projectId: val })}
                                             placeholder="Buscar proyecto..."
