@@ -178,23 +178,6 @@ export const ProjectReportPDF = ({
                     </View>
                 )}
 
-                {/* ── Bitácora de Seguimiento ── */}
-                {project.logs && project.logs.length > 0 && (
-                    <View style={S.tableWrapper} wrap={false}>
-                        <Text style={S.tableTitle}>Bitácora de Seguimiento y Comentarios</Text>
-                        <View style={{ gap: 6 }}>
-                            {project.logs.map((log: any) => (
-                                <View key={log.id} style={S.logItem} wrap={false}>
-                                    <View style={S.logHeader}>
-                                        <Text style={[S.logMeta, { color: '#6366F1' }]}>{fmtDate(log.fecha)}</Text>
-                                        <Text style={S.logMeta}>Responsable: {log.responsable}</Text>
-                                    </View>
-                                    <Text style={S.logText}>{log.observacion}</Text>
-                                </View>
-                            ))}
-                        </View>
-                    </View>
-                )}
 
                 {/* ── Resúmenes ── */}
                 <View style={S.contentRow}>

@@ -81,6 +81,13 @@ export default function HomePage() {
                         href="/my-projects"
                         color="bg-emerald-500"
                     />
+                    <ActionCard
+                        title="Notificaciones"
+                        description="Novedades y alertas"
+                        icon={<Bell className="w-6 h-6" />}
+                        href="/notifications"
+                        color="bg-amber-500"
+                    />
                 </div>
             </div>
 

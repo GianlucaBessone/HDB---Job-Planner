@@ -37,6 +37,7 @@ import {
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
+import { formatDate } from '@/lib/formatDate';
 import SearchableSelect from '@/components/SearchableSelect';
 import { CHECKLIST_TEMPLATES } from '@/lib/checklistTemplates';
 
@@ -831,7 +832,7 @@ function ProjectDetailsModal({
                                                     <tbody className="divide-y divide-slate-50">
                                                         {entries.slice(0, 10).map((entry: any) => (
                                                             <tr key={entry.id}>
-                                                                <td className="px-4 py-2 text-slate-500 font-medium">{entry.fecha}</td>
+                                                                <td className="px-4 py-2 text-slate-500 font-medium">{formatDate(entry.fecha)}</td>
                                                                 <td className="px-4 py-2 font-bold text-slate-700">{entry.operator.nombreCompleto}</td>
                                                                 <td className="px-4 py-2 text-right font-black text-slate-900">{entry.horasTrabajadas}h</td>
                                                             </tr>
@@ -992,7 +993,7 @@ function ProjectDetailsModal({
                                                 logs.map((log: any) => (
                                                     <div key={log.id} className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm space-y-2">
                                                         <div className="flex items-center justify-between">
-                                                            <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded-md">{log.fecha}</span>
+                                                            <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded-md">{formatDate(log.fecha)}</span>
                                                             <span className="text-[9px] font-bold text-slate-400">Por: {log.responsable}</span>
                                                         </div>
                                                         <p className="text-xs font-medium text-slate-600 leading-relaxed italic">"{log.observacion}"</p>

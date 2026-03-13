@@ -601,7 +601,7 @@ export default function TimesheetsPage() {
                                     <div className="space-y-1 mb-6">
                                         <h4 className="font-extrabold text-emerald-900 text-lg">{entry.operator.nombreCompleto}</h4>
                                         <p className="text-sm font-bold text-emerald-700 uppercase tracking-tighter truncate">{entry.project.nombre}</p>
-                                        <p className="text-xs font-bold text-emerald-600/70">{entry.fecha} | Ingreso: {entry.horaIngreso}hs</p>
+                                        <p className="text-xs font-bold text-emerald-600/70">{formatEntryDate(entry.fecha)} | Ingreso: {entry.horaIngreso}hs</p>
                                     </div>
                                     <button
                                         onClick={() => handleClockOut(entry.id)}

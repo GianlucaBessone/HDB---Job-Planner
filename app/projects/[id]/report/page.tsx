@@ -237,35 +237,6 @@ export default async function ProjectReportPage({ params, searchParams }: { para
                 {/* ── Tablas de Detalle ── */}
                 <div className="space-y-10">
 
-                    {/* Bitácora de Seguimiento y Comentarios */}
-                    <div>
-                        <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
-                            <MessageSquare className="w-5 h-5 text-indigo-500" />
-                            Bitácora de Seguimiento y Comentarios
-                        </h3>
-                        {project.logs.length === 0 ? (
-                            <p className="text-sm text-slate-400 italic">No hay comentarios o seguimiento registrados aún.</p>
-                        ) : (
-                            <div className="space-y-4">
-                                {project.logs.map((log) => (
-                                    <div key={log.id} className="bg-slate-50 rounded-2xl p-5 border border-slate-100 flex flex-col gap-2">
-                                        <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
-                                            <div className="flex items-center gap-2 text-indigo-600">
-                                                <Calendar className="w-3.5 h-3.5" /> {formatDate(log.fecha)}
-                                            </div>
-                                            <div className="text-slate-400">
-                                                Responsable: {log.responsable}
-                                            </div>
-                                        </div>
-                                        <p className="text-sm font-medium text-slate-700 leading-relaxed">
-                                            {log.observacion}
-                                        </p>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
                     {/* Desglose Tiempos Operativos — sin columna Horas, solo Horario */}
                     <div>
                         <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">

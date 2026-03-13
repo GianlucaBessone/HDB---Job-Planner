@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
+import { formatDateTime } from '@/lib/formatDate';
 
 interface ChecklistItem {
     id: string;
@@ -75,6 +76,11 @@ export default function MyProjectsPage() {
     const [pendingItemsForFinalize, setPendingItemsForFinalize] = useState<{ tag: string, description: string }[]>([]);
     const [isFinalizing, setIsFinalizing] = useState(false);
 
+    const [projectLogs, setProjectLogs] = useState<any[]>([]);
+    const [loadingLogs, setLoadingLogs] = useState(false);
+    const [newLog, setNewLog] = useState('');
+    const [isSubmittingLog, setIsSubmittingLog] = useState(false);
+
     const [viewAll, setViewAll] = useState(false);
 
     useEffect(() => {
@@ -117,9 +123,23 @@ export default function MyProjectsPage() {
         }
     };
 
+    const loadLogs = async (projectId: string) => {
+        setLoadingLogs(true);
+        try {
+            const res = await safeApiRequest(`/api/projects/${projectId}/logs`);
+            const data = await res.json();
+            if (Array.isArray(data)) setProjectLogs(data);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoadingLogs(false);
+        }
+    };
+
     const openProjectView = (project: Project) => {
         setSelectedProject(project);
         loadChecklist(project.id);
+        loadLogs(project.id);
     };
 
     const handleToggleItem = async (item: ChecklistItem) => {
@@ -184,6 +204,48 @@ export default function MyProjectsPage() {
             showToast('Error al enviar solicitud', 'error');
         } finally {
             setIsSubmittingChange(false);
+        }
+    };
+
+    const submitLog = async () => {
+        if (!newLog.trim() || !selectedProject || !user) return;
+        setIsSubmittingLog(true);
+        try {
+            const logData = {
+                fecha: new Date().toISOString().split('T')[0],
+                responsable: user.nombreCompleto,
+                observacion: newLog
+            };
+            const res = await safeApiRequest(`/api/projects/${selectedProject.id}/logs`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(logData)
+            });
+
+            if (res.ok) {
+                const createdLog = await res.json();
+                setProjectLogs(prev => [createdLog, ...prev]);
+                setNewLog('');
+                showToast('Comentario añadido', 'success');
+
+                await safeApiRequest('/api/notifications', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        forSupervisors: true,
+                        title: 'Nuevo comentario en proyecto',
+                        message: `Proyecto: ${selectedProject.nombre}\nOperador: ${user.nombreCompleto}\n\n"${newLog}"`,
+                        type: 'NEW_COMMENT',
+                        relatedId: selectedProject.id
+                    })
+                });
+            } else {
+                showToast('Error al añadir comentario', 'error');
+            }
+        } catch (error) {
+            showToast('Error de conexión', 'error');
+        } finally {
+            setIsSubmittingLog(false);
         }
     };
 
@@ -458,6 +520,54 @@ export default function MyProjectsPage() {
                                 ))}
                             </div>
                         )}
+
+                        {/* Comments Section */}
+                        <div className="pt-6 border-t border-slate-50 space-y-5">
+                            <h3 className="flex items-center gap-2 text-sm font-black text-slate-800 uppercase tracking-wide">
+                                <MessageSquare className="w-4 h-4 text-primary" />
+                                Comentarios
+                            </h3>
+
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <textarea
+                                        rows={3}
+                                        placeholder="Escribe un comentario o actualización..."
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all resize-none"
+                                        value={newLog}
+                                        onChange={e => setNewLog(e.target.value)}
+                                    />
+                                    <button
+                                        onClick={submitLog}
+                                        disabled={!newLog.trim() || isSubmittingLog}
+                                        className="w-full bg-slate-800 text-white py-3 rounded-xl font-bold text-sm hover:bg-slate-700 transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95"
+                                    >
+                                        {isSubmittingLog ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                                        Publicar Comentario
+                                    </button>
+                                </div>
+
+                                <div className="space-y-3 mt-4 overflow-y-auto max-h-[300px] pr-1 custom-scrollbar">
+                                    {loadingLogs ? (
+                                        <div className="flex items-center justify-center py-4">
+                                            <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+                                        </div>
+                                    ) : projectLogs.length === 0 ? (
+                                        <p className="text-center text-xs text-slate-400 font-medium py-4">No hay comentarios aún.</p>
+                                    ) : (
+                                        projectLogs.map(log => (
+                                            <div key={log.id} className="bg-slate-50 border border-slate-100 p-4 rounded-2xl space-y-2">
+                                                <div className="flex justify-between items-start">
+                                                    <span className="text-xs font-bold text-slate-700">{log.responsable}</span>
+                                                    <span className="text-[10px] font-bold text-slate-400">{formatDateTime(log.createdAt)}</span>
+                                                </div>
+                                                <p className="text-sm text-slate-600 whitespace-pre-wrap">{log.observacion}</p>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        </div>
 
                         <div className="pt-6 border-t border-slate-50">
                             <button
