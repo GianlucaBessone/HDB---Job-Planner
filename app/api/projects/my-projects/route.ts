@@ -8,6 +8,7 @@ export async function GET(req: Request) {
         const { searchParams } = new URL(req.url);
         const all = searchParams.get('all') === 'true';
         const responsableId = searchParams.get('responsableId');
+        const nombreCompleto = searchParams.get('nombre');
 
         let where: any = {
             estado: { notIn: ['finalizado'] }
@@ -17,7 +18,17 @@ export async function GET(req: Request) {
             if (!responsableId) {
                 return NextResponse.json({ error: 'Falta responsableId' }, { status: 400 });
             }
-            where.responsableId = responsableId;
+
+            // Match by ID (new relational field) OR by legacy name field
+            const orConditions: any[] = [
+                { responsableId: responsableId }
+            ];
+
+            if (nombreCompleto) {
+                orConditions.push({ responsable: nombreCompleto });
+            }
+
+            where.OR = orConditions;
         }
 
         const projects = await prisma.project.findMany({

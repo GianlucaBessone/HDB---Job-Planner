@@ -82,16 +82,16 @@ export default function MyProjectsPage() {
         if (storedUser) {
             const parsed = JSON.parse(storedUser);
             setUser(parsed);
-            loadMyProjects(parsed.id, viewAll);
+            loadMyProjects(parsed.id, viewAll, parsed.nombreCompleto);
         }
     }, [viewAll]);
 
-    const loadMyProjects = async (userId: string, all = false) => {
+    const loadMyProjects = async (userId: string, all = false, nombre = '') => {
         setLoading(true);
         try {
             const url = all
                 ? `/api/projects/my-projects?all=true`
-                : `/api/projects/my-projects?responsableId=${userId}`;
+                : `/api/projects/my-projects?responsableId=${userId}&nombre=${encodeURIComponent(nombre)}`;
             const res = await safeApiRequest(url);
             const data = await res.json();
             if (Array.isArray(data)) setProjects(data);
@@ -238,7 +238,7 @@ export default function MyProjectsPage() {
                 showToast('Proyecto finalizado con éxito', 'success');
                 setIsFinalizeModalOpen(false);
                 setSelectedProject(null);
-                loadMyProjects(user.id, viewAll);
+                loadMyProjects(user.id, viewAll, user.nombreCompleto);
             } else {
                 const data = await res.json();
                 if (data.pendingItems) {
