@@ -220,7 +220,7 @@ export default function DelaysPage() {
     const exportToExcel = () => {
         const aoa: any[][] = [['Fecha', 'Hora', 'Proyecto', 'Operador', 'Área Cliente', 'Responsable Área', 'Motivo', 'Duración (Hs)']];
         filteredDelays.forEach(d => {
-            aoa.push([d.fecha, d.hora, d.project.nombre, d.operador, d.area, d.responsableArea || '-', d.motivo, d.duracion]);
+            aoa.push([formatDate(d.fecha), d.hora, d.project.nombre, d.operador, d.area, d.responsableArea || '-', d.motivo, d.duracion]);
         });
         const ws = XLSX.utils.aoa_to_sheet(aoa);
         const wb = XLSX.utils.book_new();

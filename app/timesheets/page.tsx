@@ -10,6 +10,7 @@ import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
 import * as XLSX from 'xlsx';
 import SearchableSelect from '@/components/SearchableSelect';
+import { formatDate } from '@/lib/formatDate';
 
 interface Project {
     id: string;
@@ -423,7 +424,7 @@ export default function TimesheetsPage() {
             aoa.push(['Fecha', 'Operador', 'Proyecto', 'Ingreso', 'Egreso', 'Horas', 'Tipo', 'Estado']);
             filteredCompleted.forEach(e => {
                 aoa.push([
-                    e.fecha,
+                    formatDate(e.fecha),
                     e.operator?.nombreCompleto || '',
                     e.project?.nombre || '',
                     e.horaIngreso || '',
@@ -437,7 +438,7 @@ export default function TimesheetsPage() {
             aoa.push(['Fecha', 'Operador', 'Obra', 'Normal Inicio', 'Normal Fin', 'Normal Subtotal', 'Extra Inicio', 'Extra Fin', 'Extra Subtotal']);
             groupedPlanilla.forEach((r: any) => {
                 aoa.push([
-                    r.fecha,
+                    formatDate(r.fecha),
                     r.operatorName,
                     r.projectName,
                     r.normalStart,
@@ -452,7 +453,7 @@ export default function TimesheetsPage() {
             aoa.push(['Fecha', 'Operador', 'Total Normales', 'Total Extras', 'Total Día']);
             groupedResumen.forEach((r: any) => {
                 aoa.push([
-                    r.fecha,
+                    formatDate(r.fecha),
                     r.operatorName,
                     r.normalTotal,
                     r.extraTotal,
