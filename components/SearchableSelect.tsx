@@ -35,6 +35,8 @@ export default function SearchableSelect({
     const [highlightedIndex, setHighlightedIndex] = useState(0);
 
     const containerRef = useRef<HTMLDivElement>(null);
+    // Tracks whether the upcoming focus event was caused by a mouse click
+    const mouseDownRef = useRef(false);
     const inputRef = useRef<HTMLInputElement>(null);
     // Map from option index → DOM element for reliable scroll-into-view
     const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -157,7 +159,15 @@ export default function SearchableSelect({
 
             {/* ── Trigger ── */}
             <div
+                onMouseDown={() => { mouseDownRef.current = true; }}
                 onClick={() => !disabled && setIsOpen(!isOpen)}
+                onFocus={() => {
+                    // If focus came from Tab (not mouse), open the dropdown immediately
+                    if (!mouseDownRef.current && !disabled) {
+                        setIsOpen(true);
+                    }
+                    mouseDownRef.current = false;
+                }}
                 className={`w-full min-h-[44px] md:h-[50px] bg-slate-50 border border-slate-200 rounded-xl md:rounded-2xl py-2 md:py-3 px-3 md:px-4 flex items-center justify-between cursor-pointer transition-all text-sm ${
                     isOpen ? 'ring-4 ring-primary/10 border-primary' : 'hover:border-slate-300'
                 } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
