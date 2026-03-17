@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Search, ChevronDown, X } from 'lucide-react';
 
 interface Option {
@@ -33,9 +33,11 @@ export default function SearchableSelect({
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [highlightedIndex, setHighlightedIndex] = useState(0);
+
     const containerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
-    const listRef = useRef<HTMLDivElement>(null);
+    // Map from option index → DOM element for reliable scroll-into-view
+    const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
     const selectedOption = options.find(opt => opt.id === value);
 
@@ -43,6 +45,7 @@ export default function SearchableSelect({
         opt.label.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    // ── Close on outside click ────────────────────────────────────────────────
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -53,43 +56,48 @@ export default function SearchableSelect({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // ── On open: reset state + focus search input ─────────────────────────────
     useEffect(() => {
         if (isOpen) {
             setSearchTerm('');
-            setHighlightedIndex(0);
-            setTimeout(() => inputRef.current?.focus(), 100);
+            // Start highlighting the currently selected option, or first
+            const selectedIdx = filteredOptions.findIndex(o => o.id === value);
+            setHighlightedIndex(selectedIdx >= 0 ? selectedIdx : 0);
+            // Focus search input — requestAnimationFrame is more reliable than setTimeout on mobile
+            requestAnimationFrame(() => {
+                inputRef.current?.focus();
+            });
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen]);
 
+    // ── When search changes → highlight first filtered result ─────────────────
     useEffect(() => {
         setHighlightedIndex(0);
     }, [searchTerm]);
 
+    // ── Scroll highlighted item into view ─────────────────────────────────────
     useEffect(() => {
-        if (isOpen && listRef.current) {
-            const highlightedElement = listRef.current.children[highlightedIndex] as HTMLElement;
-            if (highlightedElement) {
-                const container = listRef.current;
-                const elementTop = highlightedElement.offsetTop;
-                const elementBottom = elementTop + highlightedElement.offsetHeight;
-                const containerTop = container.scrollTop;
-                const containerBottom = containerTop + container.offsetHeight;
-
-                if (elementTop < containerTop) {
-                    container.scrollTop = elementTop;
-                } else if (elementBottom > containerBottom) {
-                    container.scrollTop = elementBottom - container.offsetHeight;
-                }
-            }
+        if (isOpen) {
+            itemRefs.current[highlightedIndex]?.scrollIntoView({
+                block: 'nearest',
+                behavior: 'smooth',
+            });
         }
     }, [highlightedIndex, isOpen]);
 
-    const handleSelect = (id: string) => {
+    // ── Reset itemRefs array size when filtered options change ────────────────
+    useEffect(() => {
+        itemRefs.current = itemRefs.current.slice(0, filteredOptions.length);
+    }, [filteredOptions.length]);
+
+    const handleSelect = useCallback((id: string) => {
         onChange(id);
         setIsOpen(false);
         setSearchTerm('');
-    };
+    }, [onChange]);
 
+    // ── Keyboard handler (used on container AND on search input) ──────────────
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (!isOpen) {
             if (e.key === 'Enter' || e.key === 'ArrowDown' || e.key === ' ') {
@@ -102,23 +110,34 @@ export default function SearchableSelect({
         switch (e.key) {
             case 'ArrowDown':
                 e.preventDefault();
-                setHighlightedIndex(prev => (prev + 1) % filteredOptions.length);
+                setHighlightedIndex(prev =>
+                    filteredOptions.length > 0 ? (prev + 1) % filteredOptions.length : 0
+                );
                 break;
+
             case 'ArrowUp':
                 e.preventDefault();
-                setHighlightedIndex(prev => (prev - 1 + filteredOptions.length) % filteredOptions.length);
+                setHighlightedIndex(prev =>
+                    filteredOptions.length > 0
+                        ? (prev - 1 + filteredOptions.length) % filteredOptions.length
+                        : 0
+                );
                 break;
+
             case 'Enter':
-                e.preventDefault();
+            case 'Tab':
+                // Both Enter and Tab confirm the highlighted option
                 if (filteredOptions[highlightedIndex]) {
+                    e.preventDefault();
                     handleSelect(filteredOptions[highlightedIndex].id);
+                } else {
+                    // Nothing highlighted → just close
+                    setIsOpen(false);
                 }
                 break;
+
             case 'Escape':
                 e.preventDefault();
-                setIsOpen(false);
-                break;
-            case 'Tab':
                 setIsOpen(false);
                 break;
         }
@@ -136,10 +155,12 @@ export default function SearchableSelect({
                 </label>
             )}
 
+            {/* ── Trigger ── */}
             <div
                 onClick={() => !disabled && setIsOpen(!isOpen)}
-                className={`w-full min-h-[44px] md:h-[50px] bg-slate-50 border border-slate-200 rounded-xl md:rounded-2xl py-2 md:py-3 px-3 md:px-4 flex items-center justify-between cursor-pointer transition-all text-sm ${isOpen ? 'ring-4 ring-primary/10 border-primary' : 'hover:border-slate-300'
-                    } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`w-full min-h-[44px] md:h-[50px] bg-slate-50 border border-slate-200 rounded-xl md:rounded-2xl py-2 md:py-3 px-3 md:px-4 flex items-center justify-between cursor-pointer transition-all text-sm ${
+                    isOpen ? 'ring-4 ring-primary/10 border-primary' : 'hover:border-slate-300'
+                } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                 tabIndex={disabled ? -1 : 0}
             >
                 <span className={`font-bold truncate ${selectedOption ? 'text-slate-700' : 'text-slate-400'}`}>
@@ -159,8 +180,11 @@ export default function SearchableSelect({
                 </div>
             </div>
 
+            {/* ── Dropdown panel ── */}
             {isOpen && (
-                <div className="absolute z-[110] left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-2xl md:rounded-[2rem] shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden min-w-full">
+                <div className="absolute z-[110] left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-2xl md:rounded-[2rem] shadow-2xl animate-in zoom-in-95 duration-150 overflow-hidden min-w-full">
+
+                    {/* Search bar */}
                     <div className="p-3 border-b border-slate-100 flex items-center gap-2">
                         <Search className="w-4 h-4 text-slate-400 shrink-0" />
                         <input
@@ -179,12 +203,22 @@ export default function SearchableSelect({
                             onKeyDown={handleKeyDown}
                         />
                         {searchTerm && (
-                            <button className="btn-icon-inline p-1" onClick={(e) => { e.stopPropagation(); setSearchTerm(''); setHighlightedIndex(0); }}>
+                            <button
+                                className="btn-icon-inline p-1"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSearchTerm('');
+                                    setHighlightedIndex(0);
+                                    inputRef.current?.focus();
+                                }}
+                            >
                                 <X className="w-3 h-3 text-slate-400" />
                             </button>
                         )}
                     </div>
-                    <div className="max-h-60 overflow-y-auto p-2" ref={listRef}>
+
+                    {/* Options list */}
+                    <div className="max-h-60 overflow-y-auto p-2">
                         {filteredOptions.length === 0 ? (
                             <div className="p-4 text-center text-xs text-slate-400 font-bold uppercase tracking-widest">
                                 No se encontraron resultados
@@ -192,6 +226,9 @@ export default function SearchableSelect({
                         ) : (
                             filteredOptions.map((opt, index) => {
                                 const showGroupHeader = opt.group && (index === 0 || opt.group !== filteredOptions[index - 1].group);
+                                const isHighlighted = highlightedIndex === index;
+                                const isSelected = value === opt.id;
+
                                 return (
                                     <div key={`container-${opt.id}`}>
                                         {showGroupHeader && (
@@ -200,18 +237,19 @@ export default function SearchableSelect({
                                             </div>
                                         )}
                                         <div
-                                            key={opt.id}
-                                            onMouseMove={() => setHighlightedIndex(index)}
+                                            ref={el => { itemRefs.current[index] = el; }}
+                                            onMouseEnter={() => setHighlightedIndex(index)}
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleSelect(opt.id);
                                             }}
-                                            className={`p-3 md:p-3 rounded-xl text-sm font-bold cursor-pointer transition-colors min-h-[44px] flex items-center ${value === opt.id
-                                                ? 'bg-primary/20 text-primary'
-                                                : highlightedIndex === index
-                                                    ? 'bg-slate-100 text-slate-900'
-                                                    : 'text-slate-600 hover:bg-slate-50'
-                                                }`}
+                                            className={`p-3 rounded-xl text-sm font-bold cursor-pointer transition-colors min-h-[44px] flex items-center ${
+                                                isSelected
+                                                    ? 'bg-primary/20 text-primary'
+                                                    : isHighlighted
+                                                        ? 'bg-slate-100 text-slate-900'
+                                                        : 'text-slate-600 hover:bg-slate-50'
+                                            }`}
                                         >
                                             <span className="break-words">{opt.label}</span>
                                         </div>
