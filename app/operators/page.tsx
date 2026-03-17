@@ -249,10 +249,13 @@ export default function OperatorsPage() {
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">PIN / Contraseña</label>
                                         <input
-                                            type="text"
+                                            type="password"
+                                            inputMode="numeric"
+                                            pattern="[0-9]*"
+                                            maxLength={8}
                                             className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium tracking-widest"
                                             value={formData.pin}
-                                            onChange={e => setFormData({ ...formData, pin: e.target.value })}
+                                            onChange={e => setFormData({ ...formData, pin: e.target.value.replace(/\D/g, '').slice(0, 8) })}
                                             placeholder="Ej: 1234"
                                             required
                                         />

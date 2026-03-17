@@ -112,10 +112,13 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
                         <input
                             type="password"
                             required
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            maxLength={8}
                             placeholder="••••••"
                             className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-4 text-center tracking-widest text-2xl font-black outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
                             value={pin}
-                            onChange={e => setPin(e.target.value)}
+                            onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 8))}
                         />
                     </div>
 

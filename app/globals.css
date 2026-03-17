@@ -42,6 +42,7 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
+    min-width: 320px;
   }
 }
 
@@ -114,12 +115,7 @@
     @apply text-sm rounded-xl px-3;
   }
 
-  /* ── Hide native calendar/time icons to avoid collisions with custom SVG icons ── */
-  input[type="date"]::-webkit-calendar-picker-indicator,
-  input[type="time"]::-webkit-calendar-picker-indicator {
-    display: none;
-    -webkit-appearance: none;
-  }
+  /* ── Native date/time picker icons are shown — we hide the decorative icon in the component itself on mobile ── */
 
   /* ── Minimum touch target on mobile ── */
   button {

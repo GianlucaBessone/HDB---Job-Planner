@@ -160,7 +160,7 @@ export default function SearchableSelect({
             </div>
 
             {isOpen && (
-                <div className="absolute z-[110] w-full mt-1.5 bg-white border border-slate-200 rounded-2xl md:rounded-[2rem] shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden">
+                <div className="absolute z-[110] left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-2xl md:rounded-[2rem] shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden min-w-full">
                     <div className="p-3 border-b border-slate-100 flex items-center gap-2">
                         <Search className="w-4 h-4 text-slate-400 shrink-0" />
                         <input
@@ -213,7 +213,7 @@ export default function SearchableSelect({
                                                     : 'text-slate-600 hover:bg-slate-50'
                                                 }`}
                                         >
-                                            {opt.label}
+                                            <span className="break-words">{opt.label}</span>
                                         </div>
                                     </div>
                                 );
