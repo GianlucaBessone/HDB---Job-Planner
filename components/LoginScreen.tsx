@@ -66,6 +66,10 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
 
     const filteredOperators = operators.filter(o => o.nombreCompleto.toLowerCase().includes(searchTerm.toLowerCase()));
 
+    // ── Custom inline dropdown state ──────────────────────────────────────────
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const selectedOp = operators.find(o => o.id === selectedOperatorId);
+
     if (isLoading) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -86,22 +90,61 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Select User with basic search visually integrated */}
-                    <div className="space-y-2 relative">
+                    {/* Custom searchable user selector */}
+                    <div className="space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
                             <UserIcon className="w-3 h-3" /> Operador / Usuario
                         </label>
-                        <select
-                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700 transition-all appearance-none"
-                            required
-                            value={selectedOperatorId}
-                            onChange={e => setSelectedOperatorId(e.target.value)}
-                        >
-                            <option value="">— Seleccionar Identidad —</option>
-                            {operators.map(op => (
-                                <option key={op.id} value={op.id}>{op.nombreCompleto}</option>
-                            ))}
-                        </select>
+                        <div className="relative">
+                            {/* Trigger */}
+                            <button
+                                type="button"
+                                onClick={() => setDropdownOpen(prev => !prev)}
+                                className={`w-full bg-slate-50 border rounded-2xl py-4 px-4 outline-none text-left font-bold transition-all flex items-center justify-between gap-2 ${dropdownOpen ? 'border-indigo-500 ring-4 ring-indigo-500/10' : 'border-slate-200'}`}
+                            >
+                                <span className={`truncate text-base ${selectedOp ? 'text-slate-700' : 'text-slate-400'}`}>
+                                    {selectedOp ? selectedOp.nombreCompleto : '— Seleccionar Identidad —'}
+                                </span>
+                                <svg className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                            </button>
+
+                            {/* Dropdown panel */}
+                            {dropdownOpen && (
+                                <div className="absolute z-50 left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden">
+                                    {/* Search */}
+                                    <div className="p-3 border-b border-slate-100">
+                                        <input
+                                            type="text"
+                                            autoFocus
+                                            placeholder="Buscar..."
+                                            className="w-full outline-none text-sm font-medium py-1 px-2 bg-slate-50 rounded-xl border border-slate-200 focus:border-indigo-400"
+                                            value={searchTerm}
+                                            onChange={e => setSearchTerm(e.target.value)}
+                                            onClick={e => e.stopPropagation()}
+                                        />
+                                    </div>
+                                    {/* Options */}
+                                    <div className="max-h-56 overflow-y-auto">
+                                        {filteredOperators.length === 0 ? (
+                                            <p className="p-4 text-center text-xs text-slate-400 font-bold uppercase tracking-widest">Sin resultados</p>
+                                        ) : filteredOperators.map(op => (
+                                            <button
+                                                key={op.id}
+                                                type="button"
+                                                onClick={() => {
+                                                    setSelectedOperatorId(op.id);
+                                                    setDropdownOpen(false);
+                                                    setSearchTerm('');
+                                                }}
+                                                className={`w-full text-left px-4 py-3 text-sm font-bold transition-colors whitespace-normal break-words ${selectedOperatorId === op.id ? 'bg-indigo-50 text-indigo-600' : 'text-slate-700 hover:bg-slate-50'}`}
+                                            >
+                                                {op.nombreCompleto}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     {/* PIN */}
