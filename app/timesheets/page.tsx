@@ -1014,21 +1014,21 @@ export default function TimesheetsPage() {
 
                                     {/* Horas Extras */}
                                     <div className="space-y-2 md:col-span-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">¿Son Horas Extras?</label>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Tipo de Horas</label>
                                         <div className="flex gap-4">
                                             <button
                                                 type="button"
                                                 onClick={() => setFormData({ ...formData, isExtra: false })}
                                                 className={`flex-1 py-3 px-4 rounded-2xl font-bold transition-colors ${!formData.isExtra ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 text-slate-500 border-2 border-slate-200'}`}
                                             >
-                                                No, Normales
+                                                Normales
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={() => setFormData({ ...formData, isExtra: true })}
                                                 className={`flex-1 py-3 px-4 rounded-2xl font-bold transition-colors ${formData.isExtra ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 text-slate-500 border-2 border-slate-200'}`}
                                             >
-                                                Sí, Extras
+                                                Extras
                                             </button>
                                         </div>
                                     </div>
@@ -1097,21 +1097,21 @@ export default function TimesheetsPage() {
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">¿Son Horas Extras?</label>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Tipo de Horas</label>
                                         <div className="flex gap-4">
                                             <button
                                                 type="button"
                                                 onClick={() => setFormData({ ...formData, isExtra: false })}
                                                 className={`flex-1 py-3 px-4 rounded-2xl font-bold transition-colors ${!formData.isExtra ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 text-slate-500 border-2 border-slate-200'}`}
                                             >
-                                                No
+                                                Normales
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={() => setFormData({ ...formData, isExtra: true })}
                                                 className={`flex-1 py-3 px-4 rounded-2xl font-bold transition-colors ${formData.isExtra ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 text-slate-500 border-2 border-slate-200'}`}
                                             >
-                                                Sí
+                                                Extras
                                             </button>
                                         </div>
                                     </div>
