@@ -19,7 +19,7 @@ const S = StyleSheet.create({
     // Header
     header: { flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 2, borderBottomColor: '#0F172A', paddingBottom: 16, marginBottom: 20 },
     title: { fontSize: 20, fontFamily: 'Helvetica-Bold', color: '#0F172A' },
-    statusBadge: { fontSize: 8, color: '#10B981', marginTop: 4, letterSpacing: 1 },
+    statusBadge: { fontSize: 8, marginTop: 4, letterSpacing: 1 },
     projectInfo: { alignItems: 'flex-end' },
     projectName: { fontSize: 15, fontFamily: 'Helvetica-Bold', color: '#4F46E5' },
     clientName: { fontSize: 9, color: '#64748B', marginTop: 3 },
@@ -113,6 +113,17 @@ export const ProjectReportPDF = ({
     const hasClientStr = project.client?.nombre || project.cliente || 'Sin cliente';
     const hasObs = !!project.observaciones;
 
+    // Dynamic status badge
+    const STATUS_MAP: Record<string, { label: string; icon: string; color: string }> = {
+        por_hacer:   { label: 'POR HACER',   icon: '○', color: '#94A3B8' },
+        planificado: { label: 'PLANIFICADO', icon: '◈', color: '#3B82F6' },
+        activo:      { label: 'EN CURSO',    icon: '▶', color: '#6366F1' },
+        en_riesgo:   { label: 'EN RIESGO',   icon: '⚠', color: '#F59E0B' },
+        atrasado:    { label: 'ATRASADO',    icon: '⏰', color: '#F43F5E' },
+        finalizado:  { label: 'FINALIZADO',  icon: '✓', color: '#10B981' },
+    };
+    const statusInfo = STATUS_MAP[project.estado] ?? { label: (project.estado ?? 'SIN ESTADO').toUpperCase(), icon: '•', color: '#94A3B8' };
+
     return (
         <Document>
             <Page size="A4" style={S.page}>
@@ -121,7 +132,7 @@ export const ProjectReportPDF = ({
                 <View style={S.header}>
                     <View>
                         <Text style={S.title}>Reporte de Proyecto</Text>
-                        <Text style={S.statusBadge}>✓  PROYECTO FINALIZADO</Text>
+                        <Text style={[S.statusBadge, { color: statusInfo.color }]}>{statusInfo.icon}  {statusInfo.label}</Text>
                     </View>
                     <View style={S.projectInfo}>
                         <Text style={S.projectName}>{project.nombre}</Text>

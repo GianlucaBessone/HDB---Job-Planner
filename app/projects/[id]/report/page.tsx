@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/dataLayer';
 import { notFound, redirect } from 'next/navigation';
-import { Building2, Calendar, Clock, Activity, Timer, Users, ShieldCheck, FileText, MessageSquare } from 'lucide-react';
+import { Building2, Calendar, Clock, Activity, Timer, Users, ShieldCheck, FileText, MessageSquare, CheckCircle2, PlayCircle, AlertTriangle, AlarmClock, ClipboardList, BarChart2 } from 'lucide-react';
 import ReportPrintButton from '@/components/ReportPrintButton';
 
 export const dynamic = 'force-dynamic';
@@ -83,6 +83,18 @@ export default async function ProjectReportPage({ params, searchParams }: { para
     const operatorArray = Object.values(operatorMap);
     const delaysArray = Object.entries(delaysByArea).map(([area, horas]) => ({ area, horas }));
 
+    // ── Status badge config ──────────────────────────────────────────────────
+    const STATUS_CONFIG: Record<string, { label: string; textColor: string; Icon: React.ElementType }> = {
+        por_hacer:   { label: 'POR HACER',   textColor: 'text-slate-400',  Icon: ClipboardList },
+        planificado: { label: 'PLANIFICADO', textColor: 'text-blue-500',   Icon: BarChart2 },
+        activo:      { label: 'EN CURSO',    textColor: 'text-indigo-500', Icon: PlayCircle },
+        en_riesgo:   { label: 'EN RIESGO',   textColor: 'text-amber-500',  Icon: AlertTriangle },
+        atrasado:    { label: 'ATRASADO',    textColor: 'text-rose-500',   Icon: AlarmClock },
+        finalizado:  { label: 'FINALIZADO',  textColor: 'text-emerald-500',Icon: CheckCircle2 },
+    };
+    const statusCfg = STATUS_CONFIG[project.estado] ?? { label: project.estado?.toUpperCase() ?? 'SIN ESTADO', textColor: 'text-slate-400', Icon: ShieldCheck };
+    const StatusIcon = statusCfg.Icon;
+
     return (
         <div className="min-h-screen bg-slate-50 py-8 print:p-0 print:bg-white text-slate-800 font-sans mx-auto max-w-[900px]">
             {/* Control Bar (hidden in print) */}
@@ -106,8 +118,8 @@ export default async function ProjectReportPage({ params, searchParams }: { para
                     <div>
                         <h1 className="text-4xl font-black text-slate-900 tracking-tighter mb-2">Reporte de Proyecto</h1>
                         <div className="flex items-center">
-                            <ShieldCheck className="w-4 h-4 text-emerald-500 mr-2" />
-                            <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">PROYECTO FINALIZADO</span>
+                            <StatusIcon className={`w-4 h-4 mr-2 ${statusCfg.textColor}`} />
+                            <span className={`text-sm font-bold uppercase tracking-widest ${statusCfg.textColor}`}>{statusCfg.label}</span>
                         </div>
                     </div>
                     <div className="text-right flex flex-col items-end gap-1">

@@ -316,10 +316,10 @@ export default function PlanningPage() {
 
                 <div className="flex items-center gap-2">
                     <div className="relative group flex-1">
-                        <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+                        <CalendarIcon className="hidden md:block absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
                         <input
                             type="date"
-                            className="h-[50px] bg-white border border-slate-200 rounded-2xl pl-10 pr-2 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all w-full appearance-none"
+                            className="h-[50px] bg-white border border-slate-200 rounded-2xl px-3 md:pl-10 md:pr-2 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all w-full appearance-none"
                             value={fecha}
                             onChange={e => setStoreFecha(e.target.value)}
                         />
