@@ -1,30 +1,54 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Bell, Check, Trash2, ArrowRight, CheckCircle2, Circle } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
 import { formatDateTime } from '@/lib/formatDate';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function NotificationsPage() {
     const [user, setUser] = useState<any>(null);
     const [notifications, setNotifications] = useState<any[]>([]);
     const [activeTab, setActiveTab] = useState<'unread' | 'read'>('unread');
     const [loading, setLoading] = useState(true);
+    const [highlightId, setHighlightId] = useState<string | null>(null);
     const router = useRouter();
+    const searchParams = useSearchParams();
 
     useEffect(() => {
         const storedUser = localStorage.getItem('currentUser');
         if (storedUser) {
             const parsed = JSON.parse(storedUser);
             setUser(parsed);
+            const highlight = searchParams.get('highlight');
+            if (highlight) setHighlightId(highlight);
             loadNotifications(parsed.id, parsed.role);
         } else {
             router.push('/');
         }
     }, [router]);
+
+    // When data loads and we have a highlight target, switch tab and scroll
+    useEffect(() => {
+        if (!highlightId || loading || notifications.length === 0) return;
+        const notif = notifications.find(n => n.id === highlightId);
+        if (!notif) return;
+
+        // Switch to the right tab
+        setActiveTab(notif.read ? 'read' : 'unread');
+
+        // Wait for render, then scroll
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                const el = document.getElementById(`notif-${highlightId}`);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
+        });
+    }, [highlightId, loading, notifications]);
 
     const loadNotifications = async (userId: string, role: string) => {
         setLoading(true);
@@ -113,8 +137,16 @@ export default function NotificationsPage() {
                 </div>
             ) : (
                 <div className="space-y-4">
-                    {displayedNotifications.map((notification) => (
-                        <div key={notification.id} className={`p-5 rounded-3xl border transition-all ${notification.read ? 'bg-white border-slate-200 opacity-70' : 'bg-white border-indigo-100 shadow-md shadow-indigo-100/50'}`}>
+                    {displayedNotifications.map((notification) => {
+                        const isHighlighted = notification.id === highlightId;
+                        return (
+                        <div
+                            key={notification.id}
+                            id={`notif-${notification.id}`}
+                            className={`p-5 rounded-3xl border transition-all ${
+                                notification.read ? 'bg-white border-slate-200 opacity-70' : 'bg-white border-indigo-100 shadow-md shadow-indigo-100/50'
+                            } ${isHighlighted ? 'ring-2 ring-primary ring-offset-2 scale-[1.01] shadow-lg shadow-primary/10' : ''}`}
+                        >
                             <div className="flex justify-between items-start mb-2">
                                 <h3 className={`text-base font-black ${notification.read ? 'text-slate-700' : 'text-indigo-900'}`}>{notification.title}</h3>
                                 <span className="text-[10px] font-black text-slate-400 bg-slate-100 px-2 py-1 rounded-lg">
@@ -145,7 +177,8 @@ export default function NotificationsPage() {
                                 </button>
                             </div>
                         </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
         </div>

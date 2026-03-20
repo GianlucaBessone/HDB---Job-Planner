@@ -9,6 +9,7 @@ import { es } from 'date-fns/locale';
 import { showToast } from './Toast';
 import { safeApiRequest } from '@/lib/offline';
 import ProjectFinalizeAuthModal from './ProjectFinalizeAuthModal';
+import { useModalScroll } from '@/lib/useModalScroll';
 
 export default function NotificationsDropdown({ user }: { user: any }) {
     const [notifications, setNotifications] = useState<any[]>([]);
@@ -16,6 +17,9 @@ export default function NotificationsDropdown({ user }: { user: any }) {
     const [selectedNotification, setSelectedNotification] = useState<any>(null);
     const [mounted, setMounted] = useState(false);
     const router = useRouter();
+
+    // Lock body scroll when a notification modal is open
+    useModalScroll(!!selectedNotification);
 
     useEffect(() => {
         setMounted(true);
@@ -69,15 +73,19 @@ export default function NotificationsDropdown({ user }: { user: any }) {
     const handleNotificationClick = (notif: any) => {
         if (!notif.read) markAsRead(notif.id);
 
-        if (notif.type === 'TIME_MODIFICATION_REQUEST' ||
-            notif.type === 'PLANNING_ASSIGNMENT' ||
-            notif.type === 'PLANNING_ASSIGNMENT_SUMMARY' ||
-            notif.type === 'PROJECT_FINALIZE_REQUEST'
-        ) {
+        // Types that have their own modal
+        const hasOwnModal = [
+            'TIME_MODIFICATION_REQUEST',
+            'PLANNING_ASSIGNMENT',
+            'PLANNING_ASSIGNMENT_SUMMARY',
+            'PROJECT_FINALIZE_REQUEST'
+        ].includes(notif.type);
+
+        if (hasOwnModal) {
             setSelectedNotification(notif);
         } else {
-            if (notif.type === 'TIME_EDIT_REQUEST') router.push('/timesheets');
-            else if (notif.type === 'PLANNING_ASSIGNMENT' || notif.type === 'PLANNING_ASSIGNMENT_SUMMARY') router.push('/');
+            // No modal: navigate to notifications page and scroll to this notification
+            router.push(`/notifications?highlight=${notif.id}`);
         }
         setIsOpen(false);
     };

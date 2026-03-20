@@ -4,18 +4,18 @@ import { useState, useEffect, useMemo } from 'react';
 import {
     Search,
     CheckCircle2,
-    ChevronRight,
     ClipboardCheck,
-    MoreVertical,
     AlertTriangle,
     Layout,
-    BarChart3,
     ArrowRight,
     X,
     MessageSquare,
     Send,
-    Loader2
+    Loader2,
+    Tag,
+    AlertOctagon
 } from 'lucide-react';
+import { useModalScroll } from '@/lib/useModalScroll';
 import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
 import { formatDateTime } from '@/lib/formatDate';
@@ -79,9 +79,14 @@ export default function MyProjectsPage() {
     const [projectLogs, setProjectLogs] = useState<any[]>([]);
     const [loadingLogs, setLoadingLogs] = useState(false);
     const [newLog, setNewLog] = useState('');
+    const [newLogCategoria, setNewLogCategoria] = useState<'Reporte' | 'Nota' | 'Bloqueante' | 'Consulta'>('Nota');
     const [isSubmittingLog, setIsSubmittingLog] = useState(false);
 
     const [viewAll, setViewAll] = useState(false);
+
+    // Lock body scroll when any modal is open
+    const anyModalOpen = isJustifyModalOpen || isFinalizeModalOpen;
+    useModalScroll(anyModalOpen);
 
     useEffect(() => {
         const storedUser = localStorage.getItem('currentUser');
@@ -214,7 +219,8 @@ export default function MyProjectsPage() {
             const logData = {
                 fecha: new Date().toISOString().split('T')[0],
                 responsable: user.nombreCompleto,
-                observacion: newLog
+                observacion: newLog,
+                categoria: newLogCategoria
             };
             const res = await safeApiRequest(`/api/projects/${selectedProject.id}/logs`, {
                 method: 'POST',
@@ -226,16 +232,23 @@ export default function MyProjectsPage() {
                 const createdLog = await res.json();
                 setProjectLogs(prev => [createdLog, ...prev]);
                 setNewLog('');
+                setNewLogCategoria('Nota');
                 showToast('Comentario añadido', 'success');
 
+                // Notify supervisors — urgency depends on category
+                const isBlocker = newLogCategoria === 'Bloqueante';
                 await safeApiRequest('/api/notifications', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         forSupervisors: true,
-                        title: 'Nuevo comentario en proyecto',
-                        message: `Proyecto: ${selectedProject.nombre}\nOperador: ${user.nombreCompleto}\n\n"${newLog}"`,
-                        type: 'NEW_COMMENT',
+                        title: isBlocker
+                            ? `🚨 Bloqueante en proyecto ${selectedProject.nombre}`
+                            : `Nuevo comentario en proyecto`,
+                        message: isBlocker
+                            ? `Proyecto: ${selectedProject.nombre}\nOperador: ${user.nombreCompleto}\nComentario: ${newLog}`
+                            : `Proyecto: ${selectedProject.nombre}\nOperador: ${user.nombreCompleto}\n[${newLogCategoria}] "${newLog}"`,
+                        type: isBlocker ? 'BLOCKER_COMMENT' : 'NEW_COMMENT',
                         relatedId: selectedProject.id
                     })
                 });
@@ -529,7 +542,39 @@ export default function MyProjectsPage() {
                             </h3>
 
                             <div className="space-y-4">
-                                <div className="space-y-2">
+                                <div className="space-y-3">
+                                    {/* Category selector */}
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                                            <Tag className="w-3 h-3" /> Categoría *
+                                        </label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {(['Nota', 'Reporte', 'Consulta', 'Bloqueante'] as const).map(cat => (
+                                                <button
+                                                    key={cat}
+                                                    type="button"
+                                                    onClick={() => setNewLogCategoria(cat)}
+                                                    className={`btn-icon-inline px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+                                                        newLogCategoria === cat
+                                                            ? cat === 'Bloqueante'
+                                                                ? 'bg-red-600 text-white border-red-600 shadow-lg shadow-red-200'
+                                                                : 'bg-primary text-white border-primary shadow-md shadow-primary/20'
+                                                            : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300'
+                                                    }`}
+                                                >
+                                                    {cat === 'Bloqueante' && <AlertOctagon className="w-3 h-3 inline mr-1" />}
+                                                    {cat}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        {newLogCategoria === 'Bloqueante' && (
+                                            <p className="text-xs font-bold text-red-600 flex items-center gap-1 mt-1">
+                                                <AlertOctagon className="w-3.5 h-3.5" />
+                                                Se notificará inmediatamente a los supervisores
+                                            </p>
+                                        )}
+                                    </div>
+
                                     <textarea
                                         rows={3}
                                         placeholder="Escribe un comentario o actualización..."
@@ -540,7 +585,11 @@ export default function MyProjectsPage() {
                                     <button
                                         onClick={submitLog}
                                         disabled={!newLog.trim() || isSubmittingLog}
-                                        className="w-full bg-slate-800 text-white py-3 rounded-xl font-bold text-sm hover:bg-slate-700 transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95"
+                                        className={`w-full text-white py-3 rounded-xl font-bold text-sm transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95 ${
+                                            newLogCategoria === 'Bloqueante'
+                                                ? 'bg-red-600 hover:bg-red-700 shadow-red-200'
+                                                : 'bg-slate-800 hover:bg-slate-700'
+                                        }`}
                                     >
                                         {isSubmittingLog ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                                         Publicar Comentario
@@ -555,15 +604,31 @@ export default function MyProjectsPage() {
                                     ) : projectLogs.length === 0 ? (
                                         <p className="text-center text-xs text-slate-400 font-medium py-4">No hay comentarios aún.</p>
                                     ) : (
-                                        projectLogs.map(log => (
-                                            <div key={log.id} className="bg-slate-50 border border-slate-100 p-4 rounded-2xl space-y-2">
-                                                <div className="flex justify-between items-start">
-                                                    <span className="text-xs font-bold text-slate-700">{log.responsable}</span>
-                                                    <span className="text-[10px] font-bold text-slate-400">{formatDateTime(log.createdAt)}</span>
+                                        projectLogs.map(log => {
+                                            const cat = log.categoria || 'Nota';
+                                            const catStyles: Record<string, string> = {
+                                                Bloqueante: 'bg-red-100 text-red-700 border-red-200',
+                                                Reporte:    'bg-blue-50 text-blue-700 border-blue-100',
+                                                Consulta:   'bg-amber-50 text-amber-700 border-amber-100',
+                                                Nota:       'bg-slate-100 text-slate-500 border-slate-200',
+                                            };
+                                            return (
+                                                <div key={log.id} className={`border p-4 rounded-2xl space-y-2 ${
+                                                    cat === 'Bloqueante' ? 'bg-red-50 border-red-100' : 'bg-slate-50 border-slate-100'
+                                                }`}>
+                                                    <div className="flex justify-between items-start">
+                                                        <div className="flex items-center gap-2 flex-wrap">
+                                                            <span className="text-xs font-bold text-slate-700">{log.responsable}</span>
+                                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border uppercase tracking-wider ${catStyles[cat] || catStyles['Nota']}`}>
+                                                                {cat === 'Bloqueante' && '🚨 '}{cat}
+                                                            </span>
+                                                        </div>
+                                                        <span className="text-[10px] font-bold text-slate-400 shrink-0">{formatDateTime(log.createdAt)}</span>
+                                                    </div>
+                                                    <p className="text-sm text-slate-600 whitespace-pre-wrap">{log.observacion}</p>
                                                 </div>
-                                                <p className="text-sm text-slate-600 whitespace-pre-wrap">{log.observacion}</p>
-                                            </div>
-                                        ))
+                                            );
+                                        })
                                     )}
                                 </div>
                             </div>

@@ -46,9 +46,14 @@ export async function GET(req: Request) {
             });
         }
 
-        // 1. Fetch active operators not on vacation
+        // 1. Fetch active operators (operador/supervisor only) not on vacation
+        // Admins and implementacion roles are excluded from reminders
         const activeOperators = await prisma.operator.findMany({
-            where: { activo: true, enVacaciones: false }
+            where: {
+                activo: true,
+                enVacaciones: false,
+                role: { in: ['operador', 'supervisor'] }
+            }
         });
 
         const noHoursOperators = [];

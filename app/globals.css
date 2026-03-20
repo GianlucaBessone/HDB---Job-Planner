@@ -190,3 +190,14 @@
 .animate-card-in {
   animation: cardFadeIn 0.25s ease-out forwards;
 }
+
+/* ── Modal open: lock body scroll ── */
+/* Prevents background from scrolling when a modal is open */
+body.modal-open {
+  overflow: hidden;
+  /* iOS Safari: relies on fixed positioning to prevent scroll */
+  position: fixed;
+  width: 100%;
+  /* Preserve the current scroll position so content doesn't jump */
+  /* The JS must set top: -scrollY when adding the class */
+}

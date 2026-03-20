@@ -314,7 +314,7 @@ export const dataLayer = {
             orderBy: { fecha: 'desc' }
         });
     },
-    async createProjectLog(data: { projectId: string; fecha: string; responsable: string; observacion: string }) {
+    async createProjectLog(data: { projectId: string; fecha: string; responsable: string; observacion: string; categoria?: string }) {
         return await prisma.projectLog.create({ data });
     },
     async deleteProjectLog(id: string) {

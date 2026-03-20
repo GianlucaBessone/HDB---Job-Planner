@@ -45,6 +45,7 @@ model ProjectLog {
   fecha       String // YYYY-MM-DD
   responsable String
   observacion String
+  categoria   String   @default("Nota") // Reporte | Nota | Bloqueante | Consulta
   createdAt   DateTime @default(now())
 
   @@index([projectId])
