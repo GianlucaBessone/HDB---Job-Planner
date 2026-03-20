@@ -109,6 +109,8 @@ export default function ProjectFinalizeAuthModal({
                 showToast('Proyecto finalizado y notificado.', 'success');
                 onSuccess();
                 onClose();
+                // Recargar para que los cambios se reflejen inmediatamente en la interfaz
+                window.location.reload();
             } else {
                 const data = await res.json();
                 showToast(data.error || 'Error al finalizar el proyecto', 'error');
