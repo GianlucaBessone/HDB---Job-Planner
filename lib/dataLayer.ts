@@ -13,6 +13,19 @@ export const prisma = getPrisma();
 
 export const dataLayer = {
     // Projects
+    async getProjectById(id: string) {
+        return await prisma.project.findUnique({
+            where: { id },
+            include: {
+                client: true,
+                responsableUser: { select: { id: true, nombreCompleto: true, role: true } },
+                checklistItems: {
+                    select: { id: true, completed: true, excluded: true, tag: true, description: true },
+                    orderBy: { createdAt: 'asc' }
+                },
+            }
+        });
+    },
     async getProjects() {
         return await prisma.project.findMany({
             include: {
