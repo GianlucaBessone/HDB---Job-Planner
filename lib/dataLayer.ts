@@ -60,6 +60,7 @@ export const dataLayer = {
         publicToken?: string;
         categoria?: string;
         tipoActividad?: string;
+        generarOS?: boolean;
     }) {
         const sanitizedData = { ...data };
         if (sanitizedData.clientId === "") delete sanitizedData.clientId;
@@ -124,6 +125,7 @@ export const dataLayer = {
         pendientesSnapshot?: any;
         categoria?: string;
         tipoActividad?: string;
+        generarOS?: boolean;
     }) {
         const sanitizedData = { ...data };
         if (sanitizedData.clientId === "") sanitizedData.clientId = null as any;

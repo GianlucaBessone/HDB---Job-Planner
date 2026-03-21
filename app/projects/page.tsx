@@ -72,6 +72,7 @@ interface Project {
     fechaInicio?: string;
     fechaFin?: string;
     publicToken?: string;
+    generarOS?: boolean;
 }
 
 
@@ -92,6 +93,7 @@ interface FormData {
     estado: ProjectStatus;
     fechaInicio: string;
     fechaFin: string;
+    generarOS: boolean;
 }
 
 
@@ -138,6 +140,7 @@ const EMPTY_FORM: FormData = {
     estado: 'activo',
     fechaInicio: '',
     fechaFin: '',
+    generarOS: false,
 };
 
 
@@ -250,6 +253,7 @@ function ProjectsContent() {
             estado: project.estado,
             fechaInicio: project.fechaInicio || '',
             fechaFin: project.fechaFin || '',
+            generarOS: (project as any).generarOS || false,
         });
 
         setIsModalOpen(true);
@@ -1222,6 +1226,15 @@ function ProjectCard({
                     >
                         <PieChart className="w-3 h-3" /> Seguimiento
                     </Link>
+                    {(project as any).generarOS && (
+                        <Link
+                            href={`/ordenes-servicio/generar?projectId=${project.id}`}
+                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 transition-all whitespace-nowrap"
+                            title="Generar Orden de Servicio"
+                        >
+                            <ClipboardList className="w-3 h-3" /> OS
+                        </Link>
+                    )}
                 </div>
             </div>
         </div>
@@ -1486,6 +1499,25 @@ function ProjectModal({
                                 onChange={e => set('observaciones', e.target.value)}
                                 placeholder="Notas adicionales..."
                             />
+                        </div>
+
+                        {/* Generar OS Switch */}
+                        <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3.5">
+                            <div className="space-y-0.5">
+                                <p className="text-sm font-bold text-emerald-800">Generar Orden de Servicio</p>
+                                <p className="text-xs text-emerald-600 font-medium">Habilita el flujo de Orden de Servicio para este proyecto</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => set('generarOS', !(formData as any).generarOS)}
+                                className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-300 focus:outline-none shrink-0 ${
+                                    (formData as any).generarOS ? 'bg-emerald-600' : 'bg-slate-200'
+                                }`}
+                            >
+                                <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300 ${
+                                    (formData as any).generarOS ? 'translate-x-8' : 'translate-x-1'
+                                }`} />
+                            </button>
                         </div>
                     </div>
 

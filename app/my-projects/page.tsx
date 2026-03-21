@@ -13,8 +13,12 @@ import {
     Send,
     Loader2,
     Tag,
-    AlertOctagon
+    AlertOctagon,
+    FileSignature,
+    QrCode,
+    Edit3
 } from 'lucide-react';
+import Link from 'next/link';
 import { useModalScroll } from '@/lib/useModalScroll';
 import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
@@ -35,6 +39,7 @@ interface Project {
     nombre: string;
     tags: string[];
     estado: string;
+    generarOS?: boolean;
     client?: { nombre: string };
     responsableUser?: { nombreCompleto: string };
     _count?: {
@@ -83,6 +88,10 @@ export default function MyProjectsPage() {
     const [isSubmittingLog, setIsSubmittingLog] = useState(false);
 
     const [viewAll, setViewAll] = useState(false);
+
+    // OS state per selected project
+    const [projectOS, setProjectOS] = useState<any | null>(null);
+    const [loadingOS, setLoadingOS] = useState(false);
 
     // Lock body scroll when any modal is open
     const anyModalOpen = isJustifyModalOpen || isFinalizeModalOpen;
@@ -141,10 +150,32 @@ export default function MyProjectsPage() {
         }
     };
 
+    const loadProjectOS = async (projectId: string) => {
+        setLoadingOS(true);
+        setProjectOS(null);
+        try {
+            const res = await safeApiRequest(`/api/ordenes-servicio?projectId=${projectId}`);
+            const data = await res.json();
+            // Take the most recent (first) OS if any exist
+            if (Array.isArray(data) && data.length > 0) {
+                setProjectOS(data[0]);
+            } else {
+                setProjectOS(null);
+            }
+        } catch {
+            // silently fail — OS is optional
+            setProjectOS(null);
+        } finally {
+            setLoadingOS(false);
+        }
+    };
+
     const openProjectView = (project: Project) => {
         setSelectedProject(project);
         loadChecklist(project.id);
         loadLogs(project.id);
+        if (project.generarOS) loadProjectOS(project.id);
+        else setProjectOS(null);
     };
 
     const handleToggleItem = async (item: ChecklistItem) => {
@@ -635,7 +666,66 @@ export default function MyProjectsPage() {
                             </div>
                         </div>
 
-                        <div className="pt-6 border-t border-slate-50">
+                        <div className="pt-6 border-t border-slate-50 space-y-3">
+                            {/* OS Section */}
+                            {selectedProject.generarOS && (
+                                loadingOS ? (
+                                    <div className="w-full h-16 bg-slate-100 rounded-2xl animate-pulse" />
+                                ) : projectOS ? (
+                                    /* OS ya existe */
+                                    <div className="space-y-2">
+                                        {/* OS status header */}
+                                        <div className={`rounded-2xl px-4 py-3 flex items-center justify-between ${projectOS.estado === 'firmada'
+                                                ? 'bg-emerald-50 border border-emerald-200'
+                                                : 'bg-amber-50 border border-amber-200'
+                                            }`}>
+                                            <div className="flex items-center gap-2">
+                                                <FileSignature className={`w-4 h-4 ${projectOS.estado === 'firmada' ? 'text-emerald-600' : 'text-amber-600'}`} />
+                                                <span className={`text-sm font-black ${projectOS.estado === 'firmada' ? 'text-emerald-800' : 'text-amber-800'}`}>
+                                                    Orden de Servicio
+                                                </span>
+                                            </div>
+                                            <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${projectOS.estado === 'firmada'
+                                                    ? 'bg-emerald-100 text-emerald-700'
+                                                    : 'bg-amber-100 text-amber-700'
+                                                }`}>
+                                                {projectOS.estado === 'firmada' ? '✓ Firmada' : 'Pendiente de firma'}
+                                            </span>
+                                        </div>
+                                        {/* Action buttons */}
+                                        <div className={`grid gap-2 ${projectOS.estado === 'firmada' ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                                            {projectOS.estado !== 'firmada' && (
+                                                <Link
+                                                    href={`/ordenes-servicio/qr/${projectOS.id}`}
+                                                    className="flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black text-sm text-white bg-indigo-600 shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-[0.98]"
+                                                >
+                                                    <QrCode className="w-5 h-5" />
+                                                    VER QR
+                                                </Link>
+                                            )}
+                                            <Link
+                                                href={`/ordenes-servicio/generar?projectId=${selectedProject.id}&editId=${projectOS.id}`}
+                                                className={`flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black text-sm transition-all active:scale-[0.98] ${projectOS.estado === 'firmada'
+                                                        ? 'text-slate-500 bg-slate-100 hover:bg-slate-200 border border-slate-200'
+                                                        : 'text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100'
+                                                    }`}
+                                            >
+                                                <Edit3 className="w-5 h-5" />
+                                                {projectOS.estado === 'firmada' ? 'VER OS' : 'MODIFICAR OS'}
+                                            </Link>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    /* No OS creada todavía */
+                                    <Link
+                                        href={`/ordenes-servicio/generar?projectId=${selectedProject.id}`}
+                                        className="w-full text-white py-4 rounded-2xl font-black text-base shadow-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 bg-emerald-600 shadow-emerald-200 hover:bg-emerald-700"
+                                    >
+                                        <FileSignature className="w-6 h-6" />
+                                        GENERAR ORDEN DE SERVICIO
+                                    </Link>
+                                )
+                            )}
                             <button
                                 onClick={() => handleFinalizeProject()}
                                 disabled={isFinalizing}

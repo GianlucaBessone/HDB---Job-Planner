@@ -36,6 +36,8 @@ model Project {
   timeEntries     TimeEntry[]
   checklistItems  ChecklistItem[]
   logs            ProjectLog[]
+  generarOS       Boolean         @default(false)
+  ordenesServicio OrdenServicio[]
 }
 
 model ProjectLog {
@@ -93,8 +95,9 @@ model Operator {
   role           String         @default("operador") // operador | supervisor | admin
   responsibleProjects Project[]      @relation("ProjectResponsable")
   createdAt           DateTime       @default(now())
-  timeEntries    TimeEntry[]
-  notifications  Notification[]
+  timeEntries     TimeEntry[]
+  notifications   Notification[]
+  ordenesServicio OrdenServicioOperador[]
 }
 
 model FavoriteBlock {
@@ -213,3 +216,50 @@ model SystemSetting {
   dailyReminderTime     String  @default("16:45")
 }
 
+model OrdenServicio {
+  id            String                  @id @default(cuid())
+  projectId     String
+  project       Project                 @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  reporte       String                  @db.Text
+  fechaCreacion DateTime                @default(now())
+  estado        String                  @default("pendiente") // pendiente | firmada
+  linkPublico   String                  @unique @default(uuid())
+  materiales    OrdenServicioMaterial[]
+  operadores    OrdenServicioOperador[]
+  firma         OrdenServicioFirma?
+
+  @@index([projectId])
+}
+
+model OrdenServicioMaterial {
+  id              String        @id @default(cuid())
+  ordenServicioId String
+  ordenServicio   OrdenServicio @relation(fields: [ordenServicioId], references: [id], onDelete: Cascade)
+  material        String
+  cantidad        Float
+  unidadMedida    String
+
+  @@index([ordenServicioId])
+}
+
+model OrdenServicioOperador {
+  id              String        @id @default(cuid())
+  ordenServicioId String
+  ordenServicio   OrdenServicio @relation(fields: [ordenServicioId], references: [id], onDelete: Cascade)
+  operadorId      String
+  operador        Operator      @relation(fields: [operadorId], references: [id], onDelete: Cascade)
+  horas           Float
+
+  @@index([ordenServicioId])
+  @@index([operadorId])
+}
+
+model OrdenServicioFirma {
+  id              String        @id @default(cuid())
+  ordenServicioId String        @unique
+  ordenServicio   OrdenServicio @relation(fields: [ordenServicioId], references: [id], onDelete: Cascade)
+  nombre          String
+  dni             String
+  firmaImagen     String        @db.Text
+  fechaFirma      DateTime      @default(now())
+}
