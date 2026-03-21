@@ -88,6 +88,9 @@ export default function PlanningPage() {
 
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [favoriteToDelete, setFavoriteToDelete] = useState<string | null>(null);
+    const [isPromptOpen, setIsPromptOpen] = useState(false);
+    const [promptValue, setPromptValue] = useState('');
+    const [blockToFavorite, setBlockToFavorite] = useState<any>(null);
 
     const loadPlanning = useCallback(async () => {
         if (!fecha || !isHydrated) return;
@@ -202,15 +205,26 @@ export default function PlanningPage() {
         setBlocks(newBlocks);
     };
 
-    const saveAsFavorite = async (block: any) => {
-        const name = prompt('Nombre del favorito:', block.projectName || 'Bloc de nota');
-        if (!name) return;
-        const data = { ...block, name };
-        const res = await safeApiRequest('/api/favorites', {
-            method: 'POST',
-            body: JSON.stringify(data)
-        }).then(res => res.json());
-        setFavorites(prev => [...prev, res]);
+    const saveAsFavorite = (block: any) => {
+        setBlockToFavorite(block);
+        setPromptValue(block.projectName || 'Bloc de nota');
+        setIsPromptOpen(true);
+    };
+
+    const confirmSaveFavorite = async () => {
+        if (!promptValue.trim() || !blockToFavorite) return;
+        setIsPromptOpen(false);
+        const data = { ...blockToFavorite, name: promptValue.trim() };
+        try {
+            const res = await safeApiRequest('/api/favorites', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            }).then(r => r.json());
+            setFavorites(prev => [...prev, res]);
+            showToast('Guardado en favoritos', 'success');
+        } catch (e) {
+            showToast('Error al guardar favorito', 'error');
+        }
     };
 
     const addFromFavorite = (fav: any) => {
@@ -662,6 +676,28 @@ export default function PlanningPage() {
                 onConfirm={confirmDeleteFavorite}
                 onCancel={() => setIsConfirmOpen(false)}
             />
+
+            {isPromptOpen && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-3xl shadow-xl w-[90%] max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-5">
+                            <h3 className="text-lg font-bold text-slate-800 mb-3">Nombre del favorito:</h3>
+                            <input 
+                                autoFocus
+                                type="text" 
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary/10 transition-all"
+                                value={promptValue}
+                                onChange={e => setPromptValue(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && confirmSaveFavorite()}
+                            />
+                        </div>
+                        <div className="flex bg-slate-50 border-t border-slate-100 p-2 gap-2">
+                            <button onClick={() => setIsPromptOpen(false)} className="flex-1 px-4 py-2.5 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-200 transition-colors">Cancelar</button>
+                            <button onClick={confirmSaveFavorite} disabled={!promptValue.trim()} className="flex-1 px-4 py-2.5 rounded-xl font-bold text-sm bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-50">Aceptar</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

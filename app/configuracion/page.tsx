@@ -43,11 +43,7 @@ export default function ConfigPage() {
         }
     }, [router]);
 
-    if (!userRole) return (
-        <div className="w-full h-[60vh] flex items-center justify-center">
-            <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-        </div>
-    );
+    if (!userRole) return <ConfigSkeleton />;
 
     return (
         <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
@@ -92,11 +88,33 @@ export default function ConfigPage() {
                 </button>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-[2rem] p-6 md:p-8 shadow-sm">
+            <div className="bg-white border border-slate-200 min-h-[400px] rounded-[2rem] p-6 md:p-8 shadow-sm">
                 {activeTab === 'tags' && <TagsSection />}
                 {activeTab === 'checklists' && <ChecklistSection />}
                 {activeTab === 'options' && <OptionsSection />}
                 {activeTab === 'system' && <SystemSection />}
+            </div>
+        </div>
+    );
+}
+
+function ConfigSkeleton() {
+    return (
+        <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                <div className="space-y-1">
+                    <h2 className="text-2xl flex items-center gap-2"><div className="w-8 h-8 rounded-full bg-slate-200 animate-pulse"></div> <div className="w-40 h-8 bg-slate-200 rounded animate-pulse"></div></h2>
+                    <div className="w-64 h-4 bg-slate-100 rounded animate-pulse mt-2"></div>
+                </div>
+            </div>
+            <div className="flex border-b border-slate-200 overflow-x-auto gap-4 py-2">
+                <div className="w-24 h-6 bg-slate-200/60 rounded animate-pulse"></div>
+                <div className="w-24 h-6 bg-slate-200/60 rounded animate-pulse"></div>
+                <div className="w-24 h-6 bg-slate-200/60 rounded animate-pulse"></div>
+            </div>
+            <div className="bg-white border border-slate-200 min-h-[400px] rounded-[2rem] p-6 md:p-8 shadow-sm flex flex-col gap-4">
+                <div className="w-1/3 h-8 bg-slate-200/50 rounded animate-pulse mb-4"></div>
+                {Array(3).fill(0).map((_, i) => <div key={i} className="w-full h-16 bg-slate-100/50 rounded-xl animate-pulse"></div>)}
             </div>
         </div>
     );

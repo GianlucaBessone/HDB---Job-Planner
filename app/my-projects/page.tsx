@@ -347,7 +347,10 @@ export default function MyProjectsPage() {
     };
 
     // Render Logic
-    if (!user) return <div className="p-8 text-center">Cargando usuario...</div>;
+    // Render Logic
+    if (!user) {
+        return <MyProjectsSkeleton viewAll={viewAll} />;
+    }
 
     return (
         <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
@@ -391,7 +394,7 @@ export default function MyProjectsPage() {
 
                     {loading ? (
                         <div className="space-y-4">
-                            {[1, 2].map(i => <div key={i} className="h-40 bg-slate-100 rounded-3xl animate-pulse" />)}
+                            {[1, 2].map(i => <div key={i} className="h-[200px] bg-slate-100 rounded-3xl animate-pulse" />)}
                         </div>
                     ) : (
                         <div className="grid gap-4">
@@ -760,6 +763,25 @@ export default function MyProjectsPage() {
                     animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
                 }
             `}</style>
+        </div>
+    );
+}
+
+function MyProjectsSkeleton({ viewAll }: { viewAll: boolean }) {
+    return (
+        <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
+            <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div className="space-y-1 flex items-center gap-3">
+                    <ClipboardCheck className="w-6 h-6 md:w-8 md:h-8 text-primary opacity-20" />
+                    <div className="w-48 h-8 bg-slate-200 rounded-lg animate-pulse" />
+                </div>
+            </header>
+
+            <div className="w-full h-[52px] bg-slate-100 border border-slate-200 rounded-2xl animate-pulse" />
+
+            <div className="space-y-4">
+                {[1, 2].map(i => <div key={i} className="h-[200px] bg-slate-100 rounded-3xl animate-pulse" />)}
+            </div>
         </div>
     );
 }

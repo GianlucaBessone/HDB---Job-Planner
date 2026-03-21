@@ -613,14 +613,45 @@ function ProjectsContent() {
 // ── Main Component ─────────────────────────────────────────────────────────────
 export default function ProjectsPage() {
     return (
-        <Suspense fallback={
-            <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4">
-                <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-                <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Cargando Proyectos...</p>
-            </div>
-        }>
+        <Suspense fallback={<ProjectsSkeleton />}>
             <ProjectsContent />
         </Suspense>
+    );
+}
+
+function ProjectsSkeleton() {
+    return (
+        <div className="w-full space-y-4 md:space-y-8 animate-in fade-in duration-500 pb-20">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="space-y-1">
+                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 md:gap-3">
+                        <div className="w-8 h-8 rounded-full bg-slate-200 animate-pulse"></div> 
+                        <div className="w-48 h-8 bg-slate-200 rounded animate-pulse"></div>
+                    </h2>
+                    <div className="w-64 h-4 bg-slate-100 rounded animate-pulse hidden md:block mt-2"></div>
+                </div>
+            </div>
+
+            <div className="bg-white p-4 md:p-6 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
+                    <div className="w-full h-[50px] bg-slate-100 rounded-2xl animate-pulse" />
+                </div>
+                <div className="w-full md:w-auto flex gap-2">
+                    <div className="flex-1 md:w-32 h-[50px] bg-slate-100 rounded-2xl animate-pulse" />
+                    <div className="w-[50px] h-[50px] bg-slate-100 rounded-2xl animate-pulse" />
+                </div>
+            </div>
+
+            <div className="flex flex-col md:flex-row gap-6">
+                <div className="flex-1 min-w-0 w-full">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {Array(4).fill(0).map((_, i) => (
+                            <div key={i} className="bg-slate-100/60 rounded-2xl animate-pulse h-[220px]" />
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 }
 
