@@ -122,7 +122,7 @@ export default function PlanningPage() {
                 safeApiRequest('/api/operators').then(res => res.json()),
                 safeApiRequest('/api/favorites').then(res => res.json())
             ]);
-            setProjects(p.filter((x: any) => x.activo));
+            setProjects(p.filter((x: any) => x.activo && x.estado !== 'finalizado'));
             setOperators(o.filter((x: any) => x.activo));
             setFavorites(f);
             
