@@ -245,9 +245,7 @@ export default function MyProjectsPage() {
                         title: isBlocker
                             ? `🚨 Bloqueante en proyecto ${selectedProject.nombre}`
                             : `Nuevo comentario en proyecto`,
-                        message: isBlocker
-                            ? `Proyecto: ${selectedProject.nombre}\nOperador: ${user.nombreCompleto}\nComentario: ${newLog}`
-                            : `Proyecto: ${selectedProject.nombre}\nOperador: ${user.nombreCompleto}\n[${newLogCategoria}] "${newLog}"`,
+                        message: `Proyecto: ${selectedProject.nombre}\nOperador: ${user.nombreCompleto}\n[${newLogCategoria}] "${newLog}"`,
                         type: isBlocker ? 'BLOCKER_COMMENT' : 'NEW_COMMENT',
                         relatedId: selectedProject.id
                     })
@@ -608,9 +606,9 @@ export default function MyProjectsPage() {
                                             const cat = log.categoria || 'Nota';
                                             const catStyles: Record<string, string> = {
                                                 Bloqueante: 'bg-red-100 text-red-700 border-red-200',
-                                                Reporte:    'bg-blue-50 text-blue-700 border-blue-100',
-                                                Consulta:   'bg-amber-50 text-amber-700 border-amber-100',
-                                                Nota:       'bg-slate-100 text-slate-500 border-slate-200',
+                                                Reporte:    'bg-emerald-100 text-emerald-700 border-emerald-200',
+                                                Consulta:   'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200',
+                                                Nota:       'bg-blue-100 text-blue-700 border-blue-200',
                                             };
                                             return (
                                                 <div key={log.id} className={`border p-4 rounded-2xl space-y-2 ${

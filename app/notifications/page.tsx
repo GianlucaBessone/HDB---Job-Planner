@@ -139,6 +139,16 @@ export default function NotificationsPage() {
                 <div className="space-y-4">
                     {displayedNotifications.map((notification) => {
                         const isHighlighted = notification.id === highlightId;
+                        const match = notification.message.match(/\[(Nota|Reporte|Consulta|Bloqueante)\]/);
+                        const category = match ? match[1] : null;
+                        const cleanMessage = match ? notification.message.replace(match[0], '').trim() : notification.message;
+                        const catStyles: Record<string, string> = {
+                            Bloqueante: 'bg-red-100 text-red-700 border-red-200',
+                            Reporte:    'bg-emerald-100 text-emerald-700 border-emerald-200',
+                            Consulta:   'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200',
+                            Nota:       'bg-blue-100 text-blue-700 border-blue-200',
+                        };
+
                         return (
                         <div
                             key={notification.id}
@@ -148,13 +158,20 @@ export default function NotificationsPage() {
                             } ${isHighlighted ? 'ring-2 ring-primary ring-offset-2 scale-[1.01] shadow-lg shadow-primary/10' : ''}`}
                         >
                             <div className="flex justify-between items-start mb-2">
-                                <h3 className={`text-base font-black ${notification.read ? 'text-slate-700' : 'text-indigo-900'}`}>{notification.title}</h3>
-                                <span className="text-[10px] font-black text-slate-400 bg-slate-100 px-2 py-1 rounded-lg">
+                                <div className="space-y-1.5 flex-1 pr-4">
+                                    <h3 className={`text-base font-black ${notification.read ? 'text-slate-700' : 'text-indigo-900'}`}>{notification.title}</h3>
+                                    {category && (
+                                        <div className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-black border uppercase tracking-widest ${catStyles[category] || catStyles['Nota']}`}>
+                                            {category === 'Bloqueante' && '🚨 '}{category}
+                                        </div>
+                                    )}
+                                </div>
+                                <span className="text-[10px] font-black text-slate-400 bg-slate-100 px-2 py-1 rounded-lg shrink-0">
                                     {formatDateTime(notification.createdAt).replace(' ', ' - ')}
                                 </span>
                             </div>
                             <p className="text-sm font-medium text-slate-600 whitespace-pre-wrap mb-4">
-                                {notification.message}
+                                {cleanMessage}
                             </p>
                             
                             <div className="flex justify-end gap-2 border-t border-slate-50 pt-3">

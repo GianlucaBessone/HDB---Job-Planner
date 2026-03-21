@@ -990,15 +990,29 @@ function ProjectDetailsModal({
                                             {logs.length === 0 ? (
                                                 <div className="bg-slate-50 border border-dashed border-slate-200 rounded-3xl p-10 text-center text-slate-400 text-xs font-bold uppercase tracking-widest">No hay registros aún</div>
                                             ) : (
-                                                logs.map((log: any) => (
-                                                    <div key={log.id} className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm space-y-2">
-                                                        <div className="flex items-center justify-between">
-                                                            <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded-md">{formatDate(log.fecha)}</span>
+                                                logs.map((log: any) => {
+                                                    const cat = log.categoria || 'Nota';
+                                                    const catStyles: Record<string, string> = {
+                                                        Bloqueante: 'bg-red-100 text-red-700 border-red-200',
+                                                        Reporte:    'bg-emerald-100 text-emerald-700 border-emerald-200',
+                                                        Consulta:   'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200',
+                                                        Nota:       'bg-blue-100 text-blue-700 border-blue-200',
+                                                    };
+                                                    return (
+                                                    <div key={log.id} className={`bg-white border p-4 rounded-2xl shadow-sm space-y-2 ${cat === 'Bloqueante' ? 'border-red-100' : 'border-slate-100'}`}>
+                                                        <div className="flex justify-between items-start">
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded-md">{formatDate(log.fecha)}</span>
+                                                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black border uppercase tracking-widest ${catStyles[cat] || catStyles['Nota']}`}>
+                                                                    {cat === 'Bloqueante' && '🚨 '}{cat}
+                                                                </span>
+                                                            </div>
                                                             <span className="text-[9px] font-bold text-slate-400">Por: {log.responsable}</span>
                                                         </div>
                                                         <p className="text-xs font-medium text-slate-600 leading-relaxed italic">"{log.observacion}"</p>
                                                     </div>
-                                                ))
+                                                    );
+                                                })
                                             )}
                                         </div>
                                     </div>

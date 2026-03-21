@@ -222,21 +222,38 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                                     </div>
                                 ) : (
                                     <div className="divide-y divide-slate-50">
-                                        {notifications.map(notif => (
+                                        {notifications.map(notif => {
+                                            const match = notif.message.match(/\[(Nota|Reporte|Consulta|Bloqueante)\]/);
+                                            const category = match ? match[1] : null;
+                                            const cleanMessage = match ? notif.message.replace(match[0], '').trim() : notif.message;
+                                            const catStyles: Record<string, string> = {
+                                                Bloqueante: 'bg-red-100 text-red-700 border-red-200',
+                                                Reporte:    'bg-emerald-100 text-emerald-700 border-emerald-200',
+                                                Consulta:   'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200',
+                                                Nota:       'bg-blue-100 text-blue-700 border-blue-200',
+                                            };
+                                            return (
                                             <div
                                                 key={notif.id}
                                                 onClick={() => handleNotificationClick(notif)}
                                                 className={`p-4 hover:bg-slate-50 cursor-pointer transition-colors relative flex gap-3 ${!notif.read ? 'bg-primary/5' : ''}`}
                                             >
-                                                <div className="mt-1">
+                                                <div className="mt-1 shrink-0">
                                                     {!notif.read && <div className="w-2 h-2 rounded-full bg-primary mt-1.5"></div>}
                                                 </div>
-                                                <div className="flex-1">
-                                                    <h4 className={`text-sm ${!notif.read ? 'font-bold text-slate-800' : 'font-medium text-slate-600'}`}>
-                                                        {notif.title}
-                                                    </h4>
+                                                <div className="flex-1 min-w-0 pr-2">
+                                                    <div className="flex flex-col gap-1.5 mb-1.5">
+                                                        <h4 className={`text-sm ${!notif.read ? 'font-bold text-slate-800' : 'font-medium text-slate-600'}`}>
+                                                            {notif.title}
+                                                        </h4>
+                                                        {category && (
+                                                            <div className={`inline-flex px-1.5 py-0.5 rounded text-[9px] font-black border uppercase tracking-widest self-start w-max ${catStyles[category] || catStyles['Nota']}`}>
+                                                                {category === 'Bloqueante' && '🚨 '}{category}
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                     <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
-                                                        {notif.message}
+                                                        {cleanMessage}
                                                     </p>
                                                     <span className="text-[10px] text-slate-400 mt-2 block uppercase tracking-wider font-semibold">
                                                         {new Date(notif.createdAt).toLocaleDateString()} {new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -252,7 +269,8 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                                                     </button>
                                                 )}
                                             </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 )}
                             </div>
