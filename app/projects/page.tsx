@@ -1202,7 +1202,7 @@ function ProjectCard({
                     )}
                 </div>
 
-                <div className="flex items-center gap-1.5">
+                <div className="flex flex-wrap items-center gap-1.5 pt-2">
                     <button onClick={() => onDetails(project)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 border border-slate-200 hover:border-primary/40 hover:text-primary transition-all whitespace-nowrap">
                         Ver Detalle <ChevronRight className="w-3 h-3" />
                     </button>
