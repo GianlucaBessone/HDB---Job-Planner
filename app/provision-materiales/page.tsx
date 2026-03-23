@@ -273,6 +273,9 @@ function EditMaterialModal({ material, onClose, onDone }: { material: Material; 
                     <div>
                         <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Unidad</label>
                         <select value={form.unidad} onChange={e => setForm(p => ({ ...p, unidad: e.target.value }))} className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold outline-none focus:border-primary mt-1 bg-white text-slate-700">
+                            {!UNIDADES.includes(form.unidad) && form.unidad && (
+                                <option value={form.unidad}>{form.unidad}</option>
+                            )}
                             {UNIDADES.map(u => <option key={u} value={u}>{u}</option>)}
                         </select>
                     </div>

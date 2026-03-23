@@ -498,6 +498,9 @@ function GenerarOSContent() {
                                             onChange={e => updateMaterial(i, 'unidadMedida', e.target.value)}
                                             className={`w-full ${m.materialProyectoId ? 'bg-transparent border-transparent px-0 font-bold text-slate-500' : 'bg-white border-slate-200 px-2.5 py-2.5 rounded-xl border appearance-none font-medium text-sm'} disabled:opacity-90 outline-none focus:ring-2 focus:ring-primary/20 transition-all`}
                                         >
+                                            {!UNIDADES.includes(m.unidadMedida) && m.unidadMedida && (
+                                                <option value={m.unidadMedida}>{m.unidadMedida}</option>
+                                            )}
                                             {UNIDADES.map(u => <option key={u} value={u}>{u}</option>)}
                                         </select>
                                     </div>

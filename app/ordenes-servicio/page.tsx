@@ -163,7 +163,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
 
             <div class="footer">
                 <span>HDB Job Planner — Gestión de Órdenes de Servicio</span>
-                <span>OS ${(os as any).codigoOS || '#' + os.id.slice(-8).toUpperCase()} — ${(os as any).project.codigoProyecto || ''} — ${formatDate(os.fechaCreacion)}</span>
+                <span>${(os as any).codigoOS || 'OS #' + os.id.slice(-8).toUpperCase()} — ${(os as any).project.codigoProyecto || ''} — ${formatDate(os.fechaCreacion)}</span>
             </div>
         `;
 
