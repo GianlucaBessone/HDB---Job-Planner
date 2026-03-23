@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
-import { CheckCircle2, Loader2, FileText, User, Package, Clock, AlertCircle, PenLine, X } from 'lucide-react';
+import { CheckCircle2, Loader2, FileText, User, Package, Clock, AlertCircle, PenLine, X, Star, MessageSquare, ThumbsUp, Smile } from 'lucide-react';
 
 interface Firma {
     nombre: string;
@@ -35,6 +35,7 @@ export interface SignatureRef {
     getDataUrl: () => string;
 }
 
+// ─── Signature Canvas ──────────────────────────────────────────────────────────
 const SignatureCanvas = forwardRef<SignatureRef, {}>((props, ref) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [isDrawing, setIsDrawing] = useState(false);
@@ -132,7 +133,7 @@ const SignatureCanvas = forwardRef<SignatureRef, {}>((props, ref) => {
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-48 h-px bg-slate-300 pointer-events-none" />
             </div>
             {hasStrokes && (
-                <button 
+                <button
                     onClick={clear}
                     type="button"
                     className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-slate-500 hover:text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm border border-slate-200 transition-all active:scale-95"
@@ -145,6 +146,340 @@ const SignatureCanvas = forwardRef<SignatureRef, {}>((props, ref) => {
 });
 SignatureCanvas.displayName = 'SignatureCanvas';
 
+// ─── Rating Button ─────────────────────────────────────────────────────────────
+function RatingButton({ value, selected, onClick, min, max }: { value: number; selected: boolean; onClick: () => void; min: number; max: number }) {
+    // Gradient from red→yellow→green based on normalized position
+    const normalized = (value - min) / (max - min); // 0..1
+    let bg = '';
+    let textColor = '';
+    if (selected) {
+        if (normalized <= 0.3) { bg = 'bg-rose-500'; textColor = 'text-white'; }
+        else if (normalized <= 0.6) { bg = 'bg-amber-400'; textColor = 'text-white'; }
+        else { bg = 'bg-emerald-500'; textColor = 'text-white'; }
+    }
+
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            className={`
+                flex-1 min-w-[2.5rem] h-11 rounded-xl text-sm font-black transition-all duration-150 active:scale-90 border
+                ${selected
+                    ? `${bg} ${textColor} border-transparent shadow-lg scale-105`
+                    : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100 hover:border-slate-300'
+                }
+            `}
+        >
+            {value}
+        </button>
+    );
+}
+
+// ─── Scale Selector ────────────────────────────────────────────────────────────
+function ScaleSelector({
+    value,
+    onChange,
+    min,
+    max,
+    labelLeft,
+    labelRight,
+}: {
+    value: number | null;
+    onChange: (v: number) => void;
+    min: number;
+    max: number;
+    labelLeft: string;
+    labelRight: string;
+}) {
+    const values = Array.from({ length: max - min + 1 }, (_, i) => i + min);
+    return (
+        <div className="space-y-2">
+            <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
+                {values.map(v => (
+                    <RatingButton
+                        key={v}
+                        value={v}
+                        selected={value === v}
+                        onClick={() => onChange(v)}
+                        min={min}
+                        max={max}
+                    />
+                ))}
+            </div>
+            <div className="flex justify-between text-[10px] font-bold text-slate-400 px-0.5">
+                <span>{labelLeft}</span>
+                <span>{labelRight}</span>
+            </div>
+        </div>
+    );
+}
+
+// ─── Survey Step Component ────────────────────────────────────────────────────
+type SurveyData = {
+    atencion: number | null;
+    calidad: number | null;
+    tiempo: number | null;
+    nps: number | null;
+    comentario: string;
+};
+
+function SurveyView({
+    osId,
+    onDone,
+    onSkip,
+}: {
+    osId: string;
+    onDone: () => void;
+    onSkip: () => void;
+}) {
+    const [data, setData] = useState<SurveyData>({
+        atencion: null, calidad: null, tiempo: null, nps: null, comentario: ''
+    });
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState('');
+    const [done, setDone] = useState(false);
+
+    const handleSubmit = async () => {
+        if (data.atencion === null || data.calidad === null || data.tiempo === null || data.nps === null) {
+            setError('Por favor respondé todas las preguntas antes de enviar.');
+            return;
+        }
+        setError('');
+        setSubmitting(true);
+        try {
+            const res = await fetch('/api/encuesta-servicio', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ordenServicioId: osId,
+                    atencion: data.atencion,
+                    calidad: data.calidad,
+                    tiempo: data.tiempo,
+                    nps: data.nps,
+                    comentario: data.comentario,
+                }),
+            });
+            if (!res.ok) {
+                const err = await res.json();
+                setError(err.error || 'Error al enviar la encuesta');
+                return;
+            }
+            setDone(true);
+        } catch {
+            setError('Error de conexión. Por favor intentá de nuevo.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    if (done) {
+        return (
+            <div className="text-center space-y-5 py-6">
+                <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-emerald-100">
+                    <CheckCircle2 className="w-10 h-10 text-emerald-500" />
+                </div>
+                <div>
+                    <h3 className="text-xl font-black text-slate-800">¡Gracias por tu respuesta! 🙌</h3>
+                    <p className="text-sm text-slate-500 font-medium mt-1">Tu opinión nos ayuda a mejorar cada día.</p>
+                </div>
+                <button
+                    onClick={onDone}
+                    className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-base shadow-lg shadow-blue-200 active:scale-95 transition-all hover:bg-blue-700"
+                >
+                    Volver a la Orden de Servicio
+                </button>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-6">
+            <div className="text-center space-y-1">
+                <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <Star className="w-7 h-7 text-blue-500" fill="currentColor" />
+                </div>
+                <h3 className="text-xl font-black text-slate-800">Encuesta de Satisfacción</h3>
+                <p className="text-xs text-slate-400 font-medium">Menos de 30 segundos · Tu opinión importa</p>
+            </div>
+
+            {/* Q1 — Atención */}
+            <div className="space-y-3 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                <div className="flex items-start gap-2">
+                    <span className="bg-blue-100 text-blue-600 text-[10px] font-black rounded-lg px-2 py-1 uppercase tracking-widest shrink-0">1 de 4</span>
+                    <p className="text-sm font-bold text-slate-700">¿Cómo calificás la atención recibida por el técnico?</p>
+                </div>
+                <ScaleSelector
+                    value={data.atencion}
+                    onChange={v => setData(d => ({ ...d, atencion: v }))}
+                    min={1} max={10}
+                    labelLeft="Muy mala"
+                    labelRight="Excelente"
+                />
+            </div>
+
+            {/* Q2 — Calidad */}
+            <div className="space-y-3 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                <div className="flex items-start gap-2">
+                    <span className="bg-indigo-100 text-indigo-600 text-[10px] font-black rounded-lg px-2 py-1 uppercase tracking-widest shrink-0">2 de 4</span>
+                    <p className="text-sm font-bold text-slate-700">¿Cómo calificás el resultado final del trabajo?</p>
+                </div>
+                <ScaleSelector
+                    value={data.calidad}
+                    onChange={v => setData(d => ({ ...d, calidad: v }))}
+                    min={1} max={10}
+                    labelLeft="Muy malo"
+                    labelRight="Excelente"
+                />
+            </div>
+
+            {/* Q3 — Tiempo */}
+            <div className="space-y-3 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                <div className="flex items-start gap-2">
+                    <span className="bg-amber-100 text-amber-600 text-[10px] font-black rounded-lg px-2 py-1 uppercase tracking-widest shrink-0">3 de 4</span>
+                    <p className="text-sm font-bold text-slate-700">¿Cómo evaluás el tiempo en que se realizó el servicio?</p>
+                </div>
+                <ScaleSelector
+                    value={data.tiempo}
+                    onChange={v => setData(d => ({ ...d, tiempo: v }))}
+                    min={1} max={10}
+                    labelLeft="Muy lento"
+                    labelRight="Adecuado"
+                />
+            </div>
+
+            {/* Q4 — NPS */}
+            <div className="space-y-3 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                <div className="flex items-start gap-2">
+                    <span className="bg-emerald-100 text-emerald-600 text-[10px] font-black rounded-lg px-2 py-1 uppercase tracking-widest shrink-0">4 de 4</span>
+                    <p className="text-sm font-bold text-slate-700">¿Qué tan probable es que recomiendes nuestra empresa?</p>
+                </div>
+                <ScaleSelector
+                    value={data.nps}
+                    onChange={v => setData(d => ({ ...d, nps: v }))}
+                    min={0} max={10}
+                    labelLeft="Nada probable"
+                    labelRight="Totalmente probable"
+                />
+            </div>
+
+            {/* Q5 — Comentario opcional */}
+            <div className="space-y-2">
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    Comentarios adicionales <span className="normal-case font-medium text-slate-300">(opcional)</span>
+                </label>
+                <textarea
+                    value={data.comentario}
+                    onChange={e => setData(d => ({ ...d, comentario: e.target.value }))}
+                    placeholder="Contanos tu experiencia..."
+                    rows={3}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all resize-none"
+                />
+            </div>
+
+            {error && (
+                <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                    <p>{error}</p>
+                </div>
+            )}
+
+            <div className="flex gap-3 pt-2">
+                <button
+                    onClick={onSkip}
+                    type="button"
+                    className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold text-sm hover:bg-slate-200 active:scale-95 transition-all"
+                >
+                    Cancelar
+                </button>
+                <button
+                    onClick={handleSubmit}
+                    disabled={submitting}
+                    type="button"
+                    className="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-black text-sm shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:active:scale-100"
+                >
+                    {submitting ? (
+                        <>
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            Enviando...
+                        </>
+                    ) : (
+                        <>
+                            <ThumbsUp className="w-4 h-4" />
+                            Enviar encuesta
+                        </>
+                    )}
+                </button>
+            </div>
+        </div>
+    );
+}
+
+// ─── Post-signature Modal ──────────────────────────────────────────────────────
+function PostFirmaModal({
+    osId,
+    onClose,
+}: {
+    osId: string;
+    onClose: () => void;
+}) {
+    const [showSurvey, setShowSurvey] = useState(false);
+
+    if (showSurvey) {
+        return (
+            <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/60 backdrop-blur-sm">
+                <div className="bg-white w-full max-w-lg rounded-t-3xl shadow-2xl p-6 sm:p-8 space-y-0 animate-in slide-in-from-bottom-4 duration-300 max-h-[95dvh] overflow-y-auto overscroll-contain">
+                    <SurveyView
+                        osId={osId}
+                        onDone={onClose}
+                        onSkip={onClose}
+                    />
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+            <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl p-7 animate-in zoom-in-95 duration-300 space-y-5">
+                {/* Icon */}
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-blue-200">
+                    <Smile className="w-9 h-9 text-white" />
+                </div>
+
+                {/* Text */}
+                <div className="text-center space-y-2">
+                    <h3 className="text-xl font-black text-slate-800">
+                        ¡Gracias por confirmar la Orden de Servicio! 🙌
+                    </h3>
+                    <p className="text-sm text-slate-500 font-medium leading-relaxed">
+                        Tu opinión es muy importante para nosotros.<br />
+                        ¿Te gustaría responder una breve encuesta sobre el servicio?
+                    </p>
+                </div>
+
+                {/* Actions */}
+                <div className="space-y-2.5 pt-1">
+                    <button
+                        onClick={() => setShowSurvey(true)}
+                        className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-base shadow-lg shadow-blue-200 active:scale-95 transition-all hover:bg-blue-700 flex items-center justify-center gap-2"
+                    >
+                        <Star className="w-5 h-5" fill="currentColor" />
+                        Responder encuesta
+                    </button>
+                    <button
+                        onClick={onClose}
+                        className="w-full py-3.5 bg-slate-100 text-slate-600 rounded-2xl font-bold text-sm hover:bg-slate-200 active:scale-95 transition-all"
+                    >
+                        Ahora no
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
 export default function OSPublicPage({ params }: { params: { token: string } }) {
     const { token } = params;
     const [os, setOs] = useState<OrdenServicio | null>(null);
@@ -158,6 +493,10 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
     const [submittingFirma, setSubmittingFirma] = useState(false);
     const [firmaError, setFirmaError] = useState('');
     const sigRef = useRef<SignatureRef>(null);
+
+    // Post-firma survey modal — only shown once per session
+    const [showPostFirmaModal, setShowPostFirmaModal] = useState(false);
+    const alreadyShownRef = useRef(false);
 
     useEffect(() => {
         loadOS();
@@ -190,7 +529,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
             setFirmaError('Debe dibujar su firma en el recuadro.');
             return;
         }
-        
+
         setFirmaError('');
         const dataUrl = sigRef.current.getDataUrl();
         setSubmittingFirma(true);
@@ -207,6 +546,17 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
             }
             setShowFirmaModal(false);
             await loadOS();
+
+            // Show post-firma modal (only once per session)
+            if (!alreadyShownRef.current) {
+                alreadyShownRef.current = true;
+                // Check if survey already answered
+                const surveyRes = await fetch(`/api/encuesta-servicio/${token}`);
+                const surveyData = await surveyRes.json();
+                if (!surveyData) {
+                    setShowPostFirmaModal(true);
+                }
+            }
         } catch {
             setFirmaError('Error de conexión');
         } finally {
@@ -438,7 +788,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
 
                         <div className="space-y-6">
                             <p className="text-sm text-slate-500 font-medium">Por favor ingresá tus datos y firmá en el cuadro inferior.</p>
-                            
+
                             <div className="space-y-4">
                                 <div className="space-y-1.5 focus-within:z-10 relative">
                                     <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Nombre Completo *</label>
@@ -492,7 +842,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                             )}
 
                             <div className="flex gap-3 pt-2">
-                                <button 
+                                <button
                                     onClick={() => setShowFirmaModal(false)}
                                     type="button"
                                     className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold text-sm hover:bg-slate-200 active:scale-95 transition-all"
@@ -518,6 +868,14 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Post-firma modal */}
+            {showPostFirmaModal && (
+                <PostFirmaModal
+                    osId={token}
+                    onClose={() => setShowPostFirmaModal(false)}
+                />
             )}
         </div>
     );

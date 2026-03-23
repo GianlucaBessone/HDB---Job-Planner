@@ -38,6 +38,7 @@ model Project {
   logs            ProjectLog[]
   generarOS       Boolean         @default(false)
   ordenesServicio OrdenServicio[]
+  encuestas       EncuestaServicio[]
 }
 
 model ProjectLog {
@@ -227,6 +228,7 @@ model OrdenServicio {
   materiales    OrdenServicioMaterial[]
   operadores    OrdenServicioOperador[]
   firma         OrdenServicioFirma?
+  encuesta      EncuestaServicio?
 
   @@index([projectId])
 }
@@ -262,4 +264,21 @@ model OrdenServicioFirma {
   dni             String
   firmaImagen     String        @db.Text
   fechaFirma      DateTime      @default(now())
+}
+
+model EncuestaServicio {
+  id              String        @id @default(cuid())
+  ordenServicioId String        @unique
+  ordenServicio   OrdenServicio @relation(fields: [ordenServicioId], references: [id], onDelete: Cascade)
+  proyectoId      String
+  project         Project       @relation(fields: [proyectoId], references: [id], onDelete: Cascade)
+  fecha           DateTime      @default(now())
+  atencion        Int           // 1-10
+  calidad         Int           // 1-10
+  tiempo          Int           // 1-10
+  nps             Int           // 0-10
+  comentario      String?       @db.Text
+
+  @@index([proyectoId])
+  @@index([fecha])
 }

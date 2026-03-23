@@ -21,7 +21,12 @@ import {
     Activity,
     Target,
     Timer,
-    SlidersHorizontal
+    SlidersHorizontal,
+    Star,
+    MessageSquare,
+    Smile,
+    TrendingUp as TrendUp,
+    Award
 } from 'lucide-react';
 import SearchableSelect from '@/components/SearchableSelect';
 import { safeApiRequest } from '@/lib/offline';
@@ -77,12 +82,13 @@ export default function DashboardPage() {
     const [data, setData] = useState<DashboardData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [clients, setClients] = useState<{ id: string; nombre: string }[]>([]);
+    const [activeTab, setActiveTab] = useState<'proyectos' | 'servicios'>('proyectos');
 
-    // Filter States (Requirement 2)
+    // Filter States
     const [filterFrom, setFilterFrom] = useState('');
     const [filterTo, setFilterTo] = useState('');
     const [filterClientId, setFilterClientId] = useState('');
-    const [filterStatus, setFilterStatus] = useState('active'); // active | finished | all
+    const [filterStatus, setFilterStatus] = useState('active');
     const router = useRouter();
 
     useEffect(() => {
@@ -96,7 +102,6 @@ export default function DashboardPage() {
     }, [router]);
 
     useEffect(() => {
-        // Load clients once
         safeApiRequest('/api/clients')
             .then(res => res.json())
             .then(setClients)
@@ -151,6 +156,39 @@ export default function DashboardPage() {
                     <p className="text-sm text-slate-500 font-medium hidden md:block">Resumen del estado operativo y métricas de rendimiento</p>
                 </div>
             </div>
+
+            {/* Tab navigation */}
+            <div className="flex gap-1 bg-white border border-slate-200 rounded-2xl p-1.5 shadow-sm w-fit">
+                <button
+                    onClick={() => setActiveTab('proyectos')}
+                    className={`px-5 py-2.5 rounded-xl text-sm font-black transition-all ${
+                        activeTab === 'proyectos'
+                            ? 'bg-primary text-white shadow-md shadow-primary/20'
+                            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                    }`}
+                >
+                    <span className="flex items-center gap-2">
+                        <Briefcase className="w-4 h-4" />
+                        Proyectos
+                    </span>
+                </button>
+                <button
+                    onClick={() => setActiveTab('servicios')}
+                    className={`px-5 py-2.5 rounded-xl text-sm font-black transition-all ${
+                        activeTab === 'servicios'
+                            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+                            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                    }`}
+                >
+                    <span className="flex items-center gap-2">
+                        <Star className="w-4 h-4" />
+                        Servicios
+                    </span>
+                </button>
+            </div>
+
+            {activeTab === 'servicios' && <ServiciosTab clients={clients} />}
+            {activeTab === 'proyectos' && <>
 
             {/* Advanced Filters (Requirement 2) */}
             <div className="bg-white border border-slate-200 rounded-2xl md:rounded-[2rem] p-4 md:p-6 shadow-sm space-y-3 md:space-y-4">
@@ -596,10 +634,605 @@ export default function DashboardPage() {
                     />
                 </div>
             </div>
+            </> /* end proyectos tab */
+            }
         </div>
     );
 }
 
+// ═══════════════════════════════════════════════════════
+// SERVICIOS TAB
+// ═══════════════════════════════════════════════════════
+
+interface MetricasServicio {
+    total: number;
+    nps: {
+        score: number | null;
+        promotores: number;
+        pasivos: number;
+        detractores: number;
+        pctPromo: number;
+        pctDetrac: number;
+        pctPasivos: number;
+    };
+    promedios: { atencion: number | null; calidad: number | null; tiempo: number | null };
+    porMes: { label: string; atencion: number; calidad: number; tiempo: number; nps: number; count: number }[];
+    porOperador: { id: string; nombre: string; atencion: number | null; calidad: number | null; tiempo: number | null; nps: number | null; count: number }[];
+}
+
+function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }) {
+    const [metricas, setMetricas] = useState<MetricasServicio | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [operators, setOperators] = useState<{ id: string; nombreCompleto: string }[]>([]);
+    const [proyectos, setProyectos] = useState<{ id: string; nombre: string }[]>([]);
+
+    // Filters
+    const [filterFrom, setFilterFrom] = useState('');
+    const [filterTo, setFilterTo] = useState('');
+    const [filterClientId, setFilterClientId] = useState('');
+    const [filterProyectoId, setFilterProyectoId] = useState('');
+    const [filterOperadorId, setFilterOperadorId] = useState('');
+
+    useEffect(() => {
+        safeApiRequest('/api/operators').then(r => r.json()).then(setOperators).catch(console.error);
+        safeApiRequest('/api/projects').then(r => r.json()).then(d => setProyectos(Array.isArray(d) ? d : d.projects || [])).catch(console.error);
+    }, []);
+
+    useEffect(() => { loadMetricas(); }, [filterFrom, filterTo, filterClientId, filterProyectoId, filterOperadorId]);
+
+    const loadMetricas = () => {
+        setLoading(true);
+        const params = new URLSearchParams();
+        if (filterFrom) params.append('from', filterFrom);
+        if (filterTo) params.append('to', filterTo);
+        if (filterClientId) params.append('clientId', filterClientId);
+        if (filterProyectoId) params.append('proyectoId', filterProyectoId);
+        if (filterOperadorId) params.append('operadorId', filterOperadorId);
+        safeApiRequest(`/api/metricas-servicio?${params.toString()}`)
+            .then(r => r.json())
+            .then(setMetricas)
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    };
+
+    const clearFilters = () => { setFilterFrom(''); setFilterTo(''); setFilterClientId(''); setFilterProyectoId(''); setFilterOperadorId(''); };
+    const hasFilters = filterFrom || filterTo || filterClientId || filterProyectoId || filterOperadorId;
+
+    const TARGET_CSAT = 8;
+    const TARGET_NPS = 50;
+
+    if (loading) return (
+        <div className="w-full h-64 flex items-center justify-center">
+            <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+        </div>
+    );
+
+    const m = metricas;
+    const npsScore = m?.nps.score;
+    const npsColor = npsScore === null ? 'text-slate-400' : npsScore >= TARGET_NPS ? 'text-emerald-600' : npsScore >= 0 ? 'text-amber-500' : 'text-rose-500';
+
+    // Donut helpers
+    const total3 = (m?.nps.promotores ?? 0) + (m?.nps.pasivos ?? 0) + (m?.nps.detractores ?? 0);
+    const promoPct = total3 > 0 ? (m!.nps.promotores / total3) * 100 : 33;
+    const pasivoPct = total3 > 0 ? (m!.nps.pasivos / total3) * 100 : 33;
+    const detracPct = total3 > 0 ? (m!.nps.detractores / total3) * 100 : 34;
+
+    // SVG donut: circumference = 2π×16 ≈ 100.5
+    const C = 100.53;
+    const promoArc = (promoPct / 100) * C;
+    const pasivoArc = (pasivoPct / 100) * C;
+    const detracArc = (detracPct / 100) * C;
+
+    return (
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-400">
+            {/* Section header */}
+            <div className="flex items-center gap-4">
+                <div className="p-3 bg-indigo-600 rounded-2xl text-white shadow-lg shadow-indigo-200">
+                    <Star className="w-7 h-7" fill="white" />
+                </div>
+                <div>
+                    <h3 className="text-2xl font-black text-slate-800 tracking-tight">Métricas de Servicios</h3>
+                    <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mt-0.5">Satisfacción del cliente · NPS · Desempeño por operador</p>
+                </div>
+            </div>
+
+            {/* Filters */}
+            <div className="bg-white border border-slate-200 rounded-2xl md:rounded-[2rem] p-4 md:p-6 shadow-sm space-y-3">
+                <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-bold text-slate-700 flex items-center gap-2 text-sm">
+                        <SlidersHorizontal className="w-4 h-4 text-indigo-500" />
+                        Filtros de Servicio
+                    </h4>
+                    {hasFilters && (
+                        <button onClick={clearFilters} className="text-[10px] font-black text-indigo-500 uppercase tracking-widest hover:underline">
+                            Limpiar Filtros
+                        </button>
+                    )}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 flex items-center gap-1"><Calendar className="w-3 h-3" /> Desde</label>
+                        <input type="date" className="w-full h-[42px] bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-indigo-100 outline-none appearance-none" value={filterFrom} onChange={e => setFilterFrom(e.target.value)} />
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 flex items-center gap-1"><Calendar className="w-3 h-3" /> Hasta</label>
+                        <input type="date" className="w-full h-[42px] bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-indigo-100 outline-none appearance-none" value={filterTo} onChange={e => setFilterTo(e.target.value)} />
+                    </div>
+                    <div className="space-y-1.5 pt-0.5">
+                        <SearchableSelect
+                            label="Cliente"
+                            icon={<Building2 className="w-3 h-3" />}
+                            options={clients.map(c => ({ id: c.id, label: c.nombre }))}
+                            value={filterClientId}
+                            onChange={setFilterClientId}
+                            placeholder="Todos los clientes"
+                            className="!space-y-1.5"
+                        />
+                    </div>
+                    <div className="space-y-1.5 pt-0.5">
+                        <SearchableSelect
+                            label="Proyecto"
+                            icon={<Briefcase className="w-3 h-3" />}
+                            options={proyectos.map(p => ({ id: p.id, label: p.nombre }))}
+                            value={filterProyectoId}
+                            onChange={setFilterProyectoId}
+                            placeholder="Todos los proyectos"
+                            className="!space-y-1.5"
+                        />
+                    </div>
+                    <div className="space-y-1.5 pt-0.5">
+                        <SearchableSelect
+                            label="Operador"
+                            icon={<Users className="w-3 h-3" />}
+                            options={operators.map(o => ({ id: o.id, label: o.nombreCompleto }))}
+                            value={filterOperadorId}
+                            onChange={setFilterOperadorId}
+                            placeholder="Todos los operadores"
+                            className="!space-y-1.5"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {/* No data state */}
+            {m?.total === 0 && (
+                <div className="bg-white border border-slate-200 rounded-3xl p-16 text-center space-y-3">
+                    <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto">
+                        <Star className="w-8 h-8 text-slate-300" />
+                    </div>
+                    <p className="font-bold text-slate-500">Aún no hay encuestas de satisfacción</p>
+                    <p className="text-xs text-slate-400 font-medium">Las métricas aparecerán aquí una vez que los clientes completen la encuesta post-firma.</p>
+                </div>
+            )}
+
+            {m && m.total > 0 && (
+                <>
+                    {/* KPI Row */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                        {/* NPS Score */}
+                        <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group col-span-2 md:col-span-1 flex flex-col">
+                            <div className="flex justify-between items-start mb-3">
+                                <div className="p-2.5 rounded-xl bg-indigo-600 text-white shadow-lg group-hover:scale-110 transition-transform">
+                                    <TrendingUp className="w-5 h-5" />
+                                </div>
+                                <div className="group/tooltip relative">
+                                    <Info className="w-4 h-4 text-slate-300 hover:text-indigo-500 cursor-help" />
+                                    <div className="absolute top-0 right-full mr-3 w-56 p-3 bg-slate-900 text-white rounded-xl text-[10px] leading-relaxed hidden group-hover/tooltip:block z-50 shadow-2xl">
+                                        <p className="font-black text-indigo-400 mb-1">NPS Global</p>
+                                        <p className="text-slate-300">% Promotores (9-10) − % Detractores (0-6). Objetivo: &gt; {TARGET_NPS}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">NPS Global</p>
+                            <h4 className={`text-3xl font-black tracking-tighter ${npsColor}`}>
+                                {npsScore !== null ? (npsScore >= 0 ? `+${npsScore}` : npsScore) : '—'}
+                            </h4>
+                            <div className="mt-3 pt-3 border-t border-slate-50 flex items-center gap-1.5">
+                                <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${npsScore !== null && npsScore >= TARGET_NPS ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Objetivo: &gt;{TARGET_NPS}</p>
+                            </div>
+                        </div>
+
+                        {/* Atención promedio */}
+                        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col">
+                            <div className="p-2.5 rounded-xl bg-blue-500 text-white shadow-lg w-fit mb-3 group-hover:scale-110 transition-transform">
+                                <Users className="w-5 h-5" />
+                            </div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Atención</p>
+                            <h4 className={`text-3xl font-black tracking-tighter ${(m.promedios.atencion ?? 0) >= TARGET_CSAT ? 'text-emerald-600' : 'text-amber-500'}`}>
+                                {m.promedios.atencion ?? '—'}
+                            </h4>
+                            <div className="mt-auto pt-3 border-t border-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Objetivo: {TARGET_CSAT}+</div>
+                        </div>
+
+                        {/* Calidad promedio */}
+                        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col">
+                            <div className="p-2.5 rounded-xl bg-emerald-500 text-white shadow-lg w-fit mb-3 group-hover:scale-110 transition-transform">
+                                <Award className="w-5 h-5" />
+                            </div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Calidad</p>
+                            <h4 className={`text-3xl font-black tracking-tighter ${(m.promedios.calidad ?? 0) >= TARGET_CSAT ? 'text-emerald-600' : 'text-amber-500'}`}>
+                                {m.promedios.calidad ?? '—'}
+                            </h4>
+                            <div className="mt-auto pt-3 border-t border-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Objetivo: {TARGET_CSAT}+</div>
+                        </div>
+
+                        {/* Tiempo promedio */}
+                        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col">
+                            <div className="p-2.5 rounded-xl bg-amber-500 text-white shadow-lg w-fit mb-3 group-hover:scale-110 transition-transform">
+                                <Clock className="w-5 h-5" />
+                            </div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tiempo</p>
+                            <h4 className={`text-3xl font-black tracking-tighter ${(m.promedios.tiempo ?? 0) >= TARGET_CSAT ? 'text-emerald-600' : 'text-amber-500'}`}>
+                                {m.promedios.tiempo ?? '—'}
+                            </h4>
+                            <div className="mt-auto pt-3 border-t border-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Objetivo: {TARGET_CSAT}+</div>
+                        </div>
+                    </div>
+
+                    {/* Charts row: NPS Donut + Trend */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* NPS Donut */}
+                        <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col items-center">
+                            <div className="flex items-center justify-between w-full mb-4">
+                                <div className="flex items-center gap-3">
+                                    <PieChart className="w-5 h-5 text-indigo-500" />
+                                    <h3 className="text-xl font-bold text-slate-800">Distribución NPS</h3>
+                                </div>
+                            </div>
+
+                            <div className="relative w-44 h-44 my-4">
+                                <svg className="w-full h-full -rotate-90" viewBox="-4 -4 40 40">
+                                    <circle r="16" cx="16" cy="16" fill="transparent" stroke="#f1f5f9" strokeWidth="6" />
+                                    {/* Detractores (rose) */}
+                                    <circle r="16" cx="16" cy="16" fill="transparent" stroke="#f43f5e" strokeWidth="6"
+                                        strokeDasharray={`${detracArc} ${C}`}
+                                        strokeDashoffset={0}
+                                        strokeLinecap="round"
+                                    />
+                                    {/* Pasivos (amber) */}
+                                    <circle r="16" cx="16" cy="16" fill="transparent" stroke="#f59e0b" strokeWidth="6"
+                                        strokeDasharray={`${pasivoArc} ${C}`}
+                                        strokeDashoffset={`${-detracArc}`}
+                                        strokeLinecap="round"
+                                    />
+                                    {/* Promotores (emerald) */}
+                                    <circle r="16" cx="16" cy="16" fill="transparent" stroke="#10b981" strokeWidth="6"
+                                        strokeDasharray={`${promoArc} ${C}`}
+                                        strokeDashoffset={`${-(detracArc + pasivoArc)}`}
+                                        strokeLinecap="round"
+                                    />
+                                </svg>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                    <span className={`text-3xl font-black tracking-tighter ${npsColor}`}>
+                                        {npsScore !== null ? (npsScore >= 0 ? `+${npsScore}` : npsScore) : '—'}
+                                    </span>
+                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">NPS</span>
+                                </div>
+                            </div>
+
+                            <div className="w-full space-y-2.5 mt-2">
+                                <div className="flex items-center justify-between px-4 py-3 bg-emerald-50 rounded-2xl">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                                        <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">Promotores (9-10)</span>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-sm font-black text-emerald-700">{m.nps.promotores}</span>
+                                        <span className="text-[10px] text-emerald-500 ml-1">{m.nps.pctPromo}%</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between px-4 py-3 bg-amber-50 rounded-2xl">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-3 h-3 rounded-full bg-amber-400" />
+                                        <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">Pasivos (7-8)</span>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-sm font-black text-amber-700">{m.nps.pasivos}</span>
+                                        <span className="text-[10px] text-amber-500 ml-1">{m.nps.pctPasivos}%</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between px-4 py-3 bg-rose-50 rounded-2xl">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-3 h-3 rounded-full bg-rose-500" />
+                                        <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">Detractores (0-6)</span>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-sm font-black text-rose-700">{m.nps.detractores}</span>
+                                        <span className="text-[10px] text-rose-500 ml-1">{m.nps.pctDetrac}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Promedios de servicio (bar chart with target line) */}
+                        <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                            <div className="flex items-center gap-3 mb-6">
+                                <BarChart3 className="w-5 h-5 text-indigo-500" />
+                                <h3 className="text-xl font-bold text-slate-800">Promedios de Servicio</h3>
+                            </div>
+                            <div className="space-y-5 relative">
+                                {/* Target line annotation */}
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className="w-8 h-0 border-t-2 border-dashed border-slate-300" />
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Objetivo: {TARGET_CSAT}/10</span>
+                                </div>
+                                {[
+                                    { label: 'Atención', value: m.promedios.atencion, color: 'bg-blue-500', shadow: 'shadow-blue-200' },
+                                    { label: 'Calidad', value: m.promedios.calidad, color: 'bg-emerald-500', shadow: 'shadow-emerald-200' },
+                                    { label: 'Tiempo', value: m.promedios.tiempo, color: 'bg-amber-500', shadow: 'shadow-amber-200' },
+                                ].map(({ label, value, color, shadow }) => {
+                                    const pct = value !== null ? (value / 10) * 100 : 0;
+                                    const targetPct = (TARGET_CSAT / 10) * 100;
+                                    const isAboveTarget = value !== null && value >= TARGET_CSAT;
+                                    return (
+                                        <div key={label} className="space-y-1.5">
+                                            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
+                                                <span className="text-slate-500">{label}</span>
+                                                <span className={isAboveTarget ? 'text-emerald-600' : 'text-amber-500'}>
+                                                    {value ?? '—'}/10
+                                                </span>
+                                            </div>
+                                            <div className="h-5 bg-slate-50 rounded-xl relative overflow-hidden border border-slate-100">
+                                                {/* Progress bar */}
+                                                <div
+                                                    className={`h-full rounded-xl transition-all duration-1000 ${color} ${shadow} shadow-sm`}
+                                                    style={{ width: `${pct}%` }}
+                                                />
+                                                {/* Target line */}
+                                                <div
+                                                    className="absolute top-0 bottom-0 w-0.5 bg-slate-400/60 border-l border-dashed border-slate-400 z-10"
+                                                    style={{ left: `${targetPct}%` }}
+                                                    title={`Objetivo: ${TARGET_CSAT}`}
+                                                />
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* NPS trend + service averages over time */}
+                    {m.porMes.length >= 2 && (
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* NPS trend */}
+                            <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <TrendingUp className="w-5 h-5 text-indigo-500" />
+                                    <h3 className="text-xl font-bold text-slate-800">Evolución del NPS</h3>
+                                </div>
+                                <ServiceTrendChart
+                                    data={m.porMes.map(p => ({ label: p.label, value: p.nps }))}
+                                    color="#6366f1"
+                                    targetY={TARGET_NPS}
+                                    minY={-100}
+                                    maxY={100}
+                                    valueSuffix=""
+                                    targetLabel={`Objetivo NPS > ${TARGET_NPS}`}
+                                />
+                            </div>
+                            {/* CSAT trend */}
+                            <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <BarChart3 className="w-5 h-5 text-blue-500" />
+                                    <h3 className="text-xl font-bold text-slate-800">Satisfacción en el Tiempo</h3>
+                                </div>
+                                <ServiceMultiTrendChart data={m.porMes} targetCsat={TARGET_CSAT} />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Metrics per operator */}
+                    {m.porOperador.length > 0 && (
+                        <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                            <div className="flex items-center gap-3 mb-6">
+                                <Users className="w-5 h-5 text-indigo-500" />
+                                <h3 className="text-xl font-bold text-slate-800">Métricas por Operador</h3>
+                                <span className="ml-auto text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
+                                    {m.total} encuesta{m.total !== 1 ? 's' : ''}
+                                </span>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                    <thead>
+                                        <tr className="border-b border-slate-100">
+                                            <th className="text-left px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Operador</th>
+                                            <th className="text-center px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Atención</th>
+                                            <th className="text-center px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Calidad</th>
+                                            <th className="text-center px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tiempo</th>
+                                            <th className="text-center px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">NPS</th>
+                                            <th className="text-center px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Encuestas</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-50">
+                                        {m.porOperador.map(op => {
+                                            const ratingColor = (v: number | null) => {
+                                                if (v === null) return 'text-slate-400';
+                                                if (v >= TARGET_CSAT) return 'text-emerald-700 font-black';
+                                                if (v >= 6) return 'text-amber-600 font-black';
+                                                return 'text-rose-600 font-black';
+                                            };
+                                            const npsOpColor = (v: number | null) => {
+                                                if (v === null) return 'text-slate-400';
+                                                if (v >= TARGET_NPS) return 'text-emerald-700 font-black';
+                                                if (v >= 0) return 'text-amber-600 font-black';
+                                                return 'text-rose-600 font-black';
+                                            };
+                                            const barWidth = (v: number | null, max = 10) =>
+                                                v !== null ? `${(v / max) * 100}%` : '0%';
+                                            return (
+                                                <tr key={op.id} className="hover:bg-slate-50/50 transition-colors">
+                                                    <td className="px-4 py-4">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-black text-xs shrink-0">
+                                                                {op.nombre.charAt(0)}
+                                                            </div>
+                                                            <span className="font-bold text-slate-700">{op.nombre}</span>
+                                                        </div>
+                                                    </td>
+                                                    {[
+                                                        { val: op.atencion, color: '#3b82f6' },
+                                                        { val: op.calidad, color: '#10b981' },
+                                                        { val: op.tiempo, color: '#f59e0b' },
+                                                    ].map(({ val, color }, idx) => (
+                                                        <td key={idx} className="px-4 py-4">
+                                                            <div className="flex flex-col items-center gap-1.5">
+                                                                <span className={`text-base ${ratingColor(val)}`}>{val ?? '—'}</span>
+                                                                <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                                                    <div className="h-full rounded-full transition-all duration-700"
+                                                                        style={{ width: barWidth(val), backgroundColor: color }} />
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    ))}
+                                                    <td className="px-4 py-4 text-center">
+                                                        <span className={`text-base ${npsOpColor(op.nps)}`}>
+                                                            {op.nps !== null ? (op.nps >= 0 ? `+${op.nps}` : op.nps) : '—'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-4 text-center">
+                                                        <span className="px-2.5 py-1 bg-indigo-50 text-indigo-600 text-[10px] font-black rounded-lg border border-indigo-100">{op.count}</span>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+                </>
+            )}
+        </div>
+    );
+}
+
+// ─── Service trend chart (single line + target line) ──────────────────────────
+function ServiceTrendChart({ data, color, targetY, minY, maxY, valueSuffix = '', targetLabel }: {
+    data: { label: string; value: number }[];
+    color: string;
+    targetY: number;
+    minY: number;
+    maxY: number;
+    valueSuffix?: string;
+    targetLabel?: string;
+}) {
+    const [hovered, setHovered] = useState<number | null>(null);
+    if (data.length === 0) return <div className="h-48 flex items-center justify-center text-slate-400 text-[10px] font-black uppercase tracking-widest">Sin datos</div>;
+
+    const range = maxY - minY;
+    const yOf = (v: number) => 100 - ((v - minY) / range) * 85;
+    const targetYPct = yOf(targetY);
+
+    const points = data.map((d, i) => ({
+        x: (i / Math.max(data.length - 1, 1)) * 100,
+        y: yOf(d.value),
+    }));
+
+    let linePath = `M ${points[0].x} ${points[0].y}`;
+    for (let i = 0; i < points.length - 1; i++) {
+        const dx = (points[i + 1].x - points[i].x) / 3;
+        linePath += ` C ${points[i].x + dx} ${points[i].y}, ${points[i + 1].x - dx} ${points[i + 1].y}, ${points[i + 1].x} ${points[i + 1].y}`;
+    }
+    const areaPath = `${linePath} L ${points[points.length - 1].x} 100 L ${points[0].x} 100 Z`;
+
+    return (
+        <div className="h-48 relative" onMouseLeave={() => setHovered(null)}>
+            <svg className="w-full h-full overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
+                {/* Target line */}
+                <line x1="0" y1={targetYPct} x2="100" y2={targetYPct}
+                    stroke="#94a3b8" strokeWidth="0.5" strokeDasharray="2 2" />
+                <text x="1" y={targetYPct - 1.5} fill="#94a3b8" fontSize="3.5" fontWeight="bold" fontFamily="sans-serif">
+                    {targetLabel || `Objetivo: ${targetY}`}
+                </text>
+                {/* Area */}
+                <path d={areaPath} fill={color} fillOpacity="0.06" />
+                {/* Line */}
+                <path d={linePath} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" />
+                {/* Interaction zones */}
+                {points.map((p, i) => (
+                    <rect key={i} x={p.x - 5} y={0} width={10} height={100} fill="transparent" className="cursor-pointer" onMouseEnter={() => setHovered(i)} />
+                ))}
+            </svg>
+            {hovered !== null && points[hovered] && (
+                <div className="absolute w-2.5 h-2.5 rounded-full border-2 bg-white pointer-events-none"
+                    style={{ borderColor: color, left: `${points[hovered].x}%`, top: `${points[hovered].y}%`, transform: 'translate(-50%,-50%)' }}>
+                    <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] font-black px-2 py-1 rounded-lg whitespace-nowrap">
+                        {data[hovered].label}: {data[hovered].value >= 0 ? '+' : ''}{data[hovered].value}{valueSuffix}
+                    </div>
+                </div>
+            )}
+            <div className="absolute inset-x-0 bottom-[-1.5rem] flex justify-between px-2">
+                {data.map((t, i) => (
+                    <span key={i} className={`text-[9px] font-black uppercase tracking-tighter ${hovered === i ? 'text-slate-900' : 'text-slate-400'}`}>
+                        {t.label.split('-')[1] || t.label}
+                    </span>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+// ─── Multi-line trend chart for CSAT ──────────────────────────────────────────
+function ServiceMultiTrendChart({ data, targetCsat }: {
+    data: { label: string; atencion: number; calidad: number; tiempo: number }[];
+    targetCsat: number;
+}) {
+    if (data.length === 0) return <div className="h-48 flex items-center justify-center text-slate-400 text-[10px] font-black uppercase tracking-widest">Sin datos</div>;
+
+    const yOf = (v: number) => 100 - (v / 10) * 85;
+    const targetYPct = yOf(targetCsat);
+
+    const buildPath = (values: number[]) => {
+        const pts = values.map((v, i) => ({ x: (i / Math.max(values.length - 1, 1)) * 100, y: yOf(v) }));
+        let d = `M ${pts[0].x} ${pts[0].y}`;
+        for (let i = 0; i < pts.length - 1; i++) {
+            const dx = (pts[i + 1].x - pts[i].x) / 3;
+            d += ` C ${pts[i].x + dx} ${pts[i].y}, ${pts[i + 1].x - dx} ${pts[i + 1].y}, ${pts[i + 1].x} ${pts[i + 1].y}`;
+        }
+        return d;
+    };
+
+    const atencionPath = buildPath(data.map(d => d.atencion));
+    const calidadPath = buildPath(data.map(d => d.calidad));
+    const tiempoPth = buildPath(data.map(d => d.tiempo));
+
+    return (
+        <div className="space-y-3">
+            <div className="h-40 relative">
+                <svg className="w-full h-full overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    {/* Target line */}
+                    <line x1="0" y1={targetYPct} x2="100" y2={targetYPct}
+                        stroke="#94a3b8" strokeWidth="0.5" strokeDasharray="2 2" />
+                    <text x="1" y={targetYPct - 1.5} fill="#94a3b8" fontSize="3.5" fontWeight="bold" fontFamily="sans-serif">
+                        Objetivo {targetCsat}
+                    </text>
+                    <path d={atencionPath} fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" />
+                    <path d={calidadPath} fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" />
+                    <path d={tiempoPth} fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+                <div className="absolute inset-x-0 bottom-[-1.5rem] flex justify-between px-2">
+                    {data.map((d, i) => (
+                        <span key={i} className="text-[9px] font-black uppercase tracking-tighter text-slate-400">{d.label.split('-')[1] || d.label}</span>
+                    ))}
+                </div>
+            </div>
+            <div className="flex items-center gap-4 justify-center mt-4 pt-2">
+                {[
+                    { label: 'Atención', color: '#3b82f6' },
+                    { label: 'Calidad', color: '#10b981' },
+                    { label: 'Tiempo', color: '#f59e0b' },
+                ].map(l => (
+                    <div key={l.label} className="flex items-center gap-1.5">
+                        <div className="w-4 h-0.5 rounded-full" style={{ backgroundColor: l.color }} />
+                        <span className="text-[10px] font-bold text-slate-500">{l.label}</span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
 function KpiCard({ title, value, icon, color, trend, tooltip }: { title: string; value: string | number; icon: any; color: string; trend: string; tooltip?: { def: string; purpose: string; calc: string } }) {
     return (
         <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 group relative flex flex-col h-full">

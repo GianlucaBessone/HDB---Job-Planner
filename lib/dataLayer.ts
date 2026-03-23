@@ -221,6 +221,9 @@ export const dataLayer = {
     // Operators
     async getOperators() {
         return await prisma.operator.findMany({
+            where: {
+                role: { not: 'admin' }
+            },
             orderBy: { createdAt: 'desc' }
         });
     },

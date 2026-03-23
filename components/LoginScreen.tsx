@@ -64,7 +64,8 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
         }
     };
 
-    const filteredOperators = operators.filter(o => o.nombreCompleto.toLowerCase().includes(searchTerm.toLowerCase()));
+    const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const filteredOperators = operators.filter(o => normalize(o.nombreCompleto).includes(normalize(searchTerm)));
 
     // ── Custom inline dropdown state ──────────────────────────────────────────
     const [dropdownOpen, setDropdownOpen] = useState(false);
