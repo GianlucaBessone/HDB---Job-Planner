@@ -101,7 +101,7 @@ export default function NotificationsPage() {
     return (
         <div className="min-h-screen bg-slate-50 pb-20 pt-8 px-4 md:px-8 max-w-3xl mx-auto">
             <div className="flex items-center gap-3 mb-8">
-                <Link href="/dashboard" className="p-2 bg-white rounded-full shadow-sm hover:bg-slate-100 transition">
+                <Link href="/" className="p-2 bg-white rounded-full shadow-sm hover:bg-slate-100 transition">
                     <ArrowRight className="w-5 h-5 text-slate-500 rotate-180" />
                 </Link>
                 <h1 className="text-2xl font-black text-slate-800 flex items-center gap-2">

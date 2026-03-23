@@ -4,7 +4,7 @@ import { prisma } from '@/lib/dataLayer';
 const include = {
     project: {
         select: {
-            id: true, nombre: true, cliente: true, fechaInicio: true, fechaFin: true,
+            id: true, nombre: true, codigoProyecto: true, cliente: true, fechaInicio: true, fechaFin: true,
             client: { select: { nombre: true } },
             responsableUser: { select: { nombreCompleto: true } },
         }
@@ -44,7 +44,15 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
         // Find OS by linkPublico or id
         const os = await prisma.ordenServicio.findFirst({
-            where: { OR: [{ id }, { linkPublico: id }] }
+            where: { OR: [{ id }, { linkPublico: id }] },
+            include: {
+                project: {
+                    select: {
+                        id: true, nombre: true, codigoProyecto: true, aprovisionamiento: true,
+                        materialesProyecto: { include: { usos: true, devolucion: true } },
+                    }
+                }
+            }
         });
         if (!os) return NextResponse.json({ error: 'Orden de servicio no encontrada' }, { status: 404 });
         if (os.estado === 'firmada') {
@@ -61,12 +69,69 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             })
         ]);
 
+        // ── Notificaciones post-firma ──────────────────────────────────────────
+        const proyecto = os.project;
+        const osCode = os.codigoOS ? `${os.codigoOS} | ` : '';
+        const prCode = proyecto.codigoProyecto ? `${proyecto.codigoProyecto} | ` : '';
+        const notifTitle = `Orden firmada – ${osCode}${prCode}${proyecto.nombre}`;
+        const notifMsg = `La OS fue firmada por ${nombre} (DNI: ${dni}).`;
+
+        // Always notify supervisors + admins
+        const supervisorsAdmins = await prisma.operator.findMany({
+            where: { role: { in: ['supervisor', 'admin'] }, activo: true },
+            select: { id: true },
+        });
+        // If project has aprovisionamiento, also notify vendedores
+        const vendedores = proyecto.aprovisionamiento
+            ? await prisma.operator.findMany({
+                where: { role: 'vendedor', activo: true },
+                select: { id: true },
+            })
+            : [];
+
+        const notifRecipients = [...supervisorsAdmins, ...vendedores];
+        if (notifRecipients.length > 0) {
+            await prisma.notification.createMany({
+                data: notifRecipients.map(op => ({
+                    operatorId: op.id,
+                    title: notifTitle,
+                    message: notifMsg,
+                    type: 'OS_FIRMADA',
+                    relatedId: os.id,
+                })),
+            });
+        }
+
+        // ── Auto-calcular devolución si hay aprovisionamiento ──────────────────
+        if (proyecto.aprovisionamiento && proyecto.materialesProyecto.length > 0) {
+            for (const mat of proyecto.materialesProyecto) {
+                // Sum all usos for this material across any OS generated for the project
+                const totalUsado = mat.usos.reduce((acc, u) => acc + u.cantidadUtilizada, 0);
+                const aDevolver = Math.max(0, mat.cantidadEntregada - totalUsado);
+
+                if (!mat.devolucion) {
+                    await prisma.materialDevolucion.create({
+                        data: {
+                            materialId: mat.id,
+                            cantidadADevolver: aDevolver,
+                            estado: 'pendiente',
+                        },
+                    });
+                    await prisma.materialProyecto.update({
+                        where: { id: mat.id },
+                        data: { estado: 'pendiente_devolucion' },
+                    });
+                }
+            }
+        }
+
         return NextResponse.json({ success: true, firma });
     } catch (e) {
         console.error('POST firma error:', e);
         return NextResponse.json({ error: 'Error al registrar la firma', details: String(e) }, { status: 500 });
     }
 }
+
 
 // PUT /api/ordenes-servicio/[id] — Actualizar OS existente (si no está firmada)
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
@@ -84,6 +149,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
             // Drop old relations
             await tx.ordenServicioMaterial.deleteMany({ where: { ordenServicioId: id } });
             await tx.ordenServicioOperador.deleteMany({ where: { ordenServicioId: id } });
+            await tx.materialUso.deleteMany({ where: { ordenServicioId: id } });
 
             // Create new ones & update reporter
             return await tx.ordenServicio.update({
@@ -92,7 +158,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
                     reporte,
                     materiales: {
                         create: materiales.map((m: any) => ({
-                            material: m.material, cantidad: parseFloat(m.cantidad), unidadMedida: m.unidadMedida
+                            material: m.material, cantidad: parseFloat(m.cantidad), unidadMedida: m.unidadMedida, materialProyectoId: m.materialProyectoId || null
                         }))
                     },
                     operadores: {
@@ -104,6 +170,24 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
                 include
             });
         });
+
+        // Recrear usos de material
+        const aprovisionados = (materiales || []).filter((m: any) => m.materialProyectoId && Number(m.cantidad) > 0);
+        if (aprovisionados.length > 0) {
+            const firstOp = await prisma.operator.findUnique({ where: { id: operadores[0].operadorId } });
+            const opName = firstOp ? firstOp.nombreCompleto : 'Desconocido';
+
+            for (const m of aprovisionados) {
+                await prisma.materialUso.create({
+                    data: {
+                        cantidadUtilizada: Number(m.cantidad),
+                        operadorNombre: opName,
+                        materialId: m.materialProyectoId,
+                        ordenServicioId: id
+                    }
+                });
+            }
+        }
 
         return NextResponse.json(updatedOs);
 
@@ -125,6 +209,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
             await tx.ordenServicioMaterial.deleteMany({ where: { ordenServicioId: id } });
             await tx.ordenServicioOperador.deleteMany({ where: { ordenServicioId: id } });
             await tx.ordenServicioFirma.deleteMany({ where: { ordenServicioId: id } });
+            await tx.materialUso.deleteMany({ where: { ordenServicioId: id } });
             
             // Delete root
             await tx.ordenServicio.delete({ where: { id } });

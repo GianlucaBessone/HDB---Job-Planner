@@ -27,6 +27,9 @@ interface MaterialRow {
     material: string;
     cantidad: string;
     unidadMedida: string;
+    materialProyectoId?: string;
+    disponible?: number;
+    entregada?: number;
 }
 
 interface OperadorRow {
@@ -109,17 +112,24 @@ function GenerarOSContent() {
                 }));
             }
 
-            // Pre-populate if editing
+            // Pre-populate si está editando
             if (editId && data[3] && data[3].ok) {
                 const osData = await data[3].json();
                 if (osData.estado === 'firmada') setIsFirmada(true);
                 setReporte(osData.reporte || '');
                 if (osData.materiales && osData.materiales.length > 0) {
                     setMateriales(osData.materiales.map((m: any) => ({
-                        material: m.material, cantidad: String(m.cantidad), unidadMedida: m.unidadMedida
+                        material: m.material, cantidad: String(m.cantidad), unidadMedida: m.unidadMedida, materialProyectoId: m.materialProyectoId
                     })));
                 } else {
-                    setMateriales([{ material: '', cantidad: '', unidadMedida: 'Unidad' }]);
+                    let dm: MaterialRow[] = [{ material: '', cantidad: '', unidadMedida: 'Unidad' }];
+                    if (projectData.aprovisionamiento && projectData.materialesProyecto) {
+                        const actives = projectData.materialesProyecto.filter((m:any) => m.estado !== 'cerrado_ok' && m.estado !== 'cerrado_con_reserva');
+                        if (actives.length > 0) {
+                            dm = actives.map((m:any) => ({ material: m.nombre, cantidad: '', unidadMedida: m.unidad || 'Unidad', materialProyectoId: m.id, disponible: m.cantidadDisponible, entregada: m.cantidadEntregada }));
+                        }
+                    }
+                    setMateriales(dm);
                 }
 
                 if (osData.operadores && osData.operadores.length > 0) {
@@ -130,6 +140,14 @@ function GenerarOSContent() {
                     setOperadores(defaultOperadores);
                 }
             } else {
+                let dm: MaterialRow[] = [{ material: '', cantidad: '', unidadMedida: 'Unidad' }];
+                if (projectData.aprovisionamiento && projectData.materialesProyecto) {
+                    const actives = projectData.materialesProyecto.filter((m:any) => m.estado !== 'cerrado_ok' && m.estado !== 'cerrado_con_reserva');
+                    if (actives.length > 0) {
+                        dm = actives.map((m:any) => ({ material: m.nombre, cantidad: '', unidadMedida: m.unidad || 'Unidad', materialProyectoId: m.id, disponible: m.cantidadDisponible, entregada: m.cantidadEntregada }));
+                    }
+                }
+                setMateriales(dm);
                 setOperadores(defaultOperadores);
             }
         } catch (e) {
@@ -174,10 +192,14 @@ function GenerarOSContent() {
             }
         }
 
-        const matsValidos = materiales.filter(m => m.material || m.cantidad);
-        for (const m of matsValidos) {
-            if (!m.material || !m.cantidad || !m.unidadMedida) {
-                errs.materiales = 'Todos los campos de materiales son obligatorios';
+        const matsParaGuardar = materiales.filter(m => {
+            if (m.materialProyectoId) return Boolean(m.cantidad) && Number(m.cantidad) > 0;
+            return m.material || m.cantidad;
+        });
+
+        for (const m of matsParaGuardar) {
+            if (!m.material || !m.cantidad || !m.unidadMedida || Number(m.cantidad) <= 0) {
+                errs.materiales = 'Los materiales utilizados deben tener nombre y cantidad válida (mayor a 0)';
                 break;
             }
         }
@@ -194,8 +216,16 @@ function GenerarOSContent() {
             .map(op => ({ operadorId: op.operadorId, horas: Number(op.horas) }));
 
         const matsValidos = materiales
-            .filter(m => m.material && m.cantidad && m.unidadMedida)
-            .map(m => ({ material: m.material, cantidad: Number(m.cantidad), unidadMedida: m.unidadMedida }));
+            .filter(m => {
+                if (m.materialProyectoId) return Boolean(m.cantidad) && Number(m.cantidad) > 0;
+                return Boolean(m.material && m.cantidad && Number(m.cantidad) > 0);
+            })
+            .map(m => ({ 
+                material: m.material, 
+                cantidad: Number(m.cantidad), 
+                unidadMedida: m.unidadMedida,
+                materialProyectoId: m.materialProyectoId
+            }));
 
         setSubmitting(true);
         try {
@@ -421,53 +451,67 @@ function GenerarOSContent() {
                         </p>
                     )}
 
-                    {/* Header */}
-                    <div className={`hidden sm:grid ${isFirmada ? 'grid-cols-[1fr_80px_100px]' : 'grid-cols-[1fr_80px_100px_36px]'} gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest px-1`}>
-                        <span>Material</span>
-                        <span>Cantidad</span>
-                        <span>Unidad</span>
-                        {!isFirmada && <span></span>}
-                    </div>
+                    {/* Eliminado Header antiguo por diseño responsivo */}
 
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                         {materiales.map((m, i) => (
-                            <div key={i} className={`grid grid-cols-1 ${isFirmada ? 'sm:grid-cols-[1fr_80px_100px]' : 'sm:grid-cols-[1fr_80px_100px_36px]'} gap-2 items-center`}>
-                                <input
-                                    type="text"
-                                    disabled={isFirmada}
-                                    placeholder="Nombre del material"
-                                    value={m.material}
-                                    onChange={e => updateMaterial(i, 'material', e.target.value)}
-                                    className="bg-slate-50 disabled:opacity-75 disabled:bg-slate-100 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                                />
-                                <input
-                                    type="number"
-                                    disabled={isFirmada}
-                                    min="0"
-                                    step="any"
-                                    inputMode="decimal"
-                                    placeholder="0"
-                                    value={m.cantidad}
-                                    onChange={e => updateMaterial(i, 'cantidad', e.target.value)}
-                                    className="bg-slate-50 disabled:opacity-75 disabled:bg-slate-100 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                                />
-                                <select
-                                    disabled={isFirmada}
-                                    value={m.unidadMedida}
-                                    onChange={e => updateMaterial(i, 'unidadMedida', e.target.value)}
-                                    className="bg-slate-50 disabled:opacity-75 disabled:bg-slate-100 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                                >
-                                    {UNIDADES.map(u => <option key={u} value={u}>{u}</option>)}
-                                </select>
-                                {!isFirmada && (
-                                    <button
-                                        onClick={() => removeMaterial(i)}
-                                        disabled={materiales.length === 1}
-                                        className="flex items-center justify-center p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all disabled:opacity-30"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
-                                )}
+                            <div key={i} className={`bg-slate-50 border ${m.materialProyectoId ? 'border-primary/20 bg-primary/5' : 'border-slate-200'} rounded-2xl p-4 sm:p-3 space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-4 transition-colors`}>
+                                <div className="flex-1 min-w-0">
+                                    <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest sm:hidden">Descripción del Material</label>
+                                    <input
+                                        type="text"
+                                        disabled={isFirmada || !!m.materialProyectoId}
+                                        placeholder="Nombre del material"
+                                        value={m.material}
+                                        onChange={e => updateMaterial(i, 'material', e.target.value)}
+                                        className={`w-full ${m.materialProyectoId ? 'bg-transparent text-primary focus:ring-0 border-transparent px-0 text-base font-bold' : 'bg-white border-slate-200 px-3 py-2.5 rounded-xl border text-sm font-medium'} disabled:opacity-90 outline-none focus:ring-2 focus:ring-primary/20 transition-all`}
+                                    />
+                                    {m.materialProyectoId && (
+                                        <div className="mt-1 flex flex-wrap gap-2 items-center">
+                                            <span className="text-[10px] font-black tracking-tight text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-md border border-emerald-200">Entregado: {m.entregada} {m.unidadMedida}</span>
+                                            <span className="text-[10px] font-black tracking-tight text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-md border border-indigo-200">Stock Proyecto: {m.disponible} {m.unidadMedida}</span>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex items-end sm:items-center gap-3">
+                                    <div className="w-24 shrink-0">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 sm:sr-only mb-1 block">Cant. Usada</label>
+                                        <div className="relative">
+                                            <input
+                                                type="number"
+                                                disabled={isFirmada}
+                                                min="0"
+                                                step="any"
+                                                inputMode="decimal"
+                                                placeholder="0.0"
+                                                value={m.cantidad}
+                                                onChange={e => updateMaterial(i, 'cantidad', e.target.value)}
+                                                className="w-full bg-white disabled:opacity-75 disabled:bg-slate-100 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-black text-slate-900 outline-none focus:ring-2 focus:border-primary focus:ring-primary/20 transition-all text-center"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="w-24 shrink-0">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 sm:sr-only mb-1 block">Unidad</label>
+                                        <select
+                                            disabled={isFirmada || !!m.materialProyectoId}
+                                            value={m.unidadMedida}
+                                            onChange={e => updateMaterial(i, 'unidadMedida', e.target.value)}
+                                            className={`w-full ${m.materialProyectoId ? 'bg-transparent border-transparent px-0 font-bold text-slate-500' : 'bg-white border-slate-200 px-2.5 py-2.5 rounded-xl border appearance-none font-medium text-sm'} disabled:opacity-90 outline-none focus:ring-2 focus:ring-primary/20 transition-all`}
+                                        >
+                                            {UNIDADES.map(u => <option key={u} value={u}>{u}</option>)}
+                                        </select>
+                                    </div>
+                                    {!isFirmada && !m.materialProyectoId && (
+                                        <button
+                                            onClick={() => removeMaterial(i)}
+                                            disabled={materiales.length === 1 && !m.materialProyectoId}
+                                            className="p-2 mb-0.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all disabled:opacity-30 shrink-0 border border-transparent hover:border-red-100"
+                                            title="Eliminar fila"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         ))}
                     </div>

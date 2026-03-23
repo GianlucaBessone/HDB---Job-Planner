@@ -8,15 +8,18 @@ import {
     Building2, Smartphone
 } from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
+import CodeBadge from '@/components/CodeBadge';
 
 interface OrdenServicio {
     id: string;
+    codigoOS?: string;
     linkPublico: string;
     estado: string;
     reporte: string;
     fechaCreacion: string;
     project: {
         nombre: string;
+        codigoProyecto?: string;
         cliente?: string;
         client?: { nombre: string };
     };
@@ -135,8 +138,24 @@ function QRView() {
                             <FileSignature className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-emerald-100">OS Generada</p>
-                            <h2 className="text-lg font-black leading-tight">{os.project.nombre}</h2>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-emerald-100 italic">
+                                {os.codigoOS || '#SIN-OS'} | {os.project.codigoProyecto || '#SIN-PR'}
+                            </p>
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <h2 className="text-lg font-black leading-tight">
+                                    {os.codigoOS ? (
+                                        <span className="text-white font-mono">{os.codigoOS} | </span>
+                                    ) : (
+                                        <span className="opacity-50 font-mono">#SIN-OS | </span>
+                                    )}
+                                    {os.project.codigoProyecto ? (
+                                        <span className="text-white font-mono">{os.project.codigoProyecto} | </span>
+                                    ) : (
+                                        <span className="opacity-50 font-mono">#SIN-PR | </span>
+                                    )}
+                                    {os.project.nombre}
+                                </h2>
+                            </div>
                         </div>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-emerald-100 font-medium">

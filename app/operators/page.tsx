@@ -61,7 +61,7 @@ export default function OperatorsPage() {
         try {
             const user = userObj || currentUser;
             let data = await safeApiRequest('/api/operators').then(res => res.json());
-            if (user?.role === 'operador') {
+            if (user?.role === 'operador' || user?.role === 'vendedor') {
                 data = data.filter((op: any) => op.id === user.id);
             }
             setOperators(data);
@@ -226,7 +226,7 @@ export default function OperatorsPage() {
                                         className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium disabled:opacity-50"
                                         value={formData.nombreCompleto}
                                         onChange={e => setFormData({ ...formData, nombreCompleto: e.target.value })}
-                                        disabled={currentUser?.role === 'operador'}
+                                        disabled={currentUser?.role === 'operador' || currentUser?.role === 'vendedor'}
                                         required
                                     />
                                 </div>
@@ -238,11 +238,12 @@ export default function OperatorsPage() {
                                             options={[
                                                 { id: 'operador', label: 'Operador' },
                                                 { id: 'supervisor', label: 'Supervisor' },
-                                                { id: 'admin', label: 'Administrador' }
+                                                { id: 'admin', label: 'Administrador' },
+                                                { id: 'vendedor', label: 'Vendedor' }
                                             ]}
                                             value={formData.role}
                                             onChange={(val) => setFormData({ ...formData, role: val })}
-                                            disabled={currentUser?.role === 'operador'}
+                                            disabled={currentUser?.role === 'operador' || currentUser?.role === 'vendedor'}
                                             className="!space-y-0"
                                         />
                                     </div>
@@ -280,7 +281,7 @@ export default function OperatorsPage() {
                                     </label>
                                 </div>
 
-                                {currentUser?.role !== 'operador' && (
+                                {currentUser?.role !== 'operador' && currentUser?.role !== 'vendedor' && (
                                     <div className="space-y-3">
                                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 flex items-center gap-2">
                                             <TagIcon className="w-3 h-3" />
@@ -353,7 +354,10 @@ export default function OperatorsPage() {
                                             <div className="min-w-0">
                                                 <h4 className="font-bold text-slate-800 truncate">{op.nombreCompleto}</h4>
                                                 <div className="flex flex-wrap gap-1 mt-1 mb-1">
-                                                    <span className={`px-2 py-[2px] rounded-md text-[9px] font-bold uppercase tracking-wider ${op.role === 'admin' || op.role === 'supervisor' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500'}`}>
+                                                    <span className={`px-2 py-[2px] rounded-md text-[9px] font-bold uppercase tracking-wider ${
+                                                        op.role === 'admin' || op.role === 'supervisor' ? 'bg-indigo-100 text-indigo-700' : 
+                                                        op.role === 'vendedor' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'
+                                                    }`}>
                                                         {op.role || 'operador'}
                                                     </span>
                                                 </div>
@@ -372,7 +376,7 @@ export default function OperatorsPage() {
                                             >
                                                 <Edit3 className="w-4 h-4 md:w-5 md:h-5" />
                                             </button>
-                                            {currentUser?.role !== 'operador' && (
+                                            {currentUser?.role !== 'operador' && currentUser?.role !== 'vendedor' && (
                                                 <>
                                                     <button
                                                         onClick={() => toggleStatus(op.id, op.activo)}
@@ -406,7 +410,7 @@ export default function OperatorsPage() {
                                             >
                                                 <Edit3 className="w-5 h-5" />
                                             </button>
-                                            {currentUser?.role !== 'operador' && (
+                                            {currentUser?.role !== 'operador' && currentUser?.role !== 'vendedor' && (
                                                 <>
                                                     <button
                                                         onClick={() => toggleStatus(op.id, op.activo)}
@@ -427,7 +431,10 @@ export default function OperatorsPage() {
 
                                     <div className="relative z-10">
                                         <div className="flex flex-wrap gap-1 mt-1 mb-2">
-                                            <span className={`px-2 py-[2px] rounded-md text-[9px] font-bold uppercase tracking-wider ${op.role === 'admin' || op.role === 'supervisor' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500'}`}>
+                                            <span className={`px-2 py-[2px] rounded-md text-[9px] font-bold uppercase tracking-wider ${
+                                                op.role === 'admin' || op.role === 'supervisor' ? 'bg-indigo-100 text-indigo-700' : 
+                                                op.role === 'vendedor' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'
+                                            }`}>
                                                 {op.role || 'operador'}
                                             </span>
                                         </div>

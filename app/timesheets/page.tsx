@@ -12,6 +12,7 @@ import * as XLSX from 'xlsx';
 import SearchableSelect from '@/components/SearchableSelect';
 import { formatDate } from '@/lib/formatDate';
 import { getProjectOptions } from '@/lib/projectSelectHelper';
+import CodeBadge from '@/components/CodeBadge';
 
 interface Project {
     id: string;
@@ -29,7 +30,7 @@ interface TimeEntry {
     operatorId: string;
     operator: { nombreCompleto: string };
     projectId: string;
-    project: { nombre: string; cliente: string };
+    project: { nombre: string; cliente: string; codigoProyecto?: string };
     fecha: string;
     horaIngreso: string | null;
     horaEgreso: string | null;
@@ -613,7 +614,10 @@ export default function TimesheetsPage() {
                                 <div className="relative z-10 flex flex-col h-full justify-between">
                                     <div className="space-y-1 mb-6">
                                         <h4 className="font-extrabold text-emerald-900 text-lg">{entry.operator.nombreCompleto}</h4>
-                                        <p className="text-sm font-bold text-emerald-700 uppercase tracking-tighter truncate">{entry.project.nombre}</p>
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <p className="text-sm font-bold text-emerald-700 uppercase tracking-tighter truncate">{entry.project.nombre}</p>
+                                            {entry.project.codigoProyecto && <CodeBadge code={entry.project.codigoProyecto} variant="project" size="sm" showCopy={false} />}
+                                        </div>
                                         <p className="text-xs font-bold text-emerald-600/70">{formatEntryDate(entry.fecha)} | Ingreso: {entry.horaIngreso}hs</p>
                                     </div>
                                     <button
@@ -737,8 +741,9 @@ export default function TimesheetsPage() {
                                                 <td className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-tight whitespace-nowrap">{formatEntryDate(entry.fecha)}</td>
                                                 <td className="p-4 text-sm font-black text-primary">{entry.operator.nombreCompleto}</td>
                                                 <td className="p-4">
-                                                    <div className="text-xs font-bold text-slate-600 truncate max-w-[200px]" title={entry.project.nombre}>
+                                                    <div className="flex items-center gap-2 flex-wrap text-xs font-bold text-slate-600 truncate max-w-[200px]" title={entry.project.nombre}>
                                                         {entry.project.nombre}
+                                                        {entry.project.codigoProyecto && <CodeBadge code={entry.project.codigoProyecto} variant="project" size="sm" showCopy={false} />}
                                                     </div>
                                                 </td>
                                                 <td className="p-4 text-xs font-bold text-slate-500 text-center">
@@ -817,7 +822,10 @@ export default function TimesheetsPage() {
                                                     </button>
                                                 </div>
                                             </div>
-                                            <p className="text-xs font-bold text-slate-600 truncate mb-2">{entry.project.nombre}</p>
+                                            <div className="flex items-center gap-2 flex-wrap mb-2">
+                                                <p className="text-xs font-bold text-slate-600 truncate">{entry.project.nombre}</p>
+                                                {entry.project.codigoProyecto && <CodeBadge code={entry.project.codigoProyecto} variant="project" size="sm" showCopy={false} />}
+                                            </div>
                                             <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
                                                 <span className="text-xs font-bold text-slate-500">{entry.horaIngreso} - {entry.horaEgreso}</span>
                                                 <div className="flex items-center gap-2">

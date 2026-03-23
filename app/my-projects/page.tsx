@@ -23,6 +23,7 @@ import { useModalScroll } from '@/lib/useModalScroll';
 import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
 import { formatDateTime } from '@/lib/formatDate';
+import CodeBadge from '@/components/CodeBadge';
 
 interface ChecklistItem {
     id: string;
@@ -37,6 +38,7 @@ interface ChecklistItem {
 interface Project {
     id: string;
     nombre: string;
+    codigoProyecto?: string;
     tags: string[];
     estado: string;
     generarOS?: boolean;
@@ -359,10 +361,13 @@ export default function MyProjectsPage() {
         }
     };
 
-    const filteredProjects = projects.filter(p =>
-        p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.client?.nombre.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredProjects = projects.filter(p => {
+        const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const term = normalize(searchTerm);
+        return normalize(p.nombre).includes(term) ||
+               normalize(p.client?.nombre || '').includes(term) ||
+               (p.codigoProyecto || '').toLowerCase().includes(searchTerm.toLowerCase());
+    });
 
     const getProjectProgress = (p: Project) => {
         const total = p.checklistItems.length;
@@ -439,7 +444,14 @@ export default function MyProjectsPage() {
                                     >
                                         <div className="flex justify-between items-start mb-4">
                                             <div className="space-y-1">
-                                                <h3 className="font-bold text-slate-800 group-hover:text-primary transition-colors">{p.nombre}</h3>
+                                                <h3 className="font-black text-slate-800 group-hover:text-primary transition-colors flex items-center gap-2 flex-wrap text-lg">
+                                                    {p.codigoProyecto ? (
+                                                        <span className="text-primary font-mono">{p.codigoProyecto} |</span>
+                                                    ) : (
+                                                        <span className="text-slate-400 font-mono">#SIN-COD |</span>
+                                                    )}
+                                                    {p.nombre}
+                                                </h3>
                                                 <div className="flex items-center gap-2">
                                                     <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">{p.client?.nombre || 'Sin cliente'}</p>
                                                     {viewAll && p.responsableUser && (
@@ -503,7 +515,10 @@ export default function MyProjectsPage() {
                     <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
                         <div className="flex justify-between items-start border-b border-slate-50 pb-5">
                             <div className="space-y-1">
-                                <h1 className="text-2xl font-black text-slate-900 leading-tight">{selectedProject.nombre}</h1>
+                                <h1 className="text-2xl font-black text-slate-900 leading-tight flex items-center gap-2 flex-wrap">
+                                    {selectedProject.nombre}
+                                    {selectedProject.codigoProyecto && <CodeBadge code={selectedProject.codigoProyecto} variant="project" />}
+                                </h1>
                                 <p className="text-sm font-bold text-primary">{selectedProject.client?.nombre}</p>
                             </div>
                             <div className="text-right space-y-1">

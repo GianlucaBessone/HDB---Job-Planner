@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/dataLayer';
+import { generateCodigoOS } from '@/lib/codeGenerator';
 
 // GET /api/ordenes-servicio  — listado para admin/supervisor
 // GET /api/ordenes-servicio?projectId=xxx  — OS de un proyecto
@@ -11,7 +12,7 @@ export async function GET(req: Request) {
         const ordenes = await prisma.ordenServicio.findMany({
             where: projectId ? { projectId } : undefined,
             include: {
-                project: { select: { id: true, nombre: true, client: { select: { nombre: true } }, cliente: true } },
+                project: { select: { id: true, nombre: true, codigoProyecto: true, client: { select: { nombre: true } }, cliente: true } },
                 materiales: true,
                 operadores: { include: { operador: { select: { id: true, nombreCompleto: true } } } },
                 firma: true,
@@ -50,9 +51,13 @@ export async function POST(req: Request) {
             }
         }
 
+        // Auto-generate unique OS code
+        const codigoOS = await generateCodigoOS();
+
         const os = await prisma.ordenServicio.create({
             data: {
                 projectId,
+                codigoOS,
                 reporte,
                 estado: 'pendiente',
                 materiales: {
@@ -60,6 +65,7 @@ export async function POST(req: Request) {
                         material: m.material,
                         cantidad: Number(m.cantidad),
                         unidadMedida: m.unidadMedida,
+                        materialProyectoId: m.materialProyectoId || null,
                     })),
                 },
                 operadores: {
@@ -70,12 +76,36 @@ export async function POST(req: Request) {
                 },
             },
             include: {
-                project: { select: { nombre: true, client: { select: { nombre: true } }, cliente: true } },
+                project: { select: { nombre: true, codigoProyecto: true, client: { select: { nombre: true } }, cliente: true } },
                 materiales: true,
                 operadores: { include: { operador: { select: { id: true, nombreCompleto: true } } } },
                 firma: true,
             },
         });
+
+        // 2) Si hay materiales de aprovisionamiento, crear registros de MaterialUso
+        const aprovisionados = (materiales || []).filter((m: any) => m.materialProyectoId && Number(m.cantidad) > 0);
+        if (aprovisionados.length > 0) {
+            const firstOp = await prisma.operator.findUnique({ where: { id: operadores[0].operadorId } });
+            const opName = firstOp ? firstOp.nombreCompleto : 'Desconocido';
+
+            for (const m of aprovisionados) {
+                await prisma.materialUso.create({
+                    data: {
+                        cantidadUtilizada: Number(m.cantidad),
+                        operadorNombre: opName,
+                        materialId: m.materialProyectoId,
+                        ordenServicioId: os.id
+                    }
+                });
+                
+                // Update MaterialProyecto state to uso_confirmado
+                await prisma.materialProyecto.update({
+                    where: { id: m.materialProyectoId },
+                    data: { estado: 'uso_confirmado' }
+                });
+            }
+        }
 
         return NextResponse.json(os);
     } catch (e) {

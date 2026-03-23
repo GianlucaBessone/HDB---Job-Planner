@@ -104,6 +104,7 @@ export async function GET(request: Request) {
             .filter(p => p.estado !== 'finalizado' && p.horasEstimadas > 0)
             .map(p => ({
                 nombre: p.nombre,
+                codigoProyecto: p.codigoProyecto,
                 percentage: (p.horasConsumidas / p.horasEstimadas) * 100,
                 estado: p.estado
             }))
@@ -125,6 +126,7 @@ export async function GET(request: Request) {
                 return {
                     id: p.id,
                     nombre: p.nombre,
+                    codigoProyecto: p.codigoProyecto,
                     ipt,
                     savings,
                     variation,

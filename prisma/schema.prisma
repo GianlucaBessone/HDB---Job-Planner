@@ -10,6 +10,7 @@ datasource db {
 
 model Project {
   id              String          @id @default(cuid())
+  codigoProyecto  String?         @unique
   nombre          String
   activo          Boolean         @default(true)
   noEnMetricas    Boolean         @default(false)
@@ -36,9 +37,11 @@ model Project {
   timeEntries     TimeEntry[]
   checklistItems  ChecklistItem[]
   logs            ProjectLog[]
-  generarOS       Boolean         @default(false)
-  ordenesServicio OrdenServicio[]
-  encuestas       EncuestaServicio[]
+  generarOS            Boolean         @default(false)
+  aprovisionamiento    Boolean         @default(false)
+  ordenesServicio      OrdenServicio[]
+  encuestas            EncuestaServicio[]
+  materialesProyecto   MaterialProyecto[]
 }
 
 model ProjectLog {
@@ -93,7 +96,7 @@ model Operator {
   enVacaciones   Boolean        @default(false)
   etiquetas      Json // Now using native Json type
   pin            String         @default("1234")
-  role           String         @default("operador") // operador | supervisor | admin
+  role           String         @default("operador") // operador | supervisor | admin | vendedor
   responsibleProjects Project[]      @relation("ProjectResponsable")
   createdAt           DateTime       @default(now())
   timeEntries     TimeEntry[]
@@ -219,6 +222,7 @@ model SystemSetting {
 
 model OrdenServicio {
   id            String                  @id @default(cuid())
+  codigoOS      String?                 @unique
   projectId     String
   project       Project                 @relation(fields: [projectId], references: [id], onDelete: Cascade)
   reporte       String                  @db.Text
@@ -234,12 +238,13 @@ model OrdenServicio {
 }
 
 model OrdenServicioMaterial {
-  id              String        @id @default(cuid())
-  ordenServicioId String
-  ordenServicio   OrdenServicio @relation(fields: [ordenServicioId], references: [id], onDelete: Cascade)
-  material        String
-  cantidad        Float
-  unidadMedida    String
+  id                 String        @id @default(cuid())
+  ordenServicioId    String
+  ordenServicio      OrdenServicio @relation(fields: [ordenServicioId], references: [id], onDelete: Cascade)
+  material           String
+  cantidad           Float
+  unidadMedida       String
+  materialProyectoId String?       @map("material_proyecto_id")
 
   @@index([ordenServicioId])
 }
@@ -281,4 +286,47 @@ model EncuestaServicio {
 
   @@index([proyectoId])
   @@index([fecha])
+}
+
+model MaterialProyecto {
+  id                  String               @id @default(cuid())
+  proyectoId          String
+  proyecto            Project              @relation(fields: [proyectoId], references: [id], onDelete: Cascade)
+  nombre              String
+  unidad              String               @default("unidad")
+  cantidadSolicitada  Float                @default(0)
+  cantidadDisponible  Float                @default(0)
+  cantidadEntregada   Float                @default(0)
+  estado              String               @default("material_cargado")
+  // material_cargado | material_entregado | uso_confirmado | pendiente_devolucion | cerrado_ok | cerrado_con_reserva
+  createdAt           DateTime             @default(now())
+  usos                MaterialUso[]
+  devolucion          MaterialDevolucion?
+
+  @@index([proyectoId])
+}
+
+model MaterialUso {
+  id                String           @id @default(cuid())
+  materialId        String
+  material          MaterialProyecto @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  ordenServicioId   String?          // null si es uso directo sin OS
+  cantidadUtilizada Float
+  operadorNombre    String
+  createdAt         DateTime         @default(now())
+
+  @@index([materialId])
+}
+
+model MaterialDevolucion {
+  id                String           @id @default(cuid())
+  materialId        String           @unique
+  material          MaterialProyecto @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  cantidadADevolver Float
+  estado            String           @default("pendiente")
+  // pendiente | cerrado_ok | cerrado_con_reserva
+  comentario        String?          @db.Text
+  confirmadoPor     String?
+  fechaConfirm      DateTime?
+  createdAt         DateTime         @default(now())
 }

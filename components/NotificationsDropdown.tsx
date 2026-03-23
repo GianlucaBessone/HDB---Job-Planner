@@ -55,7 +55,9 @@ export default function NotificationsDropdown({ user }: { user: any }) {
             clearInterval(interval);
             window.removeEventListener('focus', handleFocus);
         };
-    }, [user.id, user.role]);
+    }, [user?.id, user?.role]);
+
+    if (!user) return null;
 
     const markAsRead = async (id: string, e?: React.MouseEvent) => {
         if (e) e.stopPropagation();

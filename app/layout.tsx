@@ -6,7 +6,7 @@ import "./globals.css";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Script from "next/script";
-import { Calendar, LayoutGrid, Users, ClipboardList, Menu, X, Landmark, LayoutDashboard, Timer, Clock, LogOut, Home, Settings, FileSignature } from "lucide-react";
+import { Calendar, LayoutGrid, Users, ClipboardList, Menu, X, Landmark, LayoutDashboard, Timer, Clock, LogOut, Home, Settings, FileSignature, Package } from "lucide-react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import ToastContainer from "@/components/Toast";
 import LoginScreen from "@/components/LoginScreen";
@@ -39,7 +39,11 @@ export default function RootLayout({
     const handleLoginSuccess = (user: any) => {
         setCurrentUser(user);
         setIsSidebarOpen(false);
-        router.push('/');
+        if (user.role?.toLowerCase() === 'operador') {
+            router.push('/timesheets');
+        } else {
+            router.push('/');
+        }
     };
 
     useEffect(() => {
@@ -67,21 +71,7 @@ export default function RootLayout({
         };
     }, []);
 
-    // OneSignal handles service worker registration
-    /*
-    useEffect(() => {
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').then(
-                    registration => console.log('SW registered: ', registration),
-                    error => console.log('SW registration failed: ', error)
-                );
-            });
-        }
-    }, []);
-    */
-
-    const isPublicPage = pathname.includes('/report') || pathname.startsWith('/os/');
+    const isPublicPage = pathname ? (pathname.includes('/report') || pathname.startsWith('/os/')) : false;
 
     let content;
     if (isCheckingAuth) {
@@ -192,7 +182,7 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
     const pathname = usePathname();
 
     const menuItems = [
-        { href: '/', icon: <Home className="w-5 h-5" />, label: 'Inicio', roles: ['operador', 'supervisor', 'admin'] },
+        { href: '/', icon: <Home className="w-5 h-5" />, label: 'Inicio', roles: ['operador', 'supervisor', 'admin', 'vendedor'] },
         { href: '/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, label: 'Panel de Análisis', roles: ['supervisor', 'admin'] },
         { href: '/planning', icon: <Calendar className="w-5 h-5" />, label: 'Planificación', roles: ['supervisor', 'admin'] },
         { href: '/timesheets', icon: <Clock className="w-5 h-5" />, label: 'Registro de Tiempos', roles: ['operador', 'supervisor', 'admin'] },
@@ -202,6 +192,7 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
         { href: '/operators', icon: <Users className="w-5 h-5" />, label: 'Gestión de Usuarios / Operadores', roles: ['operador', 'supervisor', 'admin'] },
         { href: '/clients', icon: <Landmark className="w-5 h-5" />, label: 'Gestión de Clientes', roles: ['supervisor', 'admin'] },
         { href: '/ordenes-servicio', icon: <FileSignature className="w-5 h-5" />, label: 'Órdenes de Servicio', roles: ['supervisor', 'admin'] },
+        { href: '/provision-materiales', icon: <Package className="w-5 h-5" />, label: 'Provisión de Materiales', roles: ['vendedor', 'supervisor', 'admin'] },
         { href: '/configuracion', icon: <Settings className="w-5 h-5" />, label: 'Configuración', roles: ['admin', 'supervisor'] },
 
     ];

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
-import { CheckCircle2, Loader2, FileText, User, Package, Clock, AlertCircle, PenLine, X, Star, MessageSquare, ThumbsUp, Smile } from 'lucide-react';
+import { CheckCircle2, Loader2, FileText, User, Package, Clock, AlertCircle, PenLine, X, Star, MessageSquare, ThumbsUp, Smile, Download } from 'lucide-react';
+import CodeBadge from '@/components/CodeBadge';
 
 interface Firma {
     nombre: string;
@@ -12,12 +13,14 @@ interface Firma {
 
 interface OrdenServicio {
     id: string;
+    codigoOS?: string;
     linkPublico: string;
     estado: string;
     reporte: string;
     fechaCreacion: string;
     project: {
         nombre: string;
+        codigoProyecto?: string;
         cliente?: string;
         fechaInicio?: string;
         fechaFin?: string;
@@ -579,6 +582,125 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
         }, 100);
     };
 
+    const handleDownload = () => {
+        if (!os) return;
+        const _isFirmada = os.estado === 'firmada';
+        const _clienteName = os.project.client?.nombre || os.project.cliente || 'No especificado';
+        
+        const _formatDate = (d: string) => {
+            try { return new Date(d).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
+            catch { return d; }
+        };
+
+        const _formatDateTime = (d: string) => {
+            try {
+                return new Date(d).toLocaleString('es-AR', {
+                    day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                });
+            } catch { return d; }
+        };
+
+        const printStyles = `
+            <style>
+                * { box-sizing: border-box; }
+                body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 20px; color: #1e293b; text-align: left; }
+                .header { border-bottom: 3px solid #059669; padding-bottom: 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; }
+                .logo { font-size: 22px; font-weight: 900; color: #1e293b; }
+                .logo span { color: #059669; }
+                .badge { padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+                .badge.firmada { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+                .badge.pendiente { background: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }
+                h2 { font-size: 18px; font-weight: 900; color: #0f172a; margin: 0 0 4px; }
+                h3 { font-size: 13px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 12px; padding-bottom: 6px; border-bottom: 1px solid #e2e8f0; }
+                .section { margin-bottom: 22px; }
+                .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+                .field label { font-size: 9px; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 2px; }
+                .field p { font-size: 13px; font-weight: 700; color: #1e293b; margin: 0; }
+                .reporte-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; font-size: 13px; color: #334155; line-height: 1.6; white-space: pre-wrap; }
+                table { width: 100%; border-collapse: collapse; font-size: 12px; }
+                th { background: #f8fafc; text-align: left; padding: 8px 12px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #64748b; border-bottom: 2px solid #e2e8f0; }
+                td { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; color: #334155; font-weight: 600; }
+                .firma-box { border: 1px solid #a7f3d0; border-radius: 8px; padding: 14px; background: #f0fdf4; }
+                .firma-box img { max-width: 200px; max-height: 80px; border: 1px solid #d1fae5; border-radius: 6px; padding: 4px; background: white; }
+                .footer { margin-top: 30px; padding-top: 14px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8; }
+                @media print { body { padding: 0; } }
+            </style>
+        `;
+
+        const content = `
+            <div class="header">
+                <div>
+                    <div class="logo">HDB<span>Planner</span></div>
+                    <h2 style="margin-top:8px;">Orden de Servicio — ${(os as any).codigoOS || os.id.slice(-8).toUpperCase()}</h2>
+                    <p style="font-size:12px;color:#64748b;margin:4px 0 0;">${(os as any).project.codigoProyecto ? (os as any).project.codigoProyecto + ' | ' : ''}${os.project.nombre}</p>
+                </div>
+                <div>
+                    <div class="badge ${_isFirmada ? 'firmada' : 'pendiente'}">${_isFirmada ? '✓ Firmada' : 'Pendiente de firma'}</div>
+                    <p style="font-size:11px;color:#94a3b8;margin-top:8px;text-align:right;">Emitida: ${_formatDate(os.fechaCreacion)}</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Datos del Proyecto</h3>
+                <div class="grid-2">
+                    <div class="field" style="grid-column: 1 / -1"><label>Cliente</label><p>${_clienteName}</p></div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Reporte del Trabajo</h3>
+                <div class="reporte-box">${os.reporte}</div>
+            </div>
+
+            <div class="section">
+                <h3>Operadores</h3>
+                <table>
+                    <thead><tr><th>Nombre</th><th>Horas</th></tr></thead>
+                    <tbody>
+                        ${os.operadores.map(op => `<tr><td>${op.operador.nombreCompleto}</td><td>${op.horas}h</td></tr>`).join('')}
+                    </tbody>
+                </table>
+            </div>
+
+            ${os.materiales.length > 0 ? `
+            <div class="section">
+                <h3>Materiales Utilizados</h3>
+                <table>
+                    <thead><tr><th>Material</th><th>Cantidad</th><th>Unidad</th></tr></thead>
+                    <tbody>
+                        ${os.materiales.map(m => `<tr><td>${m.material}</td><td>${m.cantidad}</td><td>${m.unidadMedida}</td></tr>`).join('')}
+                    </tbody>
+                </table>
+            </div>` : ''}
+
+            ${_isFirmada && os.firma ? `
+            <div class="section">
+                <h3>Firma del Cliente</h3>
+                <div class="firma-box">
+                    <div class="grid-2" style="margin-bottom:10px;">
+                        <div class="field"><label>Nombre</label><p>${os.firma.nombre}</p></div>
+                        <div class="field"><label>DNI</label><p>${os.firma.dni}</p></div>
+                        <div class="field"><label>Fecha de firma</label><p>${_formatDateTime(os.firma.fechaFirma)}</p></div>
+                    </div>
+                    <img src="${os.firma.firmaImagen}" alt="Firma" />
+                </div>
+            </div>` : ''}
+
+            <div class="footer">
+                <span>HDB Job Planner — Gestión de Órdenes de Servicio</span>
+                <span>OS ${(os as any).codigoOS || '#' + os.id.slice(-8).toUpperCase()} — ${(os as any).project.codigoProyecto || ''} — ${_formatDate(os.fechaCreacion)}</span>
+            </div>
+        `;
+
+        const win = window.open('', '_blank');
+        if (!win) return;
+        win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>OS - ${os.project.nombre}</title>${printStyles}</head><body>${content}</body></html>`);
+        win.document.close();
+        win.focus();
+        setTimeout(() => { win.print(); win.close(); }, 500);
+    };
+
     const formatDate = (d: string) => {
         try {
             return new Date(d).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -622,13 +744,23 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                         <FileText className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                        <p className="text-[10px] font-black text-blue-600/70 uppercase tracking-widest">HDB Job Planner</p>
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <p className="text-[10px] font-black text-blue-600/70 uppercase tracking-widest">HDB Job Planner</p>
+                            {os.codigoOS && <CodeBadge code={os.codigoOS} variant="os" size="sm" showCopy={false} />}
+                        </div>
                         <h1 className="text-lg font-black text-slate-800 leading-tight">Orden de Servicio</h1>
                     </div>
-                    <div className="ml-auto shrink-0">
-                        <span className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider ${isFirmada ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-700 border border-amber-200'}`}>
-                            {isFirmada ? '✓ Firmada' : 'Pendiente de firma'}
+                    <div className="ml-auto shrink-0 flex items-center gap-2">
+                        <span className={`whitespace-nowrap px-2 py-1.5 md:px-3 rounded-full text-[10px] md:text-xs font-black uppercase tracking-wider ${isFirmada ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-700 border border-amber-200'}`}>
+                            {isFirmada ? '✓ Firmada' : 'Pendiente'}
                         </span>
+                        <button
+                            onClick={handleDownload}
+                            className="bg-blue-50 p-1.5 md:p-2 hover:bg-blue-100 text-blue-600 rounded-xl transition-all border border-blue-200 inline-flex items-center justify-center shadow-sm"
+                            title="Descargar PDF"
+                        >
+                            <Download className="w-4 h-4 md:w-5 md:h-5" />
+                        </button>
                     </div>
                 </div>
             </div>
@@ -643,7 +775,10 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                     <div className="px-6 py-5 grid grid-cols-2 gap-4">
                         <div className="col-span-2">
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Nombre del Proyecto</p>
-                            <p className="text-lg font-black text-slate-800">{os.project.nombre}</p>
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <p className="text-lg font-black text-slate-800">{os.project.nombre}</p>
+                                {os.project.codigoProyecto && <CodeBadge code={os.project.codigoProyecto} variant="project" size="sm" showCopy={false} />}
+                            </div>
                         </div>
                         <div>
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Cliente</p>

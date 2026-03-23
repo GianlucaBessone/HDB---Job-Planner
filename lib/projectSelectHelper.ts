@@ -1,6 +1,7 @@
 export interface ProjectOption {
     id: string;
     nombre: string;
+    codigoProyecto?: string;
     [key: string]: any;
 }
 
@@ -22,7 +23,7 @@ export function getProjectOptions(projects: ProjectOption[], recentIds: string[]
     if (recent.length > 0) {
         options.push(...recent.map(p => ({
             id: p.id,
-            label: p.nombre,
+            label: p.codigoProyecto ? `${p.codigoProyecto} | ${p.nombre}` : p.nombre,
             group: 'Proyectos recientes'
         })));
     }
@@ -31,7 +32,7 @@ export function getProjectOptions(projects: ProjectOption[], recentIds: string[]
         const groupLabel = recent.length > 0 ? 'Todos los proyectos' : undefined;
         options.push(...others.map(p => ({
             id: p.id,
-            label: p.nombre,
+            label: p.codigoProyecto ? `${p.codigoProyecto} | ${p.nombre}` : p.nombre,
             group: groupLabel
         })));
     }

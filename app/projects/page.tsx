@@ -40,12 +40,14 @@ import { safeApiRequest } from '@/lib/offline';
 import { formatDate } from '@/lib/formatDate';
 import SearchableSelect from '@/components/SearchableSelect';
 import { CHECKLIST_TEMPLATES } from '@/lib/checklistTemplates';
+import CodeBadge from '@/components/CodeBadge';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type ProjectStatus = 'por_hacer' | 'planificado' | 'activo' | 'en_riesgo' | 'atrasado' | 'finalizado';
 
 interface Project {
     id: string;
+    codigoProyecto?: string;
     nombre: string;
     activo: boolean;
     noEnMetricas: boolean;
@@ -94,6 +96,7 @@ interface FormData {
     fechaInicio: string;
     fechaFin: string;
     generarOS: boolean;
+    aprovisionamiento: boolean;
 }
 
 
@@ -141,6 +144,7 @@ const EMPTY_FORM: FormData = {
     fechaInicio: '',
     fechaFin: '',
     generarOS: false,
+    aprovisionamiento: false,
 };
 
 
@@ -254,6 +258,7 @@ function ProjectsContent() {
             fechaInicio: project.fechaInicio || '',
             fechaFin: project.fechaFin || '',
             generarOS: (project as any).generarOS || false,
+            aprovisionamiento: (project as any).aprovisionamiento || false,
         });
 
         setIsModalOpen(true);
@@ -392,7 +397,12 @@ function ProjectsContent() {
     // ── Derived list ──────────────────────────────────────────────────────────
     const filteredProjects = useMemo(() => {
         return projects.filter(p => {
-            if (searchTerm && !normalize(p.nombre).includes(normalize(searchTerm))) return false;
+            if (searchTerm) {
+                const term = normalize(searchTerm);
+                const matchName = normalize(p.nombre).includes(term);
+                const matchCode = (p.codigoProyecto || '').toLowerCase().includes(searchTerm.toLowerCase());
+                if (!matchName && !matchCode) return false;
+            }
             if (appliedFilters.estados.length > 0 && !appliedFilters.estados.includes(p.estado)) return false;
             if (appliedFilters.responsable && !normalize(p.responsable || '').includes(normalize(appliedFilters.responsable))) return false;
             if (appliedFilters.cliente && !normalize(p.cliente || '').includes(normalize(appliedFilters.cliente))) return false;
@@ -725,13 +735,19 @@ function ProjectDetailsModal({
                 {/* Header */}
                 <div className="p-6 md:p-8 border-b border-slate-100 flex items-center justify-between shrink-0">
                     <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${STATUS_CONFIG[project.estado]?.bg || 'bg-slate-100'} ${STATUS_CONFIG[project.estado]?.color || 'text-slate-500'}`}>
-                                {STATUS_CONFIG[project.estado]?.label || project.estado}
-                            </span>
-                            <span className="text-slate-400 text-xs font-medium">#{project.id.slice(-6).toUpperCase()}</span>
+                            {project.codigoProyecto && (
+                                <CodeBadge code={project.codigoProyecto} variant="project" size="sm" showCopy={true} />
+                            )}
+                        <div className="flex items-center gap-3 flex-wrap">
+                            <h3 className="text-2xl font-black text-slate-800 tracking-tight">
+                                {project.codigoProyecto ? (
+                                    <span className="text-primary group-hover:text-primary transition-colors font-mono">{project.codigoProyecto} | </span>
+                                ) : (
+                                    <span className="text-slate-400 font-mono">#SIN-COD | </span>
+                                )}
+                                {project.nombre}
+                            </h3>
                         </div>
-                        <h3 className="text-2xl font-black text-slate-800 tracking-tight">{project.nombre}</h3>
                         <p className="text-sm text-slate-500 font-medium flex items-center gap-1.5">
                             <Building2 className="w-4 h-4" /> {project.client?.nombre || project.cliente || 'Sin cliente'}
                         </p>
@@ -1104,9 +1120,16 @@ function ProjectCard({
     return (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-slate-300 transition-all duration-300 p-5 flex flex-col gap-4 group">
             <div className="flex items-start justify-between gap-3">
-                <h4 className="font-bold text-lg text-slate-800 leading-tight line-clamp-2 group-hover:text-primary transition-colors">
-                    {project.nombre}
-                </h4>
+                <div className="flex-1 min-w-0">
+                    <h4 className="font-black text-lg text-slate-800 leading-tight group-hover:text-primary transition-colors">
+                        {project.codigoProyecto ? (
+                            <span className="text-primary font-mono mr-1.5">{project.codigoProyecto} |</span>
+                        ) : (
+                            <span className="text-slate-400 font-mono mr-1.5">#SIN-COD |</span>
+                        )}
+                        {project.nombre}
+                    </h4>
+                </div>
                 <div className="flex items-center gap-0.5 shrink-0">
                     <button
                         onClick={() => onEdit(project)}
@@ -1516,6 +1539,25 @@ function ProjectModal({
                             >
                                 <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300 ${
                                     (formData as any).generarOS ? 'translate-x-8' : 'translate-x-1'
+                                }`} />
+                            </button>
+                        </div>
+
+                        {/* Aprovisionamiento Switch */}
+                        <div className="flex items-center justify-between bg-primary/5 border border-primary/20 rounded-2xl px-4 py-3.5">
+                            <div className="space-y-0.5">
+                                <p className="text-sm font-bold text-primary">Aprovisionamiento de Materiales</p>
+                                <p className="text-xs text-primary/70 font-medium">Habilita la gestión y trazabilidad de materiales para este proyecto</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => set('aprovisionamiento', !(formData as any).aprovisionamiento)}
+                                className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-300 focus:outline-none shrink-0 ${
+                                    (formData as any).aprovisionamiento ? 'bg-primary' : 'bg-slate-200'
+                                }`}
+                            >
+                                <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300 ${
+                                    (formData as any).aprovisionamiento ? 'translate-x-8' : 'translate-x-1'
                                 }`} />
                             </button>
                         </div>

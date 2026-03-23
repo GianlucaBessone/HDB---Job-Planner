@@ -41,7 +41,7 @@ export async function GET(req: Request) {
         const entries = await prisma.timeEntry.findMany({
             where,
             include: {
-                project: { select: { nombre: true, cliente: true } },
+                project: { select: { nombre: true, cliente: true, codigoProyecto: true } },
                 operator: { select: { nombreCompleto: true } }
             },
             orderBy: [{ fecha: 'desc' }, { horaIngreso: 'desc' }]

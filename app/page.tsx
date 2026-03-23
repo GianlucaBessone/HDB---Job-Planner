@@ -13,7 +13,9 @@ import {
     Activity,
     AlertTriangle,
     Settings,
-    Home
+    Home,
+    Package,
+    User as UserIcon
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -21,12 +23,14 @@ export default function HomePage() {
     const router = useRouter();
     const [userRole, setUserRole] = useState<string | null>(null);
     const [userName, setUserName] = useState<string>('');
+    const [userData, setUserData] = useState<any>(null);
 
     useEffect(() => {
         const stored = localStorage.getItem('currentUser');
         if (stored) {
             try {
                 const user = JSON.parse(stored);
+                setUserData(user);
                 setUserRole(user.role?.toLowerCase() || 'operador');
                 setUserName(user.nombreCompleto || 'Usuario');
             } catch (e) {
@@ -35,7 +39,8 @@ export default function HomePage() {
         }
     }, [router]);
 
-    const isSupervisorOrAdmin = userRole === 'supervisor' || userRole === 'admin';
+    const isSupervisorOrAdmin = ['supervisor', 'admin'].includes(userRole || '');
+    const isVendedor = userRole?.trim() === 'vendedor';
 
     if (!userRole) {
         return (
@@ -53,43 +58,76 @@ export default function HomePage() {
                         <Home className="w-6 h-6 md:w-8 md:h-8 text-primary" />
                         Hola, {userName.split(' ')[0]}
                     </h2>
-                    <p className="text-sm text-slate-500 font-medium">¿Qué te gustaría hacer hoy?</p>
+                    <p className="text-sm text-slate-500 font-medium tracking-tight uppercase tracking-widest text-[10px] font-black">{userRole}</p>
                 </div>
             </div>
 
-            <div className="space-y-6">
-                <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest px-1">Tus Acciones Rápidas</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
-                    <ActionCard
-                        title="Cargar Horario"
-                        description="Registra tus horas del día"
-                        icon={<Clock className="w-6 h-6" />}
-                        href="/timesheets"
-                        color="bg-primary"
-                    />
-                    <ActionCard
-                        title="Proyectos Asignados"
-                        description="Revisa tus proyectos actuales"
-                        icon={<Briefcase className="w-6 h-6" />}
-                        href="/my-projects"
-                        color="bg-indigo-500"
-                    />
-                    <ActionCard
-                        title="Registrar Actividad"
-                        description="Informa avances y tareas"
-                        icon={<ClipboardCheck className="w-6 h-6" />}
-                        href="/my-projects"
-                        color="bg-emerald-500"
-                    />
-                    <ActionCard
-                        title="Notificaciones"
-                        description="Novedades y alertas"
-                        icon={<Bell className="w-6 h-6" />}
-                        href="/notifications"
-                        color="bg-amber-500"
-                    />
+            {/* General Actions for Operators / Everyone if not Vendedor */}
+            {!isVendedor && (
+                <div className="space-y-6">
+                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest px-1">Tus Acciones Rápidas</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
+                        <ActionCard
+                            title="Cargar Horario"
+                            description="Registra tus horas del día"
+                            icon={<Clock className="w-6 h-6" />}
+                            href="/timesheets"
+                            color="bg-primary"
+                        />
+                        <ActionCard
+                            title="Proyectos Asignados"
+                            description="Revisa tus proyectos actuales"
+                            icon={<Briefcase className="w-6 h-6" />}
+                            href="/my-projects"
+                            color="bg-indigo-500"
+                        />
+                        <ActionCard
+                            title="Registrar Actividad"
+                            description="Informa avances y tareas"
+                            icon={<ClipboardCheck className="w-6 h-6" />}
+                            href="/my-projects"
+                            color="bg-emerald-500"
+                        />
+                        <ActionCard
+                            title="Notificaciones"
+                            description="Novedades y alertas"
+                            icon={<Bell className="w-6 h-6" />}
+                            href="/notifications"
+                            color="bg-amber-500"
+                        />
+                    </div>
                 </div>
-            </div>
+            )}
+
+            {/* Specific View for Vendedor */}
+            {isVendedor && (
+                <div className="space-y-6">
+                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest px-1">Panel de Ventas</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                        <ActionCard
+                            title="Provisión de Materiales"
+                            description="Gestión de entrega y devolución"
+                            icon={<Package className="w-6 h-6" />}
+                            href="/provision-materiales"
+                            color="bg-primary"
+                        />
+                        <ActionCard
+                            title="Notificaciones"
+                            description="Novedades y alertas"
+                            icon={<Bell className="w-6 h-6" />}
+                            href="/notifications"
+                            color="bg-amber-500"
+                        />
+                        <ActionCard
+                            title="Mi Usuario"
+                            description={`${userName} (${userRole})`}
+                            icon={<UserIcon className="w-6 h-6" />}
+                            href="/operators"
+                            color="bg-slate-700"
+                        />
+                    </div>
+                </div>
+            )}
 
             {isSupervisorOrAdmin && (
                 <div className="space-y-6 pt-4 border-t border-slate-200">
@@ -103,6 +141,13 @@ export default function HomePage() {
                             color="bg-primary"
                         />
                         <ActionCard
+                            title="Provisión de Materiales"
+                            description="Control de suministros"
+                            icon={<Package className="w-6 h-6" />}
+                            href="/provision-materiales"
+                            color="bg-indigo-600"
+                        />
+                        <ActionCard
                             title="Proyectos en Curso"
                             description="Ver todos los activos"
                             icon={<Activity className="w-6 h-6" />}
@@ -110,15 +155,8 @@ export default function HomePage() {
                             color="bg-emerald-500"
                         />
                         <ActionCard
-                            title="Con Retraso"
-                            description="Proyectos críticos"
-                            icon={<AlertTriangle className="w-6 h-6" />}
-                            href="/projects?status=atrasado"
-                            color="bg-rose-500"
-                        />
-                        <ActionCard
                             title="Configuración"
-                            description="Gestión estructural del sistema"
+                            description="Gestión estructural"
                             icon={<Settings className="w-6 h-6" />}
                             href="/configuracion"
                             color="bg-slate-700"

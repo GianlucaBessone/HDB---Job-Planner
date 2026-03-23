@@ -11,9 +11,11 @@ import Link from 'next/link';
 import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import CodeBadge from '@/components/CodeBadge';
 
 interface OrdenServicio {
     id: string;
+    codigoOS?: string;
     linkPublico: string;
     estado: string;
     reporte: string;
@@ -21,6 +23,7 @@ interface OrdenServicio {
     project: {
         id: string;
         nombre: string;
+        codigoProyecto?: string;
         cliente?: string;
         client?: { nombre: string };
         responsableUser?: { nombreCompleto: string };
@@ -102,8 +105,8 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
             <div class="header">
                 <div>
                     <div class="logo">HDB<span>Planner</span></div>
-                    <h2 style="margin-top:8px;">Orden de Servicio</h2>
-                    <p style="font-size:12px;color:#64748b;margin:4px 0 0;">${os.project.nombre}</p>
+                    <h2 style="margin-top:8px;">Orden de Servicio — ${(os as any).codigoOS || os.id.slice(-8).toUpperCase()}</h2>
+                    <p style="font-size:12px;color:#64748b;margin:4px 0 0;">${(os as any).project.codigoProyecto ? (os as any).project.codigoProyecto + ' | ' : ''}${os.project.nombre}</p>
                 </div>
                 <div>
                     <div class="badge ${isFirmada ? 'firmada' : 'pendiente'}">${isFirmada ? '✓ Firmada' : 'Pendiente de firma'}</div>
@@ -114,8 +117,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
             <div class="section">
                 <h3>Datos del Proyecto</h3>
                 <div class="grid-2">
-                    <div class="field"><label>Cliente</label><p>${clienteName}</p></div>
-                    <div class="field"><label>Responsable</label><p>${os.project.responsableUser?.nombreCompleto || '—'}</p></div>
+                    <div class="field" style="grid-column: 1 / -1"><label>Cliente</label><p>${clienteName}</p></div>
                 </div>
             </div>
 
@@ -160,7 +162,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
 
             <div class="footer">
                 <span>HDB Job Planner — Gestión de Órdenes de Servicio</span>
-                <span>OS #${os.id.slice(-8).toUpperCase()} — ${formatDate(os.fechaCreacion)}</span>
+                <span>OS ${(os as any).codigoOS || '#' + os.id.slice(-8).toUpperCase()} — ${(os as any).project.codigoProyecto || ''} — ${formatDate(os.fechaCreacion)}</span>
             </div>
         `;
 
@@ -183,14 +185,25 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                 {/* Header */}
                 <div className="p-5 md:p-6 border-b border-slate-100 flex items-center justify-between shrink-0">
                     <div className="space-y-1">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 mb-1">
                             <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${isFirmada ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
                                 {isFirmada ? '✓ Firmada' : 'Pendiente de firma'}
                             </span>
-                            <span className="text-slate-400 text-xs font-medium">OS #{os.id.slice(-8).toUpperCase()}</span>
                         </div>
-                        <h3 className="text-xl font-black text-slate-800">{os.project.nombre}</h3>
-                        <p className="text-sm text-slate-500 font-medium flex items-center gap-1.5">
+                        <h3 className="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2 flex-wrap">
+                            {(os as any).codigoOS ? (
+                                <span className="text-emerald-700 font-mono">{(os as any).codigoOS} |</span>
+                            ) : (
+                                <span className="text-slate-400 font-mono">#SIN-OS |</span>
+                            )}
+                            {(os as any).project.codigoProyecto ? (
+                                <span className="text-primary font-mono">{(os as any).project.codigoProyecto} |</span>
+                            ) : (
+                                <span className="text-slate-400 font-mono">#SIN-PR |</span>
+                            )}
+                            {os.project.nombre}
+                        </h3>
+                        <p className="text-sm text-slate-500 font-medium flex items-center gap-1.5 mt-1">
                             <Building2 className="w-3.5 h-3.5" /> {clienteName}
                         </p>
                     </div>
@@ -443,9 +456,13 @@ function OrdenesServicioContent() {
     }
 
     const filtered = ordenes.filter(os => {
+        const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const term = normalize(searchTerm);
         const matchSearch = !searchTerm ||
-            os.project.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (os.project.client?.nombre || os.project.cliente || '').toLowerCase().includes(searchTerm.toLowerCase());
+            normalize(os.project.nombre).includes(term) ||
+            normalize(os.project.client?.nombre || os.project.cliente || '').includes(term) ||
+            ((os as any).codigoOS || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+            ((os as any).project.codigoProyecto || '').toLowerCase().includes(searchTerm.toLowerCase());
         const matchEstado = filterEstado === 'all' || os.estado === filterEstado;
         return matchSearch && matchEstado;
     });
@@ -472,7 +489,7 @@ function OrdenesServicioContent() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
                     <input
                         type="text"
-                        placeholder="Buscar por proyecto o cliente..."
+                        placeholder="Buscar por código OS, PR, proyecto o cliente..."
                         className="w-full bg-white border border-slate-200 rounded-xl py-2.5 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium shadow-sm"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
@@ -538,9 +555,23 @@ function OrdenesServicioContent() {
                                     <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${isFirmada ? 'bg-emerald-500' : 'bg-amber-400'}`} />
 
                                     {/* Main info */}
-                                    <div className="flex-1 min-w-0 space-y-0.5">
-                                        <p className="font-bold text-slate-800 text-sm truncate">{os.project.nombre}</p>
-                                        <div className="flex items-center gap-3 text-xs text-slate-400 font-medium">
+                                    <div className="flex-1 min-w-0 space-y-1">
+                                        <div className="flex items-center gap-2 flex-wrap text-sm">
+                                            <p className="font-black text-slate-800 truncate flex items-center gap-1.5">
+                                                {(os as any).codigoOS ? (
+                                                    <span className="text-emerald-700 font-mono">{(os as any).codigoOS} |</span>
+                                                ) : (
+                                                    <span className="text-slate-400 font-mono">#SIN-OS |</span>
+                                                )}
+                                                {(os as any).project.codigoProyecto ? (
+                                                    <span className="text-primary font-mono">{(os as any).project.codigoProyecto} |</span>
+                                                ) : (
+                                                    <span className="text-slate-400 font-mono">#SIN-PR |</span>
+                                                )}
+                                                {os.project.nombre}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-3 text-xs text-slate-400 font-medium flex-wrap">
                                             <span className="flex items-center gap-1">
                                                 <Building2 className="w-3 h-3" /> {clienteName}
                                             </span>

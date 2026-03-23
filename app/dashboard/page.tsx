@@ -29,6 +29,7 @@ import {
     Award
 } from 'lucide-react';
 import SearchableSelect from '@/components/SearchableSelect';
+import CodeBadge from '@/components/CodeBadge';
 import { safeApiRequest } from '@/lib/offline';
 
 interface DashboardData {
@@ -51,7 +52,7 @@ interface DashboardData {
     };
     topClients: { name: string; count: number }[];
     topOperators: { name: string; count: number }[];
-    criticalProjects: { nombre: string; percentage: number; estado: string }[];
+    criticalProjects: { nombre: string; percentage: number; estado: string; codigoProyecto?: string }[];
     performance: {
         projects: {
             id: string;
@@ -60,6 +61,7 @@ interface DashboardData {
             savings: number;
             variation: number;
             classification: string;
+            codigoProyecto?: string;
         }[];
         classification: {
             eficiente: number;
@@ -325,13 +327,15 @@ export default function DashboardPage() {
                             {data.performance.projects.map((p, idx) => (
                                 <div key={idx} className="flex-1 flex flex-col items-center gap-2 group/bar relative h-full justify-end z-10">
                                     <div className="absolute bottom-full mb-2 hidden group-hover/bar:block bg-slate-900 text-white text-[10px] py-1.5 px-3 rounded-xl whitespace-nowrap z-50 font-bold shadow-xl border border-white/10">
-                                        {p.nombre}: <span className="text-primary">{p.ipt.toFixed(2)}</span>
+                                        {p.codigoProyecto && <span className="text-primary/70 mr-1">{p.codigoProyecto} |</span>} {p.nombre}: <span className="text-primary font-black ml-1">{p.ipt.toFixed(2)}</span>
                                     </div>
                                     <div
                                         className={`w-full rounded-t-xl transition-all duration-700 hover:brightness-110 shadow-sm ${p.ipt >= 1 ? 'bg-primary' : 'bg-rose-400'}`}
                                         style={{ height: `${Math.min(p.ipt * 50, 100)}%` }}
                                     />
-                                    <span className="text-[9px] font-black text-slate-400 rotate-45 origin-left truncate max-w-[50px] mt-4 translate-x-1">{p.nombre}</span>
+                                    <div className="flex flex-col items-center mt-4 translate-x-1 gap-1">
+                                        <span className="text-[9px] font-black text-slate-400 rotate-45 origin-left truncate max-w-[50px]">{p.codigoProyecto || p.nombre}</span>
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -463,7 +467,10 @@ export default function DashboardPage() {
                                 {data.criticalProjects.map((project, idx) => (
                                     <div key={idx} className="space-y-1.5">
                                         <div className="flex justify-between items-center px-1">
-                                            <span className="font-bold text-slate-700 text-sm truncate max-w-[70%]">{project.nombre}</span>
+                                            <div className="flex items-center gap-2 flex-wrap max-w-[70%]">
+                                                <span className="font-bold text-slate-700 text-sm truncate">{project.nombre}</span>
+                                                {project.codigoProyecto && <CodeBadge code={project.codigoProyecto} variant="project" size="sm" showCopy={false} />}
+                                            </div>
                                             <span className={`text-xs font-black px-2 py-1 rounded-lg ${project.percentage > 100 ? 'bg-rose-50 text-rose-500' : 'bg-amber-50 text-amber-600'}`}>
                                                 {Math.round(project.percentage)}%
                                             </span>

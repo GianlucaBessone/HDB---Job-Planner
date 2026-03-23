@@ -184,7 +184,7 @@ export default function PlanningPage() {
             const updatedBlock = { ...newBlocks[index], [field]: value };
             if (field === 'projectId') {
                 const project = projects.find(p => p.id === value);
-                updatedBlock.projectName = project ? project.nombre : '';
+                updatedBlock.projectName = project ? (project.codigoProyecto ? `${project.codigoProyecto} | ${project.nombre}` : project.nombre) : '';
             }
             if (field === 'operatorIds') {
                 updatedBlock.operatorNames = value.map((id: string) => {

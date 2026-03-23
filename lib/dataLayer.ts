@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { generateCodigoProyecto } from '@/lib/codeGenerator';
 
 
 const getPrisma = () => {
@@ -22,6 +23,9 @@ export const dataLayer = {
                 checklistItems: {
                     select: { id: true, completed: true, excluded: true, tag: true, description: true },
                     orderBy: { createdAt: 'asc' }
+                },
+                materialesProyecto: {
+                    include: { usos: true, devolucion: true }
                 },
             }
         });
@@ -71,7 +75,10 @@ export const dataLayer = {
             sanitizedData.publicToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         }
 
-        const project = await prisma.project.create({ data: sanitizedData as any });
+        // Auto-generate unique project code
+        const codigoProyecto = await generateCodigoProyecto();
+
+        const project = await prisma.project.create({ data: { ...sanitizedData, codigoProyecto } as any });
 
         // Automated checklist based on tags — merge static templates + DB templates
         if (data.tags && data.tags.length > 0) {
@@ -221,10 +228,7 @@ export const dataLayer = {
     // Operators
     async getOperators() {
         return await prisma.operator.findMany({
-            where: {
-                role: { not: 'admin' }
-            },
-            orderBy: { createdAt: 'desc' }
+            orderBy: { nombreCompleto: 'asc' }
         });
     },
     async createOperator(data: { nombreCompleto: string; activo?: boolean; enVacaciones?: boolean; etiquetas: string[]; pin?: string; role?: string }) {
