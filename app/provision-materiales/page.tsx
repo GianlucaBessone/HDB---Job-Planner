@@ -327,7 +327,9 @@ function MaterialesTable({
     const [devolucionTarget, setDevolucionTarget] = useState<Material | null>(null);
     const [editTarget, setEditTarget] = useState<Material | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<Material | null>(null);
-    const isVendedor = ['vendedor', 'supervisor', 'admin'].includes(user?.role);
+    const userRole = user?.role?.toLowerCase()?.trim();
+    const isVendedor = ['vendedor', 'supervisor', 'admin'].includes(userRole || '');
+    const isAdmin = userRole === 'admin';
 
     const handleUpdate = async (id: string, field: string, value: number) => {
         await fetch(`/api/materiales-proyecto/${id}`, {
@@ -445,7 +447,7 @@ function MaterialesTable({
                                                                 <RotateCcw className="w-3.5 h-3.5" />
                                                             </button>
                                                         )}
-                                                        {isVendedor && !closed && mat.estado === 'material_cargado' && (
+                                                        {((isVendedor && !closed && mat.estado === 'material_cargado') || isAdmin) && (
                                                             <button onClick={() => setDeleteTarget(mat)} title="Eliminar"
                                                                 className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-lg transition-colors">
                                                                 <Trash2 className="w-3.5 h-3.5" />
