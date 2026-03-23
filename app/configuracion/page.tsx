@@ -596,7 +596,7 @@ function OptionsSection() {
 
 // ----- SYSTEM SECTION -----
 function SystemSection() {
-    const [setting, setSetting] = useState({ dailyReminderEnabled: false, dailyReminderTime: '16:45' });
+    const [setting, setSetting] = useState({ dailyReminderEnabled: false, dailyReminderTime: '16:45', valorManoObra: 0 });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [triggering, setTriggering] = useState(false);
@@ -692,7 +692,30 @@ function SystemSection() {
                         />
                     </div>
                 )}
+            </div>
 
+            <div className="space-y-4 bg-slate-50 p-6 rounded-2xl border border-slate-100 mt-6">
+                <div>
+                    <h4 className="font-bold text-slate-800">Valor de Mano de Obra (por hora)</h4>
+                    <p className="text-xs text-slate-500 mt-1">
+                        Utilizado como valor predeterminado al generar documentos de cobro para Órdenes de Servicio.
+                    </p>
+                </div>
+                <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">$</span>
+                    <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={setting.valorManoObra}
+                        onChange={e => setSetting({ ...setting, valorManoObra: parseFloat(e.target.value) || 0 })}
+                        className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-8 pr-4 outline-none font-bold text-slate-700 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                        placeholder="Ej: 50.00"
+                    />
+                </div>
+            </div>
+
+            <div className="pt-2">
                 <button
                     onClick={handleSave}
                     disabled={saving}

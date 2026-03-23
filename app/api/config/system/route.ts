@@ -9,7 +9,7 @@ export async function GET() {
 
         if (!setting) {
             setting = await prisma.systemSetting.create({
-                data: { id: 'default', dailyReminderEnabled: false, dailyReminderTime: '16:45' }
+                data: { id: 'default', dailyReminderEnabled: false, dailyReminderTime: '16:45', valorManoObra: 0 }
             });
         }
 
@@ -28,11 +28,13 @@ export async function PUT(req: Request) {
             create: {
                 id: 'default',
                 dailyReminderEnabled: body.dailyReminderEnabled,
-                dailyReminderTime: body.dailyReminderTime
+                dailyReminderTime: body.dailyReminderTime,
+                valorManoObra: body.valorManoObra ? parseFloat(body.valorManoObra) : 0
             },
             update: {
                 dailyReminderEnabled: body.dailyReminderEnabled,
-                dailyReminderTime: body.dailyReminderTime
+                dailyReminderTime: body.dailyReminderTime,
+                valorManoObra: body.valorManoObra !== undefined ? parseFloat(body.valorManoObra) : undefined
             }
         });
 

@@ -218,6 +218,7 @@ model SystemSetting {
   id                    String  @id @default("default")
   dailyReminderEnabled  Boolean @default(false)
   dailyReminderTime     String  @default("16:45")
+  valorManoObra         Float   @default(0)
 }
 
 model OrdenServicio {
@@ -234,6 +235,16 @@ model OrdenServicio {
   firma         OrdenServicioFirma?
   encuesta      EncuestaServicio?
 
+  // Cobro
+  cobroGenerado        Boolean  @default(false)
+  cobroValorManoObra   Float?
+  cobroDescuentoPorcentaje Float?
+  cobroAplicarIva      Boolean  @default(true)
+  cobroTotalFinal      Float?
+  cobroObservaciones   String?  @db.Text
+  cobroCondicionPago   String?
+  cobroFechaGeneracion DateTime?
+
   @@index([projectId])
 }
 
@@ -244,6 +255,7 @@ model OrdenServicioMaterial {
   material           String
   cantidad           Float
   unidadMedida       String
+  precioUnitario     Float?
   materialProyectoId String?       @map("material_proyecto_id")
 
   @@index([ordenServicioId])

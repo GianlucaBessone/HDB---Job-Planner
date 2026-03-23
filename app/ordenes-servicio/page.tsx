@@ -5,13 +5,14 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import {
     FileSignature, Search, Eye, Download, CheckCircle2, Clock, X,
     AlertCircle, Loader2, FileText, User, Package, PenLine, Building2,
-    CalendarDays, QrCode, Smartphone, Trash2
+    CalendarDays, QrCode, Smartphone, Trash2, Calculator
 } from 'lucide-react';
 import Link from 'next/link';
 import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import CodeBadge from '@/components/CodeBadge';
+import OSCobroModal from '@/components/OSCobroModal';
 
 interface OrdenServicio {
     id: string;
@@ -404,6 +405,7 @@ function OrdenesServicioContent() {
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
     const [osToDelete, setOsToDelete] = useState<string | null>(null);
+    const [osCobroToOpen, setOsCobroToOpen] = useState<OrdenServicio | null>(null);
 
     useEffect(() => {
         const user = localStorage.getItem('currentUser');
@@ -588,6 +590,14 @@ function OrdenesServicioContent() {
 
                                     {/* Actions */}
                                     <div className="flex items-center gap-1.5 shrink-0">
+                                        {currentUser?.role === 'admin' && (
+                                            <button
+                                                onClick={() => setOsCobroToOpen(os)}
+                                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-indigo-600 border border-indigo-200 bg-indigo-50 hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
+                                            >
+                                                <Calculator className="w-3.5 h-3.5" /> {(os as any).cobroGenerado ? 'Ver Cobro' : 'Generar Cobro'}
+                                            </button>
+                                        )}
                                         <button
                                             onClick={() => setSelectedOS(os)}
                                             className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 border border-slate-200 hover:border-primary/40 hover:text-primary transition-all"
@@ -615,6 +625,17 @@ function OrdenesServicioContent() {
             )}
 
             {selectedOS && <OSDetalle os={selectedOS} onClose={() => setSelectedOS(null)} />}
+            
+            {osCobroToOpen && (
+                <OSCobroModal 
+                    os={osCobroToOpen} 
+                    onClose={() => setOsCobroToOpen(null)} 
+                    onSaveSuccess={(updated) => {
+                        setOrdenes(prev => prev.map(o => o.id === updated.id ? updated : o));
+                        setOsCobroToOpen(null);
+                    }}
+                />
+            )}
 
             <ConfirmDialog
                 isOpen={!!osToDelete}
