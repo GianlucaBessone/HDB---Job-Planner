@@ -39,8 +39,12 @@ export default function HomePage() {
         }
     }, [router]);
 
-    const isSupervisorOrAdmin = ['supervisor', 'admin'].includes(userRole || '');
-    const isVendedor = userRole?.trim() === 'vendedor';
+    const role = userRole?.trim().toLowerCase() || 'operador';
+    const isOperador = role === 'operador';
+    const isVendedor = role === 'vendedor';
+    const isSupervisor = role === 'supervisor';
+    const isAdmin = role === 'admin';
+    const isSupervisorOrAdmin = isSupervisor || isAdmin;
 
     if (!userRole) {
         return (
@@ -58,34 +62,41 @@ export default function HomePage() {
                         <Home className="w-6 h-6 md:w-8 md:h-8 text-primary" />
                         Hola, {userName.split(' ')[0]}
                     </h2>
-                    <p className="text-sm text-slate-500 font-medium tracking-tight uppercase tracking-widest text-[10px] font-black">{userRole}</p>
+                    <p className="text-sm text-slate-500 font-medium tracking-tight uppercase tracking-widest text-[10px] font-black">{role}</p>
                 </div>
             </div>
 
-            {/* General Actions for Operators / Everyone if not Vendedor */}
-            {!isVendedor && (
+            {/* Operador */}
+            {isOperador && (
                 <div className="space-y-6">
                     <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest px-1">Tus Acciones Rápidas</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
                         <ActionCard
-                            title="Cargar Horario"
-                            description="Registra tus horas del día"
+                            title="Registro de Tiempos"
+                            description="Tus horas trabajadas"
                             icon={<Clock className="w-6 h-6" />}
                             href="/timesheets"
                             color="bg-primary"
                         />
                         <ActionCard
-                            title="Proyectos Asignados"
-                            description="Revisa tus proyectos actuales"
+                            title="Mis Proyectos"
+                            description="Proyectos a tu cargo"
                             icon={<Briefcase className="w-6 h-6" />}
                             href="/my-projects"
                             color="bg-indigo-500"
                         />
                         <ActionCard
-                            title="Registrar Actividad"
-                            description="Informa avances y tareas"
-                            icon={<ClipboardCheck className="w-6 h-6" />}
-                            href="/my-projects"
+                            title="Demoras del Cliente"
+                            description="Registro de inconvenientes"
+                            icon={<AlertTriangle className="w-6 h-6" />}
+                            href="/delays"
+                            color="bg-amber-500"
+                        />
+                        <ActionCard
+                            title="Gestión de Usuarios"
+                            description="Operadores y permisos"
+                            icon={<UserIcon className="w-6 h-6" />}
+                            href="/operators"
                             color="bg-emerald-500"
                         />
                         <ActionCard
@@ -93,13 +104,13 @@ export default function HomePage() {
                             description="Novedades y alertas"
                             icon={<Bell className="w-6 h-6" />}
                             href="/notifications"
-                            color="bg-amber-500"
+                            color="bg-rose-500"
                         />
                     </div>
                 </div>
             )}
 
-            {/* Specific View for Vendedor */}
+            {/* Vendedor */}
             {isVendedor && (
                 <div className="space-y-6">
                     <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest px-1">Panel de Ventas</h3>
@@ -120,7 +131,7 @@ export default function HomePage() {
                         />
                         <ActionCard
                             title="Mi Usuario"
-                            description={`${userName} (${userRole})`}
+                            description={`Perfil de Vendedor`}
                             icon={<UserIcon className="w-6 h-6" />}
                             href="/operators"
                             color="bg-slate-700"
@@ -129,44 +140,68 @@ export default function HomePage() {
                 </div>
             )}
 
+            {/* Supervisor y Admin */}
             {isSupervisorOrAdmin && (
-                <div className="space-y-6 pt-4 border-t border-slate-200">
-                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest px-1">Gestión y Supervisión</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                <div className="space-y-6">
+                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest px-1">
+                        {isAdmin ? 'Panel de Administración' : 'Panel de Supervisión'}
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
                         <ActionCard
-                            title="Métricas Generales"
-                            description="Panel de análisis global"
+                            title="Panel de Análisis"
+                            description="Métricas y estadísticas globales"
                             icon={<BarChart3 className="w-6 h-6" />}
                             href="/dashboard"
                             color="bg-primary"
+                        />
+                        <ActionCard
+                            title="Planificación"
+                            description="Agenda y cronograma"
+                            icon={<CalendarCheck className="w-6 h-6" />}
+                            href="/planning"
+                            color="bg-indigo-600"
+                        />
+                        <ActionCard
+                            title="Gestión de Proyectos"
+                            description="Todos los proyectos activos"
+                            icon={<Activity className="w-6 h-6" />}
+                            href="/projects"
+                            color="bg-emerald-500"
+                        />
+                        <ActionCard
+                            title="Órdenes de Servicio"
+                            description="Gestión y firmas"
+                            icon={<ClipboardCheck className="w-6 h-6" />}
+                            href="/ordenes-servicio"
+                            color="bg-blue-500"
                         />
                         <ActionCard
                             title="Provisión de Materiales"
                             description="Control de suministros"
                             icon={<Package className="w-6 h-6" />}
                             href="/provision-materiales"
-                            color="bg-indigo-600"
+                            color="bg-amber-500"
                         />
                         <ActionCard
-                            title="Proyectos en Curso"
-                            description="Ver todos los activos"
-                            icon={<Activity className="w-6 h-6" />}
-                            href="/projects?status=activo"
-                            color="bg-emerald-500"
+                            title="Gestión de Usuarios"
+                            description="Operadores y permisos"
+                            icon={<UserIcon className="w-6 h-6" />}
+                            href="/operators"
+                            color="bg-rose-500"
+                        />
+                        <ActionCard
+                            title="Demoras del Cliente"
+                            description="Alertas e inconvenientes"
+                            icon={<AlertTriangle className="w-6 h-6" />}
+                            href="/delays"
+                            color="bg-orange-500"
                         />
                         <ActionCard
                             title="Configuración"
-                            description="Gestión estructural"
+                            description="Ajustes del sistema"
                             icon={<Settings className="w-6 h-6" />}
                             href="/configuracion"
                             color="bg-slate-700"
-                        />
-                        <ActionCard
-                            title="Planificación"
-                            description="Planificación diaria"
-                            icon={<CalendarCheck className="w-6 h-6" />}
-                            href="/planning"
-                            color="bg-cyan-500"
                         />
                     </div>
                 </div>

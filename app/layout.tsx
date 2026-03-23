@@ -39,11 +39,7 @@ export default function RootLayout({
     const handleLoginSuccess = (user: any) => {
         setCurrentUser(user);
         setIsSidebarOpen(false);
-        if (user.role?.toLowerCase() === 'operador') {
-            router.push('/timesheets');
-        } else {
-            router.push('/');
-        }
+        router.push('/');
     };
 
     useEffect(() => {
