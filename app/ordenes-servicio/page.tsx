@@ -77,8 +77,9 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
     const handleDownload = () => {
         const printStyles = `
             <style>
+                @page { margin: 0; size: A4 portrait; }
+                body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 20mm; color: #1e293b; background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                 * { box-sizing: border-box; }
-                body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 20px; color: #1e293b; }
                 .header { border-bottom: 3px solid #059669; padding-bottom: 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; }
                 .logo { font-size: 22px; font-weight: 900; color: #1e293b; }
                 .logo span { color: #059669; }

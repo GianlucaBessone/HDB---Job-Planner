@@ -61,8 +61,9 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
 
     const generatePdfContent = () => `
         <style>
+            @page { margin: 0; size: A4 portrait; }
             * { box-sizing: border-box; }
-            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 20px; color: #1e293b; }
+            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 20mm; color: #1e293b; background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .header { border-bottom: 3px solid #6366f1; padding-bottom: 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; }
             .logo { font-size: 22px; font-weight: 900; color: #1e293b; }
             .logo span { color: #6366f1; }
