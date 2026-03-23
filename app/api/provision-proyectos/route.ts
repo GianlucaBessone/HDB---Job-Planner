@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/dataLayer';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/provision-proyectos — proyectos activos con aprovisionamiento habilitado
 export async function GET() {
     try {

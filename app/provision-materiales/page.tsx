@@ -473,10 +473,7 @@ function MaterialesTable({
                         </div>
                     )}
 
-                    {isVendedor && hayCargados && (
-                        <AddMaterialForm proyectoId={proyecto.id} onAdded={onRefresh} />
-                    )}
-                    {isVendedor && materiales.length === 0 && (
+                    {isVendedor && (
                         <AddMaterialForm proyectoId={proyecto.id} onAdded={onRefresh} />
                     )}
                 </div>
@@ -542,7 +539,7 @@ export default function ProvisionMaterialesPage() {
 
     const loadData = useCallback(async (showLoader = false) => {
         if (showLoader) setLoading(true);
-        const res = await fetch('/api/provision-proyectos');
+        const res = await fetch(`/api/provision-proyectos?t=${Date.now()}`, { cache: 'no-store' });
         const data = await res.json();
         setProyectos(Array.isArray(data) ? data : []);
         if (showLoader) setLoading(false);
