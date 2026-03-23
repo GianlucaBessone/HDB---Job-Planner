@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { CheckCircle2, Loader2, FileText, User, Package, Clock, AlertCircle, PenLine, X } from 'lucide-react';
 
 interface Firma {
@@ -29,11 +29,25 @@ interface OrdenServicio {
     firma?: Firma;
 }
 
-function SignatureCanvas({ onSave, onCancel }: { onSave: (dataUrl: string) => void; onCancel: () => void }) {
+export interface SignatureRef {
+    clear: () => void;
+    isEmpty: () => boolean;
+    getDataUrl: () => string;
+}
+
+const SignatureCanvas = forwardRef<SignatureRef, {}>((props, ref) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [isDrawing, setIsDrawing] = useState(false);
     const [hasStrokes, setHasStrokes] = useState(false);
     const lastPos = useRef<{ x: number; y: number } | null>(null);
+
+    useImperativeHandle(ref, () => ({
+        clear: clear,
+        isEmpty: () => !hasStrokes,
+        getDataUrl: () => {
+            return canvasRef.current?.toDataURL('image/png') || '';
+        }
+    }));
 
     const getPos = (e: React.MouseEvent | React.TouchEvent) => {
         const canvas = canvasRef.current!;
@@ -53,7 +67,7 @@ function SignatureCanvas({ onSave, onCancel }: { onSave: (dataUrl: string) => vo
     };
 
     const startDraw = (e: React.MouseEvent | React.TouchEvent) => {
-        e.preventDefault();
+        if (e.cancelable) e.preventDefault();
         const canvas = canvasRef.current!;
         const ctx = canvas.getContext('2d')!;
         const pos = getPos(e);
@@ -65,15 +79,15 @@ function SignatureCanvas({ onSave, onCancel }: { onSave: (dataUrl: string) => vo
     };
 
     const draw = (e: React.MouseEvent | React.TouchEvent) => {
-        e.preventDefault();
+        if (e.cancelable) e.preventDefault();
         if (!isDrawing || !lastPos.current) return;
         const canvas = canvasRef.current!;
         const ctx = canvas.getContext('2d')!;
         const pos = getPos(e);
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = 3;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
-        ctx.strokeStyle = '#1e293b';
+        ctx.strokeStyle = '#0f172a';
         ctx.lineTo(pos.x, pos.y);
         ctx.stroke();
         ctx.beginPath();
@@ -93,20 +107,14 @@ function SignatureCanvas({ onSave, onCancel }: { onSave: (dataUrl: string) => vo
         setHasStrokes(false);
     };
 
-    const save = () => {
-        if (!hasStrokes) return;
-        const canvas = canvasRef.current!;
-        onSave(canvas.toDataURL('image/png'));
-    };
-
     return (
-        <div className="space-y-3">
-            <div className="relative border-2 border-slate-200 rounded-2xl overflow-hidden bg-white shadow-inner">
+        <div className="relative group">
+            <div className="relative border-2 border-slate-200 rounded-2xl overflow-hidden bg-slate-50 transition-all focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/20">
                 <canvas
                     ref={canvasRef}
                     width={600}
-                    height={200}
-                    className="w-full touch-none cursor-crosshair block"
+                    height={400}
+                    className="w-full aspect-[3/2] touch-none cursor-crosshair block"
                     onMouseDown={startDraw}
                     onMouseMove={draw}
                     onMouseUp={endDraw}
@@ -116,33 +124,26 @@ function SignatureCanvas({ onSave, onCancel }: { onSave: (dataUrl: string) => vo
                     onTouchEnd={endDraw}
                 />
                 {!hasStrokes && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <p className="text-slate-300 font-medium text-sm flex items-center gap-2">
-                            <PenLine className="w-4 h-4" />
-                            Firma aquí
-                        </p>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-50">
+                        <PenLine className="w-8 h-8 text-slate-400 mb-2" />
+                        <p className="text-slate-500 font-bold text-sm">Firma aquí</p>
                     </div>
                 )}
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-px bg-slate-200" />
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-48 h-px bg-slate-300 pointer-events-none" />
             </div>
-            <div className="flex gap-2">
-                <button onClick={clear} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-500 bg-slate-100 hover:bg-slate-200 transition-all active:scale-95">
+            {hasStrokes && (
+                <button 
+                    onClick={clear}
+                    type="button"
+                    className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-slate-500 hover:text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm border border-slate-200 transition-all active:scale-95"
+                >
                     Limpiar
                 </button>
-                <button onClick={onCancel} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-500 bg-slate-100 hover:bg-slate-200 transition-all active:scale-95">
-                    Cancelar
-                </button>
-                <button
-                    onClick={save}
-                    disabled={!hasStrokes}
-                    className="flex-[2] py-2.5 rounded-xl font-bold text-sm text-white bg-emerald-600 hover:bg-emerald-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-200"
-                >
-                    Confirmar Firma
-                </button>
-            </div>
+            )}
         </div>
     );
-}
+});
+SignatureCanvas.displayName = 'SignatureCanvas';
 
 export default function OSPublicPage({ params }: { params: { token: string } }) {
     const { token } = params;
@@ -152,12 +153,11 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
 
     // Firma flow
     const [showFirmaModal, setShowFirmaModal] = useState(false);
-    const [firmaStep, setFirmaStep] = useState<'datos' | 'canvas' | 'done'>('datos');
     const [firmaNombre, setFirmaNombre] = useState('');
     const [firmaDni, setFirmaDni] = useState('');
-    const [firmaImagen, setFirmaImagen] = useState('');
     const [submittingFirma, setSubmittingFirma] = useState(false);
     const [firmaError, setFirmaError] = useState('');
+    const sigRef = useRef<SignatureRef>(null);
 
     useEffect(() => {
         loadOS();
@@ -181,22 +181,30 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
         }
     };
 
-    const handleSubmitFirma = async () => {
-        if (!firmaImagen) return;
+    const handleConfirm = async () => {
+        if (!firmaNombre.trim() || !firmaDni.trim()) {
+            setFirmaError('Debe completar su nombre y DNI.');
+            return;
+        }
+        if (!sigRef.current || sigRef.current.isEmpty()) {
+            setFirmaError('Debe dibujar su firma en el recuadro.');
+            return;
+        }
+        
         setFirmaError('');
+        const dataUrl = sigRef.current.getDataUrl();
         setSubmittingFirma(true);
         try {
             const res = await fetch(`/api/ordenes-servicio/${token}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nombre: firmaNombre, dni: firmaDni, firmaImagen }),
+                body: JSON.stringify({ nombre: firmaNombre, dni: firmaDni, firmaImagen: dataUrl }),
             });
             if (!res.ok) {
                 const err = await res.json();
-                setFirmaError(err.error || 'Error al registrar la firma');
+                setFirmaError(err.error || 'Error al guardar la firma');
                 return;
             }
-            setFirmaStep('done');
             setShowFirmaModal(false);
             await loadOS();
         } catch {
@@ -207,12 +215,13 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
     };
 
     const openFirmaModal = () => {
-        setFirmaStep('datos');
         setFirmaNombre('');
         setFirmaDni('');
-        setFirmaImagen('');
         setFirmaError('');
         setShowFirmaModal(true);
+        setTimeout(() => {
+            if (sigRef.current) sigRef.current.clear();
+        }, 100);
     };
 
     const formatDate = (d: string) => {
@@ -418,111 +427,95 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
 
             {/* Firma Modal */}
             {showFirmaModal && (
-                <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 backdrop-blur-sm">
-                    <div className="bg-white w-full max-w-lg rounded-t-3xl shadow-2xl p-6 space-y-5 animate-in slide-in-from-bottom-4 duration-300 max-h-[92vh] overflow-y-auto">
+                <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 backdrop-blur-sm transition-all">
+                    <div className="bg-white w-full max-w-lg rounded-t-3xl shadow-2xl p-6 sm:p-8 space-y-6 animate-in slide-in-from-bottom-4 duration-300 max-h-[92dvh] overflow-y-auto overscroll-contain">
                         <div className="flex items-center justify-between">
                             <h3 className="text-xl font-black text-slate-800">Firmar Orden de Servicio</h3>
-                            <button onClick={() => setShowFirmaModal(false)} className="p-2 hover:bg-slate-100 rounded-full">
+                            <button onClick={() => setShowFirmaModal(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
                                 <X className="w-5 h-5 text-slate-400" />
                             </button>
                         </div>
 
-                        {firmaStep === 'datos' && (
+                        <div className="space-y-6">
+                            <p className="text-sm text-slate-500 font-medium">Por favor ingresá tus datos y firmá en el cuadro inferior.</p>
+                            
                             <div className="space-y-4">
-                                <p className="text-sm text-slate-500 font-medium">Por favor ingresá tus datos antes de firmar.</p>
-                                <div className="space-y-3">
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nombre Completo *</label>
-                                        <input
-                                            type="text"
-                                            value={firmaNombre}
-                                            onChange={e => setFirmaNombre(e.target.value)}
-                                            placeholder="Ingresá tu nombre completo"
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                                        />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">DNI *</label>
-                                        <input
-                                            type="text"
-                                            inputMode="numeric"
-                                            value={firmaDni}
-                                            onChange={e => setFirmaDni(e.target.value)}
-                                            placeholder="Ej: 12345678"
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                                        />
-                                    </div>
-                                </div>
-                                {firmaError && (
-                                    <p className="text-xs text-red-600 font-bold flex items-center gap-1">
-                                        <AlertCircle className="w-3.5 h-3.5" />{firmaError}
-                                    </p>
-                                )}
-                                <button
-                                    onClick={() => {
-                                        if (!firmaNombre.trim() || !firmaDni.trim()) {
-                                            setFirmaError('Nombre y DNI son obligatorios');
-                                            return;
-                                        }
-                                        setFirmaError('');
-                                        setFirmaStep('canvas');
-                                    }}
-                                    className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-base shadow-lg shadow-blue-200 active:scale-95 transition-all hover:bg-blue-700"
-                                >
-                                    Continuar a Firma
-                                </button>
-                            </div>
-                        )}
-
-                        {firmaStep === 'canvas' && (
-                            <div className="space-y-4">
-                                <div className="bg-slate-50 rounded-2xl p-4 space-y-1">
-                                    <p className="text-xs font-bold text-slate-500">Firmante: <span className="text-slate-700">{firmaNombre}</span></p>
-                                    <p className="text-xs font-bold text-slate-500">DNI: <span className="text-slate-700">{firmaDni}</span></p>
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Dibujá tu firma abajo</p>
-                                    <SignatureCanvas
-                                        onSave={async (dataUrl) => {
-                                            setFirmaImagen(dataUrl);
-                                            setSubmittingFirma(true);
-                                            try {
-                                                const res = await fetch(`/api/ordenes-servicio/${token}`, {
-                                                    method: 'POST',
-                                                    headers: { 'Content-Type': 'application/json' },
-                                                    body: JSON.stringify({ nombre: firmaNombre, dni: firmaDni, firmaImagen: dataUrl }),
-                                                });
-                                                if (!res.ok) {
-                                                    const err = await res.json();
-                                                    setFirmaError(err.error || 'Error al guardar la firma');
-                                                    setFirmaStep('datos');
-                                                    return;
-                                                }
-                                                setShowFirmaModal(false);
-                                                await loadOS();
-                                            } catch {
-                                                setFirmaError('Error de conexión');
-                                                setFirmaStep('datos');
-                                            } finally {
-                                                setSubmittingFirma(false);
-                                            }
+                                <div className="space-y-1.5 focus-within:z-10 relative">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Nombre Completo *</label>
+                                    <input
+                                        type="text"
+                                        value={firmaNombre}
+                                        onChange={e => {
+                                            setFirmaNombre(e.target.value);
+                                            if (firmaError) setFirmaError('');
                                         }}
-                                        onCancel={() => setFirmaStep('datos')}
+                                        onFocus={e => {
+                                            setTimeout(() => {
+                                                e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                            }, 300);
+                                        }}
+                                        placeholder="Ingresá tu nombre completo"
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3.5 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all"
                                     />
                                 </div>
-                                {submittingFirma && (
-                                    <div className="flex items-center justify-center gap-2 text-blue-600">
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                        <span className="text-sm font-medium">Guardando firma...</span>
-                                    </div>
-                                )}
-                                {firmaError && (
-                                    <p className="text-xs text-red-600 font-bold flex items-center gap-1">
-                                        <AlertCircle className="w-3.5 h-3.5" />{firmaError}
-                                    </p>
-                                )}
+                                <div className="space-y-1.5 focus-within:z-10 relative">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">DNI *</label>
+                                    <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        value={firmaDni}
+                                        onChange={e => {
+                                            setFirmaDni(e.target.value);
+                                            if (firmaError) setFirmaError('');
+                                        }}
+                                        onFocus={e => {
+                                            setTimeout(() => {
+                                                e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                            }, 300);
+                                        }}
+                                        placeholder="Ej: 12345678"
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3.5 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all"
+                                    />
+                                </div>
                             </div>
-                        )}
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Dibujá tu firma *</label>
+                                <SignatureCanvas ref={sigRef} />
+                            </div>
+
+                            {firmaError && (
+                                <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-2">
+                                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                                    <p>{firmaError}</p>
+                                </div>
+                            )}
+
+                            <div className="flex gap-3 pt-2">
+                                <button 
+                                    onClick={() => setShowFirmaModal(false)}
+                                    type="button"
+                                    className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold text-sm hover:bg-slate-200 active:scale-95 transition-all"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={handleConfirm}
+                                    disabled={submittingFirma}
+                                    type="button"
+                                    className="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-black text-sm shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:active:scale-100"
+                                >
+                                    {submittingFirma ? (
+                                        <>
+                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                            Guardando...
+                                        </>
+                                    ) : (
+                                        'Confirmar Firma'
+                                    )}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
