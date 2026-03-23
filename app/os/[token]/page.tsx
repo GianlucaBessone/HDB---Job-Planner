@@ -148,8 +148,7 @@ SignatureCanvas.displayName = 'SignatureCanvas';
 
 // ─── Rating Button ─────────────────────────────────────────────────────────────
 function RatingButton({ value, selected, onClick, min, max }: { value: number; selected: boolean; onClick: () => void; min: number; max: number }) {
-    // Gradient from red→yellow→green based on normalized position
-    const normalized = (value - min) / (max - min); // 0..1
+    const normalized = (value - min) / (max - min);
     let bg = '';
     let textColor = '';
     if (selected) {
@@ -157,15 +156,14 @@ function RatingButton({ value, selected, onClick, min, max }: { value: number; s
         else if (normalized <= 0.6) { bg = 'bg-amber-400'; textColor = 'text-white'; }
         else { bg = 'bg-emerald-500'; textColor = 'text-white'; }
     }
-
     return (
         <button
             type="button"
             onClick={onClick}
             className={`
-                flex-1 min-w-[2.5rem] h-11 rounded-xl text-sm font-black transition-all duration-150 active:scale-90 border
+                w-full h-11 rounded-xl text-sm font-black transition-all duration-150 active:scale-90 border
                 ${selected
-                    ? `${bg} ${textColor} border-transparent shadow-lg scale-105`
+                    ? `${bg} ${textColor} border-transparent shadow-md scale-105`
                     : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100 hover:border-slate-300'
                 }
             `}
@@ -192,9 +190,16 @@ function ScaleSelector({
     labelRight: string;
 }) {
     const values = Array.from({ length: max - min + 1 }, (_, i) => i + min);
+    const total = values.length;
+    // For 10 items: 2 rows of 5. For other counts: single row grid.
+    const cols = total === 10 ? 5 : total;
     return (
         <div className="space-y-2">
-            <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
+            {/* p-1 gives breathing room so scale-105 + shadow never gets clipped */}
+            <div
+                className="p-1"
+                style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: '4px' }}
+            >
                 {values.map(v => (
                     <RatingButton
                         key={v}
@@ -206,7 +211,7 @@ function ScaleSelector({
                     />
                 ))}
             </div>
-            <div className="flex justify-between text-[10px] font-bold text-slate-400 px-0.5">
+            <div className="flex justify-between text-[10px] font-bold text-slate-400 px-1">
                 <span>{labelLeft}</span>
                 <span>{labelRight}</span>
             </div>
@@ -620,8 +625,8 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                         <p className="text-[10px] font-black text-blue-600/70 uppercase tracking-widest">HDB Job Planner</p>
                         <h1 className="text-lg font-black text-slate-800 leading-tight">Orden de Servicio</h1>
                     </div>
-                    <div className="ml-auto">
-                        <span className={`px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider ${isFirmada ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-700 border border-amber-200'}`}>
+                    <div className="ml-auto shrink-0">
+                        <span className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider ${isFirmada ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-700 border border-amber-200'}`}>
                             {isFirmada ? '✓ Firmada' : 'Pendiente de firma'}
                         </span>
                     </div>
