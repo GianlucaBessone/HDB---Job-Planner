@@ -99,7 +99,6 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                 .firma-box { border: 1px solid #a7f3d0; border-radius: 8px; padding: 14px; background: #f0fdf4; }
                 .firma-box img { max-width: 200px; max-height: 80px; border: 1px solid #d1fae5; border-radius: 6px; padding: 4px; background: white; }
                 .footer { margin-top: 30px; padding-top: 14px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8; }
-                @media print { body { padding: 0; } }
             </style>
         `;
 

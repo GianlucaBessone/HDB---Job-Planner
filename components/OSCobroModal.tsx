@@ -83,7 +83,6 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
             .totals-row.iva { color: #e11d48; }
             .totals-row.final { font-size: 18px; font-weight: 900; color: #0f172a; margin-top: 8px; padding-top: 8px; border-top: 2px solid #e2e8f0; }
             .footer { margin-top: 40px; text-align: center; font-size: 10px; color: #94a3b8; }
-            @media print { body { padding: 0; } }
         </style>
 
         <div class="header">
