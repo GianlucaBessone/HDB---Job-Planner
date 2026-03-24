@@ -81,7 +81,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                 body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 20mm; color: #1e293b; background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                 * { box-sizing: border-box; }
                 .header { border-bottom: 3px solid #059669; padding-bottom: 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; }
-                .logo { max-height: 48px; object-fit: contain; }
+                .logo { max-height: 80px; object-fit: contain; }
                 .badge { padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
                 .badge.firmada { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
                 .badge.pendiente { background: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }

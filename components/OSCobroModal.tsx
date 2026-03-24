@@ -65,7 +65,7 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
             * { box-sizing: border-box; }
             body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 20mm; color: #1e293b; background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .header { border-bottom: 3px solid #6366f1; padding-bottom: 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; }
-            .logo { max-height: 48px; object-fit: contain; }
+            .logo { max-height: 80px; object-fit: contain; }
             h2 { font-size: 20px; font-weight: 900; color: #0f172a; margin: 0 0 4px; }
             h3 { font-size: 13px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 12px; padding-bottom: 6px; border-bottom: 1px solid #e2e8f0; }
             .section { margin-bottom: 24px; }
