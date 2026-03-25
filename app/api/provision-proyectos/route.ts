@@ -21,6 +21,13 @@ export async function GET() {
                     },
                     orderBy: { createdAt: 'asc' },
                 },
+                ordenesServicio: {
+                    select: {
+                        id: true,
+                        cobroGenerado: true,
+                        estado: true
+                    }
+                }
             },
             orderBy: { createdAt: 'desc' },
         });

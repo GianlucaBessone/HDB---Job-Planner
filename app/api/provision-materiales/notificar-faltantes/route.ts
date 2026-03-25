@@ -11,7 +11,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Faltan datos requeridos o no hay faltantes' }, { status: 400 });
         }
 
-        const proyecto = await prisma.proyecto.findUnique({
+        const proyecto = await prisma.project.findUnique({
             where: { id: proyectoId },
             select: { id: true, codigoProyecto: true, nombre: true }
         });

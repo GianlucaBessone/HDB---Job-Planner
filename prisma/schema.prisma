@@ -227,8 +227,9 @@ model OrdenServicio {
   projectId     String
   project       Project                 @relation(fields: [projectId], references: [id], onDelete: Cascade)
   reporte       String                  @db.Text
+  comentario    String?                 @db.Text
   fechaCreacion DateTime                @default(now())
-  estado        String                  @default("pendiente") // pendiente | firmada
+  estado        String                  @default("pendiente") // pendiente | firmada | cobrada | pagada | cancelada
   linkPublico   String                  @unique @default(uuid())
   materiales    OrdenServicioMaterial[]
   operadores    OrdenServicioOperador[]
@@ -253,12 +254,14 @@ model OrdenServicioMaterial {
   ordenServicioId    String
   ordenServicio      OrdenServicio @relation(fields: [ordenServicioId], references: [id], onDelete: Cascade)
   material           String
+  codigo             String?
   cantidad           Float
   unidadMedida       String
   precioUnitario     Float?
   materialProyectoId String?       @map("material_proyecto_id")
 
   @@index([ordenServicioId])
+  @@index([codigo])
 }
 
 model OrdenServicioOperador {
@@ -305,6 +308,7 @@ model MaterialProyecto {
   proyectoId          String
   proyecto            Project              @relation(fields: [proyectoId], references: [id], onDelete: Cascade)
   nombre              String
+  codigo              String?
   unidad              String               @default("unidad")
   cantidadSolicitada  Float                @default(0)
   cantidadDisponible  Float                @default(0)
@@ -316,6 +320,14 @@ model MaterialProyecto {
   devolucion          MaterialDevolucion?
 
   @@index([proyectoId])
+  @@index([codigo])
+}
+
+model MaterialMaestro {
+  codigo    String   @id
+  nombre    String
+  unidad    String
+  updatedAt DateTime @updatedAt
 }
 
 model MaterialUso {

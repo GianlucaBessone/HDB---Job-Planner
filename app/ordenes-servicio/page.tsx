@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import {
     FileSignature, Search, Eye, Download, CheckCircle2, Clock, X,
     AlertCircle, Loader2, FileText, User, Package, PenLine, Building2,
-    CalendarDays, QrCode, Smartphone, Trash2, Calculator
+    CalendarDays, QrCode, Smartphone, Trash2, Calculator, MessageSquare
 } from 'lucide-react';
 import Link from 'next/link';
 import { safeApiRequest } from '@/lib/offline';
@@ -20,6 +20,7 @@ interface OrdenServicio {
     linkPublico: string;
     estado: string;
     reporte: string;
+    comentario?: string;
     fechaCreacion: string;
     project: {
         id: string;
@@ -145,6 +146,12 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                         ${os.materiales.map(m => `<tr><td>${m.material}</td><td>${m.cantidad}</td><td>${m.unidadMedida}</td></tr>`).join('')}
                     </tbody>
                 </table>
+            </div>` : ''}
+
+            ${os.comentario ? `
+            <div class="section">
+                <h3>Comentario Adicional</h3>
+                <div class="reporte-box" style="border-color: #e2e8f0; background: #fdfdfd;">${os.comentario}</div>
             </div>` : ''}
 
             ${isFirmada && os.firma ? `
@@ -298,6 +305,17 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                         </div>
                     )}
 
+                    {os.comentario && (
+                        <div className="space-y-2">
+                            <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                <MessageSquare className="w-3.5 h-3.5 text-slate-500" /> Comentario Adicional
+                            </h4>
+                            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                                <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{os.comentario}</p>
+                            </div>
+                        </div>
+                    )}
+
                     {/* QR + Link */}
                     <div className="space-y-2">
                         <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
@@ -399,11 +417,14 @@ function OrdenesServicioContent() {
     const [ordenes, setOrdenes] = useState<OrdenServicio[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [filterEstado, setFilterEstado] = useState<'all' | 'pendiente' | 'firmada'>('all');
+    const [filterEstado, setFilterEstado] = useState<'all' | 'pendiente' | 'firmada' | 'cobrada'>('all');
+    const [activeTab, setActiveTab] = useState<'activas' | 'historial'>('activas');
     const [selectedOS, setSelectedOS] = useState<OrdenServicio | null>(null);
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
     const [osToDelete, setOsToDelete] = useState<string | null>(null);
+    const [osToPay, setOsToPay] = useState<OrdenServicio | null>(null);
+    const [osToCancel, setOsToCancel] = useState<OrdenServicio | null>(null);
     const [osCobroToOpen, setOsCobroToOpen] = useState<OrdenServicio | null>(null);
 
     useEffect(() => {
@@ -422,6 +443,44 @@ function OrdenesServicioContent() {
             showToast('Error al cargar órdenes de servicio', 'error');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handlePagarOS = async (os: OrdenServicio) => {
+        try {
+            const res = await fetch(`/api/ordenes-servicio/${os.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ estado: 'pagada' })
+            });
+            if (res.ok) {
+                const updated = await res.json();
+                setOrdenes(prev => prev.map(o => o.id === updated.id ? updated : o));
+                showToast('Orden marcada como PAGADA', 'success');
+            }
+        } catch (err) {
+            showToast('Error al actualizar estado', 'error');
+        } finally {
+            setOsToPay(null);
+        }
+    };
+
+    const handleCancelarOS = async (os: OrdenServicio) => {
+        try {
+            const res = await fetch(`/api/ordenes-servicio/${os.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ estado: 'cancelada' })
+            });
+            if (res.ok) {
+                const updated = await res.json();
+                setOrdenes(prev => prev.map(o => o.id === updated.id ? updated : o));
+                showToast('Orden CANCELADA', 'success');
+            }
+        } catch (err) {
+            showToast('Error al actualizar estado', 'error');
+        } finally {
+            setOsToCancel(null);
         }
     };
 
@@ -465,7 +524,10 @@ function OrdenesServicioContent() {
             ((os as any).codigoOS || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
             ((os as any).project.codigoProyecto || '').toLowerCase().includes(searchTerm.toLowerCase());
         const matchEstado = filterEstado === 'all' || os.estado === filterEstado;
-        return matchSearch && matchEstado;
+        const isHistory = os.estado === 'pagada' || os.estado === 'cancelada';
+        const tabMatch = activeTab === 'historial' ? isHistory : !isHistory;
+        
+        return matchSearch && matchEstado && tabMatch;
     });
 
     const formatDate = (d: string) => {
@@ -481,7 +543,20 @@ function OrdenesServicioContent() {
                     <FileSignature className="w-6 h-6 md:w-8 md:h-8 text-primary" />
                     Órdenes de Servicio
                 </h2>
-                <p className="text-sm text-slate-500 font-medium hidden md:block">Gestión y seguimiento de Órdenes de Servicio</p>
+                <div className="flex items-center gap-4 border-b border-slate-200 mt-4">
+                    <button
+                        onClick={() => { setActiveTab('activas'); setFilterEstado('all'); }}
+                        className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'activas' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                    >
+                        Activas
+                    </button>
+                    <button
+                        onClick={() => { setActiveTab('historial'); setFilterEstado('all'); }}
+                        className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'historial' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                    >
+                        Historial
+                    </button>
+                </div>
             </div>
 
             {/* Filters */}
@@ -496,22 +571,25 @@ function OrdenesServicioContent() {
                         onChange={e => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <div className="flex gap-1.5 bg-white border border-slate-200 rounded-xl p-1 shadow-sm shrink-0">
-                    {(['all', 'pendiente', 'firmada'] as const).map(estado => (
-                        <button
-                            key={estado}
-                            onClick={() => setFilterEstado(estado)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterEstado === estado
-                                ? estado === 'firmada' ? 'bg-emerald-100 text-emerald-700'
-                                    : estado === 'pendiente' ? 'bg-amber-100 text-amber-700'
-                                        : 'bg-primary text-white'
-                                : 'text-slate-500 hover:bg-slate-50'
-                                }`}
-                        >
-                            {estado === 'all' ? 'Todas' : estado === 'firmada' ? '✓ Firmadas' : 'Pendientes'}
-                        </button>
-                    ))}
-                </div>
+                {activeTab === 'activas' && (
+                    <div className="flex gap-1.5 bg-white border border-slate-200 rounded-xl p-1 shadow-sm shrink-0">
+                        {(['all', 'pendiente', 'firmada', 'cobrada'] as const).map(estado => (
+                            <button
+                                key={estado}
+                                onClick={() => setFilterEstado(estado)}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterEstado === estado
+                                    ? estado === 'firmada' ? 'bg-emerald-100 text-emerald-700'
+                                        : estado === 'pendiente' ? 'bg-amber-100 text-amber-700'
+                                            : estado === 'cobrada' ? 'bg-indigo-100 text-indigo-700'
+                                                : 'bg-primary text-white'
+                                    : 'text-slate-500 hover:bg-slate-50'
+                                    }`}
+                            >
+                                {estado === 'all' ? 'Todas' : estado === 'firmada' ? '✓ Firmadas' : estado === 'cobrada' ? 'OC Emitida' : 'Pendientes'}
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* Stats */}
@@ -583,23 +661,55 @@ function OrdenesServicioContent() {
                                     </div>
 
                                     {/* Estado badge */}
-                                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider shrink-0 ${isFirmada ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-700 border border-amber-200'}`}>
-                                        {isFirmada ? '✓ Firmada' : 'Pendiente'}
+                                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider shrink-0 ${
+                                        os.estado === 'firmada' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 
+                                        os.estado === 'pendiente' ? 'bg-amber-100 text-amber-700 border border-amber-200' :
+                                        os.estado === 'cobrada' ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' :
+                                        os.estado === 'pagada' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
+                                        'bg-slate-100 text-slate-700 border border-slate-200'
+                                    }`}>
+                                        {os.estado === 'firmada' ? '✓ Firmada' : 
+                                         os.estado === 'pendiente' ? 'Pendiente' : 
+                                         os.estado === 'cobrada' ? 'OC Emitida' :
+                                         os.estado === 'pagada' ? 'Pagada' : 'Cancelada'}
                                     </span>
 
                                     {/* Actions */}
-                                    <div className="flex items-center gap-1.5 shrink-0">
-                                        {currentUser?.role === 'admin' && (
+                                    <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                                        {currentUser?.role === 'admin' && os.estado === 'cobrada' && (
                                             <button
-                                                onClick={() => setOsCobroToOpen(os)}
-                                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-indigo-600 border border-indigo-200 bg-indigo-50 hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setOsToPay(os);
+                                                }}
+                                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-emerald-600 border border-emerald-200 bg-emerald-50 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
                                             >
-                                                <Calculator className="w-3.5 h-3.5" /> {(os as any).cobroGenerado ? 'Ver Cobro' : 'Generar Cobro'}
+                                                <CheckCircle2 className="w-3.5 h-3.5" /> Pagada
                                             </button>
+                                        )}
+                                        {currentUser?.role === 'admin' && (os.estado === 'pendiente' || os.estado === 'firmada' || os.estado === 'cobrada') && (
+                                            <>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); setOsCobroToOpen(os); }}
+                                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-indigo-600 border border-indigo-200 bg-indigo-50 hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
+                                                >
+                                                    <Calculator className="w-3.5 h-3.5" /> {(os as any).cobroGenerado ? 'Ver Cobro' : 'Generar Cobro'}
+                                                </button>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setOsToCancel(os);
+                                                    }}
+                                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-slate-400 border border-slate-200 bg-slate-50 hover:bg-slate-200 hover:text-slate-600 transition-all shadow-sm"
+                                                    title="Cancelar orden"
+                                                >
+                                                    <X className="w-3.5 h-3.5" /> Cancelar
+                                                </button>
+                                            </>
                                         )}
                                         <button
                                             onClick={() => setSelectedOS(os)}
-                                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 border border-slate-200 hover:border-primary/40 hover:text-primary transition-all"
+                                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-slate-600 border border-slate-200 hover:border-primary/40 hover:text-primary transition-all shadow-sm"
                                         >
                                             <Eye className="w-3.5 h-3.5" /> Ver
                                         </button>
@@ -635,6 +745,26 @@ function OrdenesServicioContent() {
                     }}
                 />
             )}
+
+            <ConfirmDialog
+                isOpen={!!osToPay}
+                title="Confirmar Pago"
+                message="¿Estás seguro de que quieres marcar esta orden como PAGADA? Se moverá al historial."
+                onConfirm={() => osToPay && handlePagarOS(osToPay)}
+                onCancel={() => setOsToPay(null)}
+                variant="info"
+                confirmLabel="Marcar Pagada"
+            />
+
+            <ConfirmDialog
+                isOpen={!!osToCancel}
+                title="Cancelar Orden"
+                message="¿Estás seguro de que quieres cancelar esta orden? Se moverá al historial."
+                onConfirm={() => osToCancel && handleCancelarOS(osToCancel)}
+                onCancel={() => setOsToCancel(null)}
+                variant="danger"
+                confirmLabel="Cancelar Orden"
+            />
 
             <ConfirmDialog
                 isOpen={!!osToDelete}

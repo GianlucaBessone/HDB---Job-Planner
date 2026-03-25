@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
     ArrowLeft, Clock, Plus, Trash2, FileSignature, AlertCircle,
-    User, Package, FileText, CheckCircle2, Loader2, Users
+    User, Package, FileText, CheckCircle2, Loader2, Users, MessageSquare
 } from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
@@ -25,6 +25,7 @@ interface TimeEntryGroup {
 
 interface MaterialRow {
     material: string;
+    codigo?: string;
     cantidad: string;
     unidadMedida: string;
     materialProyectoId?: string;
@@ -53,8 +54,9 @@ function GenerarOSContent() {
 
     // Form state
     const [reporte, setReporte] = useState('');
+    const [comentario, setComentario] = useState('');
     const [materiales, setMateriales] = useState<MaterialRow[]>([
-        { material: '', cantidad: '', unidadMedida: 'Unidad' }
+        { material: '', codigo: '', cantidad: '', unidadMedida: 'Unidad' }
     ]);
     const [operadores, setOperadores] = useState<OperadorRow[]>([]);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -117,16 +119,29 @@ function GenerarOSContent() {
                 const osData = await data[3].json();
                 if (osData.estado === 'firmada') setIsFirmada(true);
                 setReporte(osData.reporte || '');
+                setComentario(osData.comentario || '');
                 if (osData.materiales && osData.materiales.length > 0) {
                     setMateriales(osData.materiales.map((m: any) => ({
-                        material: m.material, cantidad: String(m.cantidad), unidadMedida: m.unidadMedida, materialProyectoId: m.materialProyectoId
+                        material: m.material, 
+                        codigo: m.codigo || '',
+                        cantidad: String(m.cantidad), 
+                        unidadMedida: m.unidadMedida, 
+                        materialProyectoId: m.materialProyectoId
                     })));
                 } else {
-                    let dm: MaterialRow[] = [{ material: '', cantidad: '', unidadMedida: 'Unidad' }];
+                    let dm: MaterialRow[] = [{ material: '', codigo: '', cantidad: '', unidadMedida: 'Unidad' }];
                     if (projectData.aprovisionamiento && projectData.materialesProyecto) {
                         const actives = projectData.materialesProyecto.filter((m:any) => m.estado !== 'cerrado_ok' && m.estado !== 'cerrado_con_reserva');
                         if (actives.length > 0) {
-                            dm = actives.map((m:any) => ({ material: m.nombre, cantidad: '', unidadMedida: m.unidad || 'Unidad', materialProyectoId: m.id, disponible: m.cantidadDisponible, entregada: m.cantidadEntregada }));
+                            dm = actives.map((m:any) => ({ 
+                                material: m.nombre, 
+                                codigo: m.codigo || '',
+                                cantidad: '', 
+                                unidadMedida: m.unidad || 'Unidad', 
+                                materialProyectoId: m.id, 
+                                disponible: m.cantidadDisponible, 
+                                entregada: m.cantidadEntregada 
+                            }));
                         }
                     }
                     setMateriales(dm);
@@ -140,11 +155,19 @@ function GenerarOSContent() {
                     setOperadores(defaultOperadores);
                 }
             } else {
-                let dm: MaterialRow[] = [{ material: '', cantidad: '', unidadMedida: 'Unidad' }];
+                let dm: MaterialRow[] = [{ material: '', codigo: '', cantidad: '', unidadMedida: 'Unidad' }];
                 if (projectData.aprovisionamiento && projectData.materialesProyecto) {
                     const actives = projectData.materialesProyecto.filter((m:any) => m.estado !== 'cerrado_ok' && m.estado !== 'cerrado_con_reserva');
                     if (actives.length > 0) {
-                        dm = actives.map((m:any) => ({ material: m.nombre, cantidad: '', unidadMedida: m.unidad || 'Unidad', materialProyectoId: m.id, disponible: m.cantidadDisponible, entregada: m.cantidadEntregada }));
+                        dm = actives.map((m:any) => ({ 
+                            material: m.nombre, 
+                            codigo: m.codigo || '',
+                            cantidad: '', 
+                            unidadMedida: m.unidad || 'Unidad', 
+                            materialProyectoId: m.id, 
+                            disponible: m.cantidadDisponible, 
+                            entregada: m.cantidadEntregada 
+                        }));
                     }
                 }
                 setMateriales(dm);
@@ -159,10 +182,37 @@ function GenerarOSContent() {
     };
 
     // Materials
-    const addMaterial = () => setMateriales(prev => [...prev, { material: '', cantidad: '', unidadMedida: 'Unidad' }]);
+    const addMaterial = () => setMateriales(prev => [...prev, { material: '', codigo: '', cantidad: '', unidadMedida: 'Unidad' }]);
     const removeMaterial = (i: number) => setMateriales(prev => prev.filter((_, idx) => idx !== i));
-    const updateMaterial = (i: number, field: keyof MaterialRow, value: string) => {
-        setMateriales(prev => prev.map((m, idx) => idx === i ? { ...m, [field]: value } : m));
+    const updateMaterial = async (i: number, field: keyof MaterialRow, value: string) => {
+        setMateriales(prev => {
+            const newMats = [...prev];
+            newMats[i] = { ...newMats[i], [field]: value };
+            return newMats;
+        });
+
+        if (field === 'codigo' && value.length >= 2) {
+            try {
+                const res = await fetch(`/api/materiales-proyecto?codigo=${value.toUpperCase()}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.nombre) {
+                        setMateriales(prev => {
+                            const newMats = [...prev];
+                            newMats[i] = { 
+                                ...newMats[i], 
+                                material: data.nombre, 
+                                unidadMedida: data.unidad || newMats[i].unidadMedida,
+                                codigo: value.toUpperCase()
+                            };
+                            return newMats;
+                        });
+                    }
+                }
+            } catch (e) {
+                console.error('Autocomplete error:', e);
+            }
+        }
     };
 
     // Operadores
@@ -222,6 +272,7 @@ function GenerarOSContent() {
             })
             .map(m => ({ 
                 material: m.material, 
+                codigo: m.codigo || null,
                 cantidad: Number(m.cantidad), 
                 unidadMedida: m.unidadMedida,
                 materialProyectoId: m.materialProyectoId
@@ -238,6 +289,7 @@ function GenerarOSContent() {
                 body: JSON.stringify({
                     projectId,
                     reporte,
+                    comentario,
                     materiales: matsValidos,
                     operadores: opsValidas,
                 }),
@@ -427,7 +479,26 @@ function GenerarOSContent() {
                 </div>
             </section>
 
-            {/* 3.3 — Materiales Utilizados */}
+            {/* 3.3 — Comentario Adicional */}
+            <section className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-50 flex items-center gap-2">
+                    <MessageSquare className="w-4 h-4 text-slate-400" />
+                    <h2 className="text-sm font-black text-slate-700 uppercase tracking-wide">Comentario Adicional</h2>
+                    <span className="text-[10px] font-bold text-slate-400 ml-auto">(Opcional)</span>
+                </div>
+                <div className="px-6 py-4">
+                    <textarea
+                        rows={3}
+                        disabled={isFirmada}
+                        value={comentario}
+                        onChange={e => setComentario(e.target.value)}
+                        placeholder="Cualquier nota adicional, detalle técnico extra o comentario para el cliente..."
+                        className="w-full disabled:opacity-75 disabled:bg-slate-100 bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all resize-none"
+                    />
+                </div>
+            </section>
+
+            {/* 3.4 — Materiales Utilizados */}
             <section className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-50 flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -457,15 +528,30 @@ function GenerarOSContent() {
                         {materiales.map((m, i) => (
                             <div key={i} className={`bg-slate-50 border ${m.materialProyectoId ? 'border-primary/20 bg-primary/5' : 'border-slate-200'} rounded-2xl p-4 sm:p-3 space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-4 transition-colors`}>
                                 <div className="flex-1 min-w-0">
-                                    <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest sm:hidden">Descripción del Material</label>
-                                    <input
-                                        type="text"
-                                        disabled={isFirmada || !!m.materialProyectoId}
-                                        placeholder="Nombre del material"
-                                        value={m.material}
-                                        onChange={e => updateMaterial(i, 'material', e.target.value)}
-                                        className={`w-full ${m.materialProyectoId ? 'bg-transparent text-primary focus:ring-0 border-transparent px-0 text-base font-bold' : 'bg-white border-slate-200 px-3 py-2.5 rounded-xl border text-sm font-medium'} disabled:opacity-90 outline-none focus:ring-2 focus:ring-primary/20 transition-all`}
-                                    />
+                                    <div className="flex gap-2 mb-2 sm:mb-0">
+                                        <div className="w-24 shrink-0">
+                                            <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest sm:sr-only block mb-1">Cod.</label>
+                                            <input
+                                                type="text"
+                                                disabled={isFirmada || !!m.materialProyectoId}
+                                                placeholder="Código"
+                                                value={m.codigo}
+                                                onChange={e => updateMaterial(i, 'codigo', e.target.value.toUpperCase())}
+                                                className={`w-full ${m.materialProyectoId ? 'bg-transparent text-primary/70 font-mono px-0' : 'bg-white border-slate-200 px-3 py-2.5 rounded-xl border'} text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase`}
+                                            />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest sm:sr-only block mb-1">Descripción</label>
+                                            <input
+                                                type="text"
+                                                disabled={isFirmada || !!m.materialProyectoId}
+                                                placeholder="Nombre del material"
+                                                value={m.material}
+                                                onChange={e => updateMaterial(i, 'material', e.target.value)}
+                                                className={`w-full ${m.materialProyectoId ? 'bg-transparent text-primary focus:ring-0 border-transparent px-0 text-base font-bold' : 'bg-white border-slate-200 px-3 py-2.5 rounded-xl border text-sm font-medium'} disabled:opacity-90 outline-none focus:ring-2 focus:ring-primary/20 transition-all`}
+                                            />
+                                        </div>
+                                    </div>
                                     {m.materialProyectoId && (
                                         <div className="mt-1 flex flex-wrap gap-2 items-center">
                                             <span className="text-[10px] font-black tracking-tight text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-md border border-emerald-200">Entregado: {m.entregada} {m.unidadMedida}</span>

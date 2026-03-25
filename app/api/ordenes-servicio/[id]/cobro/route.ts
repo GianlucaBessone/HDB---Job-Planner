@@ -28,6 +28,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
                 cobroObservaciones: observaciones,
                 cobroCondicionPago: condicionPago,
                 cobroFechaGeneracion: new Date(),
+                estado: 'cobrada'
             }
         });
 

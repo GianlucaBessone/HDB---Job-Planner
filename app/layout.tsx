@@ -253,18 +253,18 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
                                 console.error("Error al solicitar permiso:", e);
                             }
                         }}
-                        className="w-full flex items-center justify-center gap-2 bg-primary/5 text-primary py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-primary/10 transition-all active:scale-95 border border-primary/10"
+                        className="w-full flex items-center justify-center gap-3 px-4 bg-primary/5 text-primary py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-primary/10 transition-all active:scale-95 border border-primary/10"
                     >
-                        <BellRing className="w-4 h-4" />
-                        Activar Notificaciones
+                        <BellRing className="w-4 h-4 shrink-0" />
+                        <span className="text-center">Activar Notificaciones</span>
                     </button>
 
                     <button
                         onClick={onLogout}
-                        className="w-full flex items-center justify-center gap-2 bg-rose-50 text-rose-500 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-rose-100 transition-all active:scale-95"
+                        className="w-full flex items-center justify-center gap-3 px-4 bg-rose-50 text-rose-500 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-rose-100 transition-all active:scale-95"
                     >
-                        <LogOut className="w-4 h-4" />
-                        Cerrar Sesión
+                        <LogOut className="w-4 h-4 shrink-0" />
+                        <span>Cerrar Sesión</span>
                     </button>
 
                     <div className="text-center">

@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import {
     QrCode, CheckCircle2, Loader2, AlertCircle, Clock, FileText,
     User, Package, ArrowLeft, Copy, ExternalLink, FileSignature,
-    Building2, Smartphone
+    Building2, Smartphone, MessageSquare
 } from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
 import CodeBadge from '@/components/CodeBadge';
@@ -16,6 +16,7 @@ interface OrdenServicio {
     linkPublico: string;
     estado: string;
     reporte: string;
+    comentario?: string;
     fechaCreacion: string;
     project: {
         nombre: string;
@@ -288,9 +289,22 @@ function QRView() {
                         </div>
                         <div className="flex-1">
                             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Reporte</p>
-                            <p className="text-sm text-slate-600 font-medium line-clamp-3">{os.reporte}</p>
+                            <p className="text-sm text-slate-600 font-medium whitespace-pre-wrap">{os.reporte}</p>
                         </div>
                     </div>
+
+                    {/* Comentario Adicional */}
+                    {os.comentario && (
+                        <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 bg-slate-50 rounded-lg flex items-center justify-center shrink-0 border border-slate-100">
+                                <MessageSquare className="w-4 h-4 text-slate-400" />
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Comentario Adicional</p>
+                                <p className="text-sm text-slate-600 font-medium whitespace-pre-wrap">{os.comentario}</p>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 

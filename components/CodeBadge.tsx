@@ -11,14 +11,14 @@ interface CodeBadgeProps {
 }
 
 const VARIANT_STYLES = {
-    project: 'bg-indigo-600/10 text-indigo-700 border-indigo-200/50 hover:bg-indigo-600/20 shadow-sm',
-    os: 'bg-emerald-600/10 text-emerald-700 border-emerald-200/50 hover:bg-emerald-600/20 shadow-sm',
+    project: 'bg-indigo-600/10 text-indigo-700 border-indigo-200/50 hover:bg-indigo-600/20 hover:border-indigo-300 shadow-sm',
+    os: 'bg-emerald-600/10 text-emerald-700 border-emerald-200/50 hover:bg-emerald-600/20 hover:border-emerald-300 shadow-sm',
 };
 
 const SIZE_STYLES = {
-    sm: 'text-[9px] px-1.5 py-0.5 gap-1 tracking-wider',
-    md: 'text-[11px] px-2.5 py-1 gap-1.5 tracking-widest',
-    lg: 'text-xs px-3 py-1.5 gap-2 tracking-[0.1em]',
+    sm: 'text-[9px] min-h-[1.5rem] px-2 py-0.5 gap-1.5 tracking-wider',
+    md: 'text-[11px] min-h-[1.75rem] px-3 py-1 gap-1.5 tracking-widest',
+    lg: 'text-xs min-h-[2rem] px-4 py-1.5 gap-2 tracking-[0.1em]',
 };
 
 export default function CodeBadge({
@@ -40,20 +40,26 @@ export default function CodeBadge({
 
     return (
         <span
-            className={`inline-flex items-center font-mono font-bold border rounded-lg transition-colors ${VARIANT_STYLES[variant]} ${SIZE_STYLES[size]} ${className}`}
+            onClick={showCopy ? handleCopy : undefined}
+            className={`
+                inline-flex items-center justify-center font-mono font-bold border rounded-full transition-all 
+                ${showCopy ? 'cursor-pointer active:scale-95' : ''}
+                ${VARIANT_STYLES[variant]} 
+                ${SIZE_STYLES[size]} 
+                ${className}
+            `}
+            title={showCopy ? (copied ? '¡Copiado!' : 'Clic para copiar código') : undefined}
         >
-            {code}
+            <span className="flex-1 text-center flex items-center justify-center">
+                {code}
+            </span>
             {showCopy && (
-                <button
-                    onClick={handleCopy}
-                    title={copied ? '¡Copiado!' : 'Copiar código'}
-                    className="opacity-50 hover:opacity-100 transition-opacity shrink-0"
-                >
+                <div className="shrink-0 flex items-center justify-center">
                     {copied
-                        ? <Check className="w-3 h-3" />
-                        : <Copy className="w-3 h-3" />
+                        ? <Check className="w-3 h-3 text-emerald-500 animate-in zoom-in duration-300" />
+                        : <Copy className="w-3 h-3 opacity-40 group-hover:opacity-100 transition-opacity" />
                     }
-                </button>
+                </div>
             )}
         </span>
     );

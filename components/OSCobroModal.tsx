@@ -11,6 +11,7 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
         os.materiales.map((m: any) => ({
             id: m.id,
             material: m.material,
+            codigo: m.codigo,
             cantidad: m.cantidad,
             precioUnitario: m.precioUnitario ?? '',
         }))
@@ -119,7 +120,7 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
             </table>
         </div>
 
-        ${materiales.length > 0 ? `
+        ${os.materiales.length > 0 ? `
         <div class="section">
             <h3>Materiales Suministrados</h3>
             <table>
@@ -137,6 +138,13 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
                     `).join('')}
                 </tbody>
             </table>
+        </div>
+        ` : ''}
+
+        ${os.comentario ? `
+        <div class="section">
+            <h3>Comentario Adicional (OS)</h3>
+            <p style="font-size:12px;color:#475569;margin:0;white-space:pre-wrap;">${os.comentario}</p>
         </div>
         ` : ''}
 
@@ -251,7 +259,10 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
                                     <div className="space-y-4">
                                         {materiales.map(m => (
                                             <div key={m.id} className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-start sm:items-center text-sm border-b border-slate-50 pb-4 last:border-0 last:pb-0">
-                                                <div className="font-bold text-slate-700 flex-1 w-full">{m.material}</div>
+                                                <div className="flex-1 w-full">
+                                                    <div className="font-bold text-slate-700">{m.material}</div>
+                                                    {m.codigo && <div className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-tighter">{m.codigo}</div>}
+                                                </div>
                                                 <div className="flex items-center gap-3 w-full sm:w-auto shrink-0 justify-between sm:justify-end">
                                                     <div className="text-center font-bold text-slate-500 bg-slate-100 rounded-lg py-1 px-3 min-w-[3rem]">{m.cantidad}</div>
                                                     <div className="relative w-28">

@@ -30,7 +30,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { projectId, reporte, materiales, operadores } = body;
+        const { projectId, reporte, materiales, operadores, comentario } = body;
 
         if (!projectId || !reporte) {
             return NextResponse.json({ error: 'projectId y reporte son obligatorios' }, { status: 400 });
@@ -59,10 +59,12 @@ export async function POST(req: Request) {
                 projectId,
                 codigoOS,
                 reporte,
+                comentario: comentario || null,
                 estado: 'pendiente',
                 materiales: {
                     create: (materiales || []).map((m: any) => ({
                         material: m.material,
+                        codigo: m.codigo || null,
                         cantidad: Number(m.cantidad),
                         unidadMedida: m.unidadMedida,
                         materialProyectoId: m.materialProyectoId || null,
@@ -83,27 +85,56 @@ export async function POST(req: Request) {
             },
         });
 
-        // 2) Si hay materiales de aprovisionamiento, crear registros de MaterialUso
-        const aprovisionados = (materiales || []).filter((m: any) => m.materialProyectoId && Number(m.cantidad) > 0);
-        if (aprovisionados.length > 0) {
+        // 2) Synchronize materials with the dynamic provisioning system
+        const materialsToSync = os.materiales || [];
+        if (materialsToSync.length > 0) {
             const firstOp = await prisma.operator.findUnique({ where: { id: operadores[0].operadorId } });
             const opName = firstOp ? firstOp.nombreCompleto : 'Desconocido';
 
-            for (const m of aprovisionados) {
-                await prisma.materialUso.create({
-                    data: {
-                        cantidadUtilizada: Number(m.cantidad),
-                        operadorNombre: opName,
-                        materialId: m.materialProyectoId,
-                        ordenServicioId: os.id
-                    }
-                });
-                
-                // Update MaterialProyecto state to uso_confirmado
-                await prisma.materialProyecto.update({
-                    where: { id: m.materialProyectoId },
-                    data: { estado: 'uso_confirmado' }
-                });
+            for (const osm of materialsToSync) {
+                let finalMatId = osm.materialProyectoId;
+                const cant = Number(osm.cantidad);
+
+                // If this material was NOT linked to a previous provision, create one automatically
+                if (!finalMatId) {
+                    const newMatProv = await prisma.materialProyecto.create({
+                        data: {
+                            proyectoId: projectId,
+                            nombre: osm.material,
+                            codigo: osm.codigo,
+                            unidad: osm.unidadMedida,
+                            cantidadSolicitada: cant,
+                            cantidadDisponible: cant,
+                            cantidadEntregada: cant,
+                            estado: 'uso_confirmado'
+                        }
+                    });
+                    finalMatId = newMatProv.id;
+                    
+                    // Link OS material to the new provision record
+                    await prisma.ordenServicioMaterial.update({
+                        where: { id: osm.id },
+                        data: { materialProyectoId: finalMatId }
+                    });
+                } else {
+                    // Update existing MaterialProyecto state
+                    await prisma.materialProyecto.update({
+                        where: { id: finalMatId },
+                        data: { estado: 'uso_confirmado' }
+                    });
+                }
+
+                // Create usage record
+                if (cant > 0) {
+                    await prisma.materialUso.create({
+                        data: {
+                            cantidadUtilizada: cant,
+                            operadorNombre: opName,
+                            materialId: finalMatId,
+                            ordenServicioId: os.id
+                        }
+                    });
+                }
             }
         }
 

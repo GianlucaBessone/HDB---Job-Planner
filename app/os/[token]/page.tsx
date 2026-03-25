@@ -17,6 +17,7 @@ interface OrdenServicio {
     linkPublico: string;
     estado: string;
     reporte: string;
+    comentario?: string;
     fechaCreacion: string;
     project: {
         nombre: string;
@@ -673,7 +674,13 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                     </tbody>
                 </table>
             </div>` : ''}
-
+            
+            ${os.comentario ? `
+            <div class="section">
+                <h3>Comentario Adicional</h3>
+                <div class="reporte-box" style="border-color: #e2e8f0; background: #fdfdfd;">${os.comentario}</div>
+            </div>` : ''}
+            
             ${_isFirmada && os.firma ? `
             <div class="section">
                 <h3>Firma del Cliente</h3>
@@ -860,6 +867,19 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                                     ))}
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                )}
+
+                {/* Comentario Adicional */}
+                {os.comentario && (
+                    <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div className="px-6 py-4 border-b border-slate-50 flex items-center gap-2">
+                            <MessageSquare className="w-4 h-4 text-slate-400" />
+                            <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">Comentario Adicional</h2>
+                        </div>
+                        <div className="px-6 py-5">
+                            <p className="text-sm text-slate-700 font-medium leading-relaxed whitespace-pre-wrap">{os.comentario}</p>
                         </div>
                     </div>
                 )}
