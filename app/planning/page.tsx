@@ -126,7 +126,7 @@ export default function PlanningPage() {
                 safeApiRequest('/api/favorites').then(res => res.json())
             ]);
             setProjects(p.filter((x: any) => x.activo && x.estado !== 'finalizado'));
-            setOperators(o.filter((x: any) => x.activo));
+            setOperators(o.filter((x: any) => x.activo && (x.role === 'operador' || x.role === 'supervisor')));
             setFavorites(f);
             
             const stored = localStorage.getItem('currentUser');

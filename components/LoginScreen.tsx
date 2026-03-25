@@ -118,7 +118,7 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
                                             type="text"
                                             autoFocus
                                             placeholder="Buscar..."
-                                            className="w-full outline-none text-sm font-medium py-1 px-2 bg-slate-50 rounded-xl border border-slate-200 focus:border-indigo-400"
+                                            className="w-full outline-none text-sm font-medium py-1 px-2 bg-slate-50 rounded-xl border border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10"
                                             value={searchTerm}
                                             onChange={e => setSearchTerm(e.target.value)}
                                             onClick={e => e.stopPropagation()}
@@ -137,7 +137,7 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
                                                     setDropdownOpen(false);
                                                     setSearchTerm('');
                                                 }}
-                                                className={`w-full text-left px-4 py-3 text-sm font-bold transition-colors whitespace-normal break-words ${selectedOperatorId === op.id ? 'bg-indigo-50 text-indigo-600' : 'text-slate-700 hover:bg-slate-50'}`}
+                                                className={`w-full text-left px-4 py-3 text-sm font-bold transition-colors whitespace-normal break-words outline-none focus:bg-indigo-50 focus:text-indigo-600 ${selectedOperatorId === op.id ? 'bg-indigo-50 text-indigo-600' : 'text-slate-700 hover:bg-slate-50'}`}
                                             >
                                                 {op.nombreCompleto}
                                             </button>
@@ -175,7 +175,7 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
                     <button
                         type="submit"
                         disabled={isSubmitting || !selectedOperatorId || !pin}
-                        className="w-full bg-indigo-500 disabled:opacity-50 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-sm flex items-center justify-center gap-2 hover:bg-indigo-600 shadow-xl shadow-indigo-500/20 active:scale-95 transition-all"
+                        className="w-full bg-indigo-500 disabled:opacity-50 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-sm flex items-center justify-center gap-2 hover:bg-indigo-600 shadow-xl shadow-indigo-500/20 active:scale-95 transition-all outline-none focus:ring-4 focus:ring-indigo-500/20"
                     >
                         <LogIn className="w-5 h-5" />
                         Ingresar

@@ -130,7 +130,7 @@ export const ProjectReportPDF = ({
                 {/* ── Header ── */}
                 <View style={S.header}>
                     <View style={{ flexDirection: 'row', gap: 15, alignItems: 'center' }}>
-                        <Image style={S.logo} src={(typeof window !== \'undefined\' ? window.location.origin : \'\') + "/logo-hdb.jpg"} />
+                        <Image style={S.logo} src={(typeof window !== 'undefined' ? window.location.origin : '') + "/logo-hdb.jpg"} />
                         <View>
                             <Text style={S.title}>Reporte de Proyecto</Text>
                             <Text style={[S.statusBadge, { color: statusInfo.color }]}>{statusInfo.icon}  {statusInfo.label}</Text>

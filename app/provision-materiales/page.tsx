@@ -4,8 +4,11 @@ import Link from 'next/link';
 import {
     Package, Plus, Trash2, Edit2, Check, X, ChevronDown, ChevronRight,
     AlertTriangle, CheckCircle2, Clock, RotateCcw, Loader2, MessageSquare,
+    Bell, FileSpreadsheet, ShieldCheck
 } from 'lucide-react';
 import CodeBadge from '@/components/CodeBadge';
+import * as XLSX from 'xlsx';
+import { createPortal } from 'react-dom';
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 type MaterialUso = {
@@ -322,6 +325,28 @@ function DeleteMaterialModal({ material, onClose, onConfirm }: { material: Mater
     );
 }
 
+function SuccessNotificationModal({ onClose }: { onClose: () => void }) {
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
+            <div className="bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl overflow-hidden p-8 flex flex-col items-center text-center animate-in zoom-in-95 duration-300">
+                <div className="w-20 h-20 bg-emerald-100 rounded-3xl flex items-center justify-center mb-6 shadow-lg shadow-emerald-100/50">
+                    <ShieldCheck className="w-10 h-10 text-emerald-600" />
+                </div>
+                <h3 className="text-2xl font-black text-slate-800 tracking-tight mb-2">Notificación Enviada</h3>
+                <p className="text-slate-500 font-medium mb-8 leading-relaxed">
+                    Los supervisores y responsables han sido notificados sobre los faltantes de materiales.
+                </p>
+                <button 
+                    onClick={onClose}
+                    className="w-full py-4 bg-primary text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95"
+                >
+                    Entendido
+                </button>
+            </div>
+        </div>
+    );
+}
+
 // ─── Materials Table ───────────────────────────────────────────────────────────
 function MaterialesTable({
     proyecto, user, onRefresh,
@@ -361,12 +386,69 @@ function MaterialesTable({
     const hayPendientes = materiales.some(m => m.estado === 'pendiente_devolucion');
     const hayCargados = materiales.some(m => ['material_cargado', 'material_entregado'].includes(m.estado));
 
+    const faltantes = materiales.filter(m => m.cantidadSolicitada > m.cantidadDisponible).map(m => ({
+        ...m,
+        faltante: m.cantidadSolicitada - m.cantidadDisponible
+    }));
+    const hasFaltantes = faltantes.length > 0;
+    const [notificando, setNotificando] = useState(false);
+    const [notiStatus, setNotiStatus] = useState<null | 'success' | 'error'>(null);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+    const handleNotificarFaltantes = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!hasFaltantes || notificando) return;
+        setNotificando(true);
+        try {
+            const res = await fetch('/api/provision-materiales/notificar-faltantes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    proyectoId: proyecto.id,
+                    faltantes: faltantes,
+                    notificadorNombre: user?.nombreCompleto || user?.nombre || 'Usuario',
+                    userName: user?.usuario || 'Desconocido'
+                })
+            });
+            if (res.ok) {
+                setNotiStatus('success');
+                setShowSuccessModal(true);
+            }
+            else setNotiStatus('error');
+            setTimeout(() => setNotiStatus(null), 3000);
+        } catch {
+            setNotiStatus('error');
+            setTimeout(() => setNotiStatus(null), 3000);
+        } finally {
+            setNotificando(false);
+        }
+    };
+
+    const handleExportarExcel = () => {
+        if (!hasFaltantes) return;
+        const data = faltantes.map(f => ({
+            'Código Proyecto': proyecto.codigoProyecto || '-',
+            'Nombre Proyecto': proyecto.nombre,
+            'Material': f.nombre,
+            'Unidad': f.unidad,
+            'Cantidad Solicitada': f.cantidadSolicitada,
+            'Cantidad Disponible': f.cantidadDisponible,
+            'Cantidad Faltante': f.faltante
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Faltantes");
+        const codName = proyecto.codigoProyecto ? `_${proyecto.codigoProyecto}` : '';
+        XLSX.writeFile(wb, `Faltantes${codName}.xlsx`);
+    };
+
     return (
         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
             {/* Header */}
-            <button
+            <div
                 onClick={() => setExpanded(p => !p)}
-                className="w-full flex items-center justify-between p-4 md:p-5 hover:bg-slate-50 transition-colors"
+                className="w-full flex items-center justify-between p-4 md:p-5 hover:bg-slate-50 transition-colors cursor-pointer"
             >
                 <div className="flex items-center gap-3 text-left">
                     <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
@@ -383,8 +465,19 @@ function MaterialesTable({
                         </p>
                     </div>
                 </div>
-                {expanded ? <ChevronDown className="w-5 h-5 text-slate-400 shrink-0" /> : <ChevronRight className="w-5 h-5 text-slate-400 shrink-0" />}
-            </button>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={handleNotificarFaltantes}
+                        disabled={!hasFaltantes || notificando}
+                        title={hasFaltantes ? "Notificar Faltantes" : "No hay faltantes"}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${hasFaltantes ? 'bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100 shadow-sm' : 'bg-slate-50 text-slate-400 border-slate-200 opacity-70'} ${notificando ? 'opacity-50' : ''}`}
+                    >
+                        {notificando ? <Loader2 className="w-4 h-4 animate-spin" /> : notiStatus === 'success' ? <Check className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
+                        <span className="hidden sm:inline">{notiStatus === 'success' ? 'Enviada' : 'Notificar Faltantes'}</span>
+                    </button>
+                    {expanded ? <ChevronDown className="w-5 h-5 text-slate-400 shrink-0" /> : <ChevronRight className="w-5 h-5 text-slate-400 shrink-0" />}
+                </div>
+            </div>
 
             {expanded && (
                 <div className="border-t border-slate-100 p-4 md:p-5 space-y-4">
@@ -476,9 +569,19 @@ function MaterialesTable({
                         </div>
                     )}
 
-                    {isVendedor && (
-                        <AddMaterialForm proyectoId={proyecto.id} onAdded={onRefresh} />
-                    )}
+                    <div className="flex items-center gap-2 flex-wrap">
+                        {isVendedor && (
+                            <AddMaterialForm proyectoId={proyecto.id} onAdded={onRefresh} />
+                        )}
+                        <button
+                            onClick={handleExportarExcel}
+                            disabled={!hasFaltantes}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all border ${hasFaltantes ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 shadow-sm' : 'bg-slate-50 text-slate-400 border-slate-200 opacity-70 cursor-not-allowed'}`}
+                            title={hasFaltantes ? "Exportar faltantes a Excel" : "No hay faltantes para exportar"}
+                        >
+                            <FileSpreadsheet className="w-4 h-4" /> Exportar faltantes
+                        </button>
+                    </div>
                 </div>
             )}
 
@@ -505,6 +608,11 @@ function MaterialesTable({
                     onClose={() => setDeleteTarget(null)}
                     onConfirm={() => handleDelete(deleteTarget.id)}
                 />
+            )}
+
+            {showSuccessModal && createPortal(
+                <SuccessNotificationModal onClose={() => setShowSuccessModal(false)} />,
+                document.body
             )}
         </div>
     );
