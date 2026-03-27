@@ -15,6 +15,7 @@ import {
     Settings,
     Home,
     Package,
+    MapPin,
     User as UserIcon
 } from 'lucide-react';
 import Link from 'next/link';
@@ -71,6 +72,13 @@ export default function HomePage() {
                 <div className="space-y-6">
                     <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest px-1">Tus Acciones Rápidas</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
+                        <ActionCard
+                            title="Fichado GPS/QR"
+                            description="Iniciar/Finalizar jornada"
+                            icon={<MapPin className="w-6 h-6" />}
+                            href="/fichado"
+                            color="bg-emerald-500"
+                        />
                         <ActionCard
                             title="Registro de Tiempos"
                             description="Tus horas trabajadas"
@@ -147,6 +155,13 @@ export default function HomePage() {
                         {isAdmin ? 'Panel de Administración' : 'Panel de Supervisión'}
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
+                        <ActionCard
+                            title="Fichado GPS/QR"
+                            description="Control de asistencia"
+                            icon={<MapPin className="w-6 h-6" />}
+                            href="/fichado"
+                            color="bg-emerald-500"
+                        />
                         <ActionCard
                             title="Panel de Análisis"
                             description="Métricas y estadísticas globales"

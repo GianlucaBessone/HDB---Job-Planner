@@ -65,6 +65,10 @@ export const dataLayer = {
         categoria?: string;
         tipoActividad?: string;
         generarOS?: boolean;
+        geofenceLat?: number;
+        geofenceLng?: number;
+        geofenceRadius?: number;
+        qrToken?: string;
     }) {
         const sanitizedData = { ...data };
         if (sanitizedData.clientId === "") delete sanitizedData.clientId;
@@ -133,6 +137,10 @@ export const dataLayer = {
         categoria?: string;
         tipoActividad?: string;
         generarOS?: boolean;
+        geofenceLat?: number;
+        geofenceLng?: number;
+        geofenceRadius?: number;
+        qrToken?: string;
     }) {
         const sanitizedData = { ...data };
         if (sanitizedData.clientId === "") sanitizedData.clientId = null as any;

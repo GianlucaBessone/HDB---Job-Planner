@@ -13,8 +13,18 @@ import {
     Save,
     X,
     Bell,
-    Play
+    Play,
+    MapPin,
+    Clock, 
+    Shield, 
+    CheckCircle2, 
+    AlertTriangle, 
+    Loader2, 
+    ExternalLink, 
+    Globe, 
+    History
 } from 'lucide-react';
+import MapPicker from '@/components/MapPicker';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
@@ -596,7 +606,14 @@ function OptionsSection() {
 
 // ----- SYSTEM SECTION -----
 function SystemSection() {
-    const [setting, setSetting] = useState({ dailyReminderEnabled: false, dailyReminderTime: '16:45', valorManoObra: 0 });
+    const [setting, setSetting] = useState({
+        dailyReminderEnabled: false,
+        dailyReminderTime: '16:45',
+        valorManoObra: 0,
+        companyGeofenceLat: null,
+        companyGeofenceLng: null,
+        companyGeofenceRadius: null,
+    });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [triggering, setTriggering] = useState(false);
@@ -711,6 +728,66 @@ function SystemSection() {
                         onChange={e => setSetting({ ...setting, valorManoObra: parseFloat(e.target.value) || 0 })}
                         className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-8 pr-4 outline-none font-bold text-slate-700 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                         placeholder="Ej: 50.00"
+                    />
+                </div>
+            </div>
+
+            <div className="space-y-4 bg-slate-50 p-6 rounded-2xl border border-slate-100 mt-6">
+                <div>
+                    <h4 className="font-bold text-slate-800 flex items-center gap-2">
+                        <MapPin className="w-4 h-4" /> Geovalla de la Empresa
+                    </h4>
+                    <p className="text-xs text-slate-500 mt-1">
+                        Ubicación central de la oficina o base principal para validación de fichados.
+                    </p>
+                </div>
+
+                <MapPicker 
+                    lat={setting.companyGeofenceLat} 
+                    lng={setting.companyGeofenceLng} 
+                    radius={setting.companyGeofenceRadius} 
+                    onChange={(lat, lng, radius) => {
+                        setSetting({
+                            ...setting,
+                            companyGeofenceLat: lat,
+                            companyGeofenceLng: lng,
+                            companyGeofenceRadius: radius
+                        });
+                    }}
+                />
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Latitud</label>
+                        <input
+                            type="number"
+                            step="any"
+                            value={setting.companyGeofenceLat || ''}
+                            onChange={e => setSetting({ ...setting, companyGeofenceLat: e.target.value === '' ? null : parseFloat(e.target.value) })}
+                            className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+                            placeholder="-34.123456"
+                        />
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Longitud</label>
+                        <input
+                            type="number"
+                            step="any"
+                            value={setting.companyGeofenceLng || ''}
+                            onChange={e => setSetting({ ...setting, companyGeofenceLng: e.target.value === '' ? null : parseFloat(e.target.value) })}
+                            className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+                            placeholder="-58.123456"
+                        />
+                    </div>
+                </div>
+                <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Radio de Validación (Metros)</label>
+                    <input
+                        type="number"
+                        value={setting.companyGeofenceRadius || ''}
+                        onChange={e => setSetting({ ...setting, companyGeofenceRadius: e.target.value === '' ? null : parseInt(e.target.value) })}
+                        className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+                        placeholder="Ej: 200"
                     />
                 </div>
             </div>

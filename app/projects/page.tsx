@@ -32,8 +32,13 @@ import {
     CheckSquare,
     PieChart,
     MessageSquare,
-    ClipboardList
+    ClipboardList,
+    Bell,
+    Play,
+    MapPin,
+    QrCode
 } from 'lucide-react';
+import MapPicker from '@/components/MapPicker';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
@@ -69,6 +74,10 @@ interface Project {
     tags?: string[];
     checklistItems?: { id: string; completed: boolean; excluded: boolean; tag: string }[];
     finalizadoConPendientes?: boolean;
+    geofenceLat?: number | null;
+    geofenceLng?: number | null;
+    geofenceRadius?: number | null;
+    qrToken?: string | null;
     estado: ProjectStatus;
 
     fechaInicio?: string;
@@ -97,6 +106,10 @@ interface FormData {
     fechaFin: string;
     generarOS: boolean;
     aprovisionamiento: boolean;
+    geofenceLat: number | null;
+    geofenceLng: number | null;
+    geofenceRadius: number | null;
+    qrToken: string | null;
 }
 
 
@@ -145,6 +158,10 @@ const EMPTY_FORM: FormData = {
     fechaFin: '',
     generarOS: false,
     aprovisionamiento: false,
+    geofenceLat: null,
+    geofenceLng: null,
+    geofenceRadius: null,
+    qrToken: null,
 };
 
 
@@ -259,6 +276,10 @@ function ProjectsContent() {
             fechaFin: project.fechaFin || '',
             generarOS: (project as any).generarOS || false,
             aprovisionamiento: (project as any).aprovisionamiento || false,
+            geofenceLat: project.geofenceLat || null,
+            geofenceLng: project.geofenceLng || null,
+            geofenceRadius: project.geofenceRadius || null,
+            qrToken: project.qrToken || null,
         });
 
         setIsModalOpen(true);
@@ -1541,6 +1562,82 @@ function ProjectModal({
                                     (formData as any).generarOS ? 'translate-x-8' : 'translate-x-1'
                                 }`} />
                             </button>
+                        </div>
+
+                        {/* Geovalla y QR */}
+                        <div className="space-y-4 pt-4 border-t border-slate-100">
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                <MapPin className="w-3.5 h-3.5" /> Validación por Geovalla y QR
+                            </h4>
+                            <div className="space-y-4">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic px-1">Haz clic en el mapa para posicionar el centro de la geovalla</p>
+                                <MapPicker 
+                                    lat={(formData as any).geofenceLat} 
+                                    lng={(formData as any).geofenceLng} 
+                                    radius={(formData as any).geofenceRadius} 
+                                    onChange={(lat, lng, radius) => {
+                                        set('geofenceLat', lat);
+                                        set('geofenceLng', lng);
+                                        set('geofenceRadius', radius);
+                                    }}
+                                />
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Latitud</label>
+                                    <input
+                                        type="number"
+                                        step="any"
+                                        placeholder="-34.123456"
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium text-sm"
+                                        value={(formData as any).geofenceLat || ''}
+                                        onChange={e => set('geofenceLat', e.target.value === '' ? null : parseFloat(e.target.value))}
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Longitud</label>
+                                    <input
+                                        type="number"
+                                        step="any"
+                                        placeholder="-58.123456"
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium text-sm"
+                                        value={(formData as any).geofenceLng || ''}
+                                        onChange={e => set('geofenceLng', e.target.value === '' ? null : parseFloat(e.target.value))}
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Radio (Metros)</label>
+                                    <input
+                                        type="number"
+                                        placeholder="Ej: 100"
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium text-sm"
+                                        value={(formData as any).geofenceRadius || ''}
+                                        onChange={e => set('geofenceRadius', e.target.value === '' ? null : parseInt(e.target.value))}
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">QR Token (Validación)</label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            placeholder="Token único..."
+                                            className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-mono text-sm"
+                                            value={(formData as any).qrToken || ''}
+                                            onChange={e => set('qrToken', e.target.value)}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => set('qrToken', Math.random().toString(36).substring(2, 10).toUpperCase())}
+                                            className="px-3 bg-slate-100 hover:bg-slate-200 rounded-2xl text-slate-600 transition-all active:scale-95"
+                                            title="Generar Token"
+                                        >
+                                            <Play className="w-4 h-4 rotate-90" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Aprovisionamiento Switch */}

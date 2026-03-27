@@ -42,6 +42,11 @@ model Project {
   ordenesServicio      OrdenServicio[]
   encuestas            EncuestaServicio[]
   materialesProyecto   MaterialProyecto[]
+  // Geofence & QR data
+  geofenceLat             Float?
+  geofenceLng             Float?
+  geofenceRadius          Float?   // radius in meters
+  qrToken                 String?  // token signature for QR validation
 }
 
 model ProjectLog {
@@ -102,6 +107,7 @@ model Operator {
   timeEntries     TimeEntry[]
   notifications   Notification[]
   ordenesServicio OrdenServicioOperador[]
+  primaryDeviceId String?
 }
 
 model FavoriteBlock {
@@ -139,8 +145,8 @@ model TimeEntry {
   id                      String   @id @default(cuid())
   operatorId              String
   operator                Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
-  projectId               String
-  project                 Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId               String?
+  project                 Project?  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   fecha                   String // YYYY-MM-DD
   horaIngreso             String? // HH:mm
   horaEgreso              String? // HH:mm
@@ -148,6 +154,15 @@ model TimeEntry {
   estadoConfirmado        Boolean  @default(false)
   confirmadoPorSupervisor String?
   isExtra                 Boolean  @default(false)
+  // Fichado móvil / Mobile punch-in fields
+  deviceId                String?
+  latitude                Float?
+  longitude               Float?
+  qrValidated             Boolean  @default(false)
+  validationFlags         Json?    
+  isSuspicious            Boolean  @default(false)
+  isOfflinePending        Boolean  @default(false)
+
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 
@@ -219,6 +234,9 @@ model SystemSetting {
   dailyReminderEnabled  Boolean @default(false)
   dailyReminderTime     String  @default("16:45")
   valorManoObra         Float   @default(0)
+  companyGeofenceLat    Float?
+  companyGeofenceLng    Float?
+  companyGeofenceRadius Float?
 }
 
 model OrdenServicio {

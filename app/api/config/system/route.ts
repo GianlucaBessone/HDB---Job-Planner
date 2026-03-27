@@ -29,12 +29,18 @@ export async function PUT(req: Request) {
                 id: 'default',
                 dailyReminderEnabled: body.dailyReminderEnabled,
                 dailyReminderTime: body.dailyReminderTime,
-                valorManoObra: body.valorManoObra ? parseFloat(body.valorManoObra) : 0
+                valorManoObra: body.valorManoObra ? parseFloat(body.valorManoObra) : 0,
+                companyGeofenceLat: body.companyGeofenceLat !== undefined ? parseFloat(body.companyGeofenceLat) : null,
+                companyGeofenceLng: body.companyGeofenceLng !== undefined ? parseFloat(body.companyGeofenceLng) : null,
+                companyGeofenceRadius: body.companyGeofenceRadius !== undefined ? parseFloat(body.companyGeofenceRadius) : null,
             },
             update: {
                 dailyReminderEnabled: body.dailyReminderEnabled,
                 dailyReminderTime: body.dailyReminderTime,
-                valorManoObra: body.valorManoObra !== undefined ? parseFloat(body.valorManoObra) : undefined
+                valorManoObra: body.valorManoObra !== undefined ? parseFloat(body.valorManoObra) : undefined,
+                companyGeofenceLat: body.companyGeofenceLat !== undefined ? parseFloat(body.companyGeofenceLat) : undefined,
+                companyGeofenceLng: body.companyGeofenceLng !== undefined ? parseFloat(body.companyGeofenceLng) : undefined,
+                companyGeofenceRadius: body.companyGeofenceRadius !== undefined ? parseFloat(body.companyGeofenceRadius) : undefined,
             }
         });
 
