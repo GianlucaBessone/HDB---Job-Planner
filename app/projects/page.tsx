@@ -46,6 +46,7 @@ import { formatDate } from '@/lib/formatDate';
 import SearchableSelect from '@/components/SearchableSelect';
 import { CHECKLIST_TEMPLATES } from '@/lib/checklistTemplates';
 import CodeBadge from '@/components/CodeBadge';
+import { QRCodeCanvas } from 'qrcode.react';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type ProjectStatus = 'por_hacer' | 'planificado' | 'activo' | 'en_riesgo' | 'atrasado' | 'finalizado';
@@ -370,10 +371,11 @@ function ProjectsContent() {
             ...formData,
             horasEstimadas: Number(formData.horasEstimadas) || 0,
             horasConsumidas: Number(formData.horasConsumidas) || 0,
+            qrToken: formData.qrToken || null, // Explicitly ensure it's passed
         };
-        await safeApiRequest(url, { method, body: JSON.stringify(submissionData) });
+        await safeApiRequest(url, { method, body: JSON.stringify(submissionData), headers: { 'Content-Type': 'application/json' } });
         setIsModalOpen(false);
-        loadData(true);
+        await loadData(true);
     };
 
     const handleDeleteClick = (id: string) => {
@@ -1638,6 +1640,65 @@ function ProjectModal({
                                     </div>
                                 </div>
                             </div>
+
+                            {(formData as any).qrToken && (
+                                <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col items-center gap-4 animate-in fade-in zoom-in-95 duration-300">
+                                    <div id="project-qr" className="p-4 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                                        <QRCodeCanvas 
+                                            value={(formData as any).qrToken} 
+                                            size={160}
+                                            level="H"
+                                            includeMargin={true}
+                                        />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const canvas = document.querySelector('#project-qr canvas') as HTMLCanvasElement;
+                                            if (canvas) {
+                                                const win = window.open('', '_blank');
+                                                if (win) {
+                                                    win.document.write(`
+                                                        <html>
+                                                            <head>
+                                                                <title>Imprimir QR - ${formData.nombre}</title>
+                                                                <style>
+                                                                    body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }
+                                                                    .container { text-align: center; border: 2px solid #000; padding: 40px; border-radius: 20px; }
+                                                                    h1 { margin-bottom: 20px; font-size: 24px; }
+                                                                    h2 { margin-bottom: 10px; font-size: 20px; }
+                                                                    p { margin-top: 20px; font-weight: bold; font-size: 18px; color: #666; }
+                                                                    img { width: 300px; height: 300px; }
+                                                                </style>
+                                                            </head>
+                                                            <body>
+                                                                <div class="container">
+                                                                    <h1>HDB SERVICIOS ELÉCTRICOS</h1>
+                                                                    <h2>PROYECTO: ${formData.nombre}</h2>
+                                                                    ${editingProject?.codigoProyecto ? `<h3>CÓDIGO: ${editingProject.codigoProyecto}</h3>` : ''}
+                                                                    <img src="${canvas.toDataURL()}" />
+                                                                    <p>TOKEN: ${(formData as any).qrToken}</p>
+                                                                </div>
+                                                                    <script>
+                                                                        window.onload = () => {
+                                                                            setTimeout(() => {
+                                                                                window.print();
+                                                                                window.onafterprint = () => window.close();
+                                                                            }, 500);
+                                                                        };
+                                                                    </script>
+                                                                </body>
+                                                            </html>
+                                                    `);
+                                                }
+                                            }
+                                        }}
+                                        className="flex items-center gap-2 px-6 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold hover:bg-slate-700 transition-all active:scale-95"
+                                    >
+                                        <QrCode className="w-4 h-4" /> Imprimir QR para Obra
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         {/* Aprovisionamiento Switch */}

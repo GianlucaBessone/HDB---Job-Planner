@@ -30,11 +30,19 @@ export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
         const date = searchParams.get('date');
+        const from = searchParams.get('from');
+        const to = searchParams.get('to');
         const operatorId = searchParams.get('operatorId');
         const projectId = searchParams.get('projectId');
 
         let where: any = {};
         if (date) where.fecha = date;
+        if (from || to) {
+            where.fecha = {
+                ...(from ? { gte: from } : {}),
+                ...(to ? { lte: to } : {})
+            };
+        }
         if (operatorId) where.operatorId = operatorId;
         if (projectId) where.projectId = projectId;
 

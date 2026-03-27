@@ -237,6 +237,7 @@ model SystemSetting {
   companyGeofenceLat    Float?
   companyGeofenceLng    Float?
   companyGeofenceRadius Float?
+  companyQrToken        String?
 }
 
 model OrdenServicio {

@@ -22,17 +22,20 @@ import {
     Loader2, 
     ExternalLink, 
     Globe, 
-    History
+    History,
+    FileText,
+    QrCode
 } from 'lucide-react';
 import MapPicker from '@/components/MapPicker';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
+import { QRCodeCanvas } from 'qrcode.react';
 
 export default function ConfigPage() {
     const router = useRouter();
     const [userRole, setUserRole] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<'tags' | 'checklists' | 'options' | 'system'>('tags');
+    const [activeTab, setActiveTab] = useState<'tags' | 'checklists' | 'options' | 'os' | 'system'>('tags');
 
     useEffect(() => {
         const stored = localStorage.getItem('currentUser');
@@ -96,6 +99,13 @@ export default function ConfigPage() {
                     <Bell className="w-4 h-4" />
                     Sistema
                 </button>
+                <button
+                    onClick={() => setActiveTab('os')}
+                    className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'os' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
+                >
+                    <FileText className="w-4 h-4" />
+                    Ordenes de Servicio
+                </button>
             </div>
 
             <div className="bg-white border border-slate-200 min-h-[400px] rounded-[2rem] p-6 md:p-8 shadow-sm">
@@ -103,7 +113,80 @@ export default function ConfigPage() {
                 {activeTab === 'checklists' && <ChecklistSection />}
                 {activeTab === 'options' && <OptionsSection />}
                 {activeTab === 'system' && <SystemSection />}
+                {activeTab === 'os' && <OSSection />}
             </div>
+        </div>
+    );
+}
+
+// ----- OS SECTION -----
+function OSSection() {
+    const [setting, setSetting] = useState({
+        valorManoObra: 0,
+    });
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        safeApiRequest('/api/config/system')
+            .then(res => res.json())
+            .then(data => { setSetting({ valorManoObra: data.valorManoObra || 0 }); setLoading(false); })
+            .catch(() => setLoading(false));
+    }, []);
+
+    const handleSave = async () => {
+        setSaving(true);
+        // Get existing settings first to not overwrite other system settings
+        const currentRes = await safeApiRequest('/api/config/system');
+        if (!currentRes.ok) throw new Error();
+        const currentData = await currentRes.json();
+        
+        await safeApiRequest('/api/config/system', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...currentData, valorManoObra: setting.valorManoObra })
+        });
+        setSaving(false);
+        showToast('Configuración de OS guardada correctamente.', 'success');
+    };
+
+    if (loading) return <div>Cargando...</div>;
+
+    return (
+        <div className="space-y-6 max-w-lg">
+            <div>
+                <h3 className="text-xl font-bold text-slate-800">Órdenes de Servicio</h3>
+                <p className="text-sm text-slate-500 font-medium">Configuración de valores para facturación y reportes de OS.</p>
+            </div>
+
+            <div className="space-y-4 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                <div>
+                    <h4 className="font-bold text-slate-800">Valor de Mano de Obra (por hora)</h4>
+                    <p className="text-xs text-slate-500 mt-1">
+                        Utilizado como valor predeterminado al generar documentos de cobro para Órdenes de Servicio.
+                    </p>
+                </div>
+                <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">$</span>
+                    <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={setting.valorManoObra}
+                        onChange={e => setSetting({ ...setting, valorManoObra: parseFloat(e.target.value) || 0 })}
+                        className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-8 pr-4 outline-none font-bold text-slate-700 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                        placeholder="Ej: 50.00"
+                    />
+                </div>
+            </div>
+
+            <button
+                onClick={handleSave}
+                disabled={saving}
+                className="w-full mt-4 bg-primary text-white font-bold rounded-xl py-3 hover:bg-primary/90 transition-all active:scale-95 disabled:opacity-50"
+            >
+                {saving ? 'Guardando...' : 'Guardar Cambios'}
+            </button>
         </div>
     );
 }
@@ -609,10 +692,10 @@ function SystemSection() {
     const [setting, setSetting] = useState({
         dailyReminderEnabled: false,
         dailyReminderTime: '16:45',
-        valorManoObra: 0,
         companyGeofenceLat: null,
         companyGeofenceLng: null,
         companyGeofenceRadius: null,
+        companyQrToken: '',
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -628,13 +711,31 @@ function SystemSection() {
 
     const handleSave = async () => {
         setSaving(true);
-        await safeApiRequest('/api/config/system', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(setting)
-        });
-        setSaving(false);
-        showToast('Configuración guardada correctamente.', 'success');
+        try {
+            // Get current to merge and not lose OS values
+            const currentRes = await safeApiRequest('/api/config/system');
+            const currentData = await currentRes.json();
+
+            const body = {
+                ...currentData,
+                dailyReminderEnabled: setting.dailyReminderEnabled,
+                companyGeofenceLat: setting.companyGeofenceLat,
+                companyGeofenceLng: setting.companyGeofenceLng,
+                companyGeofenceRadius: setting.companyGeofenceRadius,
+                companyQrToken: setting.companyQrToken
+            };
+
+            await safeApiRequest('/api/config/system', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            showToast('Configuración de sistema guardada correctamente.', 'success');
+        } catch (e) {
+            showToast('Error al guardar configuración.', 'error');
+        } finally {
+            setSaving(false);
+        }
     };
 
     const handleManualTrigger = async () => {
@@ -711,26 +812,6 @@ function SystemSection() {
                 )}
             </div>
 
-            <div className="space-y-4 bg-slate-50 p-6 rounded-2xl border border-slate-100 mt-6">
-                <div>
-                    <h4 className="font-bold text-slate-800">Valor de Mano de Obra (por hora)</h4>
-                    <p className="text-xs text-slate-500 mt-1">
-                        Utilizado como valor predeterminado al generar documentos de cobro para Órdenes de Servicio.
-                    </p>
-                </div>
-                <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">$</span>
-                    <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={setting.valorManoObra}
-                        onChange={e => setSetting({ ...setting, valorManoObra: parseFloat(e.target.value) || 0 })}
-                        className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-8 pr-4 outline-none font-bold text-slate-700 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                        placeholder="Ej: 50.00"
-                    />
-                </div>
-            </div>
 
             <div className="space-y-4 bg-slate-50 p-6 rounded-2xl border border-slate-100 mt-6">
                 <div>
@@ -790,6 +871,83 @@ function SystemSection() {
                         placeholder="Ej: 200"
                     />
                 </div>
+
+                <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Token de Validación QR (Empresa)</label>
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            value={setting.companyQrToken || ''}
+                            onChange={e => setSetting({ ...setting, companyQrToken: e.target.value.toUpperCase() })}
+                            className="flex-1 bg-white border border-slate-200 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm font-mono"
+                            placeholder="TOKEN-BASE"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setSetting({ ...setting, companyQrToken: Math.random().toString(36).substring(2, 10).toUpperCase() })}
+                            className="px-3 bg-slate-200 hover:bg-slate-300 rounded-xl text-slate-600 transition-all active:scale-95"
+                            title="Generar Nuevo Token"
+                        >
+                            <Play className="w-4 h-4 rotate-90" />
+                        </button>
+                    </div>
+                </div>
+
+                {setting.companyQrToken && (
+                    <div className="pt-4 border-t border-slate-200 flex flex-col items-center gap-4">
+                        <div id="company-qr" className="p-4 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                            <QRCodeCanvas 
+                                value={setting.companyQrToken} 
+                                size={200}
+                                level="H"
+                                includeMargin={true}
+                            />
+                        </div>
+                        <button
+                            onClick={() => {
+                                const canvas = document.querySelector('#company-qr canvas') as HTMLCanvasElement;
+                                if (canvas) {
+                                    const win = window.open('', '_blank');
+                                    if (win) {
+                                        win.document.write(`
+                                            <html>
+                                                <head>
+                                                    <title>Imprimir QR - HDB Base</title>
+                                                    <style>
+                                                        body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }
+                                                        .container { text-align: center; border: 2px solid #000; padding: 40px; border-radius: 20px; }
+                                                        h1 { margin-bottom: 20px; font-size: 24px; }
+                                                        p { margin-top: 20px; font-weight: bold; font-size: 18px; color: #666; }
+                                                        img { width: 300px; height: 300px; }
+                                                    </style>
+                                                </head>
+                                                <body>
+                                                    <div class="container">
+                                                        <h1>HDB SERVICIOS ELÉCTRICOS</h1>
+                                                        <h2>Ficha de Ingreso - BASE / EMPRESA</h2>
+                                                        <img src="${canvas.toDataURL()}" />
+                                                        <p>TOKEN: ${setting.companyQrToken}</p>
+                                                    </div>
+                                                    <script>
+                                                        window.onload = () => {
+                                                            setTimeout(() => {
+                                                                window.print();
+                                                                window.onafterprint = () => window.close();
+                                                            }, 500);
+                                                        };
+                                                    </script>
+                                                </body>
+                                            </html>
+                                        `);
+                                    }
+                                }
+                            }}
+                            className="flex items-center gap-2 px-6 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold hover:bg-slate-700 transition-all"
+                        >
+                            <QrCode className="w-4 h-4" /> Imprimir QR de Empresa
+                        </button>
+                    </div>
+                )}
             </div>
 
             <div className="pt-2">

@@ -13,8 +13,11 @@ import {
     Clock,
     User,
     ChevronRight,
-    Search
+    Search,
+    X,
+    Camera
 } from 'lucide-react';
+import { Html5Qrcode } from 'html5-qrcode';
 import { safeApiRequest } from '@/lib/offline';
 import { formatTime, formatDate } from '@/lib/formatDate';
 import { showToast } from '@/components/Toast';
@@ -43,6 +46,7 @@ export default function PunchInPage() {
     // QR State
     const [isScanning, setIsScanning] = useState(false);
     const [scannedToken, setScannedToken] = useState<string>('');
+    const [systemSetting, setSystemSetting] = useState<any>(null);
 
     useEffect(() => {
         const user = localStorage.getItem('currentUser');
@@ -67,14 +71,15 @@ export default function PunchInPage() {
     const loadData = async (userId: string) => {
         setIsLoading(true);
         try {
-            const [projectsRes, entriesRes] = await Promise.all([
+            const [projectsRes, entriesRes, systemRes] = await Promise.all([
                 safeApiRequest('/api/projects').then(res => res.json()),
-                safeApiRequest(`/api/time-entries?operatorId=${userId}`).then(res => res.json())
+                safeApiRequest(`/api/time-entries?operatorId=${userId}`).then(res => res.json()),
+                safeApiRequest('/api/config/system').then(res => res.json())
             ]);
             
             setProjects(projectsRes.filter((p: any) => p.estado !== 'finalizado'));
-            // Filter entries that don't have horaEgreso
             setActiveEntries(entriesRes.filter((e: any) => !e.horaEgreso));
+            setSystemSetting(systemRes);
         } catch (err) {
             console.error(err);
         } finally {
@@ -106,10 +111,7 @@ export default function PunchInPage() {
     };
 
     const handlePunch = async (action: 'IN' | 'OUT', entryId?: string, projId?: string) => {
-        if (action === 'IN' && !selectedProjectId && !projId) {
-            showToast("Selecciona un proyecto", "error");
-            return;
-        }
+        // Removed project requirement to allow BASE clock-in
 
         setIsLoading(true);
         try {
@@ -146,7 +148,7 @@ export default function PunchInPage() {
     };
 
     const selectedProject = projects.find(p => p.id === selectedProjectId);
-    const needsQR = selectedProject?.qrToken;
+    const needsQR = selectedProjectId ? selectedProject?.qrToken : systemSetting?.companyQrToken;
 
     return (
         <div className="max-w-md mx-auto space-y-6 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -258,23 +260,32 @@ export default function PunchInPage() {
                         </div>
                     </div>
 
-                    {/* QR Placeholder (Real scanner would use a library like html5-qrcode) */}
+                    {/* QR Validation Section */}
                     {needsQR && (
                         <div className="bg-indigo-50 border-2 border-indigo-200 border-dashed rounded-3xl p-6 text-center space-y-3">
                             <div className="mx-auto w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-500 shadow-sm">
                                 <QrCode className="w-6 h-6" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-indigo-900 text-sm">Este proyecto requiere QR</h4>
-                                <p className="text-[10px] font-medium text-indigo-700/70">Escanea el código disponible en obra.</p>
+                                <h4 className="font-bold text-indigo-900 text-sm">{selectedProjectId ? 'Este proyecto requiere QR' : 'La Base requiere QR'}</h4>
+                                <p className="text-[10px] font-medium text-indigo-700/70">Escanea el código disponible en el lugar.</p>
                             </div>
-                            <input 
-                                type="text"
-                                placeholder="Ingresa token o escanea..."
-                                value={scannedToken}
-                                onChange={e => setScannedToken(e.target.value)}
-                                className="w-full bg-white border border-indigo-200 rounded-xl py-2 px-4 text-center font-mono text-xs outline-none focus:border-indigo-500"
-                            />
+                            <div className="flex gap-2">
+                                <input 
+                                    type="text"
+                                    placeholder="Ingresa token..."
+                                    value={scannedToken}
+                                    onChange={e => setScannedToken(e.target.value)}
+                                    className="flex-1 bg-white border border-indigo-200 rounded-xl py-2 px-4 text-center font-mono text-xs outline-none focus:border-indigo-500"
+                                />
+                                <button 
+                                    type="button"
+                                    onClick={() => setIsScanning(true)}
+                                    className="px-3 bg-indigo-500 text-white rounded-xl shadow-lg shadow-indigo-200 active:scale-90 transition-all flex items-center justify-center"
+                                >
+                                    <Camera className="w-4 h-4" />
+                                </button>
+                            </div>
                         </div>
                     )}
 
@@ -312,6 +323,74 @@ export default function PunchInPage() {
                     </div>
                 </div>
             </div>
+
+            {isScanning && (
+                <QRScannerModal 
+                    onScan={(token) => { setScannedToken(token); setIsScanning(false); }} 
+                    onClose={() => setIsScanning(false)} 
+                />
+            )}
+        </div>
+    );
+}
+
+function QRScannerModal({ onScan, onClose }: { onScan: (token: string) => void, onClose: () => void }) {
+    useEffect(() => {
+        const html5QrCode = new Html5Qrcode("reader");
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+        html5QrCode.start(
+            { facingMode: "environment" }, 
+            config, 
+            (decodedText) => {
+                onScan(decodedText);
+                html5QrCode.stop();
+            },
+            () => {}
+        ).catch(err => {
+            console.error(err);
+            showToast("Error al iniciar cámara. Verifica los permisos.", "error");
+            onClose();
+        });
+
+        return () => {
+            if (html5QrCode.isScanning) {
+                html5QrCode.stop().catch(console.error);
+            }
+        };
+    }, []);
+
+    return (
+        <div className="fixed inset-0 z-[200] bg-slate-900/90 backdrop-blur-md flex flex-col items-center justify-center p-6 animate-in fade-in duration-300">
+            <div className="w-full max-w-sm bg-white rounded-[2.5rem] overflow-hidden shadow-2xl space-y-4">
+                <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                    <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                        <Camera className="w-5 h-5 text-primary" /> Escaneando QR
+                    </h3>
+                    <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-400">
+                        <X className="w-6 h-6" />
+                    </button>
+                </div>
+                
+                <div className="relative aspect-square bg-slate-900">
+                    <div id="reader" className="w-full h-full"></div>
+                    {/* Floating guide */}
+                    <div className="absolute inset-0 border-[40px] border-slate-900/40 pointer-events-none flex items-center justify-center">
+                        <div className="w-full h-full border-2 border-primary/50 rounded-2xl shadow-[0_0_0_999px_rgba(15,23,42,0.6)]"></div>
+                    </div>
+                </div>
+
+                <div className="p-6 text-center">
+                    <p className="text-xs font-bold text-slate-500">Apunta la cámara al código QR impreso</p>
+                </div>
+            </div>
+            
+            <button 
+                onClick={onClose}
+                className="mt-8 px-8 py-3 bg-white/10 hover:bg-white/20 text-white rounded-full font-black uppercase tracking-widest text-[10px] transition-all"
+            >
+                Cancelar Escaneo
+            </button>
         </div>
     );
 }

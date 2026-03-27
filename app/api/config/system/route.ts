@@ -9,7 +9,7 @@ export async function GET() {
 
         if (!setting) {
             setting = await prisma.systemSetting.create({
-                data: { id: 'default', dailyReminderEnabled: false, dailyReminderTime: '16:45', valorManoObra: 0 }
+                data: { id: 'default', dailyReminderEnabled: false, dailyReminderTime: '16:45', valorManoObra: 0, companyQrToken: '' }
             });
         }
 
@@ -33,6 +33,7 @@ export async function PUT(req: Request) {
                 companyGeofenceLat: body.companyGeofenceLat !== undefined ? parseFloat(body.companyGeofenceLat) : null,
                 companyGeofenceLng: body.companyGeofenceLng !== undefined ? parseFloat(body.companyGeofenceLng) : null,
                 companyGeofenceRadius: body.companyGeofenceRadius !== undefined ? parseFloat(body.companyGeofenceRadius) : null,
+                companyQrToken: body.companyQrToken || '',
             },
             update: {
                 dailyReminderEnabled: body.dailyReminderEnabled,
@@ -41,6 +42,7 @@ export async function PUT(req: Request) {
                 companyGeofenceLat: body.companyGeofenceLat !== undefined ? parseFloat(body.companyGeofenceLat) : undefined,
                 companyGeofenceLng: body.companyGeofenceLng !== undefined ? parseFloat(body.companyGeofenceLng) : undefined,
                 companyGeofenceRadius: body.companyGeofenceRadius !== undefined ? parseFloat(body.companyGeofenceRadius) : undefined,
+                companyQrToken: body.companyQrToken !== undefined ? body.companyQrToken : undefined,
             }
         });
 
