@@ -16,7 +16,9 @@ import {
     Home,
     Package,
     MapPin,
-    User as UserIcon
+    User as UserIcon,
+    FileSignature,
+    History as HistoryIcon
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -154,7 +156,7 @@ export default function HomePage() {
                     <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest px-1">
                         {isAdmin ? 'Panel de Administración' : 'Panel de Supervisión'}
                     </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 gap-3 md:gap-4">
                         <ActionCard
                             title="Aprobaciones"
                             description="Validar fichadas de riesgo"
@@ -193,7 +195,7 @@ export default function HomePage() {
                         <ActionCard
                             title="Órdenes de Servicio"
                             description="Gestión y firmas"
-                            icon={<Settings className="w-6 h-6" />}
+                            icon={<FileSignature className="w-6 h-6" />}
                             href="/ordenes-servicio"
                             color="bg-blue-600"
                         />
@@ -223,7 +225,7 @@ export default function HomePage() {
                                 <ActionCard
                                     title="Registro Auditoría"
                                     description="Trazabilidad total"
-                                    icon={<Activity className="w-6 h-6" />}
+                                    icon={<HistoryIcon className="w-6 h-6" />}
                                     href="/auditoria"
                                     color="bg-slate-900"
                                 />

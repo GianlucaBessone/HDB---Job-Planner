@@ -91,7 +91,7 @@ export default function RootLayout({
         content = (
             <div className="flex flex-col min-h-[100dvh] overflow-x-hidden">
                 <header className="sticky top-0 z-[60] w-full border-b bg-white/80 backdrop-blur-md safe-area-top">
-                    <div className="max-w-[1800px] mx-auto px-4 md:px-8 h-14 md:h-16 flex items-center justify-between">
+                    <div className="max-w-[2100px] mx-auto px-4 md:px-10 lg:px-12 xl:px-16 h-14 md:h-16 flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <button
                                 onClick={() => setIsSidebarOpen(true)}
@@ -138,7 +138,7 @@ export default function RootLayout({
                     }}
                 />
 
-                <main className="flex-1 max-w-[1800px] mx-auto w-full px-4 md:px-8 py-6 md:py-8 pb-32 md:pb-8">
+                <main className="flex-1 max-w-[2100px] mx-auto w-full px-4 md:px-10 lg:px-12 xl:px-16 py-6 md:py-8 pb-32 md:pb-8">
                     {children}
                     <SpeedInsights />
                 </main>

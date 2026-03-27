@@ -405,12 +405,13 @@ function ProjectsContent() {
     const applyFilters = () => setAppliedFilters({ ...pendingFilters });
 
     const clearFilters = () => {
-        setPendingFilters(EMPTY_FILTERS);
-        setAppliedFilters(EMPTY_FILTERS);
+        const reset = { ...EMPTY_FILTERS, estados: appliedFilters.estados };
+        setPendingFilters(reset);
+        setAppliedFilters(reset);
     };
 
     const activeFilterCount = useMemo(() => {
-        let n = appliedFilters.estados.length > 0 ? 1 : 0;
+        let n = 0;
         if (appliedFilters.responsable) n++;
         if (appliedFilters.cliente) n++;
         if (appliedFilters.fechaInicio || appliedFilters.fechaFin) n++;
@@ -424,11 +425,14 @@ function ProjectsContent() {
                 const term = normalize(searchTerm);
                 const matchName = normalize(p.nombre).includes(term);
                 const matchCode = (p.codigoProyecto || '').toLowerCase().includes(searchTerm.toLowerCase());
-                if (!matchName && !matchCode) return false;
+                const matchClient = normalize(p.cliente || p.client?.nombre || '').includes(term);
+                const matchResponsable = normalize(p.responsable || p.responsableUser?.nombreCompleto || '').includes(term);
+                
+                if (!matchName && !matchCode && !matchClient && !matchResponsable) return false;
             }
             if (appliedFilters.estados.length > 0 && !appliedFilters.estados.includes(p.estado)) return false;
-            if (appliedFilters.responsable && !normalize(p.responsable || '').includes(normalize(appliedFilters.responsable))) return false;
-            if (appliedFilters.cliente && !normalize(p.cliente || '').includes(normalize(appliedFilters.cliente))) return false;
+            if (appliedFilters.fechaInicio && p.fechaInicio && p.fechaInicio < appliedFilters.fechaInicio) return false;
+            if (appliedFilters.fechaFin && p.fechaFin && p.fechaFin > appliedFilters.fechaFin) return false;
             return true;
         });
     }, [projects, searchTerm, appliedFilters]);
@@ -438,171 +442,172 @@ function ProjectsContent() {
         <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
 
             {/* ── Page Header ── */}
-            <div className="flex flex-col gap-4 mb-6">
+            <div className="flex flex-col gap-6 mb-8">
                 {/* Title row */}
-                <div className="space-y-1">
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 md:gap-3">
-                        <Layout className="w-6 h-6 md:w-8 md:h-8 text-primary" />
-                        Gestión de Proyectos
-                    </h2>
-                    <p className="text-sm text-slate-500 font-medium hidden md:block">Control y seguimiento de proyectos activos</p>
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div className="space-y-1">
+                        <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 md:gap-3">
+                            <Layout className="w-6 h-6 md:w-8 md:h-8 text-primary" />
+                            Gestión de Proyectos
+                        </h2>
+                        <p className="text-sm text-slate-500 font-medium hidden md:block">Control y seguimiento de proyectos activos</p>
+                    </div>
+
+                    <div className="flex items-center gap-2 w-full md:w-auto">
+                        <button
+                            onClick={openCreate}
+                            className="flex items-center gap-1.5 bg-primary text-white px-3 md:px-5 py-2.5 md:py-3.5 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-primary/90 shadow-lg shadow-primary/20 active:scale-95 transition-all shrink-0"
+                        >
+                            <Plus className="w-5 h-5" />
+                            <span className="hidden sm:inline">Nuevo Proyecto</span>
+                            <span className="sm:hidden">Nuevo</span>
+                        </button>
+                    </div>
                 </div>
-                {/* Actions row */}
-                <div className="flex items-center gap-2">
-                    {/* Search – takes all remaining space */}
-                    <div className="relative flex-1 min-w-0 group">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+
+                {/* Filters Row */}
+                <div className="flex flex-col xl:flex-row items-stretch xl:items-center gap-4">
+                    {/* Search Field */}
+                    <div className="relative flex-1 group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors" />
                         <input
                             type="text"
-                            placeholder="Buscar..."
-                            className="w-full bg-white border border-slate-200 rounded-xl py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium shadow-sm"
+                            placeholder="Buscar por nombre, código, cliente o responsable..."
+                            className="w-full h-[56px] bg-white border border-slate-200 rounded-2xl pl-12 pr-4 text-sm outline-none focus:ring-4 focus:ring-primary/10 transition-all font-bold text-slate-700 shadow-sm"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    {/* Filter toggle – icon only on mobile */}
-                    <button
-                        onClick={() => setIsSidebarOpen(o => !o)}
-                        className={`flex items-center gap-2 px-3 md:px-4 py-2.5 rounded-xl text-sm font-semibold border transition-all shadow-sm relative shrink-0 ${isSidebarOpen
-                            ? 'bg-primary/10 text-primary border-primary/30'
-                            : 'bg-white text-slate-600 border-slate-200 hover:border-primary/30 hover:text-primary'
-                            }`}
-                    >
-                        <SlidersHorizontal className="w-4 h-4" />
-                        <span className="hidden sm:inline">Filtros</span>
-                        {activeFilterCount > 0 && (
-                            <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                                {activeFilterCount}
-                            </span>
+
+                    {/* Date Filters Area */}
+                    <div className="flex flex-col sm:flex-row items-center gap-3">
+                        <div className="relative w-full sm:w-44">
+                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                            <input 
+                                type="date"
+                                value={appliedFilters.fechaInicio}
+                                onChange={e => {
+                                    const val = e.target.value;
+                                    setAppliedFilters(f => ({ ...f, fechaInicio: val }));
+                                    setPendingFilters(f => ({ ...f, fechaInicio: val }));
+                                }}
+                                className="w-full h-[56px] bg-white border border-slate-200 rounded-2xl pl-9 pr-3 text-[11px] font-black uppercase tracking-tighter text-slate-700 outline-none focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer"
+                                title="Fecha Inicio"
+                            />
+                        </div>
+                        <div className="hidden sm:block text-slate-300 font-black">/</div>
+                        <div className="relative w-full sm:w-44">
+                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                            <input 
+                                type="date"
+                                value={appliedFilters.fechaFin}
+                                onChange={e => {
+                                    const val = e.target.value;
+                                    setAppliedFilters(f => ({ ...f, fechaFin: val }));
+                                    setPendingFilters(f => ({ ...f, fechaFin: val }));
+                                }}
+                                className="w-full h-[56px] bg-white border border-slate-200 rounded-2xl pl-9 pr-3 text-[11px] font-black uppercase tracking-tighter text-slate-700 outline-none focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer"
+                                title="Fecha Fin"
+                            />
+                        </div>
+                        {(appliedFilters.fechaInicio || appliedFilters.fechaFin) && (
+                            <button 
+                                onClick={() => {
+                                    setAppliedFilters(f => ({ ...f, fechaInicio: '', fechaFin: '' }));
+                                    setPendingFilters(f => ({ ...f, fechaInicio: '', fechaFin: '' }));
+                                }}
+                                className="p-4 bg-slate-100 text-slate-500 rounded-2xl hover:bg-rose-50 hover:text-rose-500 transition-all"
+                                title="Limpiar fechas"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
                         )}
-                    </button>
-                    {/* New project – icon + short label on mobile */}
+                    </div>
+                </div>
+
+                {/* Status Pills Filter */}
+                <div className="flex flex-wrap items-center gap-2 bg-white/50 p-2 rounded-[2rem] border border-slate-100 shadow-sm border-dashed">
                     <button
-                        onClick={openCreate}
-                        className="flex items-center gap-1.5 bg-primary text-white px-3 md:px-5 py-2 md:py-2.5 rounded-xl text-sm font-bold hover:bg-primary/90 shadow-lg shadow-primary/20 active:scale-95 transition-all shrink-0"
+                        onClick={() => {
+                            setAppliedFilters(f => ({ ...f, estados: [] }));
+                            setPendingFilters(f => ({ ...f, estados: [] }));
+                        }}
+                        className={`px-5 py-3 rounded-2xl text-[10px] font-black transition-all flex items-center gap-2 uppercase tracking-widest ${appliedFilters.estados.length === 0 
+                            ? 'bg-primary text-white shadow-lg shadow-primary/20' 
+                            : 'bg-white text-slate-400 hover:text-slate-600 border border-slate-100'}`}
                     >
-                        <Plus className="w-4 h-4" />
-                        <span className="hidden sm:inline">Nuevo Proyecto</span>
-                        <span className="sm:hidden">Nuevo</span>
+                        Todos
+                        <span className={`px-2 py-0.5 rounded-md text-[9px] ${appliedFilters.estados.length === 0 ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                            {projects.length}
+                        </span>
                     </button>
+
+                    {ALL_STATUSES.map(s => {
+                        const cfg = STATUS_CONFIG[s];
+                        const isActive = appliedFilters.estados.length === 1 && appliedFilters.estados[0] === s;
+                        const count = projects.filter(p => p.estado === s).length;
+                        
+                        return (
+                            <button
+                                key={s}
+                                onClick={() => {
+                                    const next = [s];
+                                    setAppliedFilters(f => ({ ...f, estados: next }));
+                                    setPendingFilters(f => ({ ...f, estados: next }));
+                                }}
+                                className={`px-5 py-3 rounded-2xl text-[10px] font-black transition-all flex items-center gap-2.5 border uppercase tracking-widest ${isActive 
+                                    ? `${cfg.bg} ${cfg.color} border-${cfg.dot.split('-')[1]}-200 shadow-md` 
+                                    : 'bg-white text-slate-400 border-slate-100 hover:border-slate-200'}`}
+                            >
+                                <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
+                                {cfg.label}
+                                <span className={`px-2 py-0.5 rounded-md text-[9px] ${isActive ? 'bg-white/50' : 'bg-slate-100 text-slate-500'}`}>
+                                    {count}
+                                </span>
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
 
-            {/* ── Body: Sidebar + Cards ── */}
-            {/* On mobile: sidebar shows ABOVE cards (full width). On desktop: side-by-side */}
-            <div className="flex flex-col md:flex-row gap-5 items-start">
-
-                {/* ── Filter Sidebar ── */}
-                {isSidebarOpen && (
-                    <aside className="w-full md:w-60 md:shrink-0 bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-6 md:sticky md:top-24 animate-in slide-in-from-top-2 md:slide-in-from-left-4 duration-300">
-                        <div className="flex items-center justify-between">
-                            <h3 className="font-bold text-slate-800 text-sm">Filtros</h3>
-                            {activeFilterCount > 0 && (
-                                <button onClick={clearFilters} className="text-[10px] font-bold text-primary hover:underline">Limpiar</button>
+            {/* ── Body: Cards grid only ── */}
+            <div className="w-full space-y-6">
+                {isLoading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {Array(6).fill(0).map((_, i) => (
+                            <div key={i} className="bg-slate-100/60 rounded-[2.5rem] animate-pulse h-64" />
+                        ))}
+                    </div>
+                ) : filteredProjects.length === 0 ? (
+                    <div className="py-24 flex flex-col items-center justify-center bg-white border border-slate-200 rounded-[2.5rem] text-slate-400 shadow-sm border-dashed">
+                        <div className="p-6 bg-slate-50 rounded-full mb-6">
+                            <AlertCircle className="w-12 h-12 opacity-20" />
+                        </div>
+                        <p className="font-bold text-slate-600 text-lg">
+                            {appliedFilters.estados.length === 1 ? (
+                                (() => {
+                                    const s = appliedFilters.estados[0];
+                                    if (s === 'en_riesgo') return 'No hay proyectos en riesgo';
+                                    if (s === 'atrasado') return 'No hay proyectos atrasados';
+                                    if (s === 'finalizado') return 'No hay proyectos finalizados';
+                                    if (s === 'planificado') return 'No hay proyectos planificados';
+                                    if (s === 'por_hacer') return 'No hay proyectos por hacer';
+                                    if (s === 'activo') return 'No hay proyectos activos';
+                                    return 'No hay proyectos activos en esta etapa';
+                                })()
+                            ) : (
+                                'No se han encontrado proyectos'
                             )}
-                        </div>
-
-                        {/* Estado */}
-                        <div className="space-y-2.5">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Estado</p>
-                            {ALL_STATUSES.map(s => {
-                                const cfg = STATUS_CONFIG[s];
-                                const checked = pendingFilters.estados.includes(s);
-                                return (
-                                    <label key={s} className="flex items-center gap-2.5 cursor-pointer group">
-                                        <input
-                                            type="checkbox"
-                                            className="hidden"
-                                            checked={checked}
-                                            onChange={() => togglePendingStatus(s)}
-                                        />
-                                        <span className={`w-4 h-4 rounded-md border-2 flex items-center justify-center transition-all ${checked ? 'bg-primary border-primary' : 'border-slate-300 group-hover:border-primary/50'}`}>
-                                            {checked && <span className="w-2 h-2 bg-white rounded-sm block" />}
-                                        </span>
-                                        <span className={`w-2.5 h-2.5 rounded-full ${cfg.dot}`} />
-                                        <span className={`text-sm font-medium ${checked ? 'text-slate-800' : 'text-slate-600'}`}>{cfg.label}</span>
-                                    </label>
-                                );
-                            })}
-                        </div>
-
-                        {/* Responsable */}
-                        <div className="space-y-2">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Responsable</p>
-                            <select
-                                className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-2xl px-4 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none cursor-pointer"
-                                value={pendingFilters.responsable}
-                                onChange={e => setPendingFilters(f => ({ ...f, responsable: e.target.value }))}
-                            >
-                                <option value="">Todos los Responsables</option>
-                                {operators.map(op => (
-                                    <option key={op.id} value={op.nombreCompleto}>{op.nombreCompleto}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        {/* Cliente */}
-                        <div className="space-y-2">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Cliente</p>
-                            <input
-                                type="text"
-                                placeholder="Buscar cliente..."
-                                className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-2xl px-4 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary/10 transition-all"
-                                value={pendingFilters.cliente}
-                                onChange={e => setPendingFilters(f => ({ ...f, cliente: e.target.value }))}
-                            />
-                        </div>
-
-                        {/* Fechas */}
-                        <div className="space-y-2">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fechas</p>
-                            <input
-                                type="date"
-                                className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-2xl px-4 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none"
-                                value={pendingFilters.fechaInicio}
-                                onChange={e => setPendingFilters(f => ({ ...f, fechaInicio: e.target.value }))}
-                            />
-                            <input
-                                type="date"
-                                className="w-full h-[48px] bg-slate-50 border border-slate-200 rounded-2xl px-4 text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none"
-                                value={pendingFilters.fechaFin}
-                                onChange={e => setPendingFilters(f => ({ ...f, fechaFin: e.target.value }))}
-                            />
-                        </div>
-
-                        <button
-                            onClick={applyFilters}
-                            className="w-full bg-primary text-white py-2.5 rounded-xl font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/20 active:scale-95 transition-all"
-                        >
-                            Aplicar filtros
-                        </button>
-                    </aside>
+                        </p>
+                        <p className="text-sm text-slate-400 mt-2 font-medium">Aún no se han registrado proyectos en este estado.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {filteredProjects.map(p => (
+                            <ProjectCard key={p.id} project={p} onEdit={openEdit} onDetails={openDetails} handleDeleteClick={handleDeleteClick} />
+                        ))}
+                    </div>
                 )}
-
-                {/* ── Cards Grid ── */}
-                <div className="flex-1 min-w-0 w-full">
-                    {isLoading ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {Array(4).fill(0).map((_, i) => (
-                                <div key={i} className="bg-slate-100/60 rounded-2xl animate-pulse h-56" />
-                            ))}
-                        </div>
-                    ) : filteredProjects.length === 0 ? (
-                        <div className="py-20 flex flex-col items-center justify-center bg-white border border-slate-200 rounded-2xl text-slate-400">
-                            <AlertCircle className="w-12 h-12 mb-4 opacity-20" />
-                            <p className="font-semibold text-slate-600">No se encontraron proyectos</p>
-                            {activeFilterCount > 0 && (
-                                <button onClick={clearFilters} className="mt-3 text-sm text-primary font-semibold hover:underline">Limpiar filtros</button>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {filteredProjects.map(p => (
-                                <ProjectCard key={p.id} project={p} onEdit={openEdit} onDetails={openDetails} handleDeleteClick={handleDeleteClick} />
-                            ))}
-                        </div>
-                    )}
-                </div>
             </div>
 
             {isDetailsOpen && selectedProjectForDetails && (
