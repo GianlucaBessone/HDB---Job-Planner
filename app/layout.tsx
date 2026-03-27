@@ -180,21 +180,22 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
     const menuItems = [
         { href: '/', icon: <Home className="w-5 h-5" />, label: 'Inicio', roles: ['operador', 'supervisor', 'admin', 'vendedor'] },
         { href: '/fichado', icon: <MapPin className="w-5 h-5" />, label: 'Fichado (GPS/QR)', roles: ['operador', 'supervisor', 'admin'] },
-        { href: '/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, label: 'Panel de Análisis', roles: ['supervisor', 'admin'] },
-        { href: '/monitoreo-fichadas', icon: <ShieldAlert className="w-5 h-5" />, label: 'Monitoreo de Fichadas', roles: ['supervisor', 'admin'] },
-        { href: '/planning', icon: <Calendar className="w-5 h-5" />, label: 'Planificación', roles: ['supervisor', 'admin'] },
-        { href: '/timesheets', icon: <Clock className="w-5 h-5" />, label: 'Registro de Tiempos', roles: ['operador', 'supervisor', 'admin'] },
         { href: '/my-projects', icon: <ClipboardList className="w-5 h-5" />, label: 'Mis Proyectos (Resp.)', roles: ['operador', 'supervisor', 'admin'] },
-        { href: '/projects', icon: <LayoutGrid className="w-5 h-5" />, label: 'Gestión de Proyectos', roles: ['supervisor', 'admin'] },
+        { href: '/timesheets', icon: <Clock className="w-5 h-5" />, label: 'Registro de Tiempos', roles: ['operador', 'supervisor', 'admin'] },
         { href: '/delays', icon: <Timer className="w-5 h-5" />, label: 'Demoras del Cliente', roles: ['operador', 'supervisor', 'admin'] },
-        { href: '/operators', icon: <Users className="w-5 h-5" />, label: 'Gestión de Usuarios / Operadores', roles: ['operador', 'supervisor', 'admin'] },
-        { href: '/clients', icon: <Landmark className="w-5 h-5" />, label: 'Gestión de Clientes', roles: ['supervisor', 'admin'] },
+        
+        { href: '/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, label: 'Panel de Análisis', roles: ['supervisor', 'admin'] },
+        { href: '/planning', icon: <Calendar className="w-5 h-5" />, label: 'Planificación', roles: ['supervisor', 'admin'] },
+        { href: '/projects', icon: <LayoutGrid className="w-5 h-5" />, label: 'Gestión de Proyectos', roles: ['supervisor', 'admin'] },
         { href: '/ordenes-servicio', icon: <FileSignature className="w-5 h-5" />, label: 'Órdenes de Servicio', roles: ['supervisor', 'admin'] },
         { href: '/provision-materiales', icon: <Package className="w-5 h-5" />, label: 'Provisión de Materiales', roles: ['vendedor', 'supervisor', 'admin'] },
-        { href: '/configuracion', icon: <Settings className="w-5 h-5" />, label: 'Configuración', roles: ['admin', 'supervisor'] },
+        { href: '/operators', icon: <Users className="w-5 h-5" />, label: 'Gestión de Usuarios / Operadores', roles: ['operador', 'supervisor', 'admin'] },
+        { href: '/clients', icon: <Landmark className="w-5 h-5" />, label: 'Gestión de Clientes', roles: ['supervisor', 'admin'] },
+        
         { href: '/aprobaciones', icon: <ShieldCheck className="w-5 h-5" />, label: 'Aprobaciones', roles: ['supervisor', 'admin'] },
-        { href: '/auditoria', icon: <History className="w-5 h-5" />, label: 'Auditoría', roles: ['admin'] },
-
+        { href: '/monitoreo-fichadas', icon: <ShieldAlert className="w-5 h-5" />, label: 'Monitoreo de Fichadas', roles: ['supervisor', 'admin'] },
+        { href: '/auditoria', icon: <History className="w-5 h-5" />, label: 'Auditoría', roles: ['admin', 'supervisor'] },
+        { href: '/configuracion', icon: <Settings className="w-5 h-5" />, label: 'Configuración', roles: ['admin', 'supervisor'] },
     ];
 
     const allowedMenu = menuItems.filter(item => item.roles.includes(user?.role?.toLowerCase() || 'operador'));

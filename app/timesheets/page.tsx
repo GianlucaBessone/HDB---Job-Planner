@@ -47,11 +47,6 @@ export default function TimesheetsPage() {
 
     const formatEntryDate = (dateStr: string) => formatDate(dateStr);
 
-    // Quick Actions State
-    const [selectedOperator, setSelectedOperator] = useState('');
-    const [selectedProject, setSelectedProject] = useState('');
-    const [isExtraQuick, setIsExtraQuick] = useState(false);
-    const [isSubmittingQuick, setIsSubmittingQuick] = useState(false);
 
     // Filters and View Mode
     const [viewMode, setViewMode] = useState<'tarjetas' | 'planilla' | 'resumen'>('tarjetas');
@@ -94,9 +89,6 @@ export default function TimesheetsPage() {
             try {
                 parsedUser = JSON.parse(stored);
                 setCurrentUser(parsedUser);
-                if (parsedUser.role === 'operador') {
-                    setSelectedOperator(parsedUser.id);
-                }
             } catch (e) { }
         }
 
@@ -143,91 +135,6 @@ export default function TimesheetsPage() {
         }
     };
 
-    const handleClockIn = async () => {
-        if (!selectedOperator || !selectedProject) {
-            showToast('Por favor selecciona operador y proyecto para iniciar jornada.', 'error');
-            return;
-        }
-
-        setIsSubmittingQuick(true);
-
-        try {
-            // Check if operator already has an open entry today
-            const today = new Date().toISOString().split('T')[0];
-            const hasOpen = entries.find(e => e.operatorId === selectedOperator && e.fecha === today && !e.horaEgreso);
-            if (hasOpen) {
-                showToast('El operador ya tiene una jornada iniciada sin finalizar hoy.', 'error');
-                setIsSubmittingQuick(false);
-                return;
-            }
-
-            const now = new Date();
-            const timeString = formatTime(now);
-
-            const res = await safeApiRequest('/api/time-entries', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    operatorId: selectedOperator,
-                    projectId: selectedProject,
-                    fecha: today,
-                    horaIngreso: timeString,
-                    horaEgreso: null,
-                    isExtra: isExtraQuick,
-                    requestUserId: currentUser?.id,
-                    requestUserRole: currentUser?.role
-                })
-            });
-
-            if (!res.ok) {
-                const errData = await res.json();
-                throw new Error(errData.error || 'Error al iniciar jornada');
-            }
-
-            showToast('Jornada iniciada con éxito', 'success');
-            await loadData();
-
-            if (currentUser?.role !== 'operador') {
-                setSelectedOperator('');
-            }
-            setSelectedProject('');
-            setIsExtraQuick(false);
-        } catch (error: any) {
-            console.error(error);
-            showToast(error.message || 'Error de conexión', 'error');
-        } finally {
-            setIsSubmittingQuick(false);
-        }
-    };
-
-    const handleClockOut = async (id: string, requiereAutorizacion = false) => {
-        const now = new Date();
-        const timeString = formatTime(now);
-
-        try {
-            const res = await safeApiRequest('/api/time-entries', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id,
-                    horaEgreso: timeString,
-                    requestUserId: currentUser?.id,
-                    requestUserRole: currentUser?.role
-                })
-            });
-
-            if (!res.ok) {
-                const data = await res.json();
-                showToast(data.error, 'error');
-                return;
-            }
-
-            setPendingAction(null);
-            loadData();
-        } catch (error) {
-            console.error(error);
-        }
-    };
 
     const handleConfirmDay = async (id: string) => {
         try {
@@ -471,13 +378,13 @@ export default function TimesheetsPage() {
     };
 
     const groupedPlanilla = Object.values(filteredCompleted.reduce((acc, entry) => {
-        const key = `${entry.fecha}_${entry.operatorId}_${entry.projectId}`;
+        const key = `${entry.fecha}_${entry.operatorId}_${entry.projectId || 'base'}`;
         if (!acc[key]) {
             acc[key] = {
                 id: key,
                 fecha: entry.fecha,
-                operatorName: entry.operator.nombreCompleto,
-                projectName: entry.project.nombre,
+                operatorName: entry.operator?.nombreCompleto || 'Sistema / Central',
+                projectName: entry.project?.nombre || 'BASE / EMPRESA',
                 normalStart: "-", normalEnd: "-", normalTotal: 0,
                 extraStart: "-", extraEnd: "-", extraTotal: 0,
             };
@@ -535,93 +442,6 @@ export default function TimesheetsPage() {
                     Carga Manual
                 </button>
             </div>
-
-            {/* Quick Logging Box */}
-            <div className="bg-white border border-slate-200 shadow-sm p-4 md:p-8 rounded-2xl md:rounded-[2.5rem] flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-8">
-                <div className="w-full md:w-1/3">
-                    <SearchableSelect
-                        label="Operador"
-                        icon={<User className="w-3 h-3" />}
-                        options={activeOperators.map(op => ({ id: op.id, label: op.nombreCompleto }))}
-                        value={selectedOperator}
-                        onChange={(val) => setSelectedOperator(val)}
-                        placeholder="Seleccionar operador..."
-                        disabled={currentUser?.role === 'operador'}
-                    />
-                </div>
-
-                <div className="w-full md:w-1/3">
-                    <SearchableSelect
-                        label="Proyecto Activo"
-                        icon={<Layout className="w-3 h-3" />}
-                        options={getProjectOptions(activeProjects, recentProjects)}
-                        value={selectedProject}
-                        onChange={(val) => setSelectedProject(val)}
-                        placeholder="Buscar proyecto..."
-                    />
-                </div>
-
-                <div className="flex gap-3 w-full md:w-auto">
-                    <div className="shrink-0">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1 mb-1.5">Extra</label>
-                        <button
-                            onClick={() => setIsExtraQuick(!isExtraQuick)}
-                            className={`h-[42px] px-5 rounded-xl font-bold transition-all active:scale-95 text-sm ${isExtraQuick ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500 shadow-sm' : 'bg-slate-50 text-slate-500 border-2 border-slate-200'
-                                }`}
-                        >
-                            {isExtraQuick ? 'Sí' : 'No'}
-                        </button>
-                    </div>
-
-                    <div className="flex-1 flex items-end">
-                        <button
-                            onClick={handleClockIn}
-                            disabled={!selectedOperator || !selectedProject || isSubmittingQuick}
-                            className="w-full md:w-auto bg-emerald-500 disabled:opacity-50 text-white px-4 md:px-8 py-2.5 md:py-4 rounded-xl md:rounded-2xl font-black uppercase tracking-wider md:tracking-widest flex items-center gap-2 hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all justify-center disabled:shadow-none text-xs md:text-sm whitespace-nowrap"
-                        >
-                            {isSubmittingQuick ? (
-                                <Activity className="w-4 h-4 animate-spin" />
-                            ) : (
-                                <Play className="w-4 h-4 fill-current" />
-                            )}
-                            {isSubmittingQuick ? 'Iniciando...' : 'Iniciar'}
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {/* In Progress Entries */}
-            {entries.filter(e => !e.horaEgreso).length > 0 && (
-                <div className="space-y-4">
-                    <h3 className="text-xl font-bold flex items-center gap-2 text-slate-700"><Activity className="w-5 h-5 text-emerald-500" /> Jornadas en curso</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {entries.filter(e => !e.horaEgreso).map(entry => (
-                            <div key={entry.id} className="bg-emerald-50 border border-emerald-100 p-5 rounded-3xl relative overflow-hidden group">
-                                <div className="absolute top-0 right-0 p-4 opacity-10">
-                                    <Clock className="w-24 h-24" />
-                                </div>
-                                <div className="relative z-10 flex flex-col h-full justify-between">
-                                    <div className="space-y-1 mb-6">
-                                        <h4 className="font-extrabold text-emerald-900 text-lg">{entry.operator.nombreCompleto}</h4>
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                            <p className="text-sm font-bold text-emerald-700 uppercase tracking-tighter truncate">{entry.project.nombre}</p>
-                                            {entry.project.codigoProyecto && <CodeBadge code={entry.project.codigoProyecto} variant="project" size="sm" showCopy={false} />}
-                                        </div>
-                                        <p className="text-xs font-bold text-emerald-600/70">{formatEntryDate(entry.fecha)} | Ingreso: {entry.horaIngreso}hs</p>
-                                    </div>
-                                    <button
-                                        onClick={() => handleClockOut(entry.id)}
-                                        className="w-full bg-rose-500 text-white py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-rose-600 shadow-lg shadow-rose-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
-                                    >
-                                        <Square className="w-4 h-4 fill-current" />
-                                        Finalizar
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
 
             {/* Past Entries / Reports Content */}
             <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm relative">
