@@ -163,6 +163,15 @@ model TimeEntry {
   isSuspicious            Boolean  @default(false)
   isOfflinePending        Boolean  @default(false)
 
+  // Aprobaciones y Riesgo
+  status                  String   @default("AUTO_APPROVED")
+  // AUTO_APPROVED | PENDING_APPROVAL | APPROVED | REJECTED
+  score                   Int      @default(0)
+  riskLevel               String   @default("OK")
+  // OK | REVISAR | SOSPECHOSO | HIGH_RISK
+  approvedById            String?
+  approvedAt              DateTime?
+
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 
@@ -238,6 +247,27 @@ model SystemSetting {
   companyGeofenceLng    Float?
   companyGeofenceRadius Float?
   companyQrToken        String?
+  
+  // Configuración de Notificaciones
+  daysWithoutHoursThreshold Int @default(5)
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  userEmail String?
+  userName  String?
+  action    String   // CREATE | UPDATE | DELETE | APPROVE | REJECT
+  entity    String   // TIME_ENTRY | PROJECT | USER | SETTING | etc
+  entityId  String?
+  timestamp DateTime @default(now())
+  oldValue  Json?
+  newValue  Json?
+  metadata  Json?    // { deviceId, location, ip, etc }
+
+  @@index([entity])
+  @@index([userId])
+  @@index([timestamp])
 }
 
 model OrdenServicio {

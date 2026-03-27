@@ -696,6 +696,7 @@ function SystemSection() {
         companyGeofenceLng: null,
         companyGeofenceRadius: null,
         companyQrToken: '',
+        daysWithoutHoursThreshold: 5,
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -722,7 +723,8 @@ function SystemSection() {
                 companyGeofenceLat: setting.companyGeofenceLat,
                 companyGeofenceLng: setting.companyGeofenceLng,
                 companyGeofenceRadius: setting.companyGeofenceRadius,
-                companyQrToken: setting.companyQrToken
+                companyQrToken: setting.companyQrToken,
+                daysWithoutHoursThreshold: setting.daysWithoutHoursThreshold
             };
 
             await safeApiRequest('/api/config/system', {
@@ -795,19 +797,35 @@ function SystemSection() {
                 </div>
 
                 {setting.dailyReminderEnabled && (
-                    <div className="space-y-2 pt-4 border-t border-slate-200">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
-                            Horario de Disparo (Nativo Vercel una vez por día)
-                        </label>
-                        <p className="text-[9px] text-amber-600 font-bold px-1 -mt-1">
-                            Nota: En Vercel Free el cron corre una vez al día (Configurado a las 18:00hs ART).
-                        </p>
-                        <input
-                            type="time"
-                            disabled
-                            value="18:00"
-                            className="w-full bg-slate-100 border border-slate-200 rounded-xl py-3 px-4 outline-none font-bold text-slate-500 cursor-not-allowed"
-                        />
+                    <div className="space-y-4 pt-4 border-t border-slate-200">
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
+                                Días sin registrar horas para notificación
+                            </label>
+                            <input
+                                type="number"
+                                min={1}
+                                value={setting.daysWithoutHoursThreshold || 5}
+                                onChange={e => setSetting({ ...setting, daysWithoutHoursThreshold: parseInt(e.target.value) || 0 })}
+                                className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+                                placeholder="Ej: 5"
+                            />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
+                                Horario de Disparo (Nativo Vercel una vez por día)
+                            </label>
+                            <p className="text-[9px] text-amber-600 font-bold px-1 -mt-1">
+                                Nota: En Vercel Free el cron corre una vez al día (Configurado a las 18:00hs ART).
+                            </p>
+                            <input
+                                type="time"
+                                disabled
+                                value="18:00"
+                                className="w-full bg-slate-100 border border-slate-200 rounded-xl py-3 px-4 outline-none font-bold text-slate-500 cursor-not-allowed"
+                            />
+                        </div>
                     </div>
                 )}
             </div>

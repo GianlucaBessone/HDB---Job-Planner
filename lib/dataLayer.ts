@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { generateCodigoProyecto } from '@/lib/codeGenerator';
+import { logAudit } from '@/lib/audit';
 
 
 const getPrisma = () => {
@@ -115,6 +116,13 @@ export const dataLayer = {
             }
         }
 
+        await logAudit({
+            action: 'CREATE',
+            entity: 'PROJECT',
+            entityId: project.id,
+            newValue: project
+        });
+
         return project;
     },
     async updateProject(id: string, data: {
@@ -145,8 +153,16 @@ export const dataLayer = {
         const sanitizedData = { ...data };
         if (sanitizedData.clientId === "") sanitizedData.clientId = null as any;
         if (sanitizedData.responsableId === "") sanitizedData.responsableId = null as any;
-        const oldProject = await prisma.project.findUnique({ where: { id }, select: { tags: true } });
+        const oldProject = await prisma.project.findUnique({ where: { id } });
         const project = await prisma.project.update({ where: { id }, data: sanitizedData as any });
+
+        await logAudit({
+            action: 'UPDATE',
+            entity: 'PROJECT',
+            entityId: project.id,
+            oldValue: oldProject,
+            newValue: project
+        });
 
         // Sync checklists if tags changed
         if (data.tags) {
@@ -230,7 +246,17 @@ export const dataLayer = {
     },
 
     async deleteProject(id: string) {
-        return await prisma.project.delete({ where: { id } });
+        const oldProject = await prisma.project.findUnique({ where: { id } });
+        const res = await prisma.project.delete({ where: { id } });
+        
+        await logAudit({
+            action: 'DELETE',
+            entity: 'PROJECT',
+            entityId: id,
+            oldValue: oldProject
+        });
+
+        return res;
     },
 
     // Operators
@@ -240,17 +266,48 @@ export const dataLayer = {
         });
     },
     async createOperator(data: { nombreCompleto: string; activo?: boolean; enVacaciones?: boolean; etiquetas: string[]; pin?: string; role?: string }) {
-        return await prisma.operator.create({
+        const operator = await prisma.operator.create({
             data: { ...data, etiquetas: data.etiquetas as any }
         });
+
+        await logAudit({
+            action: 'CREATE',
+            entity: 'OPERATOR',
+            entityId: operator.id,
+            newValue: operator
+        });
+
+        return operator;
     },
     async updateOperator(id: string, data: { nombreCompleto?: string; activo?: boolean; enVacaciones?: boolean; etiquetas?: string[]; pin?: string; role?: string }) {
         const updateData: any = { ...data };
         if (data.etiquetas) updateData.etiquetas = data.etiquetas as any;
-        return await prisma.operator.update({ where: { id }, data: updateData });
+        
+        const oldOperator = await prisma.operator.findUnique({ where: { id } });
+        const operator = await prisma.operator.update({ where: { id }, data: updateData });
+
+        await logAudit({
+            action: 'UPDATE',
+            entity: 'OPERATOR',
+            entityId: operator.id,
+            oldValue: oldOperator,
+            newValue: operator
+        });
+
+        return operator;
     },
     async deleteOperator(id: string) {
-        return await prisma.operator.delete({ where: { id } });
+        const oldOperator = await prisma.operator.findUnique({ where: { id } });
+        const res = await prisma.operator.delete({ where: { id } });
+
+        await logAudit({
+            action: 'DELETE',
+            entity: 'OPERATOR',
+            entityId: id,
+            oldValue: oldOperator
+        });
+
+        return res;
     },
 
     // Planning
@@ -331,7 +388,18 @@ export const dataLayer = {
         return await prisma.checklistItem.create({ data });
     },
     async updateChecklistItem(id: string, data: { completed?: boolean; excluded?: boolean; confirmedBySupervisor?: boolean; pendingChange?: boolean; justification?: string }) {
-        return await prisma.checklistItem.update({ where: { id }, data });
+        const oldItem = await prisma.checklistItem.findUnique({ where: { id } });
+        const item = await prisma.checklistItem.update({ where: { id }, data });
+
+        await logAudit({
+            action: 'UPDATE',
+            entity: 'CHECKLIST',
+            entityId: id,
+            oldValue: oldItem,
+            newValue: item
+        });
+
+        return item;
     },
     async deleteChecklistItem(id: string) {
         return await prisma.checklistItem.delete({ where: { id } });

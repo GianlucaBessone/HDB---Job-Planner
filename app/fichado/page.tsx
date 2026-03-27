@@ -111,18 +111,35 @@ export default function PunchInPage() {
     };
 
     const handlePunch = async (action: 'IN' | 'OUT', entryId?: string, projId?: string) => {
-        // Removed project requirement to allow BASE clock-in
+        // Enforce location
+        if (!location) {
+            showToast("Ubicación necesaria. Por favor refresca el GPS.", "info");
+            refreshLocation();
+            return;
+        }
+
+        // Enforce QR if required
+        const targetProjId = projId || selectedProjectId;
+        const targetProj = projects.find(p => p.id === targetProjId);
+        const requiredQRToken = targetProjId ? targetProj?.qrToken : systemSetting?.companyQrToken;
+        
+        if (requiredQRToken && !scannedToken) {
+            showToast("Debes escanear el código QR para validar tu posición.", "info");
+            setIsScanning(true);
+            return;
+        }
 
         setIsLoading(true);
         try {
             const body = {
                 operatorId: currentUser.id,
                 action,
-                projectId: projId || selectedProjectId || null,
+                projectId: targetProjId || null,
                 deviceId,
-                latitude: location?.lat,
-                longitude: location?.lng,
-                qrToken: scannedToken || null
+                latitude: location.lat,
+                longitude: location.lng,
+                qrToken: scannedToken || null,
+                timestamp: new Date().toISOString()
             };
 
             const res = await safeApiRequest('/api/time-entries/punch', {
@@ -297,8 +314,8 @@ export default function PunchInPage() {
                                 <QrCode className="w-6 h-6" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-indigo-900 text-sm">{selectedProjectId ? 'Este proyecto requiere QR' : 'La Base requiere QR'}</h4>
-                                <p className="text-[10px] font-medium text-indigo-700/70">Escanea el código disponible en el lugar.</p>
+                                <h4 className="font-bold text-indigo-900 text-sm">Validación por QR (Opcional)</h4>
+                                <p className="text-[10px] font-medium text-indigo-700/70">Escanea si estás en el lugar para mayor precisión.</p>
                             </div>
                             <div className="flex gap-2">
                                 <input 
@@ -322,7 +339,7 @@ export default function PunchInPage() {
                     {/* Submit IN */}
                     <button 
                         onClick={() => handlePunch('IN')}
-                        disabled={isLoading || (needsQR && !scannedToken)}
+                        disabled={isLoading}
                         className="w-full bg-emerald-500 disabled:opacity-50 text-white py-5 rounded-3xl font-black uppercase tracking-widest text-sm flex items-center justify-center gap-3 hover:bg-emerald-600 shadow-xl shadow-emerald-500/20 active:scale-95 transition-all mt-4"
                     >
                         <Play className="w-5 h-5 fill-current" />

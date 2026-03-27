@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/dataLayer';
 import { getDistanceInMeters } from '@/lib/geo';
-import { format } from 'date-fns';
+import { format, differenceInMinutes, parseISO } from 'date-fns';
+import { sendPushNotification } from '@/lib/onesignal';
+import { logAudit } from '@/lib/audit';
 
 function calculateHours(start: string, end: string): number {
     if (!start || !end) return 0;
@@ -33,9 +35,11 @@ export async function POST(req: Request) {
 
         let validationFlags: string[] = [];
         let isSuspicious = false;
+        let score = 0;
 
         if (isOfflinePending) {
             validationFlags.push('OFFLINE_PENDING');
+            score += 2;
         }
 
         // 1. Device Validation
@@ -43,6 +47,7 @@ export async function POST(req: Request) {
             if (operator.primaryDeviceId !== deviceId) {
                 validationFlags.push('DEVICE_MISMATCH');
                 isSuspicious = true;
+                score += 2;
             }
         } else {
             await prisma.operator.update({
@@ -57,11 +62,14 @@ export async function POST(req: Request) {
         if (shared) {
             validationFlags.push('DEVICE_SHARED');
             isSuspicious = true;
+            score += 2;
         }
 
         let qrValidated = false;
+        if (qrToken) score += 1;
 
         // 2. Geofence & QR Logic
+        let outOfGeofence = false;
         if (projectId) {
             const project = await prisma.project.findUnique({ where: { id: projectId }});
             if (!project) return NextResponse.json({ error: 'Proyecto no encontrado' }, { status: 404 });
@@ -77,16 +85,14 @@ export async function POST(req: Request) {
                 if (project.geofenceLat !== null && project.geofenceLng !== null && project.geofenceRadius !== null) {
                     const distance = getDistanceInMeters(latitude, longitude, project.geofenceLat, project.geofenceLng);
                     if (distance > project.geofenceRadius) {
-                        validationFlags.push('OUT_OF_GEOFENCE');
-                        isSuspicious = true;
+                        outOfGeofence = true;
                     }
                 } else {
                     const sys = await prisma.systemSetting.findUnique({ where: { id: 'default' }});
                     if (sys?.companyGeofenceLat !== null && sys?.companyGeofenceLng !== null && sys?.companyGeofenceRadius !== null && sys?.companyGeofenceLat !== undefined) {
                         const distance = getDistanceInMeters(latitude, longitude, sys.companyGeofenceLat, sys.companyGeofenceLng);
                         if (distance > sys.companyGeofenceRadius) {
-                            validationFlags.push('OUT_OF_GEOFENCE');
-                            isSuspicious = true;
+                            outOfGeofence = true;
                         }
                     }
                 }
@@ -96,10 +102,15 @@ export async function POST(req: Request) {
             if (latitude !== undefined && longitude !== undefined && sys?.companyGeofenceLat !== null && sys?.companyGeofenceLng !== null && sys?.companyGeofenceRadius !== null && sys?.companyGeofenceLat !== undefined) {
                 const distance = getDistanceInMeters(latitude, longitude, sys.companyGeofenceLat, sys.companyGeofenceLng);
                 if (distance > sys.companyGeofenceRadius) {
-                    validationFlags.push('OUT_OF_GEOFENCE');
-                    isSuspicious = true;
+                    outOfGeofence = true;
                 }
             }
+        }
+
+        if (outOfGeofence) {
+            validationFlags.push('OUT_OF_GEOFENCE');
+            isSuspicious = true;
+            score += 2;
         }
 
         if (latitude === undefined || longitude === undefined) {
@@ -107,59 +118,72 @@ export async function POST(req: Request) {
             isSuspicious = true;
         }
 
+        // 3. Status and Risk Detection
         const now = timestamp ? new Date(timestamp) : new Date();
-        const dateStr = format(now, 'yyyy-MM-dd');
-        const timeStr = format(now, 'HH:mm');
+        const argentinaNow = new Date(now.toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" }));
+        const dateStr = format(argentinaNow, 'yyyy-MM-dd');
+        const timeStr = format(argentinaNow, 'HH:mm');
 
-        // Allow entering without a specific active project if it's generic hours
-        const targetProjectId = projectId || 'generic_project_id_if_any'; // Actually, in this system, projectId is required for TimeEntry.
-
-        if (!projectId && !validationFlags.includes('DEVICE_SHARED')) {
-            // Need to verify if TimeEntry allows empty projectId. It does not: `projectId String`
-            // If the user hasn't selected a project, we can't create a time entry unless we have a dummy project or they are required to select one.
-            // Wait, "Permitir fichado SIN proyecto asignado cuando el usuario esté dentro de esta geovalla."
-            // But Prisma schema has `projectId String` without `?`. We might need a generic internal project or we need to change projectId to optional.
+        // Check Overlaps
+        const overlaps = await prisma.timeEntry.findFirst({
+            where: {
+                operatorId,
+                fecha: dateStr,
+                horaEgreso: null,
+            }
+        });
+        if (overlaps && action === 'IN') {
+            validationFlags.push('OVERLAP_DETECTED');
+            isSuspicious = true;
+            score += 3;
         }
 
-        // Finding existing entry for today and project
-        let existing;
-        if (targetProjectId !== 'generic_project_id_if_any') {
-             existing = await prisma.timeEntry.findFirst({
-                where: { 
-                    operatorId, 
-                    projectId: targetProjectId, 
-                    fecha: dateStr, 
-                    horaEgreso: null 
-                },
-                orderBy: { createdAt: 'desc' }
-            });
+        // Retro-charge (>48h)
+        const diffHours = (new Date().getTime() - now.getTime()) / (1000 * 60 * 60);
+        if (diffHours > 48) {
+            validationFlags.push('RETROACTIVE_CHARGE');
+            isSuspicious = true;
+        }
+
+        // Scoring Risk Level
+        let riskLevel = 'OK';
+        if (score >= 5) riskLevel = 'HIGH_RISK';
+        else if (score >= 3) riskLevel = 'SOSPECHOSO';
+        else if (score >= 1) riskLevel = 'REVISAR';
+
+        // Approval Status logic
+        let status = 'AUTO_APPROVED';
+        if (action === 'IN') {
+            if (outOfGeofence || validationFlags.includes('DEVICE_MISMATCH') || validationFlags.includes('OFFLINE_PENDING') || qrToken) {
+                status = 'PENDING_APPROVAL';
+            }
         } else {
-            // Find an entry with NO project id if empty
-             existing = await prisma.timeEntry.findFirst({
-                where: { 
-                    operatorId, 
-                    projectId: null, 
-                    fecha: dateStr, 
-                    horaEgreso: null 
-                },
-                orderBy: { createdAt: 'desc' }
-            });
+            // OUT status logic: if out of geofence, mark as pending
+            if (outOfGeofence) {
+                status = 'PENDING_APPROVAL';
+            }
         }
+
+        const targetProjectId = projectId || null;
+        let existing = await prisma.timeEntry.findFirst({
+            where: { 
+                operatorId, 
+                projectId: targetProjectId, 
+                fecha: dateStr, 
+                horaEgreso: null 
+            },
+            orderBy: { createdAt: 'desc' }
+        });
 
         let entry;
         if (action === 'IN') {
             if (existing) {
-                return NextResponse.json({ error: 'Ya tienes una jornada iniciada para hoy con este proyecto o base.' }, { status: 400 });
+                return NextResponse.json({ error: 'Ya tienes una jornada iniciada hoy.' }, { status: 400 });
             }
-            // Allow generic now since we made it optional
-            // if (targetProjectId === 'generic_project_id_if_any') {
-            //    return NextResponse.json({ error: 'Debes seleccionar un proyecto.' }, { status: 400 });
-            // }
-            
             entry = await prisma.timeEntry.create({
                 data: {
                     operatorId,
-                    projectId: targetProjectId !== 'generic_project_id_if_any' ? targetProjectId : null,
+                    projectId: targetProjectId,
                     fecha: dateStr,
                     horaIngreso: timeStr,
                     deviceId,
@@ -168,25 +192,24 @@ export async function POST(req: Request) {
                     qrValidated,
                     validationFlags: JSON.stringify(validationFlags),
                     isSuspicious,
-                    isOfflinePending: isOfflinePending || false
+                    isOfflinePending: isOfflinePending || false,
+                    status,
+                    score,
+                    riskLevel
                 }
             });
-        } else if (action === 'OUT') {
-            if (!existing) {
-                return NextResponse.json({ error: 'No se encontró una jornada activa para finalizar.' }, { status: 404 });
-            }
-
+        } else {
+            if (!existing) return NextResponse.json({ error: 'No se encontró una jornada activa.' }, { status: 404 });
             const horasTrabajadas = calculateHours(existing.horaIngreso || '00:00', timeStr);
+            
+            // Duration checks
+            if (horasTrabajadas < 0.16) validationFlags.push('VERY_SHORT_SHIFT'); // < 10min
+            if (horasTrabajadas > 12) validationFlags.push('EXCESSIVE_SHIFT'); // > 12h
 
             const existingFlagsRaw = (existing.validationFlags as string) || '[]';
             let parsedExistingFlags: string[] = [];
-            try {
-                 const parsed = JSON.parse(existingFlagsRaw);
-                 parsedExistingFlags = Array.isArray(parsed) ? parsed : [];
-            } catch (e) { }
-            
-            const merged = parsedExistingFlags.concat(validationFlags);
-            const uniqueFlags = merged.filter((item, pos) => merged.indexOf(item) === pos);
+            try { parsedExistingFlags = JSON.parse(existingFlagsRaw); } catch (e) { }
+            const uniqueFlags = Array.from(new Set([...parsedExistingFlags, ...validationFlags]));
 
             entry = await prisma.timeEntry.update({
                 where: { id: existing.id },
@@ -198,7 +221,10 @@ export async function POST(req: Request) {
                     longitude: longitude || existing.longitude,
                     qrValidated: existing.qrValidated || qrValidated,
                     validationFlags: JSON.stringify(uniqueFlags),
-                    isSuspicious: existing.isSuspicious || isSuspicious
+                    isSuspicious: existing.isSuspicious || isSuspicious,
+                    status: (existing.status === 'PENDING_APPROVAL' || status === 'PENDING_APPROVAL') ? 'PENDING_APPROVAL' : 'AUTO_APPROVED',
+                    score: existing.score + score,
+                    riskLevel: (existing.score + score >= 5) ? 'HIGH_RISK' : riskLevel
                 }
             });
 
@@ -210,6 +236,26 @@ export async function POST(req: Request) {
                 });
             }
         }
+
+        // Notification if Pending
+        if (entry.status === 'PENDING_APPROVAL') {
+            await sendPushNotification({
+                forSupervisors: true,
+                title: "Fichada Pendiente de Aprobación",
+                message: `${operator.nombreCompleto} ha fichado en ${projectId ? 'Proyecto' : 'Base'} con avisos: ${validationFlags.join(', ')}`,
+                data: { type: 'approval_required', entryId: entry.id }
+            });
+        }
+
+        // Audit Log
+        await logAudit({
+            userName: operator.nombreCompleto,
+            action: 'CREATE',
+            entity: 'TIME_ENTRY',
+            entityId: entry.id,
+            newValue: entry,
+            metadata: { deviceId, action, latitude, longitude }
+        });
 
         return NextResponse.json(entry, { status: 201 });
     } catch (error: any) {
