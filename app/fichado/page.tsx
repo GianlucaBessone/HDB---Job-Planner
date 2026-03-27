@@ -147,6 +147,23 @@ export default function PunchInPage() {
         }
     };
 
+    const handleOnScanSuccess = (decodedText: string) => {
+        setIsScanning(false);
+        setScannedToken(decodedText);
+        
+        // Auto-select based on token
+        if (systemSetting?.companyQrToken === decodedText) {
+            setSelectedProjectId('');
+            showToast("Base Central Detectada", "success");
+        } else {
+            const foundProj = projects.find(p => p.qrToken === decodedText);
+            if (foundProj) {
+                setSelectedProjectId(foundProj.id);
+                showToast(`Proyecto Detectado: ${foundProj.nombre}`, "success");
+            }
+        }
+    };
+
     const selectedProject = projects.find(p => p.id === selectedProjectId);
     const needsQR = selectedProjectId ? selectedProject?.qrToken : systemSetting?.companyQrToken;
 
@@ -243,20 +260,33 @@ export default function PunchInPage() {
                     {/* Project Selector */}
                     <div className="space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Destino de Trabajo</label>
-                        <div className="relative group">
-                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
-                                <Search className="w-5 h-5" />
+                        <div className="flex gap-2">
+                            <div className="relative group flex-1">
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
+                                    <MapPin className="w-5 h-5" />
+                                </div>
+                                <select 
+                                    value={selectedProjectId}
+                                    onChange={e => setSelectedProjectId(e.target.value)}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 pr-10 outline-none font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all appearance-none cursor-pointer text-sm leading-tight min-h-[60px]"
+                                >
+                                    <option value="">— BASE / EMPRESA —</option>
+                                    {projects.map(p => (
+                                        <option key={p.id} value={p.id}>{p.nombre}</option>
+                                    ))}
+                                </select>
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                    <ChevronRight className="w-5 h-5 rotate-90" />
+                                </div>
                             </div>
-                            <select 
-                                value={selectedProjectId}
-                                onChange={e => setSelectedProjectId(e.target.value)}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 pr-4 outline-none font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all appearance-none cursor-pointer"
+                            <button 
+                                type="button"
+                                onClick={() => setIsScanning(true)}
+                                className="w-14 bg-indigo-50 border border-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center active:scale-90 transition-all shadow-sm"
+                                title="Escanear QR para auto-detectar lugar"
                             >
-                                <option value="">— BASE / EMPRESA —</option>
-                                {projects.map(p => (
-                                    <option key={p.id} value={p.id}>{p.nombre}</option>
-                                ))}
-                            </select>
+                                <QrCode className="w-6 h-6" />
+                            </button>
                         </div>
                     </div>
 
@@ -326,7 +356,7 @@ export default function PunchInPage() {
 
             {isScanning && (
                 <QRScannerModal 
-                    onScan={(token) => { setScannedToken(token); setIsScanning(false); }} 
+                    onScan={handleOnScanSuccess} 
                     onClose={() => setIsScanning(false)} 
                 />
             )}
