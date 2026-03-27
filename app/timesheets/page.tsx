@@ -3,14 +3,12 @@
 import { useState, useEffect } from 'react';
 import { Play, Square, Clock, Calendar, User, Layout, CheckCircle2, ShieldAlert, Plus, Trash2, Edit3, X, AlertCircle, Activity, FileSpreadsheet } from 'lucide-react';
 import Link from 'next/link';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
 import * as XLSX from 'xlsx';
 import SearchableSelect from '@/components/SearchableSelect';
-import { formatDate } from '@/lib/formatDate';
+import { formatDate, formatTime } from '@/lib/formatDate';
 import { getProjectOptions } from '@/lib/projectSelectHelper';
 import CodeBadge from '@/components/CodeBadge';
 
@@ -47,16 +45,7 @@ export default function TimesheetsPage() {
     const [recentProjects, setRecentProjects] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const formatEntryDate = (dateStr: string) => {
-        try {
-            const date = new Date(dateStr + 'T12:00:00');
-            const dayName = format(date, "EEEE", { locale: es });
-            const formatted = format(date, "dd/MM/yyyy");
-            return `${dayName.charAt(0).toUpperCase() + dayName.slice(1)} ${formatted}`;
-        } catch (e) {
-            return dateStr;
-        }
-    };
+    const formatEntryDate = (dateStr: string) => formatDate(dateStr);
 
     // Quick Actions State
     const [selectedOperator, setSelectedOperator] = useState('');
@@ -173,7 +162,7 @@ export default function TimesheetsPage() {
             }
 
             const now = new Date();
-            const timeString = now.toTimeString().slice(0, 5);
+            const timeString = formatTime(now);
 
             const res = await safeApiRequest('/api/time-entries', {
                 method: 'POST',
@@ -213,7 +202,7 @@ export default function TimesheetsPage() {
 
     const handleClockOut = async (id: string, requiereAutorizacion = false) => {
         const now = new Date();
-        const timeString = now.toTimeString().slice(0, 5);
+        const timeString = formatTime(now);
 
         try {
             const res = await safeApiRequest('/api/time-entries', {

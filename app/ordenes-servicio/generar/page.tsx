@@ -21,6 +21,7 @@ interface TimeEntryGroup {
     operadorId: string;
     nombreCompleto: string;
     totalHoras: number;
+    isExtra: boolean;
 }
 
 interface MaterialRow {
@@ -37,6 +38,7 @@ interface OperadorRow {
     operadorId: string;
     nombreCompleto: string;
     horas: string;
+    isExtra: boolean;
 }
 
 function GenerarOSContent() {
@@ -84,26 +86,31 @@ function GenerarOSContent() {
             setProject(projectData);
             setOperators(operatorsData.filter((o: Operator) => o.role !== 'admin'));
 
-            let defaultOperadores: OperadorRow[] = [{ operadorId: '', nombreCompleto: '', horas: '' }];
+            let defaultOperadores: OperadorRow[] = [{ operadorId: '', nombreCompleto: '', horas: '', isExtra: false }];
 
-            // Group time entries by operator for existing hours summary
+            // Group time entries by operator AND isExtra category
             const grouped: Record<string, { nombre: string; horas: number }> = {};
             if (Array.isArray(entriesData)) {
                 for (const entry of entriesData) {
-                    if (!grouped[entry.operatorId]) {
-                        grouped[entry.operatorId] = {
+                    const key = `${entry.operatorId}_${entry.isExtra ? 'extra' : 'normal'}`;
+                    if (!grouped[key]) {
+                        grouped[key] = {
                             nombre: entry.operator?.nombreCompleto || 'Desconocido',
                             horas: 0,
                         };
                     }
-                    grouped[entry.operatorId].horas += entry.horasTrabajadas || 0;
+                    grouped[key].horas += entry.horasTrabajadas || 0;
                 }
             }
-            const groups: TimeEntryGroup[] = Object.entries(grouped).map(([operadorId, v]) => ({
-                operadorId,
-                nombreCompleto: v.nombre,
-                totalHoras: Math.round(v.horas * 100) / 100,
-            }));
+            const groups: TimeEntryGroup[] = Object.entries(grouped).map(([key, v]) => {
+                const [operadorId, type] = key.split('_');
+                return {
+                    operadorId,
+                    nombreCompleto: v.nombre,
+                    totalHoras: Math.round(v.horas * 100) / 100,
+                    isExtra: type === 'extra'
+                };
+            });
             setExistingHoras(groups);
 
             if (groups.length > 0) {
@@ -111,6 +118,7 @@ function GenerarOSContent() {
                     operadorId: g.operadorId,
                     nombreCompleto: g.nombreCompleto,
                     horas: String(g.totalHoras),
+                    isExtra: g.isExtra
                 }));
             }
 
@@ -149,7 +157,10 @@ function GenerarOSContent() {
 
                 if (osData.operadores && osData.operadores.length > 0) {
                     setOperadores(osData.operadores.map((op: any) => ({
-                        operadorId: op.operador.id, nombreCompleto: op.operador.nombreCompleto, horas: String(op.horas)
+                        operadorId: op.operador.id, 
+                        nombreCompleto: op.operador.nombreCompleto, 
+                        horas: String(op.horas),
+                        isExtra: !!op.isExtra
                     })));
                 } else {
                     setOperadores(defaultOperadores);
@@ -216,14 +227,14 @@ function GenerarOSContent() {
     };
 
     // Operadores
-    const addOperador = () => setOperadores(prev => [...prev, { operadorId: '', nombreCompleto: '', horas: '' }]);
+    const addOperador = () => setOperadores(prev => [...prev, { operadorId: '', nombreCompleto: '', horas: '', isExtra: false }]);
     const removeOperador = (i: number) => setOperadores(prev => prev.filter((_, idx) => idx !== i));
-    const updateOperador = (i: number, field: keyof OperadorRow, value: string) => {
+    const updateOperador = (i: number, field: keyof OperadorRow, value: any) => {
         setOperadores(prev => prev.map((op, idx) => {
             if (idx !== i) return op;
             if (field === 'operadorId') {
                 const found = operators.find(o => o.id === value);
-                return { ...op, operadorId: value, nombreCompleto: found?.nombreCompleto || '' };
+                return { ...op, operadorId: value, nombreCompleto: found?.nombreCompleto || '', isExtra: op.isExtra };
             }
             return { ...op, [field]: value };
         }));
@@ -263,7 +274,7 @@ function GenerarOSContent() {
 
         const opsValidas = operadores
             .filter(op => op.operadorId && op.horas && Number(op.horas) > 0)
-            .map(op => ({ operadorId: op.operadorId, horas: Number(op.horas) }));
+            .map(op => ({ operadorId: op.operadorId, horas: Number(op.horas), isExtra: op.isExtra }));
 
         const matsValidos = materiales
             .filter(m => {
@@ -374,9 +385,12 @@ function GenerarOSContent() {
                     <div className="px-6 py-4 border-b border-slate-50 bg-indigo-50/50">
                         <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-3">Horas ya registradas (del listado de tiempos)</p>
                         <div className="space-y-2">
-                            {existingHoras.map(g => (
-                                <div key={g.operadorId} className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-slate-700">{g.nombreCompleto}</span>
+                            {existingHoras.map((g, idx) => (
+                                <div key={idx} className="flex items-center justify-between">
+                                    <span className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                                        {g.nombreCompleto}
+                                        {g.isExtra && <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-black uppercase">Extra</span>}
+                                    </span>
                                     <span className="text-sm font-black text-indigo-600">{g.totalHoras}h</span>
                                 </div>
                             ))}
@@ -419,6 +433,20 @@ function GenerarOSContent() {
                                             <option key={o.id} value={o.id}>{o.nombreCompleto}</option>
                                         ))}
                                     </select>
+                                </div>
+                                <div className="w-20 shrink-0">
+                                    <button
+                                        type="button"
+                                        disabled={isFirmada}
+                                        onClick={() => updateOperador(i, 'isExtra', !op.isExtra)}
+                                        className={`w-full h-10 px-2 rounded-xl text-[10px] font-black uppercase border transition-all ${
+                                            op.isExtra 
+                                            ? 'bg-amber-100 border-amber-300 text-amber-700 shadow-sm' 
+                                            : 'bg-white border-slate-200 text-slate-400'
+                                        }`}
+                                    >
+                                        {op.isExtra ? 'Extra' : 'Normal'}
+                                    </button>
                                 </div>
                                 <div className="w-24">
                                     <div className="relative">

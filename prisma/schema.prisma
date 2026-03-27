@@ -271,6 +271,7 @@ model OrdenServicioOperador {
   operadorId      String
   operador        Operator      @relation(fields: [operadorId], references: [id], onDelete: Cascade)
   horas           Float
+  isExtra         Boolean       @default(false)
 
   @@index([ordenServicioId])
   @@index([operadorId])

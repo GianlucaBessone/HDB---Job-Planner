@@ -8,6 +8,7 @@ import {
     CalendarDays, QrCode, Smartphone, Trash2, Calculator, MessageSquare
 } from 'lucide-react';
 import Link from 'next/link';
+import { formatDate, formatDateTime } from '@/lib/formatDate';
 import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
 import ConfirmDialog from '@/components/ConfirmDialog';
@@ -33,7 +34,7 @@ interface OrdenServicio {
         fechaFin?: string;
     };
     materiales: { id: string; material: string; cantidad: number; unidadMedida: string }[];
-    operadores: { id: string; horas: number; operador: { id: string; nombreCompleto: string } }[];
+    operadores: { id: string; horas: number; isExtra?: boolean; operador: { id: string; nombreCompleto: string } }[];
     firma?: {
         nombre: string;
         dni: string;
@@ -61,21 +62,13 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
     const isFirmada = os.estado === 'firmada';
     const clienteName = os.project.client?.nombre || os.project.cliente || 'No especificado';
 
-    const formatDate = (d: string) => {
-        try { return new Date(d).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
-        catch { return d; }
-    };
-
-    const formatDateTime = (d: string) => {
-        try {
-            return new Date(d).toLocaleString('es-AR', {
-                day: '2-digit', month: '2-digit', year: 'numeric',
-                hour: '2-digit', minute: '2-digit'
-            });
-        } catch { return d; }
-    };
 
     const handleDownload = () => {
+        // Use the server-side PDF API — works on all devices including mobile
+        window.location.href = `/api/ordenes-servicio/${os.id}/pdf`;
+    };
+
+    const _handleDownloadLegacy = () => {
         const printStyles = `
             <style>
                 @page { margin: 0; size: A4 portrait; }
@@ -266,7 +259,12 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                                         <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-black text-xs">
                                             {op.operador.nombreCompleto.charAt(0)}
                                         </div>
-                                        <span className="text-sm font-bold text-slate-700">{op.operador.nombreCompleto}</span>
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-bold text-slate-700">{op.operador.nombreCompleto}</span>
+                                            {op.isExtra && (
+                                                <span className="text-[10px] text-amber-600 font-black uppercase tracking-tight">Horas Extras</span>
+                                            )}
+                                        </div>
                                     </div>
                                     <span className="text-sm font-black text-indigo-600">{op.horas}h</span>
                                 </div>
@@ -530,10 +528,6 @@ function OrdenesServicioContent() {
         return matchSearch && matchEstado && tabMatch;
     });
 
-    const formatDate = (d: string) => {
-        try { return new Date(d).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
-        catch { return d; }
-    };
 
     return (
         <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">

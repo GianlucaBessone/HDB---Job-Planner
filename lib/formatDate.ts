@@ -1,23 +1,39 @@
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
+import { es } from 'date-fns/locale';
 
-export function formatDate(dateString: string | null | undefined): string {
-    if (!dateString) return '';
+export function formatDate(date: string | Date | null | undefined): string {
+    if (!date) return '';
     try {
-        if (typeof dateString === 'string' && dateString.length === 10 && dateString.includes('-')) {
-            const [y, m, d] = dateString.split('-');
-            return `${d}/${m}/${y}`;
+        let d: Date;
+        if (typeof date === 'string') {
+            const dateStr = date.split('T')[0];
+            // Use T12:00:00 to avoid timezone shifts showing the "previous" day
+            d = new Date(`${dateStr}T12:00:00`);
+        } else {
+            d = date as Date;
         }
-        return format(new Date(dateString), 'dd/MM/yyyy');
+        return format(d, 'dd/MM/yyyy', { locale: es });
     } catch {
-        return String(dateString);
+        return String(date);
     }
 }
 
-export function formatDateTime(dateString: string | Date | null | undefined): string {
-    if (!dateString) return '';
+export function formatTime(date: string | Date | null | undefined): string {
+    if (!date) return '';
     try {
-        return format(new Date(dateString), 'dd/MM/yyyy HH:mm');
+        const d = typeof date === 'string' ? (date.includes('T') ? parseISO(date) : new Date(`2000-01-01T${date}`)) : date;
+        return format(d, 'HH:mm', { locale: es });
     } catch {
-        return String(dateString);
+        return String(date);
+    }
+}
+
+export function formatDateTime(date: string | Date | null | undefined): string {
+    if (!date) return '';
+    try {
+        const d = typeof date === 'string' ? parseISO(date) : date;
+        return format(d, 'dd/MM/yyyy HH:mm', { locale: es });
+    } catch {
+        return String(date);
     }
 }

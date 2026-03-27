@@ -25,8 +25,7 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import { showToast } from '@/components/Toast';
 import * as XLSX from 'xlsx';
 import SearchableSelect from '@/components/SearchableSelect';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { formatDate, formatTime } from '@/lib/formatDate';
 import { safeApiRequest } from '@/lib/offline';
 import { getProjectOptions } from '@/lib/projectSelectHelper';
 
@@ -242,10 +241,6 @@ export default function DelaysPage() {
         XLSX.writeFile(wb, `Demoras_Cliente_${filterDateFrom}_${filterDateTo}.xlsx`);
     };
 
-    const formatDate = (dateStr: string) => {
-        try { return format(new Date(dateStr + 'T12:00:00'), 'dd/MM/yyyy', { locale: es }); }
-        catch { return dateStr; }
-    };
 
     const hasActiveFilters = !!(filterClientId || filterProjectId || searchTerm);
 

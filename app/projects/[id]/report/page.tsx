@@ -2,18 +2,9 @@ import { prisma } from '@/lib/dataLayer';
 import { notFound, redirect } from 'next/navigation';
 import { Building2, Calendar, Clock, Activity, Timer, Users, ShieldCheck, FileText, MessageSquare, CheckCircle2, PlayCircle, AlertTriangle, AlarmClock, ClipboardList, BarChart2 } from 'lucide-react';
 import ReportPrintButton from '@/components/ReportPrintButton';
+import { formatDate, formatDateTime } from '@/lib/formatDate';
 
 export const dynamic = 'force-dynamic';
-
-function formatDate(dateStr: string | null | undefined) {
-    if (!dateStr) return '—';
-    try {
-        const d = new Date(dateStr + 'T12:00:00');
-        return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    } catch {
-        return dateStr;
-    }
-}
 
 export default async function ProjectReportPage({ params, searchParams }: { params: { id: string }, searchParams?: { token?: string } }) {
     const project = await prisma.project.findUnique({
@@ -352,7 +343,7 @@ export default async function ProjectReportPage({ params, searchParams }: { para
 
                 {/* Footer */}
                 <div className="mt-16 pt-6 border-t border-slate-200 text-center text-xs font-bold text-slate-400">
-                    <p>Reporte Oficial | Generado automáticamente por HDB Job Planner el {new Date().toLocaleDateString('es-AR')}</p>
+                    <p>Reporte Oficial | Generado automáticamente por HDB Job Planner el {formatDate(new Date())}</p>
                 </div>
             </div>
         </div>

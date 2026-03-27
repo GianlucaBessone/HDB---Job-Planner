@@ -46,9 +46,11 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
         setMateriales(prev => prev.map(m => m.id === id ? { ...m, precioUnitario: price } : m));
     };
 
-    const horasTotales = os.operadores.reduce((acc: number, op: any) => acc + (op.horas || 0), 0);
+    const horasNormales = os.operadores.filter((op: any) => !op.isExtra).reduce((acc: number, op: any) => acc + (op.horas || 0), 0);
+    const horasExtras = os.operadores.filter((op: any) => op.isExtra).reduce((acc: number, op: any) => acc + (op.horas || 0), 0);
+    
     const parsedValorMo = safeNum(valorMo);
-    const subtotalMo = horasTotales * parsedValorMo;
+    const subtotalMo = (horasNormales + (horasExtras * 2)) * parsedValorMo;
     const subtotalMat = materiales.reduce((acc, m) => acc + (m.cantidad * safeNum(m.precioUnitario)), 0);
     const subtotalBruto = subtotalMo + subtotalMat;
     
@@ -60,112 +62,7 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
 
     const round2 = (num: number) => Math.round(num * 100) / 100;
 
-    const generatePdfContent = () => `
-        <style>
-            @page { margin: 0; size: A4 portrait; }
-            * { box-sizing: border-box; }
-            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 20mm; color: #1e293b; background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .header { border-bottom: 3px solid #6366f1; padding-bottom: 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; }
-            .logo { max-height: 80px; object-fit: contain; }
-            h2 { font-size: 20px; font-weight: 900; color: #0f172a; margin: 0 0 4px; }
-            h3 { font-size: 13px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 12px; padding-bottom: 6px; border-bottom: 1px solid #e2e8f0; }
-            .section { margin-bottom: 24px; }
-            .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-            .field label { font-size: 9px; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 2px; }
-            .field p { font-size: 13px; font-weight: 700; color: #1e293b; margin: 0; }
-            table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
-            th { background: #f8fafc; text-align: left; padding: 8px 12px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #64748b; border-bottom: 2px solid #e2e8f0; }
-            td { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; color: #334155; font-weight: 600; }
-            .text-right { text-align: right; }
-            .totals-box { width: 300px; margin-left: auto; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; padding: 16px; }
-            .totals-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; font-weight: 600; color: #475569; }
-            .totals-row.desc { color: #059669; }
-            .totals-row.iva { color: #e11d48; }
-            .totals-row.final { font-size: 18px; font-weight: 900; color: #0f172a; margin-top: 8px; padding-top: 8px; border-top: 2px solid #e2e8f0; }
-            .footer { margin-top: 40px; text-align: center; font-size: 10px; color: #94a3b8; }
-        </style>
 
-        <div class="header">
-            <div>
-                <img class="logo" src="${window.location.origin}/logo-hdb.jpg" alt="HDB Servicios Electricos" />
-                <h2 style="margin-top:10px;">Orden de Cobro — ${os.codigoOS || os.id.slice(-8).toUpperCase()}</h2>
-                <p style="font-size:12px;color:#64748b;margin:4px 0 0;">${os.project.codigoProyecto ? os.project.codigoProyecto + ' | ' : ''}${os.project.nombre}</p>
-            </div>
-            <div style="text-align:right;">
-                <p style="font-size:11px;color:#94a3b8;font-weight:700;">Fecha de emisión: ${new Date().toLocaleDateString('es-AR')}</p>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="grid-2">
-                <div class="field"><label>Cliente</label><p>${os.project.client?.nombre || os.project.cliente || 'No especificado'}</p></div>
-                <div class="field"><label>Condición de Pago</label><p>${condicionPago || 'No especificada'}</p></div>
-            </div>
-        </div>
-
-        <div class="section">
-            <h3>Detalle de Servicios</h3>
-            <table>
-                <thead>
-                    <tr><th>Concepto</th><th class="text-right">Horas</th><th class="text-right">Valor Unit.</th><th class="text-right">Subtotal</th></tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Mano de Obra</td>
-                        <td class="text-right">${horasTotales}h</td>
-                        <td class="text-right">$${formatARS(parsedValorMo)}</td>
-                        <td class="text-right">$${formatARS(subtotalMo)}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        ${os.materiales.length > 0 ? `
-        <div class="section">
-            <h3>Materiales Suministrados</h3>
-            <table>
-                <thead>
-                    <tr><th>Material</th><th class="text-right">Cantidad</th><th class="text-right">Precio Unit.</th><th class="text-right">Subtotal</th></tr>
-                </thead>
-                <tbody>
-                    ${materiales.map(m => `
-                        <tr>
-                            <td>${m.material}</td>
-                            <td class="text-right">${m.cantidad}</td>
-                            <td class="text-right">$${formatARS(safeNum(m.precioUnitario))}</td>
-                            <td class="text-right">$${formatARS(m.cantidad * safeNum(m.precioUnitario))}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        </div>
-        ` : ''}
-
-        ${os.comentario ? `
-        <div class="section">
-            <h3>Comentario Adicional (OS)</h3>
-            <p style="font-size:12px;color:#475569;margin:0;white-space:pre-wrap;">${os.comentario}</p>
-        </div>
-        ` : ''}
-
-        ${observaciones ? `
-        <div class="section">
-            <h3>Observaciones</h3>
-            <p style="font-size:12px;color:#475569;margin:0;white-space:pre-wrap;">${observaciones}</p>
-        </div>
-        ` : ''}
-
-        <div class="totals-box">
-            <div class="totals-row"><span>Subtotal (Mano de Obra + Materiales)</span><span>$${formatARS(subtotalBruto)}</span></div>
-            ${descuentoAplicado ? `<div class="totals-row desc"><span>Descuento (${parsedDescuento}%)</span><span>-$${formatARS(montoDescuento)}</span></div>` : ''}
-            ${ivaAplicado ? `<div class="totals-row iva"><span>IVA (21%)</span><span>+$${formatARS(montoIva)}</span></div>` : ''}
-            <div class="totals-row final"><span>TOTAL FINAL</span><span>$${formatARS(totalFinal)}</span></div>
-        </div>
-
-        <div class="footer">
-            <p>Documento de control interno y detalle de servicios. No válido como factura electrónica AFIP.</p>
-        </div>
-    `;
 
     const handleSaveAndGenerate = async () => {
         if (materiales.some(m => safeNum(m.precioUnitario) < 0)) return showToast('Precios de materiales inválidos', 'error');
@@ -194,14 +91,8 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
             onSaveSuccess(data);
             showToast('Cobro guardado con éxito', 'success');
 
-            // Generate PDF
-            const win = window.open('', '_blank');
-            if (win) {
-                win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Cobro - ${os.project.nombre}</title></head><body>${generatePdfContent()}</body></html>`);
-                win.document.close();
-                win.focus();
-                setTimeout(() => { win.print(); win.close(); }, 500);
-            }
+            // Generate PDF using the new server-side API (works on mobile)
+            window.location.href = `/api/ordenes-servicio/${os.id}/cobro/pdf`;
         } catch (e) {
             showToast('Error al procesar cobro', 'error');
         } finally {
@@ -232,9 +123,15 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
                         <div className="space-y-6">
                             {/* Mano de Obra Section */}
                             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                                <h4 className="font-black text-sm text-slate-800 uppercase tracking-widest border-b border-slate-100 pb-3 flex justify-between">
-                                    Mano de Obra
-                                    <span className="text-indigo-600">{horasTotales} hs totales</span>
+                                <h4 className="font-black text-sm text-slate-800 uppercase tracking-widest border-b border-slate-100 pb-3 flex flex-col gap-1">
+                                    <div className="flex justify-between w-full">
+                                        Mano de Obra
+                                        <span className="text-slate-400">Total: {horasNormales + horasExtras} hs</span>
+                                    </div>
+                                    <div className="flex justify-between w-full text-[10px] lowercase items-center">
+                                        <span className="text-slate-400 font-bold">{horasNormales} hs normales + {horasExtras} hs extras (x2)</span>
+                                        <span className="text-indigo-400 font-black">{horasNormales + (horasExtras * 2)} hs facturables</span>
+                                    </div>
                                 </h4>
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Valor Unitario por Hora ($)</label>

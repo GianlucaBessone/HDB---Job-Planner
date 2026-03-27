@@ -197,7 +197,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
                     },
                     operadores: {
                         create: operadores.map((op: any) => ({
-                            operadorId: op.operadorId, horas: parseFloat(op.horas)
+                            operadorId: op.operadorId, horas: parseFloat(op.horas), isExtra: !!op.isExtra
                         }))
                     }
                 },

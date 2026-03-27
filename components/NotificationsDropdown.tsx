@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Bell, Check, X, Calendar, Clock, CheckCircle2, AlertCircle, ShieldAlert } from 'lucide-react';
+import { Bell, Check, X, BellOff, MessageSquare, AlertTriangle, AlertCircle, Info, Clock, CheckCircle2, MoreHorizontal, User, FileText, Timer, Calendar, ShieldAlert } from 'lucide-react';
+import { formatDate, formatTime } from '@/lib/formatDate';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -258,7 +259,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                                                         {cleanMessage}
                                                     </p>
                                                     <span className="text-[10px] text-slate-400 mt-2 block uppercase tracking-wider font-semibold">
-                                                        {new Date(notif.createdAt).toLocaleDateString()} {new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        {formatDate(notif.createdAt)} {formatTime(notif.createdAt)}
                                                     </span>
                                                 </div>
                                                 {!notif.read && (

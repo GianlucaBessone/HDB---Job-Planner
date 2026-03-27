@@ -74,6 +74,7 @@ export async function POST(req: Request) {
                     create: operadores.map((op: any) => ({
                         operadorId: op.operadorId,
                         horas: Number(op.horas),
+                        isExtra: !!op.isExtra,
                     })),
                 },
             },

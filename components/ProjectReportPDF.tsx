@@ -1,23 +1,13 @@
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-function fmtDate(dateStr: string | null | undefined): string {
-    if (!dateStr) return '—';
-    try {
-        const d = new Date(dateStr + 'T12:00:00');
-        return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    } catch {
-        return dateStr ?? '—';
-    }
-}
+import { formatDate, formatDateTime } from '@/lib/formatDate';
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 const S = StyleSheet.create({
     page: { padding: 36, backgroundColor: '#FFFFFF', fontFamily: 'Helvetica', fontSize: 9 },
 
-    header: { flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 2, borderBottomColor: '#0F172A', paddingBottom: 16, marginBottom: 20, alignItems: 'center' },
-    logo: { height: 60, objectFit: 'contain' },
-    title: { fontSize: 20, fontFamily: 'Helvetica-Bold', color: '#0F172A' },
+    header: { flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 2, borderBottomColor: '#0F172A', paddingBottom: 16, marginBottom: 15, alignItems: 'flex-start' },
+    logo: { height: 90, objectFit: 'contain', alignSelf: 'flex-start', marginBottom: 5 },
+    title: { fontSize: 20, fontFamily: 'Helvetica-Bold', color: '#0F172A', marginTop: 10 },
     statusBadge: { fontSize: 8, marginTop: 4, letterSpacing: 1 },
     projectInfo: { alignItems: 'flex-end' },
     projectName: { fontSize: 15, fontFamily: 'Helvetica-Bold', color: '#4F46E5' },
@@ -141,9 +131,9 @@ export const ProjectReportPDF = ({
                         <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Bold', color: '#1E293B', textAlign: 'right', marginBottom: 2 }}>HDB Servicios Eléctricos</Text>
                         <Text style={S.clientName}>{hasClientStr}</Text>
                         <View style={S.dateRow}>
-                            <Text style={S.dateLabel}>Inicio: {fmtDate(project.fechaInicio)}</Text>
+                            <Text style={S.dateLabel}>Inicio: {formatDate(project.fechaInicio)}</Text>
                             <Text style={S.dateLabel}>  →  </Text>
-                            <Text style={S.dateLabel}>Fin: {fmtDate(project.fechaFin)}</Text>
+                            <Text style={S.dateLabel}>Fin: {formatDate(project.fechaFin)}</Text>
                         </View>
                     </View>
                 </View>
@@ -252,7 +242,7 @@ export const ProjectReportPDF = ({
                             </View>
                             {project.timeEntries.map((e: any) => (
                                 <View key={e.id} style={S.tableRow} wrap={false}>
-                                    <Text style={[S.tdCell, { flex: 2 }]}>{fmtDate(e.fecha)}</Text>
+                                    <Text style={[S.tdCell, { flex: 2 }]}>{formatDate(e.fecha)}</Text>
                                     <Text style={[S.tdCell, { flex: 3 }]}>{e.operator.nombreCompleto}</Text>
                                     <Text style={[S.tdCell, S.tdBold, { flex: 2 }]}>{e.horaIngreso} → {e.horaEgreso}</Text>
                                 </View>
@@ -274,7 +264,7 @@ export const ProjectReportPDF = ({
                         </View>
                         {clientDelays.map((d: any) => (
                             <View key={d.id} style={S.tableRow} wrap={false}>
-                                <Text style={[S.tdCell, { flex: 1.5 }]}>{fmtDate(d.fecha)}</Text>
+                                <Text style={[S.tdCell, { flex: 1.5 }]}>{formatDate(d.fecha)}</Text>
                                 <Text style={[S.tdCell, { flex: 2, color: '#D97706' }]}>{d.area}</Text>
                                 <Text style={[S.tdCell, { flex: 2 }]}>{d.responsableArea || '—'}</Text>
                                 <Text style={[S.tdCell, { flex: 4 }]}>
@@ -328,7 +318,7 @@ export const ProjectReportPDF = ({
 
                 {/* ── Footer ── */}
                 <Text style={S.footer}>
-                    Reporte Oficial · Generado por HDBPlanner para HDB Servicios Eléctricos el {new Date().toLocaleDateString('es-AR')}
+                    Reporte Oficial · Generado por HDBPlanner para HDB Servicios Eléctricos el {formatDate(new Date())}
                 </Text>
             </Page>
         </Document>
