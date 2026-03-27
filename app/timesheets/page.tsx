@@ -407,7 +407,7 @@ export default function TimesheetsPage() {
             acc[key] = {
                 id: key,
                 fecha: entry.fecha,
-                operatorName: entry.operator.nombreCompleto,
+                operatorName: entry.operator?.nombreCompleto || 'Sistema / Central',
                 normalTotal: 0,
                 extraTotal: 0,
             };
@@ -632,8 +632,8 @@ export default function TimesheetsPage() {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-2 flex-wrap mb-2">
-                                                <p className="text-xs font-bold text-slate-600 truncate">{entry.project.nombre}</p>
-                                                {entry.project.codigoProyecto && <CodeBadge code={entry.project.codigoProyecto} variant="project" size="sm" showCopy={false} />}
+                                                <p className="text-xs font-bold text-slate-600 truncate">{entry.project?.nombre || 'BASE / EMPRESA'}</p>
+                                                {entry.project?.codigoProyecto && <CodeBadge code={entry.project.codigoProyecto} variant="project" size="sm" showCopy={false} />}
                                             </div>
                                             <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
                                                 <span className="text-xs font-bold text-slate-500">{entry.horaIngreso} - {entry.horaEgreso}</span>
