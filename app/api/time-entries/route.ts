@@ -45,6 +45,9 @@ export async function GET(req: Request) {
         }
         if (operatorId) where.operatorId = operatorId;
         if (projectId) where.projectId = projectId;
+        
+        // EXCLUDE mobile punch-ins (fichadas) from the manual time entry list
+        where.deviceId = null;
 
         const entries = await prisma.timeEntry.findMany({
             where,

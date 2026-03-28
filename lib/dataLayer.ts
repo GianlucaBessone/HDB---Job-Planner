@@ -154,6 +154,16 @@ export const dataLayer = {
         if (sanitizedData.clientId === "") sanitizedData.clientId = null as any;
         if (sanitizedData.responsableId === "") sanitizedData.responsableId = null as any;
         const oldProject = await prisma.project.findUnique({ where: { id } });
+
+        // LOG QR HISTORY if changed
+        if (data.qrToken !== undefined && oldProject?.qrToken && data.qrToken !== oldProject.qrToken) {
+            await prisma.qrTokenHistory.upsert({
+                where: { token: oldProject.qrToken },
+                update: { projectId: id, replacedAt: new Date() },
+                create: { token: oldProject.qrToken, projectId: id, replacedAt: new Date() }
+            });
+        }
+
         const project = await prisma.project.update({ where: { id }, data: sanitizedData as any });
 
         await logAudit({

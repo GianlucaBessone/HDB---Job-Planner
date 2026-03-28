@@ -9,7 +9,7 @@ import { safeApiRequest } from '@/lib/offline';
 import * as XLSX from 'xlsx';
 import SearchableSelect from '@/components/SearchableSelect';
 import { formatDate, formatTime } from '@/lib/formatDate';
-import { getProjectOptions } from '@/lib/projectSelectHelper';
+import { getProjectOptions, filterOperatorProjects } from '@/lib/projectSelectHelper';
 import CodeBadge from '@/components/CodeBadge';
 
 interface Project {
@@ -115,9 +115,9 @@ export default function TimesheetsPage() {
                 safeApiRequest('/api/projects').then(res => res.json()),
                 safeApiRequest('/api/operators').then(res => res.json())
             ]);
-            setEntries(Array.isArray(entriesData) ? entriesData : []);
-            setProjects(Array.isArray(projectsData) ? projectsData : []);
-            setOperators(Array.isArray(operatorsData) ? operatorsData : []);
+            setEntries(Array.isArray(entriesData) ? entriesData.filter(Boolean) : []);
+            setProjects(Array.isArray(projectsData) ? projectsData.filter(Boolean) : []);
+            setOperators(Array.isArray(operatorsData) ? operatorsData.filter(Boolean) : []);
             
             if (user?.id || user?.nombreCompleto) {
                 try {
@@ -313,7 +313,9 @@ export default function TimesheetsPage() {
 
 
     // Derived Data
-    const activeProjects = projects.filter(p => p.estado !== 'finalizado');
+    // Restricted projects list for operators (filters out planned/old finalized)
+    const operatorVisibleProjects = currentUser?.role === 'operador' ? filterOperatorProjects(projects) : projects;
+    const activeProjects = operatorVisibleProjects.filter(p => p.estado !== 'finalizado' || (new Date(p.updatedAt || 0) > new Date(Date.now() - 24*60*60*1000)));
     const activeOperators = operators;
 
     // Compute View Data
@@ -484,7 +486,7 @@ export default function TimesheetsPage() {
                         <div className="flex items-center gap-2 w-full md:w-auto md:min-w-[200px]">
                             <SearchableSelect
                                 label="Filtrar Operador"
-                                options={activeOperators.map(op => ({ id: op.id, label: op.nombreCompleto }))}
+                                options={activeOperators.filter(op => op?.id && op?.nombreCompleto).map(op => ({ id: op.id, label: op.nombreCompleto }))}
                                 value={filterOperator}
                                 onChange={setFilterOperator}
                                 placeholder="Todos"
@@ -496,7 +498,7 @@ export default function TimesheetsPage() {
                     <div className="flex items-center gap-2 w-full md:w-auto md:min-w-[200px]">
                         <SearchableSelect
                             label="Filtrar Proyecto"
-                            options={getProjectOptions(activeProjects.map(p => ({ ...p, id: p.nombre })), recentProjects.map(id => projects.find(p => p.id === id)?.nombre || '').filter(Boolean))}
+                            options={getProjectOptions(activeProjects.filter(p => p?.id && p?.nombre).map(p => ({ ...p, id: p.nombre })), recentProjects.map(id => projects.find(p => p?.id === id)?.nombre || '').filter(Boolean))}
                             value={filterProject}
                             onChange={setFilterProject}
                             placeholder="Todos"
@@ -548,11 +550,11 @@ export default function TimesheetsPage() {
                                         filteredCompleted.map(entry => (
                                             <tr key={entry.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors [&>td]:align-middle">
                                                 <td className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-tight whitespace-nowrap">{formatEntryDate(entry.fecha)}</td>
-                                                <td className="p-4 text-sm font-black text-primary">{entry.operator.nombreCompleto}</td>
+                                                <td className="p-4 text-sm font-black text-primary">{entry.operator?.nombreCompleto || 'Sistema / Central'}</td>
                                                 <td className="p-4">
-                                                    <div className="flex items-center gap-2 flex-wrap text-xs font-bold text-slate-600 truncate max-w-[200px]" title={entry.project.nombre}>
-                                                        {entry.project.nombre}
-                                                        {entry.project.codigoProyecto && <CodeBadge code={entry.project.codigoProyecto} variant="project" size="sm" showCopy={false} />}
+                                                    <div className="flex items-center gap-2 flex-wrap text-xs font-bold text-slate-600 truncate max-w-[200px]" title={entry.project?.nombre || 'Sin proyecto'}>
+                                                        {entry.project?.nombre || 'Sin proyecto'}
+                                                        {entry.project?.codigoProyecto && <CodeBadge code={entry.project.codigoProyecto} variant="project" size="sm" showCopy={false} />}
                                                     </div>
                                                 </td>
                                                 <td className="p-4 text-xs font-bold text-slate-500 text-center">
@@ -614,7 +616,7 @@ export default function TimesheetsPage() {
                                             <div className="flex justify-between items-start mb-2">
                                                 <div className="min-w-0 flex-1">
                                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{formatEntryDate(entry.fecha)}</p>
-                                                    <h4 className="font-extrabold text-primary text-sm truncate">{entry.operator.nombreCompleto}</h4>
+                                                    <h4 className="font-extrabold text-primary text-sm truncate">{entry.operator?.nombreCompleto || 'Sistema / Central'}</h4>
                                                 </div>
                                                 <div className="flex items-center gap-1 shrink-0 ml-2">
                                                     <button
@@ -774,7 +776,7 @@ export default function TimesheetsPage() {
                                     <div className="space-y-2 md:col-span-2">
                                         <SearchableSelect
                                             label="Operador"
-                                            options={operators.map(op => ({ id: op.id, label: op.nombreCompleto }))}
+                                            options={operators.filter(op => op?.id && op?.nombreCompleto).map(op => ({ id: op.id, label: op.nombreCompleto }))}
                                             value={formData.operatorId}
                                             onChange={(val) => setFormData({ ...formData, operatorId: val })}
                                             placeholder="Seleccionar operador..."

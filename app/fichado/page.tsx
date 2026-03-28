@@ -18,6 +18,8 @@ import {
     Camera
 } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
+import SearchableSelect from '@/components/SearchableSelect';
+import { filterOperatorProjects } from '@/lib/projectSelectHelper';
 import { safeApiRequest } from '@/lib/offline';
 import { formatTime, formatDate } from '@/lib/formatDate';
 import { showToast } from '@/components/Toast';
@@ -42,6 +44,7 @@ export default function PunchInPage() {
     const [locationError, setLocationError] = useState<string | null>(null);
     const [isRefreshingLocation, setIsRefreshingLocation] = useState(false);
     const [deviceId, setDeviceId] = useState<string>('');
+    const [validationMode, setValidationMode] = useState<'gps' | 'qr'>('gps');
 
     // QR State
     const [isScanning, setIsScanning] = useState(false);
@@ -77,7 +80,7 @@ export default function PunchInPage() {
                 safeApiRequest('/api/config/system').then(res => res.json())
             ]);
             
-            setProjects(projectsRes.filter((p: any) => p.estado !== 'finalizado'));
+            setProjects(filterOperatorProjects(projectsRes));
             setActiveEntries(entriesRes.filter((e: any) => !e.horaEgreso));
             setSystemSetting(systemRes);
         } catch (err) {
@@ -111,35 +114,34 @@ export default function PunchInPage() {
     };
 
     const handlePunch = async (action: 'IN' | 'OUT', entryId?: string, projId?: string) => {
-        // Enforce location
-        if (!location) {
-            showToast("Ubicación necesaria. Por favor refresca el GPS.", "info");
-            refreshLocation();
-            return;
-        }
+        // Enforce validations based on mode (Only for Clock IN)
+        if (action === 'IN') {
+            if (validationMode === 'gps' && !location) {
+                showToast("Ubicación necesaria para fichar por GPS. Por favor refresca el GPS.", "info");
+                refreshLocation();
+                return;
+            }
 
-        // Enforce QR if required
-        const targetProjId = projId || selectedProjectId;
-        const targetProj = projects.find(p => p.id === targetProjId);
-        const requiredQRToken = targetProjId ? targetProj?.qrToken : systemSetting?.companyQrToken;
-        
-        if (requiredQRToken && !scannedToken) {
-            showToast("Debes escanear el código QR para validar tu posición.", "info");
-            setIsScanning(true);
-            return;
+            if (validationMode === 'qr' && !scannedToken) {
+                showToast("Debes escanear el código QR para validar tu ingreso.", "info");
+                setIsScanning(true);
+                return;
+            }
         }
 
         setIsLoading(true);
         try {
+            const targetProjId = projId || selectedProjectId;
             const body = {
                 operatorId: currentUser.id,
                 action,
                 projectId: targetProjId || null,
                 deviceId,
-                latitude: location.lat,
-                longitude: location.lng,
-                qrToken: scannedToken || null,
-                timestamp: new Date().toISOString()
+                latitude: location?.lat || null,
+                longitude: location?.lng || null,
+                qrToken: (validationMode === 'qr' ? scannedToken : null) || null,
+                timestamp: new Date().toISOString(),
+                validationMethod: validationMode // Added to metadata or handle in backend
             };
 
             const res = await safeApiRequest('/api/time-entries/punch', {
@@ -164,20 +166,42 @@ export default function PunchInPage() {
         }
     };
 
-    const handleOnScanSuccess = (decodedText: string) => {
+    const handleOnScanSuccess = async (decodedText: string) => {
         setIsScanning(false);
-        setScannedToken(decodedText);
-        
-        // Auto-select based on token
-        if (systemSetting?.companyQrToken === decodedText) {
-            setSelectedProjectId('');
-            showToast("Base Central Detectada", "success");
-        } else {
-            const foundProj = projects.find(p => p.qrToken === decodedText);
-            if (foundProj) {
-                setSelectedProjectId(foundProj.id);
-                showToast(`Proyecto Detectado: ${foundProj.nombre}`, "success");
+        setIsLoading(true);
+
+        try {
+            const res = await safeApiRequest(`/api/config/qr-lookup?token=${encodeURIComponent(decodedText)}`).then(r => r.json());
+            
+            if (res.type === 'UNKNOWN') {
+                showToast("Mensaje: Código QR desconocido o no asignado a ningún proyecto.", "error");
+                setScannedToken('');
+                return;
             }
+
+            if (res.status === 'EXPIRED') {
+                showToast(`Este Código QR ha caducado (reemplazado). Por favor usa el nuevo para ${res.name}.`, "error");
+                setScannedToken('');
+                return;
+            }
+
+            // SUCCESSFUL ACTIVE TOKEN
+            setScannedToken(decodedText);
+            setValidationMode('qr');
+            
+            if (res.type === 'BASE') {
+                setSelectedProjectId('');
+                showToast("Base Central Detectada: Validación por QR Activada", "success");
+            } else if (res.type === 'PROJECT') {
+                setSelectedProjectId(res.projectId);
+                showToast(`Proyecto Detectado: ${res.name} (Validación QR)`, "success");
+            }
+
+        } catch (error) {
+            console.error(error);
+            showToast("Error al validar el código QR. Inténtalo de nuevo.", "error");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -270,68 +294,75 @@ export default function PunchInPage() {
             <div className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100 space-y-6">
                 <div className="space-y-1">
                     <h3 className="text-xl font-black text-slate-800 tracking-tight">Iniciar Nueva Jornada</h3>
-                    <p className="text-xs font-medium text-slate-400">Selecciona el destino y valida tu ingreso.</p>
+                    <p className="text-xs font-medium text-slate-400">Selecciona el destino y método de validación.</p>
+                </div>
+
+                {/* Validation Mode Toggle */}
+                <div className="grid grid-cols-2 bg-slate-100 p-1.5 rounded-[1.5rem] gap-1">
+                    <button 
+                        onClick={() => setValidationMode('gps')}
+                        className={`py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${validationMode === 'gps' ? 'bg-white text-primary shadow-sm' : 'text-slate-400'}`}
+                    >
+                        <MapPin className="w-3.5 h-3.5" /> GPS
+                    </button>
+                    <button 
+                        onClick={() => setValidationMode('qr')}
+                        className={`py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${validationMode === 'qr' ? 'bg-white text-primary shadow-sm' : 'text-slate-400'}`}
+                    >
+                        <QrCode className="w-3.5 h-3.5" /> Código QR
+                    </button>
                 </div>
 
                 <div className="space-y-4">
-                    {/* Project Selector */}
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Destino de Trabajo</label>
-                        <div className="flex gap-2">
-                            <div className="relative group flex-1">
-                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
-                                    <MapPin className="w-5 h-5" />
-                                </div>
-                                <select 
-                                    value={selectedProjectId}
-                                    onChange={e => setSelectedProjectId(e.target.value)}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 pr-10 outline-none font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all appearance-none cursor-pointer text-sm leading-tight min-h-[60px]"
-                                >
-                                    <option value="">— BASE / EMPRESA —</option>
-                                    {projects.map(p => (
-                                        <option key={p.id} value={p.id}>{p.nombre}</option>
-                                    ))}
-                                </select>
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                    <ChevronRight className="w-5 h-5 rotate-90" />
-                                </div>
-                            </div>
-                            <button 
-                                type="button"
-                                onClick={() => setIsScanning(true)}
-                                className="w-14 bg-indigo-50 border border-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center active:scale-90 transition-all shadow-sm"
-                                title="Escanear QR para auto-detectar lugar"
-                            >
-                                <QrCode className="w-6 h-6" />
-                            </button>
-                        </div>
-                    </div>
+                    {/* Searchable Project Selector */}
+                    <SearchableSelect 
+                        label="Lugar de Destino"
+                        options={[
+                            { id: '', label: '— BASE / EMPRESA —' },
+                            ...projects.map(p => ({ id: p.id, label: p.nombre }))
+                        ]}
+                        value={selectedProjectId}
+                        onChange={(val) => {
+                            setSelectedProjectId(val);
+                            // If they manualy change project, we clear the scanned token to avoid confusing validation modes
+                            if (scannedToken) setScannedToken('');
+                        }}
+                        placeholder="Buscar obra..."
+                        icon={<MapPin className="w-5 h-5" />}
+                        className="w-full"
+                    />
 
-                    {/* QR Validation Section */}
-                    {needsQR && (
+                    {/* Validation UI based on mode */}
+                    {validationMode === 'qr' ? (
                         <div className="bg-indigo-50 border-2 border-indigo-200 border-dashed rounded-3xl p-6 text-center space-y-3">
                             <div className="mx-auto w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-500 shadow-sm">
                                 <QrCode className="w-6 h-6" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-indigo-900 text-sm">Validación por QR (Opcional)</h4>
-                                <p className="text-[10px] font-medium text-indigo-700/70">Escanea si estás en el lugar para mayor precisión.</p>
+                                <h4 className="font-bold text-indigo-900 text-sm">Escanea el Código QR</h4>
+                                <p className="text-[10px] font-medium text-indigo-700/70">Apunta al código impreso en el sitio {selectedProjectId ? 'de la obra' : 'de la base'}.</p>
                             </div>
                             <div className="flex gap-2">
-                                <input 
-                                    type="text"
-                                    placeholder="Ingresa token..."
-                                    value={scannedToken}
-                                    onChange={e => setScannedToken(e.target.value)}
-                                    className="flex-1 bg-white border border-indigo-200 rounded-xl py-2 px-4 text-center font-mono text-xs outline-none focus:border-indigo-500"
-                                />
+                                <div className="flex-1 bg-white border border-indigo-200 rounded-xl py-2 px-4 text-center font-mono text-xs text-slate-500 overflow-hidden truncate">
+                                    {scannedToken || 'Esperando escaneo...'}
+                                </div>
                                 <button 
                                     type="button"
                                     onClick={() => setIsScanning(true)}
-                                    className="px-3 bg-indigo-500 text-white rounded-xl shadow-lg shadow-indigo-200 active:scale-90 transition-all flex items-center justify-center"
+                                    className="px-4 bg-indigo-500 text-white rounded-xl shadow-lg shadow-indigo-200 active:scale-95 transition-all flex items-center justify-center"
                                 >
                                     <Camera className="w-4 h-4" />
                                 </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="bg-slate-50 border border-slate-200 rounded-3xl p-6 text-center space-y-2">
+                            <div className={`mx-auto w-10 h-10 rounded-2xl flex items-center justify-center shadow-sm ${location ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-400'}`}>
+                                <MapPin className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-slate-800 text-sm">{location ? 'Ubicación Lista' : 'Esperando GPS'}</h4>
+                                <p className="text-[10px] font-medium text-slate-400">Requerido para validar zona de trabajo.</p>
                             </div>
                         </div>
                     )}
@@ -346,7 +377,7 @@ export default function PunchInPage() {
                         Ingresar a {selectedProject ? 'Obra' : 'Base'}
                     </button>
                     
-                    {!location && (
+                    {!location && validationMode === 'gps' && (
                         <p className="text-[10px] text-center font-bold text-amber-600 animate-pulse">
                             Espera a obtener ubicación para fichar con precisión.
                         </p>

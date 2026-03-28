@@ -33,6 +33,7 @@ model Project {
   publicToken     String?         @unique
   pendientesSnapshot      Json?   // Snapshot of incomplete items if forced finish
   createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
   clientDelays    ClientDelay[]
   timeEntries     TimeEntry[]
   checklistItems  ChecklistItem[]
@@ -46,7 +47,22 @@ model Project {
   geofenceLat             Float?
   geofenceLng             Float?
   geofenceRadius          Float?   // radius in meters
-  qrToken                 String?  // token signature for QR validation
+  qrToken                 String?  // current token signature for QR validation
+  qrHistory               QrTokenHistory[]
+
+  @@index([qrToken])
+}
+
+model QrTokenHistory {
+  id              String   @id @default(cuid())
+  token           String   @unique
+  projectId       String?
+  project         Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  isCompanyToken  Boolean  @default(false)
+  replacedAt      DateTime @default(now())
+  
+  @@index([token])
+  @@index([projectId])
 }
 
 model ProjectLog {

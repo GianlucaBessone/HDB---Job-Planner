@@ -27,6 +27,15 @@ export async function PUT(req: Request) {
         // Audit: get old value
         const oldValue = await prisma.systemSetting.findUnique({ where: { id: 'default' } });
 
+        // LOG QR HISTORY if changed
+        if (body.companyQrToken !== undefined && oldValue?.companyQrToken && body.companyQrToken !== oldValue.companyQrToken) {
+            await prisma.qrTokenHistory.upsert({
+                where: { token: oldValue.companyQrToken },
+                update: { isCompanyToken: true, replacedAt: new Date() },
+                create: { token: oldValue.companyQrToken, isCompanyToken: true, replacedAt: new Date() }
+            });
+        }
+
         const setting = await prisma.systemSetting.upsert({
             where: { id: 'default' },
             create: {
