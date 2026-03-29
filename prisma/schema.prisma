@@ -33,7 +33,7 @@ model Project {
   publicToken     String?         @unique
   pendientesSnapshot      Json?   // Snapshot of incomplete items if forced finish
   createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  updatedAt       DateTime        @default(now()) @updatedAt
   clientDelays    ClientDelay[]
   timeEntries     TimeEntry[]
   checklistItems  ChecklistItem[]
