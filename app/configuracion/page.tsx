@@ -782,7 +782,7 @@ function SystemSection() {
                     <div>
                         <h4 className="font-bold text-slate-800">Alerta Diaria de Carga de Horas</h4>
                         <p className="text-xs text-slate-500 mt-1">
-                            Notificar a operadores y ausentismos mayores a 5 días.
+                            Notificar a operadores y ausentismos mayores a {setting.daysWithoutHoursThreshold || 5} días.
                         </p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">

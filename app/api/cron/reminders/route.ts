@@ -59,8 +59,9 @@ export async function GET(req: Request) {
         const noHoursOperators = [];
         const fiveDaysAbsentOperators = [];
 
-        // Five days ago date string
-        const fiveDaysAgoStr = format(subDays(nowZoned, 5), 'yyyy-MM-dd');
+        const absentThreshold = setting.daysWithoutHoursThreshold || 5;
+        // Threshold days ago date string
+        const absentAgoStr = format(subDays(nowZoned, absentThreshold), 'yyyy-MM-dd');
 
         for (const op of activeOperators) {
             // Check if there are time entries today
@@ -69,11 +70,11 @@ export async function GET(req: Request) {
             });
 
             if (entriesToday.length === 0) {
-                // Determine if they haven't logged ANY hours in the last 5 days
+                // Determine if they haven't logged ANY hours in the last N days
                 const recentEntries = await prisma.timeEntry.findFirst({
                     where: { 
                         operatorId: op.id, 
-                        fecha: { gte: fiveDaysAgoStr } 
+                        fecha: { gte: absentAgoStr } 
                     }
                 });
 
@@ -85,7 +86,7 @@ export async function GET(req: Request) {
             }
         }
 
-        // Send notifications to operators who haven't logged hours today (and are not MIA for 5 days)
+        // Send notifications to operators who haven't logged hours today (and are not MIA for threshold days)
         for (const op of noHoursOperators) {
             await prisma.notification.create({
                 data: {
@@ -104,21 +105,21 @@ export async function GET(req: Request) {
             });
         }
 
-        // Send alerts to supervisors for operators absent >= 5 days
+        // Send alerts to supervisors for operators absent >= threshold days
         if (fiveDaysAbsentOperators.length > 0) {
             const opNames = fiveDaysAbsentOperators.map(o => o.nombreCompleto).join(', ');
             await prisma.notification.create({
                 data: {
                     forSupervisors: true,
                     title: 'Alerta de Ausentismo Prolongado',
-                    message: `Los siguientes operadores no han registrado carga horaria en los últimos 5 días o más: ${opNames}`,
+                    message: `Los siguientes operadores no han registrado carga horaria en los últimos ${absentThreshold} días o más: ${opNames}`,
                     type: 'ABSENT_ALERT'
                 }
             });
             await sendPushNotification({
                 forSupervisors: true,
                 title: 'Alerta de Ausentismo',
-                message: `Operadores sin registrar horas (> 5 días): ${opNames}`,
+                message: `Operadores sin registrar horas (> ${absentThreshold} días): ${opNames}`,
                 data: { type: 'ABSENT_ALERT' }
             });
         }
