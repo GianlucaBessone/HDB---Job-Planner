@@ -5,28 +5,46 @@ import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
 export function ThemeToggle() {
-    const { theme, setTheme } = useTheme();
+    const { theme, setTheme, systemTheme } = useTheme();
     const [mounted, setMounted] = React.useState(false);
 
-    // After mounting, we have access to the theme
     React.useEffect(() => {
         setMounted(true);
     }, []);
 
     if (!mounted) {
-        // Prevents hydration mismatch while keeping space reserved
-        return <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse" />;
+        return <div className="w-[56px] h-[30px] rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse shrink-0 border border-slate-300 dark:border-slate-600" />;
     }
+
+    const currentTheme = theme === 'system' ? systemTheme : theme;
+    const isDark = currentTheme === 'dark';
 
     return (
         <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="relative flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 group"
-            aria-label="Toggle theme"
+            type="button"
+            onClick={() => setTheme(isDark ? 'light' : 'dark')}
+            className={`
+                relative flex items-center h-[30px] w-[56px] rounded-full p-1 cursor-pointer transition-colors duration-500 shrink-0 border shadow-inner outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-900
+                ${isDark ? 'bg-indigo-500 border-indigo-600' : 'bg-slate-200 border-slate-300'}
+            `}
+            aria-label="Alternar modo oscuro"
+            title="Alternar Tema"
         >
-            <Sun className="h-[1.2rem] w-[1.2rem] transition-all scale-100 rotate-0 dark:-rotate-90 dark:scale-0 group-hover:text-amber-500" />
-            <Moon className="absolute h-[1.2rem] w-[1.2rem] transition-all scale-0 rotate-90 dark:rotate-0 dark:scale-100 group-hover:text-blue-400" />
-            <span className="sr-only">Toggle theme</span>
+            <span
+                className={`
+                    absolute flex items-center justify-center w-[22px] h-[22px] rounded-full bg-white shadow-sm transform transition-transform duration-500 cubic-bezier(0.34,1.56,0.64,1)
+                    ${isDark ? 'translate-x-[24px]' : 'translate-x-0'}
+                `}
+            >
+                <Sun 
+                    className={`absolute w-3.5 h-3.5 text-amber-500 transition-all duration-500 
+                    ${isDark ? 'opacity-0 scale-50 rotate-90' : 'opacity-100 scale-100 rotate-0'}
+                `} />
+                <Moon 
+                    className={`absolute w-3 h-3 text-indigo-500 transition-all duration-500 
+                    ${isDark ? 'opacity-100 scale-100 rotate-0' : 'opacity-0 scale-50 -rotate-90'}
+                `} />
+            </span>
         </button>
     );
 }
