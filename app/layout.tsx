@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { Outfit } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -18,7 +17,6 @@ import { Loader2, BellRing } from "lucide-react";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
-const outfit = Outfit({ subsets: ["latin"] });
 
 export default function RootLayout({
     children,
@@ -167,10 +165,16 @@ export default function RootLayout({
                 <meta name="theme-color" content="#2563eb" />
                 <link rel="manifest" href="/manifest.json" />
                 <link rel="apple-touch-icon" href="/icon-192x192.png" />
+                
+                {/* Manual Font Loading to prevent next/font/google build crash in local environments */}
+                <link rel="preconnect" href="https://fonts.googleapis.com" />
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+                <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
                 <title>HDB | Job Planner</title>
                 <meta name="description" content="Sistema premium de planificación para técnicos" />
             </head>
-            <body className={`${outfit.className} min-h-[100dvh] bg-slate-50/50 dark:bg-slate-900 overscroll-none text-slate-900 dark:text-slate-100`}>
+            <body className="font-sans min-h-[100dvh] bg-slate-50/50 dark:bg-slate-900 overscroll-none text-slate-900 dark:text-slate-100" style={{ fontFamily: '"Outfit", sans-serif' }}>
                 <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
                     {content}
                 </ThemeProvider>
