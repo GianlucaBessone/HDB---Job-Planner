@@ -93,6 +93,81 @@
   @apply bg-[#0e1621] text-slate-100 border-slate-700;
 }
 
+/* ────────────────────────────────────────────────────────── */
+/* DARK MODE TAILWIND COMPONENT OVERRIDES PARA UI PROFESIONAL */
+/* ────────────────────────────────────────────────────────── */
+@layer components {
+  /* Suavizar focos globalmente en dark mode (sin aros brillantes chocantes) */
+  .dark *:focus, 
+  .dark *:focus-visible, 
+  .dark *:focus-within {
+    --tw-ring-color: rgba(99, 102, 241, 0.15) !important;
+  }
+
+  /* Evitar sombras blancas/claras abusivas en modales, cards y botones */
+  .dark .shadow-sm, 
+  .dark .shadow-md, 
+  .dark .shadow-lg, 
+  .dark .shadow-xl, 
+  .dark .shadow-2xl {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+  }
+  .dark .shadow-indigo-500\/20, 
+  .dark .shadow-indigo-500\/30 {
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.08) !important;
+  }
+
+  /* Fallbacks de fondos de listas y barras de filtros omitidos en el refactor */
+  .dark .bg-slate-50\/50, .dark .bg-white\/50 {
+    @apply bg-slate-800/40 border-slate-700/50 !important;
+  }
+  .dark .bg-slate-100\/50 {
+    @apply bg-slate-800/60 border-slate-700/50 !important;
+  }
+  .dark .bg-slate-200\/50 {
+    @apply bg-slate-700/60 border-slate-600/50 !important;
+  }
+
+  /* Encabezados de Tablas consistentes (Vista de Tiempos) */
+  .dark table thead tr, 
+  .dark table thead th {
+    @apply bg-slate-800/90 border-slate-700 text-slate-300 !important;
+  }
+
+  /* Fix de colores de status (Success, Error, Warning, Info) que en dark mode se veían blancos o muy claros */
+  /* Índigo / Primario */
+  .dark .bg-indigo-50 { @apply bg-indigo-500/10 text-indigo-300 !important; }
+  .dark .bg-indigo-100 { @apply bg-indigo-500/20 text-indigo-300 border-indigo-500/30 !important; }
+  .dark .text-indigo-600, .dark .text-indigo-700 { @apply text-indigo-400 !important; }
+  .dark .border-indigo-100, .dark .border-indigo-200 { @apply border-indigo-500/20 !important; }
+  .dark .hover\:bg-indigo-50:hover { @apply bg-indigo-500/20 !important; }
+  .dark .focus\:bg-indigo-50:focus { @apply bg-indigo-500/20 !important; }
+  .dark .bg-indigo-50\/30 { @apply bg-indigo-500/5 !important; }
+
+  /* Ámbar / Warning */
+  .dark .bg-amber-50 { @apply bg-amber-500/10 text-amber-400 !important; }
+  .dark .bg-amber-100 { @apply bg-amber-500/20 text-amber-300 border-amber-500/30 !important; }
+  .dark .text-amber-600, .dark .text-amber-700, .dark .text-amber-800 { @apply text-amber-400 !important; }
+  .dark .border-amber-100, .dark .border-amber-200 { @apply border-amber-500/20 !important; }
+  .dark .hover\:bg-amber-50:hover { @apply bg-amber-500/20 !important; }
+  .dark .bg-amber-50\/30 { @apply bg-amber-500/5 !important; }
+
+  /* Esmeralda / Success */
+  .dark .bg-emerald-50 { @apply bg-emerald-500/10 text-emerald-400 border-emerald-500/20 !important; }
+  .dark .bg-emerald-100 { @apply bg-emerald-500/20 text-emerald-300 border-emerald-500/30 !important; }
+  .dark .text-emerald-500, .dark .text-emerald-600, .dark .text-emerald-700, .dark .text-emerald-800 { @apply text-emerald-400 !important; }
+  .dark .border-emerald-100, .dark .border-emerald-200 { @apply border-emerald-500/20 !important; }
+  .dark .hover\:bg-emerald-50:hover, .dark .hover\:bg-emerald-100:hover { @apply bg-emerald-500/20 !important; }
+
+  /* Rosa / Error (Negativos no chocantes) */
+  .dark .bg-rose-50 { @apply bg-rose-500/10 text-rose-400 border-rose-500/20 !important; }
+  .dark .bg-rose-100 { @apply bg-rose-500/20 text-rose-300 border-rose-500/30 !important; }
+  .dark .text-rose-400, .dark .text-rose-500, .dark .text-rose-600, .dark .text-rose-700, .dark .text-rose-800 { @apply text-rose-400 !important; }
+  .dark .border-rose-100, .dark .border-rose-200 { @apply border-rose-500/20 !important; }
+  .dark .hover\:bg-rose-50:hover, .dark .hover\:bg-rose-100:hover { @apply bg-rose-500/20 !important; }
+}
+/* ────────────────────────────────────────────────────────── */
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
