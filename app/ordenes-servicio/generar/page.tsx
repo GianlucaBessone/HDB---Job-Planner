@@ -382,16 +382,16 @@ function GenerarOSContent() {
 
                 {/* Existing hours summary */}
                 {existingHoras.length > 0 && !isFirmada && (
-                    <div className="px-6 py-4 border-b border-slate-50 bg-indigo-50/50">
-                        <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-3">Horas ya registradas (del listado de tiempos)</p>
+                    <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 bg-indigo-50/50 dark:bg-indigo-500/10">
+                        <p className="text-[10px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-widest mb-3">Horas ya registradas (del listado de tiempos)</p>
                         <div className="space-y-2">
                             {existingHoras.map((g, idx) => (
                                 <div key={idx} className="flex items-center justify-between">
                                     <span className="text-sm font-medium text-slate-700 dark:text-slate-200 flex items-center gap-2">
                                         {g.nombreCompleto}
-                                        {g.isExtra && <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-black uppercase">Extra</span>}
+                                        {g.isExtra && <span className="text-[10px] bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 px-1.5 py-0.5 rounded font-black uppercase">Extra</span>}
                                     </span>
-                                    <span className="text-sm font-black text-indigo-600">{g.totalHoras}h</span>
+                                    <span className="text-sm font-black text-indigo-600 dark:text-indigo-400">{g.totalHoras}h</span>
                                 </div>
                             ))}
                         </div>
