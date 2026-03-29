@@ -32,7 +32,7 @@ export default function ReportPrintButton({
     }, []);
 
     if (!isMounted) return (
-        <button className="bg-slate-100 text-slate-400 px-6 py-3 rounded-xl font-bold flex items-center gap-2 cursor-wait">
+        <button className="bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 px-6 py-3 rounded-xl font-bold flex items-center gap-2 cursor-wait">
             <Loader2 className="w-5 h-5 animate-spin" />
             Cargando Generador...
         </button>

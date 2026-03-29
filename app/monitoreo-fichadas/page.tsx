@@ -171,19 +171,19 @@ export default function FichadasAdminPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="space-y-1">
-                    <h2 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight flex items-center gap-3">
+                    <h2 className="text-2xl md:text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-3">
                         <div className="w-10 h-10 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20">
                             <Clock className="w-6 h-6" />
                         </div>
                         Monitoreo de Fichadas
                     </h2>
-                    <p className="text-sm text-slate-500 font-medium">Control auditado de ingresos y egresos (GPS / Dispositivo)</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Control auditado de ingresos y egresos (GPS / Dispositivo)</p>
                 </div>
                 
                 <div className="flex items-center gap-2 w-full md:w-auto">
                     <button 
                         onClick={loadEntries}
-                        className="p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 transition-all active:scale-95 shadow-sm"
+                        className="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/80 text-slate-600 dark:text-slate-300 transition-all active:scale-95 shadow-sm"
                         title="Refrescar"
                     >
                         <RefreshCcw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
@@ -199,29 +199,29 @@ export default function FichadasAdminPage() {
             </div>
 
             {/* Filters Bar */}
-            <div className="bg-white rounded-[2.5rem] p-6 shadow-xl border border-slate-100 flex flex-wrap gap-4 items-end">
+            <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] p-6 shadow-xl border border-slate-100 dark:border-slate-800 flex flex-wrap gap-4 items-end">
                 <div className="space-y-1.5 flex-1 min-w-[150px]">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Desde</label>
+                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Desde</label>
                     <div className="relative">
-                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
                         <input 
                             type="date"
                             value={filterDateFrom}
                             onChange={e => setFilterDateFrom(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 font-bold text-slate-700 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs"
+                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-10 pr-4 font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs"
                         />
                     </div>
                 </div>
 
                 <div className="space-y-1.5 flex-1 min-w-[150px]">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Hasta</label>
+                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Hasta</label>
                     <div className="relative">
-                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
                         <input 
                             type="date"
                             value={filterDateTo}
                             onChange={e => setFilterDateTo(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 font-bold text-slate-700 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs"
+                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-10 pr-4 font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs"
                         />
                     </div>
                 </div>
@@ -255,7 +255,7 @@ export default function FichadasAdminPage() {
                         className={`h-[42px] px-5 rounded-xl font-bold transition-all active:scale-95 text-xs flex items-center gap-2 ${
                             filterSuspicious 
                             ? 'bg-rose-100 text-rose-700 border-2 border-rose-500' 
-                            : 'bg-slate-50 text-slate-500 border-2 border-slate-200'
+                            : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'
                         }`}
                     >
                         <AlertTriangle className={`w-4 h-4 ${filterSuspicious ? 'animate-pulse' : ''}`} />
@@ -265,16 +265,16 @@ export default function FichadasAdminPage() {
             </div>
 
             {/* List Table */}
-            <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-slate-50/50 border-b border-slate-100">
-                                <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Información de Jornada</th>
-                                <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Operador</th>
-                                <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Horarios</th>
-                                <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Audit trail</th>
-                                <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Acciones</th>
+                            <tr className="bg-slate-50/50 border-b border-slate-100 dark:border-slate-800">
+                                <th className="p-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Información de Jornada</th>
+                                <th className="p-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Operador</th>
+                                <th className="p-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Horarios</th>
+                                <th className="p-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Audit trail</th>
+                                <th className="p-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -282,16 +282,16 @@ export default function FichadasAdminPage() {
                                 <tr>
                                     <td colSpan={5} className="p-20 text-center">
                                         <div className="inline-block w-8 h-8 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin mb-4"></div>
-                                        <p className="text-sm font-bold text-slate-400 animate-pulse">Cargando registros auditados...</p>
+                                        <p className="text-sm font-bold text-slate-400 dark:text-slate-500 animate-pulse">Cargando registros auditados...</p>
                                     </td>
                                 </tr>
                             ) : entries.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="p-20 text-center">
-                                        <div className="mx-auto w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mb-4">
+                                        <div className="mx-auto w-16 h-16 bg-slate-50 dark:bg-slate-900/50 rounded-2xl flex items-center justify-center text-slate-300 mb-4">
                                             <Search className="w-8 h-8" />
                                         </div>
-                                        <p className="font-bold text-slate-400">No se encontraron fichadas con estos filtros</p>
+                                        <p className="font-bold text-slate-400 dark:text-slate-500">No se encontraron fichadas con estos filtros</p>
                                     </td>
                                 </tr>
                             ) : (
@@ -300,11 +300,11 @@ export default function FichadasAdminPage() {
                                         <td className="p-5">
                                             <div className="space-y-1">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-tight">{formatDate(entry.fecha)}</span>
+                                                    <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-tight">{formatDate(entry.fecha)}</span>
                                                     {entry.isExtra && <span className="text-[9px] font-black bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded uppercase tracking-widest">Extra</span>}
                                                 </div>
                                                 <div className="flex flex-col">
-                                                    <h4 className="font-black text-slate-800 text-sm leading-tight">{entry.project?.nombre || 'Base / Empresa'}</h4>
+                                                    <h4 className="font-black text-slate-800 dark:text-slate-100 text-sm leading-tight">{entry.project?.nombre || 'Base / Empresa'}</h4>
                                                     {entry.project?.codigoProyecto && (
                                                         <div className="mt-1">
                                                             <CodeBadge code={entry.project.codigoProyecto} variant="project" size="sm" showCopy={false} />
@@ -318,24 +318,24 @@ export default function FichadasAdminPage() {
                                                 <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-500 font-bold text-xs">
                                                     {entry.operator.nombreCompleto.charAt(0)}
                                                 </div>
-                                                <span className="text-sm font-black text-slate-700">{entry.operator.nombreCompleto}</span>
+                                                <span className="text-sm font-black text-slate-700 dark:text-slate-200">{entry.operator.nombreCompleto}</span>
                                             </div>
                                         </td>
                                         <td className="p-5">
                                             <div className="flex flex-col items-center gap-1.5">
                                                 <div className="flex items-center gap-4">
                                                     <div className="flex flex-col items-center">
-                                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Ingreso</span>
+                                                        <span className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Ingreso</span>
                                                         <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100">{entry.horaIngreso || '--:--'}</span>
                                                     </div>
                                                     <div className="text-slate-300">→</div>
                                                     <div className="flex flex-col items-center">
-                                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Egreso</span>
+                                                        <span className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Egreso</span>
                                                         <span className="text-xs font-black text-rose-500 bg-rose-50 px-2 py-0.5 rounded-lg border border-rose-100">{entry.horaEgreso || '--:--'}</span>
                                                     </div>
                                                 </div>
                                                 {entry.horasTrabajadas > 0 && (
-                                                    <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">{entry.horasTrabajadas}h trabajadas</span>
+                                                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/50 px-2 py-0.5 rounded-full">{entry.horasTrabajadas}h trabajadas</span>
                                                 )}
                                             </div>
                                         </td>
@@ -355,7 +355,7 @@ export default function FichadasAdminPage() {
                                                 </div>
                                                 <div className="flex items-center gap-3">
                                                     {entry.deviceId && (
-                                                        <div className="flex items-center gap-1 text-[9px] font-bold text-slate-400">
+                                                        <div className="flex items-center gap-1 text-[9px] font-bold text-slate-400 dark:text-slate-500">
                                                             <Smartphone className="w-3 h-3" /> {entry.deviceId.slice(0, 8)}...
                                                         </div>
                                                     )}
@@ -375,7 +375,7 @@ export default function FichadasAdminPage() {
                                             <div className="flex items-center justify-end gap-2">
                                                 <button 
                                                     onClick={() => { setSelectedEntry(entry); setIsModalOpen(true); }}
-                                                    className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-indigo-500 transition-all active:scale-95"
+                                                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400 dark:text-slate-500 hover:text-indigo-500 transition-all active:scale-95"
                                                 >
                                                     <ExternalLink className="w-4 h-4" />
                                                 </button>
@@ -393,19 +393,19 @@ export default function FichadasAdminPage() {
             {isModalOpen && selectedEntry && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6">
                     <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsModalOpen(false)} />
-                    <div className="relative bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+                    <div className="relative bg-white dark:bg-slate-800 w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
                         {/* Modal Header */}
-                        <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                        <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50">
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20">
                                     <ShieldAlert className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-black text-slate-800 tracking-tight">Ficha Auditada</h3>
-                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{formatDate(selectedEntry.fecha)} — {selectedEntry.operator.nombreCompleto}</p>
+                                    <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Ficha Auditada</h3>
+                                    <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{formatDate(selectedEntry.fecha)} — {selectedEntry.operator.nombreCompleto}</p>
                                 </div>
                             </div>
-                            <button onClick={() => setIsModalOpen(false)} className="p-3 hover:bg-slate-100 rounded-2xl text-slate-400 transition-colors">
+                            <button onClick={() => setIsModalOpen(false)} className="p-3 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-2xl text-slate-400 dark:text-slate-500 transition-colors">
                                 <ArrowUpRight className="w-6 h-6 rotate-180" />
                             </button>
                         </div>
@@ -414,32 +414,32 @@ export default function FichadasAdminPage() {
                         <div className="p-8 space-y-8 overflow-y-auto max-h-[70vh]">
                             {/* Summary Cards */}
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Destino Declarado</p>
-                                    <h4 className="font-extrabold text-slate-800 leading-tight">{selectedEntry.project?.nombre || 'Base / Empresa'}</h4>
-                                    {selectedEntry.project?.cliente && <p className="text-xs font-bold text-slate-500 mt-1">{selectedEntry.project.cliente}</p>}
+                                <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-3xl border border-slate-100 dark:border-slate-800">
+                                    <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Destino Declarado</p>
+                                    <h4 className="font-extrabold text-slate-800 dark:text-slate-100 leading-tight">{selectedEntry.project?.nombre || 'Base / Empresa'}</h4>
+                                    {selectedEntry.project?.cliente && <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">{selectedEntry.project.cliente}</p>}
                                 </div>
-                                <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Horario Registrado</p>
+                                <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-3xl border border-slate-100 dark:border-slate-800">
+                                    <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Horario Registrado</p>
                                     <div className="flex items-center gap-3">
                                         <span className="text-lg font-black text-indigo-600">{selectedEntry.horaIngreso || '--:--'}</span>
                                         <span className="text-slate-300">→</span>
                                         <span className="text-lg font-black text-rose-500">{selectedEntry.horaEgreso || '--:--'}</span>
                                     </div>
-                                    <p className="text-xs font-bold text-slate-500 mt-1">{selectedEntry.horasTrabajadas} horas totales</p>
+                                    <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">{selectedEntry.horasTrabajadas} horas totales</p>
                                 </div>
                             </div>
 
                             {/* Validation Flags Section */}
                             <div className="space-y-4">
-                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
                                     <AlertTriangle className="w-3.5 h-3.5" /> Resultados de Validación Digital
                                 </h4>
                                 <div className="space-y-2">
                                     {selectedEntry.validationFlags ? (
                                         JSON.parse(selectedEntry.validationFlags).map((flag: string, idx: number) => (
                                             <div key={idx} className="flex items-center gap-4 p-4 bg-rose-50 rounded-2xl border border-rose-100 animate-in slide-in-from-left-2 duration-300" style={{ animationDelay: `${idx * 100}ms` }}>
-                                                <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center text-rose-500 shadow-sm">
+                                                <div className="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center text-rose-500 shadow-sm">
                                                     <AlertTriangle className="w-4 h-4" />
                                                 </div>
                                                 <div className="flex-1">
@@ -450,7 +450,7 @@ export default function FichadasAdminPage() {
                                         ))
                                     ) : (
                                         <div className="flex items-center gap-4 p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
-                                            <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center text-emerald-500 shadow-sm">
+                                            <div className="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center text-emerald-500 shadow-sm">
                                                 <CheckCircle2 className="w-4 h-4" />
                                             </div>
                                             <div className="flex-1">
@@ -465,23 +465,23 @@ export default function FichadasAdminPage() {
                             {/* Technical Rastro */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-4">
-                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                    <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
                                         <Smartphone className="w-3.5 h-3.5" /> Identidad del Dispositivo
                                     </h4>
-                                    <div className="bg-slate-100 p-5 rounded-3xl border border-slate-200">
-                                        <code className="text-[10px] font-bold text-slate-600 block break-all mb-2">ID: {selectedEntry.deviceId || 'N/A'}</code>
-                                        <p className="text-[9px] font-bold text-slate-400 leading-tight">Este ID es único por instalación y se utiliza para evitar que un operario fiche desde múltiples teléfonos no autorizados.</p>
+                                    <div className="bg-slate-100 dark:bg-slate-800/50 p-5 rounded-3xl border border-slate-200 dark:border-slate-700">
+                                        <code className="text-[10px] font-bold text-slate-600 dark:text-slate-300 block break-all mb-2">ID: {selectedEntry.deviceId || 'N/A'}</code>
+                                        <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 leading-tight">Este ID es único por instalación y se utiliza para evitar que un operario fiche desde múltiples teléfonos no autorizados.</p>
                                     </div>
                                 </div>
                                 <div className="space-y-4">
-                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                    <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
                                         <MapPin className="w-3.5 h-3.5" /> Posicionamiento Global
                                     </h4>
                                     {selectedEntry.latitude ? (
                                         <div className="space-y-3">
                                             <div className="flex items-center gap-3">
-                                                <div className="px-3 py-1.5 bg-slate-100 rounded-lg text-[10px] font-bold text-slate-600 border border-slate-200">Lat: {selectedEntry.latitude.toFixed(6)}</div>
-                                                <div className="px-3 py-1.5 bg-slate-100 rounded-lg text-[10px] font-bold text-slate-600 border border-slate-200">Lng: {selectedEntry.longitude?.toFixed(6)}</div>
+                                                <div className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800/50 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Lat: {selectedEntry.latitude.toFixed(6)}</div>
+                                                <div className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800/50 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Lng: {selectedEntry.longitude?.toFixed(6)}</div>
                                             </div>
                                             <a 
                                                 href={`https://www.google.com/maps?q=${selectedEntry.latitude},${selectedEntry.longitude}`}
@@ -492,8 +492,8 @@ export default function FichadasAdminPage() {
                                             </a>
                                         </div>
                                     ) : (
-                                        <div className="p-5 border-2 border-dashed border-slate-200 rounded-3xl text-center">
-                                            <p className="text-xs font-bold text-slate-400 italic">Ubicación no disponible para este registro.</p>
+                                        <div className="p-5 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-3xl text-center">
+                                            <p className="text-xs font-bold text-slate-400 dark:text-slate-500 italic">Ubicación no disponible para este registro.</p>
                                         </div>
                                     )}
                                 </div>
@@ -501,8 +501,8 @@ export default function FichadasAdminPage() {
                         </div>
 
                         {/* Modal Footer */}
-                        <div className="p-6 bg-slate-50/50 border-t border-slate-100 flex justify-end">
-                            <button onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 bg-white border border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-50 transition-all text-xs"> Cerrar Detalle </button>
+                        <div className="p-6 bg-slate-50/50 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+                            <button onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all text-xs"> Cerrar Detalle </button>
                         </div>
                     </div>
                 </div>

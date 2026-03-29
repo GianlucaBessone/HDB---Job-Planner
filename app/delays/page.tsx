@@ -249,16 +249,16 @@ export default function DelaysPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-slate-400 mb-1">
+                    <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500 mb-1">
                         <Link href="/projects" className="hover:text-primary transition-colors flex items-center gap-1 text-xs font-bold uppercase tracking-widest">
                             <ArrowLeft className="w-3 h-3" /> Regresar a Proyectos
                         </Link>
                     </div>
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 md:gap-3">
+                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
                         <Timer className="w-6 h-6 md:w-8 md:h-8 text-amber-500" />
                         Demoras del Cliente
                     </h2>
-                    <p className="text-sm text-slate-500 font-medium italic hidden md:block">Registro de tiempos externos para análisis de causa raíz</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium italic hidden md:block">Registro de tiempos externos para análisis de causa raíz</p>
                 </div>
                 <button
                     onClick={() => {
@@ -274,7 +274,7 @@ export default function DelaysPage() {
 
             {/* Info Box */}
             <div className="bg-amber-50 border border-amber-100 rounded-3xl p-4 md:p-5 flex items-center gap-4 text-amber-800">
-                <div className="p-2.5 bg-white rounded-xl shadow-sm shrink-0">
+                <div className="p-2.5 bg-white dark:bg-slate-800 rounded-xl shadow-sm shrink-0">
                     <Info className="w-5 h-5 text-amber-500" />
                 </div>
                 <p className="text-sm font-medium leading-relaxed">
@@ -284,23 +284,23 @@ export default function DelaysPage() {
             </div>
 
             {/* Main Content Card */}
-            <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                 {/* Toolbar */}
-                <div className="p-4 md:p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div className="p-4 md:p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
-                        <History className="w-4 h-4 md:w-5 md:h-5 text-slate-400" />
-                        <h3 className="font-bold text-slate-700 text-sm md:text-base">Historial</h3>
+                        <History className="w-4 h-4 md:w-5 md:h-5 text-slate-400 dark:text-slate-500" />
+                        <h3 className="font-bold text-slate-700 dark:text-slate-200 text-sm md:text-base">Historial</h3>
                         <span className="bg-amber-100 text-amber-700 text-[9px] md:text-[10px] font-black px-2 py-0.5 rounded-lg uppercase tracking-widest">
                             {filteredDelays.length} · {totalHours.toFixed(1)}h
                         </span>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                         {/* View Toggle */}
-                        <div className="hidden md:flex bg-slate-100 p-1 rounded-xl items-center gap-1">
+                        <div className="hidden md:flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl items-center gap-1">
                             <button
                                 onClick={() => setViewMode('tabla')}
                                 title="Vista Tabla"
-                                className={`p-1.5 md:p-2 rounded-lg transition-all ${viewMode === 'tabla' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                className={`p-1.5 md:p-2 rounded-lg transition-all ${viewMode === 'tabla' ? 'bg-white dark:bg-slate-800 text-primary shadow-sm' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600'}`}
                             >
                                 <svg className="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
                                     <path d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1z" />
@@ -309,7 +309,7 @@ export default function DelaysPage() {
                             <button
                                 onClick={() => setViewMode('tarjetas')}
                                 title="Vista Tarjetas"
-                                className={`p-1.5 md:p-2 rounded-lg transition-all ${viewMode === 'tarjetas' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                className={`p-1.5 md:p-2 rounded-lg transition-all ${viewMode === 'tarjetas' ? 'bg-white dark:bg-slate-800 text-primary shadow-sm' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600'}`}
                             >
                                 <LayoutGrid className="w-4 h-4" />
                             </button>
@@ -324,29 +324,29 @@ export default function DelaysPage() {
                 </div>
 
                 {/* Filters Bar */}
-                <div className="p-3 md:p-5 bg-slate-50/60 border-b border-slate-100 flex flex-wrap gap-2 md:gap-3 items-end">
+                <div className="p-3 md:p-5 bg-slate-50/60 border-b border-slate-100 dark:border-slate-800 flex flex-wrap gap-2 md:gap-3 items-end">
                     {/* Search */}
                     <div className="relative w-full md:flex-1 md:min-w-[200px]">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
                         <input
                             type="text"
                             placeholder="Buscar..."
-                            className="w-full h-[42px] bg-white border border-slate-200 rounded-xl pl-9 pr-3 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-bold text-slate-700"
+                            className="w-full h-[42px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-3 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-bold text-slate-700 dark:text-slate-200"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
                     </div>
 
                     <div className="flex items-center gap-1.5 w-[calc(50%-4px)] md:w-auto">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap shrink-0">Desde</label>
+                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap shrink-0">Desde</label>
                         <input type="date" value={filterDateFrom} onChange={e => setFilterDateFrom(e.target.value)}
-                            className="h-[42px] bg-white border border-slate-200 rounded-xl px-2 md:px-4 text-xs md:text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none flex-1 min-w-0" />
+                            className="h-[42px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2 md:px-4 text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none flex-1 min-w-0" />
                     </div>
 
                     <div className="flex items-center gap-1.5 w-[calc(50%-4px)] md:w-auto">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap shrink-0">Hasta</label>
+                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap shrink-0">Hasta</label>
                         <input type="date" value={filterDateTo} onChange={e => setFilterDateTo(e.target.value)}
-                            className="h-[42px] bg-white border border-slate-200 rounded-xl px-2 md:px-4 text-xs md:text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none flex-1 min-w-0" />
+                            className="h-[42px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2 md:px-4 text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none flex-1 min-w-0" />
                     </div>
 
                     <div className="w-[calc(50%-4px)] md:w-auto md:min-w-[160px]">
@@ -383,10 +383,10 @@ export default function DelaysPage() {
                 <div className="overflow-x-auto">
                     {isLoading ? (
                         <div className="p-8 space-y-3">
-                            {Array(4).fill(0).map((_, i) => <div key={i} className="h-14 bg-slate-100 rounded-xl animate-pulse" />)}
+                            {Array(4).fill(0).map((_, i) => <div key={i} className="h-14 bg-slate-100 dark:bg-slate-800/50 rounded-xl animate-pulse" />)}
                         </div>
                     ) : filteredDelays.length === 0 ? (
-                        <div className="py-24 flex flex-col items-center justify-center text-slate-400">
+                        <div className="py-24 flex flex-col items-center justify-center text-slate-400 dark:text-slate-500">
                             <Clock className="w-12 h-12 mb-4 opacity-10" />
                             <p className="font-bold uppercase tracking-widest text-xs">Sin registros que coincidan</p>
                         </div>
@@ -395,27 +395,27 @@ export default function DelaysPage() {
                             {viewMode === 'tabla' && (
                                 <table className="w-full text-left border-collapse hidden md:table">
                                     <thead>
-                                        <tr className="bg-slate-50 border-b border-slate-100">
-                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Fecha</th>
-                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Proyecto</th>
-                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Área</th>
-                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Motivo</th>
-                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden lg:table-cell">Resp. Área</th>
-                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden md:table-cell">Operador</th>
-                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Duración</th>
-                                            <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right"></th>
+                                        <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
+                                            <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap">Fecha</th>
+                                            <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Proyecto</th>
+                                            <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Área</th>
+                                            <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Motivo</th>
+                                            <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest hidden lg:table-cell">Resp. Área</th>
+                                            <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest hidden md:table-cell">Operador</th>
+                                            <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Duración</th>
+                                            <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right"></th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {filteredDelays.map(delay => (
                                             <tr key={delay.id} className="border-b border-slate-50 hover:bg-slate-50/60 transition-colors">
-                                                <td className="p-4 text-xs font-bold text-slate-500 whitespace-nowrap">{formatDate(delay.fecha)}</td>
-                                                <td className="p-4 text-sm font-black text-slate-800 max-w-[200px] truncate">{delay.project.nombre}</td>
+                                                <td className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">{formatDate(delay.fecha)}</td>
+                                                <td className="p-4 text-sm font-black text-slate-800 dark:text-slate-100 max-w-[200px] truncate">{delay.project.nombre}</td>
                                                 <td className="p-4">
                                                     <span className="text-[10px] font-black bg-amber-50 text-amber-700 px-2 py-1 rounded-lg uppercase tracking-widest whitespace-nowrap">{delay.area}</span>
                                                 </td>
-                                                <td className="p-4 text-xs font-medium text-slate-500 italic max-w-[250px] truncate" title={delay.motivo}>"{delay.motivo}"</td>
-                                                <td className="p-4 text-xs font-bold text-slate-400 hidden lg:table-cell">{delay.responsableArea || '—'}</td>
+                                                <td className="p-4 text-xs font-medium text-slate-500 dark:text-slate-400 italic max-w-[250px] truncate" title={delay.motivo}>"{delay.motivo}"</td>
+                                                <td className="p-4 text-xs font-bold text-slate-400 dark:text-slate-500 hidden lg:table-cell">{delay.responsableArea || '—'}</td>
                                                 <td className="p-4 text-xs font-bold text-primary hidden md:table-cell">{delay.operador}</td>
                                                 <td className="p-4 text-center">
                                                     <span className="px-3 py-1 bg-amber-50 text-amber-600 font-black rounded-xl text-sm border border-amber-100">{delay.duracion}h</span>
@@ -434,8 +434,8 @@ export default function DelaysPage() {
                                                 </td>
                                             </tr>
                                         ))}
-                                        <tr className="bg-slate-50 font-black border-t-2 border-slate-200">
-                                            <td colSpan={6} className="p-4 text-right text-[10px] uppercase tracking-widest text-slate-500 hidden md:table-cell">Total Horas en Rango:</td>
+                                        <tr className="bg-slate-50 dark:bg-slate-900/50 font-black border-t-2 border-slate-200 dark:border-slate-700">
+                                            <td colSpan={6} className="p-4 text-right text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400 hidden md:table-cell">Total Horas en Rango:</td>
                                             <td className="p-4 text-center text-amber-600 text-base font-black">{totalHours.toFixed(1)}h</td>
                                             <td className="hidden md:table-cell"></td>
                                         </tr>
@@ -446,44 +446,44 @@ export default function DelaysPage() {
                             {/* Cards View (Mobile Fallback + Explicit Card View) */}
                             <div className={`p-4 md:p-6 grid gap-4 ${viewMode === 'tabla' ? 'grid-cols-1 md:hidden' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}>
                                 {filteredDelays.map(delay => (
-                                    <div key={delay.id} className="bg-white border border-slate-200 rounded-2xl md:rounded-[2rem] shadow-sm p-4 md:p-5 flex flex-col gap-3 hover:shadow-md transition-all group animate-card-in">
+                                    <div key={delay.id} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-[2rem] shadow-sm p-4 md:p-5 flex flex-col gap-3 hover:shadow-md transition-all group animate-card-in">
                                         <div className="flex items-start gap-3 justify-between">
                                             <div className="flex items-start gap-3 min-w-0">
                                                 <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
                                                     <Building2 className="w-5 h-5 text-amber-500" />
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <h4 className="font-black text-slate-800 text-sm leading-tight truncate">{delay.project.nombre}</h4>
+                                                    <h4 className="font-black text-slate-800 dark:text-slate-100 text-sm leading-tight truncate">{delay.project.nombre}</h4>
                                                     <div className="flex flex-wrap items-center gap-2 mt-1">
-                                                        <span className="text-[10px] font-bold text-slate-400">{formatDate(delay.fecha)} · {delay.hora}</span>
+                                                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">{formatDate(delay.fecha)} · {delay.hora}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-1 shrink-0">
                                                 {(currentUser?.role === 'admin' || currentUser?.role === 'supervisor') && (
-                                                    <button onClick={() => handleEditClick(delay)} className="btn-icon-inline p-2 md:p-1.5 text-slate-400 hover:text-indigo-500 transition-colors">
+                                                    <button onClick={() => handleEditClick(delay)} className="btn-icon-inline p-2 md:p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-500 transition-colors">
                                                         <Edit2 className="w-4 h-4 md:w-3.5 md:h-3.5" />
                                                     </button>
                                                 )}
-                                                <button onClick={() => handleDeleteClick(delay.id)} className="btn-icon-inline p-2 md:p-1.5 text-slate-400 hover:text-rose-500 transition-colors">
+                                                <button onClick={() => handleDeleteClick(delay.id)} className="btn-icon-inline p-2 md:p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-500 transition-colors">
                                                     <Trash2 className="w-4 h-4 md:w-3.5 md:h-3.5" />
                                                 </button>
                                             </div>
                                         </div>
                                         <span className="text-[10px] font-black bg-amber-50 text-amber-700 px-2 py-1 rounded-lg uppercase tracking-widest w-fit">{delay.area}</span>
-                                        <div className="bg-slate-50 px-3 py-2.5 rounded-xl">
-                                            <p className="text-xs font-medium text-slate-600 italic line-clamp-2">"{delay.motivo}"</p>
+                                        <div className="bg-slate-50 dark:bg-slate-900/50 px-3 py-2.5 rounded-xl">
+                                            <p className="text-xs font-medium text-slate-600 dark:text-slate-300 italic line-clamp-2">"{delay.motivo}"</p>
                                         </div>
                                         <div className="flex items-center justify-between pt-2 border-t border-slate-50">
                                             <div className="flex items-center gap-2">
                                                 <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary">
                                                     {delay.operador.charAt(0)}
                                                 </div>
-                                                <span className="text-[10px] font-bold text-slate-500 truncate max-w-[100px]">{delay.operador}</span>
+                                                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate max-w-[100px]">{delay.operador}</span>
                                             </div>
                                             <div className="flex items-baseline gap-1">
                                                 <span className="text-2xl font-black text-amber-500 tracking-tighter">{delay.duracion}</span>
-                                                <span className="text-[9px] font-black text-slate-400 uppercase">Hs</span>
+                                                <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase">Hs</span>
                                             </div>
                                         </div>
                                     </div>
@@ -497,7 +497,7 @@ export default function DelaysPage() {
             {/* Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-xl rounded-t-3xl md:rounded-[3rem] shadow-2xl border border-white/20 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] flex flex-col overflow-hidden">
+                    <div className="bg-white dark:bg-slate-800 w-full max-w-xl rounded-t-3xl md:rounded-[3rem] shadow-2xl border border-white/20 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] flex flex-col overflow-hidden">
                         {/* Header - Fixed */}
                         <div className="p-5 md:p-8 pb-4 flex items-center justify-between border-b border-slate-50 flex-shrink-0">
                             <div className="flex items-center gap-3 md:gap-4">
@@ -505,13 +505,13 @@ export default function DelaysPage() {
                                     <Timer className="w-5 h-5 md:w-6 md:h-6" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg md:text-2xl font-black text-slate-800 tracking-tight leading-none">
+                                    <h3 className="text-lg md:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight leading-none">
                                         {editingDelayId ? 'Editar Registro' : 'Registrar Demora'}
                                     </h3>
-                                    <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5 md:mt-1">Responsabilidad del Cliente</p>
+                                    <p className="text-[10px] md:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5 md:mt-1">Responsabilidad del Cliente</p>
                                 </div>
                             </div>
-                            <button type="button" onClick={() => { setIsModalOpen(false); setEditingDelayId(null); }} className="btn-icon-inline p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400">
+                            <button type="button" onClick={() => { setIsModalOpen(false); setEditingDelayId(null); }} className="btn-icon-inline p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors text-slate-400 dark:text-slate-500">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -534,28 +534,28 @@ export default function DelaysPage() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
                                             <Calendar className="w-3 h-3" /> Fecha
                                         </label>
                                         <input type="date" required value={formData.fecha}
                                             onChange={e => setFormData({ ...formData, fecha: e.target.value })}
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 h-[50px]"
+                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 dark:text-slate-200 h-[50px]"
                                         />
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
                                             <Clock className="w-3 h-3" /> Hora
                                         </label>
                                         <input type="time" required value={formData.hora}
                                             onChange={e => setFormData({ ...formData, hora: e.target.value })}
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 h-[50px]"
+                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 dark:text-slate-200 h-[50px]"
                                         />
                                     </div>
 
                                     <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Motivo Frecuente</label>
+                                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">Motivo Frecuente</label>
                                             <SearchableSelect
                                                 options={motivoOptions.map(m => ({ id: m, label: m }))}
                                                 value={motivoOptions.includes(formData.motivo) ? formData.motivo : ''}
@@ -566,19 +566,19 @@ export default function DelaysPage() {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Detalle / Motivo Específico</label>
+                                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">Detalle / Motivo Específico</label>
                                             <textarea required value={formData.motivo} onChange={e => setFormData({ ...formData, motivo: e.target.value })}
-                                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 min-h-[50px] max-h-[150px]"
+                                                className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 dark:text-slate-200 min-h-[50px] max-h-[150px]"
                                                 placeholder="Describe o amplía el motivo de la demora..."
                                             />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
                                             <User className="w-3 h-3" /> Quien registra
                                         </label>
                                         {currentUser?.role === 'operador' ? (
-                                            <div className="w-full bg-slate-100 border border-slate-200 rounded-2xl py-3 px-4 font-bold text-slate-500 h-[50px] flex items-center">
+                                            <div className="w-full bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 font-bold text-slate-500 dark:text-slate-400 h-[50px] flex items-center">
                                                 {formData.operador}
                                             </div>
                                         ) : (
@@ -593,7 +593,7 @@ export default function DelaysPage() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
                                             <Building2 className="w-3 h-3" /> Área del Cliente
                                         </label>
                                         <SearchableSelect
@@ -606,29 +606,29 @@ export default function DelaysPage() {
                                     </div>
 
                                     <div className="md:col-span-2 space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
                                             <User className="w-3 h-3" /> Responsable del Área (Opcional)
                                         </label>
                                         <input type="text" value={formData.responsableArea}
                                             onChange={e => setFormData({ ...formData, responsableArea: e.target.value })}
                                             placeholder="Nombre del responsable si lo conoce..."
-                                            className="w-full h-[50px] bg-slate-50 border border-slate-200 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 text-sm rounded-2xl"
+                                            className="w-full h-[50px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 dark:text-slate-200 text-sm rounded-2xl"
                                         />
                                     </div>
 
                                     <div className="md:col-span-2 space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
                                             <AlertCircle className="w-3 h-3" /> Motivo de la demora
                                         </label>
                                         <textarea required value={formData.motivo}
                                             onChange={e => setFormData({ ...formData, motivo: e.target.value })}
                                             placeholder="Describa el motivo de la demora externa..."
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-medium text-slate-700 resize-none h-24"
+                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-medium text-slate-700 dark:text-slate-200 resize-none h-24"
                                         />
                                     </div>
 
                                     <div className="md:col-span-2 space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
                                             <Timer className="w-3 h-3" /> Tiempo perdido (Horas)
                                         </label>
                                         <div className="flex items-center gap-3">
@@ -664,14 +664,14 @@ export default function DelaysPage() {
                                             />
                                             <span className="text-xs font-black text-amber-600 uppercase">Hs</span>
                                         </div>
-                                        <p className="text-[10px] text-slate-400 font-medium pl-1">Ajuste en tramos de 15 minutos (0.25h)</p>
+                                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium pl-1">Ajuste en tramos de 15 minutos (0.25h)</p>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="flex gap-3 md:gap-4 p-5 md:p-8 border-t border-slate-50 flex-shrink-0">
                                 <button type="button" onClick={() => setIsModalOpen(false)}
-                                    className="flex-1 bg-slate-100 text-slate-600 py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95">
+                                    className="flex-1 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95">
                                     Cancelar
                                 </button>
                                 <button type="submit"

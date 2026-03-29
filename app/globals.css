@@ -34,6 +34,36 @@
 
     --radius: 1rem;
   }
+
+  .dark {
+    --background: 222.2 47.4% 11.2%;
+    --foreground: 210 40% 98%;
+
+    --card: 215 27.9% 16.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 47.4% 11.2%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+  }
 }
 
 @layer base {
@@ -50,9 +80,17 @@
   @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-xl;
 }
 
+.dark .glass {
+  @apply bg-slate-900/70 border-slate-700/50;
+}
+
 .whatsapp-preview {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   @apply bg-[#E5DDD5] p-6 rounded-2xl shadow-inner overflow-y-auto max-h-[400px] text-xs leading-relaxed text-[#111B21] border border-slate-300 whitespace-pre-wrap;
+}
+
+.dark .whatsapp-preview {
+  @apply bg-[#0e1621] text-slate-100 border-slate-700;
 }
 
 /* Custom Scrollbar */

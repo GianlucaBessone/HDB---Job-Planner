@@ -430,11 +430,11 @@ export default function TimesheetsPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div className="space-y-1">
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 md:gap-3">
+                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
                         <Clock className="w-6 h-6 md:w-8 md:h-8 text-indigo-500" />
                         Registro de Tiempos
                     </h2>
-                    <p className="text-sm text-slate-500 font-medium italic hidden md:block">Gestión de jornadas de los operadores e ingresos por proyecto</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium italic hidden md:block">Gestión de jornadas de los operadores e ingresos por proyecto</p>
                 </div>
                 <button
                     onClick={() => openEditModal()}
@@ -446,15 +446,15 @@ export default function TimesheetsPage() {
             </div>
 
             {/* Past Entries / Reports Content */}
-            <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm relative">
-                <div className="p-4 md:p-8 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                    <h3 className="font-bold text-slate-800 text-base md:text-lg">Historial y Reportes</h3>
+            <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm relative">
+                <div className="p-4 md:p-8 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base md:text-lg">Historial y Reportes</h3>
 
                     <div className="flex flex-wrap items-center gap-2">
                         <select
                             value={viewMode}
                             onChange={(e) => setViewMode(e.target.value as any)}
-                            className="bg-slate-50 border border-slate-200 rounded-xl h-[42px] px-3 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700 text-xs md:text-sm appearance-none cursor-pointer flex-1 md:flex-none"
+                            className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl h-[42px] px-3 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700 dark:text-slate-200 text-xs md:text-sm appearance-none cursor-pointer flex-1 md:flex-none"
                         >
                             <option value="tarjetas">Vista Detallada (Tarjetas)</option>
                             <option value="planilla">Formato Planilla</option>
@@ -463,23 +463,23 @@ export default function TimesheetsPage() {
                     </div>
                 </div>
 
-                <div className="p-3 md:p-4 bg-slate-50/50 border-b border-slate-100 flex flex-wrap gap-2 md:gap-4 items-end">
+                <div className="p-3 md:p-4 bg-slate-50/50 border-b border-slate-100 dark:border-slate-800 flex flex-wrap gap-2 md:gap-4 items-end">
                     <div className="flex items-center gap-1.5 w-[calc(50%-4px)] md:w-auto">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0">Desde:</label>
+                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest shrink-0">Desde:</label>
                         <input
                             type="date"
                             value={filterDateFrom}
                             onChange={e => setFilterDateFrom(e.target.value)}
-                            className="h-[42px] bg-white border border-slate-200 rounded-xl px-2 md:px-4 text-xs md:text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all appearance-none flex-1 min-w-0"
+                            className="h-[42px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2 md:px-4 text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all appearance-none flex-1 min-w-0"
                         />
                     </div>
                     <div className="flex items-center gap-1.5 w-[calc(50%-4px)] md:w-auto">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0">Hasta:</label>
+                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest shrink-0">Hasta:</label>
                         <input
                             type="date"
                             value={filterDateTo}
                             onChange={e => setFilterDateTo(e.target.value)}
-                            className="h-[42px] bg-white border border-slate-200 rounded-xl px-2 md:px-4 text-xs md:text-sm font-bold text-slate-700 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all appearance-none flex-1 min-w-0"
+                            className="h-[42px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2 md:px-4 text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all appearance-none flex-1 min-w-0"
                         />
                     </div>
                     {currentUser?.role !== 'operador' && (
@@ -530,34 +530,34 @@ export default function TimesheetsPage() {
                             {/* Desktop: Table */}
                             <table className="w-full text-left border-collapse hidden md:table">
                                 <thead>
-                                    <tr className="bg-slate-50 border-b border-slate-100">
-                                        <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha</th>
-                                        <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Operador</th>
-                                        <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Proyecto</th>
-                                        <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Horario</th>
-                                        <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Horas</th>
-                                        <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Tipo</th>
-                                        <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Estado</th>
-                                        <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Acciones</th>
+                                    <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
+                                        <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Fecha</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Operador</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Proyecto</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Horario</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Horas</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Tipo</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Estado</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {filteredCompleted.length === 0 ? (
                                         <tr>
-                                            <td colSpan={8} className="p-8 text-center text-slate-400 font-bold text-sm uppercase tracking-widest">No hay registros completados</td>
+                                            <td colSpan={8} className="p-8 text-center text-slate-400 dark:text-slate-500 font-bold text-sm uppercase tracking-widest">No hay registros completados</td>
                                         </tr>
                                     ) : (
                                         filteredCompleted.map(entry => (
                                             <tr key={entry.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors [&>td]:align-middle">
-                                                <td className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-tight whitespace-nowrap">{formatEntryDate(entry.fecha)}</td>
+                                                <td className="p-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight whitespace-nowrap">{formatEntryDate(entry.fecha)}</td>
                                                 <td className="p-4 text-sm font-black text-primary">{entry.operator?.nombreCompleto || 'Sistema / Central'}</td>
                                                 <td className="p-4">
-                                                    <div className="flex items-center gap-2 flex-wrap text-xs font-bold text-slate-600 truncate max-w-[200px]" title={entry.project?.nombre || 'Sin proyecto'}>
+                                                    <div className="flex items-center gap-2 flex-wrap text-xs font-bold text-slate-600 dark:text-slate-300 truncate max-w-[200px]" title={entry.project?.nombre || 'Sin proyecto'}>
                                                         {entry.project?.nombre || 'Sin proyecto'}
                                                         {entry.project?.codigoProyecto && <CodeBadge code={entry.project.codigoProyecto} variant="project" size="sm" showCopy={false} />}
                                                     </div>
                                                 </td>
-                                                <td className="p-4 text-xs font-bold text-slate-500 text-center">
+                                                <td className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 text-center">
                                                     {entry.horaIngreso} - {entry.horaEgreso}
                                                 </td>
                                                 <td className="p-4 text-center">
@@ -567,7 +567,7 @@ export default function TimesheetsPage() {
                                                     {entry.isExtra ? (
                                                         <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-1 rounded-md">EXTRA</span>
                                                     ) : (
-                                                        <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-1 rounded-md">NORMAL</span>
+                                                        <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 px-2 py-1 rounded-md">NORMAL</span>
                                                     )}
                                                 </td>
                                                 <td className="p-4 text-center">
@@ -578,7 +578,7 @@ export default function TimesheetsPage() {
                                                     ) : (
                                                         <button
                                                             onClick={() => handleConfirmDay(entry.id)}
-                                                            className="btn-icon-inline inline-flex items-center gap-1 text-slate-400 hover:text-emerald-500 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border border-slate-200 hover:border-emerald-200 hover:bg-emerald-50 transition-all"
+                                                            className="btn-icon-inline inline-flex items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-emerald-500 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-emerald-200 hover:bg-emerald-50 transition-all"
                                                         >
                                                             <ShieldAlert className="w-3 h-3" /> Pendiente
                                                         </button>
@@ -587,7 +587,7 @@ export default function TimesheetsPage() {
                                                 <td className="p-4 flex items-center justify-end gap-2">
                                                     <button
                                                         onClick={() => openEditModal(entry)}
-                                                        className={`btn-icon-inline p-2 rounded-xl transition-all ${entry.estadoConfirmado ? 'text-amber-500 hover:bg-amber-50' : 'text-slate-400 hover:text-indigo-500 hover:bg-indigo-50'}`}
+                                                        className={`btn-icon-inline p-2 rounded-xl transition-all ${entry.estadoConfirmado ? 'text-amber-500 hover:bg-amber-50' : 'text-slate-400 dark:text-slate-500 hover:text-indigo-500 hover:bg-indigo-50'}`}
                                                         title={entry.estadoConfirmado ? "Requiere Clave Supervisor" : "Editar"}
                                                     >
                                                         <Edit3 className="w-4 h-4" />
@@ -609,19 +609,19 @@ export default function TimesheetsPage() {
                             {/* Mobile: Cards */}
                             <div className="md:hidden p-3 space-y-2.5">
                                 {filteredCompleted.length === 0 ? (
-                                    <div className="py-12 text-center text-slate-400 font-bold text-sm uppercase tracking-widest">No hay registros completados</div>
+                                    <div className="py-12 text-center text-slate-400 dark:text-slate-500 font-bold text-sm uppercase tracking-widest">No hay registros completados</div>
                                 ) : (
                                     filteredCompleted.map((entry, idx) => (
-                                        <div key={entry.id} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm animate-card-in" style={{ animationDelay: `${idx * 30}ms` }}>
+                                        <div key={entry.id} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm animate-card-in" style={{ animationDelay: `${idx * 30}ms` }}>
                                             <div className="flex justify-between items-start mb-2">
                                                 <div className="min-w-0 flex-1">
-                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{formatEntryDate(entry.fecha)}</p>
+                                                    <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tight">{formatEntryDate(entry.fecha)}</p>
                                                     <h4 className="font-extrabold text-primary text-sm truncate">{entry.operator?.nombreCompleto || 'Sistema / Central'}</h4>
                                                 </div>
                                                 <div className="flex items-center gap-1 shrink-0 ml-2">
                                                     <button
                                                         onClick={() => openEditModal(entry)}
-                                                        className={`btn-icon-inline p-2 rounded-xl transition-all ${entry.estadoConfirmado ? 'text-amber-500' : 'text-slate-400'}`}
+                                                        className={`btn-icon-inline p-2 rounded-xl transition-all ${entry.estadoConfirmado ? 'text-amber-500' : 'text-slate-400 dark:text-slate-500'}`}
                                                     >
                                                         <Edit3 className="w-4 h-4" />
                                                     </button>
@@ -634,11 +634,11 @@ export default function TimesheetsPage() {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-2 flex-wrap mb-2">
-                                                <p className="text-xs font-bold text-slate-600 truncate">{entry.project?.nombre || 'BASE / EMPRESA'}</p>
+                                                <p className="text-xs font-bold text-slate-600 dark:text-slate-300 truncate">{entry.project?.nombre || 'BASE / EMPRESA'}</p>
                                                 {entry.project?.codigoProyecto && <CodeBadge code={entry.project.codigoProyecto} variant="project" size="sm" showCopy={false} />}
                                             </div>
-                                            <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
-                                                <span className="text-xs font-bold text-slate-500">{entry.horaIngreso} - {entry.horaEgreso}</span>
+                                            <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                                                <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{entry.horaIngreso} - {entry.horaEgreso}</span>
                                                 <div className="flex items-center gap-2">
                                                     <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 font-black rounded-lg text-xs border border-indigo-100">{entry.horasTrabajadas}h</span>
                                                     {entry.isExtra && <span className="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-md">EXTRA</span>}
@@ -661,44 +661,44 @@ export default function TimesheetsPage() {
                     {viewMode === 'planilla' && (
                         <table className="w-full text-left border-collapse min-w-[1000px]">
                             <thead>
-                                <tr className="bg-slate-50 border-b border-slate-100">
-                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha</th>
-                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Operador</th>
-                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Obra</th>
-                                    <th className="p-4 border-l border-slate-200 text-center bg-indigo-50/30 text-[10px] font-black text-indigo-400 uppercase tracking-widest" colSpan={3}>Normales</th>
-                                    <th className="p-4 border-l border-slate-200 text-center bg-amber-50/30 text-[10px] font-black text-amber-400 uppercase tracking-widest" colSpan={3}>Extras</th>
+                                <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
+                                    <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Fecha</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Operador</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Obra</th>
+                                    <th className="p-4 border-l border-slate-200 dark:border-slate-700 text-center bg-indigo-50/30 text-[10px] font-black text-indigo-400 uppercase tracking-widest" colSpan={3}>Normales</th>
+                                    <th className="p-4 border-l border-slate-200 dark:border-slate-700 text-center bg-amber-50/30 text-[10px] font-black text-amber-400 uppercase tracking-widest" colSpan={3}>Extras</th>
                                 </tr>
-                                <tr className="bg-slate-50 border-b border-slate-200">
+                                <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
                                     <th colSpan={3}></th>
-                                    <th className="p-2 border-l border-slate-200 text-center text-xs font-bold text-slate-500">Inicio</th>
-                                    <th className="p-2 text-center text-xs font-bold text-slate-500">Fin</th>
-                                    <th className="p-2 text-center text-xs font-black text-slate-800">Subtotal</th>
-                                    <th className="p-2 border-l border-slate-200 text-center text-xs font-bold text-slate-500">Inicio</th>
-                                    <th className="p-2 text-center text-xs font-bold text-slate-500">Fin</th>
-                                    <th className="p-2 text-center text-xs font-black text-slate-800">Subtotal</th>
+                                    <th className="p-2 border-l border-slate-200 dark:border-slate-700 text-center text-xs font-bold text-slate-500 dark:text-slate-400">Inicio</th>
+                                    <th className="p-2 text-center text-xs font-bold text-slate-500 dark:text-slate-400">Fin</th>
+                                    <th className="p-2 text-center text-xs font-black text-slate-800 dark:text-slate-100">Subtotal</th>
+                                    <th className="p-2 border-l border-slate-200 dark:border-slate-700 text-center text-xs font-bold text-slate-500 dark:text-slate-400">Inicio</th>
+                                    <th className="p-2 text-center text-xs font-bold text-slate-500 dark:text-slate-400">Fin</th>
+                                    <th className="p-2 text-center text-xs font-black text-slate-800 dark:text-slate-100">Subtotal</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {groupedPlanilla.length === 0 ? (
-                                    <tr><td colSpan={9} className="p-8 text-center text-slate-400 font-bold text-sm uppercase">Sin resultados</td></tr>
+                                    <tr><td colSpan={9} className="p-8 text-center text-slate-400 dark:text-slate-500 font-bold text-sm uppercase">Sin resultados</td></tr>
                                 ) : (
                                     groupedPlanilla.map((row: any) => (
-                                        <tr key={row.id} className="border-b border-slate-100 hover:bg-slate-50/50 [&>td]:align-middle">
-                                            <td className="p-4 text-[10px] font-bold text-slate-500 uppercase tracking-tight whitespace-nowrap">{formatEntryDate(row.fecha)}</td>
+                                        <tr key={row.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 [&>td]:align-middle">
+                                            <td className="p-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight whitespace-nowrap">{formatEntryDate(row.fecha)}</td>
                                             <td className="p-4 text-sm font-black text-primary">{row.operatorName}</td>
-                                            <td className="p-4 text-xs font-bold text-slate-600 truncate max-w-[200px]" title={row.projectName}>{row.projectName}</td>
-                                            <td className="p-4 border-l border-slate-100 text-center text-xs text-slate-500">{row.normalStart}</td>
-                                            <td className="p-4 text-center text-xs text-slate-500">{row.normalEnd}</td>
+                                            <td className="p-4 text-xs font-bold text-slate-600 dark:text-slate-300 truncate max-w-[200px]" title={row.projectName}>{row.projectName}</td>
+                                            <td className="p-4 border-l border-slate-100 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400">{row.normalStart}</td>
+                                            <td className="p-4 text-center text-xs text-slate-500 dark:text-slate-400">{row.normalEnd}</td>
                                             <td className="p-4 text-center font-black text-indigo-600 bg-indigo-50/30">{row.normalTotal > 0 ? `${row.normalTotal}h` : '-'}</td>
-                                            <td className="p-4 border-l border-slate-100 text-center text-xs text-slate-500">{row.extraStart}</td>
-                                            <td className="p-4 text-center text-xs text-slate-500">{row.extraEnd}</td>
+                                            <td className="p-4 border-l border-slate-100 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400">{row.extraStart}</td>
+                                            <td className="p-4 text-center text-xs text-slate-500 dark:text-slate-400">{row.extraEnd}</td>
                                             <td className="p-4 text-center font-black text-amber-600 bg-amber-50/30">{row.extraTotal > 0 ? `${row.extraTotal}h` : '-'}</td>
                                         </tr>
                                     ))
                                 )}
                                 {groupedPlanilla.length > 0 && (
-                                    <tr className="bg-slate-100 border-t-2 border-slate-300">
-                                        <td colSpan={5} className="p-4 text-right text-xs font-black text-slate-700 uppercase tracking-widest">Total Global Filtrado:</td>
+                                    <tr className="bg-slate-100 dark:bg-slate-800/50 border-t-2 border-slate-300 dark:border-slate-600">
+                                        <td colSpan={5} className="p-4 text-right text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest">Total Global Filtrado:</td>
                                         <td className="p-4 text-center font-black text-indigo-700">{totalFilteredNormales > 0 ? `${totalFilteredNormales}h` : '-'}</td>
                                         <td colSpan={2}></td>
                                         <td className="p-4 text-center font-black text-amber-700">{totalFilteredExtras > 0 ? `${totalFilteredExtras}h` : '-'}</td>
@@ -711,34 +711,34 @@ export default function TimesheetsPage() {
                     {viewMode === 'resumen' && (
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-slate-50 border-b border-slate-100">
-                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha</th>
-                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Operador</th>
-                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Total Normales</th>
-                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Total Extras</th>
-                                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Total Día</th>
+                                <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
+                                    <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Fecha</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-left">Operador</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Total Normales</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Total Extras</th>
+                                    <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Total Día</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {groupedResumen.length === 0 ? (
-                                    <tr><td colSpan={4} className="p-8 text-center text-slate-400 font-bold text-sm uppercase">Sin resultados</td></tr>
+                                    <tr><td colSpan={4} className="p-8 text-center text-slate-400 dark:text-slate-500 font-bold text-sm uppercase">Sin resultados</td></tr>
                                 ) : (
                                     groupedResumen.map((row: any) => (
-                                        <tr key={row.id} className="border-b border-slate-100 hover:bg-slate-50/50 [&>td]:align-middle">
-                                            <td className="p-4 text-xs font-bold text-slate-700 uppercase tracking-tight">{formatEntryDate(row.fecha)}</td>
+                                        <tr key={row.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 [&>td]:align-middle">
+                                            <td className="p-4 text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-tight">{formatEntryDate(row.fecha)}</td>
                                             <td className="p-4 text-sm font-black text-primary">{row.operatorName}</td>
                                             <td className="p-4 text-right font-black text-indigo-600">{row.normalTotal > 0 ? `${row.normalTotal}h` : '-'}</td>
                                             <td className="p-4 text-right font-black text-amber-600">{row.extraTotal > 0 ? `${row.extraTotal}h` : '-'}</td>
-                                            <td className="p-4 text-right font-black text-slate-800 bg-slate-50/50">{row.normalTotal + row.extraTotal}h</td>
+                                            <td className="p-4 text-right font-black text-slate-800 dark:text-slate-100 bg-slate-50/50">{row.normalTotal + row.extraTotal}h</td>
                                         </tr>
                                     ))
                                 )}
                                 {groupedResumen.length > 0 && (
-                                    <tr className="bg-slate-100 border-t-2 border-slate-300">
-                                        <td colSpan={2} className="p-4 text-right text-xs font-black text-slate-700 uppercase tracking-widest">Total Global Filtrado:</td>
+                                    <tr className="bg-slate-100 dark:bg-slate-800/50 border-t-2 border-slate-300 dark:border-slate-600">
+                                        <td colSpan={2} className="p-4 text-right text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest">Total Global Filtrado:</td>
                                         <td className="p-4 text-right font-black text-indigo-700">{totalFilteredNormales > 0 ? `${totalFilteredNormales}h` : '-'}</td>
                                         <td className="p-4 text-right font-black text-amber-700">{totalFilteredExtras > 0 ? `${totalFilteredExtras}h` : '-'}</td>
-                                        <td className="p-4 text-right font-black text-slate-800">{totalFilteredNormales + totalFilteredExtras}h</td>
+                                        <td className="p-4 text-right font-black text-slate-800 dark:text-slate-100">{totalFilteredNormales + totalFilteredExtras}h</td>
                                     </tr>
                                 )}
                             </tbody>
@@ -750,13 +750,13 @@ export default function TimesheetsPage() {
             {/* Modal de Carga Manual / Edición */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-xl rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] flex flex-col overflow-hidden">
+                    <div className="bg-white dark:bg-slate-800 w-full max-w-xl rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] flex flex-col overflow-hidden">
                         {/* Header - Fixed */}
-                        <div className="p-5 md:p-7 flex items-center justify-between border-b border-slate-100 flex-shrink-0">
-                            <h3 className="text-lg md:text-xl font-bold text-slate-800">
+                        <div className="p-5 md:p-7 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
+                            <h3 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100">
                                 {editingEntry ? 'Editar Registro de Tiempo' : 'Nuevo Registro de Tiempo'}
                             </h3>
-                            <button onClick={() => { setIsModalOpen(false); }} className="btn-icon-inline p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-all">
+                            <button onClick={() => { setIsModalOpen(false); }} className="btn-icon-inline p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500 transition-all">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -797,10 +797,10 @@ export default function TimesheetsPage() {
 
                                     {/* Fecha */}
                                     <div className="space-y-2 md:col-span-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Fecha</label>
+                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">Fecha</label>
                                         <input
                                             type="date"
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700"
+                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700 dark:text-slate-200"
                                             required
                                             value={formData.fecha}
                                             onChange={e => setFormData({ ...formData, fecha: e.target.value })}
@@ -809,10 +809,10 @@ export default function TimesheetsPage() {
 
                                     {/* Hora Ingreso */}
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Hora Inicio</label>
+                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">Hora Inicio</label>
                                         <input
                                             type="time"
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700"
+                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700 dark:text-slate-200"
                                             required
                                             value={formData.horaIngreso}
                                             onChange={e => setFormData({ ...formData, horaIngreso: e.target.value })}
@@ -821,10 +821,10 @@ export default function TimesheetsPage() {
 
                                     {/* Hora Egreso */}
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Hora Fin</label>
+                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">Hora Fin</label>
                                         <input
                                             type="time"
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700"
+                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700 dark:text-slate-200"
                                             required
                                             value={formData.horaEgreso}
                                             onChange={e => setFormData({ ...formData, horaEgreso: e.target.value })}
@@ -833,19 +833,19 @@ export default function TimesheetsPage() {
 
                                     {/* Horas Extras */}
                                     <div className="space-y-2 md:col-span-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Tipo de Horas</label>
+                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">Tipo de Horas</label>
                                         <div className="flex gap-4">
                                             <button
                                                 type="button"
                                                 onClick={() => setFormData({ ...formData, isExtra: false })}
-                                                className={`flex-1 py-3 px-4 rounded-2xl font-bold transition-colors ${!formData.isExtra ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 text-slate-500 border-2 border-slate-200'}`}
+                                                className={`flex-1 py-3 px-4 rounded-2xl font-bold transition-colors ${!formData.isExtra ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
                                             >
                                                 Normales
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={() => setFormData({ ...formData, isExtra: true })}
-                                                className={`flex-1 py-3 px-4 rounded-2xl font-bold transition-colors ${formData.isExtra ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 text-slate-500 border-2 border-slate-200'}`}
+                                                className={`flex-1 py-3 px-4 rounded-2xl font-bold transition-colors ${formData.isExtra ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
                                             >
                                                 Extras
                                             </button>
@@ -855,8 +855,8 @@ export default function TimesheetsPage() {
                             </div>
 
                             {/* Footer - Fixed */}
-                            <div className="p-5 md:p-7 border-t border-slate-100 flex gap-3 flex-shrink-0">
-                                <button type="button" onClick={() => { setIsModalOpen(false); }} className="flex-1 bg-slate-100 text-slate-600 py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95">Cancelar</button>
+                            <div className="p-5 md:p-7 border-t border-slate-100 dark:border-slate-800 flex gap-3 flex-shrink-0">
+                                <button type="button" onClick={() => { setIsModalOpen(false); }} className="flex-1 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95">Cancelar</button>
                                 <button type="submit" className="flex-[2] bg-indigo-500 text-white py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-indigo-600 shadow-xl shadow-indigo-500/20 active:scale-95 transition-all">Guardar Registro</button>
                             </div>
                         </form>
@@ -881,34 +881,34 @@ export default function TimesheetsPage() {
             {/* Modal de Solicitud de Modificación (Para Operadores) */}
             {isRequestModalOpen && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-md rounded-[2rem] shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-300 p-8">
+                    <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-[2rem] shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in zoom-in-95 duration-300 p-8">
                         <div className="flex justify-between items-start mb-6">
                             <div className="p-3 rounded-2xl bg-indigo-50 text-indigo-500">
                                 <AlertCircle className="w-6 h-6" />
                             </div>
-                            <button onClick={() => { setIsRequestModalOpen(false); setPendingAction(null); setRequestMessage(''); }} className="p-2 hover:bg-slate-100 rounded-full text-slate-400"><X className="w-5 h-5" /></button>
+                            <button onClick={() => { setIsRequestModalOpen(false); setPendingAction(null); setRequestMessage(''); }} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500"><X className="w-5 h-5" /></button>
                         </div>
-                        <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-2">Solicitar {pendingAction?.type === 'request_deletion' ? 'Eliminación' : 'Modificación'}</h3>
-                        <p className="text-slate-500 text-sm font-medium mb-6">Este registro ya fue confirmado. Por favor, indica el motivo para solicitar la modificación a tus supervisores.</p>
+                        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight mb-2">Solicitar {pendingAction?.type === 'request_deletion' ? 'Eliminación' : 'Modificación'}</h3>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-6">Este registro ya fue confirmado. Por favor, indica el motivo para solicitar la modificación a tus supervisores.</p>
                         <form onSubmit={submitModificationRequest} className="space-y-6">
                             {pendingAction?.type === 'request_modification' && (
                                 <>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Hora Inicio Sugerida</label>
+                                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">Hora Inicio Sugerida</label>
                                             <input
                                                 type="time"
-                                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700"
+                                                className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700 dark:text-slate-200"
                                                 required
                                                 value={formData.horaIngreso}
                                                 onChange={e => setFormData({ ...formData, horaIngreso: e.target.value })}
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Hora Fin Sugerida</label>
+                                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">Hora Fin Sugerida</label>
                                             <input
                                                 type="time"
-                                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700"
+                                                className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700 dark:text-slate-200"
                                                 required
                                                 value={formData.horaEgreso}
                                                 onChange={e => setFormData({ ...formData, horaEgreso: e.target.value })}
@@ -916,19 +916,19 @@ export default function TimesheetsPage() {
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Tipo de Horas</label>
+                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">Tipo de Horas</label>
                                         <div className="flex gap-4">
                                             <button
                                                 type="button"
                                                 onClick={() => setFormData({ ...formData, isExtra: false })}
-                                                className={`flex-1 py-3 px-4 rounded-2xl font-bold transition-colors ${!formData.isExtra ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 text-slate-500 border-2 border-slate-200'}`}
+                                                className={`flex-1 py-3 px-4 rounded-2xl font-bold transition-colors ${!formData.isExtra ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
                                             >
                                                 Normales
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={() => setFormData({ ...formData, isExtra: true })}
-                                                className={`flex-1 py-3 px-4 rounded-2xl font-bold transition-colors ${formData.isExtra ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 text-slate-500 border-2 border-slate-200'}`}
+                                                className={`flex-1 py-3 px-4 rounded-2xl font-bold transition-colors ${formData.isExtra ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
                                             >
                                                 Extras
                                             </button>
@@ -937,18 +937,18 @@ export default function TimesheetsPage() {
                                 </>
                             )}
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">Motivo / Detalles</label>
+                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">Motivo / Detalles</label>
                                 <textarea
                                     required
                                     autoFocus
                                     placeholder="Explica qué necesitas cambiar y por qué..."
                                     value={requestMessage}
                                     onChange={e => setRequestMessage(e.target.value)}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 resize-none h-24 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-medium text-slate-700 transition-all text-sm"
+                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 resize-none h-24 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-medium text-slate-700 dark:text-slate-200 transition-all text-sm"
                                 />
                             </div>
                             <div className="flex justify-end gap-3 pt-4">
-                                <button type="button" onClick={() => { setIsRequestModalOpen(false); setPendingAction(null); setRequestMessage(''); }} className="flex-1 px-6 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all bg-slate-100 hover:bg-slate-200 text-slate-600 active:scale-95">Cancelar</button>
+                                <button type="button" onClick={() => { setIsRequestModalOpen(false); setPendingAction(null); setRequestMessage(''); }} className="flex-1 px-6 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 text-slate-600 dark:text-slate-300 active:scale-95">Cancelar</button>
                                 <button type="submit" className="flex-1 px-6 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl active:scale-95 bg-indigo-500 hover:bg-indigo-600 text-white shadow-indigo-500/20">Enviar Solicitud</button>
                             </div>
                         </form>

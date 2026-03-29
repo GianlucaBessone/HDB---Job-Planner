@@ -151,22 +151,22 @@ export default function DashboardPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div className="space-y-1">
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 md:gap-3">
+                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
                         <LayoutDashboard className="w-6 h-6 md:w-8 md:h-8 text-primary" />
                         Panel de Análisis
                     </h2>
-                    <p className="text-sm text-slate-500 font-medium hidden md:block">Resumen del estado operativo y métricas de rendimiento</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium hidden md:block">Resumen del estado operativo y métricas de rendimiento</p>
                 </div>
             </div>
 
             {/* Tab navigation */}
-            <div className="flex gap-1 bg-white border border-slate-200 rounded-2xl p-1.5 shadow-sm w-fit">
+            <div className="flex gap-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-1.5 shadow-sm w-fit">
                 <button
                     onClick={() => setActiveTab('proyectos')}
                     className={`px-5 py-2.5 rounded-xl text-sm font-black transition-all ${
                         activeTab === 'proyectos'
                             ? 'bg-primary text-white shadow-md shadow-primary/20'
-                            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80'
                     }`}
                 >
                     <span className="flex items-center gap-2">
@@ -179,7 +179,7 @@ export default function DashboardPage() {
                     className={`px-5 py-2.5 rounded-xl text-sm font-black transition-all ${
                         activeTab === 'servicios'
                             ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
-                            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80'
                     }`}
                 >
                     <span className="flex items-center gap-2">
@@ -193,9 +193,9 @@ export default function DashboardPage() {
             {activeTab === 'proyectos' && <>
 
             {/* Advanced Filters (Requirement 2) */}
-            <div className="bg-white border border-slate-200 rounded-2xl md:rounded-[2rem] p-4 md:p-6 shadow-sm space-y-3 md:space-y-4">
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-[2rem] p-4 md:p-6 shadow-sm space-y-3 md:space-y-4">
                 <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-bold text-slate-700 flex items-center gap-2 text-sm">
+                    <h3 className="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 text-sm">
                         <SlidersHorizontal className="w-4 h-4 text-primary" />
                         Filtros de Análisis
                     </h3>
@@ -207,23 +207,23 @@ export default function DashboardPage() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 flex items-center gap-1">
+                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1">
                             <Calendar className="w-3 h-3" /> Desde
                         </label>
                         <input
                             type="date"
-                            className="w-full h-[42px] bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none"
+                            className="w-full h-[42px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none"
                             value={filterFrom}
                             onChange={e => setFilterFrom(e.target.value)}
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 flex items-center gap-1">
+                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1">
                             <Calendar className="w-3 h-3" /> Hasta
                         </label>
                         <input
                             type="date"
-                            className="w-full h-[42px] bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none"
+                            className="w-full h-[42px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none"
                             value={filterTo}
                             onChange={e => setFilterTo(e.target.value)}
                         />
@@ -240,11 +240,11 @@ export default function DashboardPage() {
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 flex items-center gap-1">
+                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1">
                             <Activity className="w-3 h-3" /> Estado <MetricTooltip def="Filtra proyectos por su estado de finalización." purpose="Permite comparar el rendimiento histórico con el operativo actual." calc="N/A" />
                         </label>
                         <select
-                            className="w-full h-[42px] bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none cursor-pointer"
+                            className="w-full h-[42px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none cursor-pointer"
                             value={filterStatus}
                             onChange={e => setFilterStatus(e.target.value)}
                         >
@@ -306,11 +306,11 @@ export default function DashboardPage() {
             {/* Performance Visualizations Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* IPT Comparison Chart */}
-                <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm relative group overflow-hidden">
+                <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm relative group overflow-hidden">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
                             <BarChart3 className="w-5 h-5 text-primary" />
-                            <h3 className="text-xl font-bold text-slate-800">IPT por Proyecto</h3>
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">IPT por Proyecto</h3>
                         </div>
                         <MetricTooltip
                             def="Muestra la eficiencia individual de cada proyecto."
@@ -319,7 +319,7 @@ export default function DashboardPage() {
                         />
                     </div>
                     {data.performance.projects.length === 0 ? (
-                        <div className="h-56 flex items-center justify-center text-slate-400 font-bold uppercase tracking-widest text-[10px]">Sin datos de proyectos</div>
+                        <div className="h-56 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Sin datos de proyectos</div>
                     ) : (
                         <div className="h-56 flex items-end justify-between gap-3 px-2 relative px-4">
                             <div className="absolute w-full h-[1px] bg-rose-500/20 border-t border-dashed border-rose-500 z-0 left-0" style={{ bottom: '50%' }} />
@@ -334,7 +334,7 @@ export default function DashboardPage() {
                                         style={{ height: `${Math.min(p.ipt * 50, 100)}%` }}
                                     />
                                     <div className="flex flex-col items-center mt-4 translate-x-1 gap-1">
-                                        <span className="text-[9px] font-black text-slate-400 rotate-45 origin-left truncate max-w-[50px]">{p.codigoProyecto || p.nombre}</span>
+                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 rotate-45 origin-left truncate max-w-[50px]">{p.codigoProyecto || p.nombre}</span>
                                     </div>
                                 </div>
                             ))}
@@ -363,11 +363,11 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 overflow-visible">
                 {/* Classification Donut */}
-                <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col items-center overflow-visible">
+                <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col items-center overflow-visible">
                     <div className="flex items-center justify-between w-full mb-6">
                         <div className="flex items-center gap-3">
                             <PieChart className="w-5 h-5 text-emerald-500" />
-                            <h3 className="text-xl font-bold text-slate-800">Clasificación</h3>
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Clasificación</h3>
                         </div>
                         <MetricTooltip
                             def="Segmentación de proyectos por su nivel de eficiencia."
@@ -385,8 +385,8 @@ export default function DashboardPage() {
                             />
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center group-hover/donut:scale-110 transition-transform duration-500">
-                            <span className="text-4xl font-black text-slate-800 tracking-tighter">{data.performance.classification.eficiente}</span>
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Eficientes</span>
+                            <span className="text-4xl font-black text-slate-800 dark:text-slate-100 tracking-tighter">{data.performance.classification.eficiente}</span>
+                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">Eficientes</span>
                         </div>
                     </div>
 
@@ -398,11 +398,11 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Savings Deviation (Bar Divergent) */}
-                <div className="lg:col-span-2 bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
                             <Briefcase className="w-5 h-5 text-primary" />
-                            <h3 className="text-xl font-bold text-slate-800">Balance de Horas por Proyecto</h3>
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Balance de Horas por Proyecto</h3>
                         </div>
                         <MetricTooltip
                             def="Muestra el desvío absoluto en horas."
@@ -414,13 +414,13 @@ export default function DashboardPage() {
                         {data.performance.projects.slice(0, 5).map((p, idx) => (
                             <div key={idx} className="space-y-2">
                                 <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                                    <span className="text-slate-500 line-clamp-1 max-w-[200px]">{p.nombre}</span>
+                                    <span className="text-slate-500 dark:text-slate-400 line-clamp-1 max-w-[200px]">{p.nombre}</span>
                                     <span className={p.savings >= 0 ? 'text-emerald-500' : 'text-rose-500'}>
                                         {p.savings > 0 ? `+${p.savings}H AHORRO` : `${Math.abs(p.savings)}H DESVÍO`}
                                     </span>
                                 </div>
-                                <div className="h-5 bg-slate-50 rounded-xl relative overflow-hidden flex items-center border border-slate-100">
-                                    <div className="absolute left-1/2 w-[2px] h-full bg-slate-200 z-10" />
+                                <div className="h-5 bg-slate-50 dark:bg-slate-900/50 rounded-xl relative overflow-hidden flex items-center border border-slate-100 dark:border-slate-800">
+                                    <div className="absolute left-1/2 w-[2px] h-full bg-slate-200 dark:bg-slate-700 z-10" />
                                     <div
                                         className={`h-full transition-all duration-1000 ${p.savings >= 0 ? 'bg-emerald-400 rounded-r-lg shadow-sm shadow-emerald-200' : 'bg-rose-400 rounded-l-lg self-end'}`}
                                         style={{
@@ -439,8 +439,8 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 <div className="lg:col-span-8 flex flex-col gap-6">
                     {/* Status Distribution */}
-                    <div className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm">
-                        <h3 className="text-xl font-bold text-slate-800 flex items-center gap-3 mb-5">
+                    <div className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3 mb-5">
                             <Activity className="w-5 h-5 text-primary" />
                             Estado Operativo
                         </h3>
@@ -455,27 +455,27 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Alert List */}
-                    <div className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm">
-                        <h3 className="text-xl font-bold text-slate-800 flex items-center gap-3 mb-5">
+                    <div className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3 mb-5">
                             <AlertTriangle className="w-5 h-5 text-rose-500" />
                             Alertas de Consumo
                         </h3>
                         {data.criticalProjects.length === 0 ? (
-                            <div className="py-8 text-center text-slate-400 font-bold text-[10px] uppercase tracking-widest">Sin proyectos críticos activos</div>
+                            <div className="py-8 text-center text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-widest">Sin proyectos críticos activos</div>
                         ) : (
                             <div className="space-y-4">
                                 {data.criticalProjects.map((project, idx) => (
                                     <div key={idx} className="space-y-1.5">
                                         <div className="flex justify-between items-center px-1">
                                             <div className="flex items-center gap-2 flex-wrap max-w-[70%]">
-                                                <span className="font-bold text-slate-700 text-sm truncate">{project.nombre}</span>
+                                                <span className="font-bold text-slate-700 dark:text-slate-200 text-sm truncate">{project.nombre}</span>
                                                 {project.codigoProyecto && <CodeBadge code={project.codigoProyecto} variant="project" size="sm" showCopy={false} />}
                                             </div>
                                             <span className={`text-xs font-black px-2 py-1 rounded-lg ${project.percentage > 100 ? 'bg-rose-50 text-rose-500' : 'bg-amber-50 text-amber-600'}`}>
                                                 {Math.round(project.percentage)}%
                                             </span>
                                         </div>
-                                        <div className="h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-50">
+                                        <div className="h-3 bg-slate-100 dark:bg-slate-800/50 rounded-full overflow-hidden border border-slate-50">
                                             <div
                                                 className={`h-full rounded-full transition-all duration-1000 ${project.percentage > 100 ? 'bg-rose-500' : project.percentage > 80 ? 'bg-amber-500' : 'bg-primary'}`}
                                                 style={{ width: `${Math.min(project.percentage, 100)}%` }}
@@ -490,19 +490,19 @@ export default function DashboardPage() {
 
                 <div className="lg:col-span-4 flex flex-col gap-6">
                     {/* Top Clients */}
-                    <div className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm">
-                        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-3 mb-4">
-                            <Building2 className="w-5 h-5 text-slate-400" />
+                    <div className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3 mb-4">
+                            <Building2 className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                             Top Clientes
                         </h3>
                         {data.topClients.length === 0 ? (
-                            <div className="py-6 text-center text-slate-400 font-bold text-[10px] uppercase tracking-widest">Sin datos</div>
+                            <div className="py-6 text-center text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-widest">Sin datos</div>
                         ) : (
                             <div className="space-y-2.5">
                                 {data.topClients.map((client, idx) => (
-                                    <div key={idx} className="flex items-center justify-between p-3 rounded-2xl bg-slate-50/50 hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-100 transition-all group">
-                                        <span className="font-bold text-slate-600 group-hover:text-primary transition-colors text-sm truncate">{client.name}</span>
-                                        <span className="px-3 py-1 bg-white border border-slate-100 text-primary text-[10px] font-black rounded-xl shadow-sm shrink-0">{client.count} Proj</span>
+                                    <div key={idx} className="flex items-center justify-between p-3 rounded-2xl bg-slate-50/50 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm border border-transparent hover:border-slate-100 transition-all group">
+                                        <span className="font-bold text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors text-sm truncate">{client.name}</span>
+                                        <span className="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-800 text-primary text-[10px] font-black rounded-xl shadow-sm shrink-0">{client.count} Proj</span>
                                     </div>
                                 ))}
                             </div>
@@ -510,19 +510,19 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Top Operators */}
-                    <div className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm">
-                        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-3 mb-4">
-                            <Users className="w-5 h-5 text-slate-400" />
+                    <div className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3 mb-4">
+                            <Users className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                             Mayor Actividad
                         </h3>
                         {data.topOperators.length === 0 ? (
-                            <div className="py-6 text-center text-slate-400 font-bold text-[10px] uppercase tracking-widest">Sin datos</div>
+                            <div className="py-6 text-center text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-widest">Sin datos</div>
                         ) : (
                             <div className="space-y-2.5">
                                 {data.topOperators.map((op, idx) => (
-                                    <div key={idx} className="flex items-center justify-between p-3 rounded-2xl bg-indigo-50/30 hover:bg-white hover:shadow-sm border border-transparent hover:border-indigo-100 transition-all group">
-                                        <span className="font-bold text-slate-600 group-hover:text-indigo-600 transition-colors text-sm truncate">{op.name}</span>
-                                        <span className="px-3 py-1 bg-white border border-indigo-100 text-indigo-600 text-[10px] font-black rounded-xl shadow-sm shrink-0">{op.count} Asig</span>
+                                    <div key={idx} className="flex items-center justify-between p-3 rounded-2xl bg-indigo-50/30 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm border border-transparent hover:border-indigo-100 transition-all group">
+                                        <span className="font-bold text-slate-600 dark:text-slate-300 group-hover:text-indigo-600 transition-colors text-sm truncate">{op.name}</span>
+                                        <span className="px-3 py-1 bg-white dark:bg-slate-800 border border-indigo-100 text-indigo-600 text-[10px] font-black rounded-xl shadow-sm shrink-0">{op.count} Asig</span>
                                     </div>
                                 ))}
                             </div>
@@ -532,14 +532,14 @@ export default function DashboardPage() {
             </div>
 
             {/* Client Delays Analysis Section (NEW) */}
-            <div className="space-y-6 pt-8 border-t border-slate-200">
+            <div className="space-y-6 pt-8 border-t border-slate-200 dark:border-slate-700">
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-amber-500 rounded-2xl text-white shadow-lg shadow-amber-500/20">
                         <Timer className="w-7 h-7" />
                     </div>
                     <div>
-                        <h3 className="text-2xl font-black text-slate-800 tracking-tight leading-none">Análisis de Demoras Externas</h3>
-                        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mt-1 px-0.5">Responsabilidad del Cliente</p>
+                        <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight leading-none">Análisis de Demoras Externas</h3>
+                        <p className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1 px-0.5">Responsabilidad del Cliente</p>
                     </div>
                 </div>
 
@@ -584,11 +584,11 @@ export default function DashboardPage() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Delays by Area */}
-                    <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm relative group overflow-hidden">
+                    <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm relative group overflow-hidden">
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
                                 <Building2 className="w-5 h-5 text-amber-500" />
-                                <h3 className="text-xl font-bold text-slate-800">Demoras por Área del Cliente</h3>
+                                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Demoras por Área del Cliente</h3>
                             </div>
                             <MetricTooltip
                                 def="Distribución de horas perdidas según el departamento responsable del cliente."
@@ -598,7 +598,7 @@ export default function DashboardPage() {
                         </div>
                         <div className="space-y-4">
                             {data.delays.topAreas.length === 0 ? (
-                                <div className="h-48 flex items-center justify-center text-slate-400 font-bold uppercase tracking-widest text-[10px]">Sin datos de áreas</div>
+                                <div className="h-48 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Sin datos de áreas</div>
                             ) : (
                                 data.delays.topAreas.slice(0, 5).map((area, idx) => {
                                     const maxHours = Math.max(...data.delays.topAreas.map(a => a.hours), 1);
@@ -606,10 +606,10 @@ export default function DashboardPage() {
                                     return (
                                         <div key={idx} className="space-y-1.5">
                                             <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
-                                                <span className="text-slate-500">{area.name}</span>
+                                                <span className="text-slate-500 dark:text-slate-400">{area.name}</span>
                                                 <span className="text-amber-600 font-black">{area.hours}h</span>
                                             </div>
-                                            <div className="h-4 bg-slate-50 rounded-lg overflow-hidden border border-slate-100 p-0.5">
+                                            <div className="h-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg overflow-hidden border border-slate-100 dark:border-slate-800 p-0.5">
                                                 <div
                                                     className="h-full bg-amber-400 rounded-md transition-all duration-1000 shadow-[0_0_10px_rgba(245,158,11,0.2)]"
                                                     style={{ width: `${percentage}%` }}
@@ -716,7 +716,7 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
 
     const m = metricas;
     const npsScore = m?.nps.score;
-    const npsColor = npsScore === null ? 'text-slate-400' : npsScore >= TARGET_NPS ? 'text-emerald-600' : npsScore >= 0 ? 'text-amber-500' : 'text-rose-500';
+    const npsColor = npsScore === null ? 'text-slate-400 dark:text-slate-500' : npsScore >= TARGET_NPS ? 'text-emerald-600' : npsScore >= 0 ? 'text-amber-500' : 'text-rose-500';
 
     // Donut helpers
     const total3 = (m?.nps.promotores ?? 0) + (m?.nps.pasivos ?? 0) + (m?.nps.detractores ?? 0);
@@ -738,15 +738,15 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                     <Star className="w-7 h-7" fill="white" />
                 </div>
                 <div>
-                    <h3 className="text-2xl font-black text-slate-800 tracking-tight">Métricas de Servicios</h3>
-                    <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mt-0.5">Satisfacción del cliente · NPS · Desempeño por operador</p>
+                    <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Métricas de Servicios</h3>
+                    <p className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">Satisfacción del cliente · NPS · Desempeño por operador</p>
                 </div>
             </div>
 
             {/* Filters */}
-            <div className="bg-white border border-slate-200 rounded-2xl md:rounded-[2rem] p-4 md:p-6 shadow-sm space-y-3">
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-[2rem] p-4 md:p-6 shadow-sm space-y-3">
                 <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-bold text-slate-700 flex items-center gap-2 text-sm">
+                    <h4 className="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 text-sm">
                         <SlidersHorizontal className="w-4 h-4 text-indigo-500" />
                         Filtros de Servicio
                     </h4>
@@ -758,12 +758,12 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                     <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 flex items-center gap-1"><Calendar className="w-3 h-3" /> Desde</label>
-                        <input type="date" className="w-full h-[42px] bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-indigo-100 outline-none appearance-none" value={filterFrom} onChange={e => setFilterFrom(e.target.value)} />
+                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1"><Calendar className="w-3 h-3" /> Desde</label>
+                        <input type="date" className="w-full h-[42px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-indigo-100 outline-none appearance-none" value={filterFrom} onChange={e => setFilterFrom(e.target.value)} />
                     </div>
                     <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 flex items-center gap-1"><Calendar className="w-3 h-3" /> Hasta</label>
-                        <input type="date" className="w-full h-[42px] bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-indigo-100 outline-none appearance-none" value={filterTo} onChange={e => setFilterTo(e.target.value)} />
+                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1"><Calendar className="w-3 h-3" /> Hasta</label>
+                        <input type="date" className="w-full h-[42px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-indigo-100 outline-none appearance-none" value={filterTo} onChange={e => setFilterTo(e.target.value)} />
                     </div>
                     <div className="space-y-1.5 pt-0.5">
                         <SearchableSelect
@@ -803,12 +803,12 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
 
             {/* No data state */}
             {m?.total === 0 && (
-                <div className="bg-white border border-slate-200 rounded-3xl p-16 text-center space-y-3">
-                    <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto">
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-16 text-center space-y-3">
+                    <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800/50 rounded-full flex items-center justify-center mx-auto">
                         <Star className="w-8 h-8 text-slate-300" />
                     </div>
-                    <p className="font-bold text-slate-500">Aún no hay encuestas de satisfacción</p>
-                    <p className="text-xs text-slate-400 font-medium">Las métricas aparecerán aquí una vez que los clientes completen la encuesta post-firma.</p>
+                    <p className="font-bold text-slate-500 dark:text-slate-400">Aún no hay encuestas de satisfacción</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">Las métricas aparecerán aquí una vez que los clientes completen la encuesta post-firma.</p>
                 </div>
             )}
 
@@ -817,7 +817,7 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                     {/* KPI Row */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                         {/* NPS Score */}
-                        <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group col-span-2 md:col-span-1 flex flex-col">
+                        <div className="bg-white dark:bg-slate-800 p-4 md:p-6 rounded-2xl md:rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group col-span-2 md:col-span-1 flex flex-col">
                             <div className="flex justify-between items-start mb-3">
                                 <div className="p-2.5 rounded-xl bg-indigo-600 text-white shadow-lg group-hover:scale-110 transition-transform">
                                     <TrendingUp className="w-5 h-5" />
@@ -830,61 +830,61 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                                     </div>
                                 </div>
                             </div>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">NPS Global</p>
+                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">NPS Global</p>
                             <h4 className={`text-3xl font-black tracking-tighter ${npsColor}`}>
                                 {npsScore !== null ? (npsScore >= 0 ? `+${npsScore}` : npsScore) : '—'}
                             </h4>
                             <div className="mt-3 pt-3 border-t border-slate-50 flex items-center gap-1.5">
                                 <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${npsScore !== null && npsScore >= TARGET_NPS ? 'bg-emerald-400' : 'bg-amber-400'}`} />
-                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Objetivo: &gt;{TARGET_NPS}</p>
+                                <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Objetivo: &gt;{TARGET_NPS}</p>
                             </div>
                         </div>
 
                         {/* Atención promedio */}
-                        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col">
+                        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col">
                             <div className="p-2.5 rounded-xl bg-blue-500 text-white shadow-lg w-fit mb-3 group-hover:scale-110 transition-transform">
                                 <Users className="w-5 h-5" />
                             </div>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Atención</p>
+                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Atención</p>
                             <h4 className={`text-3xl font-black tracking-tighter ${(m.promedios.atencion ?? 0) >= TARGET_CSAT ? 'text-emerald-600' : 'text-amber-500'}`}>
                                 {m.promedios.atencion ?? '—'}
                             </h4>
-                            <div className="mt-auto pt-3 border-t border-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Objetivo: {TARGET_CSAT}+</div>
+                            <div className="mt-auto pt-3 border-t border-slate-50 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Objetivo: {TARGET_CSAT}+</div>
                         </div>
 
                         {/* Calidad promedio */}
-                        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col">
+                        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col">
                             <div className="p-2.5 rounded-xl bg-emerald-500 text-white shadow-lg w-fit mb-3 group-hover:scale-110 transition-transform">
                                 <Award className="w-5 h-5" />
                             </div>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Calidad</p>
+                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Calidad</p>
                             <h4 className={`text-3xl font-black tracking-tighter ${(m.promedios.calidad ?? 0) >= TARGET_CSAT ? 'text-emerald-600' : 'text-amber-500'}`}>
                                 {m.promedios.calidad ?? '—'}
                             </h4>
-                            <div className="mt-auto pt-3 border-t border-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Objetivo: {TARGET_CSAT}+</div>
+                            <div className="mt-auto pt-3 border-t border-slate-50 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Objetivo: {TARGET_CSAT}+</div>
                         </div>
 
                         {/* Tiempo promedio */}
-                        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col">
+                        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col">
                             <div className="p-2.5 rounded-xl bg-amber-500 text-white shadow-lg w-fit mb-3 group-hover:scale-110 transition-transform">
                                 <Clock className="w-5 h-5" />
                             </div>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tiempo</p>
+                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Tiempo</p>
                             <h4 className={`text-3xl font-black tracking-tighter ${(m.promedios.tiempo ?? 0) >= TARGET_CSAT ? 'text-emerald-600' : 'text-amber-500'}`}>
                                 {m.promedios.tiempo ?? '—'}
                             </h4>
-                            <div className="mt-auto pt-3 border-t border-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Objetivo: {TARGET_CSAT}+</div>
+                            <div className="mt-auto pt-3 border-t border-slate-50 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Objetivo: {TARGET_CSAT}+</div>
                         </div>
                     </div>
 
                     {/* Charts row: NPS Donut + Trend */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* NPS Donut */}
-                        <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col items-center">
+                        <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col items-center">
                             <div className="flex items-center justify-between w-full mb-4">
                                 <div className="flex items-center gap-3">
                                     <PieChart className="w-5 h-5 text-indigo-500" />
-                                    <h3 className="text-xl font-bold text-slate-800">Distribución NPS</h3>
+                                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Distribución NPS</h3>
                                 </div>
                             </div>
 
@@ -914,7 +914,7 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                                     <span className={`text-3xl font-black tracking-tighter ${npsColor}`}>
                                         {npsScore !== null ? (npsScore >= 0 ? `+${npsScore}` : npsScore) : '—'}
                                     </span>
-                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">NPS</span>
+                                    <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">NPS</span>
                                 </div>
                             </div>
 
@@ -922,7 +922,7 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                                 <div className="flex items-center justify-between px-4 py-3 bg-emerald-50 rounded-2xl">
                                     <div className="flex items-center gap-3">
                                         <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                                        <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">Promotores (9-10)</span>
+                                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">Promotores (9-10)</span>
                                     </div>
                                     <div className="text-right">
                                         <span className="text-sm font-black text-emerald-700">{m.nps.promotores}</span>
@@ -932,7 +932,7 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                                 <div className="flex items-center justify-between px-4 py-3 bg-amber-50 rounded-2xl">
                                     <div className="flex items-center gap-3">
                                         <div className="w-3 h-3 rounded-full bg-amber-400" />
-                                        <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">Pasivos (7-8)</span>
+                                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">Pasivos (7-8)</span>
                                     </div>
                                     <div className="text-right">
                                         <span className="text-sm font-black text-amber-700">{m.nps.pasivos}</span>
@@ -942,7 +942,7 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                                 <div className="flex items-center justify-between px-4 py-3 bg-rose-50 rounded-2xl">
                                     <div className="flex items-center gap-3">
                                         <div className="w-3 h-3 rounded-full bg-rose-500" />
-                                        <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">Detractores (0-6)</span>
+                                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">Detractores (0-6)</span>
                                     </div>
                                     <div className="text-right">
                                         <span className="text-sm font-black text-rose-700">{m.nps.detractores}</span>
@@ -953,16 +953,16 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                         </div>
 
                         {/* Promedios de servicio (bar chart with target line) */}
-                        <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                        <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
                             <div className="flex items-center gap-3 mb-6">
                                 <BarChart3 className="w-5 h-5 text-indigo-500" />
-                                <h3 className="text-xl font-bold text-slate-800">Promedios de Servicio</h3>
+                                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Promedios de Servicio</h3>
                             </div>
                             <div className="space-y-5 relative">
                                 {/* Target line annotation */}
                                 <div className="flex items-center gap-2 mb-2">
-                                    <div className="w-8 h-0 border-t-2 border-dashed border-slate-300" />
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Objetivo: {TARGET_CSAT}/10</span>
+                                    <div className="w-8 h-0 border-t-2 border-dashed border-slate-300 dark:border-slate-600" />
+                                    <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Objetivo: {TARGET_CSAT}/10</span>
                                 </div>
                                 {[
                                     { label: 'Atención', value: m.promedios.atencion, color: 'bg-blue-500', shadow: 'shadow-blue-200' },
@@ -975,12 +975,12 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                                     return (
                                         <div key={label} className="space-y-1.5">
                                             <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
-                                                <span className="text-slate-500">{label}</span>
+                                                <span className="text-slate-500 dark:text-slate-400">{label}</span>
                                                 <span className={isAboveTarget ? 'text-emerald-600' : 'text-amber-500'}>
                                                     {value ?? '—'}/10
                                                 </span>
                                             </div>
-                                            <div className="h-5 bg-slate-50 rounded-xl relative overflow-hidden border border-slate-100">
+                                            <div className="h-5 bg-slate-50 dark:bg-slate-900/50 rounded-xl relative overflow-hidden border border-slate-100 dark:border-slate-800">
                                                 {/* Progress bar */}
                                                 <div
                                                     className={`h-full rounded-xl transition-all duration-1000 ${color} ${shadow} shadow-sm`}
@@ -1004,10 +1004,10 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                     {m.porMes.length >= 2 && (
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             {/* NPS trend */}
-                            <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                            <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
                                 <div className="flex items-center gap-3 mb-6">
                                     <TrendingUp className="w-5 h-5 text-indigo-500" />
-                                    <h3 className="text-xl font-bold text-slate-800">Evolución del NPS</h3>
+                                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Evolución del NPS</h3>
                                 </div>
                                 <ServiceTrendChart
                                     data={m.porMes.map(p => ({ label: p.label, value: p.nps }))}
@@ -1020,10 +1020,10 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                                 />
                             </div>
                             {/* CSAT trend */}
-                            <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                            <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
                                 <div className="flex items-center gap-3 mb-6">
                                     <BarChart3 className="w-5 h-5 text-blue-500" />
-                                    <h3 className="text-xl font-bold text-slate-800">Satisfacción en el Tiempo</h3>
+                                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Satisfacción en el Tiempo</h3>
                                 </div>
                                 <ServiceMultiTrendChart data={m.porMes} targetCsat={TARGET_CSAT} />
                             </div>
@@ -1032,36 +1032,36 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
 
                     {/* Metrics per operator */}
                     {m.porOperador.length > 0 && (
-                        <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                        <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
                             <div className="flex items-center gap-3 mb-6">
                                 <Users className="w-5 h-5 text-indigo-500" />
-                                <h3 className="text-xl font-bold text-slate-800">Métricas por Operador</h3>
-                                <span className="ml-auto text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
+                                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Métricas por Operador</h3>
+                                <span className="ml-auto text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-slate-50 dark:bg-slate-900/50 px-3 py-1.5 rounded-xl border border-slate-100 dark:border-slate-800">
                                     {m.total} encuesta{m.total !== 1 ? 's' : ''}
                                 </span>
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
                                     <thead>
-                                        <tr className="border-b border-slate-100">
-                                            <th className="text-left px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Operador</th>
-                                            <th className="text-center px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Atención</th>
-                                            <th className="text-center px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Calidad</th>
-                                            <th className="text-center px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tiempo</th>
-                                            <th className="text-center px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">NPS</th>
-                                            <th className="text-center px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Encuestas</th>
+                                        <tr className="border-b border-slate-100 dark:border-slate-800">
+                                            <th className="text-left px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Operador</th>
+                                            <th className="text-center px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Atención</th>
+                                            <th className="text-center px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Calidad</th>
+                                            <th className="text-center px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Tiempo</th>
+                                            <th className="text-center px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">NPS</th>
+                                            <th className="text-center px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Encuestas</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-50">
                                         {m.porOperador.map(op => {
                                             const ratingColor = (v: number | null) => {
-                                                if (v === null) return 'text-slate-400';
+                                                if (v === null) return 'text-slate-400 dark:text-slate-500';
                                                 if (v >= TARGET_CSAT) return 'text-emerald-700 font-black';
                                                 if (v >= 6) return 'text-amber-600 font-black';
                                                 return 'text-rose-600 font-black';
                                             };
                                             const npsOpColor = (v: number | null) => {
-                                                if (v === null) return 'text-slate-400';
+                                                if (v === null) return 'text-slate-400 dark:text-slate-500';
                                                 if (v >= TARGET_NPS) return 'text-emerald-700 font-black';
                                                 if (v >= 0) return 'text-amber-600 font-black';
                                                 return 'text-rose-600 font-black';
@@ -1075,7 +1075,7 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                                                             <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-black text-xs shrink-0">
                                                                 {op.nombre.charAt(0)}
                                                             </div>
-                                                            <span className="font-bold text-slate-700">{op.nombre}</span>
+                                                            <span className="font-bold text-slate-700 dark:text-slate-200">{op.nombre}</span>
                                                         </div>
                                                     </td>
                                                     {[
@@ -1086,7 +1086,7 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                                                         <td key={idx} className="px-4 py-4">
                                                             <div className="flex flex-col items-center gap-1.5">
                                                                 <span className={`text-base ${ratingColor(val)}`}>{val ?? '—'}</span>
-                                                                <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                                                <div className="w-16 h-1.5 bg-slate-100 dark:bg-slate-800/50 rounded-full overflow-hidden">
                                                                     <div className="h-full rounded-full transition-all duration-700"
                                                                         style={{ width: barWidth(val), backgroundColor: color }} />
                                                                 </div>
@@ -1126,7 +1126,7 @@ function ServiceTrendChart({ data, color, targetY, minY, maxY, valueSuffix = '',
     targetLabel?: string;
 }) {
     const [hovered, setHovered] = useState<number | null>(null);
-    if (data.length === 0) return <div className="h-48 flex items-center justify-center text-slate-400 text-[10px] font-black uppercase tracking-widest">Sin datos</div>;
+    if (data.length === 0) return <div className="h-48 flex items-center justify-center text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-widest">Sin datos</div>;
 
     const range = maxY - minY;
     const yOf = (v: number) => 100 - ((v - minY) / range) * 85;
@@ -1163,7 +1163,7 @@ function ServiceTrendChart({ data, color, targetY, minY, maxY, valueSuffix = '',
                 ))}
             </svg>
             {hovered !== null && points[hovered] && (
-                <div className="absolute w-2.5 h-2.5 rounded-full border-2 bg-white pointer-events-none"
+                <div className="absolute w-2.5 h-2.5 rounded-full border-2 bg-white dark:bg-slate-800 pointer-events-none"
                     style={{ borderColor: color, left: `${points[hovered].x}%`, top: `${points[hovered].y}%`, transform: 'translate(-50%,-50%)' }}>
                     <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] font-black px-2 py-1 rounded-lg whitespace-nowrap">
                         {data[hovered].label}: {data[hovered].value >= 0 ? '+' : ''}{data[hovered].value}{valueSuffix}
@@ -1172,7 +1172,7 @@ function ServiceTrendChart({ data, color, targetY, minY, maxY, valueSuffix = '',
             )}
             <div className="absolute inset-x-0 bottom-[-1.5rem] flex justify-between px-2">
                 {data.map((t, i) => (
-                    <span key={i} className={`text-[9px] font-black uppercase tracking-tighter ${hovered === i ? 'text-slate-900' : 'text-slate-400'}`}>
+                    <span key={i} className={`text-[9px] font-black uppercase tracking-tighter ${hovered === i ? 'text-slate-900 dark:text-slate-50' : 'text-slate-400 dark:text-slate-500'}`}>
                         {t.label.split('-')[1] || t.label}
                     </span>
                 ))}
@@ -1186,7 +1186,7 @@ function ServiceMultiTrendChart({ data, targetCsat }: {
     data: { label: string; atencion: number; calidad: number; tiempo: number }[];
     targetCsat: number;
 }) {
-    if (data.length === 0) return <div className="h-48 flex items-center justify-center text-slate-400 text-[10px] font-black uppercase tracking-widest">Sin datos</div>;
+    if (data.length === 0) return <div className="h-48 flex items-center justify-center text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-widest">Sin datos</div>;
 
     const yOf = (v: number) => 100 - (v / 10) * 85;
     const targetYPct = yOf(targetCsat);
@@ -1221,7 +1221,7 @@ function ServiceMultiTrendChart({ data, targetCsat }: {
                 </svg>
                 <div className="absolute inset-x-0 bottom-[-1.5rem] flex justify-between px-2">
                     {data.map((d, i) => (
-                        <span key={i} className="text-[9px] font-black uppercase tracking-tighter text-slate-400">{d.label.split('-')[1] || d.label}</span>
+                        <span key={i} className="text-[9px] font-black uppercase tracking-tighter text-slate-400 dark:text-slate-500">{d.label.split('-')[1] || d.label}</span>
                     ))}
                 </div>
             </div>
@@ -1233,7 +1233,7 @@ function ServiceMultiTrendChart({ data, targetCsat }: {
                 ].map(l => (
                     <div key={l.label} className="flex items-center gap-1.5">
                         <div className="w-4 h-0.5 rounded-full" style={{ backgroundColor: l.color }} />
-                        <span className="text-[10px] font-bold text-slate-500">{l.label}</span>
+                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">{l.label}</span>
                     </div>
                 ))}
             </div>
@@ -1242,25 +1242,25 @@ function ServiceMultiTrendChart({ data, targetCsat }: {
 }
 function KpiCard({ title, value, icon, color, trend, tooltip }: { title: string; value: string | number; icon: any; color: string; trend: string; tooltip?: { def: string; purpose: string; calc: string } }) {
     return (
-        <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 group relative flex flex-col h-full">
+        <div className="bg-white dark:bg-slate-800 p-4 md:p-6 rounded-2xl md:rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 group relative flex flex-col h-full">
             <div className="flex justify-between items-start mb-3 md:mb-4">
                 <div className={`p-2.5 md:p-3 rounded-xl md:rounded-2xl ${color} text-white shadow-lg group-hover:scale-110 transition-transform`}>
                     {icon}
                 </div>
                 {tooltip && <MetricTooltip {...tooltip} />}
                 {!tooltip && (
-                    <div className="px-2 py-1 bg-slate-50 rounded-lg text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">
+                    <div className="px-2 py-1 bg-slate-50 dark:bg-slate-900/50 rounded-lg text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">
                         KPI Global
                     </div>
                 )}
             </div>
             <div className="space-y-0.5 md:space-y-1 flex-1">
-                <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest px-0.5 md:px-1 line-clamp-2">{title}</p>
-                <h4 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tighter">{value}</h4>
+                <p className="text-[10px] md:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-0.5 md:px-1 line-clamp-2">{title}</p>
+                <h4 className="text-2xl md:text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tighter">{value}</h4>
             </div>
             <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-slate-50 flex items-center gap-1.5">
                 <div className={`w-1.5 h-1.5 rounded-full ${color.replace('bg-', 'bg-').replace('500', '400')} animate-pulse`} />
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{trend}</p>
+                <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{trend}</p>
             </div>
         </div>
     );
@@ -1282,7 +1282,7 @@ function MetricTooltip({ def, purpose, calc }: { def: string; purpose: string; c
                     </div>
                     <div className="pt-2 border-t border-white/10">
                         <span className="block font-black uppercase tracking-widest text-indigo-400 mb-1">Cálculo</span>
-                        <p className="font-mono text-[9px] text-slate-400">{calc}</p>
+                        <p className="font-mono text-[9px] text-slate-400 dark:text-slate-500">{calc}</p>
                     </div>
                 </div>
                 {/* Arrow */}
@@ -1294,12 +1294,12 @@ function MetricTooltip({ def, purpose, calc }: { def: string; purpose: string; c
 
 function LegendItem({ label, count, color }: { label: string; count: number; color: string }) {
     return (
-        <div className="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-2xl group hover:bg-white hover:shadow-sm transition-all border border-transparent hover:border-slate-100">
+        <div className="flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-900/50 rounded-2xl group hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm transition-all border border-transparent hover:border-slate-100">
             <div className="flex items-center gap-3">
                 <div className={`w-3 h-3 rounded-full ${color}`} />
-                <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">{label}</span>
+                <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">{label}</span>
             </div>
-            <span className="text-sm font-black text-slate-800">{count}</span>
+            <span className="text-sm font-black text-slate-800 dark:text-slate-100">{count}</span>
         </div>
     );
 }
@@ -1309,7 +1309,7 @@ function StatusPill({ label, count, color }: { label: string; count: number; col
         primary: 'bg-primary/10 text-primary border-primary/20',
         amber: 'bg-amber-50 text-amber-600 border-amber-100',
         rose: 'bg-rose-50 text-rose-500 border-rose-100',
-        slate: 'bg-slate-50 text-slate-500 border-slate-200',
+        slate: 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700',
         blue: 'bg-blue-50 text-blue-600 border-blue-100',
         violet: 'bg-violet-50 text-violet-600 border-violet-100'
     };
@@ -1361,18 +1361,18 @@ function ElegantTrendChart({ title, data, color, icon, tooltip, valuePrefix = ''
     const areaPath = points.length >= 2 ? `${linePath} L ${points[points.length - 1].x} 100 L ${points[0].x} 100 Z` : '';
 
     return (
-        <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm relative overflow-hidden group">
+        <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group">
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
                     {icon}
-                    <h3 className="text-xl font-bold text-slate-800">{title}</h3>
+                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">{title}</h3>
                 </div>
                 <MetricTooltip {...tooltip} />
             </div>
 
             <div className="h-56 relative mt-4 cursor-crosshair" onMouseLeave={() => setHoveredIndex(null)}>
                 {data.length === 0 ? (
-                    <div className="h-full flex items-center justify-center text-slate-400 font-bold uppercase tracking-widest text-[10px]">Sin datos históricos</div>
+                    <div className="h-full flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Sin datos históricos</div>
                 ) : (
                     <>
                         <svg className="w-full h-full overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -1416,7 +1416,7 @@ function ElegantTrendChart({ title, data, color, icon, tooltip, valuePrefix = ''
                         {/* Hover point – rendered as HTML div to avoid SVG stretching */}
                         {hoveredIndex !== null && points[hoveredIndex] && (
                             <div
-                                className="absolute w-[10px] h-[10px] rounded-full border-2 bg-white pointer-events-none animate-in zoom-in duration-200"
+                                className="absolute w-[10px] h-[10px] rounded-full border-2 bg-white dark:bg-slate-800 pointer-events-none animate-in zoom-in duration-200"
                                 style={{
                                     borderColor: color,
                                     left: `${points[hoveredIndex].x}%`,
@@ -1430,7 +1430,7 @@ function ElegantTrendChart({ title, data, color, icon, tooltip, valuePrefix = ''
                         {/* Labels */}
                         <div className="absolute inset-x-0 bottom-[-1.5rem] flex justify-between px-2">
                             {data.map((t, i) => (
-                                <span key={i} className={`text-[9px] font-black uppercase tracking-tighter transition-colors ${hoveredIndex === i ? 'text-slate-900 scale-110' : 'text-slate-400'}`}>
+                                <span key={i} className={`text-[9px] font-black uppercase tracking-tighter transition-colors ${hoveredIndex === i ? 'text-slate-900 dark:text-slate-50 scale-110' : 'text-slate-400 dark:text-slate-500'}`}>
                                     {t.label.split('-').length > 1 ? t.label.split('-')[1] : t.label}
                                 </span>
                             ))}
@@ -1447,7 +1447,7 @@ function ElegantTrendChart({ title, data, color, icon, tooltip, valuePrefix = ''
                                 }}
                             >
                                 <div className="space-y-1">
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{data[hoveredIndex].label}</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">{data[hoveredIndex].label}</p>
                                     <p className="text-sm font-black flex items-center gap-2">
                                         <span style={{ color }}>{valuePrefix}{data[hoveredIndex].value}{valueSuffix}</span>
                                     </p>

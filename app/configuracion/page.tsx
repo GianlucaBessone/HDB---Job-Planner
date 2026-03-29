@@ -62,53 +62,53 @@ export default function ConfigPage() {
         <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div className="space-y-1">
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 md:gap-3">
-                        <Settings className="w-6 h-6 md:w-8 md:h-8 text-slate-700" />
+                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
+                        <Settings className="w-6 h-6 md:w-8 md:h-8 text-slate-700 dark:text-slate-200" />
                         Configuración
                     </h2>
-                    <p className="text-sm text-slate-500 font-medium hidden md:block">Administra catálogos y valores globales del sistema</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium hidden md:block">Administra catálogos y valores globales del sistema</p>
                 </div>
             </div>
 
-            <div className="flex border-b border-slate-200 overflow-x-auto">
+            <div className="flex border-b border-slate-200 dark:border-slate-700 overflow-x-auto">
                 <button
                     onClick={() => setActiveTab('tags')}
-                    className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'tags' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
+                    className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'tags' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'}`}
                 >
                     <Tags className="w-4 h-4" />
                     Etiquetas
                 </button>
                 <button
                     onClick={() => setActiveTab('checklists')}
-                    className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'checklists' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
+                    className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'checklists' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'}`}
                 >
                     <ListChecks className="w-4 h-4" />
                     Checklists
                 </button>
                 <button
                     onClick={() => setActiveTab('options')}
-                    className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'options' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
+                    className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'options' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'}`}
                 >
                     <Folders className="w-4 h-4" />
                     Desplegables
                 </button>
                 <button
                     onClick={() => setActiveTab('system')}
-                    className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'system' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
+                    className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'system' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'}`}
                 >
                     <Bell className="w-4 h-4" />
                     Sistema
                 </button>
                 <button
                     onClick={() => setActiveTab('os')}
-                    className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'os' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}
+                    className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'os' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'}`}
                 >
                     <FileText className="w-4 h-4" />
                     Ordenes de Servicio
                 </button>
             </div>
 
-            <div className="bg-white border border-slate-200 min-h-[400px] rounded-[2rem] p-6 md:p-8 shadow-sm">
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 min-h-[400px] rounded-[2rem] p-6 md:p-8 shadow-sm">
                 {activeTab === 'tags' && <TagsSection />}
                 {activeTab === 'checklists' && <ChecklistSection />}
                 {activeTab === 'options' && <OptionsSection />}
@@ -155,26 +155,26 @@ function OSSection() {
     return (
         <div className="space-y-6 max-w-lg">
             <div>
-                <h3 className="text-xl font-bold text-slate-800">Órdenes de Servicio</h3>
-                <p className="text-sm text-slate-500 font-medium">Configuración de valores para facturación y reportes de OS.</p>
+                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Órdenes de Servicio</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Configuración de valores para facturación y reportes de OS.</p>
             </div>
 
-            <div className="space-y-4 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+            <div className="space-y-4 bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
                 <div>
-                    <h4 className="font-bold text-slate-800">Valor de Mano de Obra (por hora)</h4>
-                    <p className="text-xs text-slate-500 mt-1">
+                    <h4 className="font-bold text-slate-800 dark:text-slate-100">Valor de Mano de Obra (por hora)</h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                         Utilizado como valor predeterminado al generar documentos de cobro para Órdenes de Servicio.
                     </p>
                 </div>
                 <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">$</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400 dark:text-slate-500">$</span>
                     <input
                         type="number"
                         min="0"
                         step="0.01"
                         value={setting.valorManoObra}
                         onChange={e => setSetting({ ...setting, valorManoObra: parseFloat(e.target.value) || 0 })}
-                        className="w-full bg-white border border-slate-200 rounded-xl py-3 pl-8 pr-4 outline-none font-bold text-slate-700 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 pl-8 pr-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                         placeholder="Ej: 50.00"
                     />
                 </div>
@@ -196,16 +196,16 @@ function ConfigSkeleton() {
         <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div className="space-y-1">
-                    <h2 className="text-2xl flex items-center gap-2"><div className="w-8 h-8 rounded-full bg-slate-200 animate-pulse"></div> <div className="w-40 h-8 bg-slate-200 rounded animate-pulse"></div></h2>
-                    <div className="w-64 h-4 bg-slate-100 rounded animate-pulse mt-2"></div>
+                    <h2 className="text-2xl flex items-center gap-2"><div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse"></div> <div className="w-40 h-8 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div></h2>
+                    <div className="w-64 h-4 bg-slate-100 dark:bg-slate-800/50 rounded animate-pulse mt-2"></div>
                 </div>
             </div>
-            <div className="flex border-b border-slate-200 overflow-x-auto gap-4 py-2">
+            <div className="flex border-b border-slate-200 dark:border-slate-700 overflow-x-auto gap-4 py-2">
                 <div className="w-24 h-6 bg-slate-200/60 rounded animate-pulse"></div>
                 <div className="w-24 h-6 bg-slate-200/60 rounded animate-pulse"></div>
                 <div className="w-24 h-6 bg-slate-200/60 rounded animate-pulse"></div>
             </div>
-            <div className="bg-white border border-slate-200 min-h-[400px] rounded-[2rem] p-6 md:p-8 shadow-sm flex flex-col gap-4">
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 min-h-[400px] rounded-[2rem] p-6 md:p-8 shadow-sm flex flex-col gap-4">
                 <div className="w-1/3 h-8 bg-slate-200/50 rounded animate-pulse mb-4"></div>
                 {Array(3).fill(0).map((_, i) => <div key={i} className="w-full h-16 bg-slate-100/50 rounded-xl animate-pulse"></div>)}
             </div>
@@ -267,7 +267,7 @@ function TagsSection() {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h3 className="text-xl font-bold text-slate-800">Etiquetas de Proyectos</h3>
+                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Etiquetas de Proyectos</h3>
                 <button
                     onClick={() => setEditingId('new')}
                     className="flex items-center gap-2 bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors"
@@ -278,47 +278,47 @@ function TagsSection() {
 
             <div className="space-y-3">
                 {editingId === 'new' && (
-                    <div className="flex flex-col gap-4 bg-slate-50 p-4 rounded-xl border border-primary/20">
+                    <div className="flex flex-col gap-4 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-primary/20">
                         <div className="flex flex-col md:flex-row md:items-center gap-4">
                             <input
-                                className="w-full md:flex-1 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
+                                className="w-full md:flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
                                 placeholder="Nombre de la etiqueta"
                                 value={form.name}
                                 onChange={e => setForm({ ...form, name: e.target.value })}
                             />
                             <div className="flex items-center gap-6 flex-wrap px-1">
-                                <label className="flex items-center gap-2 text-sm text-slate-600 font-bold cursor-pointer">
+                                <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 font-bold cursor-pointer">
                                     <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} className="w-4 h-4 rounded text-primary focus:ring-primary" />
                                     Activo
                                 </label>
-                                <label className="flex items-center gap-2 text-sm text-slate-600 font-bold cursor-pointer">
+                                <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 font-bold cursor-pointer">
                                     <input type="checkbox" checked={form.impactsMetrics} onChange={e => setForm({ ...form, impactsMetrics: e.target.checked })} className="w-4 h-4 rounded text-primary focus:ring-primary" />
                                     Impacta Métricas
                                 </label>
                             </div>
                         </div>
-                        <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-3">
+                        <div className="flex items-center justify-end gap-3 border-t border-slate-100 dark:border-slate-800 pt-3">
                             <button onClick={() => handleSave()} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors"><Save className="w-4 h-4" /> Guardar</button>
-                            <button onClick={() => setEditingId(null)} className="flex items-center gap-2 px-4 py-2 bg-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors"><X className="w-4 h-4" /> Cancelar</button>
+                            <button onClick={() => setEditingId(null)} className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors"><X className="w-4 h-4" /> Cancelar</button>
                         </div>
                     </div>
                 )}
 
                 {tags.map(tag => (
                     editingId === tag.id ? (
-                        <div key={tag.id} className="flex flex-col gap-4 bg-white p-4 rounded-xl border border-primary/20 shadow-lg">
+                        <div key={tag.id} className="flex flex-col gap-4 bg-white dark:bg-slate-800 p-4 rounded-xl border border-primary/20 shadow-lg">
                             <div className="flex flex-col md:flex-row md:items-center gap-4">
                                 <input
-                                    className="w-full md:flex-1 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
+                                    className="w-full md:flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
                                     value={form.name}
                                     onChange={e => setForm({ ...form, name: e.target.value })}
                                 />
                                 <div className="flex items-center gap-6 flex-wrap px-1">
-                                    <label className="flex items-center gap-2 text-sm text-slate-600 font-bold cursor-pointer">
+                                    <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 font-bold cursor-pointer">
                                         <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} className="w-4 h-4 rounded text-primary focus:ring-primary" />
                                         Activo
                                     </label>
-                                    <label className="flex items-center gap-2 text-sm text-slate-600 font-bold cursor-pointer">
+                                    <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 font-bold cursor-pointer">
                                         <input type="checkbox" checked={form.impactsMetrics} onChange={e => setForm({ ...form, impactsMetrics: e.target.checked })} className="w-4 h-4 rounded text-primary focus:ring-primary" />
                                         Impacta Métricas
                                     </label>
@@ -326,19 +326,19 @@ function TagsSection() {
                             </div>
                             <div className="flex items-center justify-end gap-3 border-t border-slate-50 pt-3">
                                 <button onClick={() => handleSave(tag.id)} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors"><Save className="w-4 h-4" /> Guardar</button>
-                                <button onClick={() => setEditingId(null)} className="flex items-center gap-2 px-4 py-2 bg-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors"><X className="w-4 h-4" /> Cancelar</button>
+                                <button onClick={() => setEditingId(null)} className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors"><X className="w-4 h-4" /> Cancelar</button>
                             </div>
                         </div>
                     ) : (
-                        <div key={tag.id} className="flex items-center justify-between bg-slate-50 hover:bg-white p-4 rounded-xl border border-transparent hover:border-slate-200 transition-all">
+                        <div key={tag.id} className="flex items-center justify-between bg-slate-50 dark:bg-slate-900/50 hover:bg-white dark:hover:bg-slate-800 p-4 rounded-xl border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all">
                             <div className="flex items-center gap-4">
-                                <span className="font-bold text-slate-800">{tag.name}</span>
+                                <span className="font-bold text-slate-800 dark:text-slate-100">{tag.name}</span>
                                 {!tag.active && <span className="px-2 py-0.5 bg-rose-100 text-rose-600 text-[10px] uppercase font-black tracking-widest rounded-md">Inactivo</span>}
                                 {tag.impactsMetrics && <span className="px-2 py-0.5 bg-indigo-100 text-indigo-600 text-[10px] uppercase font-black tracking-widest rounded-md">Métricas</span>}
                             </div>
                             <div className="flex items-center gap-2">
-                                <button onClick={() => { setEditingId(tag.id); setForm({ name: tag.name, active: tag.active, impactsMetrics: tag.impactsMetrics }); }} className="btn-icon-inline text-slate-400 hover:text-primary p-2 transition-colors"><Edit2 className="w-4 h-4" /></button>
-                                <button onClick={() => handleDelete(tag.id)} className="btn-icon-inline text-slate-400 hover:text-rose-500 p-2 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                <button onClick={() => { setEditingId(tag.id); setForm({ name: tag.name, active: tag.active, impactsMetrics: tag.impactsMetrics }); }} className="btn-icon-inline text-slate-400 dark:text-slate-500 hover:text-primary p-2 transition-colors"><Edit2 className="w-4 h-4" /></button>
+                                <button onClick={() => handleDelete(tag.id)} className="btn-icon-inline text-slate-400 dark:text-slate-500 hover:text-rose-500 p-2 transition-colors"><Trash2 className="w-4 h-4" /></button>
                             </div>
                         </div>
                     )
@@ -416,9 +416,9 @@ function ChecklistSection() {
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <h3 className="text-xl font-bold text-slate-800">Checklist por Etiqueta</h3>
+                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Checklist por Etiqueta</h3>
                 <select
-                    className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary/20"
+                    className="px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-primary/20"
                     value={selectedTag}
                     onChange={e => setSelectedTag(e.target.value)}
                 >
@@ -428,7 +428,7 @@ function ChecklistSection() {
             </div>
 
             {selectedTag && (
-                <div className="space-y-3 pt-4 border-t border-slate-100">
+                <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
                     <button
                         onClick={() => { setEditingId('new'); setForm({ description: '', active: true, order: checklists.length }); }}
                         className="flex items-center gap-2 bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors w-full justify-center mb-6"
@@ -437,47 +437,47 @@ function ChecklistSection() {
                     </button>
 
                     {editingId === 'new' && (
-                        <div className="flex flex-col gap-4 bg-slate-50 p-4 rounded-xl border border-primary/20">
+                        <div className="flex flex-col gap-4 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-primary/20">
                             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                                 <input
-                                    className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
+                                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
                                     type="number" placeholder="Orden"
                                     value={form.order} onChange={e => setForm({ ...form, order: Number(e.target.value) })}
                                 />
                                 <input
-                                    className="w-full sm:col-span-2 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
+                                    className="w-full sm:col-span-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
                                     placeholder="Descripción del ítem"
                                     value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
                                 />
                                 <div className="flex items-center px-1">
-                                    <label className="flex items-center gap-2 text-sm text-slate-600 font-bold cursor-pointer">
+                                    <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 font-bold cursor-pointer">
                                         <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} className="w-4 h-4 rounded text-primary focus:ring-primary" />
                                         Activo
                                     </label>
                                 </div>
                             </div>
-                            <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-3">
+                            <div className="flex items-center justify-end gap-3 border-t border-slate-100 dark:border-slate-800 pt-3">
                                 <button onClick={() => handleSave()} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors"><Save className="w-4 h-4" /> Guardar</button>
-                                <button onClick={() => setEditingId(null)} className="flex items-center gap-2 px-4 py-2 bg-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors"><X className="w-4 h-4" /> Cancelar</button>
+                                <button onClick={() => setEditingId(null)} className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors"><X className="w-4 h-4" /> Cancelar</button>
                             </div>
                         </div>
                     )}
 
                     {checklists.map((item: any) => (
                         editingId === item.id ? (
-                            <div key={item.id} className="flex flex-col gap-4 bg-white p-4 rounded-xl border border-primary/20 shadow-lg mb-2">
+                            <div key={item.id} className="flex flex-col gap-4 bg-white dark:bg-slate-800 p-4 rounded-xl border border-primary/20 shadow-lg mb-2">
                                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                                     <input
-                                        className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
+                                        className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
                                         type="number"
                                         value={form.order} onChange={e => setForm({ ...form, order: Number(e.target.value) })}
                                     />
                                     <input
-                                        className="w-full sm:col-span-2 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
+                                        className="w-full sm:col-span-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
                                         value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
                                     />
                                     <div className="flex items-center px-1">
-                                        <label className="flex items-center gap-2 text-sm text-slate-600 font-bold cursor-pointer">
+                                        <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 font-bold cursor-pointer">
                                             <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} className="w-4 h-4 rounded text-primary focus:ring-primary" />
                                             Activo
                                         </label>
@@ -485,26 +485,26 @@ function ChecklistSection() {
                                 </div>
                                 <div className="flex items-center justify-end gap-3 border-t border-slate-50 pt-3">
                                     <button onClick={() => handleSave(item.id)} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors"><Save className="w-4 h-4" /> Guardar</button>
-                                    <button onClick={() => setEditingId(null)} className="flex items-center gap-2 px-4 py-2 bg-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors"><X className="w-4 h-4" /> Cancelar</button>
+                                    <button onClick={() => setEditingId(null)} className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors"><X className="w-4 h-4" /> Cancelar</button>
                                 </div>
                             </div>
                         ) : (
-                            <div key={item.id} className="flex items-center justify-between bg-white hover:bg-slate-50 p-4 rounded-xl border border-slate-100 hover:border-slate-200 transition-all shadow-sm">
+                            <div key={item.id} className="flex items-center justify-between bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 p-4 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all shadow-sm">
                                 <div className="flex items-center gap-4 flex-1 overflow-hidden">
-                                    <span className="w-8 h-8 flex items-center justify-center bg-slate-100 text-slate-500 font-black text-xs rounded-lg shrink-0">{item.order}</span>
-                                    <span className={`font-bold text-sm truncate ${item.active ? 'text-slate-800' : 'text-slate-400 line-through'}`}>{item.description}</span>
+                                    <span className="w-8 h-8 flex items-center justify-center bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 font-black text-xs rounded-lg shrink-0">{item.order}</span>
+                                    <span className={`font-bold text-sm truncate ${item.active ? 'text-slate-800 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 line-through'}`}>{item.description}</span>
                                     {!item.active && <span className="px-2 py-0.5 bg-rose-100 text-rose-600 text-[10px] uppercase font-black tracking-widest rounded-md shrink-0">Inactivo</span>}
                                 </div>
                                 <div className="flex items-center gap-1 ml-4 shrink-0">
-                                    <button onClick={() => { setEditingId(item.id); setForm({ description: item.description, active: item.active, order: item.order }); }} className="btn-icon-inline text-slate-400 hover:text-primary p-2 transition-colors"><Edit2 className="w-4 h-4" /></button>
-                                    <button onClick={() => handleDelete(item.id)} className="btn-icon-inline text-slate-400 hover:text-rose-500 p-2 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                    <button onClick={() => { setEditingId(item.id); setForm({ description: item.description, active: item.active, order: item.order }); }} className="btn-icon-inline text-slate-400 dark:text-slate-500 hover:text-primary p-2 transition-colors"><Edit2 className="w-4 h-4" /></button>
+                                    <button onClick={() => handleDelete(item.id)} className="btn-icon-inline text-slate-400 dark:text-slate-500 hover:text-rose-500 p-2 transition-colors"><Trash2 className="w-4 h-4" /></button>
                                 </div>
                             </div>
                         )
                     ))}
 
                     {checklists.length === 0 && editingId !== 'new' && (
-                        <div className="py-8 text-center text-slate-400 text-sm font-bold">No hay ítems configurados en esta etiqueta.</div>
+                        <div className="py-8 text-center text-slate-400 dark:text-slate-500 text-sm font-bold">No hay ítems configurados en esta etiqueta.</div>
                     )}
                 </div>
             )}
@@ -582,13 +582,13 @@ function OptionsSection() {
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                <h3 className="text-xl font-bold text-slate-800">Desplegables del Sistema</h3>
-                <div className="flex gap-2 p-1 bg-slate-100 rounded-xl overflow-x-auto w-full md:w-auto">
+                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Desplegables del Sistema</h3>
+                <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-800/50 rounded-xl overflow-x-auto w-full md:w-auto">
                     {categories.map(cat => (
                         <button
                             key={cat.id}
                             onClick={() => setSelectedCategory(cat.id)}
-                            className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all ${selectedCategory === cat.id ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all ${selectedCategory === cat.id ? 'bg-white dark:bg-slate-800 text-primary shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
                         >
                             {cat.label}
                         </button>
@@ -605,47 +605,47 @@ function OptionsSection() {
                 </button>
 
                 {editingId === 'new' && (
-                    <div className="flex flex-col gap-4 bg-slate-50 p-4 rounded-xl border border-primary/20">
+                    <div className="flex flex-col gap-4 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-primary/20">
                         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                             <input
-                                className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
+                                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
                                 type="number" placeholder="Orden"
                                 value={form.order} onChange={e => setForm({ ...form, order: Number(e.target.value) })}
                             />
                             <input
-                                className="w-full sm:col-span-2 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
+                                className="w-full sm:col-span-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
                                 placeholder="Valor visible"
                                 value={form.value} onChange={e => setForm({ ...form, value: e.target.value })}
                             />
                             <div className="flex items-center px-1">
-                                <label className="flex items-center gap-2 text-sm text-slate-600 font-bold cursor-pointer">
+                                <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 font-bold cursor-pointer">
                                     <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} className="w-4 h-4 rounded text-primary focus:ring-primary" />
                                     Activo
                                 </label>
                             </div>
                         </div>
-                        <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-3">
+                        <div className="flex items-center justify-end gap-3 border-t border-slate-100 dark:border-slate-800 pt-3">
                             <button onClick={() => handleSave()} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors"><Save className="w-4 h-4" /> Guardar</button>
-                            <button onClick={() => setEditingId(null)} className="flex items-center gap-2 px-4 py-2 bg-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors"><X className="w-4 h-4" /> Cancelar</button>
+                            <button onClick={() => setEditingId(null)} className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors"><X className="w-4 h-4" /> Cancelar</button>
                         </div>
                     </div>
                 )}
 
                 {options.map((opt: any) => (
                     editingId === opt.id ? (
-                        <div key={opt.id} className="flex flex-col gap-4 bg-white p-4 rounded-xl border border-primary/20 shadow-lg">
+                        <div key={opt.id} className="flex flex-col gap-4 bg-white dark:bg-slate-800 p-4 rounded-xl border border-primary/20 shadow-lg">
                             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                                 <input
-                                    className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
+                                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
                                     type="number"
                                     value={form.order} onChange={e => setForm({ ...form, order: Number(e.target.value) })}
                                 />
                                 <input
-                                    className="w-full sm:col-span-2 px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
+                                    className="w-full sm:col-span-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
                                     value={form.value} onChange={e => setForm({ ...form, value: e.target.value })}
                                 />
                                 <div className="flex items-center px-1">
-                                    <label className="flex items-center gap-2 text-sm text-slate-600 font-bold cursor-pointer">
+                                    <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 font-bold cursor-pointer">
                                         <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} className="w-4 h-4 rounded text-primary focus:ring-primary" />
                                         Activo
                                     </label>
@@ -653,26 +653,26 @@ function OptionsSection() {
                             </div>
                             <div className="flex items-center justify-end gap-3 border-t border-slate-50 pt-3">
                                 <button onClick={() => handleSave(opt.id)} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors"><Save className="w-4 h-4" /> Guardar</button>
-                                <button onClick={() => setEditingId(null)} className="flex items-center gap-2 px-4 py-2 bg-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors"><X className="w-4 h-4" /> Cancelar</button>
+                                <button onClick={() => setEditingId(null)} className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors"><X className="w-4 h-4" /> Cancelar</button>
                             </div>
                         </div>
                     ) : (
-                        <div key={opt.id} className="flex items-center justify-between bg-white hover:bg-slate-50 p-4 rounded-xl border border-slate-100 hover:border-slate-200 transition-all shadow-sm">
+                        <div key={opt.id} className="flex items-center justify-between bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 p-4 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all shadow-sm">
                             <div className="flex items-center gap-4 flex-1">
-                                <span className="w-8 h-8 flex items-center justify-center bg-slate-100 text-slate-500 font-black text-xs rounded-lg shrink-0">{opt.order}</span>
-                                <span className={`font-bold text-sm ${opt.active ? 'text-slate-800' : 'text-slate-400 line-through'}`}>{opt.value}</span>
+                                <span className="w-8 h-8 flex items-center justify-center bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 font-black text-xs rounded-lg shrink-0">{opt.order}</span>
+                                <span className={`font-bold text-sm ${opt.active ? 'text-slate-800 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 line-through'}`}>{opt.value}</span>
                                 {!opt.active && <span className="px-2 py-0.5 bg-rose-100 text-rose-600 text-[10px] uppercase font-black tracking-widest rounded-md shrink-0">Inactivo</span>}
                             </div>
                             <div className="flex items-center gap-1 ml-4 shrink-0">
-                                <button onClick={() => { setEditingId(opt.id); setForm({ value: opt.value, active: opt.active, order: opt.order }); }} className="btn-icon-inline text-slate-400 hover:text-primary p-2 transition-colors"><Edit2 className="w-4 h-4" /></button>
-                                <button onClick={() => handleDelete(opt.id)} className="btn-icon-inline text-slate-400 hover:text-rose-500 p-2 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                <button onClick={() => { setEditingId(opt.id); setForm({ value: opt.value, active: opt.active, order: opt.order }); }} className="btn-icon-inline text-slate-400 dark:text-slate-500 hover:text-primary p-2 transition-colors"><Edit2 className="w-4 h-4" /></button>
+                                <button onClick={() => handleDelete(opt.id)} className="btn-icon-inline text-slate-400 dark:text-slate-500 hover:text-rose-500 p-2 transition-colors"><Trash2 className="w-4 h-4" /></button>
                             </div>
                         </div>
                     )
                 ))}
 
                 {options.length === 0 && editingId !== 'new' && (
-                    <div className="py-8 text-center text-slate-400 text-sm font-bold">No hay opciones configuradas.</div>
+                    <div className="py-8 text-center text-slate-400 dark:text-slate-500 text-sm font-bold">No hay opciones configuradas.</div>
                 )}
             </div>
 
@@ -773,15 +773,15 @@ function SystemSection() {
     return (
         <div className="space-y-6 max-w-lg">
             <div>
-                <h3 className="text-xl font-bold text-slate-800">Alertas y Sistema</h3>
-                <p className="text-sm text-slate-500 font-medium">Configura opciones automáticas del sistema.</p>
+                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Alertas y Sistema</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Configura opciones automáticas del sistema.</p>
             </div>
 
-            <div className="space-y-4 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+            <div className="space-y-4 bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h4 className="font-bold text-slate-800">Alerta Diaria de Carga de Horas</h4>
-                        <p className="text-xs text-slate-500 mt-1">
+                        <h4 className="font-bold text-slate-800 dark:text-slate-100">Alerta Diaria de Carga de Horas</h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                             Notificar a operadores y ausentismos mayores a {setting.daysWithoutHoursThreshold || 5} días.
                         </p>
                     </div>
@@ -792,14 +792,14 @@ function SystemSection() {
                             onChange={e => setSetting({ ...setting, dailyReminderEnabled: e.target.checked })}
                             className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                        <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                     </label>
                 </div>
 
                 {setting.dailyReminderEnabled && (
-                    <div className="space-y-4 pt-4 border-t border-slate-200">
+                    <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-700">
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
+                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">
                                 Días sin registrar horas para notificación
                             </label>
                             <input
@@ -807,13 +807,13 @@ function SystemSection() {
                                 min={1}
                                 value={setting.daysWithoutHoursThreshold || 5}
                                 onChange={e => setSetting({ ...setting, daysWithoutHoursThreshold: parseInt(e.target.value) || 0 })}
-                                className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+                                className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
                                 placeholder="Ej: 5"
                             />
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
+                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">
                                 Horario de Disparo (Nativo Vercel una vez por día)
                             </label>
                             <p className="text-[9px] text-amber-600 font-bold px-1 -mt-1">
@@ -823,7 +823,7 @@ function SystemSection() {
                                 type="time"
                                 disabled
                                 value="18:00"
-                                className="w-full bg-slate-100 border border-slate-200 rounded-xl py-3 px-4 outline-none font-bold text-slate-500 cursor-not-allowed"
+                                className="w-full bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-500 dark:text-slate-400 cursor-not-allowed"
                             />
                         </div>
                     </div>
@@ -831,12 +831,12 @@ function SystemSection() {
             </div>
 
 
-            <div className="space-y-4 bg-slate-50 p-6 rounded-2xl border border-slate-100 mt-6">
+            <div className="space-y-4 bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 mt-6">
                 <div>
-                    <h4 className="font-bold text-slate-800 flex items-center gap-2">
+                    <h4 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                         <MapPin className="w-4 h-4" /> Geovalla de la Empresa
                     </h4>
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                         Ubicación central de la oficina o base principal para validación de fichados.
                     </p>
                 </div>
@@ -857,53 +857,53 @@ function SystemSection() {
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Latitud</label>
+                        <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Latitud</label>
                         <input
                             type="number"
                             step="any"
                             value={setting.companyGeofenceLat || ''}
                             onChange={e => setSetting({ ...setting, companyGeofenceLat: e.target.value === '' ? null : parseFloat(e.target.value) })}
-                            className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+                            className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
                             placeholder="-34.123456"
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Longitud</label>
+                        <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Longitud</label>
                         <input
                             type="number"
                             step="any"
                             value={setting.companyGeofenceLng || ''}
                             onChange={e => setSetting({ ...setting, companyGeofenceLng: e.target.value === '' ? null : parseFloat(e.target.value) })}
-                            className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+                            className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
                             placeholder="-58.123456"
                         />
                     </div>
                 </div>
                 <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Radio de Validación (Metros)</label>
+                    <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Radio de Validación (Metros)</label>
                     <input
                         type="number"
                         value={setting.companyGeofenceRadius || ''}
                         onChange={e => setSetting({ ...setting, companyGeofenceRadius: e.target.value === '' ? null : parseInt(e.target.value) })}
-                        className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
                         placeholder="Ej: 200"
                     />
                 </div>
 
                 <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Token de Validación QR (Empresa)</label>
+                    <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Token de Validación QR (Empresa)</label>
                     <div className="flex gap-2">
                         <input
                             type="text"
                             value={setting.companyQrToken || ''}
                             onChange={e => setSetting({ ...setting, companyQrToken: e.target.value.toUpperCase() })}
-                            className="flex-1 bg-white border border-slate-200 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm font-mono"
+                            className="flex-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm font-mono"
                             placeholder="TOKEN-BASE"
                         />
                         <button
                             type="button"
                             onClick={() => setSetting({ ...setting, companyQrToken: Math.random().toString(36).substring(2, 10).toUpperCase() })}
-                            className="px-3 bg-slate-200 hover:bg-slate-300 rounded-xl text-slate-600 transition-all active:scale-95"
+                            className="px-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 rounded-xl text-slate-600 dark:text-slate-300 transition-all active:scale-95"
                             title="Generar Nuevo Token"
                         >
                             <Play className="w-4 h-4 rotate-90" />
@@ -912,8 +912,8 @@ function SystemSection() {
                 </div>
 
                 {setting.companyQrToken && (
-                    <div className="pt-4 border-t border-slate-200 flex flex-col items-center gap-4">
-                        <div id="company-qr" className="p-4 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                    <div className="pt-4 border-t border-slate-200 dark:border-slate-700 flex flex-col items-center gap-4">
+                        <div id="company-qr" className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
                             <QRCodeCanvas 
                                 value={setting.companyQrToken} 
                                 size={200}
@@ -990,7 +990,7 @@ function SystemSection() {
                 <button
                     onClick={handleManualTrigger}
                     disabled={triggering}
-                    className="w-full bg-white border border-indigo-200 text-indigo-600 font-bold rounded-xl py-3 hover:bg-indigo-50 transition-all active:scale-95 disabled:opacity-50 shadow-sm flex items-center justify-center gap-2"
+                    className="w-full bg-white dark:bg-slate-800 border border-indigo-200 text-indigo-600 font-bold rounded-xl py-3 hover:bg-indigo-50 transition-all active:scale-95 disabled:opacity-50 shadow-sm flex items-center justify-center gap-2"
                 >
                     {triggering ? (
                         <div className="w-5 h-5 border-2 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin"></div>

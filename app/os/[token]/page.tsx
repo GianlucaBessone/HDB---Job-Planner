@@ -115,7 +115,7 @@ const SignatureCanvas = forwardRef<SignatureRef, {}>((props, ref) => {
 
     return (
         <div className="relative group">
-            <div className="relative border-2 border-slate-200 rounded-2xl overflow-hidden bg-slate-50 transition-all focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/20">
+            <div className="relative border-2 border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-900/50 transition-all focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/20">
                 <canvas
                     ref={canvasRef}
                     width={600}
@@ -131,8 +131,8 @@ const SignatureCanvas = forwardRef<SignatureRef, {}>((props, ref) => {
                 />
                 {!hasStrokes && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-50">
-                        <PenLine className="w-8 h-8 text-slate-400 mb-2" />
-                        <p className="text-slate-500 font-bold text-sm">Firma aquí</p>
+                        <PenLine className="w-8 h-8 text-slate-400 dark:text-slate-500 mb-2" />
+                        <p className="text-slate-500 dark:text-slate-400 font-bold text-sm">Firma aquí</p>
                     </div>
                 )}
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-48 h-px bg-slate-300 pointer-events-none" />
@@ -141,7 +141,7 @@ const SignatureCanvas = forwardRef<SignatureRef, {}>((props, ref) => {
                 <button
                     onClick={clear}
                     type="button"
-                    className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-slate-500 hover:text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm border border-slate-200 transition-all active:scale-95"
+                    className="absolute top-3 right-3 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm text-slate-500 dark:text-slate-400 hover:text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm border border-slate-200 dark:border-slate-700 transition-all active:scale-95"
                 >
                     Limpiar
                 </button>
@@ -169,7 +169,7 @@ function RatingButton({ value, selected, onClick, min, max }: { value: number; s
                 w-full h-11 rounded-xl text-sm font-black transition-all duration-150 active:scale-90 border
                 ${selected
                     ? `${bg} ${textColor} border-transparent shadow-md scale-105`
-                    : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100 hover:border-slate-300'
+                    : 'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                 }
             `}
         >
@@ -216,7 +216,7 @@ function ScaleSelector({
                     />
                 ))}
             </div>
-            <div className="flex justify-between text-[10px] font-bold text-slate-400 px-1">
+            <div className="flex justify-between text-[10px] font-bold text-slate-400 dark:text-slate-500 px-1">
                 <span>{labelLeft}</span>
                 <span>{labelRight}</span>
             </div>
@@ -289,8 +289,8 @@ function SurveyView({
                     <CheckCircle2 className="w-10 h-10 text-emerald-500" />
                 </div>
                 <div>
-                    <h3 className="text-xl font-black text-slate-800">¡Gracias por tu respuesta! 🙌</h3>
-                    <p className="text-sm text-slate-500 font-medium mt-1">Tu opinión nos ayuda a mejorar cada día.</p>
+                    <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">¡Gracias por tu respuesta! 🙌</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Tu opinión nos ayuda a mejorar cada día.</p>
                 </div>
                 <button
                     onClick={onDone}
@@ -308,15 +308,15 @@ function SurveyView({
                 <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
                     <Star className="w-7 h-7 text-blue-500" fill="currentColor" />
                 </div>
-                <h3 className="text-xl font-black text-slate-800">Encuesta de Satisfacción</h3>
-                <p className="text-xs text-slate-400 font-medium">Menos de 30 segundos · Tu opinión importa</p>
+                <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">Encuesta de Satisfacción</h3>
+                <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">Menos de 30 segundos · Tu opinión importa</p>
             </div>
 
             {/* Q1 — Atención */}
-            <div className="space-y-3 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+            <div className="space-y-3 bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
                 <div className="flex items-start gap-2">
                     <span className="bg-blue-100 text-blue-600 text-[10px] font-black rounded-lg px-2 py-1 uppercase tracking-widest shrink-0">1 de 4</span>
-                    <p className="text-sm font-bold text-slate-700">¿Cómo calificás la atención recibida por el técnico?</p>
+                    <p className="text-sm font-bold text-slate-700 dark:text-slate-200">¿Cómo calificás la atención recibida por el técnico?</p>
                 </div>
                 <ScaleSelector
                     value={data.atencion}
@@ -328,10 +328,10 @@ function SurveyView({
             </div>
 
             {/* Q2 — Calidad */}
-            <div className="space-y-3 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+            <div className="space-y-3 bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
                 <div className="flex items-start gap-2">
                     <span className="bg-indigo-100 text-indigo-600 text-[10px] font-black rounded-lg px-2 py-1 uppercase tracking-widest shrink-0">2 de 4</span>
-                    <p className="text-sm font-bold text-slate-700">¿Cómo calificás el resultado final del trabajo?</p>
+                    <p className="text-sm font-bold text-slate-700 dark:text-slate-200">¿Cómo calificás el resultado final del trabajo?</p>
                 </div>
                 <ScaleSelector
                     value={data.calidad}
@@ -343,10 +343,10 @@ function SurveyView({
             </div>
 
             {/* Q3 — Tiempo */}
-            <div className="space-y-3 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+            <div className="space-y-3 bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
                 <div className="flex items-start gap-2">
                     <span className="bg-amber-100 text-amber-600 text-[10px] font-black rounded-lg px-2 py-1 uppercase tracking-widest shrink-0">3 de 4</span>
-                    <p className="text-sm font-bold text-slate-700">¿Cómo evaluás el tiempo en que se realizó el servicio?</p>
+                    <p className="text-sm font-bold text-slate-700 dark:text-slate-200">¿Cómo evaluás el tiempo en que se realizó el servicio?</p>
                 </div>
                 <ScaleSelector
                     value={data.tiempo}
@@ -358,10 +358,10 @@ function SurveyView({
             </div>
 
             {/* Q4 — NPS */}
-            <div className="space-y-3 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+            <div className="space-y-3 bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
                 <div className="flex items-start gap-2">
                     <span className="bg-emerald-100 text-emerald-600 text-[10px] font-black rounded-lg px-2 py-1 uppercase tracking-widest shrink-0">4 de 4</span>
-                    <p className="text-sm font-bold text-slate-700">¿Qué tan probable es que recomiendes nuestra empresa?</p>
+                    <p className="text-sm font-bold text-slate-700 dark:text-slate-200">¿Qué tan probable es que recomiendes nuestra empresa?</p>
                 </div>
                 <ScaleSelector
                     value={data.nps}
@@ -374,7 +374,7 @@ function SurveyView({
 
             {/* Q5 — Comentario opcional */}
             <div className="space-y-2">
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
                     <MessageSquare className="w-3.5 h-3.5" />
                     Comentarios adicionales <span className="normal-case font-medium text-slate-300">(opcional)</span>
                 </label>
@@ -383,7 +383,7 @@ function SurveyView({
                     onChange={e => setData(d => ({ ...d, comentario: e.target.value }))}
                     placeholder="Contanos tu experiencia..."
                     rows={3}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all resize-none"
+                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all resize-none"
                 />
             </div>
 
@@ -398,7 +398,7 @@ function SurveyView({
                 <button
                     onClick={onSkip}
                     type="button"
-                    className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold text-sm hover:bg-slate-200 active:scale-95 transition-all"
+                    className="flex-1 py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 active:scale-95 transition-all"
                 >
                     Cancelar
                 </button>
@@ -438,7 +438,7 @@ function PostFirmaModal({
     if (showSurvey) {
         return (
             <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/60 backdrop-blur-sm">
-                <div className="bg-white w-full max-w-lg rounded-t-3xl shadow-2xl p-6 sm:p-8 space-y-0 animate-in slide-in-from-bottom-4 duration-300 max-h-[95dvh] overflow-y-auto overscroll-contain">
+                <div className="bg-white dark:bg-slate-800 w-full max-w-lg rounded-t-3xl shadow-2xl p-6 sm:p-8 space-y-0 animate-in slide-in-from-bottom-4 duration-300 max-h-[95dvh] overflow-y-auto overscroll-contain">
                     <SurveyView
                         osId={osId}
                         onDone={onClose}
@@ -451,7 +451,7 @@ function PostFirmaModal({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-            <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl p-7 animate-in zoom-in-95 duration-300 space-y-5">
+            <div className="bg-white dark:bg-slate-800 w-full max-w-sm rounded-3xl shadow-2xl p-7 animate-in zoom-in-95 duration-300 space-y-5">
                 {/* Icon */}
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-blue-200">
                     <Smile className="w-9 h-9 text-white" />
@@ -459,10 +459,10 @@ function PostFirmaModal({
 
                 {/* Text */}
                 <div className="text-center space-y-2">
-                    <h3 className="text-xl font-black text-slate-800">
+                    <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">
                         ¡Gracias por confirmar la Orden de Servicio! 🙌
                     </h3>
-                    <p className="text-sm text-slate-500 font-medium leading-relaxed">
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
                         Tu opinión es muy importante para nosotros.<br />
                         ¿Te gustaría responder una breve encuesta sobre el servicio?
                     </p>
@@ -479,7 +479,7 @@ function PostFirmaModal({
                     </button>
                     <button
                         onClick={onClose}
-                        className="w-full py-3.5 bg-slate-100 text-slate-600 rounded-2xl font-bold text-sm hover:bg-slate-200 active:scale-95 transition-all"
+                        className="w-full py-3.5 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 active:scale-95 transition-all"
                     >
                         Ahora no
                     </button>
@@ -593,10 +593,10 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center">
                 <div className="text-center space-y-4">
                     <Loader2 className="w-10 h-10 text-blue-600 animate-spin mx-auto" />
-                    <p className="text-slate-500 font-medium">Cargando orden de servicio...</p>
+                    <p className="text-slate-500 dark:text-slate-400 font-medium">Cargando orden de servicio...</p>
                 </div>
             </div>
         );
@@ -604,13 +604,13 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
 
     if (error || !os) {
         return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-                <div className="bg-white rounded-3xl p-8 shadow-lg border border-red-100 text-center space-y-4 max-w-sm w-full">
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center p-4">
+                <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-lg border border-red-100 text-center space-y-4 max-w-sm w-full">
                     <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto">
                         <AlertCircle className="w-8 h-8 text-red-500" />
                     </div>
-                    <h2 className="text-xl font-black text-slate-800">No encontrada</h2>
-                    <p className="text-slate-500 text-sm">{error || 'Orden de servicio no encontrada.'}</p>
+                    <h2 className="text-xl font-black text-slate-800 dark:text-slate-100">No encontrada</h2>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm">{error || 'Orden de servicio no encontrada.'}</p>
                 </div>
             </div>
         );
@@ -622,7 +622,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30">
             {/* Header */}
-            <div className="bg-white border-b border-slate-100 shadow-sm">
+            <div className="bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-800 shadow-sm">
                 <div className="max-w-2xl mx-auto px-4 py-5 flex items-center gap-3">
                     <div className="bg-blue-600 p-2 rounded-xl shadow-lg shadow-blue-200">
                         <FileText className="w-5 h-5 text-white" />
@@ -632,7 +632,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                             <p className="text-[10px] font-black text-blue-600/70 uppercase tracking-widest">HDB Job Planner</p>
                             {os.codigoOS && <CodeBadge code={os.codigoOS} variant="os" size="sm" showCopy={false} />}
                         </div>
-                        <h1 className="text-lg font-black text-slate-800 leading-tight">Orden de Servicio</h1>
+                        <h1 className="text-lg font-black text-slate-800 dark:text-slate-100 leading-tight">Orden de Servicio</h1>
                     </div>
                     <div className="ml-auto shrink-0 flex items-center gap-2">
                         <span className={`whitespace-nowrap px-2 py-1.5 md:px-3 rounded-full text-[10px] md:text-xs font-black uppercase tracking-wider ${isFirmada ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-700 border border-amber-200'}`}>
@@ -652,51 +652,51 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
             <div className="max-w-2xl mx-auto px-4 py-6 space-y-5 pb-24">
 
                 {/* Project Info */}
-                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-50">
-                        <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">Proyecto</h2>
+                        <h2 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Proyecto</h2>
                     </div>
                     <div className="px-6 py-5 grid grid-cols-2 gap-4">
                         <div className="col-span-2">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Nombre del Proyecto</p>
+                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Nombre del Proyecto</p>
                             <div className="flex items-center gap-2 flex-wrap">
-                                <p className="text-lg font-black text-slate-800">{os.project.nombre}</p>
+                                <p className="text-lg font-black text-slate-800 dark:text-slate-100">{os.project.nombre}</p>
                                 {os.project.codigoProyecto && <CodeBadge code={os.project.codigoProyecto} variant="project" size="sm" showCopy={false} />}
                             </div>
                         </div>
                         <div>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Cliente</p>
-                            <p className="text-sm font-bold text-slate-700">{clienteName}</p>
+                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Cliente</p>
+                            <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{clienteName}</p>
                         </div>
                         <div>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Fecha de emisión</p>
-                            <p className="text-sm font-bold text-slate-700">{formatDate(os.fechaCreacion)}</p>
+                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Fecha de emisión</p>
+                            <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{formatDate(os.fechaCreacion)}</p>
                         </div>
                         {os.project.responsableUser && (
                             <div className="col-span-2">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Responsable</p>
-                                <p className="text-sm font-bold text-slate-700">{os.project.responsableUser.nombreCompleto}</p>
+                                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Responsable</p>
+                                <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{os.project.responsableUser.nombreCompleto}</p>
                             </div>
                         )}
                     </div>
                 </div>
 
                 {/* Reporte */}
-                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-50 flex items-center gap-2">
                         <FileText className="w-4 h-4 text-blue-500" />
-                        <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">Reporte del Trabajo</h2>
+                        <h2 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Reporte del Trabajo</h2>
                     </div>
                     <div className="px-6 py-5">
-                        <p className="text-sm text-slate-700 font-medium leading-relaxed whitespace-pre-wrap">{os.reporte}</p>
+                        <p className="text-sm text-slate-700 dark:text-slate-200 font-medium leading-relaxed whitespace-pre-wrap">{os.reporte}</p>
                     </div>
                 </div>
 
                 {/* Operadores */}
-                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-50 flex items-center gap-2">
                         <User className="w-4 h-4 text-indigo-500" />
-                        <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">Operadores</h2>
+                        <h2 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Operadores</h2>
                     </div>
                     <div className="divide-y divide-slate-50">
                         {os.operadores.map(op => (
@@ -706,7 +706,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                                         {op.operador.nombreCompleto.charAt(0)}
                                     </div>
                                     <div className="flex flex-col">
-                                        <p className="text-sm font-bold text-slate-700">{op.operador.nombreCompleto}</p>
+                                        <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{op.operador.nombreCompleto}</p>
                                         {op.isExtra && (
                                             <span className="text-[10px] text-amber-600 font-black uppercase tracking-tight">Horas Extras</span>
                                         )}
@@ -723,25 +723,25 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
 
                 {/* Materiales */}
                 {os.materiales.length > 0 && (
-                    <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                         <div className="px-6 py-4 border-b border-slate-50 flex items-center gap-2">
                             <Package className="w-4 h-4 text-amber-500" />
-                            <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">Materiales Utilizados</h2>
+                            <h2 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Materiales Utilizados</h2>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr className="border-b border-slate-50">
-                                        <th className="text-left px-6 py-2.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Material</th>
-                                        <th className="text-right px-6 py-2.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Cantidad</th>
-                                        <th className="text-right px-6 py-2.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Unidad</th>
+                                        <th className="text-left px-6 py-2.5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Material</th>
+                                        <th className="text-right px-6 py-2.5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Cantidad</th>
+                                        <th className="text-right px-6 py-2.5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Unidad</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-50">
                                     {os.materiales.map(m => (
                                         <tr key={m.id}>
-                                            <td className="px-6 py-3 font-medium text-slate-700">{m.material}</td>
-                                            <td className="px-6 py-3 text-right font-bold text-slate-800">{m.cantidad}</td>
+                                            <td className="px-6 py-3 font-medium text-slate-700 dark:text-slate-200">{m.material}</td>
+                                            <td className="px-6 py-3 text-right font-bold text-slate-800 dark:text-slate-100">{m.cantidad}</td>
                                             <td className="px-6 py-3 text-right">
                                                 <span className="px-2 py-0.5 rounded-lg bg-amber-50 text-amber-700 text-[10px] font-black border border-amber-100 uppercase">{m.unidadMedida}</span>
                                             </td>
@@ -755,13 +755,13 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
 
                 {/* Comentario Adicional */}
                 {os.comentario && (
-                    <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                         <div className="px-6 py-4 border-b border-slate-50 flex items-center gap-2">
-                            <MessageSquare className="w-4 h-4 text-slate-400" />
-                            <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">Comentario Adicional</h2>
+                            <MessageSquare className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+                            <h2 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Comentario Adicional</h2>
                         </div>
                         <div className="px-6 py-5">
-                            <p className="text-sm text-slate-700 font-medium leading-relaxed whitespace-pre-wrap">{os.comentario}</p>
+                            <p className="text-sm text-slate-700 dark:text-slate-200 font-medium leading-relaxed whitespace-pre-wrap">{os.comentario}</p>
                         </div>
                     </div>
                 )}
@@ -777,20 +777,20 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-0.5">Nombre</p>
-                                    <p className="text-sm font-bold text-slate-700">{os.firma.nombre}</p>
+                                    <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{os.firma.nombre}</p>
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-0.5">DNI</p>
-                                    <p className="text-sm font-bold text-slate-700">{os.firma.dni}</p>
+                                    <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{os.firma.dni}</p>
                                 </div>
                                 <div className="col-span-2">
                                     <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-0.5">Fecha de firma</p>
-                                    <p className="text-sm font-bold text-slate-700">{formatDate(os.firma.fechaFirma)}</p>
+                                    <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{formatDate(os.firma.fechaFirma)}</p>
                                 </div>
                             </div>
                             <div>
                                 <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-2">Firma</p>
-                                <div className="bg-white rounded-2xl border border-emerald-100 p-3">
+                                <div className="bg-white dark:bg-slate-800 rounded-2xl border border-emerald-100 p-3">
                                     <img src={os.firma.firmaImagen} alt="Firma del cliente" className="max-h-32 mx-auto" />
                                 </div>
                             </div>
@@ -798,13 +798,13 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                     </div>
                 ) : (
                     !isFirmada && (
-                        <div className="bg-white rounded-3xl border border-amber-200 shadow-sm p-6 text-center space-y-4">
+                        <div className="bg-white dark:bg-slate-800 rounded-3xl border border-amber-200 shadow-sm p-6 text-center space-y-4">
                             <div className="w-14 h-14 bg-amber-50 rounded-full flex items-center justify-center mx-auto">
                                 <PenLine className="w-7 h-7 text-amber-500" />
                             </div>
                             <div>
-                                <h3 className="font-black text-slate-800 text-lg">Pendiente de firma</h3>
-                                <p className="text-sm text-slate-500 font-medium mt-1">Firmá esta orden de servicio para confirmar la aceptación del trabajo realizado.</p>
+                                <h3 className="font-black text-slate-800 dark:text-slate-100 text-lg">Pendiente de firma</h3>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Firmá esta orden de servicio para confirmar la aceptación del trabajo realizado.</p>
                             </div>
                             <button
                                 onClick={openFirmaModal}
@@ -820,20 +820,20 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
             {/* Firma Modal */}
             {showFirmaModal && (
                 <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 backdrop-blur-sm transition-all">
-                    <div className="bg-white w-full max-w-lg rounded-t-3xl shadow-2xl p-6 sm:p-8 space-y-6 animate-in slide-in-from-bottom-4 duration-300 max-h-[92dvh] overflow-y-auto overscroll-contain">
+                    <div className="bg-white dark:bg-slate-800 w-full max-w-lg rounded-t-3xl shadow-2xl p-6 sm:p-8 space-y-6 animate-in slide-in-from-bottom-4 duration-300 max-h-[92dvh] overflow-y-auto overscroll-contain">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-xl font-black text-slate-800">Firmar Orden de Servicio</h3>
-                            <button onClick={() => setShowFirmaModal(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-                                <X className="w-5 h-5 text-slate-400" />
+                            <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">Firmar Orden de Servicio</h3>
+                            <button onClick={() => setShowFirmaModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
+                                <X className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                             </button>
                         </div>
 
                         <div className="space-y-6">
-                            <p className="text-sm text-slate-500 font-medium">Por favor ingresá tus datos y firmá en el cuadro inferior.</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Por favor ingresá tus datos y firmá en el cuadro inferior.</p>
 
                             <div className="space-y-4">
                                 <div className="space-y-1.5 focus-within:z-10 relative">
-                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Nombre Completo *</label>
+                                    <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Nombre Completo *</label>
                                     <input
                                         type="text"
                                         value={firmaNombre}
@@ -847,11 +847,11 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                                             }, 300);
                                         }}
                                         placeholder="Ingresá tu nombre completo"
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3.5 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all"
+                                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3.5 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all"
                                     />
                                 </div>
                                 <div className="space-y-1.5 focus-within:z-10 relative">
-                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">DNI *</label>
+                                    <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">DNI *</label>
                                     <input
                                         type="text"
                                         inputMode="numeric"
@@ -866,13 +866,13 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                                             }, 300);
                                         }}
                                         placeholder="Ej: 12345678"
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3.5 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all"
+                                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3.5 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all"
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Dibujá tu firma *</label>
+                                <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Dibujá tu firma *</label>
                                 <SignatureCanvas ref={sigRef} />
                             </div>
 
@@ -887,7 +887,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                                 <button
                                     onClick={() => setShowFirmaModal(false)}
                                     type="button"
-                                    className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold text-sm hover:bg-slate-200 active:scale-95 transition-all"
+                                    className="flex-1 py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 active:scale-95 transition-all"
                                 >
                                     Cancelar
                                 </button>

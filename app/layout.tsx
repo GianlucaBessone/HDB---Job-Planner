@@ -15,6 +15,8 @@ import OneSignalInit from "@/components/OneSignalInit";
 import OneSignal from 'react-onesignal';
 import SyncIndicator from "@/components/SyncIndicator";
 import { Loader2, BellRing } from "lucide-react";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
@@ -81,7 +83,7 @@ export default function RootLayout({
     } else if (isPublicPage && !currentUser) {
         // Public view (No header/sidebar)
         content = (
-            <div className="flex flex-col min-h-[100dvh] overflow-x-hidden bg-white">
+            <div className="flex flex-col min-h-[100dvh] overflow-x-hidden bg-white dark:bg-slate-800">
                 <main className="flex-1 w-full max-w-4xl mx-auto py-4">
                     {children}
                 </main>
@@ -90,12 +92,12 @@ export default function RootLayout({
     } else {
         content = (
             <div className="flex flex-col min-h-[100dvh] overflow-x-hidden">
-                <header className="sticky top-0 z-[60] w-full border-b bg-white/80 backdrop-blur-md safe-area-top">
+                <header className="sticky top-0 z-[60] w-full border-b bg-white/80 dark:bg-slate-800/80 backdrop-blur-md safe-area-top">
                     <div className="max-w-[2100px] mx-auto px-4 md:px-10 lg:px-12 xl:px-16 h-14 md:h-16 flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <button
                                 onClick={() => setIsSidebarOpen(true)}
-                                className="p-2 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors mr-2"
+                                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-600 dark:text-slate-300 transition-colors mr-2"
                             >
                                 <Menu className="w-6 h-6" />
                             </button>
@@ -104,7 +106,7 @@ export default function RootLayout({
                                 <div className="bg-primary p-1.5 rounded-lg shadow-lg shadow-primary/20">
                                     <ClipboardList className="w-5 h-5 text-white" />
                                 </div>
-                                <span className="text-xl font-bold tracking-tight text-slate-800">
+                                <span className="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-100">
                                     HDB<span className="text-primary">Planner</span>
                                 </span>
                             </Link>
@@ -112,11 +114,12 @@ export default function RootLayout({
                         {/* Mobile Logo version if needed or right-aligned items can go here */}
                         <div className="flex items-center gap-2 md:gap-4">
                             <Link href="/" className="flex items-center gap-2 md:hidden hover:opacity-80 transition-opacity">
-                                <span className="text-xl font-bold tracking-tight text-slate-800">
+                                <span className="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-100">
                                     HDB<span className="text-primary">Planner</span>
                                 </span>
                             </Link>
                             <div className="flex items-center gap-2">
+                                <ThemeToggle />
                                 <SyncIndicator />
                                 <OneSignalInit
                                     appId={process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID || "35ce6a9c-c4c7-4645-98dc-b363dc91642b"}
@@ -143,8 +146,8 @@ export default function RootLayout({
                     <SpeedInsights />
                 </main>
 
-                <footer className="hidden md:block border-t bg-white py-6">
-                    <div className="container mx-auto px-4 text-center text-sm text-slate-500">
+                <footer className="hidden md:block border-t bg-white dark:bg-slate-800 py-6">
+                    <div className="container mx-auto px-4 text-center text-sm text-slate-500 dark:text-slate-400">
                         © 2026 HDB Job Planner - Eficiencia en cada tarea
                     </div>
                 </footer>
@@ -155,7 +158,7 @@ export default function RootLayout({
     }
 
     return (
-        <html lang="es">
+        <html lang="es" suppressHydrationWarning>
             <head>
                 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
                 <meta name="mobile-web-app-capable" content="yes" />
@@ -167,8 +170,10 @@ export default function RootLayout({
                 <title>HDB | Job Planner</title>
                 <meta name="description" content="Sistema premium de planificación para técnicos" />
             </head>
-            <body className={`${outfit.className} min-h-[100dvh] bg-slate-50/50 overscroll-none`}>
-                {content}
+            <body className={`${outfit.className} min-h-[100dvh] bg-slate-50/50 dark:bg-slate-900 overscroll-none text-slate-900 dark:text-slate-100`}>
+                <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+                    {content}
+                </ThemeProvider>
             </body>
         </html>
     );
@@ -211,13 +216,13 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
             )}
 
             {/* Sidebar */}
-            <aside className={`fixed top-0 left-0 bottom-0 w-[240px] md:w-[280px] bg-white z-[110] shadow-2xl transition-transform duration-300 ease-out flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+            <aside className={`fixed top-0 left-0 bottom-0 w-[240px] md:w-[280px] bg-white dark:bg-slate-800 z-[110] shadow-2xl transition-transform duration-300 ease-out flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <div className="flex items-center gap-2 text-primary">
                         <ClipboardList className="w-6 h-6 shrink-0" />
-                        <span className="font-extrabold text-xl tracking-tighter text-slate-800">HDB<span className="text-primary">Planner</span></span>
+                        <span className="font-extrabold text-xl tracking-tighter text-slate-800 dark:text-slate-100">HDB<span className="text-primary">Planner</span></span>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-xl text-slate-400">
+                    <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400 dark:text-slate-500">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -232,7 +237,7 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
                                 onClick={onClose}
                                 className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all duration-200 ${isActive
                                     ? 'bg-primary text-white shadow-lg shadow-primary/20 active:scale-95'
-                                    : 'text-slate-600 hover:bg-slate-50 hover:text-primary'
+                                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80 hover:text-primary'
                                     }`}
                             >
                                 {item.icon}
@@ -242,11 +247,11 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
                     })}
                 </nav>
 
-                <div className="p-6 border-t border-slate-100 space-y-4">
-                    <div className="bg-slate-50 rounded-2xl p-4 flex items-center justify-between">
+                <div className="p-6 border-t border-slate-100 dark:border-slate-800 space-y-4">
+                    <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 flex items-center justify-between">
                         <div>
-                            <p className="text-[10px] font-black text-slate-400 py-[2px] px-1.5 uppercase tracking-widest bg-white border border-slate-200 inline-block rounded-md mb-1">{user?.role}</p>
-                            <p className="text-xs font-bold text-slate-700 truncate max-w-[150px]" title={user?.nombreCompleto}>{user?.nombreCompleto}</p>
+                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 py-[2px] px-1.5 uppercase tracking-widest bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 inline-block rounded-md mb-1">{user?.role}</p>
+                            <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate max-w-[150px]" title={user?.nombreCompleto}>{user?.nombreCompleto}</p>
                         </div>
                     </div>
 
@@ -273,7 +278,7 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
                     </button>
 
                     <div className="text-center">
-                        <p className="text-[10px] font-bold text-slate-400">v2.0.4 Premium</p>
+                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500">v2.0.4 Premium</p>
                     </div>
                 </div>
             </aside>

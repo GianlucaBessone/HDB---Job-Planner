@@ -137,19 +137,19 @@ export default function ClientsPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-6 md:mb-8">
                 <div className="space-y-1">
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 md:gap-3">
+                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
                         <UserCircle2 className="w-6 h-6 md:w-8 md:h-8 text-primary" />
                         Gestión de Clientes
                     </h2>
-                    <p className="text-sm text-slate-500 font-medium hidden md:block">Administra la base de datos de tus clientes</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium hidden md:block">Administra la base de datos de tus clientes</p>
                 </div>
                 <div className="flex items-center gap-3 w-full md:w-auto">
                     <div className="relative flex-1 md:w-64 group">
-                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500 group-focus-within:text-primary transition-colors" />
                         <input
                             type="text"
                             placeholder="Buscar clientes..."
-                            className="w-full bg-white border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium shadow-sm"
+                            className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium shadow-sm"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
@@ -173,9 +173,9 @@ export default function ClientsPage() {
                     ))}
                 </div>
             ) : filteredClients.length === 0 ? (
-                <div className="py-24 flex flex-col items-center justify-center bg-white border border-slate-200 rounded-2xl text-slate-400">
+                <div className="py-24 flex flex-col items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-400 dark:text-slate-500">
                     <AlertCircle className="w-12 h-12 mb-4 opacity-20" />
-                    <p className="font-semibold text-slate-600">No se encontraron clientes</p>
+                    <p className="font-semibold text-slate-600 dark:text-slate-300">No se encontraron clientes</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -220,19 +220,19 @@ function ClientCard({ client, onEdit, onDelete, onToggleStatus }: {
     onToggleStatus: (id: string, current: boolean) => void;
 }) {
     return (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-slate-300 transition-all duration-300 p-5 flex flex-col gap-4 group">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 p-5 flex flex-col gap-4 group">
             <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                    <div className={`p-2.5 rounded-xl ${client.activo ? 'bg-primary/10 text-primary' : 'bg-slate-100 text-slate-400'}`}>
+                    <div className={`p-2.5 rounded-xl ${client.activo ? 'bg-primary/10 text-primary' : 'bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500'}`}>
                         <UserCircle2 className="w-6 h-6" />
                     </div>
                     <div>
-                        <h4 className="font-bold text-slate-800 leading-tight line-clamp-1 group-hover:text-primary transition-colors">
+                        <h4 className="font-bold text-slate-800 dark:text-slate-100 leading-tight line-clamp-1 group-hover:text-primary transition-colors">
                             {client.nombre}
                         </h4>
                         <div className="flex items-center gap-1.5 mt-0.5">
                             <span className={`w-2 h-2 rounded-full ${client.activo ? 'bg-emerald-500' : 'bg-slate-300'}`} />
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                                 {client.activo ? 'Activo' : 'Inactivo'}
                             </span>
                         </div>
@@ -241,13 +241,13 @@ function ClientCard({ client, onEdit, onDelete, onToggleStatus }: {
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                         onClick={() => onEdit(client)}
-                        className="btn-icon-inline p-2 rounded-xl text-slate-400 hover:text-primary hover:bg-primary/5 transition-all"
+                        className="btn-icon-inline p-2 rounded-xl text-slate-400 dark:text-slate-500 hover:text-primary hover:bg-primary/5 transition-all"
                     >
                         <Edit3 className="w-4 h-4" />
                     </button>
                     <button
                         onClick={() => onDelete(client.id)}
-                        className="btn-icon-inline p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
+                        className="btn-icon-inline p-2 rounded-xl text-slate-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 transition-all"
                     >
                         <Trash2 className="w-4 h-4" />
                     </button>
@@ -256,20 +256,20 @@ function ClientCard({ client, onEdit, onDelete, onToggleStatus }: {
 
             <div className="space-y-2.5 mt-2">
                 {client.email && (
-                    <div className="flex items-center gap-2.5 text-slate-600">
-                        <Mail className="w-4 h-4 text-slate-400 shrink-0" />
+                    <div className="flex items-center gap-2.5 text-slate-600 dark:text-slate-300">
+                        <Mail className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" />
                         <span className="text-sm truncate">{client.email}</span>
                     </div>
                 )}
                 {client.telefono && (
-                    <div className="flex items-center gap-2.5 text-slate-600">
-                        <Phone className="w-4 h-4 text-slate-400 shrink-0" />
+                    <div className="flex items-center gap-2.5 text-slate-600 dark:text-slate-300">
+                        <Phone className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" />
                         <span className="text-sm">{client.telefono}</span>
                     </div>
                 )}
                 {client.direccion && (
-                    <div className="flex items-center gap-2.5 text-slate-600">
-                        <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
+                    <div className="flex items-center gap-2.5 text-slate-600 dark:text-slate-300">
+                        <MapPin className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" />
                         <span className="text-sm line-clamp-1">{client.direccion}</span>
                     </div>
                 )}
@@ -279,7 +279,7 @@ function ClientCard({ client, onEdit, onDelete, onToggleStatus }: {
                 <button
                     onClick={() => onToggleStatus(client.id, client.activo)}
                     className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all ${client.activo
-                        ? 'text-slate-400 hover:text-red-500 hover:bg-red-50'
+                        ? 'text-slate-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50'
                         : 'text-primary hover:bg-primary/5'
                         }`}
                 >
@@ -301,24 +301,24 @@ function ClientModal({ formData, setFormData, editingClient, onSubmit, onClose }
 
     return (
         <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white w-full max-w-lg rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
+            <div className="bg-white dark:bg-slate-800 w-full max-w-lg rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
                 <div className="p-5 md:p-7 space-y-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                        <h3 className="text-xl font-bold text-slate-800">
+                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+                        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">
                             {editingClient ? 'Editar Cliente' : 'Nuevo Cliente'}
                         </h3>
-                        <button onClick={onClose} className="btn-icon-inline p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors">
+                        <button onClick={onClose} className="btn-icon-inline p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500 transition-colors">
                             <X className="w-5 h-5" />
                         </button>
                     </div>
 
                     <form onSubmit={onSubmit} className="space-y-4">
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Nombre Completo *</label>
+                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Nombre Completo *</label>
                             <input
                                 required
                                 type="text"
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                 placeholder="Ej: Arcor S.A."
                                 value={formData.nombre}
                                 onChange={e => setField('nombre', e.target.value)}
@@ -327,22 +327,22 @@ function ClientModal({ formData, setFormData, editingClient, onSubmit, onClose }
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Email</label>
+                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Email</label>
                                 <input
                                     type="email"
                                     inputMode="email"
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                     placeholder="contacto@empresa.com"
                                     value={formData.email}
                                     onChange={e => setField('email', e.target.value)}
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Teléfono</label>
+                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Teléfono</label>
                                 <input
                                     type="tel"
                                     inputMode="tel"
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                     placeholder="+54 9 11 ..."
                                     value={formData.telefono}
                                     onChange={e => setField('telefono', e.target.value)}
@@ -351,10 +351,10 @@ function ClientModal({ formData, setFormData, editingClient, onSubmit, onClose }
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Dirección</label>
+                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Dirección</label>
                             <input
                                 type="text"
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                 placeholder="Calle, Altura, Ciudad"
                                 value={formData.direccion}
                                 onChange={e => setField('direccion', e.target.value)}
@@ -365,7 +365,7 @@ function ClientModal({ formData, setFormData, editingClient, onSubmit, onClose }
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="flex-1 bg-slate-100 text-slate-600 py-3.5 rounded-2xl font-bold hover:bg-slate-200 transition-all active:scale-95"
+                                className="flex-1 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 py-3.5 rounded-2xl font-bold hover:bg-slate-200 transition-all active:scale-95"
                             >
                                 Cancelar
                             </button>

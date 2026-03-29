@@ -52,7 +52,7 @@ type Proyecto = {
 
 // ─── Estado badge ──────────────────────────────────────────────────────────────
 const ESTADO_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
-    material_cargado:      { label: 'Disponible',       color: 'bg-slate-100 text-slate-600 border-slate-200',    icon: Package },
+    material_cargado:      { label: 'Disponible',       color: 'bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700',    icon: Package },
     material_entregado:    { label: 'Entregado',        color: 'bg-blue-100 text-blue-700 border-blue-200',       icon: Package },
     uso_confirmado:        { label: 'Uso confirmado',   color: 'bg-violet-100 text-violet-700 border-violet-200', icon: Check },
     pendiente_devolucion:  { label: 'Pendiente',        color: 'bg-amber-100 text-amber-700 border-amber-200',    icon: Clock },
@@ -61,7 +61,7 @@ const ESTADO_CONFIG: Record<string, { label: string; color: string; icon: any }>
 };
 
 function EstadoBadge({ estado }: { estado: string }) {
-    const cfg = ESTADO_CONFIG[estado] || { label: estado, color: 'bg-slate-100 text-slate-500 border-slate-200', icon: Package };
+    const cfg = ESTADO_CONFIG[estado] || { label: estado, color: 'bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700', icon: Package };
     const Icon = cfg.icon;
     return (
         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${cfg.color}`}>
@@ -75,10 +75,10 @@ function EstadoBadge({ estado }: { estado: string }) {
 function QtyCell({ value, onSave, disabled }: { value: number; onSave: (v: number) => void; disabled?: boolean }) {
     const [editing, setEditing] = useState(false);
     const [val, setVal] = useState(String(value));
-    if (disabled) return <span className="font-bold text-slate-700">{value}</span>;
+    if (disabled) return <span className="font-bold text-slate-700 dark:text-slate-200">{value}</span>;
     if (!editing) return (
         <button onClick={() => { setVal(String(value)); setEditing(true); }}
-            className="font-bold text-slate-700 hover:text-primary hover:underline transition-colors text-center inline-block min-w-[20px]">
+            className="font-bold text-slate-700 dark:text-slate-200 hover:text-primary hover:underline transition-colors text-center inline-block min-w-[20px]">
             {value}
         </button>
     );
@@ -90,7 +90,7 @@ function QtyCell({ value, onSave, disabled }: { value: number; onSave: (v: numbe
                 <button onClick={() => { onSave(parseFloat(val) || 0); setEditing(false); }}
                     className="p-1 bg-primary text-white rounded-md"><Check className="w-3 h-3" /></button>
                 <button onClick={() => setEditing(false)}
-                    className="p-1 bg-slate-100 text-slate-500 rounded-md"><X className="w-3 h-3" /></button>
+                    className="p-1 bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 rounded-md"><X className="w-3 h-3" /></button>
             </div>
         </div>
     );
@@ -158,28 +158,28 @@ function AddMaterialForm({ proyectoId, onAdded }: { proyectoId: string; onAdded:
         </button>
     );
 
-    const qtyClass = 'border border-slate-200 rounded-xl px-1.5 py-2 text-sm font-bold outline-none focus:border-primary text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none';
+    const qtyClass = 'border border-slate-200 dark:border-slate-700 rounded-xl px-1.5 py-2 text-sm font-bold outline-none focus:border-primary text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none';
 
     return (
-        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 flex flex-wrap md:flex-nowrap items-center gap-2 relative">
+        <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 flex flex-wrap md:flex-nowrap items-center gap-2 relative">
             <input
                 placeholder="Código"
                 title="Código interno del material"
                 value={form.codigo}
                 onChange={e => setForm(p => ({ ...p, codigo: e.target.value.toUpperCase() }))}
-                className="w-24 border border-slate-200 rounded-xl px-2 py-2 text-xs font-bold outline-none focus:border-primary uppercase"
+                className="w-24 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2 text-xs font-bold outline-none focus:border-primary uppercase"
             />
             <input
                 autoFocus
                 placeholder="Nombre del material *"
                 value={form.nombre}
                 onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))}
-                className="flex-1 min-w-[150px] border border-slate-200 rounded-xl px-3 py-2 text-sm font-medium outline-none focus:border-primary"
+                className="flex-1 min-w-[150px] border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-medium outline-none focus:border-primary"
             />
             <select
                 value={form.unidad}
                 onChange={e => setForm(p => ({ ...p, unidad: e.target.value }))}
-                className="w-24 border border-slate-200 rounded-xl px-2 py-2 text-sm font-bold outline-none focus:border-primary bg-white text-slate-700 cursor-pointer"
+                className="w-24 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2 text-sm font-bold outline-none focus:border-primary bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 cursor-pointer"
             >
                 {UNIDADES.map(u => <option key={u} value={u}>{u}</option>)}
             </select>
@@ -188,8 +188,8 @@ function AddMaterialForm({ proyectoId, onAdded }: { proyectoId: string; onAdded:
             <input type="text" inputMode="numeric" pattern="[0-9.]*" placeholder="Disp." title="Disponible" value={form.cantidadDisponible} onChange={handleQty('cantidadDisponible')} className={`${qtyClass} w-16`} />
             <input type="text" inputMode="numeric" pattern="[0-9.]*" placeholder="Entr." title="Entregada" value={form.cantidadEntregada} onChange={handleQty('cantidadEntregada')} className={`${qtyClass} w-16`} />
             
-            <div className="flex gap-1 ml-auto shrink-0 border-l border-slate-200 pl-2">
-                <button onClick={() => setOpen(false)} className="p-2 bg-white text-slate-400 rounded-xl hover:bg-slate-200 hover:text-slate-600 border border-slate-200 transition-colors shadow-sm">
+            <div className="flex gap-1 ml-auto shrink-0 border-l border-slate-200 dark:border-slate-700 pl-2">
+                <button onClick={() => setOpen(false)} className="p-2 bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded-xl hover:bg-slate-200 hover:text-slate-600 border border-slate-200 dark:border-slate-700 transition-colors shadow-sm">
                     <X className="w-4 h-4" />
                 </button>
                 <button onClick={handleSubmit} disabled={saving || !form.nombre} className="p-2 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 shadow-sm shadow-primary/20">
@@ -229,33 +229,33 @@ function DevolucionModal({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 space-y-5">
+            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-md w-full p-6 space-y-5">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-black text-slate-800">Confirmar Recepción</h2>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-xl"><X className="w-5 h-5" /></button>
+                    <h2 className="text-lg font-black text-slate-800 dark:text-slate-100">Confirmar Recepción</h2>
+                    <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl"><X className="w-5 h-5" /></button>
                 </div>
 
-                <div className="bg-slate-50 rounded-2xl p-4 space-y-2 text-sm">
-                    <p className="font-bold text-slate-700">{material.nombre}</p>
+                <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 space-y-2 text-sm">
+                    <p className="font-bold text-slate-700 dark:text-slate-200">{material.nombre}</p>
                     <div className="grid grid-cols-3 gap-2 text-center mt-2">
                         {[['Entregado', material.cantidadEntregada, 'text-blue-600'], ['Utilizado', totalUsado, 'text-violet-600'], ['A devolver', aDevolver, 'text-amber-600']].map(([l, v, c]) => (
-                            <div key={String(l)} className="bg-white rounded-xl p-2 border border-slate-200">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{l}</p>
+                            <div key={String(l)} className="bg-white dark:bg-slate-800 rounded-xl p-2 border border-slate-200 dark:border-slate-700">
+                                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">{l}</p>
                                 <p className={`text-xl font-black ${c}`}>{Number(v).toFixed(0)}</p>
-                                <p className="text-[10px] text-slate-400">{material.unidad}</p>
+                                <p className="text-[10px] text-slate-400 dark:text-slate-500">{material.unidad}</p>
                             </div>
                         ))}
                     </div>
                 </div>
 
                 <div className="space-y-2">
-                    <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Tipo de recepción</p>
+                    <p className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Tipo de recepción</p>
                     <div className="grid grid-cols-2 gap-2">
                         {(['cerrado_ok', 'cerrado_con_reserva'] as const).map(opt => (
                             <button key={opt} onClick={() => setEstado(opt)}
                                 className={`px-3 py-3 rounded-2xl text-xs font-black border transition-all ${estado === opt
                                     ? opt === 'cerrado_ok' ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-rose-500 text-white border-rose-500'
-                                    : 'bg-slate-50 text-slate-500 border-slate-200'}`}>
+                                    : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700'}`}>
                                 {opt === 'cerrado_ok' ? '✓ Recepción conforme' : '⚠ Con observación'}
                             </button>
                         ))}
@@ -264,9 +264,9 @@ function DevolucionModal({
 
                 {estado === 'cerrado_con_reserva' && (
                     <div className="space-y-1">
-                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Comentario obligatorio</label>
+                        <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Comentario obligatorio</label>
                         <textarea rows={3} value={comentario} onChange={e => setComentario(e.target.value)} placeholder="Describir la observación o reserva..."
-                            className="w-full border border-slate-200 focus:border-rose-400 rounded-xl px-3 py-2 text-sm outline-none resize-none" />
+                            className="w-full border border-slate-200 dark:border-slate-700 focus:border-rose-400 rounded-xl px-3 py-2 text-sm outline-none resize-none" />
                     </div>
                 )}
 
@@ -301,23 +301,23 @@ function EditMaterialModal({ material, onClose, onDone }: { material: Material; 
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 space-y-5">
+            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-sm w-full p-6 space-y-5">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-black text-slate-800">Editar Material</h2>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-xl"><X className="w-5 h-5" /></button>
+                    <h2 className="text-lg font-black text-slate-800 dark:text-slate-100">Editar Material</h2>
+                    <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl"><X className="w-5 h-5" /></button>
                 </div>
                 <div className="space-y-3">
                     <div>
-                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Código</label>
-                        <input value={form.codigo} onChange={e => setForm(p => ({ ...p, codigo: e.target.value.toUpperCase() }))} className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold outline-none focus:border-primary mt-1 uppercase" placeholder="OPCIONAL" />
+                        <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Código</label>
+                        <input value={form.codigo} onChange={e => setForm(p => ({ ...p, codigo: e.target.value.toUpperCase() }))} className="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold outline-none focus:border-primary mt-1 uppercase" placeholder="OPCIONAL" />
                     </div>
                     <div>
-                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Nombre</label>
-                        <input value={form.nombre} onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))} className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-medium outline-none focus:border-primary mt-1" />
+                        <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Nombre</label>
+                        <input value={form.nombre} onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))} className="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-medium outline-none focus:border-primary mt-1" />
                     </div>
                     <div>
-                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Unidad</label>
-                        <select value={form.unidad} onChange={e => setForm(p => ({ ...p, unidad: e.target.value }))} className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold outline-none focus:border-primary mt-1 bg-white text-slate-700">
+                        <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Unidad</label>
+                        <select value={form.unidad} onChange={e => setForm(p => ({ ...p, unidad: e.target.value }))} className="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold outline-none focus:border-primary mt-1 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200">
                             {!UNIDADES.includes(form.unidad) && form.unidad && (
                                 <option value={form.unidad}>{form.unidad}</option>
                             )}
@@ -346,18 +346,18 @@ function DeleteMaterialModal({ material, onClose, onConfirm }: { material: Mater
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 space-y-5">
+            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-sm w-full p-6 space-y-5">
                 <div className="flex flex-col items-center text-center space-y-3">
                     <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center mb-2">
                         <AlertTriangle className="w-6 h-6 text-rose-500" />
                     </div>
-                    <h2 className="text-xl font-black text-slate-800">Eliminar material</h2>
-                    <p className="text-sm font-medium text-slate-500">
-                        ¿Estás seguro que deseas eliminar <span className="font-bold text-slate-700">{material.nombre}</span>? Esta acción no se puede deshacer.
+                    <h2 className="text-xl font-black text-slate-800 dark:text-slate-100">Eliminar material</h2>
+                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                        ¿Estás seguro que deseas eliminar <span className="font-bold text-slate-700 dark:text-slate-200">{material.nombre}</span>? Esta acción no se puede deshacer.
                     </p>
                 </div>
                 <div className="flex gap-2">
-                    <button onClick={onClose} disabled={deleting} className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl font-black text-sm transition-colors">Cancelar</button>
+                    <button onClick={onClose} disabled={deleting} className="flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 text-slate-600 dark:text-slate-300 rounded-2xl font-black text-sm transition-colors">Cancelar</button>
                     <button onClick={handleConfirm} disabled={deleting} className="flex-1 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50">
                         {deleting && <Loader2 className="w-4 h-4 animate-spin" />} Eliminar
                     </button>
@@ -370,12 +370,12 @@ function DeleteMaterialModal({ material, onClose, onConfirm }: { material: Mater
 function SuccessNotificationModal({ onClose }: { onClose: () => void }) {
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-            <div className="bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl overflow-hidden p-8 flex flex-col items-center text-center animate-in zoom-in-95 duration-300">
+            <div className="bg-white dark:bg-slate-800 w-full max-w-sm rounded-[2.5rem] shadow-2xl overflow-hidden p-8 flex flex-col items-center text-center animate-in zoom-in-95 duration-300">
                 <div className="w-20 h-20 bg-emerald-100 rounded-3xl flex items-center justify-center mb-6 shadow-lg shadow-emerald-100/50">
                     <ShieldCheck className="w-10 h-10 text-emerald-600" />
                 </div>
-                <h3 className="text-2xl font-black text-slate-800 tracking-tight mb-2">Notificación Enviada</h3>
-                <p className="text-slate-500 font-medium mb-8 leading-relaxed">
+                <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight mb-2">Notificación Enviada</h3>
+                <p className="text-slate-500 dark:text-slate-400 font-medium mb-8 leading-relaxed">
                     Los supervisores y responsables han sido notificados sobre los faltantes de materiales.
                 </p>
                 <button 
@@ -447,49 +447,49 @@ function ImportModal({ onClose, onDone }: { onClose: () => void; onDone: (result
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
-            <div className="bg-white rounded-[2.5rem] shadow-2xl max-w-md w-full p-8 space-y-6 animate-in zoom-in-95 duration-300">
+            <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-2xl max-w-md w-full p-8 space-y-6 animate-in zoom-in-95 duration-300">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-primary/10 rounded-xl">
                             <FileUp className="w-6 h-6 text-primary" />
                         </div>
-                        <h2 className="text-xl font-black text-slate-800 tracking-tight">Importar Materiales</h2>
+                        <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Importar Materiales</h2>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 transition-colors">
+                    <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400 dark:text-slate-500 transition-colors">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
 
                 <div className="space-y-4">
-                    <div className="p-6 border-2 border-dashed border-slate-200 rounded-3xl flex flex-col items-center justify-center gap-3 bg-slate-50/50 hover:bg-slate-50 transition-colors cursor-pointer relative group">
+                    <div className="p-6 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-3xl flex flex-col items-center justify-center gap-3 bg-slate-50/50 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors cursor-pointer relative group">
                         <input type="file" accept=".xlsx,.xls,.ods" onChange={handleFileChange} className="absolute inset-0 opacity-0 cursor-pointer" />
-                        <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
-                            <Upload className="w-6 h-6 text-slate-400" />
+                        <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                            <Upload className="w-6 h-6 text-slate-400 dark:text-slate-500" />
                         </div>
                         <div className="text-center">
-                            <p className="text-sm font-bold text-slate-700">{file ? file.name : 'Seleccionar archivo'}</p>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">XLSX, XLS, ODS</p>
+                            <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{file ? file.name : 'Seleccionar archivo'}</p>
+                            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest mt-1">XLSX, XLS, ODS</p>
                         </div>
                     </div>
 
-                    <div className="bg-slate-50 p-4 rounded-2xl space-y-3">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Modo de importación</p>
+                    <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl space-y-3">
+                        <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Modo de importación</p>
                         <div className="grid grid-cols-2 gap-2">
                             {(['reemplazar', 'sumar'] as const).map(m => (
                                 <button key={m} onClick={() => setMode(m)}
-                                    className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest border transition-all ${mode === m ? 'bg-white text-primary border-primary shadow-sm' : 'bg-transparent text-slate-400 border-slate-200 hover:border-slate-300'}`}>
+                                    className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest border transition-all ${mode === m ? 'bg-white dark:bg-slate-800 text-primary border-primary shadow-sm' : 'bg-transparent text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}`}>
                                     {m}
                                 </button>
                             ))}
                         </div>
-                        <p className="text-[10px] text-slate-400 italic">
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500 italic">
                             {mode === 'reemplazar' ? '* Sobrescribe cantidades si el nombre coincide.' : '* Suma las cantidades a las actuales.'}
                         </p>
                     </div>
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                    <button onClick={onClose} className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all">
+                    <button onClick={onClose} className="flex-1 py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all">
                         Cancelar
                     </button>
                     <button onClick={handleImport} disabled={!file || loading}
@@ -505,22 +505,22 @@ function ImportModal({ onClose, onDone }: { onClose: () => void; onDone: (result
 function ImportResultModal({ results, onClose }: { results: any[]; onClose: () => void }) {
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
-            <div className="bg-white rounded-[2.5rem] shadow-2xl max-w-lg w-full p-8 flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-300">
+            <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-2xl max-w-lg w-full p-8 flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-300">
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-black text-slate-800 tracking-tight">Resumen de Importación</h2>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-xl text-slate-400"><X className="w-5 h-5" /></button>
+                    <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Resumen de Importación</h2>
+                    <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400 dark:text-slate-500"><X className="w-5 h-5" /></button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto pr-2 space-y-3 scrollbar-thin">
                     {results.map((res, i) => (
-                        <div key={i} className={`p-4 rounded-2xl border flex items-center justify-between ${res.ignored ? 'bg-slate-50 border-slate-200 opacity-60' : res.success ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50 border-rose-100'}`}>
+                        <div key={i} className={`p-4 rounded-2xl border flex items-center justify-between ${res.ignored ? 'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 opacity-60' : res.success ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50 border-rose-100'}`}>
                             <div className="flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${res.ignored ? 'bg-slate-200' : res.success ? 'bg-emerald-500' : 'bg-rose-500'}`}>
-                                    {res.ignored ? <X className="w-4 h-4 text-slate-500" /> : res.success ? <Check className="w-4 h-4 text-white" /> : <AlertTriangle className="w-4 h-4 text-white" />}
+                                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${res.ignored ? 'bg-slate-200 dark:bg-slate-700' : res.success ? 'bg-emerald-500' : 'bg-rose-500'}`}>
+                                    {res.ignored ? <X className="w-4 h-4 text-slate-500 dark:text-slate-400" /> : res.success ? <Check className="w-4 h-4 text-white" /> : <AlertTriangle className="w-4 h-4 text-white" />}
                                 </div>
                                 <div>
-                                    <p className="text-sm font-black text-slate-800">{res.sheetName}</p>
-                                    <p className="text-[10px] font-bold text-slate-500 uppercase">{res.message}</p>
+                                    <p className="text-sm font-black text-slate-800 dark:text-slate-100">{res.sheetName}</p>
+                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">{res.message}</p>
                                 </div>
                             </div>
                             {!res.ignored && (
@@ -651,11 +651,11 @@ function MaterialesTable({
     };
 
     return (
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
             {/* Header */}
             <div
                 onClick={() => setExpanded(p => !p)}
-                className="w-full flex items-center justify-between p-4 md:p-5 hover:bg-slate-50 transition-colors cursor-pointer"
+                className="w-full flex items-center justify-between p-4 md:p-5 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors cursor-pointer"
             >
                 <div className="flex items-center gap-3 text-left">
                     <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
@@ -663,7 +663,7 @@ function MaterialesTable({
                     </div>
                     <div>
                         <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="font-black text-slate-800 text-sm md:text-base">{proyecto.nombre}</h3>
+                            <h3 className="font-black text-slate-800 dark:text-slate-100 text-sm md:text-base">{proyecto.nombre}</h3>
                             {proyecto.codigoProyecto && (
                                 <CodeBadge 
                                     code={proyecto.codigoProyecto} 
@@ -674,7 +674,7 @@ function MaterialesTable({
                                 />
                             )}
                         </div>
-                        <p className="text-xs text-slate-500 font-medium">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                             {proyecto.client?.nombre || proyecto.cliente || '—'} · {materiales.length} material{materiales.length !== 1 ? 'es' : ''}
                             {hayPendientes && <span className="ml-2 text-amber-600 font-black">⚠ Pendiente devolución</span>}
                         </p>
@@ -685,22 +685,22 @@ function MaterialesTable({
                         onClick={handleNotificarFaltantes}
                         disabled={!hasFaltantes || notificando}
                         title={hasFaltantes ? "Notificar Faltantes" : "No hay faltantes"}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${hasFaltantes ? 'bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100 shadow-sm' : 'bg-slate-50 text-slate-400 border-slate-200 opacity-70'} ${notificando ? 'opacity-50' : ''}`}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${hasFaltantes ? 'bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100 shadow-sm' : 'bg-slate-50 dark:bg-slate-900/50 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 opacity-70'} ${notificando ? 'opacity-50' : ''}`}
                     >
                         {notificando ? <Loader2 className="w-4 h-4 animate-spin" /> : notiStatus === 'success' ? <Check className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
                         <span className="hidden sm:inline">{notiStatus === 'success' ? 'Enviada' : 'Notificar Faltantes'}</span>
                     </button>
-                    {expanded ? <ChevronDown className="w-5 h-5 text-slate-400 shrink-0" /> : <ChevronRight className="w-5 h-5 text-slate-400 shrink-0" />}
+                    {expanded ? <ChevronDown className="w-5 h-5 text-slate-400 dark:text-slate-500 shrink-0" /> : <ChevronRight className="w-5 h-5 text-slate-400 dark:text-slate-500 shrink-0" />}
                 </div>
             </div>
 
             {expanded && (
-                <div className="border-t border-slate-100 p-4 md:p-5 space-y-4">
+                <div className="border-t border-slate-100 dark:border-slate-800 p-4 md:p-5 space-y-4">
                     {materiales.length > 0 ? (
                         <div className="overflow-x-auto -mx-1">
                             <table className="w-full text-sm min-w-[640px]">
                                 <thead>
-                                    <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    <tr className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                                         <th className="text-left pb-3 pl-2">Cod.</th>
                                         <th className="text-left pb-3">Material</th>
                                         <th className="text-center pb-3">Solicitada</th>
@@ -720,11 +720,11 @@ function MaterialesTable({
                                         return (
                                             <tr key={mat.id} className="hover:bg-slate-50/50 transition-colors">
                                                 <td className="py-3 pl-2">
-                                                    <span className="text-[10px] font-mono font-bold text-slate-400">{mat.codigo || '—'}</span>
+                                                    <span className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500">{mat.codigo || '—'}</span>
                                                 </td>
                                                 <td className="py-3">
-                                                    <span className="font-bold text-slate-700">{mat.nombre}</span>
-                                                    <span className="ml-1.5 text-[10px] text-slate-400 font-medium uppercase">{mat.unidad}</span>
+                                                    <span className="font-bold text-slate-700 dark:text-slate-200">{mat.nombre}</span>
+                                                    <span className="ml-1.5 text-[10px] text-slate-400 dark:text-slate-500 font-medium uppercase">{mat.unidad}</span>
                                                 </td>
                                                 <td className="text-center py-3">
                                                     <QtyCell value={mat.cantidadSolicitada} disabled={!isVendedor || closed}
@@ -768,7 +768,7 @@ function MaterialesTable({
                                                             );
                                                         })()}
                                                         {mat.devolucion?.comentario && (
-                                                            <span title={mat.devolucion.comentario} className="p-1.5 text-slate-400">
+                                                            <span title={mat.devolucion.comentario} className="p-1.5 text-slate-400 dark:text-slate-500">
                                                                 <MessageSquare className="w-3.5 h-3.5" />
                                                             </span>
                                                         )}
@@ -781,7 +781,7 @@ function MaterialesTable({
                             </table>
                         </div>
                     ) : (
-                        <div className="text-center py-8 text-slate-400">
+                        <div className="text-center py-8 text-slate-400 dark:text-slate-500">
                             <Package className="w-10 h-10 mx-auto mb-2 opacity-30" />
                             <p className="text-sm font-bold">Sin materiales cargados aún</p>
                         </div>
@@ -794,7 +794,7 @@ function MaterialesTable({
                         <button
                             onClick={handleExportarExcel}
                             disabled={!hasFaltantes}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all border ${hasFaltantes ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 shadow-sm' : 'bg-slate-50 text-slate-400 border-slate-200 opacity-70 cursor-not-allowed'}`}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all border ${hasFaltantes ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 shadow-sm' : 'bg-slate-50 dark:bg-slate-900/50 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 opacity-70 cursor-not-allowed'}`}
                             title={hasFaltantes ? "Exportar faltantes a Excel" : "No hay faltantes para exportar"}
                         >
                             <FileSpreadsheet className="w-4 h-4" /> Exportar faltantes
@@ -865,12 +865,12 @@ export default function ProvisionMaterialesPage() {
 
     if (user && !isAuthorized) {
         return (
-            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[2.5rem] border border-slate-200 shadow-sm animate-in zoom-in-95 duration-300">
+            <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-800 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm animate-in zoom-in-95 duration-300">
                 <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mb-4">
                     <AlertTriangle className="w-8 h-8 text-rose-500" />
                 </div>
-                <h1 className="text-2xl font-black text-slate-800 tracking-tight">Acceso Denegado</h1>
-                <p className="text-slate-500 font-medium mt-1">Tu rol no tiene permisos para esta vista.</p>
+                <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Acceso Denegado</h1>
+                <p className="text-slate-500 dark:text-slate-400 font-medium mt-1">Tu rol no tiene permisos para esta vista.</p>
                 <Link href="/" className="mt-8 px-8 py-3 bg-primary text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
                     Volver al Inicio
                 </Link>
@@ -911,12 +911,12 @@ export default function ProvisionMaterialesPage() {
                     <Package className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1">
-                    <h1 className="text-2xl font-black text-slate-800 tracking-tight">Provisión de Materiales</h1>
-                    <p className="text-sm text-slate-500 font-medium">Gestión de entrega y devolución de materiales por proyecto</p>
+                    <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Provisión de Materiales</h1>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Gestión de entrega y devolución de materiales por proyecto</p>
                 </div>
                 {isAuthorized && (
                     <div className="flex items-center gap-2">
-                        <button onClick={handleDownloadTemplate} className="hidden sm:flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm">
+                        <button onClick={handleDownloadTemplate} className="hidden sm:flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all shadow-sm">
                             <Download className="w-4 h-4" /> Plantilla
                         </button>
                         <button onClick={() => setShowImport(true)} className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 active:scale-95">
@@ -933,22 +933,22 @@ export default function ProvisionMaterialesPage() {
                     { label: 'Pendiente devolución', value: stats.pendientes, color: 'bg-amber-100 text-amber-700' },
                     { label: 'Completamente cerrados', value: stats.cerrados, color: 'bg-emerald-100 text-emerald-700' },
                 ].map(k => (
-                    <div key={k.label} className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm text-center">
+                    <div key={k.label} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 shadow-sm text-center">
                         <div className={`text-2xl font-black ${k.color.split(' ')[1]}`}>{k.value}</div>
-                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{k.label}</div>
+                        <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">{k.label}</div>
                     </div>
                 ))}
             </div>
 
             {/* Filter tabs */}
-            <div className="flex gap-2 bg-slate-100 p-1 rounded-2xl w-fit">
+            <div className="flex gap-2 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-2xl w-fit">
                 {([
                     { key: 'todos', label: 'Todos' },
                     { key: 'pendiente_devolucion', label: '⚠ Pendiente devolución' },
                     { key: 'cerrado', label: '✓ Cerrados' },
                 ] as const).map(t => (
                     <button key={t.key} onClick={() => setFilter(t.key)}
-                        className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${filter === t.key ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
+                        className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${filter === t.key ? 'bg-white dark:bg-slate-800 text-primary shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}>
                         {t.label}
                     </button>
                 ))}
@@ -960,10 +960,10 @@ export default function ProvisionMaterialesPage() {
                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
                 </div>
             ) : filteredProyectos.length === 0 ? (
-                <div className="bg-white border border-slate-200 rounded-3xl p-16 text-center shadow-sm">
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-16 text-center shadow-sm">
                     <Package className="w-12 h-12 mx-auto mb-3 text-slate-300" />
-                    <p className="text-base font-black text-slate-500">Sin proyectos en este estado</p>
-                    <p className="text-sm text-slate-400 mt-1">
+                    <p className="text-base font-black text-slate-500 dark:text-slate-400">Sin proyectos en este estado</p>
+                    <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
                         {filter === 'todos'
                             ? 'Activá "Aprovisionamiento de Materiales" en un proyecto para que aparezca aquí.'
                             : 'No hay proyectos que coincidan con el filtro seleccionado.'}

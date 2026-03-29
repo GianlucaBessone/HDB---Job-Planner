@@ -41,9 +41,9 @@ export default function ToastContainer() {
                     key={toast.id}
                     className={`
                         flex items-center gap-3 p-4 rounded-2xl shadow-2xl border backdrop-blur-md animate-in slide-in-from-top-4 duration-300 pointer-events-auto
-                        ${toast.type === 'success' ? 'bg-white/90 border-green-100 text-slate-800' :
+                        ${toast.type === 'success' ? 'bg-white/90 dark:bg-slate-800/90 border-green-100 text-slate-800 dark:text-slate-100' :
                             toast.type === 'error' ? 'bg-red-50/90 border-red-100 text-red-800' :
-                                'bg-white/90 border-slate-100 text-slate-800'}
+                                'bg-white/90 dark:bg-slate-800/90 border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-100'}
                     `}
                 >
                     {toast.type === 'success' && <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />}
@@ -57,7 +57,7 @@ export default function ToastContainer() {
                             toasts = toasts.filter(t => t.id !== toast.id);
                             toastListeners.forEach(listener => listener(toasts));
                         }}
-                        className="p-1 hover:bg-slate-100 rounded-lg text-slate-400 transition-colors"
+                        className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-400 dark:text-slate-500 transition-colors"
                     >
                         <X className="w-4 h-4" />
                     </button>

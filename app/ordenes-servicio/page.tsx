@@ -47,8 +47,8 @@ function QRImage({ url }: { url: string }) {
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
     return (
         <div className="flex flex-col items-center gap-2">
-            <img src={qrUrl} alt="QR Code" className="w-36 h-36 rounded-xl border border-slate-200 shadow-sm" />
-            <p className="text-[10px] font-bold text-slate-400 text-center max-w-[160px] break-all">{url}</p>
+            <img src={qrUrl} alt="QR Code" className="w-36 h-36 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm" />
+            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 text-center max-w-[160px] break-all">{url}</p>
         </div>
     );
 }
@@ -181,41 +181,41 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
 
     return (
         <div className="fixed inset-0 z-[120] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white w-full max-w-2xl rounded-t-3xl md:rounded-[2rem] shadow-2xl border border-slate-200 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[92vh] flex flex-col overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-t-3xl md:rounded-[2rem] shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[92vh] flex flex-col overflow-hidden">
                 {/* Header */}
-                <div className="p-5 md:p-6 border-b border-slate-100 flex items-center justify-between shrink-0">
+                <div className="p-5 md:p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
                     <div className="space-y-1">
                         <div className="flex items-center gap-2 mb-1">
                             <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${isFirmada ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
                                 {isFirmada ? '✓ Firmada' : 'Pendiente de firma'}
                             </span>
                         </div>
-                        <h3 className="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2 flex-wrap">
+                        <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2 flex-wrap">
                             {(os as any).codigoOS ? (
                                 <span className="text-emerald-700 font-mono">{(os as any).codigoOS} |</span>
                             ) : (
-                                <span className="text-slate-400 font-mono">#SIN-OS |</span>
+                                <span className="text-slate-400 dark:text-slate-500 font-mono">#SIN-OS |</span>
                             )}
                             {(os as any).project.codigoProyecto ? (
                                 <span className="text-primary font-mono">{(os as any).project.codigoProyecto} |</span>
                             ) : (
-                                <span className="text-slate-400 font-mono">#SIN-PR |</span>
+                                <span className="text-slate-400 dark:text-slate-500 font-mono">#SIN-PR |</span>
                             )}
                             {os.project.nombre}
                         </h3>
-                        <p className="text-sm text-slate-500 font-medium flex items-center gap-1.5 mt-1">
+                        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1.5 mt-1">
                             <Building2 className="w-3.5 h-3.5" /> {clienteName}
                         </p>
                     </div>
                     <div className="flex items-center gap-2">
                         <button
                             onClick={handleDownload}
-                            className="p-2.5 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-600 text-slate-500 rounded-xl transition-all"
+                            className="p-2.5 bg-slate-100 dark:bg-slate-800/50 hover:bg-emerald-50 hover:text-emerald-600 text-slate-500 dark:text-slate-400 rounded-xl transition-all"
                             title="Descargar PDF"
                         >
                             <Download className="w-4 h-4" />
                         </button>
-                        <button onClick={onClose} className="p-2.5 hover:bg-slate-100 rounded-xl text-slate-400 transition-all">
+                        <button onClick={onClose} className="p-2.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400 dark:text-slate-500 transition-all">
                             <X className="w-5 h-5" />
                         </button>
                     </div>
@@ -226,33 +226,33 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                     {/* Info */}
                     <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Fecha de emisión</p>
-                            <p className="font-bold text-slate-700">{formatDate(os.fechaCreacion)}</p>
+                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Fecha de emisión</p>
+                            <p className="font-bold text-slate-700 dark:text-slate-200">{formatDate(os.fechaCreacion)}</p>
                         </div>
                         {os.project.responsableUser && (
                             <div>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Responsable</p>
-                                <p className="font-bold text-slate-700">{os.project.responsableUser.nombreCompleto}</p>
+                                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Responsable</p>
+                                <p className="font-bold text-slate-700 dark:text-slate-200">{os.project.responsableUser.nombreCompleto}</p>
                             </div>
                         )}
                     </div>
 
                     {/* Reporte */}
                     <div className="space-y-2">
-                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                        <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
                             <FileText className="w-3.5 h-3.5 text-blue-500" /> Reporte del Trabajo
                         </h4>
-                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                            <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{os.reporte}</p>
+                        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
+                            <p className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-wrap">{os.reporte}</p>
                         </div>
                     </div>
 
                     {/* Operadores */}
                     <div className="space-y-2">
-                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                        <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
                             <User className="w-3.5 h-3.5 text-indigo-500" /> Operadores
                         </h4>
-                        <div className="divide-y divide-slate-50 border border-slate-100 rounded-2xl overflow-hidden">
+                        <div className="divide-y divide-slate-50 border border-slate-100 dark:border-slate-800 rounded-2xl overflow-hidden">
                             {os.operadores.map(op => (
                                 <div key={op.id} className="flex items-center justify-between px-4 py-3">
                                     <div className="flex items-center gap-2.5">
@@ -260,7 +260,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                                             {op.operador.nombreCompleto.charAt(0)}
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="text-sm font-bold text-slate-700">{op.operador.nombreCompleto}</span>
+                                            <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{op.operador.nombreCompleto}</span>
                                             {op.isExtra && (
                                                 <span className="text-[10px] text-amber-600 font-black uppercase tracking-tight">Horas Extras</span>
                                             )}
@@ -275,23 +275,23 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                     {/* Materiales */}
                     {os.materiales.length > 0 && (
                         <div className="space-y-2">
-                            <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                            <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
                                 <Package className="w-3.5 h-3.5 text-amber-500" /> Materiales
                             </h4>
-                            <div className="border border-slate-100 rounded-2xl overflow-hidden">
+                            <div className="border border-slate-100 dark:border-slate-800 rounded-2xl overflow-hidden">
                                 <table className="w-full text-sm">
-                                    <thead className="border-b border-slate-100 bg-slate-50">
+                                    <thead className="border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
                                         <tr>
-                                            <th className="text-left px-4 py-2.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Material</th>
-                                            <th className="text-right px-4 py-2.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Cant.</th>
-                                            <th className="text-right px-4 py-2.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Unidad</th>
+                                            <th className="text-left px-4 py-2.5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Material</th>
+                                            <th className="text-right px-4 py-2.5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Cant.</th>
+                                            <th className="text-right px-4 py-2.5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Unidad</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-50">
                                         {os.materiales.map(m => (
                                             <tr key={m.id}>
-                                                <td className="px-4 py-3 font-medium text-slate-700">{m.material}</td>
-                                                <td className="px-4 py-3 text-right font-bold text-slate-800">{m.cantidad}</td>
+                                                <td className="px-4 py-3 font-medium text-slate-700 dark:text-slate-200">{m.material}</td>
+                                                <td className="px-4 py-3 text-right font-bold text-slate-800 dark:text-slate-100">{m.cantidad}</td>
                                                 <td className="px-4 py-3 text-right">
                                                     <span className="px-2 py-0.5 rounded-lg bg-amber-50 text-amber-700 text-[10px] font-black border border-amber-100 uppercase">{m.unidadMedida}</span>
                                                 </td>
@@ -305,29 +305,29 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
 
                     {os.comentario && (
                         <div className="space-y-2">
-                            <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                                <MessageSquare className="w-3.5 h-3.5 text-slate-500" /> Comentario Adicional
+                            <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                                <MessageSquare className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" /> Comentario Adicional
                             </h4>
-                            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                                <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{os.comentario}</p>
+                            <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
+                                <p className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-wrap">{os.comentario}</p>
                             </div>
                         </div>
                     )}
 
                     {/* QR + Link */}
                     <div className="space-y-2">
-                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                            <QrCode className="w-3.5 h-3.5 text-slate-500" /> Link y QR Público
+                        <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                            <QrCode className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" /> Link y QR Público
                         </h4>
-                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex flex-col sm:flex-row items-center gap-4">
+                        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center gap-4">
                             <QRImage url={publicUrl} />
                             <div className="flex-1 space-y-2 w-full">
-                                <p className="text-xs text-slate-500 font-medium">El cliente puede escanear el QR o usar el link para ver y firmar la OS.</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">El cliente puede escanear el QR o usar el link para ver y firmar la OS.</p>
                                 <div className="flex gap-2">
                                     <input
                                         readOnly
                                         value={publicUrl}
-                                        className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-500 outline-none truncate"
+                                        className="flex-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-medium text-slate-500 dark:text-slate-400 outline-none truncate"
                                     />
                                     <button
                                         onClick={copyLink}
@@ -350,20 +350,20 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                                 <div className="grid grid-cols-3 gap-3 text-sm">
                                     <div>
                                         <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-0.5">Nombre</p>
-                                        <p className="font-bold text-slate-700">{os.firma.nombre}</p>
+                                        <p className="font-bold text-slate-700 dark:text-slate-200">{os.firma.nombre}</p>
                                     </div>
                                     <div>
                                         <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-0.5">DNI</p>
-                                        <p className="font-bold text-slate-700">{os.firma.dni}</p>
+                                        <p className="font-bold text-slate-700 dark:text-slate-200">{os.firma.dni}</p>
                                     </div>
                                     <div>
                                         <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-0.5">Fecha</p>
-                                        <p className="font-bold text-slate-700">{formatDate(os.firma.fechaFirma)}</p>
+                                        <p className="font-bold text-slate-700 dark:text-slate-200">{formatDate(os.firma.fechaFirma)}</p>
                                     </div>
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-2">Firma</p>
-                                    <div className="bg-white rounded-xl border border-emerald-100 p-2 inline-block">
+                                    <div className="bg-white dark:bg-slate-800 rounded-xl border border-emerald-100 p-2 inline-block">
                                         <img src={os.firma.firmaImagen} alt="Firma" className="max-h-24" />
                                     </div>
                                 </div>
@@ -381,7 +381,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                 </div>
 
                 {/* Footer */}
-                <div className="p-5 border-t border-slate-100 flex gap-2 shrink-0">
+                <div className="p-5 border-t border-slate-100 dark:border-slate-800 flex gap-2 shrink-0">
                     <button
                         onClick={handleDownload}
                         className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-600 text-white rounded-2xl font-black text-sm hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 active:scale-95"
@@ -398,7 +398,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                     )}
                     <button
                         onClick={onClose}
-                        className="px-6 py-3 bg-slate-100 text-slate-600 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all active:scale-95"
+                        className="px-6 py-3 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all active:scale-95"
                     >
                         Cerrar
                     </button>
@@ -508,7 +508,7 @@ function OrdenesServicioContent() {
         return (
             <div className="max-w-2xl mx-auto py-20 text-center space-y-4">
                 <AlertCircle className="w-12 h-12 text-slate-300 mx-auto" />
-                <p className="text-slate-500 font-medium">No tenés permisos para acceder a esta sección.</p>
+                <p className="text-slate-500 dark:text-slate-400 font-medium">No tenés permisos para acceder a esta sección.</p>
             </div>
         );
     }
@@ -533,20 +533,20 @@ function OrdenesServicioContent() {
         <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
             {/* Header */}
             <div className="space-y-1">
-                <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 md:gap-3">
+                <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
                     <FileSignature className="w-6 h-6 md:w-8 md:h-8 text-primary" />
                     Órdenes de Servicio
                 </h2>
-                <div className="flex items-center gap-4 border-b border-slate-200 mt-4">
+                <div className="flex items-center gap-4 border-b border-slate-200 dark:border-slate-700 mt-4">
                     <button
                         onClick={() => { setActiveTab('activas'); setFilterEstado('all'); }}
-                        className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'activas' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                        className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'activas' ? 'border-primary text-primary' : 'border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600'}`}
                     >
                         Activas
                     </button>
                     <button
                         onClick={() => { setActiveTab('historial'); setFilterEstado('all'); }}
-                        className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'historial' ? 'border-primary text-primary' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                        className={`pb-3 text-sm font-bold border-b-2 transition-all ${activeTab === 'historial' ? 'border-primary text-primary' : 'border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600'}`}
                     >
                         Historial
                     </button>
@@ -556,17 +556,17 @@ function OrdenesServicioContent() {
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1 min-w-0 group">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500 group-focus-within:text-primary transition-colors" />
                     <input
                         type="text"
                         placeholder="Buscar por código OS, PR, proyecto o cliente..."
-                        className="w-full bg-white border border-slate-200 rounded-xl py-2.5 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium shadow-sm"
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium shadow-sm"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                     />
                 </div>
                 {activeTab === 'activas' && (
-                    <div className="flex gap-1.5 bg-white border border-slate-200 rounded-xl p-1 shadow-sm shrink-0">
+                    <div className="flex gap-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-1 shadow-sm shrink-0">
                         {(['all', 'pendiente', 'firmada', 'cobrada'] as const).map(estado => (
                             <button
                                 key={estado}
@@ -576,7 +576,7 @@ function OrdenesServicioContent() {
                                         : estado === 'pendiente' ? 'bg-amber-100 text-amber-700'
                                             : estado === 'cobrada' ? 'bg-indigo-100 text-indigo-700'
                                                 : 'bg-primary text-white'
-                                    : 'text-slate-500 hover:bg-slate-50'
+                                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/80'
                                     }`}
                             >
                                 {estado === 'all' ? 'Todas' : estado === 'firmada' ? '✓ Firmadas' : estado === 'cobrada' ? 'OC Emitida' : 'Pendientes'}
@@ -588,9 +588,9 @@ function OrdenesServicioContent() {
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-3">
-                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm text-center">
-                    <p className="text-2xl font-black text-slate-800">{ordenes.length}</p>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total</p>
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm text-center">
+                    <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{ordenes.length}</p>
+                    <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Total</p>
                 </div>
                 <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 shadow-sm text-center">
                     <p className="text-2xl font-black text-emerald-700">{ordenes.filter(o => o.estado === 'firmada').length}</p>
@@ -605,12 +605,12 @@ function OrdenesServicioContent() {
             {/* Table */}
             {loading ? (
                 <div className="space-y-3">
-                    {[1, 2, 3].map(i => <div key={i} className="h-20 bg-slate-100 rounded-2xl animate-pulse" />)}
+                    {[1, 2, 3].map(i => <div key={i} className="h-20 bg-slate-100 dark:bg-slate-800/50 rounded-2xl animate-pulse" />)}
                 </div>
             ) : filtered.length === 0 ? (
-                <div className="py-20 flex flex-col items-center justify-center bg-white border border-slate-200 rounded-2xl text-slate-400">
+                <div className="py-20 flex flex-col items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-400 dark:text-slate-500">
                     <FileSignature className="w-12 h-12 mb-4 opacity-20" />
-                    <p className="font-semibold text-slate-600">No se encontraron órdenes de servicio</p>
+                    <p className="font-semibold text-slate-600 dark:text-slate-300">No se encontraron órdenes de servicio</p>
                 </div>
             ) : (
                 <div className="space-y-2">
@@ -621,7 +621,7 @@ function OrdenesServicioContent() {
                         return (
                             <div
                                 key={os.id}
-                                className={`bg-white rounded-2xl border shadow-sm hover:shadow-md transition-all p-4 ${isHighlighted ? 'border-primary ring-2 ring-primary/20' : 'border-slate-200'}`}
+                                className={`bg-white dark:bg-slate-800 rounded-2xl border shadow-sm hover:shadow-md transition-all p-4 ${isHighlighted ? 'border-primary ring-2 ring-primary/20' : 'border-slate-200 dark:border-slate-700'}`}
                             >
                                 <div className="flex items-center gap-3 flex-wrap">
                                     {/* Status dot */}
@@ -630,21 +630,21 @@ function OrdenesServicioContent() {
                                     {/* Main info */}
                                     <div className="flex-1 min-w-0 space-y-1">
                                         <div className="flex items-center gap-2 flex-wrap text-sm">
-                                            <p className="font-black text-slate-800 truncate flex items-center gap-1.5">
+                                            <p className="font-black text-slate-800 dark:text-slate-100 truncate flex items-center gap-1.5">
                                                 {(os as any).codigoOS ? (
                                                     <span className="text-emerald-700 font-mono">{(os as any).codigoOS} |</span>
                                                 ) : (
-                                                    <span className="text-slate-400 font-mono">#SIN-OS |</span>
+                                                    <span className="text-slate-400 dark:text-slate-500 font-mono">#SIN-OS |</span>
                                                 )}
                                                 {(os as any).project.codigoProyecto ? (
                                                     <span className="text-primary font-mono">{(os as any).project.codigoProyecto} |</span>
                                                 ) : (
-                                                    <span className="text-slate-400 font-mono">#SIN-PR |</span>
+                                                    <span className="text-slate-400 dark:text-slate-500 font-mono">#SIN-PR |</span>
                                                 )}
                                                 {os.project.nombre}
                                             </p>
                                         </div>
-                                        <div className="flex items-center gap-3 text-xs text-slate-400 font-medium flex-wrap">
+                                        <div className="flex items-center gap-3 text-xs text-slate-400 dark:text-slate-500 font-medium flex-wrap">
                                             <span className="flex items-center gap-1">
                                                 <Building2 className="w-3 h-3" /> {clienteName}
                                             </span>
@@ -660,7 +660,7 @@ function OrdenesServicioContent() {
                                         os.estado === 'pendiente' ? 'bg-amber-100 text-amber-700 border border-amber-200' :
                                         os.estado === 'cobrada' ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' :
                                         os.estado === 'pagada' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
-                                        'bg-slate-100 text-slate-700 border border-slate-200'
+                                        'bg-slate-100 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700'
                                     }`}>
                                         {os.estado === 'firmada' ? '✓ Firmada' : 
                                          os.estado === 'pendiente' ? 'Pendiente' : 
@@ -694,7 +694,7 @@ function OrdenesServicioContent() {
                                                         e.stopPropagation();
                                                         setOsToCancel(os);
                                                     }}
-                                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-slate-400 border border-slate-200 bg-slate-50 hover:bg-slate-200 hover:text-slate-600 transition-all shadow-sm"
+                                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-200 hover:text-slate-600 transition-all shadow-sm"
                                                     title="Cancelar orden"
                                                 >
                                                     <X className="w-3.5 h-3.5" /> Cancelar
@@ -703,7 +703,7 @@ function OrdenesServicioContent() {
                                         )}
                                         <button
                                             onClick={() => setSelectedOS(os)}
-                                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-slate-600 border border-slate-200 hover:border-primary/40 hover:text-primary transition-all shadow-sm"
+                                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-primary/40 hover:text-primary transition-all shadow-sm"
                                         >
                                             <Eye className="w-3.5 h-3.5" /> Ver
                                         </button>
@@ -711,7 +711,7 @@ function OrdenesServicioContent() {
                                             onClick={() => setOsToDelete(os.id)}
                                             title="Eliminar OS"
                                             disabled={isDeleting === os.id}
-                                            className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 border border-slate-200 hover:border-red-500 hover:bg-red-50 hover:text-red-500 transition-all disabled:opacity-50"
+                                            className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 hover:border-red-500 hover:bg-red-50 hover:text-red-500 transition-all disabled:opacity-50"
                                         >
                                             {isDeleting === os.id ? (
                                                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -776,8 +776,8 @@ export default function OrdenesServicioPage() {
     return (
         <Suspense fallback={
             <div className="space-y-4">
-                <div className="h-12 bg-slate-100 rounded-2xl animate-pulse" />
-                {[1, 2, 3].map(i => <div key={i} className="h-20 bg-slate-100 rounded-2xl animate-pulse" />)}
+                <div className="h-12 bg-slate-100 dark:bg-slate-800/50 rounded-2xl animate-pulse" />
+                {[1, 2, 3].map(i => <div key={i} className="h-20 bg-slate-100 dark:bg-slate-800/50 rounded-2xl animate-pulse" />)}
             </div>
         }>
             <OrdenesServicioContent />

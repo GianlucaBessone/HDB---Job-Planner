@@ -76,18 +76,18 @@ export default async function ProjectReportPage({ params, searchParams }: { para
 
     // ── Status badge config ──────────────────────────────────────────────────
     const STATUS_CONFIG: Record<string, { label: string; textColor: string; Icon: React.ElementType }> = {
-        por_hacer:   { label: 'POR HACER',   textColor: 'text-slate-400',  Icon: ClipboardList },
+        por_hacer:   { label: 'POR HACER',   textColor: 'text-slate-400 dark:text-slate-500',  Icon: ClipboardList },
         planificado: { label: 'PLANIFICADO', textColor: 'text-blue-500',   Icon: BarChart2 },
         activo:      { label: 'EN CURSO',    textColor: 'text-indigo-500', Icon: PlayCircle },
         en_riesgo:   { label: 'EN RIESGO',   textColor: 'text-amber-500',  Icon: AlertTriangle },
         atrasado:    { label: 'ATRASADO',    textColor: 'text-rose-500',   Icon: AlarmClock },
         finalizado:  { label: 'FINALIZADO',  textColor: 'text-emerald-500',Icon: CheckCircle2 },
     };
-    const statusCfg = STATUS_CONFIG[project.estado] ?? { label: project.estado?.toUpperCase() ?? 'SIN ESTADO', textColor: 'text-slate-400', Icon: ShieldCheck };
+    const statusCfg = STATUS_CONFIG[project.estado] ?? { label: project.estado?.toUpperCase() ?? 'SIN ESTADO', textColor: 'text-slate-400 dark:text-slate-500', Icon: ShieldCheck };
     const StatusIcon = statusCfg.Icon;
 
     return (
-        <div className="min-h-screen bg-slate-50 py-8 print:p-0 print:bg-white text-slate-800 font-sans mx-auto max-w-[900px]">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-900/50 py-8 print:p-0 print:bg-white text-slate-800 dark:text-slate-100 font-sans mx-auto max-w-[900px]">
             {/* Control Bar (hidden in print) */}
             <div className="flex justify-end mb-8 print:hidden px-4 md:px-0">
                 <ReportPrintButton
@@ -102,12 +102,12 @@ export default async function ProjectReportPage({ params, searchParams }: { para
                 />
             </div>
 
-            <div id="report-content" className="bg-white p-10 md:p-14 md:rounded-[2.5rem] shadow-sm print:shadow-none print:p-0">
+            <div id="report-content" className="bg-white dark:bg-slate-800 p-10 md:p-14 md:rounded-[2.5rem] shadow-sm print:shadow-none print:p-0">
 
                 {/* ── Header ── */}
                 <div className="flex justify-between items-start border-b-2 border-slate-900 pb-8 mb-8">
                     <div>
-                        <h1 className="text-4xl font-black text-slate-900 tracking-tighter mb-2">Reporte de Proyecto</h1>
+                        <h1 className="text-4xl font-black text-slate-900 dark:text-slate-50 tracking-tighter mb-2">Reporte de Proyecto</h1>
                         <div className="flex items-center">
                             <StatusIcon className={`w-4 h-4 mr-2 ${statusCfg.textColor}`} />
                             <span className={`text-sm font-bold uppercase tracking-widest ${statusCfg.textColor}`}>{statusCfg.label}</span>
@@ -115,12 +115,12 @@ export default async function ProjectReportPage({ params, searchParams }: { para
                     </div>
                     <div className="text-right flex flex-col items-end gap-1">
                         <h2 className="text-2xl font-black text-indigo-600 tracking-tight leading-none">{project.nombre}</h2>
-                        <div className="flex items-center justify-end text-slate-500">
+                        <div className="flex items-center justify-end text-slate-500 dark:text-slate-400">
                             <span className="text-sm font-bold">{hasClientStr}</span>
                             <Building2 className="w-4 h-4 ml-1.5" />
                         </div>
                         {/* Fechas del proyecto */}
-                        <div className="flex items-center gap-3 mt-1 text-xs font-bold text-slate-400">
+                        <div className="flex items-center gap-3 mt-1 text-xs font-bold text-slate-400 dark:text-slate-500">
                             <div className="flex items-center gap-1">
                                 <Calendar className="w-3 h-3" />
                                 <span>Inicio: {formatDate(project.fechaInicio)}</span>
@@ -136,18 +136,18 @@ export default async function ProjectReportPage({ params, searchParams }: { para
 
                 {/* ── KPI Cards ── */}
                 <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-10">
-                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col justify-center items-center text-center">
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Hs Estimadas</p>
-                        <p className="text-2xl font-black text-slate-800">{project.horasEstimadas}h</p>
+                    <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-center items-center text-center">
+                        <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Hs Estimadas</p>
+                        <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{project.horasEstimadas}h</p>
                     </div>
-                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col justify-center items-center text-center">
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Hs Reales</p>
+                    <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-center items-center text-center">
+                        <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Hs Reales</p>
                         <p className={`text-2xl font-black ${totalRealHours > project.horasEstimadas ? 'text-rose-500' : 'text-emerald-500'}`}>
                             {totalRealHours.toFixed(1)}h
                         </p>
                     </div>
-                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col justify-center items-center text-center">
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Ahorro / Desvío</p>
+                    <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-center items-center text-center">
+                        <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Ahorro / Desvío</p>
                         <p className={`text-2xl font-black ${savedHours >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                             {savedHours > 0 ? '+' : ''}{savedHours.toFixed(1)}h
                         </p>
@@ -175,15 +175,15 @@ export default async function ProjectReportPage({ params, searchParams }: { para
                             <FileText className="w-4 h-4 text-amber-500" />
                             <h3 className="text-xs font-black text-amber-700 uppercase tracking-widest">Observaciones del Proyecto</h3>
                         </div>
-                        <p className="text-sm font-medium text-slate-700 leading-relaxed whitespace-pre-wrap">{project.observaciones}</p>
+                        <p className="text-sm font-medium text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-wrap">{project.observaciones}</p>
                     </div>
                 )}
 
                 {/* ── Resúmenes laterales ── */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 border-b border-slate-100 pb-10 mb-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 border-b border-slate-100 dark:border-slate-800 pb-10 mb-10">
                     {/* Operadores */}
                     <div>
-                        <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center">
+                        <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center">
                             <Users className="w-5 h-5 text-indigo-500 mr-2.5" />
                             Resumen por Operador
                         </h3>
@@ -192,46 +192,46 @@ export default async function ProjectReportPage({ params, searchParams }: { para
                                 const pct = totalRealHours > 0 ? Math.min(op.horas / totalRealHours, 1) * 100 : 0;
                                 return (
                                     <div key={idx}>
-                                        <div className="flex justify-between text-xs font-bold text-slate-600 mb-1">
+                                        <div className="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">
                                             <span>{op.nombre}</span>
                                             <span>{op.horas.toFixed(1)}h</span>
                                         </div>
-                                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                                        <div className="h-2 bg-slate-100 dark:bg-slate-800/50 rounded-full overflow-hidden">
                                             <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${pct}%` }} />
                                         </div>
                                     </div>
                                 );
                             })}
                             {operatorArray.length === 0 && (
-                                <p className="text-sm font-bold text-slate-400 italic">No hay registros de tiempo confirmados.</p>
+                                <p className="text-sm font-bold text-slate-400 dark:text-slate-500 italic">No hay registros de tiempo confirmados.</p>
                             )}
                         </div>
                     </div>
 
                     {/* Demoras por area */}
                     <div>
-                        <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center">
+                        <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center">
                             <Timer className="w-5 h-5 text-amber-500 mr-2.5" />
                             Demoras del Cliente:&nbsp;<span className="text-amber-500">{totalDelaysHours}h</span>
-                            <span className="ml-2 text-xs font-bold text-slate-400">({delayImpactPct}% carga)</span>
+                            <span className="ml-2 text-xs font-bold text-slate-400 dark:text-slate-500">({delayImpactPct}% carga)</span>
                         </h3>
                         <div className="space-y-3">
                             {delaysArray.map(({ area, horas }, idx) => {
                                 const pct = totalDelaysHours > 0 ? (horas / totalDelaysHours) * 100 : 0;
                                 return (
                                     <div key={idx}>
-                                        <div className="flex justify-between text-xs font-bold text-slate-600 mb-1">
+                                        <div className="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">
                                             <span>{area}</span>
                                             <span className="text-amber-500">{horas}h</span>
                                         </div>
-                                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                                        <div className="h-2 bg-slate-100 dark:bg-slate-800/50 rounded-full overflow-hidden">
                                             <div className="h-full bg-amber-400 rounded-full" style={{ width: `${pct}%` }} />
                                         </div>
                                     </div>
                                 );
                             })}
                             {delaysArray.length === 0 && (
-                                <p className="text-sm font-bold text-slate-400 italic">Sin demoras registradas.</p>
+                                <p className="text-sm font-bold text-slate-400 dark:text-slate-500 italic">Sin demoras registradas.</p>
                             )}
                         </div>
                     </div>
@@ -242,24 +242,24 @@ export default async function ProjectReportPage({ params, searchParams }: { para
 
                     {/* Desglose Tiempos Operativos — sin columna Horas, solo Horario */}
                     <div>
-                        <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
                             <Clock className="w-4 h-4 text-indigo-500" />
                             Desglose de Tiempos Operativos
                         </h3>
                         {project.timeEntries.length === 0 ? (
-                            <p className="text-sm text-slate-400 italic">Sin registros de tiempo confirmados.</p>
+                            <p className="text-sm text-slate-400 dark:text-slate-500 italic">Sin registros de tiempo confirmados.</p>
                         ) : (
                             <table className="w-full text-left text-sm">
                                 <thead>
-                                    <tr className="border-b border-slate-200">
-                                        <th className="py-2 pr-4 font-bold text-slate-400 uppercase text-[10px] tracking-widest">Fecha</th>
-                                        <th className="py-2 pr-4 font-bold text-slate-400 uppercase text-[10px] tracking-widest">Operador</th>
-                                        <th className="py-2 font-bold text-slate-400 uppercase text-[10px] tracking-widest">Horario</th>
+                                    <tr className="border-b border-slate-200 dark:border-slate-700">
+                                        <th className="py-2 pr-4 font-bold text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-widest">Fecha</th>
+                                        <th className="py-2 pr-4 font-bold text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-widest">Operador</th>
+                                        <th className="py-2 font-bold text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-widest">Horario</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {project.timeEntries.map(e => (
-                                        <tr key={e.id} className="border-b border-slate-50 text-slate-600 font-medium">
+                                        <tr key={e.id} className="border-b border-slate-50 text-slate-600 dark:text-slate-300 font-medium">
                                             <td className="py-2 pr-4">{formatDate(e.fecha)}</td>
                                             <td className="py-2 pr-4">{e.operator.nombreCompleto}</td>
                                             <td className="py-2 font-bold">{e.horaIngreso} → {e.horaEgreso}</td>
@@ -273,32 +273,32 @@ export default async function ProjectReportPage({ params, searchParams }: { para
                     {/* Detalle Demoras Externas — con columna Responsable Área */}
                     {project.clientDelays.length > 0 && (
                         <div>
-                            <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
                                 <Timer className="w-4 h-4 text-amber-500" />
                                 Detalle de Demoras Externas
                             </h3>
                             <table className="w-full text-left text-sm">
                                 <thead>
-                                    <tr className="border-b border-slate-200">
-                                        <th className="py-2 pr-3 font-bold text-slate-400 uppercase text-[10px] tracking-widest">Fecha</th>
-                                        <th className="py-2 pr-3 font-bold text-slate-400 uppercase text-[10px] tracking-widest">Área</th>
-                                        <th className="py-2 pr-3 font-bold text-slate-400 uppercase text-[10px] tracking-widest">Resp. Área</th>
-                                        <th className="py-2 pr-3 font-bold text-slate-400 uppercase text-[10px] tracking-widest">Motivo</th>
-                                        <th className="py-2 font-bold text-slate-400 uppercase text-[10px] tracking-widest text-right">Hs</th>
+                                    <tr className="border-b border-slate-200 dark:border-slate-700">
+                                        <th className="py-2 pr-3 font-bold text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-widest">Fecha</th>
+                                        <th className="py-2 pr-3 font-bold text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-widest">Área</th>
+                                        <th className="py-2 pr-3 font-bold text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-widest">Resp. Área</th>
+                                        <th className="py-2 pr-3 font-bold text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-widest">Motivo</th>
+                                        <th className="py-2 font-bold text-slate-400 dark:text-slate-500 uppercase text-[10px] tracking-widest text-right">Hs</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {project.clientDelays.map(d => (
-                                        <tr key={d.id} className="border-b border-slate-50 text-slate-600 font-medium">
+                                        <tr key={d.id} className="border-b border-slate-50 text-slate-600 dark:text-slate-300 font-medium">
                                             <td className="py-2 pr-3">{formatDate(d.fecha)}</td>
                                             <td className="py-2 pr-3 text-amber-600 font-bold text-xs uppercase">{d.area}</td>
-                                            <td className="py-2 pr-3 text-slate-500 text-xs">{(d as any).responsableArea || '—'}</td>
+                                            <td className="py-2 pr-3 text-slate-500 dark:text-slate-400 text-xs">{(d as any).responsableArea || '—'}</td>
                                             <td className="py-2 pr-3 italic max-w-[200px] truncate" title={d.motivo}>"{d.motivo}"</td>
                                             <td className="py-2 text-right font-black text-amber-500">{d.duracion}h</td>
                                         </tr>
                                     ))}
-                                    <tr className="border-t-2 border-slate-200 font-black">
-                                        <td colSpan={4} className="py-2 pr-3 text-right text-[10px] uppercase tracking-widest text-slate-400">Total Demoras:</td>
+                                    <tr className="border-t-2 border-slate-200 dark:border-slate-700 font-black">
+                                        <td colSpan={4} className="py-2 pr-3 text-right text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-500">Total Demoras:</td>
                                         <td className="py-2 text-right text-amber-500">{totalDelaysHours}h</td>
                                     </tr>
                                 </tbody>
@@ -308,25 +308,25 @@ export default async function ProjectReportPage({ params, searchParams }: { para
 
                     {/* Checklist Técnico */}
                     <div>
-                        <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
                             <ShieldCheck className="w-4 h-4 text-emerald-500" />
                             Avance Técnico (Checklist)
                         </h3>
                         {project.checklistItems.filter(i => !i.excluded).length === 0 ? (
-                            <p className="text-sm text-slate-400 italic">Sin tareas documentadas en el checklist.</p>
+                            <p className="text-sm text-slate-400 dark:text-slate-500 italic">Sin tareas documentadas en el checklist.</p>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {project.checklistItems.filter(i => !i.excluded).map((item) => (
-                                    <div key={item.id} className={`p-4 rounded-2xl border flex items-start gap-4 transition-all ${item.completed ? 'bg-emerald-50/40 border-emerald-100' : 'bg-slate-50/50 border-slate-100'}`}>
-                                        <div className={`mt-0.5 shrink-0 w-6 h-6 rounded-xl border-2 flex items-center justify-center ${item.completed ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-200 bg-white'}`}>
+                                    <div key={item.id} className={`p-4 rounded-2xl border flex items-start gap-4 transition-all ${item.completed ? 'bg-emerald-50/40 border-emerald-100' : 'bg-slate-50/50 border-slate-100 dark:border-slate-800'}`}>
+                                        <div className={`mt-0.5 shrink-0 w-6 h-6 rounded-xl border-2 flex items-center justify-center ${item.completed ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'}`}>
                                             {item.completed && <Activity className="w-3 h-3" />}
                                         </div>
                                         <div>
-                                            <p className={`text-sm font-bold leading-snug ${item.completed ? 'text-emerald-900' : 'text-slate-600'}`}>
+                                            <p className={`text-sm font-bold leading-snug ${item.completed ? 'text-emerald-900' : 'text-slate-600 dark:text-slate-300'}`}>
                                                 {item.description}
                                             </p>
                                             <div className="flex items-center gap-2 mt-1.5 font-bold uppercase tracking-widest text-[9px]">
-                                                <span className="px-2 py-0.5 rounded-lg bg-white border border-slate-200 text-slate-400">
+                                                <span className="px-2 py-0.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500">
                                                     {item.tag}
                                                 </span>
                                                 <span className={item.completed ? 'text-emerald-500' : 'text-slate-300'}>
@@ -342,7 +342,7 @@ export default async function ProjectReportPage({ params, searchParams }: { para
                 </div>
 
                 {/* Footer */}
-                <div className="mt-16 pt-6 border-t border-slate-200 text-center text-xs font-bold text-slate-400">
+                <div className="mt-16 pt-6 border-t border-slate-200 dark:border-slate-700 text-center text-xs font-bold text-slate-400 dark:text-slate-500">
                     <p>Reporte Oficial | Generado automáticamente por HDB Job Planner el {formatDate(new Date())}</p>
                 </div>
             </div>

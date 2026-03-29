@@ -61,18 +61,18 @@ export default function HomePage() {
         <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div className="space-y-1">
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 md:gap-3">
+                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
                         <Home className="w-6 h-6 md:w-8 md:h-8 text-primary" />
                         Hola, {userName.split(' ')[0]}
                     </h2>
-                    <p className="text-sm text-slate-500 font-medium tracking-tight uppercase tracking-widest text-[10px] font-black">{role}</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium tracking-tight uppercase tracking-widest text-[10px] font-black">{role}</p>
                 </div>
             </div>
 
             {/* Operador */}
             {isOperador && (
                 <div className="space-y-6">
-                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest px-1">Tus Acciones Rápidas</h3>
+                    <h3 className="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Tus Acciones Rápidas</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
                         <ActionCard
                             title="Fichado GPS/QR"
@@ -116,7 +116,7 @@ export default function HomePage() {
             {/* Vendedor */}
             {isVendedor && (
                 <div className="space-y-6">
-                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest px-1">Panel de Ventas</h3>
+                    <h3 className="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Panel de Ventas</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
                         <ActionCard
                             title="Provisión de Materiales"
@@ -153,7 +153,7 @@ export default function HomePage() {
             {/* Supervisor y Admin */}
             {isSupervisorOrAdmin && (
                 <div className="space-y-6">
-                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest px-1">
+                    <h3 className="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">
                         {isAdmin ? 'Panel de Administración' : 'Panel de Supervisión'}
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 gap-3 md:gap-4">
@@ -248,13 +248,13 @@ export default function HomePage() {
 function ActionCard({ title, description, icon, href, color }: { title: string, description: string, icon: React.ReactNode, href: string, color: string }) {
     return (
         <Link href={href} className="group relative block focus:outline-none">
-            <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-slate-300 transition-all duration-300 flex flex-row items-center gap-3 md:gap-4 h-full outline-primary focus-visible:ring-4 focus-visible:ring-primary/20 overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 p-4 md:p-6 rounded-2xl md:rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 flex flex-row items-center gap-3 md:gap-4 h-full outline-primary focus-visible:ring-4 focus-visible:ring-primary/20 overflow-hidden">
                 <div className={`p-3 md:p-4 rounded-xl md:rounded-2xl ${color} text-white shadow-lg group-hover:scale-110 transition-transform shrink-0`}>
                     {icon}
                 </div>
                 <div className="flex-1 space-y-0.5 md:space-y-1 min-w-0">
-                    <h4 className="font-extrabold text-slate-800 text-base md:text-lg leading-tight group-hover:text-primary transition-colors">{title}</h4>
-                    <p className="text-[10px] md:text-xs font-semibold text-slate-400 uppercase tracking-wider line-clamp-2">{description}</p>
+                    <h4 className="font-extrabold text-slate-800 dark:text-slate-100 text-base md:text-lg leading-tight group-hover:text-primary transition-colors">{title}</h4>
+                    <p className="text-[10px] md:text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider line-clamp-2">{description}</p>
                 </div>
             </div>
         </Link>

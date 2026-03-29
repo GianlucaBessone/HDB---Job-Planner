@@ -40,7 +40,7 @@ export default function ConfirmDialog({
 
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="bg-white dark:bg-slate-800 w-full max-w-sm rounded-[2rem] shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in zoom-in-95 duration-300">
                 <div className="p-8">
                     <div className="flex justify-between items-start mb-6">
                         <div className={`p-3 rounded-2xl ${iconStyles[variant]}`}>
@@ -48,15 +48,15 @@ export default function ConfirmDialog({
                         </div>
                         <button
                             onClick={onCancel}
-                            className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors"
+                            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500 transition-colors"
                         >
                             <X className="w-5 h-5" />
                         </button>
                     </div>
 
                     <div className="space-y-2 mb-8">
-                        <h3 className="text-xl font-bold text-slate-800 tracking-tight">{title}</h3>
-                        <p className="text-slate-500 text-sm leading-relaxed font-medium">
+                        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">{title}</h3>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed font-medium">
                             {message}
                         </p>
                     </div>
@@ -64,7 +64,7 @@ export default function ConfirmDialog({
                     <div className="flex gap-3">
                         <button
                             onClick={onCancel}
-                            className="flex-1 px-6 py-3.5 rounded-2xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all active:scale-95"
+                            className="flex-1 px-6 py-3.5 rounded-2xl font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 transition-all active:scale-95"
                         >
                             {cancelLabel}
                         </button>

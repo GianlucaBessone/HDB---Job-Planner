@@ -99,12 +99,12 @@ export default function NotificationsPage() {
     const displayedNotifications = notifications.filter(n => activeTab === 'unread' ? !n.read : n.read);
 
     return (
-        <div className="min-h-screen bg-slate-50 pb-20 pt-8 px-4 md:px-8 max-w-3xl mx-auto">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-900/50 pb-20 pt-8 px-4 md:px-8 max-w-3xl mx-auto">
             <div className="flex items-center gap-3 mb-8">
-                <Link href="/" className="p-2 bg-white rounded-full shadow-sm hover:bg-slate-100 transition">
-                    <ArrowRight className="w-5 h-5 text-slate-500 rotate-180" />
+                <Link href="/" className="p-2 bg-white dark:bg-slate-800 rounded-full shadow-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                    <ArrowRight className="w-5 h-5 text-slate-500 dark:text-slate-400 rotate-180" />
                 </Link>
-                <h1 className="text-2xl font-black text-slate-800 flex items-center gap-2">
+                <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
                     <Bell className="w-6 h-6 text-primary" />
                     Centro de Notificaciones
                 </h1>
@@ -113,13 +113,13 @@ export default function NotificationsPage() {
             <div className="flex p-1 bg-slate-200/50 rounded-2xl mb-6">
                 <button
                     onClick={() => setActiveTab('unread')}
-                    className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all ${activeTab === 'unread' ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}`}
+                    className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all ${activeTab === 'unread' ? 'bg-white dark:bg-slate-800 shadow-sm text-primary' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
                 >
                     No leídas ({notifications.filter(n => !n.read).length})
                 </button>
                 <button
                     onClick={() => setActiveTab('read')}
-                    className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all ${activeTab === 'read' ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}`}
+                    className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all ${activeTab === 'read' ? 'bg-white dark:bg-slate-800 shadow-sm text-primary' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
                 >
                     Leídas ({notifications.filter(n => n.read).length})
                 </button>
@@ -127,13 +127,13 @@ export default function NotificationsPage() {
 
             {loading ? (
                 <div className="text-center py-10">
-                    <div className="w-8 h-8 border-4 border-slate-200 border-t-primary rounded-full animate-spin mx-auto"></div>
-                    <p className="mt-4 text-sm font-bold text-slate-400">Cargando notificaciones...</p>
+                    <div className="w-8 h-8 border-4 border-slate-200 dark:border-slate-700 border-t-primary rounded-full animate-spin mx-auto"></div>
+                    <p className="mt-4 text-sm font-bold text-slate-400 dark:text-slate-500">Cargando notificaciones...</p>
                 </div>
             ) : displayedNotifications.length === 0 ? (
-                <div className="text-center py-16 bg-white rounded-3xl border border-dashed border-slate-200">
+                <div className="text-center py-16 bg-white dark:bg-slate-800 rounded-3xl border border-dashed border-slate-200 dark:border-slate-700">
                     <Bell className="w-12 h-12 text-slate-200 mx-auto mb-4" />
-                    <p className="text-slate-500 font-medium text-sm">No tienes notificaciones {activeTab === 'unread' ? 'pendientes' : 'leídas'}.</p>
+                    <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">No tienes notificaciones {activeTab === 'unread' ? 'pendientes' : 'leídas'}.</p>
                 </div>
             ) : (
                 <div className="space-y-4">
@@ -154,30 +154,30 @@ export default function NotificationsPage() {
                             key={notification.id}
                             id={`notif-${notification.id}`}
                             className={`p-5 rounded-3xl border transition-all ${
-                                notification.read ? 'bg-white border-slate-200 opacity-70' : 'bg-white border-indigo-100 shadow-md shadow-indigo-100/50'
+                                notification.read ? 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-70' : 'bg-white dark:bg-slate-800 border-indigo-100 shadow-md shadow-indigo-100/50'
                             } ${isHighlighted ? 'ring-2 ring-primary ring-offset-2 scale-[1.01] shadow-lg shadow-primary/10' : ''}`}
                         >
                             <div className="flex justify-between items-start mb-2">
                                 <div className="space-y-1.5 flex-1 pr-4">
-                                    <h3 className={`text-base font-black ${notification.read ? 'text-slate-700' : 'text-indigo-900'}`}>{notification.title}</h3>
+                                    <h3 className={`text-base font-black ${notification.read ? 'text-slate-700 dark:text-slate-200' : 'text-indigo-900'}`}>{notification.title}</h3>
                                     {category && (
                                         <div className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-black border uppercase tracking-widest ${catStyles[category] || catStyles['Nota']}`}>
                                             {category === 'Bloqueante' && '🚨 '}{category}
                                         </div>
                                     )}
                                 </div>
-                                <span className="text-[10px] font-black text-slate-400 bg-slate-100 px-2 py-1 rounded-lg shrink-0">
+                                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800/50 px-2 py-1 rounded-lg shrink-0">
                                     {formatDateTime(notification.createdAt).replace(' ', ' - ')}
                                 </span>
                             </div>
-                            <p className="text-sm font-medium text-slate-600 whitespace-pre-wrap mb-4">
+                            <p className="text-sm font-medium text-slate-600 dark:text-slate-300 whitespace-pre-wrap mb-4">
                                 {cleanMessage}
                             </p>
                             
                             <div className="flex justify-end gap-2 border-t border-slate-50 pt-3">
                                 <button
                                     onClick={() => handleToggleRead(notification.id, notification.read)}
-                                    className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors ${notification.read ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'}`}
+                                    className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors ${notification.read ? 'bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:bg-slate-200' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'}`}
                                 >
                                     {notification.read ? (
                                         <><Circle className="w-3.5 h-3.5" /> Marcar no leída</>

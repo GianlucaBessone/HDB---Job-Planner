@@ -152,7 +152,7 @@ export default function SearchableSelect({
             onKeyDown={handleKeyDown}
         >
             {label && (
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">
                     {icon} {label}
                 </label>
             )}
@@ -168,12 +168,12 @@ export default function SearchableSelect({
                     }
                     mouseDownRef.current = false;
                 }}
-                className={`w-full min-h-[44px] md:h-[50px] bg-slate-50 border border-slate-200 rounded-xl md:rounded-2xl py-2 md:py-3 px-3 md:px-4 flex items-center justify-between cursor-pointer transition-all text-sm ${
-                    isOpen ? 'ring-4 ring-primary/10 border-primary' : 'hover:border-slate-300'
+                className={`w-full min-h-[44px] md:h-[50px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-2 md:py-3 px-3 md:px-4 flex items-center justify-between cursor-pointer transition-all text-sm ${
+                    isOpen ? 'ring-4 ring-primary/10 border-primary' : 'hover:border-slate-300 dark:hover:border-slate-600'
                 } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                 tabIndex={disabled ? -1 : 0}
             >
-                <span className={`font-bold truncate ${selectedOption ? 'text-slate-700' : 'text-slate-400'}`}>
+                <span className={`font-bold truncate ${selectedOption ? 'text-slate-700 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500'}`}>
                     {selectedOption ? selectedOption.label : placeholder}
                 </span>
                 <div className="flex items-center gap-1 shrink-0">
@@ -183,20 +183,20 @@ export default function SearchableSelect({
                             onClick={(e) => { e.stopPropagation(); onChange(''); setIsOpen(false); }}
                             className="btn-icon-inline p-1 hover:bg-slate-200 rounded-md transition-colors"
                         >
-                            <X className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600" />
+                            <X className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 hover:text-slate-600" />
                         </button>
                     )}
-                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                 </div>
             </div>
 
             {/* ── Dropdown panel ── */}
             {isOpen && (
-                <div className="absolute z-[110] left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-2xl md:rounded-[2rem] shadow-2xl animate-in zoom-in-95 duration-150 overflow-hidden min-w-full">
+                <div className="absolute z-[110] left-0 right-0 mt-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-[2rem] shadow-2xl animate-in zoom-in-95 duration-150 overflow-hidden min-w-full">
 
                     {/* Search bar */}
-                    <div className="p-3 border-b border-slate-100 flex items-center gap-2">
-                        <Search className="w-4 h-4 text-slate-400 shrink-0" />
+                    <div className="p-3 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                        <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" />
                         <input
                             ref={inputRef}
                             type="text"
@@ -222,7 +222,7 @@ export default function SearchableSelect({
                                     inputRef.current?.focus();
                                 }}
                             >
-                                <X className="w-3 h-3 text-slate-400" />
+                                <X className="w-3 h-3 text-slate-400 dark:text-slate-500" />
                             </button>
                         )}
                     </div>
@@ -230,7 +230,7 @@ export default function SearchableSelect({
                     {/* Options list */}
                     <div className="max-h-60 overflow-y-auto p-2">
                         {filteredOptions.length === 0 ? (
-                            <div className="p-4 text-center text-xs text-slate-400 font-bold uppercase tracking-widest">
+                            <div className="p-4 text-center text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">
                                 No se encontraron resultados
                             </div>
                         ) : (
@@ -257,8 +257,8 @@ export default function SearchableSelect({
                                                 isSelected
                                                     ? 'bg-primary/20 text-primary'
                                                     : isHighlighted
-                                                        ? 'bg-slate-100 text-slate-900'
-                                                        : 'text-slate-600 hover:bg-slate-50'
+                                                        ? 'bg-slate-100 dark:bg-slate-800/50 text-slate-900 dark:text-slate-50'
+                                                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80'
                                             }`}
                                         >
                                             <span className="break-words">{opt.label}</span>

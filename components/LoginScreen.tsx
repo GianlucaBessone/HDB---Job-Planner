@@ -73,27 +73,27 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center">
                 <div className="w-12 h-12 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-            <div className="w-full max-w-md bg-white rounded-[2.5rem] p-8 shadow-2xl border border-slate-100">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center p-4">
+            <div className="w-full max-w-md bg-white dark:bg-slate-800 rounded-[2.5rem] p-8 shadow-2xl border border-slate-100 dark:border-slate-800">
                 <div className="flex flex-col items-center justify-center mb-10">
                     <div className="bg-indigo-500 p-3 rounded-2xl shadow-lg shadow-indigo-500/30 mb-4">
                         <ClipboardList className="w-8 h-8 text-white" />
                     </div>
-                    <h1 className="text-3xl font-black text-slate-800 tracking-tighter">HDB<span className="text-indigo-500">Planner</span></h1>
-                    <p className="text-sm font-bold text-slate-400 mt-2 uppercase tracking-widest text-center">Acceso al Sistema Operativo</p>
+                    <h1 className="text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tighter">HDB<span className="text-indigo-500">Planner</span></h1>
+                    <p className="text-sm font-bold text-slate-400 dark:text-slate-500 mt-2 uppercase tracking-widest text-center">Acceso al Sistema Operativo</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Custom searchable user selector */}
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">
                             <UserIcon className="w-3 h-3" /> Operador / Usuario
                         </label>
                         <div className="relative">
@@ -101,24 +101,24 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
                             <button
                                 type="button"
                                 onClick={() => setDropdownOpen(prev => !prev)}
-                                className={`w-full bg-slate-50 border rounded-2xl py-4 px-4 outline-none text-left font-bold transition-all flex items-center justify-between gap-2 ${dropdownOpen ? 'border-indigo-500 ring-4 ring-indigo-500/10' : 'border-slate-200'}`}
+                                className={`w-full bg-slate-50 dark:bg-slate-900/50 border rounded-2xl py-4 px-4 outline-none text-left font-bold transition-all flex items-center justify-between gap-2 ${dropdownOpen ? 'border-indigo-500 ring-4 ring-indigo-500/10' : 'border-slate-200 dark:border-slate-700'}`}
                             >
-                                <span className={`truncate text-base ${selectedOp ? 'text-slate-700' : 'text-slate-400'}`}>
+                                <span className={`truncate text-base ${selectedOp ? 'text-slate-700 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500'}`}>
                                     {selectedOp ? selectedOp.nombreCompleto : '— Seleccionar Identidad —'}
                                 </span>
-                                <svg className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                <svg className={`w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                             </button>
 
                             {/* Dropdown panel */}
                             {dropdownOpen && (
-                                <div className="absolute z-50 left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden">
+                                <div className="absolute z-50 left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl overflow-hidden">
                                     {/* Search */}
-                                    <div className="p-3 border-b border-slate-100">
+                                    <div className="p-3 border-b border-slate-100 dark:border-slate-800">
                                         <input
                                             type="text"
                                             autoFocus
                                             placeholder="Buscar..."
-                                            className="w-full outline-none text-sm font-medium py-1 px-2 bg-slate-50 rounded-xl border border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10"
+                                            className="w-full outline-none text-sm font-medium py-1 px-2 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10"
                                             value={searchTerm}
                                             onChange={e => setSearchTerm(e.target.value)}
                                             onClick={e => e.stopPropagation()}
@@ -127,7 +127,7 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
                                     {/* Options */}
                                     <div className="max-h-56 overflow-y-auto">
                                         {filteredOperators.length === 0 ? (
-                                            <p className="p-4 text-center text-xs text-slate-400 font-bold uppercase tracking-widest">Sin resultados</p>
+                                            <p className="p-4 text-center text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">Sin resultados</p>
                                         ) : filteredOperators.map(op => (
                                             <button
                                                 key={op.id}
@@ -137,7 +137,7 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
                                                     setDropdownOpen(false);
                                                     setSearchTerm('');
                                                 }}
-                                                className={`w-full text-left px-4 py-3 text-sm font-bold transition-colors whitespace-normal break-words outline-none focus:bg-indigo-50 focus:text-indigo-600 ${selectedOperatorId === op.id ? 'bg-indigo-50 text-indigo-600' : 'text-slate-700 hover:bg-slate-50'}`}
+                                                className={`w-full text-left px-4 py-3 text-sm font-bold transition-colors whitespace-normal break-words outline-none focus:bg-indigo-50 focus:text-indigo-600 ${selectedOperatorId === op.id ? 'bg-indigo-50 text-indigo-600' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/80'}`}
                                             >
                                                 {op.nombreCompleto}
                                             </button>
@@ -150,7 +150,7 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
 
                     {/* PIN */}
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">
                             <Lock className="w-3 h-3" /> Clave de Acceso (PIN)
                         </label>
                         <input
@@ -160,7 +160,7 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
                             pattern="[0-9]*"
                             maxLength={8}
                             placeholder="••••••"
-                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-4 text-center tracking-widest text-2xl font-black outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
+                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-4 px-4 text-center tracking-widest text-2xl font-black outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
                             value={pin}
                             onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 8))}
                         />

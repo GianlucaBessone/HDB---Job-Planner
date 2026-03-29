@@ -94,7 +94,7 @@ export default function MapPickerContent({ lat, lng, radius, onChange }: MapPick
 
     return (
         <div className="space-y-4">
-            <div className="h-[300px] w-full rounded-2xl overflow-hidden border border-slate-200 relative z-0">
+            <div className="h-[300px] w-full rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 relative z-0">
                 <MapContainer
                     center={currentPos || defaultCenter}
                     zoom={15}
@@ -122,9 +122,9 @@ export default function MapPickerContent({ lat, lng, radius, onChange }: MapPick
                     )}
                 </MapContainer>
             </div>
-            <div className="flex items-center gap-4 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+            <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-2xl border border-slate-100 dark:border-slate-800">
                 <div className="flex-1 space-y-1">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 flex justify-between">
+                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 flex justify-between">
                         <span>Ajustar Radio</span>
                         <span>{mapRadius}m</span>
                     </label>
@@ -135,7 +135,7 @@ export default function MapPickerContent({ lat, lng, radius, onChange }: MapPick
                         step="10"
                         value={mapRadius}
                         onChange={(e) => handleRadiusChange(parseInt(e.target.value))}
-                        className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
+                        className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-primary"
                     />
                 </div>
                 <button
@@ -148,7 +148,7 @@ export default function MapPickerContent({ lat, lng, radius, onChange }: MapPick
                             });
                         }
                     }}
-                    className="p-3 bg-white border border-slate-200 rounded-xl text-primary hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
+                    className="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-primary hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all active:scale-95 shadow-sm"
                 >
                     <MapPin className="w-5 h-5" />
                 </button>

@@ -78,10 +78,10 @@ function QRView() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center">
                 <div className="text-center space-y-4">
                     <Loader2 className="w-10 h-10 text-emerald-600 animate-spin mx-auto" />
-                    <p className="text-slate-500 font-medium">Cargando orden de servicio...</p>
+                    <p className="text-slate-500 dark:text-slate-400 font-medium">Cargando orden de servicio...</p>
                 </div>
             </div>
         );
@@ -89,10 +89,10 @@ function QRView() {
 
     if (error || !os) {
         return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-                <div className="bg-white rounded-3xl p-8 shadow-lg border border-red-100 text-center space-y-4 max-w-sm w-full">
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center p-4">
+                <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-lg border border-red-100 text-center space-y-4 max-w-sm w-full">
                     <AlertCircle className="w-12 h-12 text-red-500 mx-auto" />
-                    <p className="text-slate-600 font-medium">{error}</p>
+                    <p className="text-slate-600 dark:text-slate-300 font-medium">{error}</p>
                     <button onClick={() => router.back()} className="text-sm text-primary font-bold hover:underline">
                         ← Volver
                     </button>
@@ -106,7 +106,7 @@ function QRView() {
             {/* Back */}
             <button
                 onClick={() => router.back()}
-                className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-primary transition-colors"
+                className="flex items-center gap-2 text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-primary transition-colors"
             >
                 <ArrowLeft className="w-4 h-4" />
                 Volver
@@ -168,15 +168,15 @@ function QRView() {
 
             {/* QR Card */}
             {!isFirmada && (
-                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-50">
                         <div className="flex items-center gap-2">
                             <Smartphone className="w-4 h-4 text-emerald-600" />
-                            <h3 className="text-sm font-black text-slate-700 uppercase tracking-wide">
+                            <h3 className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase tracking-wide">
                                 Mostrá este QR al cliente
                             </h3>
                         </div>
-                        <p className="text-xs text-slate-500 font-medium mt-1">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
                             El cliente escanea el código con su celular para ver y firmar la OS
                         </p>
                     </div>
@@ -194,19 +194,19 @@ function QRView() {
                         </div>
 
                         <div className="text-center space-y-1">
-                            <p className="text-xs font-black text-slate-400 uppercase tracking-widest">O compartir link</p>
+                            <p className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">O compartir link</p>
                         </div>
 
                         {/* Link + Copy */}
                         <div className="w-full flex gap-2">
-                            <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-medium text-slate-500 truncate">
+                            <div className="flex-1 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs font-medium text-slate-500 dark:text-slate-400 truncate">
                                 {publicUrl}
                             </div>
                             <button
                                 onClick={copyLink}
                                 className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-xs transition-all shrink-0 ${copied
                                     ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
-                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'
+                                    : 'bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:bg-slate-200 border border-slate-200 dark:border-slate-700'
                                     }`}
                             >
                                 {copied ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -228,19 +228,19 @@ function QRView() {
             )}
 
             {/* OS Summary */}
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-50">
-                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Resumen de la OS</h3>
+                    <h3 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Resumen de la OS</h3>
                 </div>
                 <div className="px-6 py-4 space-y-4">
                     {/* Project info */}
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center">
-                            <Building2 className="w-4 h-4 text-slate-500" />
+                        <div className="w-8 h-8 bg-slate-100 dark:bg-slate-800/50 rounded-lg flex items-center justify-center">
+                            <Building2 className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Cliente</p>
-                            <p className="text-sm font-bold text-slate-700">{clienteName}</p>
+                            <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Cliente</p>
+                            <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{clienteName}</p>
                         </div>
                     </div>
 
@@ -250,11 +250,11 @@ function QRView() {
                             <User className="w-4 h-4 text-indigo-500" />
                         </div>
                         <div className="flex-1">
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Operadores</p>
+                            <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Operadores</p>
                             <div className="space-y-1">
                                 {os.operadores.map(op => (
                                     <div key={op.id} className="flex justify-between text-sm">
-                                        <span className="font-medium text-slate-700">{op.operador.nombreCompleto}</span>
+                                        <span className="font-medium text-slate-700 dark:text-slate-200">{op.operador.nombreCompleto}</span>
                                         <span className="font-black text-indigo-600">{op.horas}h</span>
                                     </div>
                                 ))}
@@ -269,12 +269,12 @@ function QRView() {
                                 <Package className="w-4 h-4 text-amber-500" />
                             </div>
                             <div className="flex-1">
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Materiales</p>
+                                <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Materiales</p>
                                 <div className="space-y-1">
                                     {os.materiales.map(m => (
                                         <div key={m.id} className="flex justify-between text-sm">
-                                            <span className="font-medium text-slate-700">{m.material}</span>
-                                            <span className="font-bold text-slate-500">{m.cantidad} {m.unidadMedida}</span>
+                                            <span className="font-medium text-slate-700 dark:text-slate-200">{m.material}</span>
+                                            <span className="font-bold text-slate-500 dark:text-slate-400">{m.cantidad} {m.unidadMedida}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -288,20 +288,20 @@ function QRView() {
                             <FileText className="w-4 h-4 text-blue-500" />
                         </div>
                         <div className="flex-1">
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Reporte</p>
-                            <p className="text-sm text-slate-600 font-medium whitespace-pre-wrap">{os.reporte}</p>
+                            <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Reporte</p>
+                            <p className="text-sm text-slate-600 dark:text-slate-300 font-medium whitespace-pre-wrap">{os.reporte}</p>
                         </div>
                     </div>
 
                     {/* Comentario Adicional */}
                     {os.comentario && (
                         <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 bg-slate-50 rounded-lg flex items-center justify-center shrink-0 border border-slate-100">
-                                <MessageSquare className="w-4 h-4 text-slate-400" />
+                            <div className="w-8 h-8 bg-slate-50 dark:bg-slate-900/50 rounded-lg flex items-center justify-center shrink-0 border border-slate-100 dark:border-slate-800">
+                                <MessageSquare className="w-4 h-4 text-slate-400 dark:text-slate-500" />
                             </div>
                             <div className="flex-1">
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Comentario Adicional</p>
-                                <p className="text-sm text-slate-600 font-medium whitespace-pre-wrap">{os.comentario}</p>
+                                <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Comentario Adicional</p>
+                                <p className="text-sm text-slate-600 dark:text-slate-300 font-medium whitespace-pre-wrap">{os.comentario}</p>
                             </div>
                         </div>
                     )}
@@ -311,7 +311,7 @@ function QRView() {
             <div className="pb-10 pt-2">
                 <button
                     onClick={() => router.push('/ordenes-servicio')}
-                    className="w-full py-3.5 bg-slate-100 text-slate-600 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all"
+                    className="w-full py-3.5 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all"
                 >
                     Ir al listado de Órdenes de Servicio
                 </button>
@@ -324,7 +324,7 @@ export default function QRPage() {
     return (
         <Suspense fallback={
             <div className="max-w-lg mx-auto space-y-4">
-                {[1, 2, 3].map(i => <div key={i} className="h-40 bg-slate-100 rounded-3xl animate-pulse" />)}
+                {[1, 2, 3].map(i => <div key={i} className="h-40 bg-slate-100 dark:bg-slate-800/50 rounded-3xl animate-pulse" />)}
             </div>
         }>
             <QRView />

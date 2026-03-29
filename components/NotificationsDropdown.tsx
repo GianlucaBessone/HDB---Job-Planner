@@ -199,7 +199,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
             <div className="relative">
                 <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="relative p-2 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors"
+                    className="relative p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-600 dark:text-slate-300 transition-colors"
                 >
                     <Bell className="w-6 h-6" />
                     {unreadCount > 0 && (
@@ -210,9 +210,9 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                 {isOpen && (
                     <>
                         <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)}></div>
-                        <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden ring-1 ring-slate-900/5 origin-top-right animate-in fade-in slide-in-from-top-2">
-                            <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                                <h3 className="font-bold text-slate-800">Notificaciones</h3>
+                        <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 z-50 overflow-hidden ring-1 ring-slate-900/5 origin-top-right animate-in fade-in slide-in-from-top-2">
+                            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50">
+                                <h3 className="font-bold text-slate-800 dark:text-slate-100">Notificaciones</h3>
                                 {unreadCount > 0 && (
                                     <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-md">{unreadCount} nuevas</span>
                                 )}
@@ -220,7 +220,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
 
                             <div className="max-h-96 overflow-y-auto">
                                 {notifications.length === 0 ? (
-                                    <div className="p-8 text-center text-slate-400 text-sm font-medium">
+                                    <div className="p-8 text-center text-slate-400 dark:text-slate-500 text-sm font-medium">
                                         No hay notificaciones
                                     </div>
                                 ) : (
@@ -239,14 +239,14 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                                             <div
                                                 key={notif.id}
                                                 onClick={() => handleNotificationClick(notif)}
-                                                className={`p-4 hover:bg-slate-50 cursor-pointer transition-colors relative flex gap-3 ${!notif.read ? 'bg-primary/5' : ''}`}
+                                                className={`p-4 hover:bg-slate-50 dark:hover:bg-slate-800/80 cursor-pointer transition-colors relative flex gap-3 ${!notif.read ? 'bg-primary/5' : ''}`}
                                             >
                                                 <div className="mt-1 shrink-0">
                                                     {!notif.read && <div className="w-2 h-2 rounded-full bg-primary mt-1.5"></div>}
                                                 </div>
                                                 <div className="flex-1 min-w-0 pr-2">
                                                     <div className="flex flex-col gap-1.5 mb-1.5">
-                                                        <h4 className={`text-sm ${!notif.read ? 'font-bold text-slate-800' : 'font-medium text-slate-600'}`}>
+                                                        <h4 className={`text-sm ${!notif.read ? 'font-bold text-slate-800 dark:text-slate-100' : 'font-medium text-slate-600 dark:text-slate-300'}`}>
                                                             {notif.title}
                                                         </h4>
                                                         {category && (
@@ -255,10 +255,10 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                                                             </div>
                                                         )}
                                                     </div>
-                                                    <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">
                                                         {cleanMessage}
                                                     </p>
-                                                    <span className="text-[10px] text-slate-400 mt-2 block uppercase tracking-wider font-semibold">
+                                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-2 block uppercase tracking-wider font-semibold">
                                                         {formatDate(notif.createdAt)} {formatTime(notif.createdAt)}
                                                     </span>
                                                 </div>
@@ -286,16 +286,16 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                 <>
                     {selectedNotification && selectedNotification.type === 'TIME_MODIFICATION_REQUEST' && (
                         <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                            <div className="bg-white w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden p-8 relative">
-                                <button onClick={() => setSelectedNotification(null)} className="absolute top-4 right-4 p-2 hover:bg-slate-100 rounded-full text-slate-400">
+                            <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden p-8 relative">
+                                <button onClick={() => setSelectedNotification(null)} className="absolute top-4 right-4 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500">
                                     <X className="w-5 h-5" />
                                 </button>
                                 <div className="mb-6">
-                                    <h3 className="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
+                                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2">
                                         <AlertCircle className="w-6 h-6 text-indigo-500" />
                                         {(selectedNotification.metadata || selectedNotification.message?.includes('modificar')) ? 'Modificación Solicitada' : 'Eliminación Solicitada'}
                                     </h3>
-                                    <p className="text-sm text-slate-500 mt-2 font-medium bg-slate-50 p-4 rounded-xl border border-slate-100 italic">
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 font-medium bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 italic">
                                         "{selectedNotification.message.split('Motivo:')[1]?.trim() || 'Sin motivo especificado'}"
                                     </p>
                                 </div>
@@ -305,16 +305,16 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                                         <h4 className="text-xs font-black text-indigo-400 uppercase tracking-widest mb-3">Cambios Solicitados</h4>
                                         <div className="space-y-2">
                                             <div className="flex justify-between text-sm">
-                                                <span className="text-slate-500 font-medium">Hora Inicio:</span>
-                                                <span className="font-bold text-slate-800">{selectedNotification.metadata.horaIngreso || '-'}</span>
+                                                <span className="text-slate-500 dark:text-slate-400 font-medium">Hora Inicio:</span>
+                                                <span className="font-bold text-slate-800 dark:text-slate-100">{selectedNotification.metadata.horaIngreso || '-'}</span>
                                             </div>
                                             <div className="flex justify-between text-sm">
-                                                <span className="text-slate-500 font-medium">Hora Fin:</span>
-                                                <span className="font-bold text-slate-800">{selectedNotification.metadata.horaEgreso || '-'}</span>
+                                                <span className="text-slate-500 dark:text-slate-400 font-medium">Hora Fin:</span>
+                                                <span className="font-bold text-slate-800 dark:text-slate-100">{selectedNotification.metadata.horaEgreso || '-'}</span>
                                             </div>
                                             <div className="flex justify-between text-sm">
-                                                <span className="text-slate-500 font-medium">Horas Extras:</span>
-                                                <span className="font-bold text-slate-800">{selectedNotification.metadata.isExtra ? 'Sí' : 'No'}</span>
+                                                <span className="text-slate-500 dark:text-slate-400 font-medium">Horas Extras:</span>
+                                                <span className="font-bold text-slate-800 dark:text-slate-100">{selectedNotification.metadata.isExtra ? 'Sí' : 'No'}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -327,8 +327,8 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                                     </div>
                                 )}
                                 {user?.role === 'operador' && (
-                                    <div className="p-4 bg-slate-50 rounded-xl border border-dashed border-slate-200 text-center">
-                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Pendiente de aprobación</p>
+                                    <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 text-center">
+                                        <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Pendiente de aprobación</p>
                                     </div>
                                 )}
                             </div>
@@ -337,16 +337,16 @@ export default function NotificationsDropdown({ user }: { user: any }) {
 
                     {selectedNotification && selectedNotification.type === 'PLANNING_ASSIGNMENT' && (
                         <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                            <div className="bg-white w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden p-8 relative max-h-[90vh] overflow-y-auto">
-                                <button onClick={() => setSelectedNotification(null)} className="absolute top-4 right-4 p-2 hover:bg-slate-100 rounded-full text-slate-400 z-10">
+                            <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden p-8 relative max-h-[90vh] overflow-y-auto">
+                                <button onClick={() => setSelectedNotification(null)} className="absolute top-4 right-4 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500 z-10">
                                     <X className="w-5 h-5" />
                                 </button>
                                 <div className="mb-6 pr-8">
-                                    <h3 className="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
+                                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2">
                                         <Calendar className="w-6 h-6 text-primary" />
                                         Planificación del Día
                                     </h3>
-                                    <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-wider">
+                                    <p className="text-xs font-bold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wider">
                                         {(() => {
                                             try {
                                                 const d = new Date(selectedNotification.metadata.fecha + 'T12:00:00');
@@ -361,35 +361,35 @@ export default function NotificationsDropdown({ user }: { user: any }) {
 
                                 {selectedNotification.metadata?.assignments?.length > 0 ? (
                                     <div className="space-y-4 mb-6">
-                                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Tus Proyectos Asignados</h4>
+                                        <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Tus Proyectos Asignados</h4>
                                         {selectedNotification.metadata.assignments.map((assignment: any, i: number) => (
                                             <div key={i} className="bg-primary/5 border border-primary/10 rounded-2xl p-4">
-                                                <h5 className="font-bold text-slate-800 text-lg mb-2">{assignment.projectName}</h5>
-                                                <div className="flex items-center gap-2 text-sm text-slate-600 mb-1">
+                                                <h5 className="font-bold text-slate-800 dark:text-slate-100 text-lg mb-2">{assignment.projectName}</h5>
+                                                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 mb-1">
                                                     <Clock className="w-4 h-4 text-primary shrink-0" />
                                                     <span className="font-medium">{assignment.startTime || '-'} a {assignment.endTime || '-'}</span>
                                                 </div>
                                                 {assignment.companionNames && assignment.companionNames.length > 0 && (
                                                     <div className="mt-3">
-                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Compañeros:</span>
+                                                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1">Compañeros:</span>
                                                         <div className="flex flex-wrap gap-1.5">
                                                             {assignment.companionNames.map((name: string, j: number) => (
-                                                                <span key={j} className="text-xs bg-white text-slate-600 px-2 py-1 rounded-md border border-slate-100 shadow-sm">{name}</span>
+                                                                <span key={j} className="text-xs bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-1 rounded-md border border-slate-100 dark:border-slate-800 shadow-sm">{name}</span>
                                                             ))}
                                                         </div>
                                                     </div>
                                                 )}
                                                 {assignment.note && (
-                                                    <div className="mt-3 bg-white p-3 rounded-xl border border-amber-100">
+                                                    <div className="mt-3 bg-white dark:bg-slate-800 p-3 rounded-xl border border-amber-100">
                                                         <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider block mb-1">Nota de la Asignación:</span>
-                                                        <p className="text-sm text-slate-700 italic">{assignment.note}</p>
+                                                        <p className="text-sm text-slate-700 dark:text-slate-200 italic">{assignment.note}</p>
                                                     </div>
                                                 )}
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
-                                    <p className="text-sm text-slate-500 italic mb-6">No tienes proyectos asignados específicamente, más allá de las notas generales.</p>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 italic mb-6">No tienes proyectos asignados específicamente, más allá de las notas generales.</p>
                                 )}
 
                                 {selectedNotification.metadata?.notes?.length > 0 && (
@@ -404,7 +404,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                                 )}
 
                                 <div className="mt-8">
-                                    <button onClick={() => setSelectedNotification(null)} className="w-full py-4 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-colors">Cerrar</button>
+                                    <button onClick={() => setSelectedNotification(null)} className="w-full py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 rounded-xl font-bold hover:bg-slate-200 transition-colors">Cerrar</button>
                                 </div>
                             </div>
                         </div>
@@ -412,16 +412,16 @@ export default function NotificationsDropdown({ user }: { user: any }) {
 
                     {selectedNotification && selectedNotification.type === 'PLANNING_ASSIGNMENT_SUMMARY' && (
                         <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                            <div className="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden p-8 relative max-h-[90vh] overflow-y-auto">
-                                <button onClick={() => setSelectedNotification(null)} className="absolute top-4 right-4 p-2 hover:bg-slate-100 rounded-full text-slate-400 z-10">
+                            <div className="bg-white dark:bg-slate-800 w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden p-8 relative max-h-[90vh] overflow-y-auto">
+                                <button onClick={() => setSelectedNotification(null)} className="absolute top-4 right-4 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500 z-10">
                                     <X className="w-5 h-5" />
                                 </button>
                                 <div className="mb-6 pr-8">
-                                    <h3 className="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
+                                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2">
                                         <ShieldAlert className="w-6 h-6 text-indigo-500" />
                                         Resumen de Planificación
                                     </h3>
-                                    <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-wider">
+                                    <p className="text-xs font-bold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wider">
                                         {(() => {
                                             try {
                                                 const d = new Date(selectedNotification.metadata.fecha + 'T12:00:00');
@@ -441,7 +441,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                                 </div>
 
                                 <div className="mt-8">
-                                    <button onClick={() => setSelectedNotification(null)} className="w-full py-4 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-colors">Cerrar Resumen</button>
+                                    <button onClick={() => setSelectedNotification(null)} className="w-full py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 rounded-xl font-bold hover:bg-slate-200 transition-colors">Cerrar Resumen</button>
                                 </div>
                             </div>
                         </div>

@@ -8,9 +8,9 @@ const DynamicMap = dynamic<TimeEntryMapViewProps>(
     { 
         ssr: false,
         loading: () => (
-            <div className="h-full w-full bg-slate-50 border border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-2">
+            <div className="h-full w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl flex flex-col items-center justify-center gap-2">
                 <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest italic">Cargando Mapa...</span>
+                <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest italic">Cargando Mapa...</span>
             </div>
         )
     }
