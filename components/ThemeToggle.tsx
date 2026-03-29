@@ -24,7 +24,7 @@ export function ThemeToggle() {
             type="button"
             onClick={() => setTheme(isDark ? 'light' : 'dark')}
             className={`
-                relative flex items-center h-[30px] w-[56px] rounded-full p-1 cursor-pointer transition-colors duration-500 shrink-0 border shadow-inner outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-900
+                relative flex items-center h-[30px] w-[56px] rounded-full p-1 cursor-pointer transition-colors duration-500 shrink-0 border shadow-inner outline-none
                 ${isDark ? 'bg-indigo-500 border-indigo-600' : 'bg-slate-200 border-slate-300'}
             `}
             aria-label="Alternar modo oscuro"
