@@ -620,7 +620,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
     const isFirmada = os.estado === 'firmada';
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 dark:from-slate-900 dark:to-slate-800/50">
             {/* Header */}
             <div className="bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-800 shadow-sm">
                 <div className="max-w-2xl mx-auto px-4 py-5 flex items-center gap-3">
