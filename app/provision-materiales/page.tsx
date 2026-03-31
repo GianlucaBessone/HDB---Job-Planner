@@ -698,33 +698,33 @@ function MaterialesTable({
                 <div className="border-t border-slate-100 dark:border-slate-800 p-4 md:p-5 space-y-4">
                     {materiales.length > 0 ? (
                         <div className="overflow-x-auto -mx-1">
-                            <table className="w-full text-sm min-w-[640px]">
+                            <table className="w-full text-sm min-w-[1000px] table-fixed">
                                 <thead>
-                                    <tr className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                                        <th className="text-left pb-3 pl-2">Cod.</th>
-                                        <th className="text-left pb-3">Material</th>
-                                        <th className="text-center pb-3">Solicitada</th>
-                                        <th className="text-center pb-3">Disponible</th>
-                                        <th className="text-center pb-3">Entregada</th>
-                                        <th className="text-center pb-3">Utilizada</th>
-                                        <th className="text-center pb-3">A devolver</th>
-                                        <th className="text-center pb-3">Estado</th>
-                                        <th className="text-center pb-3 space-x-2">Acciones</th>
+                                    <tr className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800">
+                                        <th className="text-left pb-3 pl-2 w-20">Cod.</th>
+                                        <th className="text-left pb-3 pr-4">Material</th>
+                                        <th className="text-center pb-3 w-24">Solicitada</th>
+                                        <th className="text-center pb-3 w-24">Disponible</th>
+                                        <th className="text-center pb-3 w-24">Entregada</th>
+                                        <th className="text-center pb-3 w-24">Utilizada</th>
+                                        <th className="text-center pb-3 w-28">A devolver</th>
+                                        <th className="text-center pb-3 w-32">Estado</th>
+                                        <th className="text-center pb-3 w-24">Acciones</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100">
+                                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                                     {materiales.map(mat => {
                                         const totalUsado = mat.usos.reduce((a, u) => a + u.cantidadUtilizada, 0);
                                         const aDevolver = mat.devolucion?.cantidadADevolver ?? Math.max(0, mat.cantidadEntregada - totalUsado);
                                         const closed = ['cerrado_ok', 'cerrado_con_reserva'].includes(mat.estado);
                                         return (
-                                            <tr key={mat.id} className="hover:bg-slate-50/50 transition-colors">
-                                                <td className="py-3 pl-2">
+                                            <tr key={mat.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                                                <td className="py-3 pl-2 truncate">
                                                     <span className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500">{mat.codigo || '—'}</span>
                                                 </td>
-                                                <td className="py-3">
+                                                <td className="py-3 pr-4 break-words">
                                                     <span className="font-bold text-slate-700 dark:text-slate-200">{mat.nombre}</span>
-                                                    <span className="ml-1.5 text-[10px] text-slate-400 dark:text-slate-500 font-medium uppercase">{mat.unidad}</span>
+                                                    <span className="ml-1.5 text-[10px] text-slate-400 dark:text-slate-500 font-medium uppercase whitespace-nowrap">{mat.unidad}</span>
                                                 </td>
                                                 <td className="text-center py-3">
                                                     <QtyCell value={mat.cantidadSolicitada} disabled={!isVendedor || closed}

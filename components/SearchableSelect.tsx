@@ -206,7 +206,7 @@ export default function SearchableSelect({
                             autoCapitalize="off"
                             spellCheck={false}
                             placeholder="Buscar..."
-                            className="w-full outline-none text-sm font-medium py-1"
+                            className="w-full outline-none text-sm font-medium py-1 bg-transparent text-slate-700 dark:text-slate-200"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             onClick={(e) => e.stopPropagation()}

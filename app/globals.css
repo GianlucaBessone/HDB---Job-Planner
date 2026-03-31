@@ -93,18 +93,19 @@
   @apply bg-[#0e1621] text-slate-100 border-slate-700;
 }
 
-/* ────────────────────────────────────────────────────────── */
-/* DARK MODE TAILWIND COMPONENT OVERRIDES PARA UI PROFESIONAL */
-/* ────────────────────────────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════════════ */
+/* DARK MODE — COMPREHENSIVE OVERRIDES FOR PROFESSIONAL UI                   */
+/* ════════════════════════════════════════════════════════════════════════════ */
 @layer components {
-  /* Suavizar focos globalmente en dark mode (sin aros brillantes chocantes) */
+
+  /* ── 1. FOCUS RINGS — softer in dark mode ─────────────────────────────── */
   .dark *:focus, 
   .dark *:focus-visible, 
   .dark *:focus-within {
     --tw-ring-color: rgba(99, 102, 241, 0.15) !important;
   }
 
-  /* Evitar sombras blancas/claras abusivas en modales, cards y botones */
+  /* ── 2. SHADOWS — dark-appropriate (less blur, more opacity) ──────────── */
   .dark .shadow-sm, 
   .dark .shadow-md, 
   .dark .shadow-lg, 
@@ -112,59 +113,277 @@
   .dark .shadow-2xl {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
   }
-  .dark .shadow-indigo-500\/20, 
-  .dark .shadow-indigo-500\/30 {
+  .dark .shadow-inner {
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+  }
+  /* Colored shadows → muted */
+  .dark .shadow-indigo-500\/20, .dark .shadow-indigo-500\/30,
+  .dark .shadow-indigo-200 {
     box-shadow: 0 4px 15px rgba(99, 102, 241, 0.08) !important;
   }
+  .dark .shadow-primary\/20 {
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.08) !important;
+  }
+  .dark .shadow-green-600\/10, .dark .shadow-green-600\/30 {
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.08) !important;
+  }
+  .dark .shadow-emerald-200 {
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.06) !important;
+  }
+  .dark .shadow-blue-200 {
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.06) !important;
+  }
+  .dark .shadow-amber-200, .dark .shadow-amber-500\/20 {
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.06) !important;
+  }
+  .dark .shadow-red-200 {
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.06) !important;
+  }
+  .dark .shadow-rose-200 {
+    box-shadow: 0 4px 12px rgba(244, 63, 94, 0.06) !important;
+  }
 
-  /* Fallbacks de fondos de listas y barras de filtros omitidos en el refactor */
-  .dark .bg-slate-50\/50, .dark .bg-white\/50 {
-    @apply bg-slate-800/40 border-slate-700/50 !important;
+  /* ── 3. WHITE/LIGHT BACKGROUND LEAKS ──────────────────────────────────── */
+  /* Surfaces that use light colors without dark: variants */
+  .dark .bg-white\/90 {
+    background-color: rgba(30, 41, 59, 0.9) !important;
+  }
+  .dark .bg-white\/80 {
+    background-color: rgba(30, 41, 59, 0.8) !important;
+  }
+  .dark .bg-white\/70 {
+    background-color: rgba(30, 41, 59, 0.7) !important;
+  }
+  .dark .bg-white\/50 {
+    background-color: rgba(30, 41, 59, 0.5) !important;
+  }
+  .dark .bg-red-50\/90 {
+    background-color: rgba(244, 63, 94, 0.12) !important;
+  }
+  .dark .bg-slate-50\/50 {
+    @apply bg-slate-800/40 !important;
   }
   .dark .bg-slate-100\/50 {
-    @apply bg-slate-800/60 border-slate-700/50 !important;
+    @apply bg-slate-800/60 !important;
   }
   .dark .bg-slate-200\/50 {
-    @apply bg-slate-700/60 border-slate-600/50 !important;
+    @apply bg-slate-700/60 !important;
+  }
+  .dark .bg-slate-100\/60 {
+    @apply bg-slate-800/50 !important;
+  }
+  .dark .bg-slate-100 {
+    @apply bg-slate-800/50 !important;
   }
 
-  /* Encabezados de Tablas consistentes (Vista de Tiempos) */
+  /* ── 4. TABLES ────────────────────────────────────────────────────────── */
+  /* Header rows */
   .dark table thead tr, 
   .dark table thead th {
     @apply bg-slate-800/90 border-slate-700 text-slate-300 !important;
   }
+  /* Body row dividers */
+  .dark .divide-slate-50 > :not([hidden]) ~ :not([hidden]) {
+    border-color: rgba(51, 65, 85, 0.5) !important;
+  }
+  .dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
+    border-color: rgba(51, 65, 85, 0.5) !important;
+  }
+  /* Hover on table rows */
+  .dark .hover\:bg-slate-50\/50:hover {
+    @apply bg-slate-700/30 !important;
+  }
+  .dark table tbody tr:hover {
+    background-color: rgba(51, 65, 85, 0.25) !important;
+  }
 
-  /* Fix de colores de status (Success, Error, Warning, Info) que en dark mode se veían blancos o muy claros */
-  /* Índigo / Primario */
+  /* ── 5. BORDERS — light borders that leak ─────────────────────────────── */
+  .dark .border-slate-50 {
+    @apply border-slate-700/50 !important;
+  }
+  .dark .border-slate-100 {
+    @apply border-slate-700/50 !important;
+  }
+  .dark .border-white\/10 {
+    border-color: rgba(148, 163, 184, 0.08) !important;
+  }
+  .dark .border-white\/20 {
+    border-color: rgba(148, 163, 184, 0.1) !important;
+  }
+  .dark .hover\:border-slate-100:hover {
+    @apply border-slate-600/50 !important;
+  }
+  .dark .hover\:border-slate-200:hover {
+    @apply border-slate-600 !important;
+  }
+  .dark .hover\:border-slate-300:hover {
+    @apply border-slate-500 !important;
+  }
+
+  /* ── 6. SEMANTIC COLORS: All families ─────────────────────────────────── */
+
+  /* ── Indigo ── */
   .dark .bg-indigo-50 { @apply bg-indigo-500/10 text-indigo-300 !important; }
+  .dark .bg-indigo-50\/50 { background-color: rgba(99, 102, 241, 0.06) !important; }
   .dark .bg-indigo-100 { @apply bg-indigo-500/20 text-indigo-300 border-indigo-500/30 !important; }
-  .dark .text-indigo-600, .dark .text-indigo-700 { @apply text-indigo-400 !important; }
-  .dark .border-indigo-100, .dark .border-indigo-200 { @apply border-indigo-500/20 !important; }
+  .dark .bg-indigo-100\/50 { background-color: rgba(99, 102, 241, 0.12) !important; }
+  .dark .text-indigo-600, .dark .text-indigo-700, .dark .text-indigo-900 { @apply text-indigo-400 !important; }
+  .dark .border-indigo-100, .dark .border-indigo-200, .dark .border-indigo-100\/50 { @apply border-indigo-500/20 !important; }
   .dark .hover\:bg-indigo-50:hover { @apply bg-indigo-500/20 !important; }
+  .dark .hover\:bg-indigo-100:hover { @apply bg-indigo-500/25 !important; }
   .dark .focus\:bg-indigo-50:focus { @apply bg-indigo-500/20 !important; }
   .dark .bg-indigo-50\/30 { @apply bg-indigo-500/5 !important; }
+  .dark .focus\:ring-indigo-100 { --tw-ring-color: rgba(99, 102, 241, 0.12) !important; }
 
-  /* Ámbar / Warning */
+  /* ── Amber / Warning ── */
   .dark .bg-amber-50 { @apply bg-amber-500/10 text-amber-400 !important; }
   .dark .bg-amber-100 { @apply bg-amber-500/20 text-amber-300 border-amber-500/30 !important; }
-  .dark .text-amber-600, .dark .text-amber-700, .dark .text-amber-800 { @apply text-amber-400 !important; }
+  .dark .text-amber-600, .dark .text-amber-700, .dark .text-amber-800, .dark .text-amber-900 { @apply text-amber-400 !important; }
   .dark .border-amber-100, .dark .border-amber-200 { @apply border-amber-500/20 !important; }
   .dark .hover\:bg-amber-50:hover { @apply bg-amber-500/20 !important; }
   .dark .bg-amber-50\/30 { @apply bg-amber-500/5 !important; }
 
-  /* Esmeralda / Success */
+  /* ── Emerald / Success ── */
   .dark .bg-emerald-50 { @apply bg-emerald-500/10 text-emerald-400 border-emerald-500/20 !important; }
+  .dark .bg-emerald-50\/50 { background-color: rgba(16, 185, 129, 0.06) !important; }
   .dark .bg-emerald-100 { @apply bg-emerald-500/20 text-emerald-300 border-emerald-500/30 !important; }
-  .dark .text-emerald-500, .dark .text-emerald-600, .dark .text-emerald-700, .dark .text-emerald-800 { @apply text-emerald-400 !important; }
+  .dark .text-emerald-600, .dark .text-emerald-700, .dark .text-emerald-800 { @apply text-emerald-400 !important; }
   .dark .border-emerald-100, .dark .border-emerald-200 { @apply border-emerald-500/20 !important; }
   .dark .hover\:bg-emerald-50:hover, .dark .hover\:bg-emerald-100:hover { @apply bg-emerald-500/20 !important; }
 
-  /* Rosa / Error (Negativos no chocantes) */
+  /* ── Rose / Error ── */
   .dark .bg-rose-50 { @apply bg-rose-500/10 text-rose-400 border-rose-500/20 !important; }
   .dark .bg-rose-100 { @apply bg-rose-500/20 text-rose-300 border-rose-500/30 !important; }
   .dark .text-rose-500, .dark .text-rose-600, .dark .text-rose-700, .dark .text-rose-800 { @apply text-rose-400 !important; }
   .dark .border-rose-100, .dark .border-rose-200 { @apply border-rose-500/20 !important; }
   .dark .hover\:bg-rose-50:hover, .dark .hover\:bg-rose-100:hover { @apply bg-rose-500/20 !important; }
+
+  /* ── Blue ── */
+  .dark .bg-blue-50 { @apply bg-blue-500/10 text-blue-400 !important; }
+  .dark .bg-blue-100 { @apply bg-blue-500/20 text-blue-300 border-blue-500/30 !important; }
+  .dark .text-blue-600, .dark .text-blue-700 { @apply text-blue-400 !important; }
+  .dark .border-blue-100, .dark .border-blue-200 { @apply border-blue-500/20 !important; }
+  .dark .hover\:bg-blue-50:hover { @apply bg-blue-500/20 !important; }
+
+  /* ── Violet ── */
+  .dark .bg-violet-50 { @apply bg-violet-500/10 text-violet-400 !important; }
+  .dark .bg-violet-100 { @apply bg-violet-500/20 text-violet-300 border-violet-500/30 !important; }
+  .dark .text-violet-600, .dark .text-violet-700 { @apply text-violet-400 !important; }
+  .dark .border-violet-100, .dark .border-violet-200 { @apply border-violet-500/20 !important; }
+
+  /* ── Red ── */
+  .dark .bg-red-50 { @apply bg-red-500/10 text-red-400 !important; }
+  .dark .bg-red-100 { @apply bg-red-500/20 text-red-300 border-red-500/30 !important; }
+  .dark .text-red-600, .dark .text-red-700, .dark .text-red-700 { @apply text-red-400 !important; }
+  .dark .text-red-800 { @apply text-red-300 !important; }
+  .dark .border-red-100, .dark .border-red-200 { @apply border-red-500/20 !important; }
+
+  /* ── Fuchsia (used in notification categories) ── */
+  .dark .bg-fuchsia-100 { @apply bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/30 !important; }
+  .dark .text-fuchsia-700 { @apply text-fuchsia-400 !important; }
+  .dark .border-fuchsia-200 { @apply border-fuchsia-500/20 !important; }
+
+  /* ── Cyan / Teal ── */
+  .dark .bg-cyan-50 { @apply bg-cyan-500/10 text-cyan-400 !important; }
+  .dark .bg-teal-50 { @apply bg-teal-500/10 text-teal-400 !important; }
+
+  /* ── 7. TEXT COLOR FIXES ───────────────────────────────────────────────── */
+  /* Hard-coded light-mode text colors that fail in dark */
+  .dark .text-emerald-700.font-black { @apply text-emerald-400 !important; }
+  .dark .text-amber-700.font-black { @apply text-amber-400 !important; }
+  .dark .text-rose-700.font-black { @apply text-rose-400 !important; }
+  .dark .text-slate-800 { @apply text-slate-200 !important; }
+  .dark .text-slate-700 { @apply text-slate-300 !important; }
+  .dark .text-slate-600 { @apply text-slate-400 !important; }
+  .dark .text-slate-900 { @apply text-slate-100 !important; }
+
+  /* ── 8. SVG FILLS — donut charts bg ring ──────────────────────────────── */
+  .dark svg circle[stroke="#f1f5f9"] {
+    stroke: #334155 !important;
+  }
+
+  /* ── 9. NOTIFICATION BADGE — border against dark header ───────────────── */
+  .dark .border-2.border-white {
+    @apply border-slate-800 !important;
+  }
+
+  /* ── 10. SELECT/OPTION — native elements need explicit dark styling ──── */
+  .dark select option {
+    background-color: #1e293b !important;
+    color: #e2e8f0 !important;
+  }
+
+  /* ── 11. SCROLLBAR — dark mode ────────────────────────────────────────── */
+  .dark ::-webkit-scrollbar-thumb {
+    @apply bg-slate-700 hover:bg-slate-600 !important;
+  }
+  .dark ::-webkit-scrollbar-track {
+    @apply bg-transparent !important;
+  }
+
+  /* ── 12. SEARCH INPUT INSIDE DROPDOWNS (missing dark bg) ─────────────── */
+  .dark input.outline-none:not([class*="dark:"]) {
+    color: #e2e8f0;
+  }
+  .dark input::placeholder {
+    color: #64748b !important;
+  }
+  .dark textarea::placeholder {
+    color: #64748b !important;
+  }
+
+  /* ── 13. HOVER STATES — light hovers that don't adapt ─────────────────── */
+  .dark .hover\:bg-slate-50:hover {
+    @apply bg-slate-700/40 !important;
+  }
+  .dark .hover\:bg-slate-100:hover {
+    @apply bg-slate-700/50 !important;
+  }
+  .dark .hover\:bg-slate-200:hover {
+    @apply bg-slate-700/60 !important;
+  }
+  .dark .hover\:bg-white:hover {
+    @apply bg-slate-700/50 !important;
+  }
+  .dark .hover\:bg-rose-100:hover {
+    @apply bg-rose-500/20 !important;
+  }
+  .dark .hover\:bg-amber-100:hover {
+    @apply bg-amber-500/20 !important;
+  }
+  .dark .hover\:bg-indigo-100:hover {
+    @apply bg-indigo-500/20 !important;
+  }
+  .dark .hover\:bg-red-50:hover {
+    @apply bg-red-500/15 !important;
+  }
+
+  /* ── 14. BORDER-T / BORDER-B dividers that use light colors ──────────── */
+  .dark .border-t.border-slate-50,
+  .dark .border-b.border-slate-50 {
+    @apply border-slate-700/50 !important;
+  }
+
+  /* ── 15. DISABLED STATES ──────────────────────────────────────────────── */
+  .dark .disabled\:opacity-50[disabled] {
+    opacity: 0.4 !important;
+  }
+
+  /* ── 16. PRIMARY/10 background ────────────────────────────────────────── */
+  .dark .bg-primary\/5 {
+    background-color: rgba(99, 102, 241, 0.05) !important;
+  }
+  .dark .bg-primary\/10 {
+    background-color: rgba(99, 102, 241, 0.12) !important;
+  }
+  .dark .bg-primary\/20 {
+    background-color: rgba(99, 102, 241, 0.2) !important;
+  }
+
+  /* ── 17. HOVER SHADOW — prevent bright shadow on hover in dark ────────── */
+  .dark .hover\:shadow-xl:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5) !important;
+  }
 }
 /* ────────────────────────────────────────────────────────── */
 

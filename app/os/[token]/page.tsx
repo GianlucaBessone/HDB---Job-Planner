@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 're
 import { CheckCircle2, Loader2, FileText, User, Package, Clock, AlertCircle, PenLine, X, Star, MessageSquare, ThumbsUp, Smile, Download } from 'lucide-react';
 import CodeBadge from '@/components/CodeBadge';
 import { formatDate, formatDateTime, formatTime } from '@/lib/formatDate';
+import { useTheme } from 'next-themes';
 
 interface Firma {
     nombre: string;
@@ -40,12 +41,43 @@ export interface SignatureRef {
     getDataUrl: () => string;
 }
 
-// ─── Signature Canvas ──────────────────────────────────────────────────────────
-const SignatureCanvas = forwardRef<SignatureRef, {}>((props, ref) => {
+// ─── Signature Canvas (Fullscreen-optimized, dark-mode aware) ──────────────────
+const SignatureCanvas = forwardRef<SignatureRef, { fullscreen?: boolean }>((props, ref) => {
+    const { fullscreen = false } = props;
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const [isDrawing, setIsDrawing] = useState(false);
     const [hasStrokes, setHasStrokes] = useState(false);
     const lastPos = useRef<{ x: number; y: number } | null>(null);
+
+    // Dynamic canvas sizing
+    useEffect(() => {
+        const resizeCanvas = () => {
+            const container = containerRef.current;
+            const canvas = canvasRef.current;
+            if (!container || !canvas) return;
+            
+            // If user has drawn, resizing will wipe the canvas buffer. Avoid this.
+            if (canvas.getAttribute('data-has-strokes') === 'true') return;
+
+            const rect = container.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+            }
+        };
+
+        resizeCanvas();
+        // Resize again after the modal open transition settles
+        const timeout = setTimeout(resizeCanvas, 350);
+        window.addEventListener('resize', resizeCanvas);
+        
+        return () => {
+            clearTimeout(timeout);
+            window.removeEventListener('resize', resizeCanvas);
+        };
+    }, []);
 
     useImperativeHandle(ref, () => ({
         clear: clear,
@@ -58,8 +90,11 @@ const SignatureCanvas = forwardRef<SignatureRef, {}>((props, ref) => {
     const getPos = (e: React.MouseEvent | React.TouchEvent) => {
         const canvas = canvasRef.current!;
         const rect = canvas.getBoundingClientRect();
+        
+        // Compute correct scale using internal resolution vs CSS resolution
         const scaleX = canvas.width / rect.width;
         const scaleY = canvas.height / rect.height;
+
         if ('touches' in e) {
             return {
                 x: (e.touches[0].clientX - rect.left) * scaleX,
@@ -77,6 +112,8 @@ const SignatureCanvas = forwardRef<SignatureRef, {}>((props, ref) => {
         const canvas = canvasRef.current!;
         const ctx = canvas.getContext('2d')!;
         const pos = getPos(e);
+        
+        canvas.setAttribute('data-has-strokes', 'true');
         ctx.beginPath();
         ctx.moveTo(pos.x, pos.y);
         lastPos.current = pos;
@@ -90,7 +127,11 @@ const SignatureCanvas = forwardRef<SignatureRef, {}>((props, ref) => {
         const canvas = canvasRef.current!;
         const ctx = canvas.getContext('2d')!;
         const pos = getPos(e);
-        ctx.lineWidth = 3;
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        
+        // Always draw with dark slate ink. The canvas has `dark:invert` so it renders 
+        // as white in dark mode visually, but saves as dark ink for the PDFs.
+        ctx.lineWidth = 3 * dpr;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         ctx.strokeStyle = '#0f172a';
@@ -109,18 +150,23 @@ const SignatureCanvas = forwardRef<SignatureRef, {}>((props, ref) => {
     const clear = () => {
         const canvas = canvasRef.current!;
         const ctx = canvas.getContext('2d')!;
+        // clearRect needs to wipe the entire internal buffer correctly
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.setAttribute('data-has-strokes', 'false');
         setHasStrokes(false);
     };
 
     return (
-        <div className="relative group">
-            <div className="relative border-2 border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-900/50 transition-all focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/20">
+        <div className="relative group flex-1 flex flex-col">
+            <div
+                ref={containerRef}
+                className={`relative border-2 border-slate-200 dark:border-slate-600 overflow-hidden bg-white dark:bg-slate-800 transition-all focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/20 ${
+                    fullscreen ? 'rounded-2xl flex-1' : 'rounded-2xl aspect-[3/2]'
+                }`}
+            >
                 <canvas
                     ref={canvasRef}
-                    width={600}
-                    height={400}
-                    className="w-full aspect-[3/2] touch-none cursor-crosshair block"
+                    className="w-full h-full touch-none cursor-crosshair block absolute inset-0 dark:invert transition-all"
                     onMouseDown={startDraw}
                     onMouseMove={draw}
                     onMouseUp={endDraw}
@@ -130,18 +176,20 @@ const SignatureCanvas = forwardRef<SignatureRef, {}>((props, ref) => {
                     onTouchEnd={endDraw}
                 />
                 {!hasStrokes && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-50">
-                        <PenLine className="w-8 h-8 text-slate-400 dark:text-slate-500 mb-2" />
-                        <p className="text-slate-500 dark:text-slate-400 font-bold text-sm">Firma aquí</p>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-40">
+                        <PenLine className="w-10 h-10 text-slate-400 dark:text-slate-500 mb-2" />
+                        <p className="text-slate-400 dark:text-slate-500 font-bold text-base">Firmá aquí</p>
+                        <p className="text-slate-300 dark:text-slate-600 font-medium text-xs mt-1">Dibujá con el dedo o el mouse</p>
                     </div>
                 )}
-                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-48 h-px bg-slate-300 pointer-events-none" />
+                {/* Baseline guide */}
+                <div className={`absolute left-[10%] right-[10%] h-px bg-slate-200 dark:bg-slate-600 pointer-events-none ${fullscreen ? 'bottom-[20%]' : 'bottom-[22%]'}`} />
             </div>
             {hasStrokes && (
                 <button
                     onClick={clear}
                     type="button"
-                    className="absolute top-3 right-3 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm text-slate-500 dark:text-slate-400 hover:text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm border border-slate-200 dark:border-slate-700 transition-all active:scale-95"
+                    className="absolute top-3 right-3 bg-white/90 dark:bg-slate-700/90 backdrop-blur-sm text-slate-500 dark:text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm border border-slate-200 dark:border-slate-600 transition-all active:scale-95 z-10"
                 >
                     Limpiar
                 </button>
@@ -496,8 +544,14 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
+    // Theme for canvas stroke
+    const { theme, systemTheme } = useTheme();
+    const currentTheme = theme === 'system' ? systemTheme : theme;
+    const isDark = currentTheme === 'dark';
+
     // Firma flow
     const [showFirmaModal, setShowFirmaModal] = useState(false);
+    const [firmaStep, setFirmaStep] = useState(1);
     const [firmaNombre, setFirmaNombre] = useState('');
     const [firmaDni, setFirmaDni] = useState('');
     const [submittingFirma, setSubmittingFirma] = useState(false);
@@ -530,11 +584,20 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
         }
     };
 
-    const handleConfirm = async () => {
+    const handleNextStep = () => {
         if (!firmaNombre.trim() || !firmaDni.trim()) {
             setFirmaError('Debe completar su nombre y DNI.');
             return;
         }
+        setFirmaError('');
+        setFirmaStep(2);
+        // Ensure canvas clears after state update gives it a size
+        setTimeout(() => {
+            if (sigRef.current) sigRef.current.clear();
+        }, 150);
+    };
+
+    const handleConfirm = async () => {
         if (!sigRef.current || sigRef.current.isEmpty()) {
             setFirmaError('Debe dibujar su firma en el recuadro.');
             return;
@@ -578,10 +641,8 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
         setFirmaNombre('');
         setFirmaDni('');
         setFirmaError('');
+        setFirmaStep(1);
         setShowFirmaModal(true);
-        setTimeout(() => {
-            if (sigRef.current) sigRef.current.clear();
-        }, 100);
     };
 
     const handleDownload = () => {
@@ -817,97 +878,137 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                 )}
             </div>
 
-            {/* Firma Modal */}
+            {/* Firma Modal (2-Step) */}
             {showFirmaModal && (
-                <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 backdrop-blur-sm transition-all">
-                    <div className="bg-white dark:bg-slate-800 w-full max-w-lg rounded-t-3xl shadow-2xl p-6 sm:p-8 space-y-6 animate-in slide-in-from-bottom-4 duration-300 max-h-[92dvh] overflow-y-auto overscroll-contain">
-                        <div className="flex items-center justify-between">
-                            <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">Firmar Orden de Servicio</h3>
-                            <button onClick={() => setShowFirmaModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
+                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-sm transition-all focus:outline-none">
+                    <div className={`bg-white dark:bg-slate-800 shadow-2xl space-y-6 animate-in slide-in-from-bottom-4 duration-300 flex flex-col w-full overscroll-contain
+                        ${firmaStep === 2 
+                            ? 'h-[90dvh] sm:h-[85vh] sm:max-w-2xl sm:rounded-3xl rounded-t-3xl p-4 sm:p-6' 
+                            : 'max-h-[85dvh] max-w-lg sm:rounded-3xl rounded-t-3xl p-6 sm:p-8 overflow-y-auto'
+                        }`}
+                    >
+                        <div className="flex items-center justify-between shrink-0">
+                            <div>
+                                <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">
+                                    {firmaStep === 1 ? 'Datos del Firmante' : 'Firma de Conformidad'}
+                                </h3>
+                                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">
+                                    Paso {firmaStep} de 2
+                                </p>
+                            </div>
+                            <button onClick={() => setShowFirmaModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors self-start shrink-0">
                                 <X className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                             </button>
                         </div>
 
-                        <div className="space-y-6">
-                            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Por favor ingresá tus datos y firmá en el cuadro inferior.</p>
+                        {firmaStep === 1 ? (
+                            <div className="space-y-6 flex-1">
+                                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                                    Por favor ingresá tu nombre y DNI para validar la firma de la orden de servicio.
+                                </p>
 
-                            <div className="space-y-4">
-                                <div className="space-y-1.5 focus-within:z-10 relative">
-                                    <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Nombre Completo *</label>
-                                    <input
-                                        type="text"
-                                        value={firmaNombre}
-                                        onChange={e => {
-                                            setFirmaNombre(e.target.value);
-                                            if (firmaError) setFirmaError('');
-                                        }}
-                                        onFocus={e => {
-                                            setTimeout(() => {
-                                                e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                            }, 300);
-                                        }}
-                                        placeholder="Ingresá tu nombre completo"
-                                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3.5 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all"
+                                <div className="space-y-4">
+                                    <div className="space-y-1.5 focus-within:z-10 relative">
+                                        <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Nombre Completo *</label>
+                                        <input
+                                            type="text"
+                                            value={firmaNombre}
+                                            onChange={e => {
+                                                setFirmaNombre(e.target.value);
+                                                if (firmaError) setFirmaError('');
+                                            }}
+                                            onFocus={e => {
+                                                setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+                                            }}
+                                            placeholder="Ingresá tu nombre completo"
+                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3.5 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all dark:focus:bg-slate-800"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5 focus-within:z-10 relative">
+                                        <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">DNI *</label>
+                                        <input
+                                            type="text"
+                                            inputMode="numeric"
+                                            value={firmaDni}
+                                            onChange={e => {
+                                                setFirmaDni(e.target.value);
+                                                if (firmaError) setFirmaError('');
+                                            }}
+                                            onFocus={e => {
+                                                setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+                                            }}
+                                            placeholder="Ej: 12345678"
+                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3.5 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all dark:focus:bg-slate-800"
+                                        />
+                                    </div>
+                                </div>
+
+                                {firmaError && (
+                                    <div className="bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-2">
+                                        <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                                        <p>{firmaError}</p>
+                                    </div>
+                                )}
+
+                                <div className="flex gap-3 pt-2 shrink-0">
+                                    <button
+                                        onClick={() => setShowFirmaModal(false)}
+                                        type="button"
+                                        className="flex-1 py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 active:scale-95 transition-all"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        onClick={handleNextStep}
+                                        type="button"
+                                        className="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-black text-sm shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                    >
+                                        Siguiente Paso
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-4 flex-1 flex flex-col min-h-0">
+                                <div className="flex-1 flex flex-col min-h-0 relative">
+                                    <SignatureCanvas 
+                                        ref={sigRef} 
+                                        fullscreen={true} 
                                     />
                                 </div>
-                                <div className="space-y-1.5 focus-within:z-10 relative">
-                                    <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">DNI *</label>
-                                    <input
-                                        type="text"
-                                        inputMode="numeric"
-                                        value={firmaDni}
-                                        onChange={e => {
-                                            setFirmaDni(e.target.value);
-                                            if (firmaError) setFirmaError('');
-                                        }}
-                                        onFocus={e => {
-                                            setTimeout(() => {
-                                                e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                            }, 300);
-                                        }}
-                                        placeholder="Ej: 12345678"
-                                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3.5 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all"
-                                    />
+
+                                {firmaError && (
+                                    <div className="bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-2 shrink-0">
+                                        <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                                        <p>{firmaError}</p>
+                                    </div>
+                                )}
+
+                                <div className="flex gap-3 shrink-0">
+                                    <button
+                                        onClick={() => { setFirmaError(''); setFirmaStep(1); }}
+                                        type="button"
+                                        className="flex-1 py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 active:scale-95 transition-all"
+                                    >
+                                        Volver Atrás
+                                    </button>
+                                    <button
+                                        onClick={handleConfirm}
+                                        disabled={submittingFirma}
+                                        type="button"
+                                        className="flex-[2] py-4 bg-emerald-600 text-white rounded-2xl font-black text-sm shadow-lg shadow-emerald-200 hover:bg-emerald-700 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:active:scale-100"
+                                    >
+                                        {submittingFirma ? (
+                                            <>
+                                                <Loader2 className="w-5 h-5 animate-spin" />
+                                                Confirmando...
+                                            </>
+                                        ) : (
+                                            'Finalizar Firma'
+                                        )}
+                                    </button>
                                 </div>
                             </div>
-
-                            <div className="space-y-2">
-                                <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Dibujá tu firma *</label>
-                                <SignatureCanvas ref={sigRef} />
-                            </div>
-
-                            {firmaError && (
-                                <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm font-bold flex items-center gap-2">
-                                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                                    <p>{firmaError}</p>
-                                </div>
-                            )}
-
-                            <div className="flex gap-3 pt-2">
-                                <button
-                                    onClick={() => setShowFirmaModal(false)}
-                                    type="button"
-                                    className="flex-1 py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 active:scale-95 transition-all"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    onClick={handleConfirm}
-                                    disabled={submittingFirma}
-                                    type="button"
-                                    className="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-black text-sm shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:active:scale-100"
-                                >
-                                    {submittingFirma ? (
-                                        <>
-                                            <Loader2 className="w-5 h-5 animate-spin" />
-                                            Guardando...
-                                        </>
-                                    ) : (
-                                        'Confirmar Firma'
-                                    )}
-                                </button>
-                            </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             )}

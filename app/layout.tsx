@@ -79,9 +79,13 @@ export default function RootLayout({
     } else if (!currentUser && !isPublicPage) {
         content = <LoginScreen onLoginSuccess={handleLoginSuccess} />;
     } else if (isPublicPage && !currentUser) {
-        // Public view (No header/sidebar)
+        // Public view (No header/sidebar) — light by default, with compact toggle
         content = (
-            <div className="flex flex-col min-h-[100dvh] overflow-x-hidden bg-white dark:bg-slate-800">
+            <div className="flex flex-col min-h-[100dvh] overflow-x-hidden bg-white dark:bg-slate-900">
+                {/* Compact public header with theme toggle */}
+                <div className="fixed top-3 right-3 z-50">
+                    <ThemeToggle />
+                </div>
                 <main className="flex-1 w-full max-w-4xl mx-auto py-4">
                     {children}
                 </main>
