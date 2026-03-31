@@ -15,11 +15,25 @@ export async function GET(req: Request) {
                 project: { select: { id: true, nombre: true, codigoProyecto: true, client: { select: { nombre: true } }, cliente: true } },
                 materiales: true,
                 operadores: { include: { operador: { select: { id: true, nombreCompleto: true } } } },
-                firma: true,
+                firma: {
+                    select: {
+                        id: true,
+                        nombre: true,
+                        dni: true,
+                        fechaFirma: true
+                        // EXCLUDING firmaImagen intentionally to save payload size (~100KB per OS) and drop TTFB.
+                    }
+                },
             },
             orderBy: { fechaCreacion: 'desc' },
         });
-        return NextResponse.json(ordenes);
+        
+        // Use stale-while-revalidate to cache the heavy DB query and drop API TTFB to 0ms for subsequent requests
+        return NextResponse.json(ordenes, {
+            headers: {
+                'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=30',
+            },
+        });
     } catch (e) {
         console.error('GET ordenes-servicio error:', e);
         return NextResponse.json({ error: 'Error al obtener órdenes de servicio', details: String(e) }, { status: 500 });

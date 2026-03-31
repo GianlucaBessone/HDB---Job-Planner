@@ -13,7 +13,12 @@ import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import CodeBadge from '@/components/CodeBadge';
-import OSCobroModal from '@/components/OSCobroModal';
+import dynamic from 'next/dynamic';
+
+const OSCobroModal = dynamic(() => import('@/components/OSCobroModal'), { 
+    ssr: false, 
+    loading: () => <div className="hidden" /> 
+});
 
 interface OrdenServicio {
     id: string;
@@ -55,6 +60,27 @@ function QRImage({ url }: { url: string }) {
 
 function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) {
     const printRef = useRef<HTMLDivElement>(null);
+    const [firmaImageUrl, setFirmaImageUrl] = useState<string | null>(os.firma?.firmaImagen || null);
+    const [loadingFirma, setLoadingFirma] = useState<boolean>(!firmaImageUrl && os.estado === 'firmada');
+
+    useEffect(() => {
+        let mounted = true;
+        if (os.estado === 'firmada' && !firmaImageUrl) {
+            safeApiRequest(`/api/ordenes-servicio/${os.id}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (mounted && data.firma?.firmaImagen) {
+                        setFirmaImageUrl(data.firma.firmaImagen);
+                    }
+                })
+                .catch(e => console.error("Error fetching signature:", e))
+                .finally(() => {
+                    if (mounted) setLoadingFirma(false);
+                });
+        }
+        return () => { mounted = false; };
+    }, [os.estado, os.id, firmaImageUrl]);
+
     const publicUrl = typeof window !== 'undefined'
         ? `${window.location.origin}/os/${os.linkPublico}`
         : `/os/${os.linkPublico}`;
@@ -156,7 +182,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                         <div class="field"><label>DNI</label><p>${os.firma.dni}</p></div>
                         <div class="field"><label>Fecha de firma</label><p>${formatDateTime(os.firma.fechaFirma)}</p></div>
                     </div>
-                    <img src="${os.firma.firmaImagen}" alt="Firma" />
+                    ${firmaImageUrl ? `<img src="${firmaImageUrl}" alt="Firma" />` : '<p style="font-size:10px;color:gray;">Firma no cargada</p>'}
                 </div>
             </div>` : ''}
 
@@ -363,8 +389,14 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-2">Firma</p>
-                                    <div className="bg-white dark:bg-slate-800 rounded-xl border border-emerald-100 p-2 inline-block">
-                                        <img src={os.firma.firmaImagen} alt="Firma" className="max-h-24" />
+                                    <div className="bg-white dark:bg-slate-800 rounded-xl border border-emerald-100 p-2 flex items-center justify-center min-w-[150px] min-h-[80px] w-fit">
+                                        {loadingFirma ? (
+                                            <Loader2 className="w-6 h-6 text-emerald-500 animate-spin" />
+                                        ) : firmaImageUrl ? (
+                                            <img src={firmaImageUrl} alt="Firma" className="max-h-24" />
+                                        ) : (
+                                            <span className="text-xs font-medium text-slate-400">Sin imagen de firma</span>
+                                        )}
                                     </div>
                                 </div>
                             </div>

@@ -12,7 +12,11 @@ export async function GET(req: Request) {
         const maestro = await prisma.materialMaestro.findUnique({
             where: { codigo: searchCodigo }
         });
-        return NextResponse.json(maestro);
+        return NextResponse.json(maestro, {
+            headers: {
+                'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+            },
+        });
     }
 
     if (!proyectoId) return NextResponse.json({ error: 'proyectoId requerido' }, { status: 400 });

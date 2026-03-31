@@ -17,7 +17,11 @@ export async function GET(
             return NextResponse.json({ error: 'Proyecto no encontrado' }, { status: 404 });
         }
 
-        return NextResponse.json(project);
+        return NextResponse.json(project, {
+            headers: {
+                'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=60',
+            },
+        });
     } catch (e) {
         console.error('Error fetching project by ID:', e);
         return NextResponse.json({ error: 'Error del servidor', details: String(e) }, { status: 500 });
