@@ -191,7 +191,7 @@ export function ThemeToggle() {
                         style={{
                             width: 16,
                             height: 16,
-                            transition: 'transform 0.35s ease-in-out',
+                            transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
                             transform: isDark ? 'rotate(-30deg)' : 'rotate(0deg)',
                         }}
                     >
@@ -199,60 +199,65 @@ export function ThemeToggle() {
                         <defs>
                             <mask id="moonMask">
                                 <rect x="0" y="0" width="24" height="24" fill="white" />
-                                <circle
-                                    cx={isDark ? 16 : 28}
-                                    cy={isDark ? 7 : 7}
-                                    r="7"
-                                    fill="black"
-                                    style={{
-                                        transition: 'cx 0.35s ease-in-out',
-                                    }}
-                                />
+                                <g style={{
+                                    transform: `translate3d(${isDark ? '0px' : '14px'}, ${isDark ? '0px' : '-8px'}, 0)`,
+                                    transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                                }}>
+                                    <circle cx="16" cy="7" r="7" fill="black" />
+                                </g>
                             </mask>
                         </defs>
 
                         {/* Main circle (sun body / moon body) */}
-                        <circle
-                            cx="12"
-                            cy="12"
-                            r={isDark ? 8 : 5}
-                            mask="url(#moonMask)"
-                            style={{
-                                fill: isDark ? '#c4b5fd' : '#f59e0b',
-                                transition: 'r 0.35s ease-in-out, fill 0.35s ease-in-out',
-                            }}
-                        />
+                        <g style={{
+                            transform: `scale(${isDark ? 1 : 0.625})`,
+                            transformOrigin: '12px 12px',
+                            transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                        }}>
+                            <circle
+                                cx="12"
+                                cy="12"
+                                r="8"
+                                mask="url(#moonMask)"
+                                style={{
+                                    fill: isDark ? '#c4b5fd' : '#f59e0b',
+                                    transition: 'fill 0.4s ease',
+                                }}
+                            />
+                        </g>
 
                         {/* Sun rays – scale to 0 when dark */}
-                        {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, i) => {
-                            const rad = (angle * Math.PI) / 180;
-                            const innerR = 7.5;
-                            const outerR = 10;
-                            const x1 = 12 + innerR * Math.cos(rad);
-                            const y1 = 12 + innerR * Math.sin(rad);
-                            const x2 = 12 + outerR * Math.cos(rad);
-                            const y2 = 12 + outerR * Math.sin(rad);
-                            return (
-                                <line
-                                    key={i}
-                                    x1={x1}
-                                    y1={y1}
-                                    x2={x2}
-                                    y2={y2}
-                                    stroke={isDark ? '#c4b5fd' : '#f59e0b'}
-                                    strokeWidth="1.8"
-                                    strokeLinecap="round"
-                                    style={{
-                                        opacity: isDark ? 0 : 1,
-                                        transform: isDark
-                                            ? `scale(0) translate(${x1}px, ${y1}px)`
-                                            : 'scale(1)',
-                                        transformOrigin: `${x1}px ${y1}px`,
-                                        transition: `opacity 0.3s ease-in-out ${isDark ? '0s' : `${0.03 * i}s`}, transform 0.35s ease-in-out ${isDark ? '0s' : `${0.03 * i}s`}, stroke 0.35s ease-in-out`,
-                                    }}
-                                />
-                            );
-                        })}
+                        <g style={{
+                            opacity: isDark ? 0 : 1,
+                            transition: 'opacity 0.4s ease',
+                        }}>
+                            {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, i) => {
+                                const rad = (angle * Math.PI) / 180;
+                                const innerR = 7.5;
+                                const outerR = 10;
+                                const x1 = 12 + innerR * Math.cos(rad);
+                                const y1 = 12 + innerR * Math.sin(rad);
+                                const x2 = 12 + outerR * Math.cos(rad);
+                                const y2 = 12 + outerR * Math.sin(rad);
+                                return (
+                                    <line
+                                        key={i}
+                                        x1={x1}
+                                        y1={y1}
+                                        x2={x2}
+                                        y2={y2}
+                                        stroke={isDark ? '#c4b5fd' : '#f59e0b'}
+                                        strokeWidth="1.8"
+                                        strokeLinecap="round"
+                                        style={{
+                                            transform: `scale(${isDark ? 0 : 1})`,
+                                            transformOrigin: `${x1}px ${y1}px`,
+                                            transition: `transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) ${isDark ? '0s' : `${0.02 * i}s`}, stroke 0.4s ease`,
+                                        }}
+                                    />
+                                );
+                            })}
+                        </g>
                     </svg>
                 </div>
             </div>
