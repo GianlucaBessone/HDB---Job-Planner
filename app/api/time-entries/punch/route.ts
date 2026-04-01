@@ -228,13 +228,8 @@ export async function POST(req: Request) {
                 }
             });
 
-            if (horasTrabajadas > 0 && existing.projectId) {
-                const projectHoursImpact = existing.isExtra ? Math.ceil(horasTrabajadas) * 2 : Math.ceil(horasTrabajadas);
-                await prisma.project.update({
-                    where: { id: existing.projectId },
-                    data: { horasConsumidas: { increment: projectHoursImpact } }
-                });
-            }
+            // Notice: We intentionally DO NOT update project.horasConsumidas here.
+            // "Fichado GPS/QR" presence tracking is completely decoupled from "Registro de Tiempo".
         }
 
         // Notification if Pending

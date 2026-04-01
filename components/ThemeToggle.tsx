@@ -166,11 +166,11 @@ export function ThemeToggle() {
                     style={{
                         position: 'absolute',
                         top: '50%',
-                        left: 6,
+                        left: 2,
                         width: 28,
                         height: 28,
                         borderRadius: '50%',
-                        transform: `translate3d(${isDark ? '28px' : '0px'}, -50%, 0) scale(${isPulsing ? 1.12 : 1})`,
+                        transform: `translate3d(${isDark ? '30px' : '0px'}, -50%, 0) scale(${isPulsing ? 1.12 : 1})`,
                         transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.4s ease, box-shadow 0.4s ease',
                         background: isDark
                             ? 'linear-gradient(145deg, #334155, #1e293b)'

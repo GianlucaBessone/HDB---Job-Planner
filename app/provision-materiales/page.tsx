@@ -906,36 +906,38 @@ export default function ProvisionMaterialesPage() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex items-center gap-4">
-                <div className="p-3 bg-primary rounded-2xl shadow-lg shadow-primary/20">
-                    <Package className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                    <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Provisión de Materiales</h1>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Gestión de entrega y devolución de materiales por proyecto</p>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 md:gap-6 justify-between">
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-primary rounded-2xl shadow-lg shadow-primary/20 shrink-0">
+                        <Package className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                        <h1 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight leading-tight">Provisión de Materiales</h1>
+                        <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Gestión de entrega y devolución de materiales por proyecto</p>
+                    </div>
                 </div>
                 {isAuthorized && (
-                    <div className="flex items-center gap-2">
-                        <button onClick={handleDownloadTemplate} className="hidden sm:flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all shadow-sm">
+                    <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                        <button onClick={handleDownloadTemplate} className="hidden sm:flex items-center justify-center gap-2 px-4 py-3 sm:py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-2xl text-[10px] md:text-xs font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all shadow-sm">
                             <Download className="w-4 h-4" /> Plantilla
                         </button>
-                        <button onClick={() => setShowImport(true)} className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 active:scale-95">
-                            <FileUp className="w-4 h-4" /> Importar Excel
+                        <button onClick={() => setShowImport(true)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 bg-slate-900 text-white rounded-2xl text-[10px] md:text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 active:scale-95">
+                            <FileUp className="w-4 h-4 md:w-4 md:h-4" /> Importar Excel
                         </button>
                     </div>
                 )}
             </div>
 
             {/* KPIs */}
-            <div className="grid grid-cols-3 gap-3 md:gap-4">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4">
                 {[
-                    { label: 'Proyectos activos', value: stats.total, color: 'bg-primary/10 text-primary' },
-                    { label: 'Pendiente devolución', value: stats.pendientes, color: 'bg-amber-100 text-amber-700' },
-                    { label: 'Completamente cerrados', value: stats.cerrados, color: 'bg-emerald-100 text-emerald-700' },
+                    { label: 'Proy. Activos', value: stats.total, color: 'bg-primary/10 text-primary' },
+                    { label: 'Pendientes', value: stats.pendientes, color: 'bg-amber-100 text-amber-700' },
+                    { label: 'Cerrados', value: stats.cerrados, color: 'bg-emerald-100 text-emerald-700' },
                 ].map(k => (
-                    <div key={k.label} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 shadow-sm text-center">
-                        <div className={`text-2xl font-black ${k.color.split(' ')[1]}`}>{k.value}</div>
-                        <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">{k.label}</div>
+                    <div key={k.label} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-2 sm:p-4 shadow-sm text-center flex flex-col justify-center">
+                        <div className={`text-xl md:text-2xl font-black ${k.color.split(' ')[1]}`}>{k.value}</div>
+                        <div className="text-[9px] sm:text-[10px] sm:font-black font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider md:tracking-widest mt-0.5 md:mt-1 leading-tight break-words">{k.label}</div>
                     </div>
                 ))}
             </div>

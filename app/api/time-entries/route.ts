@@ -45,9 +45,15 @@ export async function GET(req: Request) {
         }
         if (operatorId) where.operatorId = operatorId;
         if (projectId) where.projectId = projectId;
-        
-        // EXCLUDE mobile punch-ins (fichadas) from the manual time entry list
-        where.deviceId = null;
+        const includeDevice = searchParams.get('includeDevice') === 'true';
+        const onlyDevice = searchParams.get('onlyDevice') === 'true';
+
+        // EXCLUDE mobile punch-ins (fichadas) from the manual time entry list UNLESS explicitly requested
+        if (onlyDevice) {
+            where.deviceId = { not: null };
+        } else if (!includeDevice) {
+            where.deviceId = null;
+        }
 
         const entries = await prisma.timeEntry.findMany({
             where,

@@ -76,7 +76,7 @@ export default function PunchInPage() {
         try {
             const [projectsRes, entriesRes, systemRes] = await Promise.all([
                 safeApiRequest('/api/projects').then(res => res.json()),
-                safeApiRequest(`/api/time-entries?operatorId=${userId}`).then(res => res.json()),
+                safeApiRequest(`/api/time-entries?operatorId=${userId}&onlyDevice=true`).then(res => res.json()),
                 safeApiRequest('/api/config/system').then(res => res.json())
             ]);
             
