@@ -94,7 +94,7 @@ export default function FichadasAdminPage() {
     const loadEntries = async () => {
         setIsLoading(true);
         try {
-            let url = `/api/time-entries?from=${filterDateFrom}&to=${filterDateTo}`;
+            let url = `/api/fichadas?from=${filterDateFrom}&to=${filterDateTo}`;
             if (filterOperator) url += `&operatorId=${filterOperator}`;
             if (filterProject) url += `&projectId=${filterProject}`;
 
@@ -475,27 +475,54 @@ export default function FichadasAdminPage() {
                                 </div>
                                 <div className="space-y-4">
                                     <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                                        <MapPin className="w-3.5 h-3.5" /> Posicionamiento Global
+                                        <MapPin className="w-3.5 h-3.5" /> Posicionamiento GPS
                                     </h4>
-                                    {selectedEntry.latitude ? (
-                                        <div className="space-y-3">
-                                            <div className="flex items-center gap-3">
-                                                <div className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800/50 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Lat: {selectedEntry.latitude.toFixed(6)}</div>
-                                                <div className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800/50 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Lng: {selectedEntry.longitude?.toFixed(6)}</div>
+                                    {/* Entry Location */}
+                                    <div className="space-y-2">
+                                        <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest flex items-center gap-1">
+                                            <ArrowUpRight className="w-3 h-3" /> Ubicación de Ingreso
+                                        </p>
+                                        {selectedEntry.latitude ? (
+                                            <div className="space-y-2">
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <div className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800/50 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Lat: {selectedEntry.latitude.toFixed(6)}</div>
+                                                    <div className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800/50 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Lng: {selectedEntry.longitude?.toFixed(6)}</div>
+                                                </div>
+                                                <a 
+                                                    href={`https://www.google.com/maps?q=${selectedEntry.latitude},${selectedEntry.longitude}`}
+                                                    target="_blank"
+                                                    className="w-full bg-emerald-600 text-white py-2 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 active:scale-95 transition-all"
+                                                >
+                                                    <MapIcon className="w-3.5 h-3.5" /> Ver Ingreso en Maps
+                                                </a>
                                             </div>
-                                            <a 
-                                                href={`https://www.google.com/maps?q=${selectedEntry.latitude},${selectedEntry.longitude}`}
-                                                target="_blank"
-                                                className="w-full bg-indigo-600 text-white py-3 rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 active:scale-95 transition-all"
-                                            >
-                                                <MapIcon className="w-4 h-4" /> Abrir en Google Maps
-                                            </a>
-                                        </div>
-                                    ) : (
-                                        <div className="p-5 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-3xl text-center">
-                                            <p className="text-xs font-bold text-slate-400 dark:text-slate-500 italic">Ubicación no disponible para este registro.</p>
-                                        </div>
-                                    )}
+                                        ) : (
+                                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 italic">Sin ubicación de ingreso</p>
+                                        )}
+                                    </div>
+                                    {/* Exit Location */}
+                                    <div className="space-y-2">
+                                        <p className="text-[9px] font-black text-rose-600 uppercase tracking-widest flex items-center gap-1">
+                                            <ArrowDownLeft className="w-3 h-3" /> Ubicación de Egreso
+                                        </p>
+                                        {(selectedEntry as any).latitudeEgreso ? (
+                                            <div className="space-y-2">
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <div className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800/50 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Lat: {(selectedEntry as any).latitudeEgreso.toFixed(6)}</div>
+                                                    <div className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800/50 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Lng: {(selectedEntry as any).longitudeEgreso?.toFixed(6)}</div>
+                                                </div>
+                                                <a 
+                                                    href={`https://www.google.com/maps?q=${(selectedEntry as any).latitudeEgreso},${(selectedEntry as any).longitudeEgreso}`}
+                                                    target="_blank"
+                                                    className="w-full bg-rose-600 text-white py-2 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 hover:bg-rose-700 shadow-lg shadow-rose-600/20 active:scale-95 transition-all"
+                                                >
+                                                    <MapIcon className="w-3.5 h-3.5" /> Ver Egreso en Maps
+                                                </a>
+                                            </div>
+                                        ) : (
+                                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 italic">{selectedEntry.horaEgreso ? 'Sin ubicación de egreso' : 'Jornada aún activa'}</p>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>

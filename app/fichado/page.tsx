@@ -23,6 +23,7 @@ import { filterOperatorProjects } from '@/lib/projectSelectHelper';
 import { safeApiRequest } from '@/lib/offline';
 import { formatTime, formatDate } from '@/lib/formatDate';
 import { showToast } from '@/components/Toast';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import { v4 as uuidv4 } from 'uuid';
 
 interface Project {
@@ -51,6 +52,12 @@ export default function PunchInPage() {
     const [scannedToken, setScannedToken] = useState<string>('');
     const [systemSetting, setSystemSetting] = useState<any>(null);
 
+    // Custom modal states
+    const [geoConfirmOpen, setGeoConfirmOpen] = useState(false);
+    const [unassignedConfirmOpen, setUnassignedConfirmOpen] = useState(false);
+    const [pendingPunchAction, setPendingPunchAction] = useState<{ action: 'IN' | 'OUT', entryId?: string, projId?: string } | null>(null);
+    const [forceConfirmed, setForceConfirmed] = useState(false);
+
     useEffect(() => {
         const user = localStorage.getItem('currentUser');
         if (user) {
@@ -76,7 +83,7 @@ export default function PunchInPage() {
         try {
             const [projectsRes, entriesRes, systemRes] = await Promise.all([
                 safeApiRequest('/api/projects').then(res => res.json()),
-                safeApiRequest(`/api/time-entries?operatorId=${userId}&onlyDevice=true`).then(res => res.json()),
+                safeApiRequest(`/api/fichadas?operatorId=${userId}&openOnly=true`).then(res => res.json()),
                 safeApiRequest('/api/config/system').then(res => res.json())
             ]);
             
@@ -113,6 +120,69 @@ export default function PunchInPage() {
         );
     };
 
+    const getDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+        const R = 6371000;
+        const dLat = (lat1 - lat2) * Math.PI / 180;
+        const dLon = (lng1 - lng2) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat2 * Math.PI / 180) * Math.cos(lat1 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    };
+
+    // Auto-select project based on GPS
+    useEffect(() => {
+        if (!location || validationMode === 'qr') return;
+        
+        let foundProjId = ''; // Default to base/out of bounds
+        
+        // 1. Check if inside Base geofence first
+        if (systemSetting?.companyGeofenceLat && systemSetting?.companyGeofenceLng && systemSetting?.companyGeofenceRadius) {
+            const dist = getDistance(location.lat, location.lng, systemSetting.companyGeofenceLat, systemSetting.companyGeofenceLng);
+            if (dist <= systemSetting.companyGeofenceRadius) {
+                setSelectedProjectId('');
+                return;
+            }
+        }
+        
+        // 2. Check all active projects
+        for (const p of projects) {
+            if (p.geofenceLat && p.geofenceLng && p.geofenceRadius) {
+                const dist = getDistance(location.lat, location.lng, p.geofenceLat, p.geofenceLng);
+                if (dist <= p.geofenceRadius) {
+                    foundProjId = p.id;
+                    break;
+                }
+            }
+        }
+        
+        setSelectedProjectId(foundProjId);
+    }, [location, projects, systemSetting, validationMode]);
+
+    // Pre-validation: check geofence client-side before sending to backend
+    const checkGeofenceClientSide = (): boolean => {
+        if (!location || validationMode === 'qr') return true; // QR mode doesn't need geofence check
+
+        const targetProject = projects.find(p => p.id === selectedProjectId);
+        let checkLat: number | null = null, checkLng: number | null = null, checkRadius: number | null = null;
+
+        if (selectedProjectId && targetProject) {
+            checkLat = targetProject.geofenceLat;
+            checkLng = targetProject.geofenceLng;
+            checkRadius = targetProject.geofenceRadius;
+        } else if (systemSetting) {
+            checkLat = systemSetting.companyGeofenceLat;
+            checkLng = systemSetting.companyGeofenceLng;
+            checkRadius = systemSetting.companyGeofenceRadius;
+        }
+
+        if (checkLat && checkLng && checkRadius) {
+            const distance = getDistance(location.lat, location.lng, checkLat, checkLng);
+            return distance <= checkRadius;
+        }
+
+        return true; // No geofence configured
+    };
+
     const handlePunch = async (action: 'IN' | 'OUT', entryId?: string, projId?: string) => {
         // Enforce validations based on mode (Only for Clock IN)
         if (action === 'IN') {
@@ -127,10 +197,18 @@ export default function PunchInPage() {
                 setIsScanning(true);
                 return;
             }
+
+            // Client-side geofence check — show modal instead of blocking
+            if (!forceConfirmed && !checkGeofenceClientSide()) {
+                setPendingPunchAction({ action, entryId, projId });
+                setGeoConfirmOpen(true);
+                return;
+            }
         }
 
         setIsLoading(true);
         try {
+            // Because the project is no longer manually selectable, and out-of-bounds maps to empty (Base).
             const targetProjId = projId || selectedProjectId;
             const body = {
                 operatorId: currentUser.id,
@@ -141,7 +219,8 @@ export default function PunchInPage() {
                 longitude: location?.lng || null,
                 qrToken: (validationMode === 'qr' ? scannedToken : null) || null,
                 timestamp: new Date().toISOString(),
-                validationMethod: validationMode // Added to metadata or handle in backend
+                validationMethod: validationMode,
+                forceConfirmed: forceConfirmed
             };
 
             const res = await safeApiRequest('/api/time-entries/punch', {
@@ -152,12 +231,26 @@ export default function PunchInPage() {
 
             if (!res.ok) {
                 const err = await res.json();
-                throw new Error(err.error || "Error al registrar");
+                if (res.status === 403 && err.code === 'CONFIRM_REQUIRED') {
+                    setPendingPunchAction({ action, entryId, projId });
+                    setUnassignedConfirmOpen(true);
+                    setForceConfirmed(false);
+                    return;
+                }
+                throw new Error(err.message || err.error || "Error al registrar");
             }
 
-            showToast(action === 'IN' ? "Entrada registrada" : "Salida registrada", "success");
+            const result = await res.json();
+
+            showToast(
+                action === 'IN' 
+                    ? (result._outOfGeofence ? "Entrada registrada (fuera de geovalla — supervisor notificado)" : "Entrada registrada correctamente") 
+                    : "Salida registrada correctamente", 
+                result._outOfGeofence ? "info" : "success"
+            );
             setScannedToken('');
             setSelectedProjectId('');
+            setForceConfirmed(false);
             await loadData(currentUser.id);
         } catch (err: any) {
             showToast(err.message, "error");
@@ -180,9 +273,8 @@ export default function PunchInPage() {
             }
 
             if (res.status === 'EXPIRED') {
-                showToast(`Este Código QR ha caducado (reemplazado). Por favor usa el nuevo para ${res.name}.`, "error");
-                setScannedToken('');
-                return;
+                showToast(`⚠️ Este Código QR ha caducado (reemplazado). Por favor usa el nuevo para ${res.name}.`, "error");
+                // Do NOT return here, we still allow them to punch, but we warned them.
             }
 
             // SUCCESSFUL ACTIVE TOKEN
@@ -191,10 +283,10 @@ export default function PunchInPage() {
             
             if (res.type === 'BASE') {
                 setSelectedProjectId('');
-                showToast("Base Central Detectada: Validación por QR Activada", "success");
+                if (res.status !== 'EXPIRED') showToast("Base Central Detectada: Validación por QR Activada", "success");
             } else if (res.type === 'PROJECT') {
-                setSelectedProjectId(res.projectId);
-                showToast(`Proyecto Detectado: ${res.name} (Validación QR)`, "success");
+                setSelectedProjectId(res.projectId || '');
+                if (res.status !== 'EXPIRED') showToast(`Proyecto Detectado: ${res.name} (Validación QR)`, "success");
             }
 
         } catch (error) {
@@ -314,23 +406,25 @@ export default function PunchInPage() {
                 </div>
 
                 <div className="space-y-4">
-                    {/* Searchable Project Selector */}
-                    <SearchableSelect 
-                        label="Lugar de Destino"
-                        options={[
-                            { id: '', label: '— BASE / EMPRESA —' },
-                            ...projects.map(p => ({ id: p.id, label: p.nombre }))
-                        ]}
-                        value={selectedProjectId}
-                        onChange={(val) => {
-                            setSelectedProjectId(val);
-                            // If they manualy change project, we clear the scanned token to avoid confusing validation modes
-                            if (scannedToken) setScannedToken('');
-                        }}
-                        placeholder="Buscar obra..."
-                        icon={<MapPin className="w-5 h-5" />}
-                        className="w-full"
-                    />
+                    {/* Auto-detected Destination View */}
+                    <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-[1.5rem] border border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedProjectId ? 'bg-indigo-500 text-white' : (validationMode === 'gps' && !location ? 'bg-slate-200 dark:bg-slate-700 text-slate-400' : 'bg-slate-800 text-white')}`}>
+                                {validationMode === 'qr' && !scannedToken ? <AlertTriangle className="w-5 h-5" /> : <MapPin className="w-5 h-5" />}
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                                    Destino Detectado ({validationMode === 'gps' ? 'GPS' : 'QR'})
+                                </p>
+                                <h4 className="font-bold text-slate-800 dark:text-slate-100 text-sm">
+                                    {validationMode === 'qr' && !scannedToken ? 'Esperando escaneo...' 
+                                     : (selectedProjectId ? (selectedProject ? selectedProject.nombre : 'Proyecto Desconocido') 
+                                        : (validationMode === 'qr' && scannedToken ? 'Base / Empresa' : 
+                                            (location ? (checkGeofenceClientSide() ? 'Base / Empresa' : 'Fuera de Zonas (Marca en Base)') : 'Buscando GPS...')))}
+                                </h4>
+                            </div>
+                        </div>
+                    </div>
 
                     {/* Validation UI based on mode */}
                     {validationMode === 'qr' ? (
@@ -408,6 +502,52 @@ export default function PunchInPage() {
                     onClose={() => setIsScanning(false)} 
                 />
             )}
+
+            {/* Modal: Fuera de Geovalla */}
+            <ConfirmDialog
+                isOpen={geoConfirmOpen}
+                title="Fuera de la Geovalla"
+                message="Tu ubicación actual está fuera del radio permitido para este sitio. ¿Deseas fichar igualmente? Se notificará al supervisor para aprobación."
+                confirmLabel="Fichar Igualmente"
+                variant="warning"
+                onConfirm={() => {
+                    setGeoConfirmOpen(false);
+                    setForceConfirmed(true);
+                    if (pendingPunchAction) {
+                        setTimeout(() => {
+                            handlePunch(pendingPunchAction.action, pendingPunchAction.entryId, pendingPunchAction.projId);
+                        }, 100);
+                    }
+                }}
+                onCancel={() => {
+                    setGeoConfirmOpen(false);
+                    setPendingPunchAction(null);
+                    setForceConfirmed(false);
+                }}
+            />
+
+            {/* Modal: Proyecto no asignado */}
+            <ConfirmDialog
+                isOpen={unassignedConfirmOpen}
+                title="Proyecto No Asignado"
+                message="Según la planificación de hoy, no estás asignado a este proyecto. ¿Confirmas que deseas fichar aquí? Se notificará al supervisor."
+                confirmLabel="Confirmar Fichada"
+                variant="warning"
+                onConfirm={() => {
+                    setUnassignedConfirmOpen(false);
+                    setForceConfirmed(true);
+                    if (pendingPunchAction) {
+                        setTimeout(() => {
+                            handlePunch(pendingPunchAction.action, pendingPunchAction.entryId, pendingPunchAction.projId);
+                        }, 100);
+                    }
+                }}
+                onCancel={() => {
+                    setUnassignedConfirmOpen(false);
+                    setPendingPunchAction(null);
+                    setForceConfirmed(false);
+                }}
+            />
         </div>
     );
 }

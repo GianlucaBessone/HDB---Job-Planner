@@ -832,137 +832,102 @@ function SystemSection() {
 
 
             <div className="space-y-4 bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 mt-6">
-                <div>
-                    <h4 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                        <MapPin className="w-4 h-4" /> Geovalla de la Empresa
-                    </h4>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                        Ubicación central de la oficina o base principal para validación de fichados.
-                    </p>
-                </div>
-
-                <MapPicker 
-                    lat={setting.companyGeofenceLat} 
-                    lng={setting.companyGeofenceLng} 
-                    radius={setting.companyGeofenceRadius} 
-                    onChange={(lat, lng, radius) => {
-                        setSetting({
-                            ...setting,
-                            companyGeofenceLat: lat,
-                            companyGeofenceLng: lng,
-                            companyGeofenceRadius: radius
-                        });
-                    }}
-                />
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Latitud</label>
-                        <input
-                            type="number"
-                            step="any"
-                            value={setting.companyGeofenceLat || ''}
-                            onChange={e => setSetting({ ...setting, companyGeofenceLat: e.target.value === '' ? null : parseFloat(e.target.value) })}
-                            className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
-                            placeholder="-34.123456"
-                        />
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h4 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                            <MapPin className="w-4 h-4" /> Fichaje en Base / Empresa
+                        </h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                            Habilita el fichado GPS/QR para la base u oficina principal.
+                        </p>
                     </div>
-                    <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Longitud</label>
+                    <label className="relative inline-flex items-center cursor-pointer">
                         <input
-                            type="number"
-                            step="any"
-                            value={setting.companyGeofenceLng || ''}
-                            onChange={e => setSetting({ ...setting, companyGeofenceLng: e.target.value === '' ? null : parseFloat(e.target.value) })}
-                            className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
-                            placeholder="-58.123456"
+                            type="checkbox"
+                            checked={(setting as any).fichajeHabilitado || false}
+                            onChange={e => setSetting({ ...setting, fichajeHabilitado: e.target.checked } as any)}
+                            className="sr-only peer"
                         />
-                    </div>
-                </div>
-                <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Radio de Validación (Metros)</label>
-                    <input
-                        type="number"
-                        value={setting.companyGeofenceRadius || ''}
-                        onChange={e => setSetting({ ...setting, companyGeofenceRadius: e.target.value === '' ? null : parseInt(e.target.value) })}
-                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
-                        placeholder="Ej: 200"
-                    />
+                        <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                    </label>
                 </div>
 
-                <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Token de Validación QR (Empresa)</label>
-                    <div className="flex gap-2">
-                        <input
-                            type="text"
-                            value={setting.companyQrToken || ''}
-                            onChange={e => setSetting({ ...setting, companyQrToken: e.target.value.toUpperCase() })}
-                            className="flex-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm font-mono"
-                            placeholder="TOKEN-BASE"
+                {(setting as any).fichajeHabilitado && (
+                    <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <MapPicker 
+                            lat={setting.companyGeofenceLat} 
+                            lng={setting.companyGeofenceLng} 
+                            radius={setting.companyGeofenceRadius} 
+                            onChange={(lat, lng, radius) => {
+                                setSetting({
+                                    ...setting,
+                                    companyGeofenceLat: lat,
+                                    companyGeofenceLng: lng,
+                                    companyGeofenceRadius: radius
+                                });
+                            }}
                         />
-                        <button
-                            type="button"
-                            onClick={() => setSetting({ ...setting, companyQrToken: Math.random().toString(36).substring(2, 10).toUpperCase() })}
-                            className="px-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 rounded-xl text-slate-600 dark:text-slate-300 transition-all active:scale-95"
-                            title="Generar Nuevo Token"
-                        >
-                            <Play className="w-4 h-4 rotate-90" />
-                        </button>
-                    </div>
-                </div>
 
-                {setting.companyQrToken && (
-                    <div className="pt-4 border-t border-slate-200 dark:border-slate-700 flex flex-col items-center gap-4">
-                        <div id="company-qr" className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
-                            <QRCodeCanvas 
-                                value={setting.companyQrToken} 
-                                size={200}
-                                level="H"
-                                includeMargin={true}
-                            />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Latitud</label>
+                                <input type="number" step="any" value={setting.companyGeofenceLat || ''} onChange={e => setSetting({ ...setting, companyGeofenceLat: e.target.value === '' ? null : parseFloat(e.target.value) })} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm" placeholder="-34.123456" />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Longitud</label>
+                                <input type="number" step="any" value={setting.companyGeofenceLng || ''} onChange={e => setSetting({ ...setting, companyGeofenceLng: e.target.value === '' ? null : parseFloat(e.target.value) })} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm" placeholder="-58.123456" />
+                            </div>
                         </div>
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Radio de Validación (Metros)</label>
+                            <input type="number" value={setting.companyGeofenceRadius || ''} onChange={e => setSetting({ ...setting, companyGeofenceRadius: e.target.value === '' ? null : parseInt(e.target.value) })} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm" placeholder="Ej: 200" />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Token de Validación QR (Empresa)</label>
+                            <div className="flex gap-2">
+                                <input type="text" value={setting.companyQrToken || ''} onChange={e => setSetting({ ...setting, companyQrToken: e.target.value.toUpperCase() })} className="flex-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm font-mono" placeholder="TOKEN-BASE" />
+                                <button type="button" onClick={() => setSetting({ ...setting, companyQrToken: Math.random().toString(36).substring(2, 10).toUpperCase() })} className="px-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 rounded-xl text-slate-600 dark:text-slate-300 transition-all active:scale-95" title="Generar Nuevo Token">
+                                    <Play className="w-4 h-4 rotate-90" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {setting.companyQrToken && (
+                            <div className="pt-4 border-t border-slate-200 dark:border-slate-700 flex flex-col items-center gap-4">
+                                <div id="company-qr" className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+                                    <QRCodeCanvas value={setting.companyQrToken} size={200} level="H" includeMargin={true} />
+                                </div>
+                                <button onClick={() => { const canvas = document.querySelector('#company-qr canvas') as HTMLCanvasElement; if (canvas) { const win = window.open('', '_blank'); if (win) { win.document.write(`<html><head><title>Imprimir QR - HDB Base</title><style>body{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;}.container{text-align:center;border:2px solid #000;padding:40px;border-radius:20px;}h1{margin-bottom:20px;font-size:24px;}p{margin-top:20px;font-weight:bold;font-size:18px;color:#666;}img{width:300px;height:300px;}</style></head><body><div class="container"><h1>HDB SERVICIOS ELÉCTRICOS</h1><h2>Ficha de Ingreso - BASE / EMPRESA</h2><img src="${canvas.toDataURL()}" /><p>TOKEN: ${setting.companyQrToken}</p></div><script>window.onload=()=>{setTimeout(()=>{window.print();window.onafterprint=()=>window.close();},500);};</script></body></html>`); } } }} className="flex items-center gap-2 px-6 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold hover:bg-slate-700 transition-all"><QrCode className="w-4 h-4" /> Imprimir QR de Empresa</button>
+                            </div>
+                        )}
+
+                        {/* Independent save button for fichaje base config */}
                         <button
-                            onClick={() => {
-                                const canvas = document.querySelector('#company-qr canvas') as HTMLCanvasElement;
-                                if (canvas) {
-                                    const win = window.open('', '_blank');
-                                    if (win) {
-                                        win.document.write(`
-                                            <html>
-                                                <head>
-                                                    <title>Imprimir QR - HDB Base</title>
-                                                    <style>
-                                                        body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }
-                                                        .container { text-align: center; border: 2px solid #000; padding: 40px; border-radius: 20px; }
-                                                        h1 { margin-bottom: 20px; font-size: 24px; }
-                                                        p { margin-top: 20px; font-weight: bold; font-size: 18px; color: #666; }
-                                                        img { width: 300px; height: 300px; }
-                                                    </style>
-                                                </head>
-                                                <body>
-                                                    <div class="container">
-                                                        <h1>HDB SERVICIOS ELÉCTRICOS</h1>
-                                                        <h2>Ficha de Ingreso - BASE / EMPRESA</h2>
-                                                        <img src="${canvas.toDataURL()}" />
-                                                        <p>TOKEN: ${setting.companyQrToken}</p>
-                                                    </div>
-                                                    <script>
-                                                        window.onload = () => {
-                                                            setTimeout(() => {
-                                                                window.print();
-                                                                window.onafterprint = () => window.close();
-                                                            }, 500);
-                                                        };
-                                                    </script>
-                                                </body>
-                                            </html>
-                                        `);
-                                    }
+                            onClick={async () => {
+                                try {
+                                    const currentRes = await safeApiRequest('/api/config/system');
+                                    const currentData = await currentRes.json();
+                                    await safeApiRequest('/api/config/system', {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            ...currentData,
+                                            fichajeHabilitado: (setting as any).fichajeHabilitado,
+                                            companyGeofenceLat: setting.companyGeofenceLat,
+                                            companyGeofenceLng: setting.companyGeofenceLng,
+                                            companyGeofenceRadius: setting.companyGeofenceRadius,
+                                            companyQrToken: setting.companyQrToken,
+                                        })
+                                    });
+                                    showToast('Configuración de fichaje de la empresa guardada correctamente.', 'success');
+                                } catch (e) {
+                                    showToast('Error al guardar configuración de fichaje.', 'error');
                                 }
                             }}
-                            className="flex items-center gap-2 px-6 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold hover:bg-slate-700 transition-all"
+                            className="w-full bg-emerald-600 text-white font-bold rounded-xl py-3 hover:bg-emerald-700 transition-all active:scale-95 flex items-center justify-center gap-2"
                         >
-                            <QrCode className="w-4 h-4" /> Imprimir QR de Empresa
+                            <Save className="w-4 h-4" /> Guardar Config. Fichaje Base
                         </button>
                     </div>
                 )}

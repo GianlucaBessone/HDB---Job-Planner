@@ -45,15 +45,10 @@ export async function GET(req: Request) {
         }
         if (operatorId) where.operatorId = operatorId;
         if (projectId) where.projectId = projectId;
-        const includeDevice = searchParams.get('includeDevice') === 'true';
-        const onlyDevice = searchParams.get('onlyDevice') === 'true';
 
-        // EXCLUDE mobile punch-ins (fichadas) from the manual time entry list UNLESS explicitly requested
-        if (onlyDevice) {
-            where.deviceId = { not: null };
-        } else if (!includeDevice) {
-            where.deviceId = null;
-        }
+        // Exclude legacy punch-in records (they have a deviceId).
+        // New punch-ins go to the Fichada table. This ensures time-entries only returns manual entries.
+        where.deviceId = null;
 
         const entries = await prisma.timeEntry.findMany({
             where,

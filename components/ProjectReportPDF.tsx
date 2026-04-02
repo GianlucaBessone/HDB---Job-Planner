@@ -243,7 +243,9 @@ export const ProjectReportPDF = ({
                             {project.timeEntries.map((e: any) => (
                                 <View key={e.id} style={S.tableRow} wrap={false}>
                                     <Text style={[S.tdCell, { flex: 2 }]}>{formatDate(e.fecha)}</Text>
-                                    <Text style={[S.tdCell, { flex: 3 }]}>{e.operator.nombreCompleto}</Text>
+                                    <Text style={[S.tdCell, { flex: 3 }]}>
+                                        {e.operator.nombreCompleto} {e.isExtra ? '(Extra)' : ''}
+                                    </Text>
                                     <Text style={[S.tdCell, S.tdBold, { flex: 2 }]}>{e.horaIngreso} → {e.horaEgreso}</Text>
                                 </View>
                             ))}

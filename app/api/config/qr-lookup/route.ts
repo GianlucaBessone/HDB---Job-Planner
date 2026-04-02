@@ -43,6 +43,7 @@ export async function GET(req: Request) {
             return NextResponse.json({
                 type: history.isCompanyToken ? 'BASE' : 'PROJECT',
                 status: 'EXPIRED',
+                projectId: history.projectId,
                 name: history.project?.nombre || (history.isCompanyToken ? 'BASE / EMPRESA' : 'Proyecto Desconocido'),
                 replacedAt: history.replacedAt
             });

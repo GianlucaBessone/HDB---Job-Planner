@@ -24,7 +24,7 @@ function calculateHours(start: string, end: string): number {
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { operatorId, action, projectId, deviceId, latitude, longitude, qrToken, isOfflinePending, timestamp } = body;
+        const { operatorId, action, projectId, deviceId, latitude, longitude, qrToken, isOfflinePending, timestamp, forceConfirmed } = body;
 
         if (!operatorId || !action || !deviceId) {
             return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 });
@@ -118,14 +118,40 @@ export async function POST(req: Request) {
             isSuspicious = true;
         }
 
-        // 3. Status and Risk Detection
+        // 3. Planning validation — check if operator is assigned to this project today
         const now = timestamp ? new Date(timestamp) : new Date();
         const argentinaNow = new Date(now.toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" }));
         const dateStr = format(argentinaNow, 'yyyy-MM-dd');
         const timeStr = format(argentinaNow, 'HH:mm');
 
+        let isUnassignedProject = false;
+        if (projectId && action === 'IN') {
+            try {
+                const planning = await prisma.planning.findUnique({ where: { fecha: dateStr } });
+                if (planning) {
+                    const blocks = planning.blocks as any[];
+                    const isAssigned = blocks.some((block: any) => {
+                        const opIds = Array.isArray(block.operatorIds) ? block.operatorIds : (block.operatorIds ? JSON.parse(block.operatorIds) : []);
+                        return block.projectId === projectId && opIds.includes(operatorId);
+                    });
+                    if (!isAssigned) {
+                        if (!forceConfirmed) {
+                            return NextResponse.json({ 
+                                error: 'UNASSIGNED_PROJECT', 
+                                code: 'CONFIRM_REQUIRED', 
+                                message: 'No estás asignado a este proyecto hoy.' 
+                            }, { status: 403 });
+                        }
+                        validationFlags.push('UNASSIGNED_PROJECT');
+                        isUnassignedProject = true;
+                        score += 1;
+                    }
+                }
+            } catch (e) { /* No planning for today — allow */ }
+        }
+
         // Check Overlaps
-        const overlaps = await prisma.timeEntry.findFirst({
+        const overlaps = await prisma.fichada.findFirst({
             where: {
                 operatorId,
                 fecha: dateStr,
@@ -165,7 +191,7 @@ export async function POST(req: Request) {
         }
 
         const targetProjectId = projectId || null;
-        let existing = await prisma.timeEntry.findFirst({
+        let existing = await prisma.fichada.findFirst({
             where: { 
                 operatorId, 
                 projectId: targetProjectId, 
@@ -180,7 +206,7 @@ export async function POST(req: Request) {
             if (existing) {
                 return NextResponse.json({ error: 'Ya tienes una jornada iniciada hoy.' }, { status: 400 });
             }
-            entry = await prisma.timeEntry.create({
+            entry = await prisma.fichada.create({
                 data: {
                     operatorId,
                     projectId: targetProjectId,
@@ -211,14 +237,15 @@ export async function POST(req: Request) {
             try { parsedExistingFlags = JSON.parse(existingFlagsRaw); } catch (e) { }
             const uniqueFlags = Array.from(new Set([...parsedExistingFlags, ...validationFlags]));
 
-            entry = await prisma.timeEntry.update({
+            entry = await prisma.fichada.update({
                 where: { id: existing.id },
                 data: {
                     horaEgreso: timeStr,
                     horasTrabajadas,
                     deviceId,
-                    latitude: latitude || existing.latitude,
-                    longitude: longitude || existing.longitude,
+                    // Keep entry location, store exit location separately
+                    latitudeEgreso: latitude || null,
+                    longitudeEgreso: longitude || null,
                     qrValidated: existing.qrValidated || qrValidated,
                     validationFlags: JSON.stringify(uniqueFlags),
                     isSuspicious: existing.isSuspicious || isSuspicious,
@@ -246,13 +273,13 @@ export async function POST(req: Request) {
         await logAudit({
             userName: operator.nombreCompleto,
             action: 'CREATE',
-            entity: 'TIME_ENTRY',
+            entity: 'FICHADA',
             entityId: entry.id,
             newValue: entry,
             metadata: { deviceId, action, latitude, longitude }
         });
 
-        return NextResponse.json(entry, { status: 201 });
+        return NextResponse.json({ ...entry, _flags: validationFlags, _isUnassignedProject: isUnassignedProject || false, _outOfGeofence: outOfGeofence }, { status: 201 });
     } catch (error: any) {
         console.error("Punch POST Error: ", error);
         return NextResponse.json({ error: error?.message || 'Failed to register punch' }, { status: 500 });

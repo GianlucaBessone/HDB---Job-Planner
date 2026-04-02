@@ -43,11 +43,13 @@ model Project {
   ordenesServicio      OrdenServicio[]
   encuestas            EncuestaServicio[]
   materialesProyecto   MaterialProyecto[]
+  fichadas             Fichada[]
   // Geofence & QR data
   geofenceLat             Float?
   geofenceLng             Float?
   geofenceRadius          Float?   // radius in meters
   qrToken                 String?  // current token signature for QR validation
+  fichajeHabilitado       Boolean  @default(false)
   qrHistory               QrTokenHistory[]
 
   @@index([qrToken])
@@ -123,6 +125,7 @@ model Operator {
   timeEntries     TimeEntry[]
   notifications   Notification[]
   ordenesServicio OrdenServicioOperador[]
+  fichadas        Fichada[]
   primaryDeviceId String?
 }
 
@@ -170,7 +173,7 @@ model TimeEntry {
   estadoConfirmado        Boolean  @default(false)
   confirmadoPorSupervisor String?
   isExtra                 Boolean  @default(false)
-  // Fichado móvil / Mobile punch-in fields
+  // Legacy punch-in fields (kept for data integrity, new punch-ins go to Fichada table)
   deviceId                String?
   latitude                Float?
   longitude               Float?
@@ -178,13 +181,9 @@ model TimeEntry {
   validationFlags         Json?    
   isSuspicious            Boolean  @default(false)
   isOfflinePending        Boolean  @default(false)
-
-  // Aprobaciones y Riesgo
   status                  String   @default("AUTO_APPROVED")
-  // AUTO_APPROVED | PENDING_APPROVAL | APPROVED | REJECTED
   score                   Int      @default(0)
   riskLevel               String   @default("OK")
-  // OK | REVISAR | SOSPECHOSO | HIGH_RISK
   approvedById            String?
   approvedAt              DateTime?
 
@@ -263,6 +262,7 @@ model SystemSetting {
   companyGeofenceLng    Float?
   companyGeofenceRadius Float?
   companyQrToken        String?
+  fichajeHabilitado     Boolean @default(false)
   
   // Configuración de Notificaciones
   daysWithoutHoursThreshold Int @default(5)
@@ -419,4 +419,37 @@ model MaterialDevolucion {
   confirmadoPor     String?
   fechaConfirm      DateTime?
   createdAt         DateTime         @default(now())
+}
+
+model Fichada {
+  id              String   @id @default(cuid())
+  operatorId      String
+  operator        Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  projectId       String?
+  project         Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  fecha           String // YYYY-MM-DD
+  horaIngreso     String? // HH:mm
+  horaEgreso      String? // HH:mm
+  horasTrabajadas Float    @default(0)
+  
+  deviceId                String?
+  latitude                Float?
+  longitude               Float?
+  qrValidated             Boolean  @default(false)
+  validationFlags         Json?    
+  latitudeEgreso          Float?
+  longitudeEgreso         Float?
+  isSuspicious            Boolean  @default(false)
+  isOfflinePending        Boolean  @default(false)
+
+  status                  String   @default("AUTO_APPROVED")
+  score                   Int      @default(0)
+  riskLevel               String   @default("OK")
+
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  @@index([fecha])
+  @@index([projectId])
+  @@index([operatorId])
 }

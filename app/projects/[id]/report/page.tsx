@@ -12,7 +12,7 @@ export default async function ProjectReportPage({ params, searchParams }: { para
         include: {
             client: true,
             timeEntries: {
-                where: { estadoConfirmado: true },
+                where: { estadoConfirmado: true, deviceId: null },
                 include: { operator: true },
                 orderBy: { fecha: 'asc' }
             },
@@ -43,7 +43,7 @@ export default async function ProjectReportPage({ params, searchParams }: { para
 
     const hasClientStr = project.client?.nombre || project.cliente || 'Sin cliente';
     const totalDelaysHours = project.clientDelays.reduce((acc, d) => acc + d.duracion, 0);
-    const totalRealHours = project.timeEntries.reduce((acc, t) => acc + t.horasTrabajadas, 0);
+    const totalRealHours = project.timeEntries.reduce((acc, t) => acc + (t.isExtra ? t.horasTrabajadas * 2 : t.horasTrabajadas), 0);
 
     const IPT = project.horasEstimadas > 0 && totalRealHours > 0
         ? (project.horasEstimadas / totalRealHours).toFixed(2)
@@ -62,7 +62,7 @@ export default async function ProjectReportPage({ params, searchParams }: { para
         if (!operatorMap[entry.operatorId]) {
             operatorMap[entry.operatorId] = { nombre: entry.operator.nombreCompleto, horas: 0 };
         }
-        operatorMap[entry.operatorId].horas += entry.horasTrabajadas;
+        operatorMap[entry.operatorId].horas += entry.isExtra ? entry.horasTrabajadas * 2 : entry.horasTrabajadas;
     });
 
     // Agrupar demoras por área (para gráfica)
@@ -261,7 +261,10 @@ export default async function ProjectReportPage({ params, searchParams }: { para
                                     {project.timeEntries.map(e => (
                                         <tr key={e.id} className="border-b border-slate-50 text-slate-600 dark:text-slate-300 font-medium">
                                             <td className="py-2 pr-4">{formatDate(e.fecha)}</td>
-                                            <td className="py-2 pr-4">{e.operator.nombreCompleto}</td>
+                                            <td className="py-2 pr-4">
+                                                {e.operator.nombreCompleto}
+                                                {e.isExtra && <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest ml-1.5">(Extra)</span>}
+                                            </td>
                                             <td className="py-2 font-bold">{e.horaIngreso} → {e.horaEgreso}</td>
                                         </tr>
                                     ))}

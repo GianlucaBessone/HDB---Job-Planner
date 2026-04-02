@@ -192,7 +192,7 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
 
     const menuItems = [
         { href: '/', icon: <Home className="w-5 h-5" />, label: 'Inicio', roles: ['operador', 'supervisor', 'admin', 'vendedor'] },
-        { href: '/fichado', icon: <MapPin className="w-5 h-5" />, label: 'Fichado (GPS/QR)', roles: ['operador', 'supervisor', 'admin'] },
+        { href: '/fichado', icon: <MapPin className="w-5 h-5" />, label: 'Fichado (GPS/QR)', roles: ['operador', 'supervisor'] },
         { href: '/my-projects', icon: <ClipboardList className="w-5 h-5" />, label: 'Mis Proyectos (Resp.)', roles: ['operador', 'supervisor', 'admin'] },
         { href: '/timesheets', icon: <Clock className="w-5 h-5" />, label: 'Registro de Tiempos', roles: ['operador', 'supervisor', 'admin'] },
         { href: '/delays', icon: <Timer className="w-5 h-5" />, label: 'Demoras del Cliente', roles: ['operador', 'supervisor', 'admin'] },
