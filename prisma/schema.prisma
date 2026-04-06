@@ -390,10 +390,12 @@ model MaterialProyecto {
 }
 
 model MaterialMaestro {
-  codigo    String   @id
-  nombre    String
-  unidad    String
-  updatedAt DateTime @updatedAt
+  codigo      String   @id
+  nombre      String
+  unidad      String
+  precioVenta Float?
+  costo       Float?
+  updatedAt   DateTime @updatedAt
 }
 
 model MaterialUso {

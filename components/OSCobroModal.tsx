@@ -30,13 +30,33 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
         return isNaN(p) ? 0 : p;
     };
 
-    // Initial load generic config
+    // Initial load generic config and material prices
     useEffect(() => {
         if (!os.cobroGenerado) {
+            // Load custom manpower price
             safeApiRequest('/api/config/system')
                 .then(res => res.json())
                 .then(data => {
                     if (data?.valorManoObra && defaultMO === 0) setValorMo(data.valorManoObra);
+                })
+                .catch(() => {});
+            
+            // Prefill empty material prices from Inventory
+            safeApiRequest('/api/inventario')
+                .then(res => res.json())
+                .then(inventario => {
+                    if (Array.isArray(inventario)) {
+                        setMateriales(prev => prev.map(m => {
+                            // Only prefill if the price is empty and we have a match in inventory
+                            if (m.precioUnitario === '' && m.codigo) {
+                                const invItem = inventario.find((i: any) => i.codigo === m.codigo);
+                                if (invItem && invItem.precioVenta != null) {
+                                    return { ...m, precioUnitario: invItem.precioVenta };
+                                }
+                            }
+                            return m;
+                        }));
+                    }
                 })
                 .catch(() => {});
         }
@@ -65,6 +85,9 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
 
 
     const handleSaveAndGenerate = async () => {
+        if (materiales.some(m => m.precioUnitario === '' || m.precioUnitario === null || m.precioUnitario === undefined)) {
+            return showToast('Faltan cargar precios a los materiales', 'error');
+        }
         if (materiales.some(m => safeNum(m.precioUnitario) < 0)) return showToast('Precios de materiales inválidos', 'error');
         if (parsedValorMo < 0) return showToast('Valor MO inválido', 'error');
 
