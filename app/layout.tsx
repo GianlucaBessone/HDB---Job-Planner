@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import Script from "next/script";
 import { Calendar, LayoutGrid, Users, ClipboardList, Menu, X, Landmark, LayoutDashboard, Timer, Clock, LogOut, Home, Settings, FileSignature, Package, PackageSearch, MapPin, ShieldAlert, ShieldCheck, History } from "lucide-react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 import ToastContainer from "@/components/Toast";
 import LoginScreen from "@/components/LoginScreen";
 import NotificationsDropdown from "@/components/NotificationsDropdown";
@@ -181,6 +182,7 @@ export default function RootLayout({
             <body className="font-sans min-h-[100dvh] bg-slate-50/50 dark:bg-slate-900 overscroll-none text-slate-900 dark:text-slate-100" style={{ fontFamily: '"Outfit", sans-serif' }}>
                 <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
                     {content}
+                    <Analytics />
                 </ThemeProvider>
             </body>
         </html>
