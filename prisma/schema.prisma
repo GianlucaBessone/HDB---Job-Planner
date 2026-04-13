@@ -508,7 +508,9 @@ model ToolCartMovementItem {
 
   // Status at checkout (salida)
   presentAtOut    Boolean  @default(true)
+  cantidadOut     Int      @default(0)
   
   // Status at checkin (devolucion)
   presentAtIn     Boolean?
+  cantidadIn      Int?
 }

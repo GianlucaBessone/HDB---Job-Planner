@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Html5Qrcode } from 'html5-qrcode';
-import { Camera, Search, ArrowLeft, CheckCircle2, AlertTriangle, Plus, ClipboardCheck, Wrench, X, RefreshCw, ScanLine, QrCode as QrCodeIcon } from 'lucide-react';
+import { Camera, Search, ArrowLeft, CheckCircle2, AlertTriangle, Plus, ClipboardCheck, Wrench, X, RefreshCw, ScanLine, Minus } from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
 import ConfirmDialog from '@/components/ConfirmDialog';
@@ -11,11 +11,18 @@ import SearchableSelect from '@/components/SearchableSelect';
 
 interface Operator { id: string; nombreCompleto: string; }
 interface Project { id: string; nombre: string; codigoProyecto?: string; }
-interface CartItem { id: string; nombre: string; cantidad: number; presentAtOut?: boolean; presentAtIn?: boolean; isAdditional?: boolean; }
+interface CartItem { 
+    id: string; 
+    nombre: string; 
+    cantidad: number; // expected quantity
+    cantidadOut?: number; // observed at checkout
+    cantidadIn?: number;  // observed at checkin
+    isAdditional?: boolean; 
+}
 interface ToolCart { id: string; nombre: string; estado: string; items: CartItem[]; }
 interface CartMovement { id: string; cart: ToolCart; project: Project; items: CartItem[]; fechaSalida: string; }
 
-export default function ToolCartsOperatorPage() {
+export default function CarrosPage() {
     const router = useRouter();
     const [currentUser, setCurrentUser] = useState<Operator | null>(null);
     const [activeMovements, setActiveMovements] = useState<CartMovement[]>([]);
@@ -109,8 +116,8 @@ export default function ToolCartsOperatorPage() {
                 return;
             }
             setSelectedCart(cart);
-            // Default: all unchecked
-            setChecklist(cart.items.map(i => ({ ...i, presentAtOut: false })));
+            // Default at checkout: 0 observed tools, forces user to enter what they see
+            setChecklist(cart.items.map(i => ({ ...i, cantidadOut: 0 })));
             setMode('CHECKOUT');
         } catch (e) {
             showToast('Error de conexión', 'error');
@@ -124,14 +131,25 @@ export default function ToolCartsOperatorPage() {
         if (!newToolName.trim()) return;
         setChecklist(prev => [
             ...prev, 
-            { id: `t_${Date.now()}`, nombre: newToolName.trim(), cantidad: newToolQty, presentAtOut: true, isAdditional: true }
+            { 
+                id: `t_${Date.now()}`, 
+                nombre: newToolName.trim(), 
+                cantidad: newToolQty, 
+                cantidadOut: newToolQty, // Additional tools are assumed present by default
+                isAdditional: true 
+            }
         ]);
         setNewToolName('');
         setNewToolQty(1);
     };
 
-    const toggleToolCheckout = (id: string) => {
-        setChecklist(prev => prev.map(c => c.id === id ? { ...c, presentAtOut: !c.presentAtOut } : c));
+    const updateToolQty = (id: string, val: number, isCheckout: boolean) => {
+        setChecklist(prev => prev.map(c => {
+            if (c.id !== id) return c;
+            // Limit to [0, original quantity]
+            const newVal = Math.min(c.cantidad, Math.max(0, val));
+            return isCheckout ? { ...c, cantidadOut: newVal } : { ...c, cantidadIn: newVal };
+        }));
     };
 
     const submitCheckout = async () => {
@@ -172,12 +190,9 @@ export default function ToolCartsOperatorPage() {
 
     const startCheckin = (mov: CartMovement) => {
         setSelectedMovement(mov);
-        setChecklist(mov.items.map(i => ({ ...i, presentAtIn: true })));
+        // Default at checkin: assume all tools are returned, but allow reduction
+        setChecklist(mov.items.map(i => ({ ...i, cantidadIn: i.cantidad })));
         setMode('CHECKIN');
-    };
-
-    const toggleToolCheckin = (id: string) => {
-        setChecklist(prev => prev.map(c => c.id === id ? { ...c, presentAtIn: !c.presentAtIn } : c));
     };
 
     const submitCheckin = async () => {
@@ -189,7 +204,12 @@ export default function ToolCartsOperatorPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     movementId: selectedMovement!.id,
-                    tools: checklist
+                    tools: checklist.map(c => ({
+                        id: c.id,
+                        nombre: c.nombre,
+                        cantidadIn: c.cantidadIn,
+                        expectedQty: c.cantidad
+                    }))
                 })
             });
 
@@ -209,8 +229,8 @@ export default function ToolCartsOperatorPage() {
         }
     };
 
-    const missingOut = checklist.filter(c => !c.presentAtOut);
-    const missingIn = checklist.filter(c => !c.presentAtIn);
+    const missingOutCount = checklist.filter(c => (c.cantidadOut || 0) < c.cantidad).length;
+    const missingInCount = checklist.filter(c => (c.cantidadIn || 0) < c.cantidad).length;
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-20">
@@ -277,7 +297,7 @@ export default function ToolCartsOperatorPage() {
                 )}
 
                 {isScanning && (
-                    <ToolCartScannerModal 
+                    <CarroScannerModal 
                         onScan={handleScanSuccess}
                         onClose={() => setIsScanning(false)}
                     />
@@ -305,60 +325,81 @@ export default function ToolCartsOperatorPage() {
                                 />
                             </div>
 
-                            <p className="text-xs text-slate-500 font-medium mb-4">Marca las herramientas que estás retirando. Desmarca las faltantes.</p>
+                            <p className="text-xs text-slate-500 font-medium mb-4">Ingresa la cantidad que encuentras de cada herramienta.</p>
 
-                            <div className="space-y-2 mb-6">
-                                {checklist.map(item => (
-                                    <button 
-                                        type="button"
-                                        key={item.id}
-                                        onClick={() => toggleToolCheckout(item.id)}
-                                        className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-colors ${
-                                            item.presentAtOut 
-                                                ? 'bg-emerald-50/50 border-emerald-200 dark:bg-emerald-900/10 dark:border-emerald-800' 
-                                                : 'bg-red-50/50 border-red-200 dark:bg-red-900/10 dark:border-red-800'
-                                        }`}
-                                    >
-                                        <div className={`w-5 h-5 rounded flex items-center justify-center shrink-0 border ${item.presentAtOut ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-red-400 bg-white dark:bg-slate-800'}`}>
-                                            {item.presentAtOut && <CheckCircle2 className="w-3.5 h-3.5" />}
-                                        </div>
-                                        <div className="flex-1">
-                                            <span className={`text-sm font-bold block ${item.presentAtOut ? 'text-slate-700 dark:text-slate-200' : 'text-slate-500 dark:text-slate-400 opacity-70 line-through'}`}>{item.nombre}</span>
-                                            <div className="flex gap-2 mt-0.5">
-                                                <span className="text-[9px] uppercase tracking-widest font-black text-slate-400">×{item.cantidad}</span>
-                                                {item.isAdditional && <span className="text-[9px] uppercase tracking-widest font-black text-indigo-500">Adicional</span>}
+                            <div className="space-y-3 mb-6">
+                                {checklist.map(item => {
+                                    const missingCount = Math.max(0, item.cantidad - (item.cantidadOut || 0));
+                                    return (
+                                        <div key={item.id} className="p-4 rounded-2xl border border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/30">
+                                            <div className="flex items-center justify-between gap-4">
+                                                <div className="flex-1 min-w-0">
+                                                    <span className="text-sm font-black text-slate-800 dark:text-slate-100 block truncate">{item.nombre}</span>
+                                                    <span className="text-[10px] uppercase tracking-widest font-black text-slate-400">Esperado: {item.cantidad}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    <button 
+                                                        type="button"
+                                                        onClick={() => updateToolQty(item.id, (item.cantidadOut || 0) - 1, true)}
+                                                        className="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"
+                                                    >
+                                                        <Minus className="w-4 h-4" />
+                                                    </button>
+                                                    <input 
+                                                        type="number"
+                                                        min={0}
+                                                        max={item.cantidad}
+                                                        value={item.cantidadOut}
+                                                        onChange={e => updateToolQty(item.id, parseInt(e.target.value) || 0, true)}
+                                                        className="w-14 h-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center text-sm font-black text-slate-800 dark:text-slate-100 outline-none focus:border-primary"
+                                                    />
+                                                    <button 
+                                                        type="button"
+                                                        disabled={(item.cantidadOut || 0) >= item.cantidad}
+                                                        onClick={() => updateToolQty(item.id, (item.cantidadOut || 0) + 1, true)}
+                                                        className="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed"
+                                                    >
+                                                        <Plus className="w-4 h-4" />
+                                                    </button>
+                                                </div>
                                             </div>
+                                            {missingCount > 0 && (
+                                                <div className="mt-2 flex items-center gap-1.5 text-red-500 animate-in fade-in slide-in-from-top-1">
+                                                    <AlertTriangle className="w-3.5 h-3.5" />
+                                                    <span className="text-[10px] font-black uppercase tracking-widest">Faltan {missingCount} unidades</span>
+                                                </div>
+                                            )}
                                         </div>
-                                    </button>
-                                ))}
+                                    );
+                                })}
                             </div>
 
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 p-1 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800">
                                 <input 
                                     type="text" 
-                                    placeholder="Herramienta adicional..." 
+                                    placeholder="Agregar adicional..." 
                                     value={newToolName}
                                     onChange={e => setNewToolName(e.target.value)}
-                                    className="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-xs font-bold outline-none min-w-0"
+                                    className="flex-1 bg-transparent px-4 py-3 text-xs font-bold outline-none min-w-0"
                                 />
                                 <input 
                                     type="number" 
                                     min={1}
                                     value={newToolQty}
                                     onChange={e => setNewToolQty(Math.max(1, parseInt(e.target.value) || 1))}
-                                    className="w-14 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2.5 text-xs font-bold text-center outline-none"
+                                    className="w-14 bg-transparent border-x border-slate-200 dark:border-slate-700 text-xs font-black text-center outline-none"
                                 />
-                                <button type="button" onClick={handleAddNewTool} disabled={!newToolName.trim()} className="bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 px-4 rounded-xl disabled:opacity-50">
-                                    <Plus className="w-4 h-4" />
+                                <button type="button" onClick={handleAddNewTool} disabled={!newToolName.trim()} className="px-4 text-primary disabled:opacity-30">
+                                    <Plus className="w-5 h-5" />
                                 </button>
                             </div>
                         </div>
 
-                        {missingOut.length > 0 && (
+                        {missingOutCount > 0 && (
                             <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 flex gap-3 animate-in fade-in">
                                 <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
                                 <p className="text-xs font-bold text-amber-800 dark:text-amber-400 leading-tight">
-                                    Se registrarán {missingOut.length} herramientas faltantes.
+                                    Se reportarán discrepancias en {missingOutCount} herramientas.
                                 </p>
                             </div>
                         )}
@@ -369,7 +410,7 @@ export default function ToolCartsOperatorPage() {
                             onClick={() => setIsConfirmingCheckout(true)}
                             className="w-full py-4 bg-primary text-white rounded-2xl font-black uppercase tracking-widest text-sm disabled:opacity-50 flex items-center justify-center gap-2 shadow-xl shadow-primary/20"
                         >
-                            <ClipboardCheck className="w-5 h-5" /> Registrar Salida
+                            <ClipboardCheck className="w-5 h-5" /> Confirmar e Iniciar Obra
                         </button>
                         <ConfirmDialog 
                             isOpen={isConfirmingCheckout}
@@ -392,40 +433,61 @@ export default function ToolCartsOperatorPage() {
                                 <p className="text-xs font-medium text-slate-500 mt-2">Obra: <span className="font-bold text-slate-700 dark:text-slate-300">{selectedMovement.project.nombre}</span></p>
                             </div>
 
-                            <p className="text-xs text-slate-500 font-medium mb-4">Marca las herramientas que estás devolviendo.</p>
+                            <p className="text-xs text-slate-500 font-medium mb-4">Ingresa la cantidad que estás devolviendo.</p>
 
-                            <div className="space-y-2 mb-6">
-                                {checklist.map(item => (
-                                    <button 
-                                        type="button"
-                                        key={item.id}
-                                        onClick={() => toggleToolCheckin(item.id)}
-                                        className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-colors ${
-                                            item.presentAtIn 
-                                                ? 'bg-emerald-50/50 border-emerald-200 dark:bg-emerald-900/10 dark:border-emerald-800' 
-                                                : 'bg-red-50/50 border-red-200 dark:bg-red-900/10 dark:border-red-800'
-                                        }`}
-                                    >
-                                        <div className={`w-5 h-5 rounded flex items-center justify-center shrink-0 border ${item.presentAtIn ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-red-400 bg-white dark:bg-slate-800'}`}>
-                                            {item.presentAtIn && <CheckCircle2 className="w-3.5 h-3.5" />}
-                                        </div>
-                                        <div className="flex-1">
-                                            <span className={`text-sm font-bold block ${item.presentAtIn ? 'text-slate-700 dark:text-slate-200' : 'text-slate-500 dark:text-slate-400 opacity-70 line-through'}`}>{item.nombre}</span>
-                                            <div className="flex gap-2 mt-0.5">
-                                                <span className="text-[9px] uppercase tracking-widest font-black text-slate-400">×{item.cantidad}</span>
-                                                {item.isAdditional && <span className="text-[9px] uppercase tracking-widest font-black text-indigo-500">Adicional</span>}
+                            <div className="space-y-3 mb-6">
+                                {checklist.map(item => {
+                                    const missingCount = Math.max(0, item.cantidad - (item.cantidadIn || 0));
+                                    return (
+                                        <div key={item.id} className="p-4 rounded-2xl border border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/30">
+                                            <div className="flex items-center justify-between gap-4">
+                                                <div className="flex-1 min-w-0">
+                                                    <span className="text-sm font-black text-slate-800 dark:text-slate-100 block truncate">{item.nombre}</span>
+                                                    <span className="text-[10px] uppercase tracking-widest font-black text-slate-400">Esperado: {item.cantidad}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    <button 
+                                                        type="button"
+                                                        onClick={() => updateToolQty(item.id, (item.cantidadIn || 0) - 1, false)}
+                                                        className="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"
+                                                    >
+                                                        <Minus className="w-4 h-4" />
+                                                    </button>
+                                                    <input 
+                                                        type="number"
+                                                        min={0}
+                                                        max={item.cantidad}
+                                                        value={item.cantidadIn}
+                                                        onChange={e => updateToolQty(item.id, parseInt(e.target.value) || 0, false)}
+                                                        className="w-14 h-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center text-sm font-black text-slate-800 dark:text-slate-100 outline-none focus:border-primary"
+                                                    />
+                                                    <button 
+                                                        type="button"
+                                                        disabled={(item.cantidadIn || 0) >= item.cantidad}
+                                                        onClick={() => updateToolQty(item.id, (item.cantidadIn || 0) + 1, false)}
+                                                        className="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed"
+                                                    >
+                                                        <Plus className="w-4 h-4" />
+                                                    </button>
+                                                </div>
                                             </div>
+                                            {missingCount > 0 && (
+                                                <div className="mt-2 flex items-center gap-1.5 text-red-500 animate-in fade-in slide-in-from-top-1">
+                                                    <AlertTriangle className="w-3.5 h-3.5" />
+                                                    <span className="text-[10px] font-black uppercase tracking-widest">Faltan {missingCount} unidades</span>
+                                                </div>
+                                            )}
                                         </div>
-                                    </button>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
 
-                        {missingIn.length > 0 && (
-                            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 flex gap-3 animate-in fade-in">
-                                <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
-                                <p className="text-xs font-bold text-amber-800 dark:text-amber-400 leading-tight">
-                                    Reportando {missingIn.length} faltantes.
+                        {missingInCount > 0 && (
+                            <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-2xl p-4 flex gap-3 animate-in fade-in">
+                                <AlertTriangle className="w-5 h-5 text-rose-500 shrink-0" />
+                                <p className="text-xs font-bold text-rose-800 dark:text-rose-400 leading-tight">
+                                    Reportando {missingInCount} herramientas incompletas.
                                 </p>
                             </div>
                         )}
@@ -436,12 +498,12 @@ export default function ToolCartsOperatorPage() {
                             onClick={() => setIsConfirmingCheckin(true)}
                             className="w-full py-4 bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 rounded-2xl font-black uppercase tracking-widest text-sm disabled:opacity-50 flex items-center justify-center gap-2 shadow-xl shadow-slate-200 dark:shadow-none"
                         >
-                            Registrar Devolución
+                            Finalizar y Entregar Carro
                         </button>
                         <ConfirmDialog 
                             isOpen={isConfirmingCheckin}
                             title="Confirmar Devolución"
-                            message={`¿Confirmas la devolución de ${selectedMovement.cart.nombre}?`}
+                            message={`¿Confirmas que devuelves ${selectedMovement.cart.nombre}?`}
                             onConfirm={submitCheckin}
                             onCancel={() => setIsConfirmingCheckin(false)}
                             confirmLabel="Devolver"
@@ -454,7 +516,7 @@ export default function ToolCartsOperatorPage() {
     );
 }
 
-function ToolCartScannerModal({ onScan, onClose }: { onScan: (text: string) => void, onClose: () => void }) {
+function CarroScannerModal({ onScan, onClose }: { onScan: (text: string) => void, onClose: () => void }) {
     useEffect(() => {
         const html5QrCode = new Html5Qrcode("reader");
         const config = { fps: 10, qrbox: { width: 250, height: 250 } };

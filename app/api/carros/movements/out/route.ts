@@ -28,7 +28,8 @@ export async function POST(req: Request) {
                         nombre: t.nombre,
                         cantidad: t.cantidad || 1,
                         isAdditional: t.isAdditional || false,
-                        presentAtOut: t.presentAtOut
+                        presentAtOut: t.cantidadOut >= (t.cantidad || 1),
+                        cantidadOut: t.cantidadOut || 0
                     }))
                 }
             }
@@ -41,9 +42,11 @@ export async function POST(req: Request) {
         });
 
         // Notify if there are missing tools
-        const missingTools = tools.filter((t: any) => !t.presentAtOut);
+        const missingTools = tools.filter((t: any) => t.cantidadOut < (t.cantidad || 1));
         if (missingTools.length > 0) {
-            const missingNames = missingTools.map((t: any) => t.nombre).join(', ');
+            const missingDetails = missingTools.map((t: any) => 
+                `${t.nombre} (Tiene: ${t.cantidadOut}, Esperado: ${t.cantidad || 1})`
+            ).join('\n- ');
             
             const [op, pb, supers] = await Promise.all([
                 prisma.operator.findUnique({ where: { id: operatorId } }),
@@ -55,7 +58,7 @@ export async function POST(req: Request) {
                 data: supers.map(s => ({
                     operatorId: s.id,
                     title: `Herramientas faltantes - Salida: ${cart.nombre}`,
-                    message: `El operador ${op?.nombreCompleto || 'Desconocido'} registró la salida en obra ${pb?.nombre || 'Desconocida'} con faltantes:\n${missingNames}.`,
+                    message: `El operador ${op?.nombreCompleto || 'Desconocido'} registró la salida en obra ${pb?.nombre || 'Desconocida'} con faltantes:\n- ${missingDetails}`,
                     type: 'WARNING'
                 }))
             });

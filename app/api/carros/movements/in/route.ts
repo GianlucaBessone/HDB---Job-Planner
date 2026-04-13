@@ -20,7 +20,10 @@ export async function POST(req: Request) {
         const updatePromises = tools.map((t: any) => 
             prisma.toolCartMovementItem.update({
                 where: { id: t.id },
-                data: { presentAtIn: t.presentAtIn }
+                data: { 
+                    cantidadIn: t.cantidadIn,
+                    presentAtIn: t.cantidadIn >= t.expectedQty
+                }
             })
         );
         await Promise.all(updatePromises);
@@ -41,14 +44,11 @@ export async function POST(req: Request) {
         });
 
         // Notify missing tools
-        const missing = tools.filter((t: any) => !t.presentAtIn);
+        const missing = tools.filter((t: any) => t.cantidadIn < t.expectedQty);
         if (missing.length > 0) {
-            // Need the names of the missing tools for the notification
-            const missingIds = missing.map((t: any) => t.id);
-            const missingDbItems = await prisma.toolCartMovementItem.findMany({
-                where: { id: { in: missingIds } }
-            });
-            const missingNames = missingDbItems.map(i => i.nombre).join(', ');
+            const missingDetails = missing.map((t: any) => 
+                `${t.nombre} (Devolvió: ${t.cantidadIn}, Esperado: ${t.expectedQty})`
+            ).join('\n- ');
 
             const [op, pb, supers] = await Promise.all([
                 prisma.operator.findUnique({ where: { id: mov.operatorId } }),
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
                 data: supers.map(s => ({
                     operatorId: s.id,
                     title: `Herramientas faltantes - Devolución: ${mov.cart.nombre}`,
-                    message: `El operador ${op?.nombreCompleto || 'Desconocido'} reportó faltantes al devolver desde la obra ${pb?.nombre || 'Desconocida'}:\n${missingNames}.`,
+                    message: `El operador ${op?.nombreCompleto || 'Desconocido'} reportó faltantes al devolver desde la obra ${pb?.nombre || 'Desconocida'}:\n- ${missingDetails}`,
                     type: 'WARNING'
                 }))
             });
