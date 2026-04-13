@@ -12,7 +12,18 @@ export default function OneSignalInit({ appId, user }: { appId: string, user?: a
             if (typeof window === 'undefined') return;
 
             // 1. Initialize if needed
-            if (!initializedRef.current) {
+            if (!(window as any).__ONESIGNAL_INITIALIZED__) {
+                // Skip on localhost or local network IPs — OneSignal is bound to the production domain
+                const isLocal = window.location.hostname === 'localhost' || 
+                              window.location.hostname === '127.0.0.1' || 
+                              window.location.hostname.startsWith('192.168.') ||
+                              window.location.hostname.endsWith('.local');
+
+                if (isLocal) {
+                    (window as any).__ONESIGNAL_INITIALIZED__ = true;
+                    return;
+                }
+
                 try {
                     console.log("🔔 OneSignal: Initializing...");
                     await OneSignal.init({
@@ -20,10 +31,16 @@ export default function OneSignalInit({ appId, user }: { appId: string, user?: a
                         notifyButton: { enable: false } as any,
                         allowLocalhostAsSecureOrigin: true,
                     });
-                    initializedRef.current = true;
+                    (window as any).__ONESIGNAL_INITIALIZED__ = true;
                     console.log("✅ OneSignal initialized");
-                } catch (error) {
-                    console.error("❌ OneSignal init error:", error);
+                } catch (error: any) {
+                    const errMsg = (error?.message || String(error)).toLowerCase();
+                    if (errMsg.includes('already initialized')) {
+                        (window as any).__ONESIGNAL_INITIALIZED__ = true;
+                        console.log("ℹ️ OneSignal already initialized, skipping.");
+                    } else {
+                        console.error("❌ OneSignal init error:", error);
+                    }
                     return;
                 }
             }

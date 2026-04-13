@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Bell, Check, X, BellOff, MessageSquare, AlertTriangle, AlertCircle, Info, Clock, CheckCircle2, MoreHorizontal, User, FileText, Timer, Calendar, ShieldAlert } from 'lucide-react';
 import { formatDate, formatTime } from '@/lib/formatDate';
@@ -22,6 +22,8 @@ export default function NotificationsDropdown({ user }: { user: any }) {
     // Lock body scroll when a notification modal is open
     useModalScroll(!!selectedNotification);
 
+    const knownIdsRef = useRef<Set<string>>(new Set());
+
     useEffect(() => {
         setMounted(true);
         if (!user) return;
@@ -30,16 +32,16 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                 const res = await safeApiRequest(`/api/notifications?operatorId=${user.id}&role=${user.role}`);
                 const data = await res.json();
                 if (Array.isArray(data)) {
-                    setNotifications(prev => {
-                        if (isPoll && prev.length > 0) {
-                            const newNotifs = data.filter(d => !prev.some(p => p.id === d.id));
-                            if (newNotifs.length > 0) {
-                                console.log("📬 [INTERNAL_NOTIFICATION_RECEIVED]:", newNotifs[0]);
-                                showToast(`Nueva notificación: ${newNotifs[0].title}`, 'success');
-                            }
+                    if (isPoll && knownIdsRef.current.size > 0) {
+                        const newNotifs = data.filter(d => !knownIdsRef.current.has(d.id));
+                        if (newNotifs.length > 0) {
+                            console.log("📬 [INTERNAL_NOTIFICATION_RECEIVED]:", newNotifs[0]);
+                            showToast(`Nueva notificación: ${newNotifs[0].title}`, 'success');
                         }
-                        return data;
-                    });
+                    }
+                    
+                    data.forEach(d => knownIdsRef.current.add(d.id));
+                    setNotifications(data);
                 }
             } catch (err) {
                 console.error('Error fetching notifications:', err);

@@ -59,6 +59,9 @@ export async function GET(req: Request) {
             orderBy: [{ fecha: 'desc' }, { horaIngreso: 'desc' }]
         });
 
+        // Attach causaRegistro as a virtual display name when no project
+        // (it's already in the data from prisma)
+
         return NextResponse.json(entries);
     } catch (error) {
         return NextResponse.json({ error: 'Failed to fetch time entries' }, { status: 500 });
@@ -70,11 +73,19 @@ export async function POST(req: Request) {
         try {
             const data = await req.json();
 
-            const { operatorId, projectId, fecha, horaIngreso, horaEgreso, isExtra, requestUserId, requestUserRole } = data;
+            const { operatorId, projectId, causaRegistro, fecha, horaIngreso, horaEgreso, isExtra, requestUserId, requestUserRole } = data;
 
-            if (!operatorId || !projectId || !fecha) {
-                console.error("POST Error: Missing required fields", { operatorId, projectId, fecha });
-                return NextResponse.json({ error: 'Faltan campos obligatorios (Operador, Proyecto o Fecha).' }, { status: 400 });
+            if (!operatorId || !fecha) {
+                console.error("POST Error: Missing required fields", { operatorId, fecha });
+                return NextResponse.json({ error: 'Faltan campos obligatorios (Operador o Fecha).' }, { status: 400 });
+            }
+
+            // Must have either project or causa, never both
+            if (!projectId && !causaRegistro) {
+                return NextResponse.json({ error: 'Debe seleccionar un Proyecto o una Causa.' }, { status: 400 });
+            }
+            if (projectId && causaRegistro) {
+                return NextResponse.json({ error: 'No puede seleccionar Proyecto y Causa simultáneamente.' }, { status: 400 });
             }
 
             if (requestUserRole === 'operador' && requestUserId !== operatorId) {
@@ -86,11 +97,12 @@ export async function POST(req: Request) {
                 horasTrabajadas = calculateHours(horaIngreso, horaEgreso);
             }
 
-            console.log("Creating time entry in Prisma...", { operatorId, projectId, fecha });
+            console.log("Creating time entry in Prisma...", { operatorId, projectId, causaRegistro, fecha });
             const entry = await prisma.timeEntry.create({
                 data: {
                     operatorId,
-                    projectId,
+                    projectId: projectId || null,
+                    causaRegistro: causaRegistro || null,
                     fecha,
                     horaIngreso,
                     horaEgreso,
@@ -103,7 +115,8 @@ export async function POST(req: Request) {
             // Also update project total hours roughly, though normally this is kept separate or aggregated upon need.
             // If we want to automatically add consumed hours to the project:
             // Overtime hours (isExtra) count double for project consumption
-            if (horasTrabajadas > 0) {
+            // Only update project hours if linked to a project (not a causa)
+            if (horasTrabajadas > 0 && projectId) {
                 const projectHoursImpact = (isExtra || false) ? Math.ceil(horasTrabajadas) * 2 : Math.ceil(horasTrabajadas);
                 await prisma.project.update({
                     where: { id: projectId },
@@ -123,7 +136,7 @@ export async function POST(req: Request) {
 export async function PUT(req: Request) {
     try {
         const data = await req.json();
-        const { id, projectId, fecha, horaIngreso, horaEgreso, estadoConfirmado, isExtra, requestUserId, requestUserRole } = data;
+        const { id, projectId, causaRegistro, fecha, horaIngreso, horaEgreso, estadoConfirmado, isExtra, requestUserId, requestUserRole } = data;
 
         // Check if existing
         const existing = await prisma.timeEntry.findUnique({ where: { id } });
@@ -141,7 +154,9 @@ export async function PUT(req: Request) {
         }
 
         const oldProjectId = existing.projectId;
-        const newProjectId = projectId !== undefined ? projectId : oldProjectId;
+        // Handle causa mode: if causaRegistro is being set, clear projectId
+        const newCausa = causaRegistro !== undefined ? causaRegistro : existing.causaRegistro;
+        const newProjectId = newCausa ? null : (projectId !== undefined ? projectId : oldProjectId);
 
         let horasTrabajadas = existing.horasTrabajadas;
         let newHoraIngreso = horaIngreso !== undefined ? horaIngreso : existing.horaIngreso;
@@ -155,6 +170,7 @@ export async function PUT(req: Request) {
             where: { id },
             data: {
                 projectId: newProjectId,
+                causaRegistro: newCausa || null,
                 fecha: fecha !== undefined ? fecha : existing.fecha,
                 horaIngreso: newHoraIngreso,
                 horaEgreso: newHoraEgreso,
@@ -169,7 +185,8 @@ export async function PUT(req: Request) {
         const oldIsExtra = existing.isExtra;
         const newIsExtra = isExtra !== undefined ? isExtra : existing.isExtra;
 
-        if (oldProjectId === newProjectId) {
+        // Only adjust project hours when projects are involved
+        if (oldProjectId && newProjectId && oldProjectId === newProjectId) {
             // Same project: compute delta considering overtime multiplier
             const oldProjectImpact = oldIsExtra ? Math.ceil(existing.horasTrabajadas) * 2 : Math.ceil(existing.horasTrabajadas);
             const newProjectImpact = newIsExtra ? Math.ceil(horasTrabajadas) * 2 : Math.ceil(horasTrabajadas);
@@ -181,15 +198,15 @@ export async function PUT(req: Request) {
                 });
             }
         } else {
-            // Project changed - remove old impact, add new impact
-            if (existing.horasTrabajadas > 0) {
+            // Project changed or switched to/from causa
+            if (oldProjectId && existing.horasTrabajadas > 0) {
                 const oldProjectImpact = oldIsExtra ? Math.ceil(existing.horasTrabajadas) * 2 : Math.ceil(existing.horasTrabajadas);
                 await prisma.project.update({
                     where: { id: oldProjectId },
                     data: { horasConsumidas: { decrement: oldProjectImpact } }
                 });
             }
-            if (horasTrabajadas > 0) {
+            if (newProjectId && horasTrabajadas > 0) {
                 const newProjectImpact = newIsExtra ? Math.ceil(horasTrabajadas) * 2 : Math.ceil(horasTrabajadas);
                 await prisma.project.update({
                     where: { id: newProjectId },
@@ -229,8 +246,8 @@ export async function DELETE(req: Request) {
 
         await prisma.timeEntry.delete({ where: { id } });
 
-        if (existing.horasTrabajadas > 0) {
-            // Overtime hours (isExtra) count double for project consumption
+        // Only decrement project hours if linked to a project (not a causa)
+        if (existing.horasTrabajadas > 0 && existing.projectId) {
             const projectHoursImpact = existing.isExtra ? Math.ceil(existing.horasTrabajadas) * 2 : Math.ceil(existing.horasTrabajadas);
             await prisma.project.update({
                 where: { id: existing.projectId },

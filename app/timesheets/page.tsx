@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Play, Square, Clock, Calendar, User, Layout, CheckCircle2, ShieldAlert, Plus, Trash2, Edit3, X, AlertCircle, Activity, FileSpreadsheet } from 'lucide-react';
+import { Play, Square, Clock, Calendar, User, Layout, CheckCircle2, ShieldAlert, Plus, Trash2, Edit3, X, AlertCircle, Activity, FileSpreadsheet, Briefcase, UserX, ToggleLeft, ToggleRight } from 'lucide-react';
 import Link from 'next/link';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { showToast } from '@/components/Toast';
@@ -27,8 +27,9 @@ interface TimeEntry {
     id: string;
     operatorId: string;
     operator: { nombreCompleto: string };
-    projectId: string;
-    project: { nombre: string; cliente: string; codigoProyecto?: string };
+    projectId: string | null;
+    project: { nombre: string; cliente: string; codigoProyecto?: string } | null;
+    causaRegistro: string | null;
     fecha: string;
     horaIngreso: string | null;
     horaEgreso: string | null;
@@ -38,11 +39,18 @@ interface TimeEntry {
     isExtra: boolean;
 }
 
+interface CausaOption {
+    id: string;
+    value: string;
+    active: boolean;
+}
+
 export default function TimesheetsPage() {
     const [entries, setEntries] = useState<TimeEntry[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
     const [operators, setOperators] = useState<Operator[]>([]);
     const [recentProjects, setRecentProjects] = useState<string[]>([]);
+    const [causas, setCausas] = useState<CausaOption[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     const formatEntryDate = (dateStr: string) => formatDate(dateStr);
@@ -63,9 +71,11 @@ export default function TimesheetsPage() {
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
+    const [formMode, setFormMode] = useState<'proyecto' | 'causa'>('proyecto');
     const [formData, setFormData] = useState({
         operatorId: '',
         projectId: '',
+        causaRegistro: '',
         fecha: new Date().toISOString().split('T')[0],
         horaIngreso: '',
         horaEgreso: '',
@@ -110,14 +120,16 @@ export default function TimesheetsPage() {
                 entriesUrl += `?operatorId=${user.id}`;
             }
 
-            const [entriesData, projectsData, operatorsData] = await Promise.all([
+            const [entriesData, projectsData, operatorsData, causasData] = await Promise.all([
                 safeApiRequest(entriesUrl).then(res => res.json()),
                 safeApiRequest('/api/projects').then(res => res.json()),
-                safeApiRequest('/api/operators').then(res => res.json())
+                safeApiRequest('/api/operators').then(res => res.json()),
+                safeApiRequest('/api/config/options?category=CAUSA_REGISTRO').then(res => res.json())
             ]);
             setEntries(Array.isArray(entriesData) ? entriesData.filter(Boolean) : []);
             setProjects(Array.isArray(projectsData) ? projectsData.filter(Boolean) : []);
             setOperators(Array.isArray(operatorsData) ? operatorsData.filter(Boolean) : []);
+            setCausas(Array.isArray(causasData) ? causasData.filter((c: any) => c.active) : []);
             
             if (user?.id || user?.nombreCompleto) {
                 try {
@@ -157,9 +169,12 @@ export default function TimesheetsPage() {
     const openEditModal = (entry?: TimeEntry) => {
         if (entry) {
             setEditingEntry(entry);
+            const isCausaMode = !!entry.causaRegistro;
+            setFormMode(isCausaMode ? 'causa' : 'proyecto');
             setFormData({
                 operatorId: entry.operatorId,
-                projectId: entry.projectId,
+                projectId: entry.projectId || '',
+                causaRegistro: entry.causaRegistro || '',
                 fecha: entry.fecha,
                 horaIngreso: entry.horaIngreso || '',
                 horaEgreso: entry.horaEgreso || '',
@@ -175,9 +190,11 @@ export default function TimesheetsPage() {
             }
         } else {
             setEditingEntry(null);
+            setFormMode('proyecto');
             setFormData({
                 operatorId: currentUser?.role === 'operador' ? currentUser.id : '',
                 projectId: '',
+                causaRegistro: '',
                 fecha: new Date().toISOString().split('T')[0],
                 horaIngreso: '',
                 horaEgreso: '',
@@ -187,8 +204,43 @@ export default function TimesheetsPage() {
         setIsModalOpen(true);
     };
 
+    const handleToggleMode = () => {
+        setFormMode(prev => {
+            const newMode = prev === 'proyecto' ? 'causa' : 'proyecto';
+            // Clear the value of the opposite mode
+            if (newMode === 'proyecto') {
+                setFormData(fd => ({ ...fd, causaRegistro: '', horaIngreso: fd.horaIngreso, horaEgreso: fd.horaEgreso }));
+            } else {
+                setFormData(fd => ({ ...fd, projectId: '' }));
+            }
+            return newMode;
+        });
+    };
+
+    const handleCausaChange = (causaValue: string) => {
+        setFormData(fd => {
+            const update: any = { ...fd, causaRegistro: causaValue };
+            // Auto-fill times when selecting a causa (if not already set)
+            if (causaValue && !fd.horaIngreso && !fd.horaEgreso) {
+                update.horaIngreso = '08:00';
+                update.horaEgreso = '17:00';
+            }
+            return update;
+        });
+    };
+
     const handleSubmitForm = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validation: must have selection in the active mode
+        if (formMode === 'proyecto' && !formData.projectId) {
+            showToast('Debe seleccionar un Proyecto.', 'error');
+            return;
+        }
+        if (formMode === 'causa' && !formData.causaRegistro) {
+            showToast('Debe seleccionar una Causa.', 'error');
+            return;
+        }
 
         if (formData.horaIngreso && formData.horaEgreso) {
             if (formData.horaEgreso < formData.horaIngreso) {
@@ -199,10 +251,23 @@ export default function TimesheetsPage() {
 
         try {
             const payload: any = {
-                ...formData,
+                operatorId: formData.operatorId,
+                fecha: formData.fecha,
+                horaIngreso: formData.horaIngreso,
+                horaEgreso: formData.horaEgreso,
+                isExtra: formData.isExtra,
                 requestUserId: currentUser?.id,
                 requestUserRole: currentUser?.role
             };
+
+            // Only send the active mode's value
+            if (formMode === 'proyecto') {
+                payload.projectId = formData.projectId;
+                payload.causaRegistro = null;
+            } else {
+                payload.causaRegistro = formData.causaRegistro;
+                payload.projectId = null;
+            }
 
             let url = '/api/time-entries';
             let method = 'POST';
@@ -288,7 +353,7 @@ export default function TimesheetsPage() {
                     operatorId: currentUser.id,
                     forSupervisors: true,
                     title: `Solicitud para ${actionText} registro`,
-                    message: `El operador ${currentUser.nombreCompleto} solicita ${actionText} su registro de horas del ${pendingAction.entry.fecha} (${pendingAction.entry.project?.nombre || 'Sin proyecto'}).\nMotivo: ${requestMessage}`,
+                    message: `El operador ${currentUser.nombreCompleto} solicita ${actionText} su registro de horas del ${pendingAction.entry.fecha} (${pendingAction.entry.causaRegistro ? `Causa: ${pendingAction.entry.causaRegistro}` : (pendingAction.entry.project?.nombre || 'Sin proyecto')}).\nMotivo: ${requestMessage}`,
                     type: 'TIME_MODIFICATION_REQUEST',
                     relatedId: pendingAction.entry.id,
                     metadata
@@ -337,7 +402,7 @@ export default function TimesheetsPage() {
                 aoa.push([
                     formatDate(e.fecha),
                     e.operator?.nombreCompleto || '',
-                    e.project?.nombre || '',
+                    e.causaRegistro ? `[CAUSA] ${e.causaRegistro}` : (e.project?.nombre || ''),
                     e.horaIngreso || '',
                     e.horaEgreso || '',
                     e.horasTrabajadas,
@@ -380,13 +445,14 @@ export default function TimesheetsPage() {
     };
 
     const groupedPlanilla = Object.values(filteredCompleted.reduce((acc, entry) => {
-        const key = `${entry.fecha}_${entry.operatorId}_${entry.projectId || 'base'}`;
+        const key = `${entry.fecha}_${entry.operatorId}_${entry.projectId || entry.causaRegistro || 'base'}`;
         if (!acc[key]) {
             acc[key] = {
                 id: key,
                 fecha: entry.fecha,
                 operatorName: entry.operator?.nombreCompleto || 'Sistema / Central',
-                projectName: entry.project?.nombre || 'BASE / EMPRESA',
+                projectName: entry.causaRegistro ? `[CAUSA] ${entry.causaRegistro}` : (entry.project?.nombre || 'BASE / EMPRESA'),
+                isCausa: !!entry.causaRegistro,
                 normalStart: "-", normalEnd: "-", normalTotal: 0,
                 extraStart: "-", extraEnd: "-", extraTotal: 0,
             };
@@ -552,10 +618,19 @@ export default function TimesheetsPage() {
                                                 <td className="p-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight whitespace-nowrap">{formatEntryDate(entry.fecha)}</td>
                                                 <td className="p-4 text-sm font-black text-primary">{entry.operator?.nombreCompleto || 'Sistema / Central'}</td>
                                                 <td className="p-4">
-                                                    <div className="flex items-center gap-2 flex-wrap text-xs font-bold text-slate-600 dark:text-slate-300 truncate max-w-[200px]" title={entry.project?.nombre || 'Sin proyecto'}>
-                                                        {entry.project?.nombre || 'Sin proyecto'}
-                                                        {entry.project?.codigoProyecto && <CodeBadge code={entry.project.codigoProyecto} variant="project" size="sm" showCopy={false} />}
-                                                    </div>
+                                                    {entry.causaRegistro ? (
+                                                        <div className="flex items-center gap-2 text-xs font-bold">
+                                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-lg border border-orange-200 dark:border-orange-800">
+                                                                <UserX className="w-3 h-3" />
+                                                                {entry.causaRegistro}
+                                                            </span>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex items-center gap-2 flex-wrap text-xs font-bold text-slate-600 dark:text-slate-300 truncate max-w-[200px]" title={entry.project?.nombre || 'Sin proyecto'}>
+                                                            {entry.project?.nombre || 'Sin proyecto'}
+                                                            {entry.project?.codigoProyecto && <CodeBadge code={entry.project.codigoProyecto} variant="project" size="sm" showCopy={false} />}
+                                                        </div>
+                                                    )}
                                                 </td>
                                                 <td className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 text-center">
                                                     {entry.horaIngreso} - {entry.horaEgreso}
@@ -634,8 +709,17 @@ export default function TimesheetsPage() {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-2 flex-wrap mb-2">
-                                                <p className="text-xs font-bold text-slate-600 dark:text-slate-300 truncate">{entry.project?.nombre || 'BASE / EMPRESA'}</p>
-                                                {entry.project?.codigoProyecto && <CodeBadge code={entry.project.codigoProyecto} variant="project" size="sm" showCopy={false} />}
+                                                {entry.causaRegistro ? (
+                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-lg border border-orange-200 dark:border-orange-800 text-xs font-bold">
+                                                        <UserX className="w-3 h-3" />
+                                                        {entry.causaRegistro}
+                                                    </span>
+                                                ) : (
+                                                    <>
+                                                        <p className="text-xs font-bold text-slate-600 dark:text-slate-300 truncate">{entry.project?.nombre || 'BASE / EMPRESA'}</p>
+                                                        {entry.project?.codigoProyecto && <CodeBadge code={entry.project.codigoProyecto} variant="project" size="sm" showCopy={false} />}
+                                                    </>
+                                                )}
                                             </div>
                                             <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                                                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{entry.horaIngreso} - {entry.horaEgreso}</span>
@@ -686,7 +770,16 @@ export default function TimesheetsPage() {
                                         <tr key={row.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 [&>td]:align-middle">
                                             <td className="p-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight whitespace-nowrap">{formatEntryDate(row.fecha)}</td>
                                             <td className="p-4 text-sm font-black text-primary">{row.operatorName}</td>
-                                            <td className="p-4 text-xs font-bold text-slate-600 dark:text-slate-300 truncate max-w-[200px]" title={row.projectName}>{row.projectName}</td>
+                                            <td className="p-4 text-xs font-bold truncate max-w-[200px]" title={row.projectName}>
+                                                {row.isCausa ? (
+                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-lg border border-orange-200 dark:border-orange-800">
+                                                        <UserX className="w-3 h-3" />
+                                                        {row.projectName.replace('[CAUSA] ', '')}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-slate-600 dark:text-slate-300">{row.projectName}</span>
+                                                )}
+                                            </td>
                                             <td className="p-4 border-l border-slate-100 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400">{row.normalStart}</td>
                                             <td className="p-4 text-center text-xs text-slate-500 dark:text-slate-400">{row.normalEnd}</td>
                                             <td className="p-4 text-center font-black text-indigo-600 bg-indigo-50/30">{row.normalTotal > 0 ? `${row.normalTotal}h` : '-'}</td>
@@ -784,15 +877,70 @@ export default function TimesheetsPage() {
                                         />
                                     </div>
 
-                                    {/* Proyecto */}
-                                    <div className="space-y-2 md:col-span-2">
-                                        <SearchableSelect
-                                            label="Proyecto"
-                                            options={getProjectOptions(activeProjects, recentProjects)}
-                                            value={formData.projectId}
-                                            onChange={(val) => setFormData({ ...formData, projectId: val })}
-                                            placeholder="Seleccionar proyecto..."
-                                        />
+                                    {/* Toggle Proyecto / Causa */}
+                                    <div className="space-y-3 md:col-span-2">
+                                        <div className="flex items-center gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={handleToggleMode}
+                                                className={`group relative flex items-center gap-2.5 w-full py-3 px-4 rounded-2xl font-bold text-sm transition-all duration-300 border-2 ${
+                                                    formMode === 'proyecto'
+                                                        ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300'
+                                                        : 'bg-orange-50 dark:bg-orange-900/20 border-orange-300 dark:border-orange-700 text-orange-700 dark:text-orange-300'
+                                                }`}
+                                            >
+                                                <div className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-300 ${
+                                                    formMode === 'proyecto'
+                                                        ? 'bg-indigo-500 text-white'
+                                                        : 'bg-orange-500 text-white'
+                                                }`}>
+                                                    {formMode === 'proyecto' ? <Briefcase className="w-4 h-4" /> : <UserX className="w-4 h-4" />}
+                                                </div>
+                                                <span className="flex-1 text-left">
+                                                    {formMode === 'proyecto' ? 'Modo: Proyecto' : 'Modo: Causa / Ausencia'}
+                                                </span>
+                                                <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest opacity-60">
+                                                    <span>Cambiar</span>
+                                                    {formMode === 'proyecto' 
+                                                        ? <ToggleLeft className="w-5 h-5" />
+                                                        : <ToggleRight className="w-5 h-5" />
+                                                    }
+                                                </div>
+                                            </button>
+                                        </div>
+
+                                        {/* Proyecto selector (visible in proyecto mode) */}
+                                        {formMode === 'proyecto' && (
+                                            <div className="animate-in fade-in zoom-in-95 duration-300">
+                                                <SearchableSelect
+                                                    label="Proyecto"
+                                                    options={getProjectOptions(activeProjects, recentProjects)}
+                                                    value={formData.projectId}
+                                                    onChange={(val) => setFormData({ ...formData, projectId: val })}
+                                                    placeholder="Seleccionar proyecto..."
+                                                />
+                                            </div>
+                                        )}
+
+                                        {/* Causa selector (visible in causa mode) */}
+                                        {formMode === 'causa' && (
+                                            <div className="animate-in fade-in zoom-in-95 duration-300">
+                                                <SearchableSelect
+                                                    label="Causa / Ausencia"
+                                                    options={causas.map(c => ({ id: c.value, label: c.value }))}
+                                                    value={formData.causaRegistro}
+                                                    onChange={handleCausaChange}
+                                                    placeholder="Seleccionar causa..."
+                                                    icon={<UserX className="w-3.5 h-3.5" />}
+                                                />
+                                                {formData.causaRegistro && (
+                                                    <p className="text-[10px] text-orange-500 dark:text-orange-400 font-bold mt-1.5 px-1 flex items-center gap-1 animate-in fade-in duration-300">
+                                                        <Clock className="w-3 h-3" />
+                                                        Horario autocompletado: 08:00 – 17:00 (editable)
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Fecha */}

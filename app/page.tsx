@@ -18,7 +18,8 @@ import {
     MapPin,
     User as UserIcon,
     FileSignature,
-    History as HistoryIcon
+    History as HistoryIcon,
+    Wrench
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -87,6 +88,13 @@ export default function HomePage() {
                             icon={<Clock className="w-6 h-6" />}
                             href="/timesheets"
                             color="bg-primary"
+                        />
+                        <ActionCard
+                            title="Carros de Herramientas"
+                            description="Retiro y devolución"
+                            icon={<Wrench className="w-6 h-6" />}
+                            href="/carros"
+                            color="bg-slate-600"
                         />
                         <ActionCard
                             title="Mis Proyectos"
@@ -170,6 +178,13 @@ export default function HomePage() {
                             icon={<MapPin className="w-6 h-6" />}
                             href="/fichado"
                             color="bg-emerald-500"
+                        />
+                        <ActionCard
+                            title="Carros de Herramientas"
+                            description="Control de retiros"
+                            icon={<Wrench className="w-6 h-6" />}
+                            href="/carros"
+                            color="bg-slate-600"
                         />
                         <ActionCard
                             title="Panel de Análisis"

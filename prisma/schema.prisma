@@ -51,6 +51,7 @@ model Project {
   qrToken                 String?  // current token signature for QR validation
   fichajeHabilitado       Boolean  @default(false)
   qrHistory               QrTokenHistory[]
+  cartMovements           ToolCartMovement[]
 
   @@index([qrToken])
 }
@@ -126,6 +127,7 @@ model Operator {
   notifications   Notification[]
   ordenesServicio OrdenServicioOperador[]
   fichadas        Fichada[]
+  cartMovements   ToolCartMovement[]
   primaryDeviceId String?
 }
 
@@ -173,6 +175,7 @@ model TimeEntry {
   estadoConfirmado        Boolean  @default(false)
   confirmadoPorSupervisor String?
   isExtra                 Boolean  @default(false)
+  causaRegistro           String?  // "Falta", "Permiso", "Carpeta Médica", etc. (from ConfigOption CAUSA_REGISTRO)
   // Legacy punch-in fields (kept for data integrity, new punch-ins go to Fichada table)
   deviceId                String?
   latitude                Float?
@@ -454,4 +457,58 @@ model Fichada {
   @@index([fecha])
   @@index([projectId])
   @@index([operatorId])
+}
+
+model ToolCart {
+  id          String   @id @default(uuid())
+  nombre      String   @unique
+  descripcion String?
+  estado      String   @default("DISPONIBLE") // DISPONIBLE, EN_USO, MANTENIMIENTO
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items       ToolCartItem[]
+  movements   ToolCartMovement[]
+}
+
+model ToolCartItem {
+  id           String   @id @default(uuid())
+  cartId       String
+  cart         ToolCart @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  nombre       String
+  cantidad     Int      @default(1)
+  createdAt    DateTime @default(now())
+}
+
+model ToolCartMovement {
+  id              String   @id @default(uuid())
+  cartId          String
+  cart            ToolCart @relation(fields: [cartId], references: [id], onDelete: Restrict)
+  operatorId      String
+  operator        Operator @relation(fields: [operatorId], references: [id], onDelete: Restrict)
+  projectId       String
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  
+  fechaSalida     DateTime @default(now())
+  fechaDevolucion DateTime?
+  
+  estado          String   @default("ACTIVO") // ACTIVO, COMPLETADO
+
+  items           ToolCartMovementItem[]
+}
+
+model ToolCartMovementItem {
+  id              String   @id @default(uuid())
+  movementId      String
+  movement        ToolCartMovement @relation(fields: [movementId], references: [id], onDelete: Cascade)
+  
+  nombre          String
+  cantidad        Int      @default(1)
+  isAdditional    Boolean  @default(false) // true = agregada por operador, efímera
+
+  // Status at checkout (salida)
+  presentAtOut    Boolean  @default(true)
+  
+  // Status at checkin (devolucion)
+  presentAtIn     Boolean?
 }
