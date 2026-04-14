@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from "react";
+import { ViewConfig, isViewAllowed } from '@/lib/viewAccess';
 import "./globals.css";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Script from "next/script";
-import { Calendar, LayoutGrid, Users, ClipboardList, Menu, X, Landmark, LayoutDashboard, Timer, Clock, LogOut, Home, Settings, FileSignature, Package, PackageSearch, MapPin, ShieldAlert, ShieldCheck, History } from "lucide-react";
+import { Calendar, LayoutGrid, Users, ClipboardList, Menu, X, Landmark, LayoutDashboard, Timer, Clock, LogOut, Home, Settings, FileSignature, Package, PackageSearch, MapPin, ShieldAlert, ShieldCheck, History, Wrench } from "lucide-react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import ToastContainer from "@/components/Toast";
@@ -191,6 +192,18 @@ export default function RootLayout({
 
 function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose: () => void; user: any; onLogout: () => void }) {
     const pathname = usePathname();
+    const [viewConfig, setViewConfig] = useState<ViewConfig[] | null>(null);
+
+    useEffect(() => {
+        fetch('/api/config/views')
+            .then(r => r.json())
+            .then(data => {
+                if (Array.isArray(data) && data.length > 0) {
+                    setViewConfig(data);
+                }
+            })
+            .catch(() => {});
+    }, []);
 
     const menuItems = [
         { href: '/', icon: <Home className="w-5 h-5" />, label: 'Inicio', roles: ['operador', 'supervisor', 'admin', 'vendedor'] },
@@ -211,10 +224,17 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
         { href: '/aprobaciones', icon: <ShieldCheck className="w-5 h-5" />, label: 'Aprobaciones', roles: ['supervisor', 'admin'] },
         { href: '/monitoreo-fichadas', icon: <ShieldAlert className="w-5 h-5" />, label: 'Monitoreo de Fichadas', roles: ['supervisor', 'admin'] },
         { href: '/auditoria', icon: <History className="w-5 h-5" />, label: 'Auditoría', roles: ['admin', 'supervisor'] },
+        { href: '/carros-historial', icon: <Wrench className="w-5 h-5" />, label: 'Historial de Carros', roles: ['supervisor', 'admin'] },
         { href: '/configuracion', icon: <Settings className="w-5 h-5" />, label: 'Configuración', roles: ['admin', 'supervisor'] },
     ];
 
-    const allowedMenu = menuItems.filter(item => item.roles.includes(user?.role?.toLowerCase() || 'operador'));
+    const role = user?.role?.toLowerCase() || 'operador';
+    const allowedMenu = menuItems.filter(item => {
+        // First check hardcoded role access
+        if (!item.roles.includes(role)) return false;
+        // Then apply dynamic view config if available
+        return isViewAllowed(item.href, role, 'sidebar', viewConfig);
+    });
 
     return (
         <>

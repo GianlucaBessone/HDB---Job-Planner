@@ -331,40 +331,38 @@ export default function CarrosPage() {
                                 {checklist.map(item => {
                                     const missingCount = Math.max(0, item.cantidad - (item.cantidadOut || 0));
                                     return (
-                                        <div key={item.id} className="p-4 rounded-2xl border border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/30">
-                                            <div className="flex items-center justify-between gap-4">
-                                                <div className="flex-1 min-w-0">
-                                                    <span className="text-sm font-black text-slate-800 dark:text-slate-100 block truncate">{item.nombre}</span>
-                                                    <span className="text-[10px] uppercase tracking-widest font-black text-slate-400">Esperado: {item.cantidad}</span>
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    <button 
-                                                        type="button"
-                                                        onClick={() => updateToolQty(item.id, (item.cantidadOut || 0) - 1, true)}
-                                                        className="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"
-                                                    >
-                                                        <Minus className="w-4 h-4" />
-                                                    </button>
-                                                    <input 
-                                                        type="number"
-                                                        min={0}
-                                                        max={item.cantidad}
-                                                        value={item.cantidadOut}
-                                                        onChange={e => updateToolQty(item.id, parseInt(e.target.value) || 0, true)}
-                                                        className="w-14 h-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center text-sm font-black text-slate-800 dark:text-slate-100 outline-none focus:border-primary"
-                                                    />
-                                                    <button 
-                                                        type="button"
-                                                        disabled={(item.cantidadOut || 0) >= item.cantidad}
-                                                        onClick={() => updateToolQty(item.id, (item.cantidadOut || 0) + 1, true)}
-                                                        className="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed"
-                                                    >
-                                                        <Plus className="w-4 h-4" />
-                                                    </button>
-                                                </div>
+                                        <div key={item.id} className="p-4 rounded-2xl border border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/30 space-y-3">
+                                            <div>
+                                                <span className="text-sm font-black text-slate-800 dark:text-slate-100 block break-words">{item.nombre}</span>
+                                                <span className="text-[10px] uppercase tracking-widest font-black text-slate-400">Esperado: {item.cantidad}</span>
+                                            </div>
+                                            <div className="flex items-center justify-center gap-2">
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => updateToolQty(item.id, (item.cantidadOut || 0) - 1, true)}
+                                                    className="w-11 h-11 flex items-center justify-center bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 active:scale-90 transition-transform"
+                                                >
+                                                    <Minus className="w-4 h-4" />
+                                                </button>
+                                                <input 
+                                                    type="number"
+                                                    min={0}
+                                                    max={item.cantidad}
+                                                    value={item.cantidadOut}
+                                                    onChange={e => updateToolQty(item.id, parseInt(e.target.value) || 0, true)}
+                                                    className="w-16 h-11 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center text-base font-black text-slate-800 dark:text-slate-100 outline-none focus:border-primary"
+                                                />
+                                                <button 
+                                                    type="button"
+                                                    disabled={(item.cantidadOut || 0) >= item.cantidad}
+                                                    onClick={() => updateToolQty(item.id, (item.cantidadOut || 0) + 1, true)}
+                                                    className="w-11 h-11 flex items-center justify-center bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed active:scale-90 transition-transform"
+                                                >
+                                                    <Plus className="w-4 h-4" />
+                                                </button>
                                             </div>
                                             {missingCount > 0 && (
-                                                <div className="mt-2 flex items-center gap-1.5 text-red-500 animate-in fade-in slide-in-from-top-1">
+                                                <div className="flex items-center gap-1.5 text-red-500 animate-in fade-in slide-in-from-top-1">
                                                     <AlertTriangle className="w-3.5 h-3.5" />
                                                     <span className="text-[10px] font-black uppercase tracking-widest">Faltan {missingCount} unidades</span>
                                                 </div>
@@ -439,40 +437,38 @@ export default function CarrosPage() {
                                 {checklist.map(item => {
                                     const missingCount = Math.max(0, item.cantidad - (item.cantidadIn || 0));
                                     return (
-                                        <div key={item.id} className="p-4 rounded-2xl border border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/30">
-                                            <div className="flex items-center justify-between gap-4">
-                                                <div className="flex-1 min-w-0">
-                                                    <span className="text-sm font-black text-slate-800 dark:text-slate-100 block truncate">{item.nombre}</span>
-                                                    <span className="text-[10px] uppercase tracking-widest font-black text-slate-400">Esperado: {item.cantidad}</span>
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    <button 
-                                                        type="button"
-                                                        onClick={() => updateToolQty(item.id, (item.cantidadIn || 0) - 1, false)}
-                                                        className="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400"
-                                                    >
-                                                        <Minus className="w-4 h-4" />
-                                                    </button>
-                                                    <input 
-                                                        type="number"
-                                                        min={0}
-                                                        max={item.cantidad}
-                                                        value={item.cantidadIn}
-                                                        onChange={e => updateToolQty(item.id, parseInt(e.target.value) || 0, false)}
-                                                        className="w-14 h-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center text-sm font-black text-slate-800 dark:text-slate-100 outline-none focus:border-primary"
-                                                    />
-                                                    <button 
-                                                        type="button"
-                                                        disabled={(item.cantidadIn || 0) >= item.cantidad}
-                                                        onClick={() => updateToolQty(item.id, (item.cantidadIn || 0) + 1, false)}
-                                                        className="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed"
-                                                    >
-                                                        <Plus className="w-4 h-4" />
-                                                    </button>
-                                                </div>
+                                        <div key={item.id} className="p-4 rounded-2xl border border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/30 space-y-3">
+                                            <div>
+                                                <span className="text-sm font-black text-slate-800 dark:text-slate-100 block break-words">{item.nombre}</span>
+                                                <span className="text-[10px] uppercase tracking-widest font-black text-slate-400">Esperado: {item.cantidad}</span>
+                                            </div>
+                                            <div className="flex items-center justify-center gap-2">
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => updateToolQty(item.id, (item.cantidadIn || 0) - 1, false)}
+                                                    className="w-11 h-11 flex items-center justify-center bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 active:scale-90 transition-transform"
+                                                >
+                                                    <Minus className="w-4 h-4" />
+                                                </button>
+                                                <input 
+                                                    type="number"
+                                                    min={0}
+                                                    max={item.cantidad}
+                                                    value={item.cantidadIn}
+                                                    onChange={e => updateToolQty(item.id, parseInt(e.target.value) || 0, false)}
+                                                    className="w-16 h-11 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center text-base font-black text-slate-800 dark:text-slate-100 outline-none focus:border-primary"
+                                                />
+                                                <button 
+                                                    type="button"
+                                                    disabled={(item.cantidadIn || 0) >= item.cantidad}
+                                                    onClick={() => updateToolQty(item.id, (item.cantidadIn || 0) + 1, false)}
+                                                    className="w-11 h-11 flex items-center justify-center bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed active:scale-90 transition-transform"
+                                                >
+                                                    <Plus className="w-4 h-4" />
+                                                </button>
                                             </div>
                                             {missingCount > 0 && (
-                                                <div className="mt-2 flex items-center gap-1.5 text-red-500 animate-in fade-in slide-in-from-top-1">
+                                                <div className="flex items-center gap-1.5 text-red-500 animate-in fade-in slide-in-from-top-1">
                                                     <AlertTriangle className="w-3.5 h-3.5" />
                                                     <span className="text-[10px] font-black uppercase tracking-widest">Faltan {missingCount} unidades</span>
                                                 </div>

@@ -22,12 +22,15 @@ import {
     Wrench
 } from 'lucide-react';
 import Link from 'next/link';
+import { ViewConfig, isViewAllowed } from '@/lib/viewAccess';
 
 export default function HomePage() {
     const router = useRouter();
     const [userRole, setUserRole] = useState<string | null>(null);
     const [userName, setUserName] = useState<string>('');
     const [userData, setUserData] = useState<any>(null);
+
+    const [viewConfig, setViewConfig] = useState<ViewConfig[] | null>(null);
 
     useEffect(() => {
         const stored = localStorage.getItem('currentUser');
@@ -41,6 +44,15 @@ export default function HomePage() {
                 // Ignore
             }
         }
+
+        fetch('/api/config/views')
+            .then(r => r.json())
+            .then(data => {
+                if (Array.isArray(data) && data.length > 0) {
+                    setViewConfig(data);
+                }
+            })
+            .catch(() => {});
     }, [router]);
 
     const role = userRole?.trim().toLowerCase() || 'operador';
@@ -49,6 +61,8 @@ export default function HomePage() {
     const isSupervisor = role === 'supervisor';
     const isAdmin = role === 'admin';
     const isSupervisorOrAdmin = isSupervisor || isAdmin;
+
+    const show = (href: string) => isViewAllowed(href, role, 'home', viewConfig);
 
     if (!userRole) {
         return (
@@ -75,48 +89,48 @@ export default function HomePage() {
                 <div className="space-y-6">
                     <h3 className="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Tus Acciones Rápidas</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
-                        <ActionCard
+                        {show('/fichado') && <ActionCard
                             title="Fichado GPS/QR"
                             description="Iniciar/Finalizar jornada"
                             icon={<MapPin className="w-6 h-6" />}
                             href="/fichado"
                             color="bg-emerald-500"
-                        />
-                        <ActionCard
+                        />}
+                        {show('/timesheets') && <ActionCard
                             title="Registro de Tiempos"
                             description="Tus horas trabajadas"
                             icon={<Clock className="w-6 h-6" />}
                             href="/timesheets"
                             color="bg-primary"
-                        />
-                        <ActionCard
+                        />}
+                        {show('/carros') && <ActionCard
                             title="Carros de Herramientas"
                             description="Retiro y devolución"
                             icon={<Wrench className="w-6 h-6" />}
                             href="/carros"
                             color="bg-slate-600"
-                        />
-                        <ActionCard
+                        />}
+                        {show('/my-projects') && <ActionCard
                             title="Mis Proyectos"
                             description="Proyectos a tu cargo"
                             icon={<Briefcase className="w-6 h-6" />}
                             href="/my-projects"
                             color="bg-indigo-500"
-                        />
-                        <ActionCard
+                        />}
+                        {show('/delays') && <ActionCard
                             title="Demoras del Cliente"
                             description="Registro de inconvenientes"
                             icon={<AlertTriangle className="w-6 h-6" />}
                             href="/delays"
                             color="bg-amber-500"
-                        />
-                        <ActionCard
+                        />}
+                        {show('/notifications') && <ActionCard
                             title="Notificaciones"
                             description="Novedades y alertas"
                             icon={<Bell className="w-6 h-6" />}
                             href="/notifications"
                             color="bg-rose-500"
-                        />
+                        />}
                     </div>
                 </div>
             )}
@@ -126,34 +140,34 @@ export default function HomePage() {
                 <div className="space-y-6">
                     <h3 className="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Panel de Ventas</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-                        <ActionCard
+                        {show('/provision-materiales') && <ActionCard
                             title="Provisión de Materiales"
                             description="Gestión de suministros"
                             icon={<Package className="w-6 h-6" />}
                             href="/provision-materiales"
                             color="bg-orange-500"
-                        />
-                        <ActionCard
+                        />}
+                        {show('/clients') && <ActionCard
                             title="Gestión de Clientes"
                             description="Base de datos de clientes"
                             icon={<Activity className="w-6 h-6" />}
                             href="/clients"
                             color="bg-indigo-500"
-                        />
-                        <ActionCard
+                        />}
+                        {show('/notifications') && <ActionCard
                             title="Notificaciones"
                             description="Novedades y alertas"
                             icon={<Bell className="w-6 h-6" />}
                             href="/notifications"
                             color="bg-rose-500"
-                        />
-                        <ActionCard
+                        />}
+                        {show('/operators') && <ActionCard
                             title="Mi Usuario"
                             description="Perfil de Ventas"
                             icon={<UserIcon className="w-6 h-6" />}
                             href="/operators"
                             color="bg-slate-700"
-                        />
+                        />}
                     </div>
                 </div>
             )}
@@ -165,94 +179,97 @@ export default function HomePage() {
                         {isAdmin ? 'Panel de Administración' : 'Panel de Supervisión'}
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 gap-3 md:gap-4">
-                        <ActionCard
+                        {show('/aprobaciones') && <ActionCard
                             title="Aprobaciones"
                             description="Validar fichadas de riesgo"
                             icon={<ClipboardCheck className="w-6 h-6" />}
                             href="/aprobaciones"
                             color="bg-teal-600"
-                        />
-                        <ActionCard
+                        />}
+                        {show('/fichado') && <ActionCard
                             title="Fichado GPS/QR"
                             description="Control de asistencia"
                             icon={<MapPin className="w-6 h-6" />}
                             href="/fichado"
                             color="bg-emerald-500"
-                        />
-                        <ActionCard
+                        />}
+                        {show('/carros') && <ActionCard
                             title="Carros de Herramientas"
                             description="Control de retiros"
                             icon={<Wrench className="w-6 h-6" />}
                             href="/carros"
                             color="bg-slate-600"
-                        />
-                        <ActionCard
+                        />}
+                        {show('/carros-historial') && <ActionCard
+                            title="Historial de Carros"
+                            description="Trazabilidad y faltantes"
+                            icon={<HistoryIcon className="w-6 h-6" />}
+                            href="/carros-historial"
+                            color="bg-slate-800"
+                        />}
+                        {show('/dashboard') && <ActionCard
                             title="Panel de Análisis"
                             description="Métricas globales"
                             icon={<BarChart3 className="w-6 h-6" />}
                             href="/dashboard"
                             color="bg-cyan-600"
-                        />
-                        <ActionCard
+                        />}
+                        {show('/planning') && <ActionCard
                             title="Planificación"
                             description="Agenda y cronograma"
                             icon={<CalendarCheck className="w-6 h-6" />}
                             href="/planning"
                             color="bg-violet-600"
-                        />
-                        <ActionCard
+                        />}
+                        {show('/projects') && <ActionCard
                             title="Gestión de Proyectos"
                             description="Proyectos activos"
                             icon={<Briefcase className="w-6 h-6" />}
                             href="/projects"
                             color="bg-indigo-500"
-                        />
-                        <ActionCard
+                        />}
+                        {show('/ordenes-servicio') && <ActionCard
                             title="Órdenes de Servicio"
                             description="Gestión y firmas"
                             icon={<FileSignature className="w-6 h-6" />}
                             href="/ordenes-servicio"
                             color="bg-blue-600"
-                        />
-                        <ActionCard
+                        />}
+                        {show('/provision-materiales') && <ActionCard
                             title="Provisión de Materiales"
                             description="Control de suministros"
                             icon={<Package className="w-6 h-6" />}
                             href="/provision-materiales"
                             color="bg-orange-500"
-                        />
-                        <ActionCard
+                        />}
+                        {show('/notifications') && <ActionCard
                             title="Notificaciones"
                             description="Novedades y alertas"
                             icon={<Bell className="w-6 h-6" />}
                             href="/notifications"
                             color="bg-rose-500"
-                        />
-                        <ActionCard
+                        />}
+                        {show('/operators') && <ActionCard
                             title="Gestión de Usuarios"
                             description="Operadores y permisos"
                             icon={<UserIcon className="w-6 h-6" />}
                             href="/operators"
                             color="bg-slate-700"
-                        />
-                        {isAdmin && (
-                            <>
-                                <ActionCard
-                                    title="Registro Auditoría"
-                                    description="Trazabilidad total"
-                                    icon={<HistoryIcon className="w-6 h-6" />}
-                                    href="/auditoria"
-                                    color="bg-slate-900"
-                                />
-                                <ActionCard
-                                    title="Configuración"
-                                    description="Ajustes de sistema"
-                                    icon={<Settings className="w-6 h-6" />}
-                                    href="/configuracion"
-                                    color="bg-slate-400"
-                                />
-                            </>
-                        )}
+                        />}
+                        {show('/auditoria') && <ActionCard
+                            title="Registro Auditoría"
+                            description="Trazabilidad total"
+                            icon={<HistoryIcon className="w-6 h-6" />}
+                            href="/auditoria"
+                            color="bg-slate-900"
+                        />}
+                        {show('/configuracion') && <ActionCard
+                            title="Configuración"
+                            description="Ajustes de sistema"
+                            icon={<Settings className="w-6 h-6" />}
+                            href="/configuracion"
+                            color="bg-slate-400"
+                        />}
                     </div>
                 </div>
             )}

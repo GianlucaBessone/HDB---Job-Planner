@@ -25,7 +25,8 @@ import {
     History,
     FileText,
     QrCode,
-    Wrench
+    Wrench,
+    Eye
 } from 'lucide-react';
 import MapPicker from '@/components/MapPicker';
 import ToolCartsSection from '@/components/ToolCartsSection';
@@ -33,11 +34,12 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
 import { QRCodeCanvas } from 'qrcode.react';
+import { ViewConfig, DEFAULT_VIEWS, getViewConfig } from '@/lib/viewAccess';
 
 export default function ConfigPage() {
     const router = useRouter();
     const [userRole, setUserRole] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<'tags' | 'checklists' | 'options' | 'os' | 'system' | 'carros'>('tags');
+    const [activeTab, setActiveTab] = useState<'tags' | 'checklists' | 'options' | 'os' | 'system' | 'carros' | 'vistas'>('tags');
 
     useEffect(() => {
         const stored = localStorage.getItem('currentUser');
@@ -115,6 +117,13 @@ export default function ConfigPage() {
                     <Wrench className="w-4 h-4" />
                     Carros
                 </button>
+                <button
+                    onClick={() => setActiveTab('vistas')}
+                    className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'vistas' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'}`}
+                >
+                    <Eye className="w-4 h-4" />
+                    Vistas
+                </button>
             </div>
 
             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 min-h-[400px] rounded-[2rem] p-6 md:p-8 shadow-sm">
@@ -124,6 +133,7 @@ export default function ConfigPage() {
                 {activeTab === 'system' && <SystemSection />}
                 {activeTab === 'os' && <OSSection />}
                 {activeTab === 'carros' && <ToolCartsSection />}
+                {activeTab === 'vistas' && <ViewsSection />}
             </div>
         </div>
     );
@@ -985,6 +995,162 @@ function SystemSection() {
                 confirmLabel="Disparar ahora"
                 variant="info"
             />
+        </div>
+    );
+}
+
+// ----- VIEWS ACCESS SECTION -----
+function ViewsSection() {
+    const [views, setViews] = useState<ViewConfig[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        safeApiRequest('/api/config/views')
+            .then(res => res.json())
+            .then(data => {
+                if (Array.isArray(data) && data.length > 0) {
+                    setViews(getViewConfig(data));
+                } else {
+                    setViews(DEFAULT_VIEWS.map(v => ({ ...v })));
+                }
+                setLoading(false);
+            })
+            .catch(() => {
+                setViews(DEFAULT_VIEWS.map(v => ({ ...v })));
+                setLoading(false);
+            });
+    }, []);
+
+    const toggleRole = (viewKey: string, role: string) => {
+        setViews(prev => prev.map(v => {
+            if (v.key !== viewKey) return v;
+            const roles = v.roles.includes(role)
+                ? v.roles.filter(r => r !== role)
+                : [...v.roles, role];
+            return { ...v, roles };
+        }));
+    };
+
+    const setAccessValue = (viewKey: string, access: 'sidebar' | 'home' | 'ambos') => {
+        setViews(prev => prev.map(v => {
+            if (v.key !== viewKey) return v;
+            return { ...v, access };
+        }));
+    };
+
+    const handleSave = async () => {
+        setSaving(true);
+        try {
+            await safeApiRequest('/api/config/views', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(views)
+            });
+            showToast('Configuración de vistas guardada correctamente.', 'success');
+        } catch (e) {
+            showToast('Error al guardar configuración de vistas.', 'error');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    if (loading) return <div>Cargando...</div>;
+
+    const allRoles = [
+        { id: 'operador', label: 'Operador', color: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300' },
+        { id: 'supervisor', label: 'Supervisor', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' },
+        { id: 'admin', label: 'Admin', color: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300' },
+        { id: 'vendedor', label: 'Vendedor', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' },
+    ];
+
+    const accessOptions: { id: 'sidebar' | 'home' | 'ambos'; label: string }[] = [
+        { id: 'sidebar', label: 'Panel Lateral' },
+        { id: 'home', label: 'Home' },
+        { id: 'ambos', label: 'Ambos' },
+    ];
+
+    return (
+        <div className="space-y-6">
+            <div>
+                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Acceso a Vistas</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                    Configura qué roles pueden acceder a cada vista y desde dónde es accesible.
+                </p>
+            </div>
+
+            <div className="space-y-3">
+                {views.map(view => (
+                    <div
+                        key={view.key}
+                        className="bg-slate-50 dark:bg-slate-900/50 p-4 md:p-5 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all space-y-4"
+                    >
+                        {/* View header */}
+                        <div className="flex items-center gap-3">
+                            <span className="font-bold text-slate-800 dark:text-slate-100 text-sm md:text-base">{view.label}</span>
+                            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">{view.key}</span>
+                        </div>
+
+                        {/* Controls */}
+                        <div className="flex flex-col md:flex-row md:items-center gap-4">
+                            {/* Roles */}
+                            <div className="flex-1">
+                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 block px-0.5">
+                                    Roles con Acceso
+                                </label>
+                                <div className="flex flex-wrap gap-2">
+                                    {allRoles.map(r => {
+                                        const isActive = view.roles.includes(r.id);
+                                        return (
+                                            <button
+                                                key={r.id}
+                                                onClick={() => toggleRole(view.key, r.id)}
+                                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                                                    isActive
+                                                        ? `${r.color} border-transparent shadow-sm`
+                                                        : 'bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 opacity-50 hover:opacity-75'
+                                                }`}
+                                            >
+                                                {r.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Access location */}
+                            <div className="shrink-0">
+                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 block px-0.5">
+                                    Ubicación
+                                </label>
+                                <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800/50 rounded-xl">
+                                    {accessOptions.map(opt => (
+                                        <button
+                                            key={opt.id}
+                                            onClick={() => setAccessValue(view.key, opt.id)}
+                                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                                view.access === opt.id
+                                                    ? 'bg-white dark:bg-slate-700 text-primary shadow-sm'
+                                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                                            }`}
+                                        >
+                                            {opt.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            <button
+                onClick={handleSave}
+                disabled={saving}
+                className="w-full bg-primary text-white font-bold rounded-xl py-3 hover:bg-primary/90 transition-all active:scale-95 disabled:opacity-50"
+            >
+                {saving ? 'Guardando...' : 'Guardar Configuración de Vistas'}
+            </button>
         </div>
     );
 }
