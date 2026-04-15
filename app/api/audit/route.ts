@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/dataLayer';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: Request) {
-    const { searchParams } = new URL(req.url);
+export async function GET(req: NextRequest) {
+    const searchParams = req.nextUrl.searchParams;
     const userId = searchParams.get('userId');
     const action = searchParams.get('action');
     const entity = searchParams.get('entity');
