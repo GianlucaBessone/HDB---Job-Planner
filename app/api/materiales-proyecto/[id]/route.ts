@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/dataLayer';
+import { prisma } from '@/lib/prisma';
 
 // PUT /api/materiales-proyecto/[id] — actualizar material
 export async function PUT(req: Request, { params }: { params: { id: string } }) {

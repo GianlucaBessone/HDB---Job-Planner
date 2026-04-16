@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/dataLayer';
+import { prisma } from '@/lib/prisma';
 import { getDistanceInMeters } from '@/lib/geo';
 import { format, differenceInMinutes, parseISO } from 'date-fns';
 import { sendPushNotification } from '@/lib/onesignal';

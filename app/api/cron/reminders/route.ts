@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/dataLayer';
+import { prisma } from '@/lib/prisma';
 import { sendPushNotification } from '@/lib/onesignal';
 import { format, subDays } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';

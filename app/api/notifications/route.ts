@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/dataLayer';
+import { prisma } from '@/lib/prisma';
 import { sendPushNotification } from '@/lib/onesignal';
 import { withIdempotency } from '@/lib/idempotency';
 

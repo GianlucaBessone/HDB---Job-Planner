@@ -1,4 +1,4 @@
-import { prisma } from './dataLayer';
+import { prisma } from './prisma';
 
 /**
  * Registra una acción en la base de datos de auditoría.

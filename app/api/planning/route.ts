@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { dataLayer } from '@/lib/dataLayer';
-import { prisma } from '@/lib/dataLayer';
+import { prisma } from '@/lib/prisma';
 import { withIdempotency } from '@/lib/idempotency';
 
 export async function GET(req: Request) {

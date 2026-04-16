@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from './dataLayer';
+import { prisma } from './prisma';
 
 /**
  * Helper to handle idempotency in API routes.

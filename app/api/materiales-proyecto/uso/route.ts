@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/dataLayer';
+import { prisma } from '@/lib/prisma';
 
 // POST /api/materiales-proyecto/uso
 // Body: { materialId, cantidadUtilizada, operadorNombre, ordenServicioId? }

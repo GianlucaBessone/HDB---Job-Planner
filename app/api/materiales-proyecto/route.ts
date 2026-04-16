@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/dataLayer';
+import { prisma } from '@/lib/prisma';
 
 // GET /api/materiales-proyecto?proyectoId=xxx
 export async function GET(req: Request) {

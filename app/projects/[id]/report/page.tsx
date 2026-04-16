@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/dataLayer';
+import { prisma } from '@/lib/prisma';
 import { notFound, redirect } from 'next/navigation';
 import { Building2, Calendar, Clock, Activity, Timer, Users, ShieldCheck, FileText, MessageSquare, CheckCircle2, PlayCircle, AlertTriangle, AlarmClock, ClipboardList, BarChart2 } from 'lucide-react';
 import ReportPrintButton from '@/components/ReportPrintButton';

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/dataLayer';
+import { prisma } from '@/lib/prisma';
 
 // GET /api/encuesta-servicio/[osId] — Obtener encuesta por OS id o token
 export async function GET(req: Request, { params }: { params: { osId: string } }) {

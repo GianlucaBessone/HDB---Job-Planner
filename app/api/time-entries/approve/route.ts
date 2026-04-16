@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/dataLayer';
+import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 
 export async function GET(req: Request) {
@@ -10,7 +10,7 @@ export async function GET(req: Request) {
         const entries = await prisma.timeEntry.findMany({
             where: { status },
             include: {
-                operador: {
+                operator: {
                     select: { id: true, nombreCompleto: true }
                 },
                 project: {

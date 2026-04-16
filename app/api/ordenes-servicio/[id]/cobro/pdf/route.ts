@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/dataLayer';
+import { prisma } from '@/lib/prisma';
 import { renderToStream } from '@react-pdf/renderer';
 import { CobroPdf } from '@/components/CobroPdf';
 import { createElement } from 'react';

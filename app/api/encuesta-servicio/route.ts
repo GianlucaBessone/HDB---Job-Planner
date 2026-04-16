@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/dataLayer';
+import { prisma } from '@/lib/prisma';
 
 // POST /api/encuesta-servicio — Guardar encuesta de satisfacción
 export async function POST(req: Request) {

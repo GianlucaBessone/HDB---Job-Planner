@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/dataLayer';
+import { prisma } from '@/lib/prisma';
 import { CHECKLIST_TEMPLATES } from '@/lib/checklistTemplates';
 
 export async function POST() {

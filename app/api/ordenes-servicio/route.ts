@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/dataLayer';
+import { prisma } from '@/lib/prisma';
 import { generateCodigoOS } from '@/lib/codeGenerator';
 
 // GET /api/ordenes-servicio  — listado para admin/supervisor

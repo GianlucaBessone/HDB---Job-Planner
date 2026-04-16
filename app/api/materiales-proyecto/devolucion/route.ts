@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/dataLayer';
+import { prisma } from '@/lib/prisma';
 
 // POST /api/materiales-proyecto/devolucion
 // Body: { materialId, cantidadADevolver, estado, comentario?, confirmadoPor }

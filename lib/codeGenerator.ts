@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/dataLayer';
+import { prisma } from '@/lib/prisma';
 
 /**
  * Generates a sequential code like PR-2026-0001 or OS-2026-0001.

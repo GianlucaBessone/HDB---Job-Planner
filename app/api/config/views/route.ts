@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/dataLayer';
+import { prisma } from '@/lib/prisma';
 
 // Each VIEW_ACCESS ConfigOption stores a JSON value:
 // { key: string, label: string, roles: string[], access: 'sidebar' | 'home' | 'ambos' }

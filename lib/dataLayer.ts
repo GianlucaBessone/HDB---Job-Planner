@@ -1,17 +1,9 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from './prisma';
 import { generateCodigoProyecto } from '@/lib/codeGenerator';
 import { logAudit } from '@/lib/audit';
 
+export { prisma };
 
-const getPrisma = () => {
-    const g = global as any;
-    if (!g.prisma_v2) {
-        g.prisma_v2 = new PrismaClient();
-    }
-    return g.prisma_v2;
-};
-
-export const prisma = getPrisma();
 
 export const dataLayer = {
     // Projects
