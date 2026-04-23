@@ -49,137 +49,26 @@ import { CHECKLIST_TEMPLATES } from '@/lib/checklistTemplates';
 import CodeBadge from '@/components/CodeBadge';
 import { QRCodeCanvas } from 'qrcode.react';
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-type ProjectStatus = 'por_hacer' | 'planificado' | 'activo' | 'en_riesgo' | 'atrasado' | 'finalizado';
+import { 
+    ProjectStatus, 
+    Project, 
+    FormData, 
+    Filters, 
+    STATUS_CONFIG, 
+    getProgressColor, 
+    ALL_STATUSES, 
+    EMPTY_FORM, 
+    EMPTY_FILTERS, 
+    normalize,
+    ViewType,
+    VIEW_STORAGE_KEY
+} from '@/lib/projectTypes';
 
-interface Project {
-    id: string;
-    codigoProyecto?: string;
-    nombre: string;
-    activo: boolean;
-    noEnMetricas: boolean;
-    observaciones?: string;
-    horasEstimadas: number;
-    horasConsumidas: number;
-    cliente?: string;
-    clientId?: string;
-    client?: { nombre: string }; // Relational client
-    _count?: {
-        clientDelays: number;
-        checklistItems: number;
-    };
-    responsable?: string;
-    responsableId?: string;
-    responsableUser?: { nombreCompleto: string };
-    categoria?: string;
-    tipoActividad?: string;
-    tags?: string[];
-    checklistItems?: { id: string; completed: boolean; excluded: boolean; tag: string }[];
-    finalizadoConPendientes?: boolean;
-    geofenceLat?: number | null;
-    geofenceLng?: number | null;
-    geofenceRadius?: number | null;
-    qrToken?: string | null;
-    estado: ProjectStatus;
-
-    fechaInicio?: string;
-    fechaFin?: string;
-    publicToken?: string;
-    generarOS?: boolean;
-}
-
-
-interface FormData {
-    nombre: string;
-    activo: boolean;
-    noEnMetricas: boolean;
-    observaciones: string;
-    horasEstimadas: number | string;
-    horasConsumidas: number | string;
-    cliente: string;
-    clientId: string;
-    responsable: string;
-    responsableId: string;
-    tags: string[];
-    categoria: string;
-    tipoActividad: string;
-    estado: ProjectStatus;
-    fechaInicio: string;
-    fechaFin: string;
-    generarOS: boolean;
-    aprovisionamiento: boolean;
-    geofenceLat: number | null;
-    geofenceLng: number | null;
-    geofenceRadius: number | null;
-    qrToken: string | null;
-    fichajeHabilitado: boolean;
-}
-
-
-interface Filters {
-    estados: ProjectStatus[];
-    responsable: string;
-    cliente: string;
-    fechaInicio: string;
-    fechaFin: string;
-}
-
-// ── Status config ─────────────────────────────────────────────────────────────
-const STATUS_CONFIG: Record<ProjectStatus, { label: string; color: string; bg: string; ring: string; dot: string; Icon: React.ElementType }> = {
-    por_hacer: { label: 'Por Hacer', color: 'text-blue-700', bg: 'bg-blue-50', ring: 'ring-blue-200', dot: 'bg-blue-500', Icon: Clock },
-    planificado: { label: 'Planificado', color: 'text-violet-700', bg: 'bg-violet-50', ring: 'ring-violet-200', dot: 'bg-violet-500', Icon: Calendar },
-    activo: { label: 'Activo', color: 'text-emerald-700', bg: 'bg-emerald-50', ring: 'ring-emerald-200', dot: 'bg-emerald-500', Icon: CheckCircle2 },
-    en_riesgo: { label: 'En Riesgo', color: 'text-amber-700', bg: 'bg-amber-50', ring: 'ring-amber-200', dot: 'bg-amber-400', Icon: AlertTriangle },
-    atrasado: { label: 'Atrasado', color: 'text-red-700', bg: 'bg-red-50', ring: 'ring-red-200', dot: 'bg-red-500', Icon: XCircle },
-    finalizado: { label: 'Finalizado', color: 'text-slate-500 dark:text-slate-400', bg: 'bg-slate-100 dark:bg-slate-800/50', ring: 'ring-slate-200', dot: 'bg-slate-400', Icon: MinusCircle },
-};
-
-const getProgressColor = (progress: number): string => {
-    if (progress >= 85) return 'bg-red-500';
-    if (progress >= 60) return 'bg-amber-400';
-    return 'bg-emerald-500';
-};
-
-const ALL_STATUSES: ProjectStatus[] = ['por_hacer', 'planificado', 'activo', 'en_riesgo', 'atrasado', 'finalizado'];
-
-const EMPTY_FORM: FormData = {
-    nombre: '',
-    activo: true,
-    noEnMetricas: false,
-    observaciones: '',
-    horasEstimadas: '',
-    horasConsumidas: '',
-    cliente: '',
-    clientId: '',
-    responsable: '',
-    responsableId: '',
-    tags: [],
-    categoria: '',
-    tipoActividad: '',
-    estado: 'activo',
-    fechaInicio: '',
-    fechaFin: '',
-    generarOS: false,
-    aprovisionamiento: false,
-    geofenceLat: null,
-    geofenceLng: null,
-    geofenceRadius: null,
-    qrToken: null,
-    fichajeHabilitado: false,
-};
-
-
-const EMPTY_FILTERS: Filters = {
-    estados: [],
-    responsable: '',
-    cliente: '',
-    fechaInicio: '',
-    fechaFin: '',
-};
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-const normalize = (s: string) =>
-    s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+import ProjectViewSelector from '@/components/projects/ProjectViewSelector';
+import ProjectCardView from '@/components/projects/ProjectCardView';
+import ProjectSpreadsheetView from '@/components/projects/ProjectSpreadsheetView';
+import ProjectGanttView from '@/components/projects/ProjectGanttView';
+import ProjectCalendarView from '@/components/projects/ProjectCalendarView';
 
 // ── Content Component ──────────────────────────────────────────────────────────
 function ProjectsContent() {
@@ -188,6 +77,7 @@ function ProjectsContent() {
     const [operators, setOperators] = useState<{ id: string; nombreCompleto: string; role?: string }[]>([]);
     const [clients, setClients] = useState<{ id: string; nombre: string }[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [viewType, setViewType] = useState<ViewType>('card');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [editingProject, setEditingProject] = useState<Project | null>(null);
@@ -203,6 +93,9 @@ function ProjectsContent() {
     useEffect(() => {
         const user = localStorage.getItem('currentUser');
         if (user) setCurrentUser(JSON.parse(user));
+        
+        const savedView = localStorage.getItem(VIEW_STORAGE_KEY) as ViewType;
+        if (savedView) setViewType(savedView);
     }, []);
 
     // Details Modal State
@@ -458,6 +351,13 @@ function ProjectsContent() {
                     </div>
 
                     <div className="flex items-center gap-2 w-full md:w-auto">
+                        <ProjectViewSelector 
+                            value={viewType} 
+                            onChange={(val) => {
+                                setViewType(val);
+                                localStorage.setItem(VIEW_STORAGE_KEY, val);
+                            }} 
+                        />
                         <button
                             onClick={openCreate}
                             className="flex items-center gap-1.5 bg-primary text-white px-3 md:px-5 py-2.5 md:py-3.5 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-primary/90 shadow-lg shadow-primary/20 active:scale-95 transition-all shrink-0"
@@ -605,13 +505,15 @@ function ProjectsContent() {
                         </p>
                         <p className="text-sm text-slate-400 dark:text-slate-500 mt-2 font-medium">Aún no se han registrado proyectos en este estado.</p>
                     </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredProjects.map(p => (
-                            <ProjectCard key={p.id} project={p} onEdit={openEdit} onDetails={openDetails} handleDeleteClick={handleDeleteClick} />
-                        ))}
-                    </div>
-                )}
+                ) : viewType === 'card' ? (
+                    <ProjectCardView projects={filteredProjects} onEdit={openEdit} onDetails={openDetails} handleDeleteClick={handleDeleteClick} />
+                ) : viewType === 'spreadsheet' ? (
+                    <ProjectSpreadsheetView projects={filteredProjects} onRefresh={loadData} />
+                ) : viewType === 'gantt' ? (
+                    <ProjectGanttView projects={filteredProjects} onRefresh={loadData} onDetails={openDetails} />
+                ) : viewType === 'calendar' ? (
+                    <ProjectCalendarView projects={filteredProjects} onDetails={openDetails} />
+                ) : null}
             </div>
 
             {isDetailsOpen && selectedProjectForDetails && (
@@ -1128,171 +1030,6 @@ function ProjectDetailsModal({
                     <button onClick={onClose} className="px-8 py-3 bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 text-slate-600 dark:text-slate-300 font-black uppercase tracking-widest text-xs rounded-2xl transition-all active:scale-95">
                         Cerrar Ventana
                     </button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-// ── ProjectCard ───────────────────────────────────────────────────────────────
-function ProjectCard({
-    project,
-    onEdit,
-    onDetails,
-    handleDeleteClick,
-}: {
-    project: Project;
-    onEdit: (p: Project) => void;
-    onDetails: (p: Project) => void;
-    handleDeleteClick: (id: string) => void;
-}) {
-    const { horasConsumidas, horasEstimadas, estado } = project;
-    const progress = (horasEstimadas || 0) > 0 ? Math.min(100, Math.round((horasConsumidas / horasEstimadas) * 100)) : 0;
-    const cfg = STATUS_CONFIG[estado] || STATUS_CONFIG.activo;
-    const StatusIcon = cfg.Icon;
-    const progressColor = getProgressColor(progress);
-
-    return (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 p-5 flex flex-col gap-4 group">
-            <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                    <h4 className="font-black text-lg text-slate-800 dark:text-slate-100 leading-tight group-hover:text-primary transition-colors">
-                        {project.codigoProyecto ? (
-                            <span className="text-primary font-mono mr-1.5">{project.codigoProyecto} |</span>
-                        ) : (
-                            <span className="text-slate-400 dark:text-slate-500 font-mono mr-1.5">#SIN-COD |</span>
-                        )}
-                        {project.nombre}
-                    </h4>
-                </div>
-                <div className="flex items-center gap-0.5 shrink-0">
-                    <button
-                        onClick={() => onEdit(project)}
-                        className="btn-icon-inline p-2 rounded-xl text-slate-400 dark:text-slate-500 hover:text-primary hover:bg-primary/5 transition-all active:scale-90"
-                        title="Editar"
-                    >
-                        <Edit3 className="w-4 h-4" />
-                    </button>
-                    <button
-                        onClick={() => handleDeleteClick(project.id)}
-                        className="btn-icon-inline p-2 rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all active:scale-90"
-                        title="Eliminar"
-                    >
-                        <Trash2 className="w-4 h-4" />
-                    </button>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
-                <div className="flex items-center gap-1.5 min-w-0">
-                    <Building2 className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-                    <span className="text-slate-400 dark:text-slate-500 shrink-0">Cliente:</span>
-                    <span className="font-semibold text-slate-700 dark:text-slate-200 truncate">
-                        {project.client?.nombre || project.cliente || '—'}
-                    </span>
-                </div>
-                <div className="flex items-center gap-1.5 min-w-0">
-                    <User className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-                    <span className="text-slate-400 dark:text-slate-500 shrink-0">Resp:</span>
-                    <span className="font-semibold text-slate-700 dark:text-slate-200 truncate">{project.responsableUser?.nombreCompleto || project.responsable || '—'}</span>
-                </div>
-            </div>
-
-            <div className="flex flex-wrap gap-1.5">
-                {project.tags && project.tags.length > 0 ? (
-                    project.tags.map((tag: any) => (
-                        <span key={tag} className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800/50 text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 uppercase tracking-tighter">
-                            {tag}
-                        </span>
-                    ))
-                ) : (
-                    <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 italic">Sin etiquetas técnicas</span>
-                )}
-            </div>
-
-            <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
-                        <TrendingUp className="w-3.5 h-3.5" />
-                        <span>Avance: {progress}%</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
-                        <Clock className="w-3.5 h-3.5" />
-                        <span>{horasConsumidas}h / {horasEstimadas}h</span>
-                    </div>
-                </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-800/50 h-2 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full transition-all duration-700 ${progressColor}`} style={{ width: `${progress}%` }} />
-                </div>
-            </div>
-
-            <div className="space-y-1.5 pt-1 border-t border-slate-50">
-                <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                    <span>Avance Técnico (Checklist)</span>
-                    <span className="text-slate-600 dark:text-slate-300">
-                        {project.checklistItems?.filter((i: any) => i.completed && !i.excluded).length} / {project.checklistItems?.filter((i: any) => !i.excluded).length}
-                    </span>
-                </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-800/50 h-1.5 rounded-full overflow-hidden">
-                    <div className="h-full bg-primary rounded-full transition-all duration-700"
-                        style={{
-                            width: `${(project.checklistItems?.filter((i: any) => !i.excluded).length || 0) > 0
-                                ? Math.round((project.checklistItems?.filter((i: any) => i.completed && !i.excluded).length || 0) / (project.checklistItems?.filter((i: any) => !i.excluded).length || 0) * 100)
-                                : 0}%`
-                        }}
-                    />
-                </div>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-50">
-                <div className="flex flex-wrap gap-2">
-                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg ${cfg.bg} ring-1 ${cfg.ring}`}>
-                        <StatusIcon className={`w-3.5 h-3.5 ${cfg.color}`} />
-                        <span className={`text-xs font-bold ${cfg.color}`}>{cfg.label}</span>
-                    </div>
-                    {project._count && (project._count.clientDelays || 0) > 0 && (
-                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-100 text-amber-600">
-                            <Timer className="w-3.5 h-3.5" />
-                            <span className="text-[10px] font-black uppercase tracking-tight">{project._count.clientDelays} Demoras</span>
-                        </div>
-                    )}
-                    {project.finalizadoConPendientes && (
-                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-50 border border-red-100 text-red-600">
-                            <AlertTriangle className="w-3.5 h-3.5" />
-                            <span className="text-[10px] font-black uppercase tracking-tight">Cierre con Pendientes</span>
-                        </div>
-                    )}
-                </div>
-
-                <div className="flex flex-wrap items-center gap-1.5 pt-2">
-                    <button onClick={() => onDetails(project)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-primary/40 hover:text-primary transition-all whitespace-nowrap">
-                        Ver Detalle <ChevronRight className="w-3 h-3" />
-                    </button>
-                    <Link href="/planning" className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-primary/40 hover:text-primary transition-all whitespace-nowrap">
-                        <Calendar className="w-3 h-3" /> Planificación
-                    </Link>
-                    {project.estado === 'finalizado' && (
-                        <Link href={`/projects/${project.id}/report`} target="_blank" className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-100 hover:bg-rose-100 transition-all whitespace-nowrap" title="Descargar Reporte PDF">
-                            <FileText className="w-3 h-3" /> PDF
-                        </Link>
-                    )}
-                    <Link
-                        href={`/projects/${project.id}/report?token=${project.publicToken || ''}`}
-                        target="_blank"
-                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 hover:bg-indigo-100 transition-all whitespace-nowrap"
-                        title="Seguimiento Público"
-                    >
-                        <PieChart className="w-3 h-3" /> Seguimiento
-                    </Link>
-                    {(project as any).generarOS && (
-                        <Link
-                            href={`/ordenes-servicio/generar?projectId=${project.id}`}
-                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 transition-all whitespace-nowrap"
-                            title="Generar Orden de Servicio"
-                        >
-                            <ClipboardList className="w-3 h-3" /> OS
-                        </Link>
-                    )}
                 </div>
             </div>
         </div>
