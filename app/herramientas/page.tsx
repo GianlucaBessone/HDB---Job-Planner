@@ -1179,13 +1179,13 @@ function VerificacionTab({ user }: { user: any }) {
                                                 <div className="space-y-2.5">
                                                     {conControl.map((h: any) => (
                                                         <div key={h.id} className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm">
-                                                            <div className="flex justify-between items-start mb-2">
-                                                                <div>
-                                                                    <span className="text-sm font-black text-slate-800 dark:text-slate-100 block">{h.nombre}</span>
-                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 font-mono mt-0.5 block">ID: {h.id}</span>
+                                                            <div className="flex justify-between items-start mb-2 gap-3">
+                                                                <div className="flex-1">
+                                                                    <span className="text-sm font-black text-slate-800 dark:text-slate-100 block leading-tight">{h.nombre}</span>
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 font-mono mt-1 block">ID: {h.id}</span>
                                                                 </div>
                                                                 {h.estadoControl && (
-                                                                    <div className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg ${ESTADO_CONTROL_STYLES[h.estadoControl]?.cls || ''}`}>
+                                                                    <div className={`shrink-0 whitespace-nowrap text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg ${ESTADO_CONTROL_STYLES[h.estadoControl]?.cls || ''}`}>
                                                                         {ESTADO_CONTROL_STYLES[h.estadoControl]?.label}
                                                                         {h.diasRestantes !== null && <span className="ml-1">({h.diasRestantes}d)</span>}
                                                                     </div>
