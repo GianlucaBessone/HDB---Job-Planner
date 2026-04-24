@@ -58,7 +58,7 @@ export default function ProjectSpreadsheetView({
                             <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right w-24">Horas Cons.</th>
                             <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest min-w-[280px]">Fechas</th>
                             <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest w-24">Avance</th>
-                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center w-12">📝</th>
+                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center w-12"></th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50 dark:divide-slate-700/50">
@@ -113,18 +113,14 @@ export default function ProjectSpreadsheetView({
                                     </td>
                                     <td className="px-4 py-2 align-middle">
                                         <div className="flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-300">
-                                            <input 
-                                                type="date" 
+                                            <EditableDate 
                                                 value={p.fechaInicio || ''} 
-                                                onChange={(e) => handleUpdate(p, 'fechaInicio', e.target.value)}
-                                                className="bg-transparent border-b border-transparent hover:border-slate-300 dark:hover:border-slate-600 outline-none w-[110px] cursor-pointer focus:border-primary px-1"
+                                                onSave={(val) => handleUpdate(p, 'fechaInicio', val)}
                                             />
                                             <span className="text-slate-300 font-bold">→</span>
-                                            <input 
-                                                type="date" 
+                                            <EditableDate 
                                                 value={p.fechaFin || ''} 
-                                                onChange={(e) => handleUpdate(p, 'fechaFin', e.target.value)}
-                                                className="bg-transparent border-b border-transparent hover:border-slate-300 dark:hover:border-slate-600 outline-none w-[110px] cursor-pointer focus:border-primary px-1"
+                                                onSave={(val) => handleUpdate(p, 'fechaFin', val)}
                                             />
                                         </div>
                                     </td>
@@ -257,5 +253,35 @@ function EditableNumber({ value, onSave, className }: { value: number | string, 
         >
             {value}h
         </span>
+    );
+}
+
+function EditableDate({ value, onSave, className }: { value: string, onSave: (v: string) => void, className?: string }) {
+    const [val, setVal] = useState(value);
+    
+    useEffect(() => { setVal(value); }, [value]);
+
+    const handleBlur = () => {
+        if (val !== value) onSave(val);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            e.currentTarget.blur();
+        }
+        if (e.key === 'Escape') {
+            setVal(value);
+        }
+    };
+
+    return (
+        <input 
+            type="date" 
+            value={val || ''} 
+            onChange={e => setVal(e.target.value)} 
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            className={`bg-transparent border-b border-transparent hover:border-slate-300 dark:hover:border-slate-600 outline-none w-[110px] cursor-pointer focus:border-primary px-1 transition-colors ${className || ''}`}
+        />
     );
 }

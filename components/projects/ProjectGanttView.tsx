@@ -326,7 +326,7 @@ function GanttBar({
 
             {/* Quick Edit Popover */}
             {isEditing && (
-                <div className="absolute top-10 left-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl rounded-2xl p-3 z-50 animate-in fade-in zoom-in-95 w-72 flex flex-col gap-2 cursor-default">
+                <div className="absolute top-full mt-2 left-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl rounded-2xl p-3 z-50 animate-in fade-in zoom-in-95 w-72 flex flex-col gap-2 cursor-default" onClick={e => e.stopPropagation()}>
                     <div className="font-bold text-xs text-slate-700 dark:text-slate-200 mb-1 flex justify-between">
                         <span>Minicontrol Fechas</span>
                         <button onClick={() => setIsEditing(false)} className="text-slate-400 hover:text-slate-600">✕</button>
