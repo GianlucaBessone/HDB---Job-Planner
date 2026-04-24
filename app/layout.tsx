@@ -224,7 +224,7 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
         { href: '/aprobaciones', icon: <ShieldCheck className="w-5 h-5" />, label: 'Aprobaciones', roles: ['supervisor', 'admin'] },
         { href: '/monitoreo-fichadas', icon: <ShieldAlert className="w-5 h-5" />, label: 'Monitoreo de Fichadas', roles: ['supervisor', 'admin'] },
         { href: '/auditoria', icon: <History className="w-5 h-5" />, label: 'Auditoría', roles: ['admin', 'supervisor'] },
-        { href: '/carros-historial', icon: <Wrench className="w-5 h-5" />, label: 'Historial de Carros', roles: ['supervisor', 'admin'] },
+        { href: '/herramientas', icon: <Wrench className="w-5 h-5" />, label: 'Herramientas y Carros', roles: ['operador', 'supervisor', 'admin'] },
         { href: '/configuracion', icon: <Settings className="w-5 h-5" />, label: 'Configuración', roles: ['admin', 'supervisor'] },
     ];
 

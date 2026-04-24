@@ -51,7 +51,7 @@ model Project {
   qrToken                 String?  // current token signature for QR validation
   fichajeHabilitado       Boolean  @default(false)
   qrHistory               QrTokenHistory[]
-  cartMovements           ToolCartMovement[]
+  toolMovements            ToolMovement[]
 
   @@index([qrToken])
 }
@@ -127,7 +127,7 @@ model Operator {
   notifications   Notification[]
   ordenesServicio OrdenServicioOperador[]
   fichadas        Fichada[]
-  cartMovements   ToolCartMovement[]
+  toolMovements   ToolMovement[]
   primaryDeviceId String?
 }
 
@@ -459,57 +459,86 @@ model Fichada {
   @@index([operatorId])
 }
 
-model ToolCart {
-  id          String   @id @default(uuid())
-  nombre      String   @unique
-  descripcion String?
-  estado      String   @default("DISPONIBLE") // DISPONIBLE, EN_USO, MANTENIMIENTO
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+// ═══════════════════════════════════════════════════════
+// HERRAMIENTAS Y CARROS (nuevo modelo unificado)
+// ═══════════════════════════════════════════════════════
 
-  items       ToolCartItem[]
-  movements   ToolCartMovement[]
+model Tool {
+  id              String   @id  // 8-char alphanumeric unique
+  nombre          String
+  marca           String?
+  descripcion     String?  @db.Text
+  tipo            String   // MANUAL | ELECTRICA | NEUMATICA | HIDRAULICA | CARRO
+  subtipo         String?  // CORTE | MEDICION | AJUSTE | PERFORACION | SUJECION
+  rubro           String?  // ELECTRICIDAD | OBRA | TALLER | IT
+
+  // Control / Verificación
+  controlActivo         Boolean   @default(false)
+  periodoControl        Int       @default(60)  // días (30, 60, 90, 180, 365)
+  ultimoControlFecha    DateTime?
+  ultimoControlOperador String?   // nombre snapshot
+  estadoHerramienta     String?   // APROBADA | RECHAZADA | null
+
+  // Asignación a carro (self-referential)
+  carroId         String?
+  carro           Tool?    @relation("ToolEnCarro", fields: [carroId], references: [id], onDelete: SetNull)
+  herramientas    Tool[]   @relation("ToolEnCarro")
+
+  activo          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  verificaciones        ToolVerification[]
+  cartMovementsAsCarro  ToolMovement[]
+
+  @@index([tipo])
+  @@index([carroId])
+  @@index([controlActivo])
 }
 
-model ToolCartItem {
-  id           String   @id @default(uuid())
-  cartId       String
-  cart         ToolCart @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  nombre       String
-  cantidad     Int      @default(1)
-  createdAt    DateTime @default(now())
+model ToolVerification {
+  id              String   @id @default(cuid())
+  toolId          String
+  tool            Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  operadorId      String
+  operadorNombre  String
+  estado          String   // APROBADA | RECHAZADA
+  fecha           DateTime @default(now())
+
+  @@index([toolId])
+  @@index([fecha])
 }
 
-model ToolCartMovement {
+model ToolMovement {
   id              String   @id @default(uuid())
-  cartId          String
-  cart            ToolCart @relation(fields: [cartId], references: [id], onDelete: Restrict)
+  carroId         String
+  carro           Tool     @relation(fields: [carroId], references: [id], onDelete: Restrict)
   operatorId      String
   operator        Operator @relation(fields: [operatorId], references: [id], onDelete: Restrict)
   projectId       String
   project         Project  @relation(fields: [projectId], references: [id], onDelete: Restrict)
-  
+
   fechaSalida     DateTime @default(now())
   fechaDevolucion DateTime?
-  
-  estado          String   @default("ACTIVO") // ACTIVO, COMPLETADO
+  estado          String   @default("ACTIVO") // ACTIVO | COMPLETADO
 
-  items           ToolCartMovementItem[]
+  items           ToolMovementItem[]
 }
 
-model ToolCartMovementItem {
+model ToolMovementItem {
   id              String   @id @default(uuid())
   movementId      String
-  movement        ToolCartMovement @relation(fields: [movementId], references: [id], onDelete: Cascade)
-  
-  nombre          String
+  movement        ToolMovement @relation(fields: [movementId], references: [id], onDelete: Cascade)
+
+  toolId          String?  // referencia a Tool registrada (null si es adicional efímera)
+  nombre          String   // snapshot del nombre
   cantidad        Int      @default(1)
-  isAdditional    Boolean  @default(false) // true = agregada por operador, efímera
+  isAdditional    Boolean  @default(false)
 
   // Status at checkout (salida)
   presentAtOut    Boolean  @default(true)
   cantidadOut     Int      @default(0)
-  
+
   // Status at checkin (devolucion)
   presentAtIn     Boolean?
   cantidadIn      Int?

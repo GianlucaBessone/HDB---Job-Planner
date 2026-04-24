@@ -103,11 +103,11 @@ export default function HomePage() {
                             href="/timesheets"
                             color="bg-primary"
                         />}
-                        {show('/carros') && <ActionCard
-                            title="Carros de Herramientas"
-                            description="Retiro y devolución"
+                        {show('/herramientas') && <ActionCard
+                            title="Herramientas y Carros"
+                            description="Retiro, devolución y verificación"
                             icon={<Wrench className="w-6 h-6" />}
-                            href="/carros"
+                            href="/herramientas?tab=retiros"
                             color="bg-slate-600"
                         />}
                         {show('/my-projects') && <ActionCard
@@ -193,19 +193,12 @@ export default function HomePage() {
                             href="/fichado"
                             color="bg-emerald-500"
                         />}
-                        {show('/carros') && <ActionCard
-                            title="Carros de Herramientas"
-                            description="Control de retiros"
+                        {show('/herramientas') && <ActionCard
+                            title="Herramientas y Carros"
+                            description="Gestión integral de herramientas"
                             icon={<Wrench className="w-6 h-6" />}
-                            href="/carros"
+                            href="/herramientas"
                             color="bg-slate-600"
-                        />}
-                        {show('/carros-historial') && <ActionCard
-                            title="Historial de Carros"
-                            description="Trazabilidad y faltantes"
-                            icon={<HistoryIcon className="w-6 h-6" />}
-                            href="/carros-historial"
-                            color="bg-slate-800"
                         />}
                         {show('/dashboard') && <ActionCard
                             title="Panel de Análisis"

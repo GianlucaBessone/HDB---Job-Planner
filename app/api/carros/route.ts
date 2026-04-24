@@ -1,19 +1,46 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { enriquecerTool } from '@/lib/toolControl';
 
+/**
+ * Carros API — now backed by Tool model where tipo = 'CARRO'
+ */
 export async function GET() {
     try {
-        const carts = await prisma.toolCart.findMany({
+        const carts = await prisma.tool.findMany({
+            where: { tipo: 'CARRO', activo: true },
             include: {
-                items: true,
-                movements: {
+                herramientas: {
+                    where: { activo: true },
+                    orderBy: { nombre: 'asc' },
+                },
+                cartMovementsAsCarro: {
                     where: { estado: 'ACTIVO' },
-                    include: { operator: { select: { nombreCompleto: true } }, project: { select: { nombre: true, codigoProyecto: true } } }
+                    include: {
+                        operator: { select: { nombreCompleto: true } },
+                        project: { select: { nombre: true, codigoProyecto: true } }
+                    }
                 }
             },
             orderBy: { nombre: 'asc' }
         });
-        return NextResponse.json(carts);
+
+        // Derive estado from active movements
+        const result = carts.map(cart => {
+            const hasActiveMovement = cart.cartMovementsAsCarro.length > 0;
+            return {
+                ...enriquecerTool(cart),
+                estado: hasActiveMovement ? 'EN_USO' : 'DISPONIBLE',
+                // Map herramientas to items format for backward compat
+                items: cart.herramientas.map(h => ({
+                    id: h.id,
+                    nombre: h.nombre,
+                    cantidad: 1, // each tool is individual now
+                })),
+            };
+        });
+
+        return NextResponse.json(result);
     } catch (e: any) {
         return NextResponse.json({ error: 'Fallo al obtener los carros', details: e.message }, { status: 500 });
     }
@@ -22,30 +49,28 @@ export async function GET() {
 export async function POST(req: Request) {
     try {
         const data = await req.json();
-        const { nombre, descripcion, items } = data; // items = [{nombre, cantidad}]
-        
+        const { nombre, descripcion, items } = data;
+
         if (!nombre) {
             return NextResponse.json({ error: 'El nombre es obligatorio' }, { status: 400 });
         }
 
-        const cart = await prisma.toolCart.create({
+        // This endpoint now creates a Tool of tipo CARRO
+        // For backward compat from ToolCartsSection / config
+        const { generateToolId } = await import('@/lib/codeGenerator');
+        const id = await generateToolId();
+
+        const cart = await prisma.tool.create({
             data: {
+                id,
                 nombre,
                 descripcion,
-                items: {
-                    create: (items || []).map((i: any) => ({
-                        nombre: i.nombre,
-                        cantidad: i.cantidad || 1,
-                    }))
-                }
-            },
-            include: {
-                items: true
+                tipo: 'CARRO',
             }
         });
+
         return NextResponse.json(cart);
     } catch (e: any) {
-        if (e.code === 'P2002') return NextResponse.json({ error: 'Ya existe un carro con este nombre' }, { status: 400 });
-        return NextResponse.json({ error: 'Fallo al crear carrito', details: e.message }, { status: 500 });
+        return NextResponse.json({ error: 'Fallo al crear carro', details: e.message }, { status: 500 });
     }
 }

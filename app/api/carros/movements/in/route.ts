@@ -4,32 +4,31 @@ import { prisma } from '@/lib/prisma';
 export async function POST(req: Request) {
     try {
         const { movementId, tools } = await req.json();
-        // tools is array: { id (MovementItem id), presentAtIn }
 
         if (!movementId) return NextResponse.json({ error: 'Falta el ID del movimiento.' }, { status: 400 });
 
-        const mov = await prisma.toolCartMovement.findUnique({
+        const mov = await prisma.toolMovement.findUnique({
             where: { id: movementId },
-            include: { cart: true }
+            include: { carro: true }
         });
 
         if (!mov) return NextResponse.json({ error: 'Movimiento no encontrado.' }, { status: 404 });
         if (mov.estado !== 'ACTIVO') return NextResponse.json({ error: 'El movimiento ya fue cerrado.' }, { status: 400 });
 
         // Update items
-        const updatePromises = tools.map((t: any) => 
-            prisma.toolCartMovementItem.update({
+        const updatePromises = tools.map((t: any) =>
+            prisma.toolMovementItem.update({
                 where: { id: t.id },
-                data: { 
+                data: {
                     cantidadIn: t.cantidadIn,
-                    presentAtIn: t.cantidadIn >= t.expectedQty
+                    presentAtIn: (t.cantidadIn || 0) >= (t.expectedQty || t.cantidad || 1)
                 }
             })
         );
         await Promise.all(updatePromises);
 
         // Update movement
-        const updatedMov = await prisma.toolCartMovement.update({
+        const updatedMov = await prisma.toolMovement.update({
             where: { id: movementId },
             data: {
                 estado: 'COMPLETADO',
@@ -37,17 +36,11 @@ export async function POST(req: Request) {
             }
         });
 
-        // Update cart
-        await prisma.toolCart.update({
-            where: { id: mov.cartId },
-            data: { estado: 'DISPONIBLE' }
-        });
-
         // Notify missing tools
-        const missing = tools.filter((t: any) => t.cantidadIn < t.expectedQty);
+        const missing = tools.filter((t: any) => (t.cantidadIn || 0) < (t.expectedQty || t.cantidad || 1));
         if (missing.length > 0) {
-            const missingDetails = missing.map((t: any) => 
-                `${t.nombre} (Devolvió: ${t.cantidadIn}, Esperado: ${t.expectedQty})`
+            const missingDetails = missing.map((t: any) =>
+                `${t.nombre} (Devolvió: ${t.cantidadIn || 0}, Esperado: ${t.expectedQty || t.cantidad || 1})`
             ).join('\n- ');
 
             const [op, pb, supers] = await Promise.all([
@@ -59,7 +52,7 @@ export async function POST(req: Request) {
             await prisma.notification.createMany({
                 data: supers.map(s => ({
                     operatorId: s.id,
-                    title: `Herramientas faltantes - Devolución: ${mov.cart.nombre}`,
+                    title: `Herramientas faltantes - Devolución: ${mov.carro.nombre}`,
                     message: `El operador ${op?.nombreCompleto || 'Desconocido'} reportó faltantes al devolver desde la obra ${pb?.nombre || 'Desconocida'}:\n- ${missingDetails}`,
                     type: 'WARNING'
                 }))

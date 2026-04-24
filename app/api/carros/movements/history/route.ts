@@ -15,7 +15,7 @@ export async function GET(req: Request) {
 
         if (operatorId) whereClause.operatorId = operatorId;
         if (projectId) whereClause.projectId = projectId;
-        if (cartId) whereClause.cartId = cartId;
+        if (cartId) whereClause.carroId = cartId;
         if (toolName) {
             whereClause.items = {
                 some: {
@@ -24,10 +24,10 @@ export async function GET(req: Request) {
             };
         }
 
-        const movements = await prisma.toolCartMovement.findMany({
+        const movements = await prisma.toolMovement.findMany({
             where: whereClause,
             include: {
-                cart: { select: { id: true, nombre: true } },
+                carro: { select: { id: true, nombre: true } },
                 operator: { select: { id: true, nombreCompleto: true } },
                 project: { select: { id: true, nombre: true, codigoProyecto: true } },
                 items: {
@@ -38,7 +38,13 @@ export async function GET(req: Request) {
             take: 200
         });
 
-        return NextResponse.json(movements);
+        // Map to expected format (backward compat)
+        const result = movements.map(m => ({
+            ...m,
+            cart: m.carro,
+        }));
+
+        return NextResponse.json(result);
     } catch (e: any) {
         return NextResponse.json(
             { error: 'Error al obtener historial de movimientos', details: e.message },

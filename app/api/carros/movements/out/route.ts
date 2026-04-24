@@ -4,50 +4,56 @@ import { prisma } from '@/lib/prisma';
 export async function POST(req: Request) {
     try {
         const { cartId, operatorId, projectId, tools } = await req.json();
-        // tools is array: { nombre, cantidad, isAdditional, presentAtOut }
 
         if (!cartId || !operatorId || !projectId) {
             return NextResponse.json({ error: 'Datos incompletos.' }, { status: 400 });
         }
 
-        // Verify cart availability
-        const cart = await prisma.toolCart.findUnique({ where: { id: cartId } });
-        if (!cart) return NextResponse.json({ error: 'Carro no encontrado.' }, { status: 404 });
-        if (cart.estado !== 'DISPONIBLE') return NextResponse.json({ error: 'El carro no está disponible (estado actual: ' + cart.estado + ').' }, { status: 400 });
+        // Verify cart (Tool with tipo=CARRO) availability
+        const cart = await prisma.tool.findUnique({
+            where: { id: cartId },
+            include: {
+                cartMovementsAsCarro: { where: { estado: 'ACTIVO' } },
+                herramientas: { where: { activo: true } }
+            }
+        });
 
-        // Create Movement
-        const mov = await prisma.toolCartMovement.create({
+        if (!cart || cart.tipo !== 'CARRO') {
+            return NextResponse.json({ error: 'Carro no encontrado.' }, { status: 404 });
+        }
+
+        if (cart.cartMovementsAsCarro.length > 0) {
+            return NextResponse.json({ error: 'El carro ya tiene un movimiento activo (está en uso).' }, { status: 400 });
+        }
+
+        // Create Movement using new ToolMovement model
+        const mov = await prisma.toolMovement.create({
             data: {
-                cartId,
+                carroId: cartId,
                 operatorId,
                 projectId,
                 estado: 'ACTIVO',
                 fechaSalida: new Date(),
                 items: {
                     create: tools.map((t: any) => ({
+                        toolId: t.isAdditional ? null : (t.id || null),
                         nombre: t.nombre,
                         cantidad: t.cantidad || 1,
                         isAdditional: t.isAdditional || false,
-                        presentAtOut: t.cantidadOut >= (t.cantidad || 1),
+                        presentAtOut: (t.cantidadOut || 0) >= (t.cantidad || 1),
                         cantidadOut: t.cantidadOut || 0
                     }))
                 }
             }
         });
 
-        // Mark cart as EN_USO
-        await prisma.toolCart.update({
-            where: { id: cartId },
-            data: { estado: 'EN_USO' }
-        });
-
         // Notify if there are missing tools
-        const missingTools = tools.filter((t: any) => t.cantidadOut < (t.cantidad || 1));
+        const missingTools = tools.filter((t: any) => (t.cantidadOut || 0) < (t.cantidad || 1));
         if (missingTools.length > 0) {
-            const missingDetails = missingTools.map((t: any) => 
-                `${t.nombre} (Tiene: ${t.cantidadOut}, Esperado: ${t.cantidad || 1})`
+            const missingDetails = missingTools.map((t: any) =>
+                `${t.nombre} (Tiene: ${t.cantidadOut || 0}, Esperado: ${t.cantidad || 1})`
             ).join('\n- ');
-            
+
             const [op, pb, supers] = await Promise.all([
                 prisma.operator.findUnique({ where: { id: operatorId } }),
                 prisma.project.findUnique({ where: { id: projectId } }),

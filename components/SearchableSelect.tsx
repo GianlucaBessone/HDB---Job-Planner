@@ -18,6 +18,9 @@ interface SearchableSelectProps {
     icon?: React.ReactNode;
     disabled?: boolean;
     className?: string;
+    allowCreate?: boolean;
+    onCreateOption?: (value: string) => void;
+    createLabel?: string;
 }
 
 export default function SearchableSelect({
@@ -28,7 +31,10 @@ export default function SearchableSelect({
     label,
     icon,
     disabled = false,
-    className = ''
+    className = '',
+    allowCreate = false,
+    onCreateOption,
+    createLabel = 'Crear nuevo'
 }: SearchableSelectProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -230,8 +236,24 @@ export default function SearchableSelect({
                     {/* Options list */}
                     <div className="max-h-60 overflow-y-auto p-2">
                         {filteredOptions.length === 0 ? (
-                            <div className="p-4 text-center text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">
-                                No se encontraron resultados
+                            <div className="p-4 text-center space-y-3">
+                                <p className="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">
+                                    No se encontraron resultados
+                                </p>
+                                {allowCreate && searchTerm.trim() && onCreateOption && (
+                                    <button
+                                        type="button"
+                                        className="w-full p-3 rounded-xl text-sm font-bold bg-primary/10 text-primary hover:bg-primary/20 transition-colors flex items-center justify-center gap-2"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onCreateOption(searchTerm.trim());
+                                            setIsOpen(false);
+                                            setSearchTerm('');
+                                        }}
+                                    >
+                                        + {createLabel}: "{searchTerm.trim()}"
+                                    </button>
+                                )}
                             </div>
                         ) : (
                             filteredOptions.map((opt, index) => {

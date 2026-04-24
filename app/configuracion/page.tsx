@@ -29,7 +29,6 @@ import {
     Eye
 } from 'lucide-react';
 import MapPicker from '@/components/MapPicker';
-import ToolCartsSection from '@/components/ToolCartsSection';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
@@ -39,7 +38,7 @@ import { ViewConfig, DEFAULT_VIEWS, getViewConfig } from '@/lib/viewAccess';
 export default function ConfigPage() {
     const router = useRouter();
     const [userRole, setUserRole] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<'tags' | 'checklists' | 'options' | 'os' | 'system' | 'carros' | 'vistas'>('tags');
+    const [activeTab, setActiveTab] = useState<'tags' | 'checklists' | 'options' | 'os' | 'system' | 'vistas'>('tags');
 
     useEffect(() => {
         const stored = localStorage.getItem('currentUser');
@@ -111,13 +110,6 @@ export default function ConfigPage() {
                     Ordenes de Servicio
                 </button>
                 <button
-                    onClick={() => setActiveTab('carros')}
-                    className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'carros' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'}`}
-                >
-                    <Wrench className="w-4 h-4" />
-                    Carros
-                </button>
-                <button
                     onClick={() => setActiveTab('vistas')}
                     className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'vistas' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'}`}
                 >
@@ -132,7 +124,6 @@ export default function ConfigPage() {
                 {activeTab === 'options' && <OptionsSection />}
                 {activeTab === 'system' && <SystemSection />}
                 {activeTab === 'os' && <OSSection />}
-                {activeTab === 'carros' && <ToolCartsSection />}
                 {activeTab === 'vistas' && <ViewsSection />}
             </div>
         </div>

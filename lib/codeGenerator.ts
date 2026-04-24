@@ -45,3 +45,38 @@ export async function generateCodigoProyecto(): Promise<string> {
 export async function generateCodigoOS(): Promise<string> {
     return generateCode('OS');
 }
+
+/**
+ * Generates a unique 8-character alphanumeric ID for tools.
+ * Characters used: A-Z, 0-9 (uppercase only for readability on QR labels).
+ * Validates uniqueness against the Tool table.
+ */
+export async function generateToolId(): Promise<string> {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // excluded I,O,0,1 to avoid confusion
+    const ID_LENGTH = 8;
+    const MAX_ATTEMPTS = 10;
+
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+        let id = '';
+        for (let i = 0; i < ID_LENGTH; i++) {
+            id += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+
+        // Check uniqueness
+        const existing = await prisma.tool.findUnique({ where: { id } });
+        if (!existing) return id;
+    }
+
+    throw new Error('No se pudo generar un ID único después de múltiples intentos.');
+}
+
+/**
+ * Generates N unique tool IDs at once (for bulk creation).
+ */
+export async function generateToolIds(count: number): Promise<string[]> {
+    const ids: string[] = [];
+    for (let i = 0; i < count; i++) {
+        ids.push(await generateToolId());
+    }
+    return ids;
+}
