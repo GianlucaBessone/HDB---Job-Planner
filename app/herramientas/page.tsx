@@ -1496,7 +1496,7 @@ function CheckoutCheckinView({
 
             <button type="button" disabled={isLoading || (isCheckout && !selectedProjectId)} onClick={onSubmit}
                 className={`w-full py-4 ${isCheckout ? 'bg-primary shadow-xl shadow-primary/20' : 'bg-slate-800 dark:bg-slate-100 dark:text-slate-900'} text-white rounded-2xl font-black uppercase tracking-widest text-sm disabled:opacity-50 flex items-center justify-center gap-2`}>
-                {isCheckout ? <><ClipboardCheck className="w-5 h-5" /> Confirmar e Iniciar Obra</> : 'Finalizar y Entregar Carro'}
+                {isCheckout ? <><ClipboardCheck className="w-5 h-5" /> Confirmar Salida</> : 'Finalizar y Entregar Carro'}
             </button>
         </div>
     );
