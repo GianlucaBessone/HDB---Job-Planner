@@ -32,7 +32,12 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
         if (!tool) return NextResponse.json({ error: 'Herramienta no encontrada' }, { status: 404 });
 
-        return NextResponse.json(enriquecerTool(tool));
+        const enrichedTool = enriquecerTool(tool);
+        if (enrichedTool.herramientas) {
+            enrichedTool.herramientas = enrichedTool.herramientas.map((h: any) => enriquecerTool(h));
+        }
+
+        return NextResponse.json(enrichedTool);
     } catch (e: any) {
         return NextResponse.json({ error: 'Error al obtener herramienta', details: e.message }, { status: 500 });
     }

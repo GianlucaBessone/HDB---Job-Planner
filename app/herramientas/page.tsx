@@ -287,17 +287,21 @@ function HerramientasTab({ user }: { user: any }) {
 
     const handlePrintQr = (tool: Tool) => {
         if (!qrRef.current) return;
-        const canvas = qrRef.current.querySelector('canvas');
+        const canvas = qrRef.current.querySelector('canvas') as HTMLCanvasElement;
         if (!canvas) return;
         const qrDataUrl = canvas.toDataURL('image/png');
-        const printWindow = window.open('', '', 'width=700,height=400');
-        if (printWindow) {
-            printWindow.document.write(`<html><head><title>QR - ${tool.nombre}</title>
-            <style>@page{size:landscape;margin:0}*{box-sizing:border-box;margin:0;padding:0}body{display:flex;align-items:center;justify-content:center;height:100vh;background:#fff;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif}.tarjetero{width:100mm;height:60mm;border:1px solid #eee;display:flex;align-items:center;padding:5mm;gap:8mm;overflow:hidden}.qr-container{flex-shrink:0;display:flex;align-items:center}.qr-container img{width:45mm;height:45mm}.info{display:flex;flex-direction:column;justify-content:center;border-left:2px solid #f1f5f9;padding-left:6mm;height:40mm}.info h2{font-size:20px;font-weight:900;color:#0f172a;text-transform:uppercase;line-height:1.1;margin-bottom:4px;max-width:40mm;word-wrap:break-word}.info .label{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1.5px;font-weight:800;margin-bottom:8px}.info .id{font-size:11px;color:#94a3b8;font-family:'Courier New',Courier,monospace;font-weight:bold;background:#f8fafc;padding:4px 8px;border-radius:4px}</style>
-            </head><body><div class="tarjetero"><div class="qr-container"><img src="${qrDataUrl}" alt="QR"/></div><div class="info"><div class="label">Herramienta</div><h2>${tool.nombre}</h2><div class="id">ID: ${tool.id}</div></div></div>
-            <script>window.onload=function(){window.print();window.close()}<\/script></body></html>`);
-            printWindow.document.close();
-        }
+        const printWindow = window.open('', '_blank', 'width=700,height=500');
+        if (!printWindow) { showToast('El navegador bloqueó la ventana emergente. Permitir pop-ups.', 'error'); return; }
+        printWindow.document.write(`<!DOCTYPE html><html><head><title>QR - ${tool.nombre}</title>
+        <style>@page{size:landscape;margin:0}*{box-sizing:border-box;margin:0;padding:0}body{display:flex;align-items:center;justify-content:center;height:100vh;background:#fff;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif}.tarjetero{width:100mm;height:60mm;border:1px solid #eee;display:flex;align-items:center;padding:5mm;gap:8mm;overflow:hidden}.qr-container{flex-shrink:0;display:flex;align-items:center}.qr-container img{width:45mm;height:45mm}.info{display:flex;flex-direction:column;justify-content:center;border-left:2px solid #f1f5f9;padding-left:6mm;height:40mm}.info h2{font-size:20px;font-weight:900;color:#0f172a;text-transform:uppercase;line-height:1.1;margin-bottom:4px;max-width:40mm;word-wrap:break-word}.info .label{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1.5px;font-weight:800;margin-bottom:8px}.info .id{font-size:11px;color:#94a3b8;font-family:'Courier New',Courier,monospace;font-weight:bold;background:#f8fafc;padding:4px 8px;border-radius:4px}</style>
+        </head><body><div class="tarjetero"><div class="qr-container"><img id="qrimg" src="${qrDataUrl}" alt="QR"/></div><div class="info"><div class="label">Herramienta</div><h2>${tool.nombre}</h2><div class="id">ID: ${tool.id}</div></div></div>
+        <script>
+        var img = document.getElementById('qrimg');
+        function doPrint() { window.focus(); window.print(); }
+        if (img.complete) { setTimeout(doPrint, 300); }
+        else { img.onload = function() { setTimeout(doPrint, 300); }; }
+        <\/script></body></html>`);
+        printWindow.document.close();
     };
 
     const filteredTools = useMemo(() => {
@@ -617,14 +621,16 @@ function CarrosTab({ user }: { user: any }) {
             return `<div class="card"><div class="qr"><img src="${dataUrl}"/></div><div class="info"><div class="nm">${t.nombre}</div><div class="id">${t.id}</div></div></div>`;
         }).join('');
 
-        const printWindow = window.open('', '', 'width=900,height=700');
-        if (printWindow) {
-            printWindow.document.write(`<html><head><title>QRs - ${selectedCarro.nombre}</title>
-            <style>@page{margin:10mm}*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',Roboto,sans-serif}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8mm}.card{border:1px solid #e2e8f0;border-radius:8px;padding:4mm;display:flex;align-items:center;gap:4mm;break-inside:avoid}.qr img{width:25mm;height:25mm}.info{flex:1}.nm{font-size:11px;font-weight:900;color:#0f172a;text-transform:uppercase}.id{font-size:9px;color:#94a3b8;font-family:monospace;margin-top:2px}</style>
-            </head><body><h1 style="font-size:16px;margin-bottom:6mm;color:#334155">${selectedCarro.nombre} — Herramientas</h1><div class="grid">${blocks}</div>
-            <script>window.onload=function(){setTimeout(function(){window.print();window.close()},300)}<\/script></body></html>`);
-            printWindow.document.close();
-        }
+        const printWindow = window.open('', '_blank', 'width=900,height=700');
+        if (!printWindow) { showToast('El navegador bloqueó la ventana emergente. Permitir pop-ups.', 'error'); return; }
+        
+        printWindow.document.write(`<!DOCTYPE html><html><head><title>QRs - ${selectedCarro.nombre}</title>
+        <style>@page{margin:10mm}*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',Roboto,sans-serif}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8mm}.card{border:1px solid #e2e8f0;border-radius:8px;padding:4mm;display:flex;align-items:center;gap:4mm;break-inside:avoid}.qr img{width:25mm;height:25mm}.info{flex:1}.nm{font-size:11px;font-weight:900;color:#0f172a;text-transform:uppercase}.id{font-size:9px;color:#94a3b8;font-family:monospace;margin-top:2px}</style>
+        </head><body><h1 style="font-size:16px;margin-bottom:6mm;color:#334155">${selectedCarro.nombre} — Herramientas</h1><div class="grid">${blocks}</div>
+        <script>
+        setTimeout(function() { window.focus(); window.print(); }, 300);
+        <\/script></body></html>`);
+        printWindow.document.close();
     };
 
     // Count control issues across selected cart's tools
@@ -1117,6 +1123,7 @@ function VerificacionTab({ user }: { user: any }) {
                             {tool.estadoHerramienta && <p className="text-xs font-bold text-slate-500">Estado: <span className={`font-black ${tool.estadoHerramienta === 'APROBADA' ? 'text-emerald-600' : 'text-red-600'}`}>{tool.estadoHerramienta}</span></p>}
                             {tool.ultimoControlOperador && <p className="text-xs font-bold text-slate-500">Último control por: {tool.ultimoControlOperador}</p>}
                             {tool.ultimoControlFecha && <p className="text-xs font-bold text-slate-500">Fecha: {new Date(tool.ultimoControlFecha).toLocaleDateString('es-AR')}</p>}
+                            {tool.proximoControlFecha && <p className="text-xs font-bold text-slate-500">Próxima verificación: <span className="text-slate-700 dark:text-slate-300 font-black">{new Date(tool.proximoControlFecha).toLocaleDateString('es-AR')}</span></p>}
 
                             {/* Verify Actions */}
                             {!verifyMode ? (
@@ -1152,6 +1159,82 @@ function VerificacionTab({ user }: { user: any }) {
                                     <span className="text-[10px] font-bold text-slate-400">{new Date(v.fecha).toLocaleDateString('es-AR')}</span>
                                 </div>
                             ))}
+                        </div>
+                    )}
+
+                    {/* Cargo content lists for CARRO types */}
+                    {tool.tipo === 'CARRO' && tool.herramientas && tool.herramientas.length > 0 && (
+                        <div className="space-y-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+                            {(() => {
+                                const conControl = tool.herramientas.filter((h: any) => h.controlActivo);
+                                const sinControl = tool.herramientas.filter((h: any) => !h.controlActivo);
+                                
+                                return (
+                                    <>
+                                        {conControl.length > 0 && (
+                                            <div className="space-y-3">
+                                                <h4 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                                                    <ShieldCheck className="w-4 h-4" /> Herramientas Sujetas a Control ({conControl.length})
+                                                </h4>
+                                                <div className="space-y-2.5">
+                                                    {conControl.map((h: any) => (
+                                                        <div key={h.id} className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm">
+                                                            <div className="flex justify-between items-start mb-2">
+                                                                <div>
+                                                                    <span className="text-sm font-black text-slate-800 dark:text-slate-100 block">{h.nombre}</span>
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 font-mono mt-0.5 block">ID: {h.id}</span>
+                                                                </div>
+                                                                {h.estadoControl && (
+                                                                    <div className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg ${ESTADO_CONTROL_STYLES[h.estadoControl]?.cls || ''}`}>
+                                                                        {ESTADO_CONTROL_STYLES[h.estadoControl]?.label}
+                                                                        {h.diasRestantes !== null && <span className="ml-1">({h.diasRestantes}d)</span>}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div className="text-xs font-medium text-slate-500 dark:text-slate-400 space-y-1.5 mt-2 bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-xl">
+                                                                {h.estadoHerramienta && (
+                                                                    <div className="flex justify-between">
+                                                                        <span>Estado Actual:</span>
+                                                                        <span className={`font-black ${h.estadoHerramienta === 'APROBADA' ? 'text-emerald-600' : 'text-red-600'}`}>{h.estadoHerramienta}</span>
+                                                                    </div>
+                                                                )}
+                                                                <div className="flex justify-between">
+                                                                    <span>Último control:</span>
+                                                                    <span className="font-bold text-slate-700 dark:text-slate-300 text-right">
+                                                                        {h.ultimoControlFecha ? `${new Date(h.ultimoControlFecha).toLocaleDateString('es-AR')}` : 'Nunca'}
+                                                                        {h.ultimoControlOperador ? ` por ${h.ultimoControlOperador}` : ''}
+                                                                    </span>
+                                                                </div>
+                                                                {h.proximoControlFecha && (
+                                                                    <div className="flex justify-between">
+                                                                        <span>Próxima verificación:</span>
+                                                                        <span className="font-black text-slate-800 dark:text-slate-200">{new Date(h.proximoControlFecha).toLocaleDateString('es-AR')}</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {sinControl.length > 0 && (
+                                            <div className="space-y-3 pt-2">
+                                                <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                                                    <Wrench className="w-4 h-4" /> Otras Herramientas ({sinControl.length})
+                                                </h4>
+                                                <div className="space-y-2">
+                                                    {sinControl.map((h: any) => (
+                                                        <div key={h.id} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex justify-between items-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                                            <span className="text-sm font-black text-slate-700 dark:text-slate-300 truncate">{h.nombre}</span>
+                                                            <span className="shrink-0 ml-2 text-[10px] font-black text-slate-400 font-mono">ID: {h.id}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </>
+                                );
+                            })()}
                         </div>
                     )}
                 </div>
