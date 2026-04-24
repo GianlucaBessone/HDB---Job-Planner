@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { withIdempotency } from '@/lib/idempotency';
+import { logAudit } from '@/lib/audit';
 
 
 function calculateHours(start: string, end: string): number {
@@ -124,6 +125,18 @@ export async function POST(req: Request) {
                 });
             }
 
+            // Audit
+            const requestOperator = requestUserId ? await prisma.operator.findUnique({ where: { id: requestUserId }, select: { nombreCompleto: true } }) : null;
+            await logAudit({
+                userId: requestUserId,
+                userName: requestOperator?.nombreCompleto,
+                action: 'CREATE',
+                entity: 'TIME_ENTRY',
+                entityId: entry.id,
+                newValue: entry,
+                metadata: { operatorId, projectId, fecha, horaIngreso, horaEgreso, isExtra, causaRegistro }
+            });
+
             return NextResponse.json(entry, { status: 201 });
         } catch (error: any) {
             console.error("POST Error: ", error);
@@ -215,6 +228,18 @@ export async function PUT(req: Request) {
             }
         }
 
+        // Audit
+        const requestOperator = requestUserId ? await prisma.operator.findUnique({ where: { id: requestUserId }, select: { nombreCompleto: true } }) : null;
+        await logAudit({
+            userId: requestUserId,
+            userName: requestOperator?.nombreCompleto,
+            action: 'UPDATE',
+            entity: 'TIME_ENTRY',
+            entityId: id,
+            oldValue: existing,
+            newValue: updated,
+        });
+
         return NextResponse.json(updated);
     } catch (error: any) {
         console.error("PUT Error: ", error);
@@ -254,6 +279,17 @@ export async function DELETE(req: Request) {
                 data: { horasConsumidas: { decrement: projectHoursImpact } }
             });
         }
+
+        // Audit
+        const requestOperator = requestUserId ? await prisma.operator.findUnique({ where: { id: requestUserId }, select: { nombreCompleto: true } }) : null;
+        await logAudit({
+            userId: requestUserId,
+            userName: requestOperator?.nombreCompleto,
+            action: 'DELETE',
+            entity: 'TIME_ENTRY',
+            entityId: id,
+            oldValue: existing,
+        });
 
         return NextResponse.json({ success: true });
     } catch (error: any) {

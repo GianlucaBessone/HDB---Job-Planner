@@ -48,8 +48,10 @@ export async function PATCH(req: Request) {
         });
 
         // Audit Log
+        const approver = approvedById ? await prisma.operator.findUnique({ where: { id: approvedById }, select: { nombreCompleto: true } }) : null;
         await logAudit({
             userId: approvedById,
+            userName: approver?.nombreCompleto,
             action: action === 'APPROVED' ? 'APPROVE' : 'REJECT',
             entity: 'TIME_ENTRY',
             entityId: id,
