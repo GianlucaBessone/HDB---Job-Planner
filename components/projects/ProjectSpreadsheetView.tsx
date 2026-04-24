@@ -265,7 +265,7 @@ function EditableDate({ value, onSave, className }: { value: string, onSave: (v:
         if (val !== value) onSave(val);
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent) => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
             e.currentTarget.blur();
         }
