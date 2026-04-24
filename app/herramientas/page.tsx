@@ -70,7 +70,21 @@ const ESTADO_CONTROL_STYLES: Record<string, { label: string; cls: string }> = {
 type TabId = 'herramientas' | 'carros' | 'retiros' | 'verificacion' | 'historial';
 
 // ═══════════════════════════════════ MAIN PAGE ═══════════════════════════════
-export default function HerramientasPage() {
+import { Suspense } from 'react';
+
+export default function HerramientasPageWrapper() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-[60vh] flex items-center justify-center">
+                <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+            </div>
+        }>
+            <HerramientasPage />
+        </Suspense>
+    );
+}
+
+function HerramientasPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const initialTab = (searchParams.get('tab') as TabId) || 'herramientas';
@@ -87,14 +101,7 @@ export default function HerramientasPage() {
         }
     }, [router]);
 
-    if (!currentUser) return (
-        <div className="min-h-[60vh] flex items-center justify-center">
-            <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-        </div>
-    );
-
-    const role = currentUser.role?.toLowerCase() || 'operador';
-    const isOperador = role === 'operador';
+    const role = currentUser?.role?.toLowerCase() || 'operador';
 
     const tabs: { id: TabId; label: string; icon: React.ReactNode; roles: string[] }[] = [
         { id: 'herramientas', label: 'Herramientas', icon: <Wrench className="w-4 h-4" />, roles: ['supervisor', 'admin'] },
@@ -104,14 +111,21 @@ export default function HerramientasPage() {
         { id: 'historial', label: 'Historial', icon: <Clock className="w-4 h-4" />, roles: ['supervisor', 'admin'] },
     ];
 
-    const allowedTabs = tabs.filter(t => t.roles.includes(role));
+    const allowedTabs = useMemo(() => tabs.filter(t => t.roles.includes(role)), [role]);
 
     // Default to first allowed tab if current isn't allowed
     useEffect(() => {
         if (!allowedTabs.find(t => t.id === activeTab) && allowedTabs.length > 0) {
             setActiveTab(allowedTabs[0].id);
         }
-    }, [role]);
+    }, [role, allowedTabs, activeTab]);
+
+    // Loading state — all hooks have been called above
+    if (!currentUser) return (
+        <div className="min-h-[60vh] flex items-center justify-center">
+            <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+        </div>
+    );
 
     return (
         <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
