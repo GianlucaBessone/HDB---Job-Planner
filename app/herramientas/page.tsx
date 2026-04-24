@@ -802,6 +802,7 @@ function RetirosTab({ user }: { user: any }) {
     const [isLoading, setIsLoading] = useState(false);
     const [isConfirmingCheckout, setIsConfirmingCheckout] = useState(false);
     const [isConfirmingCheckin, setIsConfirmingCheckin] = useState(false);
+    const [isWarningCheckout, setIsWarningCheckout] = useState(false);
 
     useEffect(() => {
         loadActiveMovements();
@@ -858,11 +859,21 @@ function RetirosTab({ user }: { user: any }) {
 
             setSelectedCart(cart);
             setChecklist((cart.herramientas || []).map((h: any) => ({
-                id: h.id, nombre: h.nombre, cantidad: 1, cantidadOut: 0
+                id: h.id, nombre: h.nombre, cantidad: 1, cantidadOut: 0,
+                estadoControl: h.estadoControl
             })));
             setMode('CHECKOUT');
         } catch (e) { showToast('Error de conexión', 'error'); }
         finally { setIsLoading(false); }
+    };
+
+    const handleCheckoutPrecheck = () => {
+        const hasExpiredTools = checklist.some(c => c.estadoControl === 'VENCIDO' || c.estadoControl === 'POR_VENCER');
+        if (hasExpiredTools) {
+            setIsWarningCheckout(true);
+        } else {
+            setIsConfirmingCheckout(true);
+        }
     };
 
     const handleAddNewTool = () => {
@@ -993,7 +1004,7 @@ function RetirosTab({ user }: { user: any }) {
                     newToolQty={newToolQty} setNewToolQty={setNewToolQty}
                     handleAddNewTool={handleAddNewTool} missingCount={missingOutCount}
                     isLoading={isLoading} onBack={handleBack}
-                    onSubmit={() => setIsConfirmingCheckout(true)}
+                    onSubmit={handleCheckoutPrecheck}
                 />
             )}
             {mode === 'CHECKIN' && selectedMovement && (
@@ -1006,6 +1017,11 @@ function RetirosTab({ user }: { user: any }) {
                 />
             )}
 
+            <ConfirmDialog isOpen={isWarningCheckout} title="¡Atención! Herramientas por vencer"
+                message={`Este carro contiene herramientas con controles vencidos o por vencer. ¿Autorizas la salida de todas formas?`}
+                onConfirm={() => { setIsWarningCheckout(false); setIsConfirmingCheckout(true); }}
+                onCancel={() => setIsWarningCheckout(false)} confirmLabel="Autorizar" variant="warning" />
+            
             <ConfirmDialog isOpen={isConfirmingCheckout} title="Confirmar Salida"
                 message={`¿Confirmas el retiro de ${selectedCart?.nombre}?`}
                 onConfirm={submitCheckout} onCancel={() => setIsConfirmingCheckout(false)} confirmLabel="Registrar" variant="info" />
@@ -1025,6 +1041,7 @@ function VerificacionTab({ user }: { user: any }) {
     const [tool, setTool] = useState<Tool | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [verifyMode, setVerifyMode] = useState(false);
+    const [warningCartModal, setWarningCartModal] = useState<Tool | null>(null);
 
     const handleScan = (text: string) => {
         setIsScanning(false);
@@ -1040,7 +1057,17 @@ function VerificacionTab({ user }: { user: any }) {
         try {
             const res = await safeApiRequest(`/api/herramientas/${id}`);
             if (!res.ok) { showToast('Herramienta no encontrada', 'error'); return; }
-            setTool(await res.json());
+            const fetchedTool = await res.json();
+            
+            if (fetchedTool.tipo === 'CARRO' && fetchedTool.herramientas) {
+                const hasExpired = fetchedTool.herramientas.some((h: any) => h.estadoControl === 'VENCIDO' || h.estadoControl === 'POR_VENCER');
+                if (hasExpired && warningCartModal?.id !== fetchedTool.id) {
+                    setWarningCartModal(fetchedTool);
+                    return;
+                }
+            }
+            
+            setTool(fetchedTool);
         } catch (e) { showToast('Error de conexión', 'error'); }
         finally { setIsLoading(false); }
     };
@@ -1088,6 +1115,17 @@ function VerificacionTab({ user }: { user: any }) {
             </div>
 
             {isScanning && <ScannerModal onScan={handleScan} onClose={() => setIsScanning(false)} />}
+
+            <ConfirmDialog
+                isOpen={!!warningCartModal}
+                title="¡Atención! Herramientas por vencer"
+                message={`El carro que escaneaste contiene herramientas con controles vencidos o por vencer. Te sugerimos revisar la lista.`}
+                onConfirm={() => { setTool(warningCartModal); setWarningCartModal(null); }}
+                onCancel={() => setWarningCartModal(null)}
+                confirmLabel="Ver Detalles"
+                cancelLabel="Cerrar"
+                variant="warning"
+            />
 
             {isLoading && (
                 <div className="flex justify-center py-8"><div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" /></div>
