@@ -179,7 +179,7 @@ export default function SearchableSelect({
                 } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                 tabIndex={disabled ? -1 : 0}
             >
-                <span className={`font-bold truncate ${selectedOption ? 'text-slate-700 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500'}`}>
+                <span className={`block flex-1 min-w-0 truncate font-bold ${selectedOption ? 'text-slate-700 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500'}`}>
                     {selectedOption ? selectedOption.label : placeholder}
                 </span>
                 <div className="flex items-center gap-1 shrink-0">

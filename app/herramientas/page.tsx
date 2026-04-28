@@ -229,12 +229,14 @@ function HerramientasTab({ user }: { user: any }) {
     const handleSave = async () => {
         if (!form.nombre.trim()) { showToast('El nombre es obligatorio', 'error'); return; }
 
+        const submitForm = { ...form, cantidad: Math.max(1, Number(form.cantidad) || 1) };
+
         try {
             if (editingTool) {
                 const res = await safeApiRequest(`/api/herramientas/${editingTool.id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(form)
+                    body: JSON.stringify(submitForm)
                 });
                 if (!res.ok) { const e = await res.json(); showToast(e.error || 'Error', 'error'); return; }
                 showToast('Herramienta actualizada', 'success');
@@ -242,10 +244,10 @@ function HerramientasTab({ user }: { user: any }) {
                 const res = await safeApiRequest('/api/herramientas', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(form)
+                    body: JSON.stringify(submitForm)
                 });
                 if (!res.ok) { const e = await res.json(); showToast(e.error || 'Error', 'error'); return; }
-                showToast(form.cantidad > 1 ? `${form.cantidad} herramientas creadas` : 'Herramienta creada', 'success');
+                showToast(submitForm.cantidad > 1 ? `${submitForm.cantidad} herramientas creadas` : 'Herramienta creada', 'success');
             }
             resetForm();
             loadTools();
@@ -421,7 +423,7 @@ function HerramientasTab({ user }: { user: any }) {
                                 <button
                                     type="button"
                                     onClick={() => setForm({ ...form, controlActivo: !form.controlActivo })}
-                                    className={`w-12 h-7 rounded-full transition-all duration-300 relative ${form.controlActivo ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-600'}`}
+                                    className={`w-12 h-7 !min-h-0 shrink-0 rounded-full transition-all duration-300 relative ${form.controlActivo ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-600'}`}
                                 >
                                     <div className={`w-5 h-5 bg-white rounded-full shadow-md absolute top-1 transition-all duration-300 ${form.controlActivo ? 'left-6' : 'left-1'}`} />
                                 </button>
@@ -443,7 +445,13 @@ function HerramientasTab({ user }: { user: any }) {
                                 <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Cantidad</label>
                                 <div className="flex items-center gap-3">
                                     <input type="number" min={1} max={100} value={form.cantidad}
-                                        onChange={e => setForm({ ...form, cantidad: Math.max(1, Math.min(100, parseInt(e.target.value) || 1)) })}
+                                        onChange={e => {
+                                            const val = e.target.value;
+                                            setForm({ ...form, cantidad: val === '' ? ('' as any) : Math.min(100, parseInt(val) || 0) });
+                                        }}
+                                        onBlur={() => {
+                                            if (!form.cantidad || form.cantidad < 1) setForm({ ...form, cantidad: 1 });
+                                        }}
                                         className="w-24 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-sm font-bold text-center outline-none focus:border-primary" />
                                     {form.cantidad > 1 && (
                                         <p className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
@@ -729,7 +737,7 @@ function CarrosTab({ user }: { user: any }) {
 
                                 {/* Assign Tool */}
                                 <div className="flex gap-2 mb-4">
-                                    <div className="flex-1">
+                                    <div className="flex-1 min-w-0">
                                         <SearchableSelect
                                             options={allTools.map(t => ({ id: t.id, label: `${t.nombre} (${t.id})` }))}
                                             value={assigningToolId}
@@ -738,7 +746,7 @@ function CarrosTab({ user }: { user: any }) {
                                         />
                                     </div>
                                     <button onClick={handleAssign} disabled={!assigningToolId}
-                                        className="px-4 py-2 bg-primary text-white rounded-xl font-bold text-xs disabled:opacity-40 hover:bg-primary/90 transition-all active:scale-95 flex items-center gap-1.5 whitespace-nowrap">
+                                        className="px-4 py-2 shrink-0 bg-primary text-white rounded-xl font-bold text-xs disabled:opacity-40 hover:bg-primary/90 transition-all active:scale-95 flex items-center gap-1.5 whitespace-nowrap">
                                         <LinkIcon className="w-4 h-4" /> Asignar
                                     </button>
                                 </div>
