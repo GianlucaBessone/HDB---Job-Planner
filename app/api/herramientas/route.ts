@@ -78,7 +78,8 @@ export async function POST(req: Request) {
         const {
             nombre, marca, descripcion, tipo, subtipo, rubro,
             controlActivo, periodoControl,
-            cantidad = 1
+            cantidad = 1,
+            carroId
         } = data;
 
         if (!nombre?.trim()) {
@@ -86,6 +87,18 @@ export async function POST(req: Request) {
         }
         if (!tipo?.trim()) {
             return NextResponse.json({ error: 'El tipo es obligatorio' }, { status: 400 });
+        }
+
+        // Validate carroId if provided
+        if (carroId) {
+            const carro = await prisma.tool.findUnique({ where: { id: carroId } });
+            if (!carro || carro.tipo !== 'CARRO') {
+                return NextResponse.json({ error: 'El carro especificado no existe o no es de tipo CARRO' }, { status: 400 });
+            }
+            // Don't allow assigning a CARRO to a CARRO
+            if (tipo.toUpperCase() === 'CARRO') {
+                return NextResponse.json({ error: 'No se puede asignar un carro dentro de otro carro' }, { status: 400 });
+            }
         }
 
         const count = Math.max(1, Math.min(cantidad, 100)); // Max 100 at once
@@ -101,6 +114,7 @@ export async function POST(req: Request) {
             rubro: rubro?.toUpperCase() || null,
             controlActivo: controlActivo || false,
             periodoControl: periodoControl || 60,
+            carroId: carroId || null,
         }));
 
         // Use createMany for bulk, individual create for single

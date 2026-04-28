@@ -6,7 +6,7 @@ import {
     Wrench, Plus, Search, ScanLine, Camera, ArrowLeft, X, Save, Trash2, Edit2,
     CheckCircle2, AlertTriangle, Clock, RefreshCw, Minus, ClipboardCheck, Filter,
     ChevronDown, ChevronUp, Package, QrCode, Printer, Eye, ShieldCheck, Settings2,
-    Link as LinkIcon, Unlink, AlertCircle, Zap, Hammer, Droplets, Cog
+    Link as LinkIcon, Unlink, AlertCircle, Zap, Hammer, Droplets, Cog, Copy
 } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { QRCodeCanvas } from 'qrcode.react';
@@ -189,14 +189,21 @@ function HerramientasTab({ user }: { user: any }) {
     // Brands
     const [marcas, setMarcas] = useState<string[]>([]);
 
+    // Carros for assignment
+    const [carros, setCarros] = useState<Tool[]>([]);
+
+    // Replicate state (for edit mode)
+    const [replicateCantidad, setReplicateCantidad] = useState<number | ''>('');
+    const [isReplicating, setIsReplicating] = useState(false);
+
     // Form state
     const [form, setForm] = useState({
         nombre: '', marca: '', descripcion: '', tipo: 'MANUAL',
         subtipo: '', rubro: '', controlActivo: false, periodoControl: 60,
-        cantidad: 1
+        cantidad: 1, carroId: ''
     });
 
-    useEffect(() => { loadTools(); loadMarcas(); }, []);
+    useEffect(() => { loadTools(); loadMarcas(); loadCarros(); }, []);
 
     const loadTools = async () => {
         setIsLoading(true);
@@ -220,16 +227,24 @@ function HerramientasTab({ user }: { user: any }) {
         } catch (e) { console.error(e); }
     };
 
+    const loadCarros = async () => {
+        try {
+            const res = await safeApiRequest('/api/herramientas?soloCarros=true');
+            if (res.ok) setCarros(await res.json());
+        } catch (e) { console.error(e); }
+    };
+
     const resetForm = () => {
-        setForm({ nombre: '', marca: '', descripcion: '', tipo: 'MANUAL', subtipo: '', rubro: '', controlActivo: false, periodoControl: 60, cantidad: 1 });
+        setForm({ nombre: '', marca: '', descripcion: '', tipo: 'MANUAL', subtipo: '', rubro: '', controlActivo: false, periodoControl: 60, cantidad: 1, carroId: '' });
         setShowForm(false);
         setEditingTool(null);
+        setReplicateCantidad('');
     };
 
     const handleSave = async () => {
         if (!form.nombre.trim()) { showToast('El nombre es obligatorio', 'error'); return; }
 
-        const submitForm = { ...form, cantidad: Math.max(1, Number(form.cantidad) || 1) };
+        const submitForm = { ...form, cantidad: Math.max(1, Number(form.cantidad) || 1), carroId: form.carroId || undefined };
 
         try {
             if (editingTool) {
@@ -247,7 +262,8 @@ function HerramientasTab({ user }: { user: any }) {
                     body: JSON.stringify(submitForm)
                 });
                 if (!res.ok) { const e = await res.json(); showToast(e.error || 'Error', 'error'); return; }
-                showToast(submitForm.cantidad > 1 ? `${submitForm.cantidad} herramientas creadas` : 'Herramienta creada', 'success');
+                const carroMsg = submitForm.carroId ? ' y asignada(s) al carro' : '';
+                showToast(submitForm.cantidad > 1 ? `${submitForm.cantidad} herramientas creadas${carroMsg}` : `Herramienta creada${carroMsg}`, 'success');
             }
             resetForm();
             loadTools();
@@ -259,9 +275,34 @@ function HerramientasTab({ user }: { user: any }) {
         setForm({
             nombre: tool.nombre, marca: tool.marca || '', descripcion: tool.descripcion || '',
             tipo: tool.tipo, subtipo: tool.subtipo || '', rubro: tool.rubro || '',
-            controlActivo: tool.controlActivo, periodoControl: tool.periodoControl, cantidad: 1
+            controlActivo: tool.controlActivo, periodoControl: tool.periodoControl, cantidad: 1, carroId: ''
         });
+        setReplicateCantidad('');
         setShowForm(true);
+    };
+
+    const handleReplicate = async () => {
+        if (!editingTool || !replicateCantidad || replicateCantidad < 1) return;
+        setIsReplicating(true);
+        try {
+            const res = await safeApiRequest('/api/herramientas/replicar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ toolId: editingTool.id, cantidad: replicateCantidad })
+            });
+            if (!res.ok) {
+                const e = await res.json();
+                showToast(e.error || 'Error al replicar', 'error');
+                return;
+            }
+            showToast(`${replicateCantidad} copia(s) de "${editingTool.nombre}" creada(s)`, 'success');
+            setReplicateCantidad('');
+            loadTools();
+        } catch (e) {
+            showToast('Error de conexión', 'error');
+        } finally {
+            setIsReplicating(false);
+        }
     };
 
     const handleDelete = async (tool: Tool) => {
@@ -439,24 +480,85 @@ function HerramientasTab({ user }: { user: any }) {
                             )}
                         </div>
 
-                        {/* Cantidad (solo para creación) */}
+                        {/* Cantidad y Carro (solo para creación) */}
                         {!editingTool && (
-                            <div className="lg:col-span-3">
-                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Cantidad</label>
+                            <>
+                                <div>
+                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Cantidad</label>
+                                    <div className="flex items-center gap-3">
+                                        <input type="number" min={1} max={100} value={form.cantidad}
+                                            onChange={e => {
+                                                const val = e.target.value;
+                                                setForm({ ...form, cantidad: val === '' ? ('' as any) : Math.min(100, parseInt(val) || 0) });
+                                            }}
+                                            onBlur={() => {
+                                                if (!form.cantidad || form.cantidad < 1) setForm({ ...form, cantidad: 1 });
+                                            }}
+                                            className="w-24 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-sm font-bold text-center outline-none focus:border-primary" />
+                                        {form.cantidad > 1 && (
+                                            <p className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                                                <AlertCircle className="w-4 h-4" />
+                                                Se crearán {form.cantidad} herramientas con IDs distintos
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                                {form.tipo !== 'CARRO' && (
+                                    <div className="lg:col-span-2">
+                                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Asignar a Carro (Opcional)</label>
+                                        <SearchableSelect
+                                            options={carros.map(c => ({ id: c.id, label: c.nombre }))}
+                                            value={form.carroId}
+                                            onChange={v => setForm({ ...form, carroId: v })}
+                                            placeholder="Sin asignar — seleccionar carro..."
+                                        />
+                                        {form.carroId && (
+                                            <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 mt-1.5">
+                                                <LinkIcon className="w-3.5 h-3.5" />
+                                                Se asignará automáticamente al carro seleccionado
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+                            </>
+                        )}
+
+                        {/* Replicar Herramienta (solo en edición) */}
+                        {editingTool && editingTool.tipo !== 'CARRO' && (
+                            <div className="lg:col-span-3 bg-indigo-50/50 dark:bg-indigo-950/20 rounded-2xl p-4 border border-indigo-100 dark:border-indigo-900/30">
+                                <label className="block text-sm font-black text-indigo-700 dark:text-indigo-300 mb-2 flex items-center gap-2">
+                                    <Copy className="w-4 h-4" /> Replicar Herramienta
+                                </label>
+                                <p className="text-xs font-medium text-indigo-500 dark:text-indigo-400 mb-3">
+                                    Crear copias idénticas de esta herramienta con nuevos IDs únicos.
+                                </p>
                                 <div className="flex items-center gap-3">
-                                    <input type="number" min={1} max={100} value={form.cantidad}
+                                    <input
+                                        type="number" min={1} max={100}
+                                        value={replicateCantidad}
                                         onChange={e => {
                                             const val = e.target.value;
-                                            setForm({ ...form, cantidad: val === '' ? ('' as any) : Math.min(100, parseInt(val) || 0) });
+                                            setReplicateCantidad(val === '' ? '' : Math.min(100, Math.max(1, parseInt(val) || 1)));
                                         }}
-                                        onBlur={() => {
-                                            if (!form.cantidad || form.cantidad < 1) setForm({ ...form, cantidad: 1 });
-                                        }}
-                                        className="w-24 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-sm font-bold text-center outline-none focus:border-primary" />
-                                    {form.cantidad > 1 && (
-                                        <p className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                                        placeholder="Cantidad"
+                                        className="w-28 bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-800 rounded-xl py-2.5 px-4 text-sm font-bold text-center outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                                    />
+                                    <button
+                                        onClick={handleReplicate}
+                                        disabled={!replicateCantidad || replicateCantidad < 1 || isReplicating}
+                                        className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-black text-sm hover:bg-indigo-700 transition-all active:scale-95 shadow-md shadow-indigo-600/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100 whitespace-nowrap"
+                                    >
+                                        {isReplicating ? (
+                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        ) : (
+                                            <Copy className="w-4 h-4" />
+                                        )}
+                                        Replicar Herramienta
+                                    </button>
+                                    {replicateCantidad && replicateCantidad >= 1 && (
+                                        <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
                                             <AlertCircle className="w-4 h-4" />
-                                            Se crearán {form.cantidad} herramientas con IDs distintos
+                                            Se crearán {replicateCantidad} copia(s) con IDs nuevos
                                         </p>
                                     )}
                                 </div>
