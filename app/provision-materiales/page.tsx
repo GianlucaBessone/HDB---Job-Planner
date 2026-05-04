@@ -10,6 +10,7 @@ import CodeBadge from '@/components/CodeBadge';
 import * as XLSX from 'xlsx';
 import { createPortal } from 'react-dom';
 import { showToast } from '@/components/Toast';
+import { ViewConfig, isViewAllowed } from '@/lib/viewAccess';
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 type MaterialUso = {
@@ -844,14 +845,19 @@ export default function ProvisionMaterialesPage() {
     const [filter, setFilter] = useState<'todos' | 'pendiente_devolucion' | 'cerrado'>('todos');
     const [showImport, setShowImport] = useState(false);
     const [importResults, setImportResults] = useState<any[] | null>(null);
+    const [viewConfig, setViewConfig] = useState<ViewConfig[] | null>(null);
 
     useEffect(() => {
         const stored = localStorage.getItem('currentUser');
         if (stored) setUser(JSON.parse(stored));
+        fetch('/api/config/views')
+            .then(r => r.json())
+            .then(data => { if (Array.isArray(data) && data.length > 0) setViewConfig(data); })
+            .catch(() => {});
     }, []);
 
-    const userRole = user?.role?.toLowerCase()?.trim();
-    const isAuthorized = ['vendedor', 'supervisor', 'admin'].includes(userRole || '');
+    const userRole = user?.role?.toLowerCase()?.trim() || '';
+    const isAuthorized = !userRole || !viewConfig || isViewAllowed('/provision-materiales', userRole, 'sidebar', viewConfig);
 
     const loadData = useCallback(async (showLoader = false) => {
         if (showLoader) setLoading(true);

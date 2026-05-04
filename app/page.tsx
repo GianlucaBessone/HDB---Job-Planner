@@ -30,7 +30,15 @@ export default function HomePage() {
     const [userName, setUserName] = useState<string>('');
     const [userData, setUserData] = useState<any>(null);
 
-    const [viewConfig, setViewConfig] = useState<ViewConfig[] | null>(null);
+    const [viewConfig, setViewConfig] = useState<ViewConfig[] | null>(() => {
+        if (typeof window !== 'undefined') {
+            const cached = localStorage.getItem('cachedViewConfig');
+            if (cached) {
+                try { return JSON.parse(cached); } catch { return null; }
+            }
+        }
+        return null;
+    });
 
     useEffect(() => {
         const stored = localStorage.getItem('currentUser');
@@ -50,17 +58,13 @@ export default function HomePage() {
             .then(data => {
                 if (Array.isArray(data) && data.length > 0) {
                     setViewConfig(data);
+                    localStorage.setItem('cachedViewConfig', JSON.stringify(data));
                 }
             })
             .catch(() => {});
     }, [router]);
 
     const role = userRole?.trim().toLowerCase() || 'operador';
-    const isOperador = role === 'operador';
-    const isVendedor = role === 'vendedor';
-    const isSupervisor = role === 'supervisor';
-    const isAdmin = role === 'admin';
-    const isSupervisorOrAdmin = isSupervisor || isAdmin;
 
     const show = (href: string) => isViewAllowed(href, role, 'home', viewConfig);
 
@@ -71,6 +75,10 @@ export default function HomePage() {
             </div>
         );
     }
+
+    const hasOperaciones = show('/fichado') || show('/timesheets') || show('/herramientas') || show('/my-projects') || show('/delays');
+    const hasGestion = show('/aprobaciones') || show('/planning') || show('/projects') || show('/ordenes-servicio') || show('/provision-materiales') || show('/clients');
+    const hasAdmin = show('/dashboard') || show('/operators') || show('/auditoria') || show('/configuracion') || show('/notifications');
 
     return (
         <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
@@ -84,10 +92,9 @@ export default function HomePage() {
                 </div>
             </div>
 
-            {/* Operador */}
-            {isOperador && (
+            {hasOperaciones && (
                 <div className="space-y-6">
-                    <h3 className="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Tus Acciones Rápidas</h3>
+                    <h3 className="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Operaciones</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
                         {show('/fichado') && <ActionCard
                             title="Fichado GPS/QR"
@@ -124,88 +131,20 @@ export default function HomePage() {
                             href="/delays"
                             color="bg-amber-500"
                         />}
-                        {show('/notifications') && <ActionCard
-                            title="Notificaciones"
-                            description="Novedades y alertas"
-                            icon={<Bell className="w-6 h-6" />}
-                            href="/notifications"
-                            color="bg-rose-500"
-                        />}
                     </div>
                 </div>
             )}
 
-            {/* Vendedor */}
-            {isVendedor && (
+            {hasGestion && (
                 <div className="space-y-6">
-                    <h3 className="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Panel de Ventas</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-                        {show('/provision-materiales') && <ActionCard
-                            title="Provisión de Materiales"
-                            description="Gestión de suministros"
-                            icon={<Package className="w-6 h-6" />}
-                            href="/provision-materiales"
-                            color="bg-orange-500"
-                        />}
-                        {show('/clients') && <ActionCard
-                            title="Gestión de Clientes"
-                            description="Base de datos de clientes"
-                            icon={<Activity className="w-6 h-6" />}
-                            href="/clients"
-                            color="bg-indigo-500"
-                        />}
-                        {show('/notifications') && <ActionCard
-                            title="Notificaciones"
-                            description="Novedades y alertas"
-                            icon={<Bell className="w-6 h-6" />}
-                            href="/notifications"
-                            color="bg-rose-500"
-                        />}
-                        {show('/operators') && <ActionCard
-                            title="Mi Usuario"
-                            description="Perfil de Ventas"
-                            icon={<UserIcon className="w-6 h-6" />}
-                            href="/operators"
-                            color="bg-slate-700"
-                        />}
-                    </div>
-                </div>
-            )}
-
-            {/* Supervisor y Admin */}
-            {isSupervisorOrAdmin && (
-                <div className="space-y-6">
-                    <h3 className="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">
-                        {isAdmin ? 'Panel de Administración' : 'Panel de Supervisión'}
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 gap-3 md:gap-4">
+                    <h3 className="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Gestión y Seguimiento</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
                         {show('/aprobaciones') && <ActionCard
                             title="Aprobaciones"
                             description="Validar fichadas de riesgo"
                             icon={<ClipboardCheck className="w-6 h-6" />}
                             href="/aprobaciones"
                             color="bg-teal-600"
-                        />}
-                        {show('/fichado') && <ActionCard
-                            title="Fichado GPS/QR"
-                            description="Control de asistencia"
-                            icon={<MapPin className="w-6 h-6" />}
-                            href="/fichado"
-                            color="bg-emerald-500"
-                        />}
-                        {show('/herramientas') && <ActionCard
-                            title="Herramientas y Carros"
-                            description="Gestión integral de herramientas"
-                            icon={<Wrench className="w-6 h-6" />}
-                            href="/herramientas"
-                            color="bg-slate-600"
-                        />}
-                        {show('/dashboard') && <ActionCard
-                            title="Panel de Análisis"
-                            description="Métricas globales"
-                            icon={<BarChart3 className="w-6 h-6" />}
-                            href="/dashboard"
-                            color="bg-cyan-600"
                         />}
                         {show('/planning') && <ActionCard
                             title="Planificación"
@@ -230,17 +169,32 @@ export default function HomePage() {
                         />}
                         {show('/provision-materiales') && <ActionCard
                             title="Provisión de Materiales"
-                            description="Control de suministros"
+                            description="Gestión de suministros"
                             icon={<Package className="w-6 h-6" />}
                             href="/provision-materiales"
                             color="bg-orange-500"
                         />}
-                        {show('/notifications') && <ActionCard
-                            title="Notificaciones"
-                            description="Novedades y alertas"
-                            icon={<Bell className="w-6 h-6" />}
-                            href="/notifications"
-                            color="bg-rose-500"
+                        {show('/clients') && <ActionCard
+                            title="Gestión de Clientes"
+                            description="Base de datos de clientes"
+                            icon={<Activity className="w-6 h-6" />}
+                            href="/clients"
+                            color="bg-indigo-500"
+                        />}
+                    </div>
+                </div>
+            )}
+
+            {hasAdmin && (
+                <div className="space-y-6">
+                    <h3 className="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Administración</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
+                        {show('/dashboard') && <ActionCard
+                            title="Panel de Análisis"
+                            description="Métricas globales"
+                            icon={<BarChart3 className="w-6 h-6" />}
+                            href="/dashboard"
+                            color="bg-cyan-600"
                         />}
                         {show('/operators') && <ActionCard
                             title="Gestión de Usuarios"
@@ -262,6 +216,13 @@ export default function HomePage() {
                             icon={<Settings className="w-6 h-6" />}
                             href="/configuracion"
                             color="bg-slate-400"
+                        />}
+                        {show('/notifications') && <ActionCard
+                            title="Notificaciones"
+                            description="Novedades y alertas"
+                            icon={<Bell className="w-6 h-6" />}
+                            href="/notifications"
+                            color="bg-rose-500"
                         />}
                     </div>
                 </div>

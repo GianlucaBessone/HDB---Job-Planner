@@ -192,7 +192,15 @@ export default function RootLayout({
 
 function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose: () => void; user: any; onLogout: () => void }) {
     const pathname = usePathname();
-    const [viewConfig, setViewConfig] = useState<ViewConfig[] | null>(null);
+    const [viewConfig, setViewConfig] = useState<ViewConfig[] | null>(() => {
+        if (typeof window !== 'undefined') {
+            const cached = localStorage.getItem('cachedViewConfig');
+            if (cached) {
+                try { return JSON.parse(cached); } catch { return null; }
+            }
+        }
+        return null;
+    });
 
     useEffect(() => {
         fetch('/api/config/views')
@@ -200,6 +208,7 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
             .then(data => {
                 if (Array.isArray(data) && data.length > 0) {
                     setViewConfig(data);
+                    localStorage.setItem('cachedViewConfig', JSON.stringify(data));
                 }
             })
             .catch(() => {});
@@ -230,9 +239,8 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
 
     const role = user?.role?.toLowerCase() || 'operador';
     const allowedMenu = menuItems.filter(item => {
-        // First check hardcoded role access
-        if (!item.roles.includes(role)) return false;
-        // Then apply dynamic view config if available
+        // Apply dynamic view config if available
+        // isViewAllowed handles fallbacks using DEFAULT_VIEWS if no dynamic config exists
         return isViewAllowed(item.href, role, 'sidebar', viewConfig);
     });
 

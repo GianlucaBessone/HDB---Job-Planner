@@ -12,6 +12,7 @@ import { formatDate, formatDateTime } from '@/lib/formatDate';
 import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { ViewConfig, isViewAllowed } from '@/lib/viewAccess';
 import CodeBadge from '@/components/CodeBadge';
 import dynamic from 'next/dynamic';
 
@@ -474,11 +475,16 @@ function OrdenesServicioContent() {
     const [osToPay, setOsToPay] = useState<OrdenServicio | null>(null);
     const [osToCancel, setOsToCancel] = useState<OrdenServicio | null>(null);
     const [osCobroToOpen, setOsCobroToOpen] = useState<OrdenServicio | null>(null);
+    const [viewConfig, setViewConfig] = useState<ViewConfig[] | null>(null);
 
     useEffect(() => {
         const user = localStorage.getItem('currentUser');
         if (user) setCurrentUser(JSON.parse(user));
         loadOrdenes();
+        fetch('/api/config/views')
+            .then(r => r.json())
+            .then(data => { if (Array.isArray(data) && data.length > 0) setViewConfig(data); })
+            .catch(() => {});
     }, []);
 
     const loadOrdenes = async () => {
@@ -552,7 +558,8 @@ function OrdenesServicioContent() {
         }
     };
 
-    const isSupervisorOrAdmin = currentUser?.role === 'supervisor' || currentUser?.role === 'admin';
+    const role = currentUser?.role?.trim().toLowerCase() || '';
+    const isSupervisorOrAdmin = !role || !viewConfig || isViewAllowed('/ordenes-servicio', role, 'sidebar', viewConfig);
 
     if (!loading && !isSupervisorOrAdmin) {
         return (

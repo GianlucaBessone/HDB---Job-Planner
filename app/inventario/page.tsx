@@ -5,6 +5,7 @@ import { PackageSearch, Plus, Upload, Download, Search, Edit2, Trash2, X, AlertC
 import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { ViewConfig, isViewAllowed } from '@/lib/viewAccess';
 
 interface Material {
     codigo: string;
@@ -31,11 +32,16 @@ export default function InventarioPage() {
 
     const [deleteCode, setDeleteCode] = useState<string | null>(null);
     const [currentUser, setCurrentUser] = useState<any>(null);
+    const [viewConfig, setViewConfig] = useState<ViewConfig[] | null>(null);
 
     useEffect(() => {
         const u = localStorage.getItem('currentUser');
         if (u) setCurrentUser(JSON.parse(u));
         loadMateriales();
+        fetch('/api/config/views')
+            .then(r => r.json())
+            .then(data => { if (Array.isArray(data) && data.length > 0) setViewConfig(data); })
+            .catch(() => {});
     }, []);
 
     const loadMateriales = async () => {
@@ -162,10 +168,10 @@ export default function InventarioPage() {
         m.codigo.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Only Admin & Ventas should see this, or everyone? We check:
-    const hasAccess = currentUser?.role === 'admin' || currentUser?.role === 'ventas';
+    const role = currentUser?.role?.trim().toLowerCase() || '';
+    const hasAccess = !role || !viewConfig || isViewAllowed('/inventario', role, 'sidebar', viewConfig);
 
-    if (!loading && !hasAccess && currentUser?.role) {
+    if (!loading && !hasAccess && role) {
         return (
             <div className="max-w-2xl mx-auto py-20 text-center space-y-4">
                 <AlertCircle className="w-12 h-12 text-slate-300 mx-auto" />

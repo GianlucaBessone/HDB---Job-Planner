@@ -54,9 +54,9 @@ export function isViewAllowed(
     location: 'sidebar' | 'home',
     configs: ViewConfig[] | null
 ): boolean {
-    if (!configs || configs.length === 0) return true;
+    const effectiveConfigs = (!configs || configs.length === 0) ? DEFAULT_VIEWS : configs;
 
-    const cfg = configs.find(v => v.key === key);
+    const cfg = effectiveConfigs.find(v => v.key === key);
     if (!cfg) return true; // Not configured = allow
 
     if (!cfg.roles.includes(role)) return false;
