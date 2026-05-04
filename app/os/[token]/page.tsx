@@ -651,6 +651,118 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
         window.location.href = `/api/ordenes-servicio/${token}/pdf`;
     };
 
+    const handlePrint = () => {
+        if (!os) return;
+        const printStyles = `
+            <style>
+                @page { margin: 0; size: A4 portrait; }
+                body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 20mm; color: #1e293b; background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                * { box-sizing: border-box; }
+                .header { border-bottom: 3px solid #059669; padding-bottom: 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; }
+                .logo { max-height: 80px; object-fit: contain; }
+                .badge { padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+                .badge.firmada { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+                .badge.pendiente { background: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }
+                h2 { font-size: 18px; font-weight: 900; color: #0f172a; margin: 0 0 4px; }
+                h3 { font-size: 13px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 12px; padding-bottom: 6px; border-bottom: 1px solid #e2e8f0; }
+                .section { margin-bottom: 22px; page-break-inside: avoid; }
+                .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+                .field label { font-size: 9px; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 2px; }
+                .field p { font-size: 13px; font-weight: 700; color: #1e293b; margin: 0; }
+                .reporte-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; font-size: 13px; color: #334155; line-height: 1.6; white-space: pre-wrap; }
+                table { width: 100%; border-collapse: collapse; font-size: 12px; }
+                th { background: #f8fafc; text-align: left; padding: 8px 12px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #64748b; border-bottom: 2px solid #e2e8f0; }
+                tr { page-break-inside: avoid; }
+                td { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; color: #334155; font-weight: 600; }
+                .firma-box { border: 1px solid #a7f3d0; border-radius: 8px; padding: 14px; background: #f0fdf4; page-break-inside: avoid; }
+                .firma-box img { max-width: 200px; max-height: 80px; border: 1px solid #d1fae5; border-radius: 6px; padding: 4px; background: white; }
+                .footer { margin-top: 30px; padding-top: 14px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8; }
+            </style>
+        `;
+
+        const clienteName = os.project.client?.nombre || os.project.cliente || 'No especificado';
+        const isFirmada = os.estado === 'firmada';
+        const firmaImageUrl = os.firma?.firmaImagen || null;
+
+        const content = `
+            <div class="header">
+                <div>
+                    <img class="logo" src="${window.location.origin}/logo-hdb.jpg" alt="HDB Servicios Electricos" />
+                    <h2 style="margin-top:10px;">Orden de Servicio — ${os.codigoOS || 'OS #' + os.id.slice(-8).toUpperCase()}</h2>
+                    <p style="font-size:12px;color:#64748b;margin:4px 0 0;">${os.project.codigoProyecto ? os.project.codigoProyecto + ' | ' : ''}${os.project.nombre}</p>
+                </div>
+                <div>
+                    <div class="badge ${isFirmada ? 'firmada' : 'pendiente'}">${isFirmada ? '✓ Firmada' : 'Pendiente de firma'}</div>
+                    <p style="font-size:11px;color:#94a3b8;margin-top:8px;text-align:right;">Emitida: ${formatDate(os.fechaCreacion)}</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Datos del Proyecto</h3>
+                <div class="grid-2">
+                    <div class="field" style="grid-column: 1 / -1"><label>Cliente</label><p>${clienteName}</p></div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Reporte del Trabajo</h3>
+                <div class="reporte-box">${os.reporte}</div>
+            </div>
+
+            <div class="section">
+                <h3>Operadores</h3>
+                <table>
+                    <thead><tr><th>Nombre</th><th>Horas</th></tr></thead>
+                    <tbody>
+                        ${os.operadores.map((op: any) => `<tr><td>${op.operador.nombreCompleto}</td><td>${op.horas}h</td></tr>`).join('')}
+                    </tbody>
+                </table>
+            </div>
+
+            ${os.materiales.length > 0 ? `
+            <div class="section">
+                <h3>Materiales Utilizados</h3>
+                <table>
+                    <thead><tr><th>Material</th><th>Cantidad</th><th>Unidad</th></tr></thead>
+                    <tbody>
+                        ${os.materiales.map((m: any) => `<tr><td>${m.material}</td><td>${m.cantidad}</td><td>${m.unidadMedida}</td></tr>`).join('')}
+                    </tbody>
+                </table>
+            </div>` : ''}
+
+            ${os.comentario ? `
+            <div class="section">
+                <h3>Comentario Adicional</h3>
+                <div class="reporte-box" style="border-color: #e2e8f0; background: #fdfdfd;">${os.comentario}</div>
+            </div>` : ''}
+
+            ${isFirmada && os.firma ? `
+            <div class="section">
+                <h3>Firma del Cliente</h3>
+                <div class="firma-box">
+                    <div class="grid-2" style="margin-bottom:10px;">
+                        <div class="field"><label>Nombre</label><p>${os.firma.nombre}</p></div>
+                        <div class="field"><label>DNI</label><p>${os.firma.dni}</p></div>
+                        <div class="field"><label>Fecha de firma</label><p>${formatDateTime(os.firma.fechaFirma)}</p></div>
+                    </div>
+                    ${firmaImageUrl ? `<img src="${firmaImageUrl}" alt="Firma" />` : '<p style="font-size:10px;color:gray;">Firma no cargada</p>'}
+                </div>
+            </div>` : ''}
+
+            <div class="footer">
+                <span>HDB Job Planner — Gestión de Órdenes de Servicio</span>
+                <span>${os.codigoOS || 'OS #' + os.id.slice(-8).toUpperCase()} — ${os.project.codigoProyecto || ''} — ${formatDate(os.fechaCreacion)}</span>
+            </div>
+        `;
+
+        const win = window.open('', '_blank');
+        if (!win) return;
+        win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>OS - ${os.project.nombre}</title>${printStyles}</head><body>${content}</body></html>`);
+        win.document.close();
+        win.focus();
+        setTimeout(() => { win.print(); win.close(); }, 500);
+    };
+
 
     if (loading) {
         return (
@@ -699,6 +811,15 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                         <span className={`whitespace-nowrap px-2 py-1.5 md:px-3 rounded-full text-[10px] md:text-xs font-black uppercase tracking-wider ${isFirmada ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-700 border border-amber-200'}`}>
                             {isFirmada ? '✓ Firmada' : 'Pendiente'}
                         </span>
+                        <button
+                            onClick={handlePrint}
+                            className="bg-slate-100 p-1.5 md:p-2 hover:bg-slate-200 text-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 rounded-xl transition-all border border-slate-200 dark:border-slate-700 inline-flex items-center justify-center shadow-sm"
+                            title="Imprimir"
+                        >
+                            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                            </svg>
+                        </button>
                         <button
                             onClick={handleDownload}
                             className="bg-blue-50 p-1.5 md:p-2 hover:bg-blue-100 text-blue-600 rounded-xl transition-all border border-blue-200 inline-flex items-center justify-center shadow-sm"

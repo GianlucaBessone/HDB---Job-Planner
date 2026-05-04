@@ -102,7 +102,7 @@ export function OSPdf({ os, logoUrl }: OSPdfProps) {
                 </View>
 
                 {/* ── Datos del Proyecto ── */}
-                <View style={S.section}>
+                <View style={S.section} wrap={false}>
                     <Text style={S.sectionTitle}>Datos del Proyecto</Text>
                     <View style={S.grid2}>
                         <View style={S.field}>
@@ -119,7 +119,7 @@ export function OSPdf({ os, logoUrl }: OSPdfProps) {
                 </View>
 
                 {/* ── Reporte ── */}
-                <View style={S.section}>
+                <View style={S.section} wrap={false}>
                     <Text style={S.sectionTitle}>Reporte del Trabajo</Text>
                     <View style={S.reportBox}>
                         <Text style={S.reportText}>{os.reporte}</Text>
@@ -127,14 +127,14 @@ export function OSPdf({ os, logoUrl }: OSPdfProps) {
                 </View>
 
                 {/* ── Operadores ── */}
-                <View style={S.section}>
+                <View style={S.section} wrap={false}>
                     <Text style={S.sectionTitle}>Operadores</Text>
-                    <View style={S.tableHeader}>
+                    <View style={S.tableHeader} wrap={false}>
                         <Text style={[S.thCell, { flex: 4 }]}>Nombre</Text>
                         <Text style={[S.thCell, { flex: 1, textAlign: 'right' }]}>Horas</Text>
                     </View>
                     {os.operadores.map((op, idx) => (
-                        <View key={idx} style={S.tableRow}>
+                        <View key={idx} style={S.tableRow} wrap={false}>
                             <View style={{ flex: 4 }}>
                                 <Text style={S.tdCell}>{op.operador.nombreCompleto}</Text>
                                 {op.isExtra && (
@@ -148,15 +148,15 @@ export function OSPdf({ os, logoUrl }: OSPdfProps) {
 
                 {/* ── Materiales ── */}
                 {os.materiales.length > 0 && (
-                    <View style={S.section}>
+                    <View style={S.section} wrap={false}>
                         <Text style={S.sectionTitle}>Materiales Utilizados</Text>
-                        <View style={S.tableHeader}>
+                        <View style={S.tableHeader} wrap={false}>
                             <Text style={[S.thCell, { flex: 4 }]}>Material</Text>
                             <Text style={[S.thCell, { flex: 1, textAlign: 'right' }]}>Cant.</Text>
                             <Text style={[S.thCell, { flex: 2, textAlign: 'right' }]}>Unidad</Text>
                         </View>
                         {os.materiales.map((m) => (
-                            <View key={m.id} style={S.tableRow}>
+                            <View key={m.id} style={S.tableRow} wrap={false}>
                                 <Text style={[S.tdCell, { flex: 4 }]}>{m.material}</Text>
                                 <Text style={[S.tdCell, S.tdBold, { flex: 1, textAlign: 'right' }]}>{m.cantidad}</Text>
                                 <Text style={[S.tdCell, { flex: 2, textAlign: 'right' }]}>{m.unidadMedida}</Text>
@@ -167,7 +167,7 @@ export function OSPdf({ os, logoUrl }: OSPdfProps) {
 
                 {/* ── Comentario ── */}
                 {os.comentario && (
-                    <View style={S.section}>
+                    <View style={S.section} wrap={false}>
                         <Text style={S.sectionTitle}>Comentario Adicional</Text>
                         <View style={S.reportBox}>
                             <Text style={S.reportText}>{os.comentario}</Text>
@@ -177,7 +177,7 @@ export function OSPdf({ os, logoUrl }: OSPdfProps) {
 
                 {/* ── Firma ── */}
                 {isFirmada && os.firma && (
-                    <View style={S.section}>
+                    <View style={S.section} wrap={false}>
                         <Text style={S.sectionTitle}>Firma del Cliente</Text>
                         <View style={S.firmaBox}>
                             <View style={S.grid2}>

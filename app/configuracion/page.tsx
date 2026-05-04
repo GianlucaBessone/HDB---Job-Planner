@@ -1038,7 +1038,17 @@ function ViewsSection() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(views)
             });
+            // Refetch the updated view configuration
+            const res = await safeApiRequest('/api/config/views');
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+                setViews(getViewConfig(data));
+            }
             showToast('Configuración de vistas guardada correctamente.', 'success');
+            // Reload the page to apply updated view permissions across the app
+            if (typeof window !== 'undefined') {
+                window.location.reload();
+            }
         } catch (e) {
             showToast('Error al guardar configuración de vistas.', 'error');
         } finally {

@@ -10,16 +10,18 @@ export async function GET() {
             where: { category: 'VIEW_ACCESS' },
             orderBy: { order: 'asc' }
         });
-
-        const views = options.map(o => {
+        // Parse saved configs
+        const saved = options.map(o => {
             try {
-                return { id: o.id, ...JSON.parse(o.value) };
+                return JSON.parse(o.value) as any;
             } catch {
                 return null;
             }
         }).filter(Boolean);
-
-        return NextResponse.json(views);
+        // Merge with defaults to include any new views
+        const { getViewConfig } = await import('@/lib/viewAccess');
+        const merged = getViewConfig(saved);
+        return NextResponse.json(merged);
     } catch (error) {
         return NextResponse.json({ error: 'Failed to fetch views' }, { status: 500 });
     }

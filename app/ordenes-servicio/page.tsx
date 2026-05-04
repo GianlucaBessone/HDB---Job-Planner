@@ -94,7 +94,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
         window.location.href = `/api/ordenes-servicio/${os.id}/pdf`;
     };
 
-    const _handleDownloadLegacy = () => {
+    const handlePrint = () => {
         const printStyles = `
             <style>
                 @page { margin: 0; size: A4 portrait; }
@@ -107,15 +107,16 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                 .badge.pendiente { background: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }
                 h2 { font-size: 18px; font-weight: 900; color: #0f172a; margin: 0 0 4px; }
                 h3 { font-size: 13px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 12px; padding-bottom: 6px; border-bottom: 1px solid #e2e8f0; }
-                .section { margin-bottom: 22px; }
+                .section { margin-bottom: 22px; page-break-inside: avoid; }
                 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
                 .field label { font-size: 9px; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 2px; }
                 .field p { font-size: 13px; font-weight: 700; color: #1e293b; margin: 0; }
                 .reporte-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; font-size: 13px; color: #334155; line-height: 1.6; white-space: pre-wrap; }
                 table { width: 100%; border-collapse: collapse; font-size: 12px; }
                 th { background: #f8fafc; text-align: left; padding: 8px 12px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #64748b; border-bottom: 2px solid #e2e8f0; }
+                tr { page-break-inside: avoid; }
                 td { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; color: #334155; font-weight: 600; }
-                .firma-box { border: 1px solid #a7f3d0; border-radius: 8px; padding: 14px; background: #f0fdf4; }
+                .firma-box { border: 1px solid #a7f3d0; border-radius: 8px; padding: 14px; background: #f0fdf4; page-break-inside: avoid; }
                 .firma-box img { max-width: 200px; max-height: 80px; border: 1px solid #d1fae5; border-radius: 6px; padding: 4px; background: white; }
                 .footer { margin-top: 30px; padding-top: 14px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8; }
             </style>
@@ -235,9 +236,18 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                     </div>
                     <div className="flex items-center gap-2">
                         <button
+                            onClick={handlePrint}
+                            className="p-2.5 bg-slate-100 dark:bg-slate-800/50 hover:bg-emerald-50 hover:text-emerald-600 text-slate-500 dark:text-slate-400 rounded-xl transition-all"
+                            title="Imprimir (Ajustar hojas en navegador)"
+                        >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                            </svg>
+                        </button>
+                        <button
                             onClick={handleDownload}
                             className="p-2.5 bg-slate-100 dark:bg-slate-800/50 hover:bg-emerald-50 hover:text-emerald-600 text-slate-500 dark:text-slate-400 rounded-xl transition-all"
-                            title="Descargar PDF"
+                            title="Descargar PDF Original"
                         >
                             <Download className="w-4 h-4" />
                         </button>
@@ -413,17 +423,25 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                 </div>
 
                 {/* Footer */}
-                <div className="p-5 border-t border-slate-100 dark:border-slate-800 flex gap-2 shrink-0">
+                <div className="p-5 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-2 shrink-0">
+                    <button
+                        onClick={handlePrint}
+                        className="flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3 bg-blue-600 text-white rounded-2xl font-black text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-95"
+                    >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                        </svg> Imprimir
+                    </button>
                     <button
                         onClick={handleDownload}
-                        className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-600 text-white rounded-2xl font-black text-sm hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 active:scale-95"
+                        className="flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3 bg-emerald-600 text-white rounded-2xl font-black text-sm hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 active:scale-95"
                     >
-                        <Download className="w-4 h-4" /> Descargar PDF
+                        <Download className="w-4 h-4" /> Bajar PDF
                     </button>
                     {!isFirmada && (
                         <Link
                             href={`/ordenes-servicio/qr/${os.id}`}
-                            className="flex-1 flex items-center justify-center gap-2 py-3 bg-indigo-600 text-white rounded-2xl font-black text-sm hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-95"
+                            className="flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3 bg-indigo-600 text-white rounded-2xl font-black text-sm hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-95"
                         >
                             <Smartphone className="w-4 h-4" /> Ver QR
                         </Link>
