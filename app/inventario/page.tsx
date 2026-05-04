@@ -262,7 +262,7 @@ export default function InventarioPage() {
                         <form onSubmit={handleSave} className="space-y-4">
                             <div>
                                 <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Código</label>
-                                <input required disabled={!!currentCode} type="text" value={formData.codigo} onChange={e => setFormData({...formData, codigo: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 font-mono text-sm outline-none focus:border-primary disabled:opacity-60" placeholder="Ej: MAT-001"/>
+                                <input required disabled={!!currentCode} type="text" value={formData.codigo} onChange={e => setFormData({...formData, codigo: e.target.value.replace(/^0+/, '')})} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 font-mono text-sm outline-none focus:border-primary disabled:opacity-60" placeholder="Ej: MAT-001"/>
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Material (Nombre)</label>
