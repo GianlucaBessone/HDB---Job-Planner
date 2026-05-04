@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import {
     Package, Plus, Trash2, Edit2, Check, X, ChevronDown, ChevronRight,
@@ -112,6 +112,7 @@ function AddMaterialForm({ proyectoId, onAdded }: { proyectoId: string; onAdded:
         cantidadDisponible: '', 
         cantidadEntregada: '' 
     });
+    const codeInputRef = useRef<HTMLInputElement>(null);
 
     // Autocomplete por código
     useEffect(() => {
@@ -143,9 +144,9 @@ function AddMaterialForm({ proyectoId, onAdded }: { proyectoId: string; onAdded:
             body: JSON.stringify({ proyectoId, ...form }),
         });
         setSaving(false);
-        setOpen(false);
         setForm({ nombre: '', codigo: '', unidad: 'Unid.', cantidadSolicitada: '', cantidadDisponible: '', cantidadEntregada: '' });
         onAdded();
+        setTimeout(() => codeInputRef.current?.focus(), 50);
     };
 
     const handleQty = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -165,6 +166,8 @@ function AddMaterialForm({ proyectoId, onAdded }: { proyectoId: string; onAdded:
     return (
         <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 flex flex-wrap md:flex-nowrap items-center gap-2 relative">
             <input
+                ref={codeInputRef}
+                autoFocus
                 placeholder="Código"
                 title="Código interno del material"
                 value={form.codigo}
@@ -172,7 +175,6 @@ function AddMaterialForm({ proyectoId, onAdded }: { proyectoId: string; onAdded:
                 className="w-24 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2 text-xs font-bold outline-none focus:border-primary uppercase"
             />
             <input
-                autoFocus
                 placeholder="Nombre del material *"
                 value={form.nombre}
                 onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))}
