@@ -116,8 +116,9 @@ function AddMaterialForm({ proyectoId, onAdded }: { proyectoId: string; onAdded:
     // Autocomplete por código
     useEffect(() => {
         const timeout = setTimeout(async () => {
-            if (form.codigo && form.codigo.length >= 2) {
-                const res = await fetch(`/api/materiales-proyecto?codigo=${form.codigo}`);
+            const searchCode = form.codigo.replace(/^0+/, '');
+            if (searchCode && searchCode.length >= 1) {
+                const res = await fetch(`/api/materiales-proyecto?codigo=${searchCode}`);
                 if (res.ok) {
                     const data = await res.json();
                     if (data && data.nombre) {
@@ -167,7 +168,7 @@ function AddMaterialForm({ proyectoId, onAdded }: { proyectoId: string; onAdded:
                 placeholder="Código"
                 title="Código interno del material"
                 value={form.codigo}
-                onChange={e => setForm(p => ({ ...p, codigo: e.target.value.replace(/^0+/, '').toUpperCase() }))}
+                onChange={e => setForm(p => ({ ...p, codigo: e.target.value.toUpperCase() }))}
                 className="w-24 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2 text-xs font-bold outline-none focus:border-primary uppercase"
             />
             <input
@@ -310,7 +311,7 @@ function EditMaterialModal({ material, onClose, onDone }: { material: Material; 
                 <div className="space-y-3">
                     <div>
                         <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Código</label>
-                        <input value={form.codigo} onChange={e => setForm(p => ({ ...p, codigo: e.target.value.replace(/^0+/, '').toUpperCase() }))} className="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold outline-none focus:border-primary mt-1 uppercase" placeholder="OPCIONAL" />
+                        <input value={form.codigo} onChange={e => setForm(p => ({ ...p, codigo: e.target.value.toUpperCase() }))} className="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold outline-none focus:border-primary mt-1 uppercase" placeholder="OPCIONAL" />
                     </div>
                     <div>
                         <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Nombre</label>

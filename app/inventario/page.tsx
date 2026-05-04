@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { PackageSearch, Plus, Upload, Download, Search, Edit2, Trash2, X, AlertCircle, Loader2 } from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
@@ -163,10 +163,40 @@ export default function InventarioPage() {
         setIsEditModalOpen(true);
     };
 
-    const filtered = materiales.filter(m => 
-        m.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        m.codigo.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const [searchMode, setSearchMode] = useState<'codigo' | 'nombre'>('codigo');
+
+    const filtered = useMemo(() => {
+        const term = searchTerm.toLowerCase().trim();
+        if (!term) return materiales.slice(0, 100);
+
+        if (searchMode === 'nombre') {
+            return materiales.filter(m => m.nombre.toLowerCase().includes(term)).slice(0, 100);
+        } else {
+            const termNoZeros = term.replace(/^0+/, '');
+            
+            let matches = materiales.filter(m => {
+                const mCodeNoZeros = m.codigo.replace(/^0+/, '').toLowerCase();
+                return mCodeNoZeros.startsWith(termNoZeros);
+            });
+
+            // Organizar de menor a mayor (numéricamente)
+            matches.sort((a, b) => {
+                const aCode = a.codigo.replace(/^0+/, '').toLowerCase();
+                const bCode = b.codigo.replace(/^0+/, '').toLowerCase();
+                if (aCode === termNoZeros) return -1;
+                if (bCode === termNoZeros) return 1;
+                return aCode.localeCompare(bCode, undefined, { numeric: true });
+            });
+
+            // Si hay coincidencia exacta, se reduce a 1 solo material
+            const exactMatch = matches.find(m => m.codigo.replace(/^0+/, '').toLowerCase() === termNoZeros);
+            if (exactMatch) {
+                matches = [exactMatch];
+            }
+
+            return matches.slice(0, 100);
+        }
+    }, [materiales, searchTerm, searchMode]);
 
     const role = currentUser?.role?.trim().toLowerCase() || '';
     const hasAccess = !role || !viewConfig || isViewAllowed('/inventario', role, 'sidebar', viewConfig);
@@ -201,15 +231,31 @@ export default function InventarioPage() {
             </div>
 
             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-[2rem] p-4 md:p-6 shadow-sm space-y-4">
-                <div className="relative group max-w-md">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
-                    <input
-                        type="text"
-                        placeholder="Buscar por código o nombre..."
-                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm font-medium"
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                    />
+                <div className="flex flex-col md:flex-row gap-3">
+                    <div className="relative group flex-1 max-w-md">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+                        <input
+                            type="text"
+                            placeholder={searchMode === 'codigo' ? "Buscar por código (ej: 004 o 4)..." : "Buscar por nombre..."}
+                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm font-medium"
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <div className="flex bg-slate-100 dark:bg-slate-900/50 p-1 rounded-xl w-fit border border-slate-200 dark:border-slate-700">
+                        <button 
+                            onClick={() => { setSearchMode('codigo'); setSearchTerm(''); }}
+                            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${searchMode === 'codigo' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}`}
+                        >
+                            Por Código
+                        </button>
+                        <button 
+                            onClick={() => { setSearchMode('nombre'); setSearchTerm(''); }}
+                            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${searchMode === 'nombre' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}`}
+                        >
+                            Por Nombre
+                        </button>
+                    </div>
                 </div>
 
                 {loading ? (
@@ -262,7 +308,7 @@ export default function InventarioPage() {
                         <form onSubmit={handleSave} className="space-y-4">
                             <div>
                                 <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Código</label>
-                                <input required disabled={!!currentCode} type="text" value={formData.codigo} onChange={e => setFormData({...formData, codigo: e.target.value.replace(/^0+/, '')})} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 font-mono text-sm outline-none focus:border-primary disabled:opacity-60" placeholder="Ej: MAT-001"/>
+                                <input required disabled={!!currentCode} type="text" value={formData.codigo} onChange={e => setFormData({...formData, codigo: e.target.value.toUpperCase()})} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 font-mono text-sm outline-none focus:border-primary disabled:opacity-60" placeholder="Ej: MAT-001"/>
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Material (Nombre)</label>

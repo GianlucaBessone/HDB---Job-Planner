@@ -9,9 +9,17 @@ export async function GET(req: Request) {
     // Autocomplete by codigo
     const searchCodigo = searchParams.get('codigo');
     if (searchCodigo) {
-        const maestro = await prisma.materialMaestro.findUnique({
-            where: { codigo: searchCodigo }
+        const termNoZeros = searchCodigo.replace(/^0+/, '').toLowerCase();
+        
+        // Buscar candidatos que contengan el término
+        const candidatos = await prisma.materialMaestro.findMany({
+            where: { codigo: { contains: termNoZeros, mode: 'insensitive' } }
         });
+        
+        // Encontrar coincidencia exacta ignorando ceros a la izquierda
+        const maestro = candidatos.find(m => 
+            m.codigo.replace(/^0+/, '').toLowerCase() === termNoZeros
+        ) || null;
         return NextResponse.json(maestro, {
             headers: {
                 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
