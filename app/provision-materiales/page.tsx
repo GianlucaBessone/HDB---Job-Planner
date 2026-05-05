@@ -1,10 +1,11 @@
 'use client';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
+import { Search } from 'lucide-react';
 import {
     Package, Plus, Trash2, Edit2, Check, X, ChevronDown, ChevronRight,
     AlertTriangle, CheckCircle2, Clock, RotateCcw, Loader2, MessageSquare,
-    Bell, FileSpreadsheet, ShieldCheck, Upload, Download, FileUp, FileText, CheckCircle
+    Bell, FileSpreadsheet, ShieldCheck, Upload, Download, FileUp, FileText, CheckCircle,
 } from 'lucide-react';
 import CodeBadge from '@/components/CodeBadge';
 import * as XLSX from 'xlsx';
@@ -549,7 +550,7 @@ function ImportResultModal({ results, onClose }: { results: any[]; onClose: () =
 function MaterialesTable({
     proyecto, user, onRefresh,
 }: { proyecto: Proyecto; user: any; onRefresh: () => void }) {
-    const [expanded, setExpanded] = useState(true);
+    const [expanded, setExpanded] = useState(false);
     const [devolucionTarget, setDevolucionTarget] = useState<Material | null>(null);
     const [editTarget, setEditTarget] = useState<Material | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<Material | null>(null);
@@ -845,7 +846,8 @@ export default function ProvisionMaterialesPage() {
     const [user, setUser] = useState<any>(null);
     const [proyectos, setProyectos] = useState<Proyecto[]>([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState<'todos' | 'pendiente_devolucion' | 'cerrado'>('todos');
+    const [filter, setFilter] = useState<'todos' | 'activos' | 'pendiente_devolucion' | 'cerrado'>('todos');
+    const [searchQuery, setSearchQuery] = useState('');
     const [showImport, setShowImport] = useState(false);
     const [importResults, setImportResults] = useState<any[] | null>(null);
     const [viewConfig, setViewConfig] = useState<ViewConfig[] | null>(null);
@@ -887,10 +889,29 @@ export default function ProvisionMaterialesPage() {
         );
     }
 
+    // Normalize text: lowercase + remove accents
+    const normalize = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
     const filteredProyectos = proyectos.filter(p => {
-        if (filter === 'todos') return true;
-        if (filter === 'pendiente_devolucion') return p.materialesProyecto.some(m => m.estado === 'pendiente_devolucion');
-        if (filter === 'cerrado') return p.materialesProyecto.every(m => ['cerrado_ok', 'cerrado_con_reserva'].includes(m.estado));
+        // Status filter
+        if (filter === 'activos') {
+            const hasPendiente = p.materialesProyecto.some(m => m.estado === 'pendiente_devolucion');
+            const allCerrado = p.materialesProyecto.length > 0 && p.materialesProyecto.every(m => ['cerrado_ok', 'cerrado_con_reserva'].includes(m.estado));
+            if (hasPendiente || allCerrado) return false;
+        }
+        if (filter === 'pendiente_devolucion' && !p.materialesProyecto.some(m => m.estado === 'pendiente_devolucion')) return false;
+        if (filter === 'cerrado' && !p.materialesProyecto.every(m => ['cerrado_ok', 'cerrado_con_reserva'].includes(m.estado))) return false;
+
+        // Search filter
+        if (searchQuery.trim()) {
+            const q = normalize(searchQuery.trim());
+            const matchProject = normalize(p.nombre).includes(q);
+            const matchCode = p.codigoProyecto && normalize(p.codigoProyecto).includes(q);
+            const matchClient = normalize(p.client?.nombre || p.cliente || '').includes(q);
+            const matchMaterial = p.materialesProyecto.some(m => normalize(m.nombre).includes(q) || (m.codigo && normalize(m.codigo).includes(q)));
+            if (!matchProject && !matchCode && !matchClient && !matchMaterial) return false;
+        }
+
         return true;
     });
 
@@ -951,18 +972,36 @@ export default function ProvisionMaterialesPage() {
                 ))}
             </div>
 
-            {/* Filter tabs */}
-            <div className="flex gap-2 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-2xl w-fit">
-                {([
-                    { key: 'todos', label: 'Todos' },
-                    { key: 'pendiente_devolucion', label: '⚠ Pendiente devolución' },
-                    { key: 'cerrado', label: '✓ Cerrados' },
-                ] as const).map(t => (
-                    <button key={t.key} onClick={() => setFilter(t.key)}
-                        className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${filter === t.key ? 'bg-white dark:bg-slate-800 text-primary shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}>
-                        {t.label}
-                    </button>
-                ))}
+            {/* Search + Filter */}
+            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                <div className="relative flex-1 w-full sm:max-w-md">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                        placeholder="Buscar por proyecto, código, cliente o material..."
+                        className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-medium text-slate-700 dark:text-slate-200 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                    />
+                    {searchQuery && (
+                        <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
+                            <X className="w-3.5 h-3.5 text-slate-400" />
+                        </button>
+                    )}
+                </div>
+                <div className="flex gap-2 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-2xl w-fit shrink-0">
+                    {([
+                        { key: 'todos', label: 'Todos' },
+                        { key: 'activos', label: '● Activos' },
+                        { key: 'pendiente_devolucion', label: '⚠ Pendientes' },
+                        { key: 'cerrado', label: '✓ Cerrados' },
+                    ] as const).map(t => (
+                        <button key={t.key} onClick={() => setFilter(t.key)}
+                            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${filter === t.key ? 'bg-white dark:bg-slate-800 text-primary shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}>
+                            {t.label}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             {/* Content */}
