@@ -7,8 +7,10 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
     try {
         // ── Auto-repair: fix materials stuck in wrong states ─────────────────────
-        // Case 1: Materials in material_entregado/uso_confirmado with no devolucion,
-        //         on projects that have a signed OS → calculate and transition
+
+        // Case 1: Materials still in material_entregado/uso_confirmado on projects
+        //         with a signed OS. They should have transitioned but didn't.
+        //         Handles BOTH cases: with or without existing devolucion records.
         const stuckMaterials = await prisma.materialProyecto.findMany({
             where: {
                 proyecto: {
@@ -20,9 +22,8 @@ export async function GET() {
                     }
                 },
                 estado: { in: ['material_entregado', 'uso_confirmado'] },
-                devolucion: null
             },
-            include: { usos: true }
+            include: { usos: true, devolucion: true }
         });
 
         if (stuckMaterials.length > 0) {
@@ -31,18 +32,32 @@ export async function GET() {
                     const totalUsado = mat.usos.reduce((acc, u) => acc + u.cantidadUtilizada, 0);
                     const aDevolver = Math.max(0, mat.cantidadEntregada - totalUsado);
                     const esCerrado = mat.cantidadEntregada > 0 && aDevolver === 0;
+                    const nuevoEstado = esCerrado ? 'cerrado_ok' : 'pendiente_devolucion';
+                    const devEstado = esCerrado ? 'cerrado_ok' : 'pendiente';
 
-                    await tx.materialDevolucion.create({
-                        data: {
-                            materialId: mat.id,
-                            cantidadADevolver: aDevolver,
-                            estado: esCerrado ? 'cerrado_ok' : 'pendiente',
-                        }
-                    });
+                    // Create or update devolucion record
+                    if (!mat.devolucion) {
+                        await tx.materialDevolucion.create({
+                            data: {
+                                materialId: mat.id,
+                                cantidadADevolver: aDevolver,
+                                estado: devEstado,
+                            }
+                        });
+                    } else {
+                        await tx.materialDevolucion.update({
+                            where: { materialId: mat.id },
+                            data: {
+                                cantidadADevolver: aDevolver,
+                                estado: devEstado,
+                            }
+                        });
+                    }
 
+                    // Update material state
                     await tx.materialProyecto.update({
                         where: { id: mat.id },
-                        data: { estado: esCerrado ? 'cerrado_ok' : 'pendiente_devolucion' }
+                        data: { estado: nuevoEstado }
                     });
                 }
             });
