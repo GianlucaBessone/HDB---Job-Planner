@@ -931,6 +931,7 @@ export default function ProvisionMaterialesPage() {
 
     const stats = {
         total: proyectos.length,
+        activos: proyectos.filter(p => !p.materialesProyecto.some(m => m.estado === 'pendiente_devolucion') && !isCerrado(p)).length,
         pendientes: proyectos.filter(p => p.materialesProyecto.some(m => m.estado === 'pendiente_devolucion')).length,
         cerrados: proyectos.filter(p => isCerrado(p)).length,
     };
@@ -961,16 +962,18 @@ export default function ProvisionMaterialesPage() {
             </div>
 
             {/* KPIs */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4">
+            <div className="grid grid-cols-4 gap-2 sm:gap-3 md:gap-4">
                 {[
-                    { label: 'Proy. Activos', value: stats.total, color: 'bg-primary/10 text-primary' },
-                    { label: 'Pendientes', value: stats.pendientes, color: 'bg-amber-100 text-amber-700' },
-                    { label: 'Cerrados', value: stats.cerrados, color: 'bg-emerald-100 text-emerald-700' },
+                    { label: 'Total', value: stats.total, color: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300', filterKey: 'todos' as const },
+                    { label: 'Activos', value: stats.activos, color: 'bg-primary/10 text-primary', filterKey: 'activos' as const },
+                    { label: 'Pendientes', value: stats.pendientes, color: 'bg-amber-100 text-amber-700', filterKey: 'pendiente_devolucion' as const },
+                    { label: 'Cerrados', value: stats.cerrados, color: 'bg-emerald-100 text-emerald-700', filterKey: 'cerrado' as const },
                 ].map(k => (
-                    <div key={k.label} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-2 sm:p-4 shadow-sm text-center flex flex-col justify-center">
+                    <button key={k.label} onClick={() => setFilter(k.filterKey)}
+                        className={`bg-white dark:bg-slate-800 rounded-2xl border p-2 sm:p-4 shadow-sm text-center flex flex-col justify-center transition-all hover:scale-[1.02] active:scale-95 cursor-pointer ${filter === k.filterKey ? 'border-primary ring-2 ring-primary/10' : 'border-slate-200 dark:border-slate-700'}`}>
                         <div className={`text-xl md:text-2xl font-black ${k.color.split(' ')[1]}`}>{k.value}</div>
                         <div className="text-[9px] sm:text-[10px] sm:font-black font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider md:tracking-widest mt-0.5 md:mt-1 leading-tight break-words">{k.label}</div>
-                    </div>
+                    </button>
                 ))}
             </div>
 
