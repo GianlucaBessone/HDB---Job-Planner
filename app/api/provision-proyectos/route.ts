@@ -9,7 +9,16 @@ export async function GET() {
         const proyectos = await prisma.project.findMany({
             where: {
                 aprovisionamiento: true,
-                estado: { not: 'finalizado' },
+                OR: [
+                    { estado: { not: 'finalizado' } },
+                    // Include finalized projects that still have pending returns
+                    {
+                        estado: 'finalizado',
+                        materialesProyecto: {
+                            some: { estado: 'pendiente_devolucion' }
+                        }
+                    }
+                ],
             },
             include: {
                 client: { select: { nombre: true } },

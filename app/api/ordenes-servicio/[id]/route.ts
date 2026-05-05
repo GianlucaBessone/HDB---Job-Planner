@@ -117,19 +117,20 @@ export async function POST(req: Request, { params }: { params: { id: string } })
                     if (!mat.devolucion) {
                         const totalUsado = mat.usos.reduce((acc, u) => acc + u.cantidadUtilizada, 0);
                         const aDevolver = Math.max(0, mat.cantidadEntregada - totalUsado);
-                        const esCerrado = mat.cantidadEntregada > 0 && aDevolver === 0;
                         
                         await tx.materialDevolucion.create({
                             data: {
                                 materialId: mat.id,
                                 cantidadADevolver: aDevolver,
-                                estado: esCerrado ? 'cerrado_ok' : 'pendiente',
+                                estado: 'pendiente',
                             },
                         });
                         
+                        // Always set to pendiente_devolucion so sales can confirm,
+                        // even when aDevolver === 0 (operator used everything)
                         await tx.materialProyecto.update({
                             where: { id: mat.id },
-                            data: { estado: esCerrado ? 'cerrado_ok' : 'pendiente_devolucion' },
+                            data: { estado: 'pendiente_devolucion' },
                         });
                     }
                 }
