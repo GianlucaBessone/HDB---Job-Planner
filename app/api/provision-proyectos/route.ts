@@ -6,8 +6,9 @@ export const dynamic = 'force-dynamic';
 // GET /api/provision-proyectos — proyectos activos con aprovisionamiento habilitado
 export async function GET() {
     try {
-        // ── Auto-repair: fix materials stuck in wrong states from old signing logic ──
-        // Case 1: Materials with no devolucion record but project has signed OS
+        // ── Auto-repair: fix materials stuck in wrong states ─────────────────────
+        // Case 1: Materials in material_entregado/uso_confirmado with no devolucion,
+        //         on projects that have a signed OS → calculate and transition
         const stuckMaterials = await prisma.materialProyecto.findMany({
             where: {
                 proyecto: {
@@ -29,52 +30,51 @@ export async function GET() {
                 for (const mat of stuckMaterials) {
                     const totalUsado = mat.usos.reduce((acc, u) => acc + u.cantidadUtilizada, 0);
                     const aDevolver = Math.max(0, mat.cantidadEntregada - totalUsado);
+                    const esCerrado = mat.cantidadEntregada > 0 && aDevolver === 0;
 
                     await tx.materialDevolucion.create({
                         data: {
                             materialId: mat.id,
                             cantidadADevolver: aDevolver,
-                            estado: 'pendiente',
+                            estado: esCerrado ? 'cerrado_ok' : 'pendiente',
                         }
                     });
 
                     await tx.materialProyecto.update({
                         where: { id: mat.id },
-                        data: { estado: 'pendiente_devolucion' }
+                        data: { estado: esCerrado ? 'cerrado_ok' : 'pendiente_devolucion' }
                     });
                 }
             });
         }
 
-        // Case 2: Materials auto-closed as cerrado_ok without sales confirmation
-        const autoClosedMaterials = await prisma.materialProyecto.findMany({
+        // Case 2 (damage repair): Materials wrongly set to pendiente_devolucion
+        // when they should be cerrado_ok (100% consumed, cantidadADevolver = 0,
+        // never confirmed by sales)
+        const wronglyPending = await prisma.materialProyecto.findMany({
             where: {
                 proyecto: {
                     aprovisionamiento: true,
-                    ordenesServicio: {
-                        some: {
-                            estado: { in: ['firmada', 'cobrada', 'pagada'] }
-                        }
-                    }
                 },
-                estado: 'cerrado_ok',
+                estado: 'pendiente_devolucion',
                 devolucion: {
-                    confirmadoPor: null
+                    cantidadADevolver: 0,
+                    confirmadoPor: null,
                 }
             }
         });
 
-        if (autoClosedMaterials.length > 0) {
+        if (wronglyPending.length > 0) {
             await prisma.$transaction(async (tx) => {
-                for (const mat of autoClosedMaterials) {
+                for (const mat of wronglyPending) {
                     await tx.materialProyecto.update({
                         where: { id: mat.id },
-                        data: { estado: 'pendiente_devolucion' }
+                        data: { estado: 'cerrado_ok' }
                     });
 
                     await tx.materialDevolucion.update({
                         where: { materialId: mat.id },
-                        data: { estado: 'pendiente' }
+                        data: { estado: 'cerrado_ok' }
                     });
                 }
             });
