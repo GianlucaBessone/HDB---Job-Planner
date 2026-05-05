@@ -892,15 +892,17 @@ export default function ProvisionMaterialesPage() {
     // Normalize text: lowercase + remove accents
     const normalize = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
+    const ESTADOS_CERRADOS = ['cerrado_ok', 'cerrado_con_reserva', 'material_cargado'];
+    const isCerrado = (p: Proyecto) => p.materialesProyecto.length > 0 && p.materialesProyecto.every(m => ESTADOS_CERRADOS.includes(m.estado));
+
     const filteredProyectos = proyectos.filter(p => {
         // Status filter
         if (filter === 'activos') {
             const hasPendiente = p.materialesProyecto.some(m => m.estado === 'pendiente_devolucion');
-            const allCerrado = p.materialesProyecto.length > 0 && p.materialesProyecto.every(m => ['cerrado_ok', 'cerrado_con_reserva'].includes(m.estado));
-            if (hasPendiente || allCerrado) return false;
+            if (hasPendiente || isCerrado(p)) return false;
         }
         if (filter === 'pendiente_devolucion' && !p.materialesProyecto.some(m => m.estado === 'pendiente_devolucion')) return false;
-        if (filter === 'cerrado' && !p.materialesProyecto.every(m => ['cerrado_ok', 'cerrado_con_reserva'].includes(m.estado))) return false;
+        if (filter === 'cerrado' && !isCerrado(p)) return false;
 
         // Search filter
         if (searchQuery.trim()) {
@@ -930,7 +932,7 @@ export default function ProvisionMaterialesPage() {
     const stats = {
         total: proyectos.length,
         pendientes: proyectos.filter(p => p.materialesProyecto.some(m => m.estado === 'pendiente_devolucion')).length,
-        cerrados: proyectos.filter(p => p.materialesProyecto.length > 0 && p.materialesProyecto.every(m => ['cerrado_ok', 'cerrado_con_reserva'].includes(m.estado))).length,
+        cerrados: proyectos.filter(p => isCerrado(p)).length,
     };
 
     return (
