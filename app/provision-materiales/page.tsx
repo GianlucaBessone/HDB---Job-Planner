@@ -111,8 +111,10 @@ function AddMaterialForm({ proyectoId, onAdded }: { proyectoId: string; onAdded:
         unidad: 'Unid.', 
         cantidadSolicitada: '', 
         cantidadDisponible: '', 
-        cantidadEntregada: '' 
+        cantidadEntregada: '',
+        precioVenta: ''
     });
+    const [manualPrice, setManualPrice] = useState(false);
     const codeInputRef = useRef<HTMLInputElement>(null);
 
     // Autocomplete por código
@@ -145,7 +147,7 @@ function AddMaterialForm({ proyectoId, onAdded }: { proyectoId: string; onAdded:
             body: JSON.stringify({ proyectoId, ...form }),
         });
         setSaving(false);
-        setForm({ nombre: '', codigo: '', unidad: 'Unid.', cantidadSolicitada: '', cantidadDisponible: '', cantidadEntregada: '' });
+        setForm({ nombre: '', codigo: '', unidad: 'Unid.', cantidadSolicitada: '', cantidadDisponible: '', cantidadEntregada: '', precioVenta: '' });
         onAdded();
         setTimeout(() => codeInputRef.current?.focus(), 50);
     };
@@ -166,15 +168,17 @@ function AddMaterialForm({ proyectoId, onAdded }: { proyectoId: string; onAdded:
 
     return (
         <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 flex flex-wrap md:flex-nowrap items-center gap-2 relative">
-            <input
-                ref={codeInputRef}
-                autoFocus
-                placeholder="Código"
-                title="Código interno del material"
-                value={form.codigo}
-                onChange={e => setForm(p => ({ ...p, codigo: e.target.value.toUpperCase() }))}
-                className="w-24 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2 text-xs font-bold outline-none focus:border-primary uppercase"
-            />
+            {!manualPrice && (
+                <input
+                    ref={codeInputRef}
+                    autoFocus
+                    placeholder="Código"
+                    title="Código interno del material"
+                    value={form.codigo}
+                    onChange={e => setForm(p => ({ ...p, codigo: e.target.value.toUpperCase() }))}
+                    className="w-24 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2 text-xs font-bold outline-none focus:border-primary uppercase"
+                />
+            )}
             <input
                 placeholder="Nombre del material *"
                 value={form.nombre}
@@ -192,6 +196,31 @@ function AddMaterialForm({ proyectoId, onAdded }: { proyectoId: string; onAdded:
             <input type="text" inputMode="numeric" pattern="[0-9.]*" placeholder="Sol." title="Solicitada" value={form.cantidadSolicitada} onChange={handleQty('cantidadSolicitada')} className={`${qtyClass} w-16`} />
             <input type="text" inputMode="numeric" pattern="[0-9.]*" placeholder="Disp." title="Disponible" value={form.cantidadDisponible} onChange={handleQty('cantidadDisponible')} className={`${qtyClass} w-16`} />
             <input type="text" inputMode="numeric" pattern="[0-9.]*" placeholder="Entr." title="Entregada" value={form.cantidadEntregada} onChange={handleQty('cantidadEntregada')} className={`${qtyClass} w-16`} />
+
+            {manualPrice && (
+                <div className="relative w-28 shrink-0">
+                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400">$</span>
+                    <input 
+                        type="text" inputMode="numeric" pattern="[0-9.]*" 
+                        placeholder="Precio" 
+                        value={form.precioVenta} 
+                        onChange={handleQty('precioVenta')} 
+                        className="w-full border border-emerald-200 dark:border-emerald-900/50 rounded-xl pl-5 pr-2 py-2 text-xs font-black text-emerald-700 dark:text-emerald-400 outline-none focus:border-emerald-500 bg-emerald-50/30" 
+                    />
+                </div>
+            )}
+
+            <button 
+                type="button"
+                onClick={() => {
+                    setManualPrice(!manualPrice);
+                    if (!manualPrice) setForm(p => ({ ...p, codigo: '' }));
+                }}
+                title={manualPrice ? "Usar código de material" : "Cargar sin código / Precio manual"}
+                className={`p-2 rounded-xl transition-all border ${manualPrice ? 'bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700 hover:text-emerald-600'}`}
+            >
+                <Calculator className="w-4 h-4" />
+            </button>
             
             <div className="flex gap-1 ml-auto shrink-0 border-l border-slate-200 dark:border-slate-700 pl-2">
                 <button onClick={() => setOpen(false)} className="p-2 bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded-xl hover:bg-slate-200 hover:text-slate-600 border border-slate-200 dark:border-slate-700 transition-colors shadow-sm">
@@ -892,7 +921,7 @@ export default function ProvisionMaterialesPage() {
     // Normalize text: lowercase + remove accents
     const normalize = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
-    const ESTADOS_CERRADOS = ['cerrado_ok', 'cerrado_con_reserva', 'material_cargado'];
+    const ESTADOS_CERRADOS = ['cerrado_ok', 'cerrado_con_reserva'];
     const isCerrado = (p: Proyecto) => p.materialesProyecto.length > 0 && p.materialesProyecto.every(m => ESTADOS_CERRADOS.includes(m.estado));
 
     const filteredProyectos = proyectos.filter(p => {

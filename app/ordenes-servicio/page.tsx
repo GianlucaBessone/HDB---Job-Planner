@@ -62,11 +62,12 @@ function QRImage({ url }: { url: string }) {
 function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) {
     const printRef = useRef<HTMLDivElement>(null);
     const [firmaImageUrl, setFirmaImageUrl] = useState<string | null>(os.firma?.firmaImagen || null);
-    const [loadingFirma, setLoadingFirma] = useState<boolean>(!firmaImageUrl && os.estado === 'firmada');
+    const isSigned = os.estado === 'firmada' || os.estado === 'cobrada' || os.estado === 'pagada';
+    const [loadingFirma, setLoadingFirma] = useState<boolean>(!firmaImageUrl && isSigned);
 
     useEffect(() => {
         let mounted = true;
-        if (os.estado === 'firmada' && !firmaImageUrl) {
+        if (isSigned && !firmaImageUrl) {
             safeApiRequest(`/api/ordenes-servicio/${os.id}`)
                 .then(r => r.json())
                 .then(data => {
@@ -86,7 +87,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
         ? `${window.location.origin}/os/${os.linkPublico}`
         : `/os/${os.linkPublico}`;
 
-    const isFirmada = os.estado === 'firmada';
+    const isFirmada = os.estado === 'firmada' || os.estado === 'cobrada' || os.estado === 'pagada';
     const clienteName = os.project.client?.nombre || os.project.cliente || 'No especificado';
 
 
@@ -629,7 +630,7 @@ function OrdenesServicioContent() {
                                 key={estado}
                                 onClick={() => setFilterEstado(estado)}
                                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterEstado === estado
-                                    ? estado === 'firmada' ? 'bg-emerald-100 text-emerald-700'
+                                    ? (estado === 'firmada' || estado === 'cobrada' || estado === 'pagada') ? 'bg-emerald-100 text-emerald-700'
                                         : estado === 'pendiente' ? 'bg-amber-100 text-amber-700'
                                             : estado === 'cobrada' ? 'bg-indigo-100 text-indigo-700'
                                                 : 'bg-primary text-white'
@@ -713,13 +714,13 @@ function OrdenesServicioContent() {
 
                                     {/* Estado badge */}
                                     <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider shrink-0 ${
-                                        os.estado === 'firmada' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 
+                                        (os.estado === 'firmada' || os.estado === 'cobrada' || os.estado === 'pagada') ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 
                                         os.estado === 'pendiente' ? 'bg-amber-100 text-amber-700 border border-amber-200' :
                                         os.estado === 'cobrada' ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' :
                                         os.estado === 'pagada' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
                                         'bg-slate-100 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700'
                                     }`}>
-                                        {os.estado === 'firmada' ? '✓ Firmada' : 
+                                        {(os.estado === 'firmada' || os.estado === 'cobrada' || os.estado === 'pagada') ? '✓ Firmada' : 
                                          os.estado === 'pendiente' ? 'Pendiente' : 
                                          os.estado === 'cobrada' ? 'OC Emitida' :
                                          os.estado === 'pagada' ? 'Pagada' : 'Cancelada'}

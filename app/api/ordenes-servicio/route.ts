@@ -82,6 +82,7 @@ export async function POST(req: Request) {
                         cantidad: Number(m.cantidad),
                         unidadMedida: m.unidadMedida,
                         materialProyectoId: m.materialProyectoId || null,
+                        precioUnitario: m.precioUnitario || null,
                     })),
                 },
                 operadores: {
@@ -121,7 +122,8 @@ export async function POST(req: Request) {
                             cantidadSolicitada: cant,
                             cantidadDisponible: cant,
                             cantidadEntregada: cant,
-                            estado: 'uso_confirmado'
+                            estado: 'uso_confirmado',
+                            precioVenta: osm.precioUnitario
                         }
                     });
                     finalMatId = newMatProv.id;

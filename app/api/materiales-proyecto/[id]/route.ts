@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
     const { id } = params;
     const body = await req.json();
-    const { nombre, unidad, codigo, cantidadSolicitada, cantidadDisponible, cantidadEntregada, estado } = body;
+    const { nombre, unidad, codigo, cantidadSolicitada, cantidadDisponible, cantidadEntregada, estado, precioVenta } = body;
 
     const dataToUpdate: any = {};
     if (nombre !== undefined) dataToUpdate.nombre = nombre;
@@ -15,6 +15,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     if (cantidadDisponible !== undefined) dataToUpdate.cantidadDisponible = parseFloat(cantidadDisponible);
     if (cantidadEntregada !== undefined) dataToUpdate.cantidadEntregada = parseFloat(cantidadEntregada);
     if (estado !== undefined) dataToUpdate.estado = estado;
+    if (precioVenta !== undefined) dataToUpdate.precioVenta = precioVenta ? parseFloat(precioVenta) : null;
 
     let material = await prisma.materialProyecto.update({
         where: { id },

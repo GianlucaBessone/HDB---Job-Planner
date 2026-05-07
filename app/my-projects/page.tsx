@@ -690,26 +690,26 @@ export default function MyProjectsPage() {
                                     /* OS ya existe */
                                     <div className="space-y-2">
                                         {/* OS status header */}
-                                        <div className={`rounded-2xl px-4 py-3 flex items-center justify-between ${projectOS.estado === 'firmada'
+                                        <div className={`rounded-2xl px-4 py-3 flex items-center justify-between ${(projectOS.estado === 'firmada' || projectOS.estado === 'cobrada' || projectOS.estado === 'pagada')
                                                 ? 'bg-emerald-50 border border-emerald-200'
                                                 : 'bg-amber-50 border border-amber-200'
                                             }`}>
                                             <div className="flex items-center gap-2">
-                                                <FileSignature className={`w-4 h-4 ${projectOS.estado === 'firmada' ? 'text-emerald-600' : 'text-amber-600'}`} />
-                                                <span className={`text-sm font-black ${projectOS.estado === 'firmada' ? 'text-emerald-800' : 'text-amber-800'}`}>
+                                                <FileSignature className={`w-4 h-4 ${(projectOS.estado === 'firmada' || projectOS.estado === 'cobrada' || projectOS.estado === 'pagada') ? 'text-emerald-600' : 'text-amber-600'}`} />
+                                                <span className={`text-sm font-black ${(projectOS.estado === 'firmada' || projectOS.estado === 'cobrada' || projectOS.estado === 'pagada') ? 'text-emerald-800' : 'text-amber-800'}`}>
                                                     Orden de Servicio
                                                 </span>
                                             </div>
-                                            <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${projectOS.estado === 'firmada'
+                                            <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${(projectOS.estado === 'firmada' || projectOS.estado === 'cobrada' || projectOS.estado === 'pagada')
                                                     ? 'bg-emerald-100 text-emerald-700'
                                                     : 'bg-amber-100 text-amber-700'
                                                 }`}>
-                                                {projectOS.estado === 'firmada' ? '✓ Firmada' : 'Pendiente de firma'}
+                                                {(projectOS.estado === 'firmada' || projectOS.estado === 'cobrada' || projectOS.estado === 'pagada') ? '✓ Firmada' : 'Pendiente de firma'}
                                             </span>
                                         </div>
                                         {/* Action buttons */}
-                                        <div className={`grid gap-2 ${projectOS.estado === 'firmada' ? 'grid-cols-1' : 'grid-cols-2'}`}>
-                                            {projectOS.estado !== 'firmada' && (
+                                        <div className={`grid gap-2 ${(projectOS.estado === 'firmada' || projectOS.estado === 'cobrada' || projectOS.estado === 'pagada') ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                                            {(projectOS.estado !== 'firmada' && projectOS.estado !== 'cobrada' && projectOS.estado !== 'pagada') && (
                                                 <Link
                                                     href={`/ordenes-servicio/qr/${projectOS.id}`}
                                                     className="flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black text-sm text-white bg-indigo-600 shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-[0.98]"
@@ -720,13 +720,13 @@ export default function MyProjectsPage() {
                                             )}
                                             <Link
                                                 href={`/ordenes-servicio/generar?projectId=${selectedProject.id}&editId=${projectOS.id}`}
-                                                className={`flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black text-sm transition-all active:scale-[0.98] ${projectOS.estado === 'firmada'
+                                                className={`flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black text-sm transition-all active:scale-[0.98] ${(projectOS.estado === 'firmada' || projectOS.estado === 'cobrada' || projectOS.estado === 'pagada')
                                                         ? 'text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 border border-slate-200 dark:border-slate-700'
                                                         : 'text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100'
                                                     }`}
                                             >
                                                 <Edit3 className="w-5 h-5" />
-                                                {projectOS.estado === 'firmada' ? 'VER OS' : 'MODIFICAR OS'}
+                                                {(projectOS.estado === 'firmada' || projectOS.estado === 'cobrada' || projectOS.estado === 'pagada') ? 'VER OS' : 'MODIFICAR OS'}
                                             </Link>
                                         </div>
                                     </div>

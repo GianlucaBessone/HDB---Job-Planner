@@ -148,7 +148,8 @@ function GenerarOSContent() {
                                 unidadMedida: m.unidad || 'Unidad', 
                                 materialProyectoId: m.id, 
                                 disponible: m.cantidadDisponible, 
-                                entregada: m.cantidadEntregada 
+                                entregada: m.cantidadEntregada,
+                                precioUnitario: m.precioVenta
                             }));
                         }
                     }
@@ -286,7 +287,8 @@ function GenerarOSContent() {
                 codigo: m.codigo || null,
                 cantidad: Number(m.cantidad), 
                 unidadMedida: m.unidadMedida,
-                materialProyectoId: m.materialProyectoId
+                materialProyectoId: m.materialProyectoId,
+                precioUnitario: m.precioUnitario ? Number(m.precioUnitario) : null
             }));
 
         setSubmitting(true);

@@ -45,7 +45,7 @@ export async function GET(req: Request) {
 // POST /api/materiales-proyecto — crear material
 export async function POST(req: Request) {
     const body = await req.json();
-    const { proyectoId, nombre, unidad, codigo, cantidadSolicitada, cantidadDisponible, cantidadEntregada } = body;
+    const { proyectoId, nombre, unidad, codigo, cantidadSolicitada, cantidadDisponible, cantidadEntregada, precioVenta } = body;
     if (!proyectoId || !nombre) return NextResponse.json({ error: 'proyectoId y nombre son requeridos' }, { status: 400 });
 
     const material = await prisma.materialProyecto.create({
@@ -57,6 +57,7 @@ export async function POST(req: Request) {
             cantidadSolicitada: parseFloat(cantidadSolicitada) || 0,
             cantidadDisponible: parseFloat(cantidadDisponible) || 0,
             cantidadEntregada: parseFloat(cantidadEntregada) || 0,
+            precioVenta: precioVenta ? parseFloat(precioVenta) : null,
         },
         include: { usos: true, devolucion: true },
     });
@@ -65,8 +66,17 @@ export async function POST(req: Request) {
     if (codigo) {
         await prisma.materialMaestro.upsert({
             where: { codigo },
-            update: { nombre, unidad: unidad || 'unidad' },
-            create: { codigo, nombre, unidad: unidad || 'unidad' },
+            update: { 
+                nombre, 
+                unidad: unidad || 'unidad',
+                precioVenta: precioVenta ? parseFloat(precioVenta) : undefined
+            },
+            create: { 
+                codigo, 
+                nombre, 
+                unidad: unidad || 'unidad',
+                precioVenta: precioVenta ? parseFloat(precioVenta) : null
+            },
         });
     }
 

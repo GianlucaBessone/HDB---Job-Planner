@@ -385,6 +385,7 @@ model MaterialProyecto {
   estado              String               @default("material_cargado")
   // material_cargado | material_entregado | uso_confirmado | pendiente_devolucion | cerrado_ok | cerrado_con_reserva
   createdAt           DateTime             @default(now())
+  precioVenta         Float?
   usos                MaterialUso[]
   devolucion          MaterialDevolucion?
 

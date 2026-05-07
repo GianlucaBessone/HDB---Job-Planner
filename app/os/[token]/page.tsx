@@ -681,7 +681,8 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
         `;
 
         const clienteName = os.project.client?.nombre || os.project.cliente || 'No especificado';
-        const isFirmada = os.estado === 'firmada';
+        const isSigned = os.estado === 'firmada' || os.estado === 'cobrada' || os.estado === 'pagada';
+        const isFirmada = isSigned;
         const firmaImageUrl = os.firma?.firmaImagen || null;
 
         const content = `
@@ -790,7 +791,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
     }
 
     const clienteName = os.project.client?.nombre || os.project.cliente || 'No especificado';
-    const isFirmada = os.estado === 'firmada';
+    const isFirmada = os.estado === 'firmada' || os.estado === 'cobrada' || os.estado === 'pagada';
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 dark:from-slate-900 dark:to-slate-800/50">
