@@ -59,7 +59,7 @@ export async function POST(req: Request) {
             cantidadEntregada: parseFloat(cantidadEntregada) || 0,
             precioVenta: precioVenta ? parseFloat(precioVenta) : null,
         },
-        include: { usos: true, devolucion: true },
+        include: { usos: true, devoluciones: true },
     });
 
     // Actualizar MaterialMaestro si se usó un código

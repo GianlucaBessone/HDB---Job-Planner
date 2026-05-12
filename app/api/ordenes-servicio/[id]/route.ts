@@ -51,7 +51,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
                     project: {
                         select: {
                             id: true, nombre: true, codigoProyecto: true, aprovisionamiento: true,
-                            materialesProyecto: { include: { usos: true, devolucion: true } },
+                            materialesProyecto: { include: { usos: true, devoluciones: true } },
                         }
                     }
                 }

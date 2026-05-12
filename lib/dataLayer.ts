@@ -18,7 +18,7 @@ export const dataLayer = {
                     orderBy: { createdAt: 'asc' }
                 },
                 materialesProyecto: {
-                    include: { usos: true, devolucion: true }
+                    include: { usos: true, devoluciones: true }
                 },
             }
         });
