@@ -18,7 +18,10 @@ import {
     History,
     MinusCircle,
     PlusCircle,
-    Edit3
+    Edit3,
+    FileSignature,
+    Clock,
+    QrCode
 } from 'lucide-react';
 import Link from 'next/link';
 import { useModalScroll } from '@/lib/useModalScroll';

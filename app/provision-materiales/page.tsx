@@ -6,7 +6,7 @@ import {
     Package, Plus, Trash2, Edit2, Check, X, ChevronDown, ChevronRight,
     AlertTriangle, CheckCircle2, Clock, RotateCcw, Loader2, MessageSquare,
     Bell, FileSpreadsheet, ShieldCheck, Upload, Download, FileUp, FileText, CheckCircle,
-    Calculator,
+    Calculator, History
 } from 'lucide-react';
 import CodeBadge from '@/components/CodeBadge';
 import * as XLSX from 'xlsx';
@@ -885,8 +885,8 @@ function MaterialesTable({
                                                                 </button>
                                                             );
                                                         })()}
-                                                        {mat.devolucion?.comentario && (
-                                                            <span title={mat.devolucion.comentario} className="p-1.5 text-slate-400 dark:text-slate-500">
+                                                        {mat.devoluciones?.some(d => d.comentario) && (
+                                                            <span title="Hay comentarios en las devoluciones" className="p-1.5 text-slate-400 dark:text-slate-500">
                                                                 <MessageSquare className="w-3.5 h-3.5" />
                                                             </span>
                                                         )}
