@@ -58,6 +58,7 @@ export async function POST(req: Request) {
             cantidadDisponible: parseFloat(cantidadDisponible) || 0,
             cantidadEntregada: parseFloat(cantidadEntregada) || 0,
             precioVenta: precioVenta ? parseFloat(precioVenta) : null,
+            estado: (parseFloat(cantidadEntregada) > 0) ? 'material_entregado' : 'material_cargado'
         },
         include: { usos: true, devoluciones: true },
     });

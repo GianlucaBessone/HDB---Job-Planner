@@ -69,13 +69,13 @@ export async function POST(req: Request) {
                             
                             const totalUsado = materialToEval?.usos.reduce((a: any, u: any) => a + u.cantidadUtilizada, 0) || 0;
 
-                            if (newEntregada > 0 && totalUsado === newEntregada) {
-                                nuevoEstado = 'cerrado_ok';
-                            } else if (newEntregada > 0 && newEntregada < newSolicitada) {
-                                nuevoEstado = 'material_entregado'; 
-                            } else if (newEntregada > 0 && newEntregada === newSolicitada) {
-                                nuevoEstado = 'material_entregado';
-                            } else if (newDisponible > 0) {
+                            if (newEntregada > 0) {
+                                if (totalUsado > 0 && totalUsado >= newEntregada) {
+                                    nuevoEstado = 'cerrado_ok';
+                                } else {
+                                    nuevoEstado = 'material_entregado';
+                                }
+                            } else if (newDisponible > 0 || newSolicitada > 0) {
                                 nuevoEstado = 'material_cargado';
                             }
                         }
@@ -97,9 +97,7 @@ export async function POST(req: Request) {
                             ignoredRows++;
                             continue;
                         }
-                        let nuevoEstado = 'material_cargado';
-                        if (numEntregada > 0 && numEntregada < numSolicitado) nuevoEstado = 'material_entregado';
-                        else if (numEntregada > 0 && numEntregada === numSolicitado) nuevoEstado = 'material_entregado';
+                        let nuevoEstado = (numEntregada > 0) ? 'material_entregado' : 'material_cargado';
 
                         await prisma.materialProyecto.create({
                             data: {

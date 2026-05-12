@@ -44,13 +44,14 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         const totalUsado = material.usos.reduce((a, u) => a + u.cantidadUtilizada, 0);
         let nuevoEstado = material.estado;
 
-        if (material.cantidadEntregada > 0 && totalUsado === material.cantidadEntregada) {
-            nuevoEstado = 'cerrado_ok'; // Auto-confirm
-        } else if (material.cantidadEntregada > 0 && material.cantidadEntregada < material.cantidadSolicitada) {
-            nuevoEstado = 'material_entregado'; 
-        } else if (material.cantidadEntregada > 0 && material.cantidadEntregada === material.cantidadSolicitada) {
-            nuevoEstado = 'material_entregado';
-        } else if (material.cantidadDisponible > 0) {
+        if (material.cantidadEntregada > 0) {
+            // Si ya se usó todo lo que se entregó, marcar como completo
+            if (totalUsado > 0 && totalUsado >= material.cantidadEntregada) {
+                nuevoEstado = 'cerrado_ok';
+            } else {
+                nuevoEstado = 'material_entregado';
+            }
+        } else if (material.cantidadDisponible > 0 || material.cantidadSolicitada > 0) {
             nuevoEstado = 'material_cargado';
         }
 
