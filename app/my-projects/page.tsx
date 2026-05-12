@@ -698,7 +698,7 @@ export default function MyProjectsPage() {
                                             const totalUsado = m.usos.reduce((acc: number, u: any) => acc + u.cantidadUtilizada, 0);
                                             const totalDevuelto = (m.devoluciones || []).filter((d: any) => d.estado !== 'pendiente').reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
                                             const pendingDevolucion = (m.devoluciones || []).filter((d: any) => d.estado === 'pendiente').reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
-                                            const balance = m.cantidadEntregada - totalUsado - totalDevuelto;
+                                            const balance = m.cantidadEntregada - totalUsado - totalDevuelto - pendingDevolucion;
 
                                             return (
                                                 <div key={m.id} className="bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 space-y-3">

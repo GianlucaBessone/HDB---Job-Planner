@@ -44,8 +44,21 @@ export async function POST(req: Request) {
         });
     }
 
-    // If confirmed, maybe update material state
-    if (estado !== 'pendiente') {
+    // Update material state based on remaining pending returns
+    const pendingCount = await prisma.materialDevolucion.count({
+        where: {
+            materialId,
+            estado: 'pendiente'
+        }
+    });
+
+    if (pendingCount > 0) {
+        await prisma.materialProyecto.update({
+            where: { id: materialId },
+            data: { estado: 'pendiente_devolucion' }
+        });
+    } else if (estado !== 'pendiente') {
+        // All returns confirmed, set to the requested final state
         await prisma.materialProyecto.update({
             where: { id: materialId },
             data: { estado }

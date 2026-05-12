@@ -7,20 +7,16 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
     try {
         // ── Auto-repair: fix materials stuck in wrong states ─────────────────────
-
-        // Case 1: Materials still in material_entregado/uso_confirmado on projects
-        //         with a signed OS. They should have transitioned but didn't.
-        //         Handles BOTH cases: with or without existing devolucion records.
+        // If an OS is signed, materials must be either 'pendiente_devolucion' or 'cerrado_ok'
         const stuckMaterials = await prisma.materialProyecto.findMany({
             where: {
                 proyecto: {
                     aprovisionamiento: true,
                     ordenesServicio: {
-                        some: {
-                            estado: { in: ['firmada', 'cobrada', 'pagada'] }
-                        }
+                        some: { estado: { in: ['firmada', 'cobrada', 'pagada'] } }
                     }
                 },
+                // Only if NOT closed or already pending
                 estado: { in: ['material_entregado', 'uso_confirmado'] },
             },
             include: { usos: true, devoluciones: true }
@@ -30,67 +26,63 @@ export async function GET() {
             await prisma.$transaction(async (tx) => {
                 for (const mat of stuckMaterials) {
                     const totalUsado = mat.usos.reduce((acc, u) => acc + u.cantidadUtilizada, 0);
-                    const aDevolver = Math.max(0, mat.cantidadEntregada - totalUsado);
-                    const esCerrado = mat.cantidadEntregada > 0 && aDevolver === 0;
-                    const nuevoEstado = esCerrado ? 'cerrado_ok' : 'pendiente_devolucion';
-                    const devEstado = esCerrado ? 'cerrado_ok' : 'pendiente';
-
-                    // Check if there is already a pending return for this material
+                    const totalDevuelto = mat.devoluciones.filter(d => d.estado !== 'pendiente').reduce((acc, d) => acc + d.cantidadADevolver, 0);
+                    const aDevolver = Math.max(0, mat.cantidadEntregada - totalUsado - totalDevuelto);
+                    
                     const hasPending = mat.devoluciones.some(d => d.estado === 'pendiente');
+                    const esCerrado = mat.cantidadEntregada > 0 && aDevolver <= 0;
 
-                    if (!hasPending && aDevolver > 0) {
+                    if (esCerrado) {
+                        await tx.materialProyecto.update({
+                            where: { id: mat.id },
+                            data: { estado: 'cerrado_ok' }
+                        });
+                    } else if (aDevolver > 0 && !hasPending) {
+                        // Create pending return if missing
                         await tx.materialDevolucion.create({
                             data: {
                                 materialId: mat.id,
                                 cantidadADevolver: aDevolver,
-                                estado: devEstado,
+                                estado: 'pendiente',
                             }
                         });
+                        await tx.materialProyecto.update({
+                            where: { id: mat.id },
+                            data: { estado: 'pendiente_devolucion' }
+                        });
                     }
-
-                    // Update material state
-                    await tx.materialProyecto.update({
-                        where: { id: mat.id },
-                        data: { estado: nuevoEstado }
-                    });
                 }
             });
         }
 
-        // Case 2 (damage repair): Materials wrongly set to pendiente_devolucion
-        // when they should be cerrado_ok (100% consumed, cantidadADevolver = 0,
-        // never confirmed by sales)
+        // Case 2 (damage repair): Fix materials wrongly set to pendiente_devolucion 
+        // with 0 balance or old 0-devolucion records.
         const wronglyPending = await prisma.materialProyecto.findMany({
             where: {
-                proyecto: {
-                    aprovisionamiento: true,
-                },
+                proyecto: { aprovisionamiento: true },
                 estado: 'pendiente_devolucion',
-                devoluciones: {
-                    some: {
-                        cantidadADevolver: 0,
-                        confirmadoPor: null,
-                    }
-                }
             },
-            include: { devoluciones: true }
+            include: { usos: true, devoluciones: true }
         });
 
         if (wronglyPending.length > 0) {
             await prisma.$transaction(async (tx) => {
                 for (const mat of wronglyPending) {
-                    await tx.materialProyecto.update({
-                        where: { id: mat.id },
-                        data: { estado: 'cerrado_ok' }
-                    });
+                    const totalUsado = mat.usos.reduce((acc, u) => acc + u.cantidadUtilizada, 0);
+                    const totalDevuelto = mat.devoluciones.filter(d => d.estado !== 'pendiente').reduce((acc, d) => acc + d.cantidadADevolver, 0);
+                    const aDevolver = Math.max(0, mat.cantidadEntregada - totalUsado - totalDevuelto);
+                    const hasPending = mat.devoluciones.some(d => d.estado === 'pendiente');
 
-                    // Update the specific record
-                    const target = mat.devoluciones.find(d => d.cantidadADevolver === 0 && !d.confirmadoPor);
-                    if (target) {
-                        await tx.materialDevolucion.update({
-                            where: { id: target.id },
+                    if (aDevolver <= 0 && !hasPending) {
+                        await tx.materialProyecto.update({
+                            where: { id: mat.id },
                             data: { estado: 'cerrado_ok' }
                         });
+                        // Clean up any 0-pending returns
+                        const zeroPendings = mat.devoluciones.filter(d => d.cantidadADevolver === 0 && d.estado === 'pendiente');
+                        for (const zp of zeroPendings) {
+                            await tx.materialDevolucion.delete({ where: { id: zp.id } });
+                        }
                     }
                 }
             });
