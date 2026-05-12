@@ -23,7 +23,7 @@ export async function GET() {
                 },
                 estado: { in: ['material_entregado', 'uso_confirmado'] },
             },
-            include: { usos: true, devolucion: true }
+            include: { usos: true, devoluciones: true }
         });
 
         if (stuckMaterials.length > 0) {
@@ -35,19 +35,13 @@ export async function GET() {
                     const nuevoEstado = esCerrado ? 'cerrado_ok' : 'pendiente_devolucion';
                     const devEstado = esCerrado ? 'cerrado_ok' : 'pendiente';
 
-                    // Create or update devolucion record
-                    if (!mat.devolucion) {
+                    // Check if there is already a pending return for this material
+                    const hasPending = mat.devoluciones.some(d => d.estado === 'pendiente');
+
+                    if (!hasPending && aDevolver > 0) {
                         await tx.materialDevolucion.create({
                             data: {
                                 materialId: mat.id,
-                                cantidadADevolver: aDevolver,
-                                estado: devEstado,
-                            }
-                        });
-                    } else {
-                        await tx.materialDevolucion.update({
-                            where: { materialId: mat.id },
-                            data: {
                                 cantidadADevolver: aDevolver,
                                 estado: devEstado,
                             }
@@ -72,11 +66,14 @@ export async function GET() {
                     aprovisionamiento: true,
                 },
                 estado: 'pendiente_devolucion',
-                devolucion: {
-                    cantidadADevolver: 0,
-                    confirmadoPor: null,
+                devoluciones: {
+                    some: {
+                        cantidadADevolver: 0,
+                        confirmadoPor: null,
+                    }
                 }
-            }
+            },
+            include: { devoluciones: true }
         });
 
         if (wronglyPending.length > 0) {
@@ -87,10 +84,14 @@ export async function GET() {
                         data: { estado: 'cerrado_ok' }
                     });
 
-                    await tx.materialDevolucion.update({
-                        where: { materialId: mat.id },
-                        data: { estado: 'cerrado_ok' }
-                    });
+                    // Update the specific record
+                    const target = mat.devoluciones.find(d => d.cantidadADevolver === 0 && !d.confirmadoPor);
+                    if (target) {
+                        await tx.materialDevolucion.update({
+                            where: { id: target.id },
+                            data: { estado: 'cerrado_ok' }
+                        });
+                    }
                 }
             });
         }
@@ -116,7 +117,7 @@ export async function GET() {
                 materialesProyecto: {
                     include: {
                         usos: { orderBy: { createdAt: 'desc' } },
-                        devolucion: true,
+                        devoluciones: { orderBy: { createdAt: 'desc' } },
                     },
                     orderBy: { createdAt: 'asc' },
                 },

@@ -14,8 +14,10 @@ import {
     Loader2,
     Tag,
     AlertOctagon,
-    FileSignature,
-    QrCode,
+    Package,
+    History,
+    MinusCircle,
+    PlusCircle,
     Edit3
 } from 'lucide-react';
 import Link from 'next/link';
@@ -95,8 +97,20 @@ export default function MyProjectsPage() {
     const [projectOS, setProjectOS] = useState<any | null>(null);
     const [loadingOS, setLoadingOS] = useState(false);
 
+    // Material state
+    const [projectMaterials, setProjectMaterials] = useState<any[]>([]);
+    const [loadingMaterials, setLoadingMaterials] = useState(false);
+
+    // Material Report Modals
+    const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
+    const [materialAction, setMaterialAction] = useState<'uso' | 'devolucion'>('uso');
+    const [selectedMaterial, setSelectedMaterial] = useState<any>(null);
+    const [materialQuantity, setMaterialQuantity] = useState('');
+    const [materialNote, setMaterialNote] = useState('');
+    const [isSubmittingMaterial, setIsSubmittingMaterial] = useState(false);
+
     // Lock body scroll when any modal is open
-    const anyModalOpen = isJustifyModalOpen || isFinalizeModalOpen;
+    const anyModalOpen = isJustifyModalOpen || isFinalizeModalOpen || isMaterialModalOpen;
     useModalScroll(anyModalOpen);
 
     useEffect(() => {
@@ -164,20 +178,33 @@ export default function MyProjectsPage() {
             } else {
                 setProjectOS(null);
             }
-        } catch {
-            // silently fail — OS is optional
-            setProjectOS(null);
         } finally {
             setLoadingOS(false);
         }
     };
 
-    const openProjectView = (project: Project) => {
+    const loadMaterials = async (projectId: string) => {
+        setLoadingMaterials(true);
+        try {
+            const res = await safeApiRequest(`/api/materiales-proyecto?proyectoId=${projectId}`);
+            const data = await res.json();
+            if (Array.isArray(data)) setProjectMaterials(data);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoadingMaterials(false);
+        }
+    };
+
+    const openProjectView = (project: any) => {
         setSelectedProject(project);
         loadChecklist(project.id);
         loadLogs(project.id);
         if (project.generarOS) loadProjectOS(project.id);
         else setProjectOS(null);
+
+        if (project.aprovisionamiento) loadMaterials(project.id);
+        else setProjectMaterials([]);
     };
 
     const handleToggleItem = async (item: ChecklistItem) => {
@@ -242,6 +269,51 @@ export default function MyProjectsPage() {
             showToast('Error al enviar solicitud', 'error');
         } finally {
             setIsSubmittingChange(false);
+        }
+    };
+
+    const submitMaterialAction = async () => {
+        if (!selectedMaterial || !materialQuantity || isSubmittingMaterial) return;
+        
+        setIsSubmittingMaterial(true);
+        try {
+            const endpoint = materialAction === 'uso' 
+                ? '/api/materiales-proyecto/uso' 
+                : '/api/materiales-proyecto/devolucion';
+            
+            const body = materialAction === 'uso' 
+                ? {
+                    materialId: selectedMaterial.id,
+                    cantidadUtilizada: parseFloat(materialQuantity),
+                    operadorNombre: user.nombreCompleto
+                  }
+                : {
+                    materialId: selectedMaterial.id,
+                    cantidadADevolver: parseFloat(materialQuantity),
+                    estado: 'pendiente',
+                    comentario: materialNote
+                  };
+
+            const res = await safeApiRequest(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+
+            if (res.ok) {
+                showToast(materialAction === 'uso' ? 'Uso registrado' : 'Solicitud de devolución enviada', 'success');
+                setIsMaterialModalOpen(false);
+                setMaterialQuantity('');
+                setMaterialNote('');
+                loadMaterials(selectedProject?.id!);
+            } else {
+                const err = await res.json();
+                showToast(err.error || 'Error al registrar', 'error');
+            }
+        } catch (error) {
+            showToast('Error de conexión', 'error');
+        } finally {
+            setIsSubmittingMaterial(false);
         }
     };
 
@@ -581,6 +653,96 @@ export default function MyProjectsPage() {
                             </div>
                         )}
 
+                        {/* Materiales Section */}
+                        {(selectedProject as any).aprovisionamiento && (
+                            <div className="pt-6 border-t border-slate-50 space-y-5">
+                                <h3 className="flex items-center gap-2 text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-wide">
+                                    <Package className="w-4 h-4 text-primary" />
+                                    Materiales en Obra
+                                </h3>
+                                {loadingMaterials ? (
+                                    <div className="flex items-center justify-center py-4">
+                                        <Loader2 className="w-5 h-5 animate-spin text-slate-400 dark:text-slate-500" />
+                                    </div>
+                                ) : projectMaterials.length === 0 ? (
+                                    <p className="text-center text-xs text-slate-400 dark:text-slate-500 font-medium py-4">No hay materiales asignados.</p>
+                                ) : (
+                                    <div className="grid gap-3">
+                                        {projectMaterials.map(m => {
+                                            const totalUsado = m.usos.reduce((acc: number, u: any) => acc + u.cantidadUtilizada, 0);
+                                            const totalDevuelto = (m.devoluciones || []).filter((d: any) => d.estado !== 'pendiente').reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
+                                            const pendingDevolucion = (m.devoluciones || []).filter((d: any) => d.estado === 'pendiente').reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
+                                            const balance = m.cantidadEntregada - totalUsado - totalDevuelto;
+
+                                            return (
+                                                <div key={m.id} className="bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 space-y-3">
+                                                    <div className="flex justify-between items-start">
+                                                        <div>
+                                                            <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">{m.nombre}</h4>
+                                                            <p className="text-[10px] text-slate-500 font-medium uppercase">{m.codigo || 'S/C'} • {m.unidad}</p>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">En Poder</div>
+                                                            <div className={`text-sm font-black ${balance > 0 ? 'text-primary' : 'text-slate-400'}`}>{balance.toFixed(2)}</div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-200/50">
+                                                        <div className="text-center">
+                                                            <div className="text-[8px] font-bold text-slate-400 uppercase">Entregado</div>
+                                                            <div className="text-xs font-bold text-slate-600">{m.cantidadEntregada}</div>
+                                                        </div>
+                                                        <div className="text-center">
+                                                            <div className="text-[8px] font-bold text-slate-400 uppercase">Usado</div>
+                                                            <div className="text-xs font-bold text-emerald-600">{totalUsado}</div>
+                                                        </div>
+                                                        <div className="text-center">
+                                                            <div className="text-[8px] font-bold text-slate-400 uppercase">Devuelto</div>
+                                                            <div className="text-xs font-bold text-blue-600">{totalDevuelto}</div>
+                                                        </div>
+                                                    </div>
+
+                                                    {pendingDevolucion > 0 && (
+                                                        <div className="bg-amber-50 border border-amber-100 rounded-xl px-3 py-1.5 flex items-center justify-between anim-pulse">
+                                                            <span className="text-[10px] font-bold text-amber-700">Devolución pendiente: {pendingDevolucion}</span>
+                                                            <History className="w-3 h-3 text-amber-500" />
+                                                        </div>
+                                                    )}
+
+                                                    <div className="flex gap-2">
+                                                        <button 
+                                                            onClick={() => {
+                                                                setSelectedMaterial(m);
+                                                                setMaterialAction('uso');
+                                                                setMaterialQuantity('');
+                                                                setIsMaterialModalOpen(true);
+                                                            }}
+                                                            className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all active:scale-95"
+                                                        >
+                                                            <PlusCircle className="w-3.5 h-3.5 text-emerald-500" />
+                                                            INFORMAR USO
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => {
+                                                                setSelectedMaterial(m);
+                                                                setMaterialAction('devolucion');
+                                                                setMaterialQuantity('');
+                                                                setIsMaterialModalOpen(true);
+                                                            }}
+                                                            className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all active:scale-95"
+                                                        >
+                                                            <MinusCircle className="w-3.5 h-3.5 text-blue-500" />
+                                                            DEVOLVER
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {/* Comments Section */}
                         <div className="pt-6 border-t border-slate-50 space-y-5">
                             <h3 className="flex items-center gap-2 text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-wide">
@@ -753,6 +915,72 @@ export default function MyProjectsPage() {
                                 {(user?.role === 'supervisor' || user?.role === 'admin')
                                     ? 'FINALIZAR PROYECTO'
                                     : 'SOLICITAR FINALIZACIÓN'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Material Modal */}
+            {isMaterialModalOpen && selectedMaterial && (
+                <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl p-6 md:p-7 space-y-6 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
+                        <div className="flex items-center gap-4">
+                            <div className={`p-3 rounded-2xl ${materialAction === 'uso' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
+                                {materialAction === 'uso' ? <PlusCircle className="w-6 h-6" /> : <MinusCircle className="w-6 h-6" />}
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">
+                                    {materialAction === 'uso' ? 'Informar Uso' : 'Devolver Material'}
+                                </h3>
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{selectedMaterial.nombre}</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Cantidad ({selectedMaterial.unidad}) *</label>
+                                <input
+                                    type="number"
+                                    autoFocus
+                                    inputMode="decimal"
+                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
+                                    placeholder="0.00"
+                                    value={materialQuantity}
+                                    onChange={e => setMaterialQuantity(e.target.value)}
+                                />
+                            </div>
+
+                            {materialAction === 'devolucion' && (
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Observación (Opcional)</label>
+                                    <textarea
+                                        rows={2}
+                                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all resize-none"
+                                        placeholder="Ej: Material sobrante en buen estado..."
+                                        value={materialNote}
+                                        onChange={e => setMaterialNote(e.target.value)}
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setIsMaterialModalOpen(false)}
+                                className="flex-1 py-3.5 rounded-2xl font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 transition-all active:scale-95"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={submitMaterialAction}
+                                disabled={!materialQuantity || isSubmittingMaterial}
+                                className={`flex-[2] text-white py-3.5 rounded-2xl font-bold transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95 ${
+                                    materialAction === 'uso' ? 'bg-emerald-600 shadow-emerald-200 hover:bg-emerald-700' : 'bg-blue-600 shadow-blue-200 hover:bg-blue-700'
+                                }`}
+                            >
+                                {isSubmittingMaterial ? <Loader2 className="w-4 h-4 animate-spin" /> : <Package className="w-4 h-4" />}
+                                {materialAction === 'uso' ? 'Confirmar Uso' : 'Solicitar Devolución'}
                             </button>
                         </div>
                     </div>

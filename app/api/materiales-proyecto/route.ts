@@ -35,7 +35,7 @@ export async function GET(req: Request) {
         where: { proyectoId },
         include: {
             usos: { orderBy: { createdAt: 'desc' } },
-            devolucion: true,
+            devoluciones: { orderBy: { createdAt: 'desc' } },
         },
         orderBy: { createdAt: 'asc' },
     });

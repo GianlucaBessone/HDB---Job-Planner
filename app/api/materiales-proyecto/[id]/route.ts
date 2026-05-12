@@ -20,7 +20,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     let material = await prisma.materialProyecto.update({
         where: { id },
         data: dataToUpdate,
-        include: { usos: true, devolucion: true },
+        include: { usos: true, devoluciones: true },
     });
 
     // Actualizar MaterialMaestro si se usó un código en la actualización
@@ -59,7 +59,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
             material = await prisma.materialProyecto.update({
                 where: { id },
                 data: { estado: nuevoEstado },
-                include: { usos: true, devolucion: true }
+                include: { usos: true, devoluciones: true }
             });
         }
     }

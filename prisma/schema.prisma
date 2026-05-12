@@ -387,7 +387,7 @@ model MaterialProyecto {
   createdAt           DateTime             @default(now())
   precioVenta         Float?
   usos                MaterialUso[]
-  devolucion          MaterialDevolucion?
+  devoluciones        MaterialDevolucion[]
 
   @@index([proyectoId])
   @@index([codigo])
@@ -416,7 +416,7 @@ model MaterialUso {
 
 model MaterialDevolucion {
   id                String           @id @default(cuid())
-  materialId        String           @unique
+  materialId        String
   material          MaterialProyecto @relation(fields: [materialId], references: [id], onDelete: Cascade)
   cantidadADevolver Float
   estado            String           @default("pendiente")
@@ -425,6 +425,8 @@ model MaterialDevolucion {
   confirmadoPor     String?
   fechaConfirm      DateTime?
   createdAt         DateTime         @default(now())
+
+  @@index([materialId])
 }
 
 model Fichada {

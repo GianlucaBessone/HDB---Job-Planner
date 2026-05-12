@@ -40,7 +40,7 @@ type Material = {
     cantidadEntregada: number;
     estado: string;
     usos: MaterialUso[];
-    devolucion: MaterialDevolucion | null;
+    devoluciones: MaterialDevolucion[];
 };
 type Proyecto = {
     id: string;
@@ -63,13 +63,13 @@ const ESTADO_CONFIG: Record<string, { label: string; color: string; icon: any }>
     cerrado_con_reserva:   { label: 'Con observación',  color: 'bg-rose-100 text-rose-700 border-rose-200',       icon: AlertTriangle },
 };
 
-function EstadoBadge({ estado }: { estado: string }) {
-    const cfg = ESTADO_CONFIG[estado] || { label: estado, color: 'bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700', icon: Package };
+function EstadoBadge({ estado, hasPending }: { estado: string, hasPending?: boolean }) {
+    const cfg = ESTADO_CONFIG[hasPending ? 'pendiente_devolucion' : estado] || { label: estado, color: 'bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700', icon: Package };
     const Icon = cfg.icon;
     return (
         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${cfg.color}`}>
-            <Icon className="w-3 h-3" />
-            {cfg.label}
+            <Icon className={`w-3 h-3 ${hasPending ? 'animate-pulse' : ''}`} />
+            {hasPending ? 'Pendiente' : cfg.label}
         </span>
     );
 }
@@ -239,14 +239,19 @@ function AddMaterialForm({ proyectoId, onAdded }: { proyectoId: string; onAdded:
 function DevolucionModal({
     material, userName, onClose, onDone,
 }: { material: Material; userName: string; onClose: () => void; onDone: () => void }) {
-    const totalUsado = material.usos.reduce((a, u) => a + u.cantidadUtilizada, 0);
-    const aDevolver = Math.max(0, material.cantidadEntregada - totalUsado);
+    const pendingReturns = (material.devoluciones || []).filter(d => d.estado === 'pendiente');
+    const confirmedReturns = (material.devoluciones || []).filter(d => d.estado !== 'pendiente');
+    
+    const [selectedId, setSelectedId] = useState<string | null>(pendingReturns[0]?.id || null);
     const [estado, setEstado] = useState<'cerrado_ok' | 'cerrado_con_reserva'>('cerrado_ok');
     const [comentario, setComentario] = useState('');
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
 
+    const selectedReturn = pendingReturns.find(d => d.id === selectedId);
+
     const handleConfirm = async () => {
+        if (!selectedId) return;
         if (estado === 'cerrado_con_reserva' && !comentario.trim()) {
             setError('El comentario es obligatorio al confirmar con reserva.');
             return;
@@ -255,63 +260,136 @@ function DevolucionModal({
         const res = await fetch('/api/materiales-proyecto/devolucion', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ materialId: material.id, cantidadADevolver: aDevolver, estado, comentario, confirmadoPor: userName }),
+            body: JSON.stringify({ 
+                id: selectedId,
+                materialId: material.id, 
+                cantidadADevolver: selectedReturn?.cantidadADevolver, 
+                estado, 
+                comentario, 
+                confirmadoPor: userName 
+            }),
         });
         setSaving(false);
-        if (res.ok) { onDone(); onClose(); }
+        if (res.ok) { 
+            onDone(); 
+            // If more pending, stay or close? Let's refresh and see.
+            // For better UX, if more pending, clear selection.
+            const remaining = pendingReturns.filter(d => d.id !== selectedId);
+            if (remaining.length > 0) {
+                setSelectedId(remaining[0].id);
+                setComentario('');
+                setError('');
+            } else {
+                onClose();
+            }
+        }
         else { const d = await res.json(); setError(d.error || 'Error al confirmar'); }
     };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-md w-full p-6 space-y-5">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-black text-slate-800 dark:text-slate-100">Confirmar Recepción</h2>
+            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-lg w-full p-6 space-y-5 flex flex-col max-h-[90vh]">
+                <div className="flex items-center justify-between shrink-0">
+                    <div>
+                        <h2 className="text-lg font-black text-slate-800 dark:text-slate-100 leading-tight">Gestión de Devoluciones</h2>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{material.nombre}</p>
+                    </div>
                     <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl"><X className="w-5 h-5" /></button>
                 </div>
 
-                <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 space-y-2 text-sm">
-                    <p className="font-bold text-slate-700 dark:text-slate-200">{material.nombre}</p>
-                    <div className="grid grid-cols-3 gap-2 text-center mt-2">
-                        {[['Entregado', material.cantidadEntregada, 'text-blue-600'], ['Utilizado', totalUsado, 'text-violet-600'], ['A devolver', aDevolver, 'text-amber-600']].map(([l, v, c]) => (
-                            <div key={String(l)} className="bg-white dark:bg-slate-800 rounded-xl p-2 border border-slate-200 dark:border-slate-700">
-                                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">{l}</p>
-                                <p className={`text-xl font-black ${c}`}>{Number(v).toFixed(0)}</p>
-                                <p className="text-[10px] text-slate-400 dark:text-slate-500">{material.unidad}</p>
+                <div className="flex-1 overflow-y-auto space-y-6 pr-2 custom-scrollbar">
+                    {/* Pending Section */}
+                    <div className="space-y-3">
+                        <h3 className="text-[10px] font-black text-amber-600 uppercase tracking-widest flex items-center gap-2">
+                            <Clock className="w-3 h-3" /> Pendientes de Confirmación
+                        </h3>
+                        {pendingReturns.length === 0 ? (
+                            <p className="text-xs text-slate-400 italic py-2">No hay devoluciones pendientes.</p>
+                        ) : (
+                            <div className="grid gap-2">
+                                {pendingReturns.map(d => (
+                                    <button 
+                                        key={d.id}
+                                        onClick={() => setSelectedId(d.id)}
+                                        className={`w-full text-left p-3 rounded-2xl border transition-all ${selectedId === d.id 
+                                            ? 'bg-amber-50 border-amber-200 ring-2 ring-amber-200/50' 
+                                            : 'bg-slate-50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-800 hover:border-slate-200'}`}
+                                    >
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm font-black text-slate-700 dark:text-slate-200">{d.cantidadADevolver} {material.unidad}</span>
+                                            <span className="text-[10px] font-bold text-slate-400">{new Date(d.id.startsWith('c') ? Date.now() : 0).toLocaleDateString()}</span>
+                                        </div>
+                                        {d.comentario && <p className="text-[11px] text-slate-500 mt-1 italic">"{d.comentario}"</p>}
+                                    </button>
+                                ))}
                             </div>
-                        ))}
+                        )}
                     </div>
-                </div>
 
-                <div className="space-y-2">
-                    <p className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Tipo de recepción</p>
-                    <div className="grid grid-cols-2 gap-2">
-                        {(['cerrado_ok', 'cerrado_con_reserva'] as const).map(opt => (
-                            <button key={opt} onClick={() => setEstado(opt)}
-                                className={`px-3 py-3 rounded-2xl text-xs font-black border transition-all ${estado === opt
-                                    ? opt === 'cerrado_ok' ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-rose-500 text-white border-rose-500'
-                                    : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700'}`}>
-                                {opt === 'cerrado_ok' ? '✓ Recepción conforme' : '⚠ Con observación'}
+                    {/* Confirmation Form */}
+                    {selectedReturn && (
+                        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-5 space-y-4 border border-slate-100 dark:border-slate-800 animate-in slide-in-from-top-2 duration-200">
+                            <p className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Confirmar {selectedReturn.cantidadADevolver} {material.unidad}</p>
+                            
+                            <div className="grid grid-cols-2 gap-2">
+                                {(['cerrado_ok', 'cerrado_con_reserva'] as const).map(opt => (
+                                    <button key={opt} onClick={() => setEstado(opt)}
+                                        className={`px-3 py-3 rounded-2xl text-[10px] font-black border transition-all uppercase tracking-widest ${estado === opt
+                                            ? opt === 'cerrado_ok' ? 'bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/20' : 'bg-rose-500 text-white border-rose-500 shadow-lg shadow-rose-500/20'
+                                            : 'bg-white dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300'}`}>
+                                        {opt === 'cerrado_ok' ? 'Recepción Conforme' : 'Con Observación'}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    {estado === 'cerrado_con_reserva' ? 'Comentario obligatorio *' : 'Comentario opcional'}
+                                </label>
+                                <textarea 
+                                    rows={2} 
+                                    value={comentario} 
+                                    onChange={e => setComentario(e.target.value)} 
+                                    placeholder={estado === 'cerrado_con_reserva' ? "Describir el motivo de la observación..." : "Notas adicionales..."}
+                                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs outline-none focus:border-primary transition-all resize-none" 
+                                />
+                            </div>
+
+                            {error && <p className="text-[10px] font-bold text-rose-500 bg-rose-50 rounded-lg px-3 py-2">{error}</p>}
+
+                            <button onClick={handleConfirm} disabled={saving}
+                                className={`w-full py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-xl active:scale-95 ${estado === 'cerrado_ok' ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-100' : 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-100'} disabled:opacity-50`}>
+                                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                                Confirmar Recepción
                             </button>
-                        ))}
+                        </div>
+                    )}
+
+                    {/* History Section */}
+                    <div className="space-y-3 pt-2">
+                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                            <History className="w-3 h-3" /> Historial de Recepciones
+                        </h3>
+                        {confirmedReturns.length === 0 ? (
+                            <p className="text-xs text-slate-400 italic py-2 text-center">No hay registros anteriores.</p>
+                        ) : (
+                            <div className="space-y-2">
+                                {confirmedReturns.map(d => (
+                                    <div key={d.id} className="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                                        <div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs font-black text-slate-700 dark:text-slate-200">{d.cantidadADevolver} {material.unidad}</span>
+                                                <EstadoBadge estado={d.estado} />
+                                            </div>
+                                            <p className="text-[9px] text-slate-400 mt-0.5 font-bold uppercase">Confirmado por {d.confirmadoPor} · {d.fechaConfirm ? new Date(d.fechaConfirm).toLocaleDateString() : '-'}</p>
+                                            {d.comentario && <p className="text-[10px] text-slate-500 mt-1 italic">"{d.comentario}"</p>}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
-
-                {estado === 'cerrado_con_reserva' && (
-                    <div className="space-y-1">
-                        <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Comentario obligatorio</label>
-                        <textarea rows={3} value={comentario} onChange={e => setComentario(e.target.value)} placeholder="Describir la observación o reserva..."
-                            className="w-full border border-slate-200 dark:border-slate-700 focus:border-rose-400 rounded-xl px-3 py-2 text-sm outline-none resize-none" />
-                    </div>
-                )}
-
-                {error && <p className="text-xs font-bold text-rose-500 bg-rose-50 rounded-xl px-3 py-2">{error}</p>}
-
-                <button onClick={handleConfirm} disabled={saving}
-                    className={`w-full py-3 rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${estado === 'cerrado_ok' ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'bg-rose-500 hover:bg-rose-600 text-white'} disabled:opacity-50`}>
-                    {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-                    Confirmar Recepción
-                </button>
             </div>
         </div>
     );
@@ -750,7 +828,10 @@ function MaterialesTable({
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                                     {materiales.map(mat => {
                                         const totalUsado = mat.usos.reduce((a, u) => a + u.cantidadUtilizada, 0);
-                                        const aDevolver = mat.devolucion?.cantidadADevolver ?? Math.max(0, mat.cantidadEntregada - totalUsado);
+                                        const pendingReturns = (mat.devoluciones || []).filter(d => d.estado === 'pendiente');
+                                        const hasPending = pendingReturns.length > 0;
+                                        const totalPending = pendingReturns.reduce((a, d) => a + d.cantidadADevolver, 0);
+                                        
                                         const closed = ['cerrado_ok', 'cerrado_con_reserva'].includes(mat.estado);
                                         return (
                                             <tr key={mat.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
@@ -774,8 +855,10 @@ function MaterialesTable({
                                                         onSave={v => handleUpdate(mat.id, 'cantidadEntregada', v)} />
                                                 </td>
                                                 <td className="text-center py-3 font-bold text-violet-600">{totalUsado}</td>
-                                                <td className="text-center py-3 font-bold text-amber-600">{aDevolver}</td>
-                                                <td className="text-center py-3"><EstadoBadge estado={mat.estado} /></td>
+                                                <td className={`text-center py-3 font-bold ${hasPending ? 'text-amber-600' : 'text-slate-400'}`}>
+                                                    {totalPending > 0 ? totalPending : '0'}
+                                                </td>
+                                                <td className="text-center py-3"><EstadoBadge estado={mat.estado} hasPending={hasPending} /></td>
                                                 <td className="text-center py-3">
                                                     <div className="flex items-center justify-center gap-1">
                                                         {isVendedor && !closed && (
@@ -784,9 +867,9 @@ function MaterialesTable({
                                                                 <Edit2 className="w-3.5 h-3.5" />
                                                             </button>
                                                         )}
-                                                        {isVendedor && mat.estado === 'pendiente_devolucion' && (
-                                                            <button onClick={(e) => { e.stopPropagation(); setDevolucionTarget(mat); }} title="Confirmar recepción"
-                                                                className="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg transition-colors">
+                                                        {isVendedor && (hasPending || mat.devoluciones?.length > 0) && (
+                                                            <button onClick={(e) => { e.stopPropagation(); setDevolucionTarget(mat); }} title={hasPending ? "Confirmar recepción" : "Ver historial"}
+                                                                className={`p-1.5 rounded-lg transition-colors ${hasPending ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}>
                                                                 <RotateCcw className="w-3.5 h-3.5" />
                                                             </button>
                                                         )}
