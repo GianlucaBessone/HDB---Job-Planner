@@ -114,23 +114,35 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             // 4. Auto-calculate returns if provisioning is active
             if (proyecto.aprovisionamiento && proyecto.materialesProyecto.length > 0) {
                 for (const mat of proyecto.materialesProyecto) {
-                    if (!mat.devolucion) {
+                    const hasPending = mat.devoluciones.some(d => d.estado === 'pendiente');
+                    const isClosed = ['cerrado_ok', 'cerrado_con_reserva'].includes(mat.estado);
+
+                    if (!hasPending && !isClosed) {
                         const totalUsado = mat.usos.reduce((acc, u) => acc + u.cantidadUtilizada, 0);
-                        const aDevolver = Math.max(0, mat.cantidadEntregada - totalUsado);
+                        const totalDevuelto = mat.devoluciones.filter(d => d.estado !== 'pendiente').reduce((acc, d) => acc + d.cantidadADevolver, 0);
+                        const aDevolver = Math.max(0, mat.cantidadEntregada - totalUsado - totalDevuelto);
+                        
                         const esCerrado = mat.cantidadEntregada > 0 && aDevolver === 0;
                         
-                        await tx.materialDevolucion.create({
-                            data: {
-                                materialId: mat.id,
-                                cantidadADevolver: aDevolver,
-                                estado: esCerrado ? 'cerrado_ok' : 'pendiente',
-                            },
-                        });
-                        
-                        await tx.materialProyecto.update({
-                            where: { id: mat.id },
-                            data: { estado: esCerrado ? 'cerrado_ok' : 'pendiente_devolucion' },
-                        });
+                        if (aDevolver > 0) {
+                            await tx.materialDevolucion.create({
+                                data: {
+                                    materialId: mat.id,
+                                    cantidadADevolver: aDevolver,
+                                    estado: 'pendiente',
+                                },
+                            });
+                            
+                            await tx.materialProyecto.update({
+                                where: { id: mat.id },
+                                data: { estado: 'pendiente_devolucion' },
+                            });
+                        } else if (esCerrado) {
+                            await tx.materialProyecto.update({
+                                where: { id: mat.id },
+                                data: { estado: 'cerrado_ok' },
+                            });
+                        }
                     }
                 }
             }
