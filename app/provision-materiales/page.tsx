@@ -6,6 +6,7 @@ import {
     Package, Plus, Trash2, Edit2, Check, X, ChevronDown, ChevronRight,
     AlertTriangle, CheckCircle2, Clock, RotateCcw, Loader2, MessageSquare,
     Bell, FileSpreadsheet, ShieldCheck, Upload, Download, FileUp, FileText, CheckCircle,
+    Calculator,
 } from 'lucide-react';
 import CodeBadge from '@/components/CodeBadge';
 import * as XLSX from 'xlsx';

@@ -630,7 +630,7 @@ function OrdenesServicioContent() {
                                 key={estado}
                                 onClick={() => setFilterEstado(estado)}
                                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterEstado === estado
-                                    ? (estado === 'firmada' || estado === 'cobrada' || estado === 'pagada') ? 'bg-emerald-100 text-emerald-700'
+                                    ? estado === 'firmada' ? 'bg-emerald-100 text-emerald-700'
                                         : estado === 'pendiente' ? 'bg-amber-100 text-amber-700'
                                             : estado === 'cobrada' ? 'bg-indigo-100 text-indigo-700'
                                                 : 'bg-primary text-white'
@@ -714,7 +714,7 @@ function OrdenesServicioContent() {
 
                                     {/* Estado badge */}
                                     <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider shrink-0 ${
-                                        (os.estado === 'firmada' || os.estado === 'cobrada' || os.estado === 'pagada') ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 
+                                        os.estado === 'firmada' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 
                                         os.estado === 'pendiente' ? 'bg-amber-100 text-amber-700 border border-amber-200' :
                                         os.estado === 'cobrada' ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' :
                                         os.estado === 'pagada' ? 'bg-blue-100 text-blue-700 border border-blue-200' :

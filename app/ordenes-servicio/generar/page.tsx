@@ -32,6 +32,7 @@ interface MaterialRow {
     materialProyectoId?: string;
     disponible?: number;
     entregada?: number;
+    precioUnitario?: number | string | null;
 }
 
 interface OperadorRow {
@@ -134,7 +135,8 @@ function GenerarOSContent() {
                         codigo: m.codigo || '',
                         cantidad: String(m.cantidad), 
                         unidadMedida: m.unidadMedida, 
-                        materialProyectoId: m.materialProyectoId
+                        materialProyectoId: m.materialProyectoId,
+                        precioUnitario: m.precioUnitario
                     })));
                 } else {
                     let dm: MaterialRow[] = [{ material: '', codigo: '', cantidad: '', unidadMedida: 'Unidad' }];
@@ -178,7 +180,8 @@ function GenerarOSContent() {
                             unidadMedida: m.unidad || 'Unidad', 
                             materialProyectoId: m.id, 
                             disponible: m.cantidadDisponible, 
-                            entregada: m.cantidadEntregada 
+                            entregada: m.cantidadEntregada,
+                            precioUnitario: m.precioVenta
                         }));
                     }
                 }

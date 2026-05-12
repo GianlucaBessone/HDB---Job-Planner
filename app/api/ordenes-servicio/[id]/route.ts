@@ -192,7 +192,12 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
                     comentario: comentario || null,
                     materiales: {
                         create: materiales.map((m: any) => ({
-                            material: m.material, codigo: m.codigo || null, cantidad: parseFloat(m.cantidad), unidadMedida: m.unidadMedida, materialProyectoId: m.materialProyectoId || null
+                            material: m.material, 
+                            codigo: m.codigo || null, 
+                            cantidad: parseFloat(m.cantidad), 
+                            unidadMedida: m.unidadMedida, 
+                            materialProyectoId: m.materialProyectoId || null,
+                            precioUnitario: m.precioUnitario || null
                         }))
                     },
                     operadores: {
