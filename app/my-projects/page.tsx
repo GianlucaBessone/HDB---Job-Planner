@@ -278,6 +278,29 @@ export default function MyProjectsPage() {
     const submitMaterialAction = async () => {
         if (!selectedMaterial || !materialQuantity || isSubmittingMaterial) return;
         
+        const qty = parseFloat(materialQuantity);
+        if (isNaN(qty) || qty <= 0) {
+            showToast('Ingrese una cantidad válida', 'error');
+            return;
+        }
+
+        // Validations
+        const totalUsado = (selectedMaterial.usos || []).reduce((acc: number, u: any) => acc + u.cantidadUtilizada, 0);
+        const totalDevuelto = (selectedMaterial.devoluciones || []).reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
+        const balance = selectedMaterial.cantidadEntregada - totalUsado - totalDevuelto;
+
+        if (materialAction === 'uso') {
+            if (qty > (selectedMaterial.cantidadEntregada - totalUsado)) {
+                showToast(`No puede informar más uso que el entregado (${(selectedMaterial.cantidadEntregada - totalUsado).toFixed(2)} ${selectedMaterial.unidad} restante)`, 'error');
+                return;
+            }
+        } else {
+            if (qty > balance) {
+                showToast(`No puede devolver más del balance disponible (${balance.toFixed(2)} ${selectedMaterial.unidad})`, 'error');
+                return;
+            }
+        }
+
         setIsSubmittingMaterial(true);
         try {
             const endpoint = materialAction === 'uso' 
@@ -287,12 +310,12 @@ export default function MyProjectsPage() {
             const body = materialAction === 'uso' 
                 ? {
                     materialId: selectedMaterial.id,
-                    cantidadUtilizada: parseFloat(materialQuantity),
+                    cantidadUtilizada: qty,
                     operadorNombre: user.nombreCompleto
                   }
                 : {
                     materialId: selectedMaterial.id,
-                    cantidadADevolver: parseFloat(materialQuantity),
+                    cantidadADevolver: qty,
                     estado: 'pendiente',
                     comentario: materialNote
                   };
@@ -941,18 +964,35 @@ export default function MyProjectsPage() {
                         </div>
 
                         <div className="space-y-4">
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Cantidad ({selectedMaterial.unidad}) *</label>
-                                <input
-                                    type="number"
-                                    autoFocus
-                                    inputMode="decimal"
-                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
-                                    placeholder="0.00"
-                                    value={materialQuantity}
-                                    onChange={e => setMaterialQuantity(e.target.value)}
-                                />
-                            </div>
+                            {(() => {
+                                const totalUsado = (selectedMaterial.usos || []).reduce((acc: number, u: any) => acc + u.cantidadUtilizada, 0);
+                                const totalDevuelto = (selectedMaterial.devoluciones || []).reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
+                                const maxAllowed = materialAction === 'uso' 
+                                    ? selectedMaterial.cantidadEntregada - totalUsado 
+                                    : selectedMaterial.cantidadEntregada - totalUsado - totalDevuelto;
+
+                                return (
+                                    <div className="space-y-1.5">
+                                        <div className="flex justify-between items-center">
+                                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                                                Cantidad ({selectedMaterial.unidad}) *
+                                            </label>
+                                            <span className="text-[10px] font-black text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
+                                                MÁX: {maxAllowed.toFixed(2)}
+                                            </span>
+                                        </div>
+                                        <input
+                                            type="number"
+                                            autoFocus
+                                            inputMode="decimal"
+                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
+                                            placeholder="0.00"
+                                            value={materialQuantity}
+                                            onChange={e => setMaterialQuantity(e.target.value)}
+                                        />
+                                    </div>
+                                );
+                            })()}
 
                             {materialAction === 'devolucion' && (
                                 <div className="space-y-1.5">
