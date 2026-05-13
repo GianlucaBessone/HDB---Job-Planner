@@ -170,7 +170,7 @@ export default function RootLayout({
                 <meta name="apple-mobile-web-app-title" content="HDB Planner" />
                 <meta name="theme-color" content="#2563eb" />
                 <link rel="manifest" href="/manifest.json" />
-                <link rel="apple-touch-icon" href="/icon-192x192.png" />
+                <link rel="apple-touch-icon" href="/images/ios/180.png" />
                 
                 {/* Manual Font Loading to prevent next/font/google build crash in local environments */}
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
