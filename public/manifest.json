@@ -2,10 +2,15 @@
     "name": "HDB Planner",
     "short_name": "HDB Planner",
     "description": "Sistema premium de planificación para técnicos",
+    "lang": "es",
+    "dir": "ltr",
+    "categories": ["business", "productivity"],
     "start_url": "/",
     "display": "standalone",
+    "display_override": ["window-controls-overlay", "minimal-ui"],
     "background_color": "#ffffff",
     "theme_color": "#2563eb",
+    "prefer_related_applications": false,
     "icons": [
         {
             "src": "/images/android/launchericon-48x48.png",
@@ -41,5 +46,17 @@
         }
     ],
     "orientation": "portrait",
-    "scope": "/"
+    "scope": "/",
+    "shortcuts": [
+        {
+            "name": "Mis Proyectos",
+            "url": "/my-projects",
+            "icons": [{ "src": "/images/android/launchericon-96x96.png", "sizes": "96x96" }]
+        },
+        {
+            "name": "Registro de Tiempos",
+            "url": "/timesheets",
+            "icons": [{ "src": "/images/android/launchericon-96x96.png", "sizes": "96x96" }]
+        }
+    ]
 }
