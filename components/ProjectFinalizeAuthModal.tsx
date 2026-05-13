@@ -12,7 +12,9 @@ import {
     Users,
     ShieldCheck,
     XCircle,
-    Loader2
+    Loader2,
+    FileSignature,
+    MessageSquare
 } from 'lucide-react';
 import { showToast } from './Toast';
 import { safeApiRequest } from '@/lib/offline';
