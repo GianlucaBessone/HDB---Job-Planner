@@ -155,6 +155,19 @@ export async function POST(req: Request) {
             }
         }
 
+        // 3) Update project total hours
+        const totalOSHours = operadores.reduce((acc: number, op: any) => {
+            const h = Number(op.horas);
+            return acc + (op.isExtra ? Math.ceil(h) * 2 : Math.ceil(h));
+        }, 0);
+
+        if (totalOSHours > 0) {
+            await prisma.project.update({
+                where: { id: projectId },
+                data: { horasConsumidas: { increment: totalOSHours } }
+            });
+        }
+
         return NextResponse.json(os);
     } catch (e) {
         console.error('POST ordenes-servicio error:', e);

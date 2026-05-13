@@ -51,6 +51,7 @@ export default function ProjectFinalizeAuthModal({
     const [project, setProject] = useState<Project | null>(null);
     const [entries, setEntries] = useState<any[]>([]);
     const [checklist, setChecklist] = useState<any[]>([]);
+    const [serviceOrders, setServiceOrders] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isActionLoading, setIsActionLoading] = useState(false);
 
@@ -59,15 +60,17 @@ export default function ProjectFinalizeAuthModal({
             setIsLoading(true);
             try {
                 const projectId = notification.relatedId;
-                const [pRes, eRes, cRes] = await Promise.all([
+                const [pRes, eRes, cRes, osRes] = await Promise.all([
                     safeApiRequest(`/api/projects/${projectId}`).then(res => res.json()),
                     safeApiRequest(`/api/time-entries?projectId=${projectId}`).then(res => res.json()),
-                    safeApiRequest(`/api/projects/${projectId}/checklist`).then(res => res.json())
+                    safeApiRequest(`/api/projects/${projectId}/checklist`).then(res => res.json()),
+                    safeApiRequest(`/api/ordenes-servicio?projectId=${projectId}`).then(res => res.json())
                 ]);
 
                 setProject(pRes);
                 setEntries(Array.isArray(eRes) ? eRes : []);
                 setChecklist(Array.isArray(cRes) ? cRes : []);
+                setServiceOrders(Array.isArray(osRes) ? osRes : []);
             } catch (error) {
                 console.error('Error fetching project details:', error);
                 showToast('Error al cargar los detalles del proyecto', 'error');
@@ -166,7 +169,7 @@ export default function ProjectFinalizeAuthModal({
     const hoursRemaining = Math.max(0, project.horasEstimadas - project.horasConsumidas);
     const progress = project.horasEstimadas > 0 ? Math.min(100, Math.round((project.horasConsumidas / project.horasEstimadas) * 100)) : 0;
 
-    const operatorStats = entries.reduce((acc: any, entry: any) => {
+    const operatorStats: any = entries.reduce((acc: any, entry: any) => {
         const opId = entry.operatorId;
         if (!acc[opId]) {
             acc[opId] = {
@@ -179,6 +182,27 @@ export default function ProjectFinalizeAuthModal({
         if (entry.fecha > acc[opId].lastSeen) acc[opId].lastSeen = entry.fecha;
         return acc;
     }, {});
+
+    // Add hours from Service Orders
+    serviceOrders.forEach((os: any) => {
+        if (os.operadores) {
+            os.operadores.forEach((opOS: any) => {
+                const opId = opOS.operadorId;
+                if (!operatorStats[opId]) {
+                    operatorStats[opId] = {
+                        name: opOS.operador?.nombreCompleto || 'Desconocido',
+                        totalHours: 0,
+                        lastSeen: os.fechaCreacion?.split('T')[0] || ''
+                    };
+                }
+                operatorStats[opId].totalHours += opOS.horas;
+                const osDate = os.fechaCreacion?.split('T')[0];
+                if (osDate && osDate > operatorStats[opId].lastSeen) {
+                    operatorStats[opId].lastSeen = osDate;
+                }
+            });
+        }
+    });
 
     const statsArray = Object.values(operatorStats);
 
@@ -255,6 +279,31 @@ export default function ProjectFinalizeAuthModal({
                         </div>
                     </div>
 
+                    {/* Latest Report from Service Order */}
+                    {serviceOrders.length > 0 && (
+                        <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-[2.5rem] p-6 md:p-8 space-y-4">
+                            <h4 className="flex items-center gap-2 font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest text-xs">
+                                <FileSignature className="w-4 h-4 text-emerald-500" /> Reporte de la Última Orden de Servicio ({serviceOrders[0].codigoOS})
+                            </h4>
+                            <div className="space-y-4">
+                                <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                                    <p className="text-slate-700 dark:text-slate-200 text-sm leading-relaxed whitespace-pre-wrap font-medium italic">
+                                        "{serviceOrders[0].reporte}"
+                                    </p>
+                                </div>
+                                {serviceOrders[0].comentario && (
+                                    <div className="flex gap-3 px-4">
+                                        <MessageSquare className="w-4 h-4 text-slate-400 shrink-0 mt-1" />
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                                            <span className="font-black uppercase tracking-widest text-[9px] block mb-1">Comentario Adicional</span>
+                                            {serviceOrders[0].comentario}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Personnel & History */}
                         <div className="space-y-6">
@@ -325,17 +374,24 @@ export default function ProjectFinalizeAuthModal({
                                 <CheckCircle2 className="w-4 h-4 text-primary" /> Estado del Checklist
                             </h4>
                             <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin">
-                                {checklist.map((item: any) => (
-                                    <div key={item.id} className={`flex items-start gap-4 p-4 rounded-3xl border transition-all ${item.completed ? 'bg-emerald-50/40 border-emerald-100 shadow-sm' : 'bg-red-50/40 border-red-100 hover:border-red-200'}`}>
-                                        <div className={`mt-0.5 shrink-0 w-6 h-6 rounded-xl border-2 flex items-center justify-center transition-all ${item.completed ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-200' : 'bg-red-500 border-red-500 text-white shadow-lg shadow-red-200'}`}>
-                                            {item.completed ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                            <p className={`text-sm font-bold leading-snug ${item.completed ? 'text-emerald-900' : 'text-red-900'}`}>{item.description}</p>
-                                            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-white/50 px-2 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700 mt-1 inline-block">{item.tag}</span>
-                                        </div>
+                                {checklist.length === 0 ? (
+                                    <div className="p-10 text-center bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
+                                        <CheckCircle2 className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                                        <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Sin tareas definidas</p>
                                     </div>
-                                ))}
+                                ) : (
+                                    checklist.map((item: any) => (
+                                        <div key={item.id} className={`flex items-start gap-4 p-4 rounded-3xl border transition-all ${item.completed ? 'bg-emerald-50/40 border-emerald-100 shadow-sm' : 'bg-red-50/40 border-red-100 hover:border-red-200'}`}>
+                                            <div className={`mt-0.5 shrink-0 w-6 h-6 rounded-xl border-2 flex items-center justify-center transition-all ${item.completed ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-200' : 'bg-red-500 border-red-500 text-white shadow-lg shadow-red-200'}`}>
+                                                {item.completed ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <p className={`text-sm font-bold leading-snug ${item.completed ? 'text-emerald-900' : 'text-red-900'}`}>{item.description}</p>
+                                                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-white/50 px-2 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700 mt-1 inline-block">{item.tag}</span>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
                             </div>
                         </div>
                     </div>
