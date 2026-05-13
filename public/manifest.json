@@ -6,6 +6,7 @@
     "dir": "ltr",
     "categories": ["business", "productivity"],
     "start_url": "/",
+    "id": "/",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#2563eb",
