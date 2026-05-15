@@ -3,12 +3,14 @@ import { safeApiRequest } from '@/lib/offline';
 import { Search, Plus, FileText, Edit2, ShieldCheck, Eye, Trash2 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 import DocumentDetailModal from './DocumentDetailModal';
+import NewDocumentModal from './NewDocumentModal';
 
 export default function LibraryTab({ user }: { user: any }) {
     const [docs, setDocs] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
+    const [isNewModalOpen, setIsNewModalOpen] = useState(false);
 
     useEffect(() => {
         loadDocs();
@@ -40,6 +42,7 @@ export default function LibraryTab({ user }: { user: any }) {
                     />
                 </div>
                 <button
+                    onClick={() => setIsNewModalOpen(true)}
                     className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-2xl font-black text-sm hover:bg-primary/90 transition-all active:scale-95 shadow-md"
                 >
                     <Plus className="w-4 h-4" /> Nuevo
@@ -87,6 +90,18 @@ export default function LibraryTab({ user }: { user: any }) {
                 <DocumentDetailModal 
                     documentId={selectedDocId} 
                     onClose={() => setSelectedDocId(null)} 
+                />
+            )}
+
+            {isNewModalOpen && (
+                <NewDocumentModal 
+                    user={user}
+                    onClose={() => setIsNewModalOpen(false)}
+                    onSuccess={(id) => {
+                        setIsNewModalOpen(false);
+                        loadDocs();
+                        setSelectedDocId(id);
+                    }}
                 />
             )}
         </div>
