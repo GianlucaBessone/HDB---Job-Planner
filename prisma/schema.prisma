@@ -546,3 +546,149 @@ model ToolMovementItem {
   presentAtIn     Boolean?
   cantidadIn      Int?
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CALIDAD Y CONTROL DOCUMENTAL — QMS / ISO 9001
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model ControlledDocument {
+  id                    String   @id @default(cuid())
+  codigoDocumental      String   @unique  // PR-TEC-001, IN-SEG-003, etc.
+  titulo                String
+  tipoDocumento         String   // Procedimiento | Instructivo | Manual técnico | Formulario | Política | Norma de seguridad | Checklist estándar | Protocolo | Especificación técnica | Certificado
+  area                  String   // Producción | Calidad | Seguridad | IT | RRHH | etc.
+  estado                String   @default("borrador") // borrador | en_revision | vigente | obsoleto
+
+  // Versión actual (snapshot para consulta rápida)
+  versionMayor          Int      @default(1)
+  versionMenor          Int      @default(0)
+
+  // Fechas
+  fechaEmision          DateTime @default(now())
+  fechaRevision         DateTime?
+  proximaRevision       DateTime?
+
+  // Responsables
+  responsableId         String?
+  responsableNombre     String?  // Snapshot del nombre
+  aprobadorId           String?
+  aprobadorNombre       String?  // Snapshot del nombre
+
+  // Configuración
+  requiereConfirmacionLectura Boolean @default(false)
+  requiereCapacitacion        Boolean @default(false)
+  nivelCriticidad             String  @default("media") // baja | media | alta | critica
+
+  // Trazabilidad
+  documentoReemplazadoId String?
+  documentoReemplazado   ControlledDocument? @relation("DocumentReplace", fields: [documentoReemplazadoId], references: [id], onDelete: SetNull)
+  documentosReemplazantes ControlledDocument[] @relation("DocumentReplace")
+  motivoCambio           String?  @db.Text
+  hashDocumental         String?  // SHA-256 del archivo vigente
+
+  // Metadata
+  tags                  Json     @default("[]") // Array de strings
+  observaciones         String?  @db.Text
+
+  // Timestamps
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  createdBy             String?  // userId
+  createdByName         String?  // Snapshot
+
+  // Relations
+  versions              DocumentVersion[]
+  readConfirmations     DocumentReadConfirmation[]
+  alerts                DocumentAlert[]
+
+  @@index([tipoDocumento])
+  @@index([area])
+  @@index([estado])
+  @@index([nivelCriticidad])
+  @@index([proximaRevision])
+}
+
+model DocumentVersion {
+  id                    String   @id @default(cuid())
+  documentId            String
+  document              ControlledDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  versionMayor          Int
+  versionMenor          Int
+  versionLabel          String   // "1.0", "1.1", "2.0"
+
+  estado                String   @default("borrador") // borrador | en_revision | vigente | obsoleto
+
+  // Autoría y aprobación
+  autorId               String?
+  autorNombre           String?
+  aprobadorId           String?
+  aprobadorNombre       String?
+  fechaAprobacion       DateTime?
+
+  // Contenido
+  motivoCambio          String?  @db.Text
+  notas                 String?  @db.Text
+  hashDocumental        String?  // SHA-256
+
+  // Timestamps
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Archivos asociados a esta versión
+  files                 DocumentFile[]
+
+  @@unique([documentId, versionMayor, versionMenor])
+  @@index([documentId])
+  @@index([estado])
+}
+
+model DocumentFile {
+  id                    String   @id @default(cuid())
+  versionId             String
+  version               DocumentVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+
+  nombreArchivo         String
+  tipoArchivo           String   // application/pdf, image/jpeg, video/mp4, etc.
+  tamanioBytes          Int      @default(0)
+  url                   String   @db.Text  // URL o path al archivo
+  esPrincipal           Boolean  @default(false)  // Archivo principal de la versión
+  hashArchivo           String?  // SHA-256 del archivo individual
+
+  createdAt             DateTime @default(now())
+
+  @@index([versionId])
+}
+
+model DocumentReadConfirmation {
+  id                    String   @id @default(cuid())
+  documentId            String
+  document              ControlledDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  operatorId            String
+  operatorNombre        String
+  confirmadoAt          DateTime @default(now())
+  versionAlMomento      String   // "1.0" snapshot de la versión que leyó
+
+  @@unique([documentId, operatorId])
+  @@index([documentId])
+  @@index([operatorId])
+}
+
+model DocumentAlert {
+  id                    String   @id @default(cuid())
+  documentId            String
+  document              ControlledDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  tipo                  String   // PROXIMA_REVISION | VENCIDO | CRITICO_EXPIRADO | SIN_ACTUALIZAR
+  mensaje               String
+  leido                 Boolean  @default(false)
+  destinatarioId        String?  // null = all supervisors/admins
+  destinatarioNombre    String?
+
+  createdAt             DateTime @default(now())
+
+  @@index([documentId])
+  @@index([tipo])
+  @@index([leido])
+}
