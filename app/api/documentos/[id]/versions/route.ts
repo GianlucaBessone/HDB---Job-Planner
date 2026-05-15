@@ -32,7 +32,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         const data = await req.json();
         const {
             tipoVersion, // 'mayor' | 'menor'
-            motivoCambio, notas,
+            motivoCambio, notas, checklistTemplate,
             autorId, autorNombre,
             userId, userName
         } = data;
@@ -76,6 +76,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
                 autorNombre: autorNombre || userName || null,
                 motivoCambio: motivoCambio || null,
                 notas: notas || null,
+                checklistTemplate: checklistTemplate || null,
             }
         });
 

@@ -2,68 +2,67 @@ generator client {
   provider = "prisma-client-js"
 }
 
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model Project {
-  id              String          @id @default(cuid())
-  codigoProyecto  String?         @unique
-  nombre          String
-  activo          Boolean         @default(true)
-  noEnMetricas    Boolean         @default(false)
-  categoria       String?
-  tipoActividad   String?
-  observaciones   String?
-  horasEstimadas  Int             @default(0)
-  horasConsumidas Int             @default(0)
-  cliente         String? // Keeping this for legacy text
-  clientId        String?
-  client          HdbClient?      @relation(fields: [clientId], references: [id])
-  responsable     String? // Legacy name field
-  responsableId   String?
-  responsableUser Operator?       @relation("ProjectResponsable", fields: [responsableId], references: [id])
-  tags            Json            @default("[]") // Technical tags: "Montaje", "Tendido", etc.
-  estado          String          @default("activo") // por_hacer | planificado | activo | en_riesgo | atrasado | finalizado
-  fechaInicio     String?
-  fechaFin        String?
-  finalizadoConPendientes Boolean @default(false)
-  publicToken     String?         @unique
-  pendientesSnapshot      Json?   // Snapshot of incomplete items if forced finish
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @default(now()) @updatedAt
-  clientDelays    ClientDelay[]
-  timeEntries     TimeEntry[]
-  checklistItems  ChecklistItem[]
-  logs            ProjectLog[]
-  generarOS            Boolean         @default(false)
-  aprovisionamiento    Boolean         @default(false)
-  ordenesServicio      OrdenServicio[]
-  encuestas            EncuestaServicio[]
-  materialesProyecto   MaterialProyecto[]
-  fichadas             Fichada[]
+  id                      String             @id @default(cuid())
+  codigoProyecto          String?            @unique
+  nombre                  String
+  activo                  Boolean            @default(true)
+  noEnMetricas            Boolean            @default(false)
+  categoria               String?
+  tipoActividad           String?
+  observaciones           String?
+  horasEstimadas          Int                @default(0)
+  horasConsumidas         Int                @default(0)
+  cliente                 String? // Keeping this for legacy text
+  clientId                String?
+  client                  HdbClient?         @relation(fields: [clientId], references: [id])
+  responsable             String? // Legacy name field
+  responsableId           String?
+  responsableUser         Operator?          @relation("ProjectResponsable", fields: [responsableId], references: [id])
+  tags                    Json               @default("[]") // Technical tags: "Montaje", "Tendido", etc.
+  estado                  String             @default("activo") // por_hacer | planificado | activo | en_riesgo | atrasado | finalizado
+  fechaInicio             String?
+  fechaFin                String?
+  finalizadoConPendientes Boolean            @default(false)
+  publicToken             String?            @unique
+  pendientesSnapshot      Json? // Snapshot of incomplete items if forced finish
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime           @default(now()) @updatedAt
+  clientDelays            ClientDelay[]
+  timeEntries             TimeEntry[]
+  checklistItems          ChecklistItem[]
+  logs                    ProjectLog[]
+  generarOS               Boolean            @default(false)
+  aprovisionamiento       Boolean            @default(false)
+  ordenesServicio         OrdenServicio[]
+  encuestas               EncuestaServicio[]
+  materialesProyecto      MaterialProyecto[]
+  fichadas                Fichada[]
   // Geofence & QR data
   geofenceLat             Float?
   geofenceLng             Float?
-  geofenceRadius          Float?   // radius in meters
-  qrToken                 String?  // current token signature for QR validation
-  fichajeHabilitado       Boolean  @default(false)
+  geofenceRadius          Float? // radius in meters
+  qrToken                 String? // current token signature for QR validation
+  fichajeHabilitado       Boolean            @default(false)
   qrHistory               QrTokenHistory[]
-  toolMovements            ToolMovement[]
+  toolMovements           ToolMovement[]
 
   @@index([qrToken])
 }
 
 model QrTokenHistory {
-  id              String   @id @default(cuid())
-  token           String   @unique
-  projectId       String?
-  project         Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  isCompanyToken  Boolean  @default(false)
-  replacedAt      DateTime @default(now())
-  
+  id             String   @id @default(cuid())
+  token          String   @unique
+  projectId      String?
+  project        Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  isCompanyToken Boolean  @default(false)
+  replacedAt     DateTime @default(now())
+
   @@index([token])
   @@index([projectId])
 }
@@ -82,22 +81,21 @@ model ProjectLog {
 }
 
 model ChecklistItem {
-  id                   String   @id @default(cuid())
-  projectId            String
-  project              Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  tag                  String
-  description          String
-  completed            Boolean  @default(false)
-  excluded             Boolean  @default(false)
-  confirmedBySupervisor Boolean @default(false)
-  pendingChange        Boolean  @default(false) // Request to unmark or similar
-  justification        String?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id                    String   @id @default(cuid())
+  projectId             String
+  project               Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tag                   String
+  description           String
+  completed             Boolean  @default(false)
+  excluded              Boolean  @default(false)
+  confirmedBySupervisor Boolean  @default(false)
+  pendingChange         Boolean  @default(false) // Request to unmark or similar
+  justification         String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
   @@index([projectId])
 }
-
 
 model ClientDelay {
   id              String   @id @default(cuid())
@@ -114,21 +112,22 @@ model ClientDelay {
 }
 
 model Operator {
-  id             String         @id @default(cuid())
-  nombreCompleto String
-  activo         Boolean        @default(true)
-  enVacaciones   Boolean        @default(false)
-  etiquetas      Json // Now using native Json type
-  pin            String         @default("1234")
-  role           String         @default("operador") // operador | supervisor | admin | vendedor
-  responsibleProjects Project[]      @relation("ProjectResponsable")
-  createdAt           DateTime       @default(now())
-  timeEntries     TimeEntry[]
-  notifications   Notification[]
-  ordenesServicio OrdenServicioOperador[]
-  fichadas        Fichada[]
-  toolMovements   ToolMovement[]
-  primaryDeviceId String?
+  id                        String                      @id @default(cuid())
+  nombreCompleto            String
+  activo                    Boolean                     @default(true)
+  enVacaciones              Boolean                     @default(false)
+  etiquetas                 Json // Now using native Json type
+  pin                       String                      @default("1234")
+  role                      String                      @default("operador") // operador | supervisor | admin | vendedor
+  responsibleProjects       Project[]                   @relation("ProjectResponsable")
+  createdAt                 DateTime                    @default(now())
+  timeEntries               TimeEntry[]
+  notifications             Notification[]
+  ordenesServicio           OrdenServicioOperador[]
+  fichadas                  Fichada[]
+  toolMovements             ToolMovement[]
+  primaryDeviceId           String?
+  OSDocumentAcknowledgement OSDocumentAcknowledgement[]
 }
 
 model FavoriteBlock {
@@ -163,35 +162,35 @@ model HdbClient {
 }
 
 model TimeEntry {
-  id                      String   @id @default(cuid())
+  id                      String    @id @default(cuid())
   operatorId              String
-  operator                Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  operator                Operator  @relation(fields: [operatorId], references: [id], onDelete: Cascade)
   projectId               String?
   project                 Project?  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   fecha                   String // YYYY-MM-DD
   horaIngreso             String? // HH:mm
   horaEgreso              String? // HH:mm
-  horasTrabajadas         Float    @default(0)
-  estadoConfirmado        Boolean  @default(false)
+  horasTrabajadas         Float     @default(0)
+  estadoConfirmado        Boolean   @default(false)
   confirmadoPorSupervisor String?
-  isExtra                 Boolean  @default(false)
-  causaRegistro           String?  // "Falta", "Permiso", "Carpeta Médica", etc. (from ConfigOption CAUSA_REGISTRO)
+  isExtra                 Boolean   @default(false)
+  causaRegistro           String? // "Falta", "Permiso", "Carpeta Médica", etc. (from ConfigOption CAUSA_REGISTRO)
   // Legacy punch-in fields (kept for data integrity, new punch-ins go to Fichada table)
   deviceId                String?
   latitude                Float?
   longitude               Float?
-  qrValidated             Boolean  @default(false)
-  validationFlags         Json?    
-  isSuspicious            Boolean  @default(false)
-  isOfflinePending        Boolean  @default(false)
-  status                  String   @default("AUTO_APPROVED")
-  score                   Int      @default(0)
-  riskLevel               String   @default("OK")
+  qrValidated             Boolean   @default(false)
+  validationFlags         Json?
+  isSuspicious            Boolean   @default(false)
+  isOfflinePending        Boolean   @default(false)
+  status                  String    @default("AUTO_APPROVED")
+  score                   Int       @default(0)
+  riskLevel               String    @default("OK")
   approvedById            String?
   approvedAt              DateTime?
 
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([fecha])
   @@index([projectId])
@@ -207,7 +206,7 @@ model Notification {
   message        String
   type           String // TIME_EDIT_REQUEST, PLANNING_ASSIGNMENT
   relatedId      String? // ID of TimeEntry or Planning block
-  metadata       Json?   // To store requested modifications or planning block details
+  metadata       Json? // To store requested modifications or planning block details
   read           Boolean   @default(false)
   createdAt      DateTime  @default(now())
 
@@ -216,13 +215,13 @@ model Notification {
 }
 
 model ProjectTag {
-  id              String             @id @default(cuid())
-  name            String             @unique
-  active          Boolean            @default(true)
-  impactsMetrics  Boolean            @default(false)
-  checklists      TagChecklistItem[]
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  id             String             @id @default(cuid())
+  name           String             @unique
+  active         Boolean            @default(true)
+  impactsMetrics Boolean            @default(false)
+  checklists     TagChecklistItem[]
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
 }
 
 model TagChecklistItem {
@@ -239,13 +238,13 @@ model TagChecklistItem {
 }
 
 model ConfigOption {
-  id          String   @id @default(cuid())
-  category    String   // e.g "AREA_DEMORA", "MOTIVO_DEMORA", "CATEGORIA", "TIPO_ACTIVIDAD"
-  value       String   
-  active      Boolean  @default(true)
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  category  String // e.g "AREA_DEMORA", "MOTIVO_DEMORA", "CATEGORIA", "TIPO_ACTIVIDAD"
+  value     String
+  active    Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([category])
 }
@@ -266,7 +265,7 @@ model SystemSetting {
   companyGeofenceRadius Float?
   companyQrToken        String?
   fichajeHabilitado     Boolean @default(false)
-  
+
   // Configuración de Notificaciones
   daysWithoutHoursThreshold Int @default(5)
 }
@@ -276,13 +275,13 @@ model AuditLog {
   userId    String?
   userEmail String?
   userName  String?
-  action    String   // CREATE | UPDATE | DELETE | APPROVE | REJECT
-  entity    String   // TIME_ENTRY | PROJECT | USER | SETTING | etc
+  action    String // CREATE | UPDATE | DELETE | APPROVE | REJECT
+  entity    String // TIME_ENTRY | PROJECT | USER | SETTING | etc
   entityId  String?
   timestamp DateTime @default(now())
   oldValue  Json?
   newValue  Json?
-  metadata  Json?    // { deviceId, location, ip, etc }
+  metadata  Json? // { deviceId, location, ip, etc }
 
   @@index([entity])
   @@index([userId])
@@ -305,14 +304,18 @@ model OrdenServicio {
   encuesta      EncuestaServicio?
 
   // Cobro
-  cobroGenerado        Boolean  @default(false)
-  cobroValorManoObra   Float?
+  cobroGenerado            Boolean   @default(false)
+  cobroValorManoObra       Float?
   cobroDescuentoPorcentaje Float?
-  cobroAplicarIva      Boolean  @default(true)
-  cobroTotalFinal      Float?
-  cobroObservaciones   String?  @db.Text
-  cobroCondicionPago   String?
-  cobroFechaGeneracion DateTime?
+  cobroAplicarIva          Boolean   @default(true)
+  cobroTotalFinal          Float?
+  cobroObservaciones       String?   @db.Text
+  cobroCondicionPago       String?
+  cobroFechaGeneracion     DateTime?
+
+  // QMS Integration
+  documentosRequeridos OrdenServicioDocumento[]
+  checklists           OSChecklist[]
 
   @@index([projectId])
 }
@@ -362,10 +365,10 @@ model EncuestaServicio {
   proyectoId      String
   project         Project       @relation(fields: [proyectoId], references: [id], onDelete: Cascade)
   fecha           DateTime      @default(now())
-  atencion        Int           // 1-10
-  calidad         Int           // 1-10
-  tiempo          Int           // 1-10
-  nps             Int           // 0-10
+  atencion        Int // 1-10
+  calidad         Int // 1-10
+  tiempo          Int // 1-10
+  nps             Int // 0-10
   comentario      String?       @db.Text
 
   @@index([proyectoId])
@@ -373,21 +376,21 @@ model EncuestaServicio {
 }
 
 model MaterialProyecto {
-  id                  String               @id @default(cuid())
-  proyectoId          String
-  proyecto            Project              @relation(fields: [proyectoId], references: [id], onDelete: Cascade)
-  nombre              String
-  codigo              String?
-  unidad              String               @default("unidad")
-  cantidadSolicitada  Float                @default(0)
-  cantidadDisponible  Float                @default(0)
-  cantidadEntregada   Float                @default(0)
-  estado              String               @default("material_cargado")
+  id                 String               @id @default(cuid())
+  proyectoId         String
+  proyecto           Project              @relation(fields: [proyectoId], references: [id], onDelete: Cascade)
+  nombre             String
+  codigo             String?
+  unidad             String               @default("unidad")
+  cantidadSolicitada Float                @default(0)
+  cantidadDisponible Float                @default(0)
+  cantidadEntregada  Float                @default(0)
+  estado             String               @default("material_cargado")
   // material_cargado | material_entregado | uso_confirmado | pendiente_devolucion | cerrado_ok | cerrado_con_reserva
-  createdAt           DateTime             @default(now())
-  precioVenta         Float?
-  usos                MaterialUso[]
-  devoluciones        MaterialDevolucion[]
+  createdAt          DateTime             @default(now())
+  precioVenta        Float?
+  usos               MaterialUso[]
+  devoluciones       MaterialDevolucion[]
 
   @@index([proyectoId])
   @@index([codigo])
@@ -406,7 +409,7 @@ model MaterialUso {
   id                String           @id @default(cuid())
   materialId        String
   material          MaterialProyecto @relation(fields: [materialId], references: [id], onDelete: Cascade)
-  ordenServicioId   String?          // null si es uso directo sin OS
+  ordenServicioId   String? // null si es uso directo sin OS
   cantidadUtilizada Float
   operadorNombre    String
   createdAt         DateTime         @default(now())
@@ -439,23 +442,23 @@ model Fichada {
   horaIngreso     String? // HH:mm
   horaEgreso      String? // HH:mm
   horasTrabajadas Float    @default(0)
-  
-  deviceId                String?
-  latitude                Float?
-  longitude               Float?
-  qrValidated             Boolean  @default(false)
-  validationFlags         Json?    
-  latitudeEgreso          Float?
-  longitudeEgreso         Float?
-  isSuspicious            Boolean  @default(false)
-  isOfflinePending        Boolean  @default(false)
 
-  status                  String   @default("AUTO_APPROVED")
-  score                   Int      @default(0)
-  riskLevel               String   @default("OK")
+  deviceId         String?
+  latitude         Float?
+  longitude        Float?
+  qrValidated      Boolean @default(false)
+  validationFlags  Json?
+  latitudeEgreso   Float?
+  longitudeEgreso  Float?
+  isSuspicious     Boolean @default(false)
+  isOfflinePending Boolean @default(false)
 
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
+  status    String @default("AUTO_APPROVED")
+  score     Int    @default(0)
+  riskLevel String @default("OK")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([fecha])
   @@index([projectId])
@@ -467,32 +470,32 @@ model Fichada {
 // ═══════════════════════════════════════════════════════
 
 model Tool {
-  id              String   @id  // 8-char alphanumeric unique
-  nombre          String
-  marca           String?
-  descripcion     String?  @db.Text
-  tipo            String   // MANUAL | ELECTRICA | NEUMATICA | HIDRAULICA | CARRO
-  subtipo         String?  // CORTE | MEDICION | AJUSTE | PERFORACION | SUJECION
-  rubro           String?  // ELECTRICIDAD | OBRA | TALLER | IT
+  id          String  @id // 8-char alphanumeric unique
+  nombre      String
+  marca       String?
+  descripcion String? @db.Text
+  tipo        String // MANUAL | ELECTRICA | NEUMATICA | HIDRAULICA | CARRO
+  subtipo     String? // CORTE | MEDICION | AJUSTE | PERFORACION | SUJECION
+  rubro       String? // ELECTRICIDAD | OBRA | TALLER | IT
 
   // Control / Verificación
   controlActivo         Boolean   @default(false)
-  periodoControl        Int       @default(60)  // días (30, 60, 90, 180, 365)
+  periodoControl        Int       @default(60) // días (30, 60, 90, 180, 365)
   ultimoControlFecha    DateTime?
-  ultimoControlOperador String?   // nombre snapshot
-  estadoHerramienta     String?   // APROBADA | RECHAZADA | null
+  ultimoControlOperador String? // nombre snapshot
+  estadoHerramienta     String? // APROBADA | RECHAZADA | null
 
   // Asignación a carro (self-referential)
-  carroId         String?
-  carro           Tool?    @relation("ToolEnCarro", fields: [carroId], references: [id], onDelete: SetNull)
-  herramientas    Tool[]   @relation("ToolEnCarro")
+  carroId      String?
+  carro        Tool?   @relation("ToolEnCarro", fields: [carroId], references: [id], onDelete: SetNull)
+  herramientas Tool[]  @relation("ToolEnCarro")
 
-  activo          Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  activo    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  verificaciones        ToolVerification[]
-  cartMovementsAsCarro  ToolMovement[]
+  verificaciones       ToolVerification[]
+  cartMovementsAsCarro ToolMovement[]
 
   @@index([tipo])
   @@index([carroId])
@@ -500,51 +503,51 @@ model Tool {
 }
 
 model ToolVerification {
-  id              String   @id @default(cuid())
-  toolId          String
-  tool            Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
-  operadorId      String
-  operadorNombre  String
-  estado          String   // APROBADA | RECHAZADA
-  fecha           DateTime @default(now())
+  id             String   @id @default(cuid())
+  toolId         String
+  tool           Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  operadorId     String
+  operadorNombre String
+  estado         String // APROBADA | RECHAZADA
+  fecha          DateTime @default(now())
 
   @@index([toolId])
   @@index([fecha])
 }
 
 model ToolMovement {
-  id              String   @id @default(uuid())
-  carroId         String
-  carro           Tool     @relation(fields: [carroId], references: [id], onDelete: Restrict)
-  operatorId      String
-  operator        Operator @relation(fields: [operatorId], references: [id], onDelete: Restrict)
-  projectId       String
-  project         Project  @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  id         String   @id @default(uuid())
+  carroId    String
+  carro      Tool     @relation(fields: [carroId], references: [id], onDelete: Restrict)
+  operatorId String
+  operator   Operator @relation(fields: [operatorId], references: [id], onDelete: Restrict)
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Restrict)
 
-  fechaSalida     DateTime @default(now())
+  fechaSalida     DateTime  @default(now())
   fechaDevolucion DateTime?
-  estado          String   @default("ACTIVO") // ACTIVO | COMPLETADO
+  estado          String    @default("ACTIVO") // ACTIVO | COMPLETADO
 
-  items           ToolMovementItem[]
+  items ToolMovementItem[]
 }
 
 model ToolMovementItem {
-  id              String   @id @default(uuid())
-  movementId      String
-  movement        ToolMovement @relation(fields: [movementId], references: [id], onDelete: Cascade)
+  id         String       @id @default(uuid())
+  movementId String
+  movement   ToolMovement @relation(fields: [movementId], references: [id], onDelete: Cascade)
 
-  toolId          String?  // referencia a Tool registrada (null si es adicional efímera)
-  nombre          String   // snapshot del nombre
-  cantidad        Int      @default(1)
-  isAdditional    Boolean  @default(false)
+  toolId       String? // referencia a Tool registrada (null si es adicional efímera)
+  nombre       String // snapshot del nombre
+  cantidad     Int     @default(1)
+  isAdditional Boolean @default(false)
 
   // Status at checkout (salida)
-  presentAtOut    Boolean  @default(true)
-  cantidadOut     Int      @default(0)
+  presentAtOut Boolean @default(true)
+  cantidadOut  Int     @default(0)
 
   // Status at checkin (devolucion)
-  presentAtIn     Boolean?
-  cantidadIn      Int?
+  presentAtIn Boolean?
+  cantidadIn  Int?
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -552,27 +555,27 @@ model ToolMovementItem {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 model ControlledDocument {
-  id                    String   @id @default(cuid())
-  codigoDocumental      String   @unique  // PR-TEC-001, IN-SEG-003, etc.
-  titulo                String
-  tipoDocumento         String   // Procedimiento | Instructivo | Manual técnico | Formulario | Política | Norma de seguridad | Checklist estándar | Protocolo | Especificación técnica | Certificado
-  area                  String   // Producción | Calidad | Seguridad | IT | RRHH | etc.
-  estado                String   @default("borrador") // borrador | en_revision | vigente | obsoleto
+  id               String @id @default(cuid())
+  codigoDocumental String @unique // PR-TEC-001, IN-SEG-003, etc.
+  titulo           String
+  tipoDocumento    String // Procedimiento | Instructivo | Manual técnico | Formulario | Política | Norma de seguridad | Checklist estándar | Protocolo | Especificación técnica | Certificado
+  area             String // Producción | Calidad | Seguridad | IT | RRHH | etc.
+  estado           String @default("borrador") // borrador | en_revision | vigente | obsoleto
 
   // Versión actual (snapshot para consulta rápida)
-  versionMayor          Int      @default(1)
-  versionMenor          Int      @default(0)
+  versionMayor Int @default(1)
+  versionMenor Int @default(0)
 
   // Fechas
-  fechaEmision          DateTime @default(now())
-  fechaRevision         DateTime?
-  proximaRevision       DateTime?
+  fechaEmision    DateTime  @default(now())
+  fechaRevision   DateTime?
+  proximaRevision DateTime?
 
   // Responsables
-  responsableId         String?
-  responsableNombre     String?  // Snapshot del nombre
-  aprobadorId           String?
-  aprobadorNombre       String?  // Snapshot del nombre
+  responsableId     String?
+  responsableNombre String? // Snapshot del nombre
+  aprobadorId       String?
+  aprobadorNombre   String? // Snapshot del nombre
 
   // Configuración
   requiereConfirmacionLectura Boolean @default(false)
@@ -580,26 +583,30 @@ model ControlledDocument {
   nivelCriticidad             String  @default("media") // baja | media | alta | critica
 
   // Trazabilidad
-  documentoReemplazadoId String?
-  documentoReemplazado   ControlledDocument? @relation("DocumentReplace", fields: [documentoReemplazadoId], references: [id], onDelete: SetNull)
+  documentoReemplazadoId  String?
+  documentoReemplazado    ControlledDocument?  @relation("DocumentReplace", fields: [documentoReemplazadoId], references: [id], onDelete: SetNull)
   documentosReemplazantes ControlledDocument[] @relation("DocumentReplace")
-  motivoCambio           String?  @db.Text
-  hashDocumental         String?  // SHA-256 del archivo vigente
+  motivoCambio            String?              @db.Text
+  hashDocumental          String? // SHA-256 del archivo vigente
 
   // Metadata
-  tags                  Json     @default("[]") // Array de strings
-  observaciones         String?  @db.Text
+  tags          Json    @default("[]") // Array de strings
+  observaciones String? @db.Text
 
   // Timestamps
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  createdBy             String?  // userId
-  createdByName         String?  // Snapshot
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String? // userId
+  createdByName String? // Snapshot
 
   // Relations
-  versions              DocumentVersion[]
-  readConfirmations     DocumentReadConfirmation[]
-  alerts                DocumentAlert[]
+  versions          DocumentVersion[]
+  readConfirmations DocumentReadConfirmation[]
+  alerts            DocumentAlert[]
+
+  // OS Integrations
+  applicabilityRules DocumentApplicabilityRule[]
+  osAssignments      OrdenServicioDocumento[]
 
   @@index([tipoDocumento])
   @@index([area])
@@ -609,34 +616,37 @@ model ControlledDocument {
 }
 
 model DocumentVersion {
-  id                    String   @id @default(cuid())
-  documentId            String
-  document              ControlledDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  id         String             @id @default(cuid())
+  documentId String
+  document   ControlledDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
-  versionMayor          Int
-  versionMenor          Int
-  versionLabel          String   // "1.0", "1.1", "2.0"
+  versionMayor Int
+  versionMenor Int
+  versionLabel String // "1.0", "1.1", "2.0"
 
-  estado                String   @default("borrador") // borrador | en_revision | vigente | obsoleto
+  estado String @default("borrador") // borrador | en_revision | vigente | obsoleto
 
   // Autoría y aprobación
-  autorId               String?
-  autorNombre           String?
-  aprobadorId           String?
-  aprobadorNombre       String?
-  fechaAprobacion       DateTime?
+  autorId         String?
+  autorNombre     String?
+  aprobadorId     String?
+  aprobadorNombre String?
+  fechaAprobacion DateTime?
 
   // Contenido
-  motivoCambio          String?  @db.Text
-  notas                 String?  @db.Text
-  hashDocumental        String?  // SHA-256
+  motivoCambio   String? @db.Text
+  notas          String? @db.Text
+  hashDocumental String? // SHA-256
+  checklistTemplate Json?
 
   // Timestamps
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Archivos asociados a esta versión
-  files                 DocumentFile[]
+  files                  DocumentFile[]
+  OrdenServicioDocumento OrdenServicioDocumento[]
+  OSChecklist            OSChecklist[]
 
   @@unique([documentId, versionMayor, versionMenor])
   @@index([documentId])
@@ -644,31 +654,31 @@ model DocumentVersion {
 }
 
 model DocumentFile {
-  id                    String   @id @default(cuid())
-  versionId             String
-  version               DocumentVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  id        String          @id @default(cuid())
+  versionId String
+  version   DocumentVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
 
-  nombreArchivo         String
-  tipoArchivo           String   // application/pdf, image/jpeg, video/mp4, etc.
-  tamanioBytes          Int      @default(0)
-  url                   String   @db.Text  // URL o path al archivo
-  esPrincipal           Boolean  @default(false)  // Archivo principal de la versión
-  hashArchivo           String?  // SHA-256 del archivo individual
+  nombreArchivo String
+  tipoArchivo   String // application/pdf, image/jpeg, video/mp4, etc.
+  tamanioBytes  Int     @default(0)
+  url           String  @db.Text // URL o path al archivo
+  esPrincipal   Boolean @default(false) // Archivo principal de la versión
+  hashArchivo   String? // SHA-256 del archivo individual
 
-  createdAt             DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([versionId])
 }
 
 model DocumentReadConfirmation {
-  id                    String   @id @default(cuid())
-  documentId            String
-  document              ControlledDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  id         String             @id @default(cuid())
+  documentId String
+  document   ControlledDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
-  operatorId            String
-  operatorNombre        String
-  confirmadoAt          DateTime @default(now())
-  versionAlMomento      String   // "1.0" snapshot de la versión que leyó
+  operatorId       String
+  operatorNombre   String
+  confirmadoAt     DateTime @default(now())
+  versionAlMomento String // "1.0" snapshot de la versión que leyó
 
   @@unique([documentId, operatorId])
   @@index([documentId])
@@ -676,19 +686,145 @@ model DocumentReadConfirmation {
 }
 
 model DocumentAlert {
-  id                    String   @id @default(cuid())
-  documentId            String
-  document              ControlledDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  id         String             @id @default(cuid())
+  documentId String
+  document   ControlledDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
-  tipo                  String   // PROXIMA_REVISION | VENCIDO | CRITICO_EXPIRADO | SIN_ACTUALIZAR
-  mensaje               String
-  leido                 Boolean  @default(false)
-  destinatarioId        String?  // null = all supervisors/admins
-  destinatarioNombre    String?
+  tipo               String // PROXIMA_REVISION | VENCIDO | CRITICO_EXPIRADO | SIN_ACTUALIZAR
+  mensaje            String
+  leido              Boolean @default(false)
+  destinatarioId     String? // null = all supervisors/admins
+  destinatarioNombre String?
 
-  createdAt             DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([documentId])
   @@index([tipo])
   @@index([leido])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INTEGRACIÓN QMS <-> FIELD SERVICE (ÓRDENES DE SERVICIO)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model DocumentApplicabilityRule {
+  id         String             @id @default(cuid())
+  documentId String
+  document   ControlledDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  // Criterios de aplicación (si son null, aplican a todos en ese nivel)
+  tipoActividad     String? // Match con Project.tipoActividad
+  categoriaProyecto String? // Match con Project.categoria
+  clienteId         String? // Match con Project.clientId
+  nivelRiesgo       String? // bajo | medio | alto | critico
+  tagsRequeridos    Json? // Lista de tags que el proyecto debe tener
+
+  // Comportamiento al asignar
+  bloqueanteDeInicio Boolean @default(false)
+  requiereLecturaOS  Boolean @default(true)
+  generaChecklist    Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([documentId])
+}
+
+model OrdenServicioDocumento {
+  id              String        @id @default(cuid())
+  ordenServicioId String
+  ordenServicio   OrdenServicio @relation(fields: [ordenServicioId], references: [id], onDelete: Cascade)
+
+  documentId String
+  document   ControlledDocument @relation(fields: [documentId], references: [id], onDelete: Restrict)
+  versionId  String
+  version    DocumentVersion    @relation(fields: [versionId], references: [id], onDelete: Restrict)
+
+  versionSnapshot String // "1.2"
+  requerido       Boolean @default(true)
+  bloqueante      Boolean @default(false)
+
+  // Seguimiento
+  leido           Boolean  @default(false)
+  fechaAsignacion DateTime @default(now())
+
+  acknowledgements OSDocumentAcknowledgement[]
+
+  @@unique([ordenServicioId, documentId])
+  @@index([ordenServicioId])
+  @@index([versionId])
+}
+
+model OSDocumentAcknowledgement {
+  id            String                 @id @default(cuid())
+  osDocumentoId String
+  osDocumento   OrdenServicioDocumento @relation(fields: [osDocumentoId], references: [id], onDelete: Cascade)
+
+  operatorId     String
+  operator       Operator @relation(fields: [operatorId], references: [id], onDelete: Restrict)
+  operatorNombre String
+
+  fechaConfirmacion DateTime @default(now())
+  gpsLat            Float?
+  gpsLng            Float?
+  ip                String?
+  dispositivo       String?
+
+  @@index([osDocumentoId])
+  @@index([operatorId])
+}
+
+model OSChecklist {
+  id              String        @id @default(cuid())
+  ordenServicioId String
+  ordenServicio   OrdenServicio @relation(fields: [ordenServicioId], references: [id], onDelete: Cascade)
+
+  documentVersionId String? // La versión del procedimiento que originó este checklist
+  version           DocumentVersion? @relation(fields: [documentVersionId], references: [id], onDelete: Restrict)
+
+  titulo String
+  estado String @default("pendiente") // pendiente | en_progreso | completado
+
+  items OSChecklistItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ordenServicioId])
+}
+
+model OSChecklistItem {
+  id            String      @id @default(cuid())
+  osChecklistId String
+  osChecklist   OSChecklist @relation(fields: [osChecklistId], references: [id], onDelete: Cascade)
+
+  descripcion       String
+  esObligatorio     Boolean @default(false)
+  requiereEvidencia Boolean @default(false)
+
+  // Ejecución
+  completado      Boolean   @default(false)
+  observaciones   String?   @db.Text
+  completadoPorId String?
+  fechaCompletado DateTime?
+
+  evidencias OSChecklistEvidence[]
+
+  @@index([osChecklistId])
+}
+
+model OSChecklistEvidence {
+  id                String          @id @default(cuid())
+  osChecklistItemId String
+  osChecklistItem   OSChecklistItem @relation(fields: [osChecklistItemId], references: [id], onDelete: Cascade)
+
+  tipo        String // foto | video | firma
+  urlArchivo  String  @db.Text
+  observacion String? @db.Text
+
+  gpsLat    Float?
+  gpsLng    Float?
+  createdAt DateTime @default(now())
+
+  @@index([osChecklistItemId])
 }

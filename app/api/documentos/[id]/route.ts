@@ -24,6 +24,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
                 documentoReemplazado: {
                     select: { id: true, codigoDocumental: true, titulo: true }
                 },
+                applicabilityRules: true,
                 documentosReemplazantes: {
                     select: { id: true, codigoDocumental: true, titulo: true }
                 }

@@ -14,7 +14,7 @@ export async function PUT(req: Request, { params }: { params: { id: string; vers
         const {
             estado, // borrador | en_revision | vigente | obsoleto
             aprobadorId, aprobadorNombre,
-            motivoCambio, notas,
+            motivoCambio, notas, checklistTemplate,
             userId, userName
         } = data;
 
@@ -31,6 +31,7 @@ export async function PUT(req: Request, { params }: { params: { id: string; vers
         if (aprobadorNombre !== undefined) updateData.aprobadorNombre = aprobadorNombre;
         if (motivoCambio !== undefined) updateData.motivoCambio = motivoCambio;
         if (notas !== undefined) updateData.notas = notas;
+        if (checklistTemplate !== undefined) updateData.checklistTemplate = checklistTemplate;
 
         // If setting to vigente → approve
         if (estado === 'vigente') {

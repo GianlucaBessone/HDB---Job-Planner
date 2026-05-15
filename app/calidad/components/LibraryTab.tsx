@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { safeApiRequest } from '@/lib/offline';
 import { Search, Plus, FileText, Edit2, ShieldCheck, Eye, Trash2 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
+import DocumentDetailModal from './DocumentDetailModal';
 
 export default function LibraryTab({ user }: { user: any }) {
     const [docs, setDocs] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
 
     useEffect(() => {
         loadDocs();
@@ -68,7 +70,10 @@ export default function LibraryTab({ user }: { user: any }) {
                             <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-100 dark:border-slate-700">
                                 <span className="text-xs font-bold text-slate-400">v{doc.versionActual}</span>
                                 <div className="flex gap-1">
-                                    <button className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors">
+                                    <button 
+                                        onClick={() => setSelectedDocId(doc.id)}
+                                        className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                                    >
                                         <Eye className="w-4 h-4" />
                                     </button>
                                 </div>
@@ -76,6 +81,13 @@ export default function LibraryTab({ user }: { user: any }) {
                         </div>
                     ))}
                 </div>
+            )}
+
+            {selectedDocId && (
+                <DocumentDetailModal 
+                    documentId={selectedDocId} 
+                    onClose={() => setSelectedDocId(null)} 
+                />
             )}
         </div>
     );

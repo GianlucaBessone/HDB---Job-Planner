@@ -12,6 +12,18 @@ const include = {
     materiales: true,
     operadores: { include: { operador: { select: { id: true, nombreCompleto: true } } } },
     firma: true,
+    documentosRequeridos: {
+        include: {
+            document: { select: { codigoDocumental: true, titulo: true, tipoDocumento: true, requiereConfirmacionLectura: true } },
+            version: { select: { id: true, versionLabel: true, files: { select: { url: true, tipoArchivo: true } } } },
+            acknowledgements: true
+        }
+    },
+    checklists: {
+        include: {
+            items: { include: { evidencias: true } }
+        }
+    }
 };
 
 // GET /api/ordenes-servicio/[id]  — por id interno o por token público
@@ -59,6 +71,27 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
             if (!os) throw new Error('Orden de servicio no encontrada');
             if (os.estado === 'firmada') throw new Error('Esta orden ya ha sido firmada');
+
+            // --- VALIDACIÓN QMS (Bloqueos operativos) ---
+            const osDocs = await tx.ordenServicioDocumento.findMany({
+                where: { ordenServicioId: os.id }
+            });
+            const unreadBlocking = osDocs.filter(d => d.bloqueante && !d.leido);
+            if (unreadBlocking.length > 0) {
+                throw new Error('No se puede firmar: Existen documentos críticos pendientes de lectura.');
+            }
+
+            const osChecklists = await tx.oSChecklist.findMany({
+                where: { ordenServicioId: os.id },
+                include: { items: true }
+            });
+            for (const chk of osChecklists) {
+                const missingObligatorio = chk.items.find(i => i.esObligatorio && !i.completado);
+                if (missingObligatorio) {
+                    throw new Error(`No se puede firmar: El checklist "${chk.titulo}" tiene pasos obligatorios incompletos.`);
+                }
+            }
+            // --------------------------------------------
 
             // 1. Register signature (upsert to handle orphaned records in dev environments)
             const firma = await tx.ordenServicioFirma.upsert({

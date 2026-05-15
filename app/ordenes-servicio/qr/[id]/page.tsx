@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
 import CodeBadge from '@/components/CodeBadge';
+import QMSSection from './QMSSection';
 
 interface OrdenServicio {
     id: string;
@@ -225,6 +226,11 @@ function QRView() {
                         </a>
                     </div>
                 </div>
+            )}
+
+            {/* QMS Integration Section */}
+            {!isFirmada && (
+                <QMSSection os={os} onUpdate={loadOS} />
             )}
 
             {/* OS Summary */}
