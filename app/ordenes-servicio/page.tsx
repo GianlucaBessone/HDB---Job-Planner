@@ -29,6 +29,8 @@ interface OrdenServicio {
     reporte: string;
     comentario?: string;
     fechaCreacion: string;
+    cobroGenerado?: boolean;
+    cobroFechaGeneracion?: string;
     project: {
         id: string;
         nombre: string;
@@ -456,6 +458,16 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                     >
                         <Download className="w-4 h-4" /> Bajar PDF
                     </button>
+                    {os.cobroGenerado && (
+                        <a
+                            href={`/api/ordenes-servicio/${os.id}/cobro/pdf`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3 bg-indigo-600 text-white rounded-2xl font-black text-sm hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-[0.98] text-center"
+                        >
+                            <FileText className="w-4 h-4" /> Ver Cobro
+                        </a>
+                    )}
                     {!isFirmada && (
                         <Link
                             href={`/ordenes-servicio/qr/${os.id}`}
@@ -745,6 +757,17 @@ function OrdenesServicioContent() {
 
                                     {/* Actions */}
                                     <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                                        {currentUser?.role === 'admin' && os.cobroGenerado && (
+                                            <a
+                                                href={`/api/ordenes-servicio/${os.id}/cobro/pdf`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-blue-600 border border-blue-200 bg-blue-50 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                                            >
+                                                <FileText className="w-3.5 h-3.5" /> PDF Cobro
+                                            </a>
+                                        )}
                                         {currentUser?.role === 'admin' && os.estado === 'cobrada' && (
                                             <button
                                                 onClick={(e) => {
@@ -762,7 +785,7 @@ function OrdenesServicioContent() {
                                                     onClick={(e) => { e.stopPropagation(); setOsCobroToOpen(os); }}
                                                     className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-indigo-600 border border-indigo-200 bg-indigo-50 hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
                                                 >
-                                                    <Calculator className="w-3.5 h-3.5" /> {(os as any).cobroGenerado ? 'Ver Cobro' : 'Generar Cobro'}
+                                                    <Calculator className="w-3.5 h-3.5" /> {os.cobroGenerado ? 'Ver Cobro' : 'Generar Cobro'}
                                                 </button>
                                                 <button
                                                     onClick={(e) => {
