@@ -15,7 +15,7 @@ export function ThemeToggle() {
     // Placeholder while mounting to avoid hydration mismatch
     if (!mounted) {
         return (
-            <div className="w-12 h-6 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse shrink-0" />
+            <div className="w-12 h-6 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse shrink-0 !min-h-0" />
         );
     }
 
@@ -34,6 +34,7 @@ export function ThemeToggle() {
                 relative flex items-center shrink-0 w-12 h-6 rounded-full transition-colors duration-300
                 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500
                 ${isDark ? 'bg-slate-700' : 'bg-slate-200'}
+                btn-icon-inline !min-h-0
             `}
             aria-label="Alternar modo oscuro"
             title="Alternar Tema"
