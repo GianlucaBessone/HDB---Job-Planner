@@ -160,9 +160,44 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
     const handleAcknowledge = async (docId: string) => {
         setLoadingAction(docId);
         try {
-            const operatorId = os.operadores[0]?.operadorId;
-            const operatorNombre = os.operadores[0]?.operador?.nombreCompleto;
-            if (!operatorId) return alert('No hay operador asignado para confirmar lectura');
+            const operatorId = os.operadores[0]?.operadorId || 'public_user';
+            const operatorNombre = os.operadores[0]?.operador?.nombreCompleto || 'Cliente / Usuario Público';
+
+            // 1. Get current geolocation details via browser API
+            const getCoords = (): Promise<{ lat: number | null, lng: number | null }> => {
+                return new Promise((resolve) => {
+                    if (typeof window === 'undefined' || !navigator.geolocation) {
+                        resolve({ lat: null, lng: null });
+                        return;
+                    }
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                        () => resolve({ lat: null, lng: null }),
+                        { timeout: 5000 }
+                    );
+                });
+            };
+            const coords = await getCoords();
+
+            // 2. Fetch public IP address
+            let ip = '';
+            try {
+                const ipRes = await fetch('https://api.ipify.org?format=json').then(r => r.json());
+                ip = ipRes.ip || '';
+            } catch (err) {
+                console.warn('Could not determine public IP:', err);
+            }
+
+            // 3. Detect browser/device details
+            let dispositivo = 'Desconocido';
+            if (typeof navigator !== 'undefined') {
+                const ua = navigator.userAgent;
+                if (/Mobi|Android|iPhone/i.test(ua)) {
+                    dispositivo = 'Mobile - ' + (ua.includes('Android') ? 'Android' : ua.includes('iPhone') ? 'iPhone' : 'Device');
+                } else {
+                    dispositivo = 'Desktop - ' + (ua.includes('Windows') ? 'Windows' : ua.includes('Mac') ? 'Mac' : ua.includes('Linux') ? 'Linux' : 'Device');
+                }
+            }
 
             await safeApiRequest(`/api/ordenes-servicio/${os.id}/qms`, {
                 method: 'POST',
@@ -171,7 +206,11 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                     action: 'acknowledge',
                     osDocumentoId: docId,
                     operatorId,
-                    operatorNombre
+                    operatorNombre,
+                    gpsLat: coords.lat,
+                    gpsLng: coords.lng,
+                    ip,
+                    dispositivo
                 })
             });
             onUpdate();
@@ -316,17 +355,19 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                                             <button 
                                                 onClick={() => handleAcknowledge(d.id)}
                                                 disabled={d.leido || loadingAction === d.id}
-                                                className={`text-xs font-black px-3 py-1.5 rounded-xl transition-all flex items-center gap-1 ${
+                                                className={`text-xs font-black px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 active:scale-95 duration-200 ${
                                                     d.leido 
-                                                        ? 'bg-emerald-100 text-emerald-700' 
-                                                        : 'bg-primary text-white hover:bg-primary/90'
+                                                        ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50 cursor-default' 
+                                                        : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-200 dark:shadow-none hover:shadow-none'
                                                 }`}
                                             >
                                                 {loadingAction === d.id ? (
-                                                    <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                    <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                                 ) : d.leido ? (
-                                                    <><CheckCircle2 className="w-3.5 h-3.5" /> Leído</>
-                                                ) : 'Confirmar Lectura'}
+                                                    <><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Confirmado</>
+                                                ) : (
+                                                    <><FileText className="w-3.5 h-3.5" /> Confirmar Lectura</>
+                                                )}
                                             </button>
                                         )}
                                     </div>

@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
-import { CheckCircle2, Loader2, FileText, User, Package, Clock, AlertCircle, PenLine, X, Star, MessageSquare, ThumbsUp, Smile, Download } from 'lucide-react';
+import { CheckCircle2, Loader2, FileText, User, Package, Clock, AlertCircle, AlertTriangle, PenLine, X, Star, MessageSquare, ThumbsUp, Smile, Download } from 'lucide-react';
 import CodeBadge from '@/components/CodeBadge';
 import { formatDate, formatDateTime, formatTime } from '@/lib/formatDate';
 import { useTheme } from 'next-themes';
+import QMSSection from '@/app/ordenes-servicio/qr/[id]/QMSSection';
 
 interface Firma {
     nombre: string;
@@ -29,10 +30,13 @@ interface OrdenServicio {
         fechaFin?: string;
         client?: { nombre: string };
         responsableUser?: { nombreCompleto: string };
+        documentChecklists?: any[];
     };
     materiales: { id: string; material: string; cantidad: number; unidadMedida: string }[];
-    operadores: { id: string; horas: number; isExtra?: boolean; operador: { id: string; nombreCompleto: string } }[];
+    operadores: { id: string; horas: number; isExtra?: boolean; operador: { id: string; nombreCompleto: string, idOperator?: string } }[];
     firma?: Firma;
+    documentosRequeridos?: any[];
+    checklists?: any[];
 }
 
 export interface SignatureRef {
@@ -562,6 +566,56 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
     const [showPostFirmaModal, setShowPostFirmaModal] = useState(false);
     const alreadyShownRef = useRef(false);
 
+    const checkQmsBlocks = () => {
+        if (!os) return [];
+        const unreadBlocking = (os.documentosRequeridos || []).filter(
+            (d: any) => d.bloqueante && !d.leido
+        );
+
+        const qmsErrors: string[] = [];
+
+        if (unreadBlocking.length > 0) {
+            qmsErrors.push("Existen documentos críticos de calidad y seguridad (bloqueantes) pendientes de lectura.");
+        }
+
+        const docChecklists = os.project?.documentChecklists || [];
+        for (const chk of docChecklists) {
+            const snapshot: any = chk.snapshotData;
+            const items = Array.isArray(snapshot?.items)
+                ? snapshot.items
+                : Array.isArray(snapshot)
+                ? snapshot
+                : [];
+
+            const reqEvidence = !!snapshot?.requiresEvidence;
+            const reqPhotos = !!snapshot?.requiresPhotos;
+            const reqSignature = !!snapshot?.requiresSignature;
+
+            for (const item of items) {
+                if (item.esObligatorio && !item.completado) {
+                    qmsErrors.push(`El checklist "${chk.templateName}" tiene pasos obligatorios incompletos.`);
+                    break;
+                }
+                if (item.completado) {
+                    if (reqEvidence && !item.observacion?.trim()) {
+                        qmsErrors.push(`El paso "${item.descripcion}" del checklist "${chk.templateName}" requiere evidencia descriptiva.`);
+                        break;
+                    }
+                    if (reqPhotos && !item.foto) {
+                        qmsErrors.push(`El paso "${item.descripcion}" del checklist "${chk.templateName}" requiere fotografía.`);
+                        break;
+                    }
+                    if (reqSignature && !item.firma) {
+                        qmsErrors.push(`El paso "${item.descripcion}" del checklist "${chk.templateName}" requiere firma de conformidad.`);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return qmsErrors;
+    };
+
     useEffect(() => {
         loadOS();
     }, [token]);
@@ -638,6 +692,11 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
     };
 
     const openFirmaModal = () => {
+        const errors = checkQmsBlocks();
+        if (errors.length > 0) {
+            alert('No se puede firmar la orden: Existen requisitos de calidad (QMS) pendientes por el operador.');
+            return;
+        }
         setFirmaNombre('');
         setFirmaDni('');
         setFirmaError('');
@@ -663,6 +722,8 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                 .badge { padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
                 .badge.firmada { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
                 .badge.pendiente { background: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }
+                .badge.cobrada { background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
+                .badge.pagada { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
                 h2 { font-size: 18px; font-weight: 900; color: #0f172a; margin: 0 0 4px; }
                 h3 { font-size: 13px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 12px; padding-bottom: 6px; border-bottom: 1px solid #e2e8f0; }
                 .section { margin-bottom: 22px; page-break-inside: avoid; }
@@ -693,7 +754,12 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                     <p style="font-size:12px;color:#64748b;margin:4px 0 0;">${os.project.codigoProyecto ? os.project.codigoProyecto + ' | ' : ''}${os.project.nombre}</p>
                 </div>
                 <div>
-                    <div class="badge ${isFirmada ? 'firmada' : 'pendiente'}">${isFirmada ? '✓ Firmada' : 'Pendiente de firma'}</div>
+                    <div class="badge ${os.estado}">${
+                        os.estado === 'firmada' ? '✓ Firmada' :
+                        os.estado === 'cobrada' ? 'OC Emitida' :
+                        os.estado === 'pagada' ? '✓ Pagada' :
+                        os.estado === 'pendiente' ? 'Pendiente de firma' : 'Cancelada'
+                    }</div>
                     <p style="font-size:11px;color:#94a3b8;margin-top:8px;text-align:right;">Emitida: ${formatDate(os.fechaCreacion)}</p>
                 </div>
             </div>
@@ -809,8 +875,17 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                         <h1 className="text-lg font-black text-slate-800 dark:text-slate-100 leading-tight">Orden de Servicio</h1>
                     </div>
                     <div className="ml-auto shrink-0 flex items-center gap-2">
-                        <span className={`whitespace-nowrap px-2 py-1.5 md:px-3 rounded-full text-[10px] md:text-xs font-black uppercase tracking-wider ${isFirmada ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-700 border border-amber-200'}`}>
-                            {isFirmada ? '✓ Firmada' : 'Pendiente'}
+                        <span className={`whitespace-nowrap px-2 py-1.5 md:px-3 rounded-full text-[10px] md:text-xs font-black uppercase tracking-wider ${
+                            os.estado === 'firmada' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 
+                            os.estado === 'pendiente' ? 'bg-amber-100 text-amber-700 border border-amber-200' :
+                            os.estado === 'cobrada' ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' :
+                            os.estado === 'pagada' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
+                            'bg-slate-100 text-slate-700 border border-slate-200'
+                        }`}>
+                            {os.estado === 'firmada' ? '✓ Firmada' :
+                             os.estado === 'cobrada' ? 'OC Emitida' :
+                             os.estado === 'pagada' ? '✓ Pagada' :
+                             os.estado === 'pendiente' ? 'Pendiente' : 'Cancelada'}
                         </span>
                         <button
                             onClick={handlePrint}
@@ -949,6 +1024,11 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                     </div>
                 )}
 
+                {/* QMS Integration Section */}
+                {!isFirmada && (
+                    <QMSSection os={os} onUpdate={loadOS} />
+                )}
+
                 {/* Firma del cliente */}
                 {isFirmada && os.firma ? (
                     <div className="bg-emerald-50 rounded-3xl border border-emerald-200 shadow-sm overflow-hidden">
@@ -981,21 +1061,55 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                     </div>
                 ) : (
                     !isFirmada && (
-                        <div className="bg-white dark:bg-slate-800 rounded-3xl border border-amber-200 shadow-sm p-6 text-center space-y-4">
-                            <div className="w-14 h-14 bg-amber-50 rounded-full flex items-center justify-center mx-auto">
-                                <PenLine className="w-7 h-7 text-amber-500" />
-                            </div>
-                            <div>
-                                <h3 className="font-black text-slate-800 dark:text-slate-100 text-lg">Pendiente de firma</h3>
-                                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Firmá esta orden de servicio para confirmar la aceptación del trabajo realizado.</p>
-                            </div>
-                            <button
-                                onClick={openFirmaModal}
-                                className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-base shadow-lg shadow-blue-200 active:scale-95 transition-all hover:bg-blue-700"
-                            >
-                                Firmar Orden de Servicio
-                            </button>
-                        </div>
+                        (() => {
+                            const errors = checkQmsBlocks();
+                            const hasBlocks = errors.length > 0;
+                            return (
+                                <div className={`rounded-3xl border shadow-sm p-6 text-center space-y-4 ${
+                                    hasBlocks 
+                                        ? 'bg-slate-50 dark:bg-slate-850 border-slate-200 dark:border-slate-700' 
+                                        : 'bg-white dark:bg-slate-800 border-amber-200'
+                                }`}>
+                                    <div className="w-14 h-14 bg-amber-50 dark:bg-amber-950/20 rounded-full flex items-center justify-center mx-auto">
+                                        <PenLine className="w-7 h-7 text-amber-500" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-black text-slate-800 dark:text-slate-100 text-lg">Pendiente de firma</h3>
+                                        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Firmá esta orden de servicio para confirmar la aceptación del trabajo realizado.</p>
+                                    </div>
+
+                                    {/* QMS Blocks warning alert box */}
+                                    {hasBlocks && (
+                                        <div className="bg-amber-50 dark:bg-amber-950/25 border border-amber-200 dark:border-amber-900 rounded-2xl p-4 text-left space-y-2.5">
+                                            <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300">
+                                                <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+                                                <p className="text-xs font-black uppercase tracking-widest">Firma Bloqueada por Calidad</p>
+                                            </div>
+                                            <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">
+                                                Existen requisitos obligatorios del Sistema de Gestión de Calidad (QMS / ISO 9001) pendientes de completar por los operadores:
+                                            </p>
+                                            <ul className="list-disc pl-4 text-xs font-medium text-amber-800 dark:text-amber-300 space-y-1.5">
+                                                {errors.map((err, idx) => (
+                                                    <li key={idx}>{err}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    <button
+                                        onClick={openFirmaModal}
+                                        disabled={hasBlocks}
+                                        className={`w-full py-4 rounded-2xl font-black text-base transition-all ${
+                                            hasBlocks
+                                                ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
+                                                : 'bg-blue-600 text-white shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95'
+                                        }`}
+                                    >
+                                        {hasBlocks ? 'Firma Bloqueada por Calidad' : 'Firmar Orden de Servicio'}
+                                    </button>
+                                </div>
+                            );
+                        })()
                     )
                 )}
             </div>

@@ -107,6 +107,8 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                 .badge { padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
                 .badge.firmada { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
                 .badge.pendiente { background: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }
+                .badge.cobrada { background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
+                .badge.pagada { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
                 h2 { font-size: 18px; font-weight: 900; color: #0f172a; margin: 0 0 4px; }
                 h3 { font-size: 13px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 12px; padding-bottom: 6px; border-bottom: 1px solid #e2e8f0; }
                 .section { margin-bottom: 22px; page-break-inside: avoid; }
@@ -132,7 +134,12 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                     <p style="font-size:12px;color:#64748b;margin:4px 0 0;">${(os as any).project.codigoProyecto ? (os as any).project.codigoProyecto + ' | ' : ''}${os.project.nombre}</p>
                 </div>
                 <div>
-                    <div class="badge ${isFirmada ? 'firmada' : 'pendiente'}">${isFirmada ? '✓ Firmada' : 'Pendiente de firma'}</div>
+                    <div class="badge ${os.estado}">${
+                        os.estado === 'firmada' ? '✓ Firmada' :
+                        os.estado === 'cobrada' ? 'OC Emitida' :
+                        os.estado === 'pagada' ? '✓ Pagada' :
+                        os.estado === 'pendiente' ? 'Pendiente de firma' : 'Cancelada'
+                    }</div>
                     <p style="font-size:11px;color:#94a3b8;margin-top:8px;text-align:right;">Emitida: ${formatDate(os.fechaCreacion)}</p>
                 </div>
             </div>
@@ -215,8 +222,17 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                 <div className="p-5 md:p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
                     <div className="space-y-1">
                         <div className="flex items-center gap-2 mb-1">
-                            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${isFirmada ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                                {isFirmada ? '✓ Firmada' : 'Pendiente de firma'}
+                            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${
+                                os.estado === 'firmada' ? 'bg-emerald-100 text-emerald-700' :
+                                os.estado === 'pendiente' ? 'bg-amber-100 text-amber-700' :
+                                os.estado === 'cobrada' ? 'bg-indigo-100 text-indigo-700' :
+                                os.estado === 'pagada' ? 'bg-blue-100 text-blue-700' :
+                                'bg-slate-100 text-slate-700'
+                            }`}>
+                                {os.estado === 'firmada' ? '✓ Firmada' :
+                                 os.estado === 'cobrada' ? 'OC Emitida' :
+                                 os.estado === 'pagada' ? '✓ Pagada' :
+                                 os.estado === 'pendiente' ? 'Pendiente de firma' : 'Cancelada'}
                             </span>
                         </div>
                         <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2 flex-wrap">
@@ -720,10 +736,11 @@ function OrdenesServicioContent() {
                                         os.estado === 'pagada' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
                                         'bg-slate-100 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700'
                                     }`}>
-                                        {(os.estado === 'firmada' || os.estado === 'cobrada' || os.estado === 'pagada') ? '✓ Firmada' : 
-                                         os.estado === 'pendiente' ? 'Pendiente' : 
+                                        {os.estado === 'firmada' ? '✓ Firmada' : 
                                          os.estado === 'cobrada' ? 'OC Emitida' :
-                                         os.estado === 'pagada' ? 'Pagada' : 'Cancelada'}
+                                         os.estado === 'pagada' ? '✓ Pagada' : 
+                                         os.estado === 'pendiente' ? 'Pendiente' : 
+                                         os.estado === 'cancelada' ? 'Cancelada' : 'Cancelada'}
                                     </span>
 
                                     {/* Actions */}

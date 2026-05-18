@@ -888,11 +888,16 @@ export default function MyProjectsPage() {
                                                     Orden de Servicio
                                                 </span>
                                             </div>
-                                            <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${(projectOS.estado === 'firmada' || projectOS.estado === 'cobrada' || projectOS.estado === 'pagada')
-                                                    ? 'bg-emerald-100 text-emerald-700'
-                                                    : 'bg-amber-100 text-amber-700'
-                                                }`}>
-                                                {(projectOS.estado === 'firmada' || projectOS.estado === 'cobrada' || projectOS.estado === 'pagada') ? '✓ Firmada' : 'Pendiente de firma'}
+                                            <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${
+                                                projectOS.estado === 'firmada' ? 'bg-emerald-100 text-emerald-700' :
+                                                projectOS.estado === 'cobrada' ? 'bg-indigo-100 text-indigo-700' :
+                                                projectOS.estado === 'pagada' ? 'bg-blue-100 text-blue-700' :
+                                                'bg-amber-100 text-amber-700'
+                                            }`}>
+                                                {projectOS.estado === 'firmada' ? '✓ Firmada' :
+                                                 projectOS.estado === 'cobrada' ? 'OC Emitida' :
+                                                 projectOS.estado === 'pagada' ? '✓ Pagada' :
+                                                 'Pendiente de firma'}
                                             </span>
                                         </div>
                                         {/* Action buttons */}

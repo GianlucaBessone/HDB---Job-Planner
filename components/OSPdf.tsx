@@ -14,6 +14,8 @@ const S = StyleSheet.create({
     badge: { paddingVertical: 5, paddingHorizontal: 12, borderRadius: 20, fontSize: 9, fontFamily: 'Helvetica-Bold', letterSpacing: 0.8 },
     badgeFirmada: { backgroundColor: '#d1fae5', color: '#065f46' },
     badgePendiente: { backgroundColor: '#fef3c7', color: '#92400e' },
+    badgeCobrada: { backgroundColor: '#e0e7ff', color: '#3730a3' },
+    badgePagada: { backgroundColor: '#dbeafe', color: '#1e40af' },
     headRight: { alignItems: 'flex-end', gap: 6 },
     headDate: { fontSize: 9, color: '#94a3b8' },
 
@@ -73,7 +75,7 @@ export interface OSPdfProps {
 
 // ── Component ──────────────────────────────────────────────────────────────────
 export function OSPdf({ os, logoUrl }: OSPdfProps) {
-    const isFirmada = os.estado === 'firmada';
+    const isFirmada = os.estado === 'firmada' || os.estado === 'cobrada' || os.estado === 'pagada';
     const clienteName = os.project.client?.nombre || os.project.cliente || 'No especificado';
     const osCode = os.codigoOS || `#${os.id.slice(-8).toUpperCase()}`;
     const prCode = os.project.codigoProyecto;
@@ -94,8 +96,19 @@ export function OSPdf({ os, logoUrl }: OSPdfProps) {
                         </Text>
                     </View>
                     <View style={S.headRight}>
-                        <View style={[S.badge, isFirmada ? S.badgeFirmada : S.badgePendiente]}>
-                            <Text>{isFirmada ? '✓ Firmada' : 'Pendiente de firma'}</Text>
+                        <View style={[S.badge, 
+                            os.estado === 'firmada' ? S.badgeFirmada : 
+                            os.estado === 'pendiente' ? S.badgePendiente : 
+                            os.estado === 'cobrada' ? S.badgeCobrada : 
+                            os.estado === 'pagada' ? S.badgePagada : 
+                            S.badgePendiente
+                        ]}>
+                            <Text>{
+                                os.estado === 'firmada' ? '✓ Firmada' :
+                                os.estado === 'cobrada' ? 'OC Emitida' :
+                                os.estado === 'pagada' ? '✓ Pagada' :
+                                os.estado === 'pendiente' ? 'Pendiente de firma' : 'Cancelada'
+                            }</Text>
                         </View>
                         <Text style={S.headDate}>Emitida: {fmtDate(os.fechaCreacion)}</Text>
                     </View>
