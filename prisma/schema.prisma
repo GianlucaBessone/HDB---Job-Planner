@@ -8,37 +8,37 @@ datasource db {
 }
 
 model Project {
-  id                      String             @id @default(cuid())
-  codigoProyecto          String?            @unique
+  id                      String              @id @default(cuid())
+  codigoProyecto          String?             @unique
   nombre                  String
-  activo                  Boolean            @default(true)
-  noEnMetricas            Boolean            @default(false)
+  activo                  Boolean             @default(true)
+  noEnMetricas            Boolean             @default(false)
   categoria               String?
   tipoActividad           String?
   observaciones           String?
-  horasEstimadas          Int                @default(0)
-  horasConsumidas         Int                @default(0)
+  horasEstimadas          Int                 @default(0)
+  horasConsumidas         Int                 @default(0)
   cliente                 String? // Keeping this for legacy text
   clientId                String?
-  client                  HdbClient?         @relation(fields: [clientId], references: [id])
+  client                  HdbClient?          @relation(fields: [clientId], references: [id])
   responsable             String? // Legacy name field
   responsableId           String?
-  responsableUser         Operator?          @relation("ProjectResponsable", fields: [responsableId], references: [id])
-  tags                    Json               @default("[]") // Technical tags: "Montaje", "Tendido", etc.
-  estado                  String             @default("activo") // por_hacer | planificado | activo | en_riesgo | atrasado | finalizado
+  responsableUser         Operator?           @relation("ProjectResponsable", fields: [responsableId], references: [id])
+  tags                    Json                @default("[]") // Technical tags: "Montaje", "Tendido", etc.
+  estado                  String              @default("activo") // por_hacer | planificado | activo | en_riesgo | atrasado | finalizado
   fechaInicio             String?
   fechaFin                String?
-  finalizadoConPendientes Boolean            @default(false)
-  publicToken             String?            @unique
+  finalizadoConPendientes Boolean             @default(false)
+  publicToken             String?             @unique
   pendientesSnapshot      Json? // Snapshot of incomplete items if forced finish
-  createdAt               DateTime           @default(now())
-  updatedAt               DateTime           @default(now()) @updatedAt
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @default(now()) @updatedAt
   clientDelays            ClientDelay[]
   timeEntries             TimeEntry[]
   checklistItems          ChecklistItem[]
   logs                    ProjectLog[]
-  generarOS               Boolean            @default(false)
-  aprovisionamiento       Boolean            @default(false)
+  generarOS               Boolean             @default(false)
+  aprovisionamiento       Boolean             @default(false)
   ordenesServicio         OrdenServicio[]
   encuestas               EncuestaServicio[]
   materialesProyecto      MaterialProyecto[]
@@ -48,9 +48,10 @@ model Project {
   geofenceLng             Float?
   geofenceRadius          Float? // radius in meters
   qrToken                 String? // current token signature for QR validation
-  fichajeHabilitado       Boolean            @default(false)
+  fichajeHabilitado       Boolean             @default(false)
   qrHistory               QrTokenHistory[]
   toolMovements           ToolMovement[]
+  documentChecklists      DocumentChecklist[]
 
   @@index([qrToken])
 }
@@ -215,13 +216,14 @@ model Notification {
 }
 
 model ProjectTag {
-  id             String             @id @default(cuid())
-  name           String             @unique
-  active         Boolean            @default(true)
-  impactsMetrics Boolean            @default(false)
+  id             String                 @id @default(cuid())
+  name           String                 @unique
+  active         Boolean                @default(true)
+  impactsMetrics Boolean                @default(false)
   checklists     TagChecklistItem[]
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
+  templates      TagChecklistTemplate[]
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
 }
 
 model TagChecklistItem {
@@ -566,6 +568,9 @@ model ControlledDocument {
   versionMayor Int @default(1)
   versionMenor Int @default(0)
 
+  // Descripción larga
+  descripcion String? @db.Text
+
   // Fechas
   fechaEmision    DateTime  @default(now())
   fechaRevision   DateTime?
@@ -574,6 +579,8 @@ model ControlledDocument {
   // Responsables
   responsableId     String?
   responsableNombre String? // Snapshot del nombre
+  revisadorId       String?
+  revisadorNombre   String?
   aprobadorId       String?
   aprobadorNombre   String? // Snapshot del nombre
 
@@ -592,6 +599,7 @@ model ControlledDocument {
   // Metadata
   tags          Json    @default("[]") // Array de strings
   observaciones String? @db.Text
+  workflowState Json?   // Workflow de firmas y acuerdos
 
   // Timestamps
   createdAt     DateTime @default(now())
@@ -600,9 +608,10 @@ model ControlledDocument {
   createdByName String? // Snapshot
 
   // Relations
-  versions          DocumentVersion[]
-  readConfirmations DocumentReadConfirmation[]
-  alerts            DocumentAlert[]
+  versions           DocumentVersion[]
+  readConfirmations  DocumentReadConfirmation[]
+  alerts             DocumentAlert[]
+  documentChecklists DocumentChecklist[]
 
   // OS Integrations
   applicabilityRules DocumentApplicabilityRule[]
@@ -634,9 +643,9 @@ model DocumentVersion {
   fechaAprobacion DateTime?
 
   // Contenido
-  motivoCambio   String? @db.Text
-  notas          String? @db.Text
-  hashDocumental String? // SHA-256
+  motivoCambio      String? @db.Text
+  notas             String? @db.Text
+  hashDocumental    String? // SHA-256
   checklistTemplate Json?
 
   // Timestamps
@@ -827,4 +836,63 @@ model OSChecklistEvidence {
   createdAt DateTime @default(now())
 
   @@index([osChecklistItemId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NEW QMS CHECKLIST ARCHITECTURE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model ChecklistTemplate {
+  id                String   @id @default(cuid())
+  code              String?  @unique
+  name              String
+  description       String?  @db.Text
+  version           Int      @default(1)
+  status            String   @default("active") // active | inactive
+  checklistItems    Json     @default("[]") // JSON structure
+  requiresEvidence  Boolean  @default(false)
+  requiresPhotos    Boolean  @default(false)
+  requiresSignature Boolean  @default(false)
+  riskLevel         String   @default("low") // low | medium | high | critical
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tags TagChecklistTemplate[]
+}
+
+model TagChecklistTemplate {
+  id                  String            @id @default(cuid())
+  tagId               String
+  tag                 ProjectTag        @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  checklistTemplateId String
+  checklistTemplate   ChecklistTemplate @relation(fields: [checklistTemplateId], references: [id], onDelete: Cascade)
+  createdAt           DateTime          @default(now())
+
+  @@unique([tagId, checklistTemplateId])
+  @@index([tagId])
+  @@index([checklistTemplateId])
+}
+
+model DocumentChecklist {
+  id         String              @id @default(cuid())
+  projectId  String?
+  project    Project?            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  documentId String?
+  document   ControlledDocument? @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  templateId      String
+  templateVersion Int
+  templateName    String
+  snapshotData    Json // full JSON snapshot of checklistItems
+  editable        Boolean @default(false)
+  mandatory       Boolean @default(true)
+  order           Int     @default(0)
+  status          String  @default("pending") // pending | completed
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+  @@index([documentId])
+  @@index([templateId])
 }

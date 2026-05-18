@@ -3,10 +3,12 @@ import { prisma } from '@/lib/prisma';
 
 const include = {
     project: {
-        select: {
-            id: true, nombre: true, codigoProyecto: true, cliente: true, fechaInicio: true, fechaFin: true,
+        include: {
             client: { select: { nombre: true } },
             responsableUser: { select: { nombreCompleto: true } },
+            documentChecklists: {
+                orderBy: { order: 'asc' as const }
+            }
         }
     },
     materiales: true,
@@ -81,14 +83,33 @@ export async function POST(req: Request, { params }: { params: { id: string } })
                 throw new Error('No se puede firmar: Existen documentos críticos pendientes de lectura.');
             }
 
-            const osChecklists = await tx.oSChecklist.findMany({
-                where: { ordenServicioId: os.id },
-                include: { items: true }
+            // --- VALIDACIÓN DE DOCUMENTCHECKLIST SNAPSHOTS (QMS) ---
+            const docChecklists = await tx.documentChecklist.findMany({
+                where: { projectId: os.projectId }
             });
-            for (const chk of osChecklists) {
-                const missingObligatorio = chk.items.find(i => i.esObligatorio && !i.completado);
-                if (missingObligatorio) {
-                    throw new Error(`No se puede firmar: El checklist "${chk.titulo}" tiene pasos obligatorios incompletos.`);
+            for (const chk of docChecklists) {
+                const snapshot: any = chk.snapshotData;
+                const items = Array.isArray(snapshot?.items) ? snapshot.items : (Array.isArray(snapshot) ? snapshot : []);
+                
+                const reqEvidence = !!snapshot?.requiresEvidence;
+                const reqPhotos = !!snapshot?.requiresPhotos;
+                const reqSignature = !!snapshot?.requiresSignature;
+
+                for (const item of items) {
+                    if (item.esObligatorio && !item.completado) {
+                        throw new Error(`No se puede firmar: El checklist "${chk.templateName}" tiene pasos obligatorios incompletos.`);
+                    }
+                    if (item.completado) {
+                        if (reqEvidence && !item.observacion?.trim()) {
+                            throw new Error(`No se puede firmar: El paso "${item.descripcion}" del checklist "${chk.templateName}" requiere evidencia descriptiva.`);
+                        }
+                        if (reqPhotos && !item.foto) {
+                            throw new Error(`No se puede firmar: El paso "${item.descripcion}" del checklist "${chk.templateName}" requiere fotografía.`);
+                        }
+                        if (reqSignature && !item.firma) {
+                            throw new Error(`No se puede firmar: El paso "${item.descripcion}" del checklist "${chk.templateName}" requiere firma de conformidad.`);
+                        }
+                    }
                 }
             }
             // --------------------------------------------

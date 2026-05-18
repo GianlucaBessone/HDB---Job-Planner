@@ -62,6 +62,59 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         const body = await req.json();
         const { action } = body;
 
+        if (action === 'document_checklist_item') {
+            const { documentChecklistId, itemIndex, completado, observacion, foto, firma, operatorId, operatorNombre } = body;
+
+            const docChecklist = await prisma.documentChecklist.findUnique({
+                where: { id: documentChecklistId }
+            });
+            if (!docChecklist) {
+                return NextResponse.json({ error: 'Checklist no encontrado' }, { status: 404 });
+            }
+
+            const snapshot: any = docChecklist.snapshotData;
+            let items: any[] = [];
+            let hasObjectWrapper = false;
+            
+            if (snapshot && typeof snapshot === 'object' && !Array.isArray(snapshot)) {
+                items = Array.isArray(snapshot.items) ? [...snapshot.items] : [];
+                hasObjectWrapper = true;
+            } else if (Array.isArray(snapshot)) {
+                items = [...snapshot];
+            }
+
+            if (itemIndex >= 0 && itemIndex < items.length) {
+                items[itemIndex] = {
+                    ...items[itemIndex],
+                    completado: !!completado,
+                    observacion: observacion || null,
+                    foto: foto || null,
+                    firma: firma || null,
+                    completadoPorId: operatorId || null,
+                    completadoPorNombre: operatorNombre || null,
+                    fechaCompletado: completado ? new Date().toISOString() : null
+                };
+
+                const updatedData = hasObjectWrapper 
+                    ? { ...snapshot, items } 
+                    : items;
+
+                const allMandatoryDone = items.every((i: any) => !i.esObligatorio || i.completado);
+
+                const updated = await prisma.documentChecklist.update({
+                    where: { id: documentChecklistId },
+                    data: {
+                        snapshotData: updatedData as any,
+                        status: allMandatoryDone ? 'completed' : 'pending'
+                    }
+                });
+
+                return NextResponse.json({ success: true, documentChecklist: updated });
+            }
+
+            return NextResponse.json({ error: 'Índice de ítem fuera de rango' }, { status: 400 });
+        }
+
         if (action === 'checklist_item') {
             const { itemId, completado, observaciones, operatorId } = body;
 

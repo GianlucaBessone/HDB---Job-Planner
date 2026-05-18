@@ -9,10 +9,11 @@ import { safeApiRequest } from '@/lib/offline';
 
 import DashboardTab from './components/DashboardTab';
 import LibraryTab from './components/LibraryTab';
+import TemplatesTab from './components/TemplatesTab';
 import ExpirationsTab from './components/ExpirationsTab';
 import HistoryTab from './components/HistoryTab';
 
-type TabId = 'dashboard' | 'library' | 'expirations' | 'history';
+type TabId = 'dashboard' | 'library' | 'templates' | 'expirations' | 'history';
 
 export default function CalidadPageWrapper() {
     return (
@@ -42,6 +43,7 @@ function CalidadPage() {
     const tabs: { id: TabId; label: string; icon: React.ReactNode; roles: string[] }[] = [
         { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" />, roles: ['supervisor', 'admin'] },
         { id: 'library', label: 'Biblioteca Documental', icon: <BookOpen className="w-4 h-4" />, roles: ['operador', 'supervisor', 'admin'] },
+        { id: 'templates', label: 'Plantillas de Checklist', icon: <FileCheck className="w-4 h-4" />, roles: ['supervisor', 'admin'] },
         { id: 'expirations', label: 'Vencimientos', icon: <AlertTriangle className="w-4 h-4" />, roles: ['supervisor', 'admin'] },
         { id: 'history', label: 'Historial', icon: <History className="w-4 h-4" />, roles: ['supervisor', 'admin'] },
     ];
@@ -94,6 +96,7 @@ function CalidadPage() {
             <div className="animate-in fade-in duration-300">
                 {activeTab === 'dashboard' && <DashboardTab user={currentUser} />}
                 {activeTab === 'library' && <LibraryTab user={currentUser} />}
+                {activeTab === 'templates' && <TemplatesTab user={currentUser} />}
                 {activeTab === 'expirations' && <ExpirationsTab user={currentUser} />}
                 {activeTab === 'history' && <HistoryTab user={currentUser} />}
             </div>

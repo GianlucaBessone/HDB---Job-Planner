@@ -42,10 +42,10 @@ export function ThemeToggle() {
             
             {/* Background Icons */}
             <span className="absolute inset-y-0 left-0 flex items-center justify-center w-6 text-slate-400">
-                <Moon className="w-3 h-3" />
+                <Sun className="w-3 h-3" />
             </span>
             <span className="absolute inset-y-0 right-0 flex items-center justify-center w-6 text-slate-400/70">
-                <Sun className="w-3 h-3" />
+                <Moon className="w-3 h-3" />
             </span>
 
             {/* Moving Thumb */}

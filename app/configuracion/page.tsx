@@ -368,66 +368,110 @@ function TagsSection() {
 }
 
 // ----- CHECKLIST SECTION -----
+// ----- CHECKLIST SECTION -----
 function ChecklistSection() {
     const [tags, setTags] = useState<any[]>([]);
+    const [templates, setTemplates] = useState<any[]>([]);
     const [selectedTag, setSelectedTag] = useState<string>('');
+    const [selectedTemplateToAdd, setSelectedTemplateToAdd] = useState<string>('');
     const [loading, setLoading] = useState(true);
-    const [editingId, setEditingId] = useState<string | null>(null);
-    const [form, setForm] = useState({ description: '', active: true, order: 0 });
 
     // Confirm dialog
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-    const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+    const [templateToUnlink, setTemplateToUnlink] = useState<string | null>(null);
 
-    useEffect(() => { loadTags(); }, []);
+    useEffect(() => {
+        Promise.all([loadTags(), loadTemplates()]).finally(() => setLoading(false));
+    }, []);
 
-    const loadTags = () => {
-        setLoading(true);
-        safeApiRequest('/api/config/tags')
-            .then(res => res.json())
-            .then(data => { setTags(Array.isArray(data) ? data : []); setLoading(false); })
-            .catch(() => setLoading(false));
+    const loadTags = async () => {
+        try {
+            const res = await safeApiRequest('/api/config/tags');
+            if (res.ok) setTags(await res.json());
+        } catch (e) {
+            console.error(e);
+        }
     };
 
-    const handleSave = async (id?: string) => {
-        if (!form.description.trim() || !selectedTag) return;
-        const method = id ? 'PUT' : 'POST';
-        const body = id ? { id, tagId: selectedTag, ...form } : { tagId: selectedTag, ...form };
-
-        await safeApiRequest('/api/config/checklists', {
-            method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-        setEditingId(null);
-        setForm({ description: '', active: true, order: 0 });
-        loadTags();
+    const loadTemplates = async () => {
+        try {
+            const res = await safeApiRequest('/api/checklist-templates?status=active');
+            if (res.ok) setTemplates(await res.json());
+        } catch (e) {
+            console.error(e);
+        }
     };
 
-    const handleDelete = async (id: string) => {
-        setItemToDelete(id);
+    const handleLinkTemplate = async () => {
+        if (!selectedTag || !selectedTemplateToAdd) return;
+        try {
+            const res = await safeApiRequest('/api/config/checklists', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tagId: selectedTag,
+                    checklistTemplateId: selectedTemplateToAdd
+                })
+            });
+            if (res.ok) {
+                showToast('Plantilla vinculada con éxito', 'success');
+                setSelectedTemplateToAdd('');
+                loadTags();
+            } else {
+                showToast('Error al vincular plantilla', 'error');
+            }
+        } catch (e) {
+            console.error(e);
+            showToast('Error al vincular plantilla', 'error');
+        }
+    };
+
+    const handleUnlink = (templateId: string) => {
+        setTemplateToUnlink(templateId);
         setIsConfirmOpen(true);
     };
 
-    const confirmDelete = async () => {
-        if (!itemToDelete) return;
-        await safeApiRequest(`/api/config/checklists?id=${itemToDelete}`, { method: 'DELETE' });
-        setIsConfirmOpen(false);
-        setItemToDelete(null);
-        loadTags();
+    const confirmUnlink = async () => {
+        if (!selectedTag || !templateToUnlink) return;
+        try {
+            const res = await safeApiRequest(`/api/config/checklists?tagId=${selectedTag}&checklistTemplateId=${templateToUnlink}`, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                showToast('Plantilla desvinculada con éxito', 'success');
+                loadTags();
+            } else {
+                showToast('Error al desvincular plantilla', 'error');
+            }
+        } catch (e) {
+            console.error(e);
+            showToast('Error al desvincular plantilla', 'error');
+        } finally {
+            setIsConfirmOpen(false);
+            setTemplateToUnlink(null);
+        }
     };
 
     const currentTag = tags.find(t => t.id === selectedTag);
-    const checklists = currentTag?.checklists || [];
-    // Sort checklists by order, then by creation
-    checklists.sort((a: any, b: any) => a.order - b.order);
+    // Linked templates are represented in templates relation:
+    const linkedTemplates = currentTag?.templates || [];
+
+    // Filter out templates that are already linked
+    const unlinkedTemplates = templates.filter(t => 
+        !linkedTemplates.some((lt: any) => lt.checklistTemplateId === t.id)
+    );
 
     if (loading) return <div>Cargando...</div>;
 
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Checklist por Etiqueta</h3>
+                <div>
+                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Checklists por Etiqueta</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        Vincula plantillas de checklist normalizadas a etiquetas de actividad. Los proyectos con estas etiquetas heredarán estos checklists de forma automática.
+                    </p>
+                </div>
                 <select
                     className="px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-primary/20"
                     value={selectedTag}
@@ -439,92 +483,79 @@ function ChecklistSection() {
             </div>
 
             {selectedTag && (
-                <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
-                    <button
-                        onClick={() => { setEditingId('new'); setForm({ description: '', active: true, order: checklists.length }); }}
-                        className="flex items-center gap-2 bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors w-full justify-center mb-6"
-                    >
-                        <Plus className="w-4 h-4" /> Agregar Ítem de Checklist
-                    </button>
-
-                    {editingId === 'new' && (
-                        <div className="flex flex-col gap-4 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-primary/20">
-                            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                                <input
-                                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
-                                    type="number" placeholder="Orden"
-                                    value={form.order} onChange={e => setForm({ ...form, order: Number(e.target.value) })}
-                                />
-                                <input
-                                    className="w-full sm:col-span-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
-                                    placeholder="Descripción del ítem"
-                                    value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
-                                />
-                                <div className="flex items-center px-1">
-                                    <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 font-bold cursor-pointer">
-                                        <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} className="w-4 h-4 rounded text-primary focus:ring-primary" />
-                                        Activo
-                                    </label>
-                                </div>
-                            </div>
-                            <div className="flex items-center justify-end gap-3 border-t border-slate-100 dark:border-slate-800 pt-3">
-                                <button onClick={() => handleSave()} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors"><Save className="w-4 h-4" /> Guardar</button>
-                                <button onClick={() => setEditingId(null)} className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors"><X className="w-4 h-4" /> Cancelar</button>
-                            </div>
+                <div className="space-y-4 pt-6 border-t border-slate-100 dark:border-slate-800">
+                    <div className="bg-slate-50 dark:bg-slate-900/30 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/80 flex flex-col sm:flex-row items-end gap-3">
+                        <div className="flex-1 w-full">
+                            <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">Vincular Nueva Plantilla</label>
+                            <select
+                                className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-primary/20"
+                                value={selectedTemplateToAdd}
+                                onChange={e => setSelectedTemplateToAdd(e.target.value)}
+                            >
+                                <option value="">-- Seleccionar plantilla para vincular --</option>
+                                {unlinkedTemplates.map(t => (
+                                    <option key={t.id} value={t.id}>
+                                        {t.code ? `[${t.code}] ` : ''}{t.name} (v{t.version})
+                                    </option>
+                                ))}
+                            </select>
                         </div>
-                    )}
+                        <button
+                            onClick={handleLinkTemplate}
+                            disabled={!selectedTemplateToAdd}
+                            className="bg-primary hover:bg-primary/95 disabled:opacity-40 text-white font-black text-sm px-6 py-3 rounded-xl transition-all shadow-sm shadow-primary/20 flex items-center gap-1.5 shrink-0"
+                        >
+                            <Plus className="w-4 h-4" /> Vincular Plantilla
+                        </button>
+                    </div>
 
-                    {checklists.map((item: any) => (
-                        editingId === item.id ? (
-                            <div key={item.id} className="flex flex-col gap-4 bg-white dark:bg-slate-800 p-4 rounded-xl border border-primary/20 shadow-lg mb-2">
-                                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                                    <input
-                                        className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
-                                        type="number"
-                                        value={form.order} onChange={e => setForm({ ...form, order: Number(e.target.value) })}
-                                    />
-                                    <input
-                                        className="w-full sm:col-span-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
-                                        value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
-                                    />
-                                    <div className="flex items-center px-1">
-                                        <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 font-bold cursor-pointer">
-                                            <input type="checkbox" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })} className="w-4 h-4 rounded text-primary focus:ring-primary" />
-                                            Activo
-                                        </label>
+                    <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest pt-2">Plantillas de Checklist Vinculadas</h4>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {linkedTemplates.map((lt: any) => {
+                            const t = lt.checklistTemplate;
+                            if (!t) return null;
+                            const itemsCount = Array.isArray(t.checklistItems) ? t.checklistItems.length : 0;
+                            return (
+                                <div key={lt.id} className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 flex justify-between items-start hover:shadow-sm transition-shadow">
+                                    <div className="space-y-1.5">
+                                        <div className="flex gap-2 items-center">
+                                            <span className="text-[9px] font-black font-mono bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded text-slate-500 dark:text-slate-300">
+                                                {t.code || 'SIN CÓDIGO'}
+                                            </span>
+                                            <span className="text-[9px] font-black bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded">
+                                                v{t.version}
+                                            </span>
+                                        </div>
+                                        <h4 className="font-black text-slate-800 dark:text-slate-100 text-sm">{t.name}</h4>
+                                        <p className="text-xs text-slate-400 font-bold">{itemsCount} pasos • Riesgo: {t.riskLevel.toUpperCase()}</p>
                                     </div>
-                                </div>
-                                <div className="flex items-center justify-end gap-3 border-t border-slate-50 pt-3">
-                                    <button onClick={() => handleSave(item.id)} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors"><Save className="w-4 h-4" /> Guardar</button>
-                                    <button onClick={() => setEditingId(null)} className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors"><X className="w-4 h-4" /> Cancelar</button>
-                                </div>
-                            </div>
-                        ) : (
-                            <div key={item.id} className="flex items-center justify-between bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 p-4 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all shadow-sm">
-                                <div className="flex items-center gap-4 flex-1 overflow-hidden">
-                                    <span className="w-8 h-8 flex items-center justify-center bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 font-black text-xs rounded-lg shrink-0">{item.order}</span>
-                                    <span className={`font-bold text-sm truncate ${item.active ? 'text-slate-800 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 line-through'}`}>{item.description}</span>
-                                    {!item.active && <span className="px-2 py-0.5 bg-rose-100 text-rose-600 text-[10px] uppercase font-black tracking-widest rounded-md shrink-0">Inactivo</span>}
-                                </div>
-                                <div className="flex items-center gap-1 ml-4 shrink-0">
-                                    <button onClick={() => { setEditingId(item.id); setForm({ description: item.description, active: item.active, order: item.order }); }} className="btn-icon-inline text-slate-400 dark:text-slate-500 hover:text-primary p-2 transition-colors"><Edit2 className="w-4 h-4" /></button>
-                                    <button onClick={() => handleDelete(item.id)} className="btn-icon-inline text-slate-400 dark:text-slate-500 hover:text-rose-500 p-2 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                                </div>
-                            </div>
-                        )
-                    ))}
 
-                    {checklists.length === 0 && editingId !== 'new' && (
-                        <div className="py-8 text-center text-slate-400 dark:text-slate-500 text-sm font-bold">No hay ítems configurados en esta etiqueta.</div>
-                    )}
+                                    <button
+                                        onClick={() => handleUnlink(t.id)}
+                                        className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-xl transition-colors"
+                                        title="Desvincular plantilla"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            );
+                        })}
+
+                        {linkedTemplates.length === 0 && (
+                            <div className="col-span-full py-12 text-center text-slate-400 dark:text-slate-500 text-sm font-bold">
+                                No hay plantillas de checklist vinculadas a esta etiqueta.
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
 
             <ConfirmDialog
                 isOpen={isConfirmOpen}
-                title="¿Eliminar ítem del checklist?"
-                message="Este punto ya no aparecerá en los nuevos proyectos que utilicen esta etiqueta."
-                onConfirm={confirmDelete}
+                title="¿Desvincular plantilla?"
+                message="Esta plantilla ya no se agregará automáticamente a los proyectos que utilicen esta etiqueta. Los proyectos y snapshots existentes no se verán afectados."
+                onConfirm={confirmUnlink}
                 onCancel={() => setIsConfirmOpen(false)}
             />
         </div>

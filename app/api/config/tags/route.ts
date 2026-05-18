@@ -1,17 +1,22 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 export async function GET() {
     try {
         const tags = await prisma.projectTag.findMany({
             orderBy: { name: 'asc' },
-            include: { checklists: true }
+            include: { 
+                checklists: true,
+                templates: {
+                    include: {
+                        checklistTemplate: true
+                    }
+                }
+            }
         });
         return NextResponse.json(tags);
-    } catch (error) {
-        return NextResponse.json({ error: 'Failed to fetch tags' }, { status: 500 });
+    } catch (error: any) {
+        return NextResponse.json({ error: 'Failed to fetch tags', details: error.message || String(error) }, { status: 500 });
     }
 }
 

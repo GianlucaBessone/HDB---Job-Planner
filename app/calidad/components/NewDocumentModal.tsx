@@ -1,25 +1,110 @@
 'use client';
 
-import { useState } from 'react';
-import { X, FileText, Loader2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { X, FileText, Loader2, FileSignature, Check } from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
 
 export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose: () => void, onSuccess: (newDocId: string) => void, user: any }) {
     const [loading, setLoading] = useState(false);
+    const [operators, setOperators] = useState<any[]>([]);
+    const [tagsList, setTagsList] = useState<any[]>([]);
     const [formData, setFormData] = useState({
         codigoDocumental: '',
         titulo: '',
+        descripcion: '',
         tipoDocumento: 'Procedimiento',
-        area: '',
+        area: 'Operaciones',
         nivelCriticidad: 'medio',
         requiereConfirmacionLectura: true,
         requiereCapacitacion: false,
+        revisadorId: '',
+        aprobadorId: '',
+        tags: [] as string[]
     });
+
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [isDrawing, setIsDrawing] = useState(false);
+
+    const getCoordinates = (e: any) => {
+        const canvas = canvasRef.current;
+        if (!canvas) return { x: 0, y: 0 };
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+            x: clientX - rect.left,
+            y: clientY - rect.top
+        };
+    };
+
+    const startDrawing = (e: any) => {
+        const coords = getCoordinates(e);
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        
+        ctx.beginPath();
+        ctx.moveTo(coords.x, coords.y);
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = '#0f172a';
+        setIsDrawing(true);
+    };
+
+    const draw = (e: any) => {
+        if (!isDrawing) return;
+        const coords = getCoordinates(e);
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        
+        ctx.lineTo(coords.x, coords.y);
+        ctx.stroke();
+    };
+
+    const stopDrawing = () => {
+        setIsDrawing(false);
+    };
+
+    const clearCanvas = () => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    };
+
+    useEffect(() => {
+        Promise.all([
+            safeApiRequest('/api/operators').then(res => res.json()),
+            safeApiRequest('/api/config/tags').then(res => res.json())
+        ]).then(([opsData, tagsData]) => {
+            if (Array.isArray(opsData)) setOperators(opsData);
+            if (Array.isArray(tagsData)) setTagsList(tagsData);
+        }).catch(console.error);
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const signatureData = canvas.toDataURL('image/png');
+        
+        // Basic check for empty signature
+        const isBlank = !isDrawing && canvas.toDataURL() === document.createElement('canvas').toDataURL();
+        if (isBlank) {
+            alert('Debe firmar el documento para crearlo (Firma Digital del Creador)');
+            return;
+        }
+
         setLoading(true);
         try {
+            const revisador = operators.find(o => o.id === formData.revisadorId);
+            const aprobador = operators.find(o => o.id === formData.aprobadorId);
+
             const res = await safeApiRequest('/api/documentos', {
                 method: 'POST',
                 body: JSON.stringify({
@@ -28,6 +113,9 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                     autorNombre: user?.nombreCompleto || user?.nombre,
                     userId: user?.id,
                     userName: user?.nombreCompleto || user?.nombre,
+                    revisadorNombre: revisador?.nombreCompleto || revisador?.nombre,
+                    aprobadorNombre: aprobador?.nombreCompleto || aprobador?.nombre,
+                    creatorSignature: signatureData
                 })
             });
             if (res.ok) {
@@ -60,7 +148,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Código</label>
@@ -95,14 +183,57 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                         />
                     </div>
 
+                    <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Descripción Larga</label>
+                        <textarea
+                            placeholder="Descripción detallada del propósito del documento..."
+                            value={formData.descripcion} onChange={e => setFormData({ ...formData, descripcion: e.target.value })}
+                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-medium focus:border-indigo-500 outline-none h-20 resize-none"
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Revisado Por</label>
+                            <select
+                                value={formData.revisadorId} onChange={e => setFormData({ ...formData, revisadorId: e.target.value })}
+                                className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-indigo-500 outline-none"
+                            >
+                                <option value="">(Sin asignar)</option>
+                                {operators.map(op => (
+                                    <option key={op.id} value={op.id}>{op.nombreCompleto || op.nombre}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Aprobado Por</label>
+                            <select
+                                value={formData.aprobadorId} onChange={e => setFormData({ ...formData, aprobadorId: e.target.value })}
+                                className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-indigo-500 outline-none"
+                            >
+                                <option value="">(Sin asignar)</option>
+                                {operators.map(op => (
+                                    <option key={op.id} value={op.id}>{op.nombreCompleto || op.nombre}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Área / Sector</label>
-                            <input
-                                required type="text" placeholder="Ej. Operaciones"
+                            <select
                                 value={formData.area} onChange={e => setFormData({ ...formData, area: e.target.value })}
                                 className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-indigo-500 outline-none"
-                            />
+                            >
+                                <option>Operaciones</option>
+                                <option>Ventas</option>
+                                <option>Administración</option>
+                                <option>Gerencia</option>
+                                <option>Calidad</option>
+                                <option>Seguridad e Higiene</option>
+                                <option>Mantenimiento</option>
+                            </select>
                         </div>
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Criticidad</label>
@@ -115,6 +246,29 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                 <option value="alto">Alto</option>
                                 <option value="critico">Crítico</option>
                             </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Etiquetas (Tipo de Actividad)</label>
+                        <div className="flex flex-wrap gap-2 p-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl min-h-[44px]">
+                            {tagsList.map(tag => (
+                                <label key={tag.id} className={`cursor-pointer px-3 py-1 text-xs font-bold rounded-lg border transition-colors ${formData.tags.includes(tag.name) ? 'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'}`}>
+                                    <input
+                                        type="checkbox"
+                                        className="hidden"
+                                        checked={formData.tags.includes(tag.name)}
+                                        onChange={(e) => {
+                                            if (e.target.checked) {
+                                                setFormData({ ...formData, tags: [...formData.tags, tag.name] });
+                                            } else {
+                                                setFormData({ ...formData, tags: formData.tags.filter(t => t !== tag.name) });
+                                            }
+                                        }}
+                                    />
+                                    {tag.name}
+                                </label>
+                            ))}
                         </div>
                     </div>
 
@@ -133,7 +287,39 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                         </label>
                     </div>
 
-                    <div className="pt-4 flex justify-end gap-3">
+                    {/* Firma digital del creador */}
+                    <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
+                        <label className="block text-xs font-bold text-slate-500 uppercase mb-2 flex items-center gap-1.5">
+                            <FileSignature className="w-3.5 h-3.5 text-indigo-500" /> Firma Digital del Creador <span className="text-red-500">*</span>
+                        </label>
+                        <div className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-900/50">
+                            <canvas
+                                ref={canvasRef}
+                                width={416}
+                                height={150}
+                                onMouseDown={startDrawing}
+                                onMouseMove={draw}
+                                onMouseUp={stopDrawing}
+                                onMouseLeave={stopDrawing}
+                                onTouchStart={startDrawing}
+                                onTouchMove={draw}
+                                onTouchEnd={stopDrawing}
+                                className="w-full bg-white dark:bg-slate-950 cursor-crosshair touch-none h-[150px]"
+                            />
+                            <div className="px-4 py-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900">
+                                <span className="text-[10px] font-bold text-slate-400">Dibuje su firma arriba con el mouse o dedo</span>
+                                <button
+                                    type="button"
+                                    onClick={clearCanvas}
+                                    className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-950/20"
+                                >
+                                    Limpiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="pt-4 flex justify-end gap-3 border-t border-slate-100 dark:border-slate-700">
                         <button type="button" onClick={onClose} className="px-5 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
                             Cancelar
                         </button>

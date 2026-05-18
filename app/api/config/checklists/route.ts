@@ -1,52 +1,70 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 
-const prisma = new PrismaClient();
-
+// POST /api/config/checklists - Vincular una plantilla de checklist a una etiqueta
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const item = await prisma.tagChecklistItem.create({
-            data: {
-                tagId: body.tagId,
-                description: body.description,
-                active: body.active !== undefined ? body.active : true,
-                order: body.order || 0,
+        const { tagId, checklistTemplateId } = body;
+
+        if (!tagId || !checklistTemplateId) {
+            return NextResponse.json({ error: 'tagId y checklistTemplateId son requeridos' }, { status: 400 });
+        }
+
+        // Evitar duplicados
+        const existing = await prisma.tagChecklistTemplate.findUnique({
+            where: {
+                tagId_checklistTemplateId: {
+                    tagId,
+                    checklistTemplateId
+                }
             }
         });
-        return NextResponse.json(item);
-    } catch (error) {
-        return NextResponse.json({ error: 'Failed to create checklist item' }, { status: 500 });
+
+        if (existing) {
+            return NextResponse.json(existing);
+        }
+
+        const link = await prisma.tagChecklistTemplate.create({
+            data: {
+                tagId,
+                checklistTemplateId
+            },
+            include: {
+                checklistTemplate: true
+            }
+        });
+
+        return NextResponse.json(link);
+    } catch (error: any) {
+        console.error('Error linking template to tag:', error);
+        return NextResponse.json({ error: 'Error al vincular plantilla a etiqueta', details: error.message }, { status: 500 });
     }
 }
 
-export async function PUT(req: Request) {
-    try {
-        const body = await req.json();
-        const item = await prisma.tagChecklistItem.update({
-            where: { id: body.id },
-            data: {
-                description: body.description,
-                active: body.active,
-                order: body.order,
-            }
-        });
-        return NextResponse.json(item);
-    } catch (error) {
-        console.error(error);
-        return NextResponse.json({ error: 'Failed to update checklist item' }, { status: 500 });
-    }
-}
-
+// DELETE /api/config/checklists - Desvincular plantilla de una etiqueta
 export async function DELETE(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
+        const tagId = searchParams.get('tagId');
+        const checklistTemplateId = searchParams.get('checklistTemplateId');
         const id = searchParams.get('id');
-        if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
 
-        await prisma.tagChecklistItem.delete({ where: { id } });
-        return NextResponse.json({ success: true });
-    } catch (error) {
-        return NextResponse.json({ error: 'Failed to delete checklist item' }, { status: 500 });
+        if (tagId && checklistTemplateId) {
+            await prisma.tagChecklistTemplate.deleteMany({
+                where: { tagId, checklistTemplateId }
+            });
+            return NextResponse.json({ success: true });
+        } else if (id) {
+            await prisma.tagChecklistTemplate.delete({
+                where: { id }
+            });
+            return NextResponse.json({ success: true });
+        }
+
+        return NextResponse.json({ error: 'tagId y checklistTemplateId, o id son requeridos' }, { status: 400 });
+    } catch (error: any) {
+        console.error('Error unlinking template from tag:', error);
+        return NextResponse.json({ error: 'Error al desvincular plantilla', details: error.message }, { status: 500 });
     }
 }

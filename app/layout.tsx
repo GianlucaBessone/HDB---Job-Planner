@@ -6,7 +6,7 @@ import "./globals.css";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Script from "next/script";
-import { Calendar, LayoutGrid, Users, ClipboardList, Menu, X, Landmark, LayoutDashboard, Timer, Clock, LogOut, Home, Settings, FileSignature, Package, PackageSearch, MapPin, ShieldAlert, ShieldCheck, History, Wrench, FileCheck } from "lucide-react";
+import { Calendar, LayoutGrid, Users, ClipboardList, Menu, X, Landmark, LayoutDashboard, Timer, Clock, LogOut, Home, Settings, FileSignature, Package, PackageSearch, MapPin, ShieldAlert, ShieldCheck, History, Wrench, FileCheck, ChevronDown, ChevronRight } from "lucide-react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import ToastContainer from "@/components/Toast";
@@ -215,36 +215,83 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
             .catch(() => {});
     }, []);
 
-    const menuItems = [
-        { href: '/', icon: <Home className="w-5 h-5" />, label: 'Inicio', roles: ['operador', 'supervisor', 'admin', 'vendedor'] },
-        { href: '/fichado', icon: <MapPin className="w-5 h-5" />, label: 'Fichado (GPS/QR)', roles: ['operador', 'supervisor'] },
-        { href: '/my-projects', icon: <ClipboardList className="w-5 h-5" />, label: 'Mis Proyectos (Resp.)', roles: ['operador', 'supervisor', 'admin'] },
-        { href: '/timesheets', icon: <Clock className="w-5 h-5" />, label: 'Registro de Tiempos', roles: ['operador', 'supervisor', 'admin'] },
-        { href: '/delays', icon: <Timer className="w-5 h-5" />, label: 'Demoras del Cliente', roles: ['operador', 'supervisor', 'admin'] },
-        
-        { href: '/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, label: 'Panel de Análisis', roles: ['supervisor', 'admin'] },
-        { href: '/planning', icon: <Calendar className="w-5 h-5" />, label: 'Planificación', roles: ['supervisor', 'admin'] },
-        { href: '/projects', icon: <LayoutGrid className="w-5 h-5" />, label: 'Gestión de Proyectos', roles: ['supervisor', 'admin'] },
-        { href: '/ordenes-servicio', icon: <FileSignature className="w-5 h-5" />, label: 'Órdenes de Servicio', roles: ['supervisor', 'admin'] },
-        { href: '/inventario', icon: <PackageSearch className="w-5 h-5" />, label: 'Inventario de Materiales', roles: ['admin', 'vendedor'] },
-        { href: '/provision-materiales', icon: <Package className="w-5 h-5" />, label: 'Provisión de Materiales', roles: ['vendedor', 'supervisor', 'admin'] },
-        { href: '/operators', icon: <Users className="w-5 h-5" />, label: 'Gestión de Usuarios / Operadores', roles: ['operador', 'supervisor', 'admin'] },
-        { href: '/clients', icon: <Landmark className="w-5 h-5" />, label: 'Gestión de Clientes', roles: ['supervisor', 'admin'] },
-        
-        { href: '/aprobaciones', icon: <ShieldCheck className="w-5 h-5" />, label: 'Aprobaciones', roles: ['supervisor', 'admin'] },
-        { href: '/monitoreo-fichadas', icon: <ShieldAlert className="w-5 h-5" />, label: 'Monitoreo de Fichadas', roles: ['supervisor', 'admin'] },
-        { href: '/auditoria', icon: <History className="w-5 h-5" />, label: 'Auditoría', roles: ['admin', 'supervisor'] },
-        { href: '/calidad', icon: <FileCheck className="w-5 h-5" />, label: 'Calidad y Documentación', roles: ['admin', 'supervisor'] },
-        { href: '/herramientas', icon: <Wrench className="w-5 h-5" />, label: 'Herramientas y Carros', roles: ['operador', 'supervisor', 'admin'] },
-        { href: '/configuracion', icon: <Settings className="w-5 h-5" />, label: 'Configuración', roles: ['admin', 'supervisor'] },
+    const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
+        "Principal": true,
+        "Operaciones": false,
+        "Gestión y Seguimiento": false,
+        "Logística y Materiales": false,
+        "Calidad": false,
+        "Administración": false
+    });
+
+    const toggleGroup = (title: string) => {
+        setExpandedGroups(prev => ({ ...prev, [title]: !prev[title] }));
+    };
+
+    const menuGroups = [
+        {
+            title: "Principal",
+            icon: <Home className="w-5 h-5" />,
+            items: [
+                { href: '/', icon: <Home className="w-4 h-4" />, label: 'Inicio', roles: ['operador', 'supervisor', 'admin', 'vendedor'] },
+                { href: '/dashboard', icon: <LayoutDashboard className="w-4 h-4" />, label: 'Panel de Análisis', roles: ['supervisor', 'admin'] },
+            ]
+        },
+        {
+            title: "Operaciones",
+            icon: <Wrench className="w-5 h-5" />,
+            items: [
+                { href: '/fichado', icon: <MapPin className="w-4 h-4" />, label: 'Fichado (GPS/QR)', roles: ['operador', 'supervisor'] },
+                { href: '/timesheets', icon: <Clock className="w-4 h-4" />, label: 'Registro de Tiempos', roles: ['operador', 'supervisor', 'admin'] },
+                { href: '/my-projects', icon: <ClipboardList className="w-4 h-4" />, label: 'Mis Proyectos (Resp.)', roles: ['operador', 'supervisor', 'admin'] },
+                { href: '/delays', icon: <Timer className="w-4 h-4" />, label: 'Demoras del Cliente', roles: ['operador', 'supervisor', 'admin'] },
+                { href: '/herramientas', icon: <Wrench className="w-4 h-4" />, label: 'Herramientas y Carros', roles: ['operador', 'supervisor', 'admin'] },
+            ]
+        },
+        {
+            title: "Gestión y Seguimiento",
+            icon: <LayoutGrid className="w-5 h-5" />,
+            items: [
+                { href: '/planning', icon: <Calendar className="w-4 h-4" />, label: 'Planificación', roles: ['supervisor', 'admin'] },
+                { href: '/projects', icon: <LayoutGrid className="w-4 h-4" />, label: 'Gestión de Proyectos', roles: ['supervisor', 'admin'] },
+                { href: '/ordenes-servicio', icon: <FileSignature className="w-4 h-4" />, label: 'Órdenes de Servicio', roles: ['supervisor', 'admin'] },
+                { href: '/monitoreo-fichadas', icon: <ShieldAlert className="w-4 h-4" />, label: 'Monitoreo de Fichadas', roles: ['supervisor', 'admin'] },
+                { href: '/aprobaciones', icon: <ShieldCheck className="w-4 h-4" />, label: 'Aprobaciones', roles: ['supervisor', 'admin'] },
+            ]
+        },
+        {
+            title: "Logística y Materiales",
+            icon: <Package className="w-5 h-5" />,
+            items: [
+                { href: '/inventario', icon: <PackageSearch className="w-4 h-4" />, label: 'Inventario de Materiales', roles: ['admin', 'vendedor'] },
+                { href: '/provision-materiales', icon: <Package className="w-4 h-4" />, label: 'Provisión de Materiales', roles: ['vendedor', 'supervisor', 'admin'] },
+            ]
+        },
+        {
+            title: "Calidad",
+            icon: <FileCheck className="w-5 h-5" />,
+            items: [
+                { href: '/calidad', icon: <FileCheck className="w-4 h-4" />, label: 'Calidad y Documentación', roles: ['admin', 'supervisor'] },
+                { href: '/auditoria', icon: <History className="w-4 h-4" />, label: 'Auditoría', roles: ['admin', 'supervisor'] },
+            ]
+        },
+        {
+            title: "Administración",
+            icon: <Settings className="w-5 h-5" />,
+            items: [
+                { href: '/operators', icon: <Users className="w-4 h-4" />, label: 'Gestión de Operadores', roles: ['operador', 'supervisor', 'admin'] },
+                { href: '/clients', icon: <Landmark className="w-4 h-4" />, label: 'Gestión de Clientes', roles: ['supervisor', 'admin'] },
+                { href: '/configuracion', icon: <Settings className="w-4 h-4" />, label: 'Configuración', roles: ['admin', 'supervisor'] },
+            ]
+        }
     ];
 
     const role = user?.role?.toLowerCase() || 'operador';
-    const allowedMenu = menuItems.filter(item => {
-        // Apply dynamic view config if available
-        // isViewAllowed handles fallbacks using DEFAULT_VIEWS if no dynamic config exists
-        return isViewAllowed(item.href, role, 'sidebar', viewConfig);
-    });
+    
+    const allowedGroups = menuGroups.map(group => {
+        const allowedItems = group.items.filter(item => isViewAllowed(item.href, role, 'sidebar', viewConfig));
+        return { ...group, items: allowedItems };
+    }).filter(group => group.items.length > 0);
 
     return (
         <>
@@ -268,22 +315,49 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
                     </button>
                 </div>
 
-                <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-                    {allowedMenu.map(item => {
-                        const isActive = pathname === item.href;
+                <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+                    {allowedGroups.map(group => {
+                        const isExpanded = expandedGroups[group.title];
+                        const hasActiveChild = group.items.some(item => pathname === item.href);
+                        
                         return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                onClick={onClose}
-                                className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all duration-200 ${isActive
-                                    ? 'bg-primary text-white shadow-lg shadow-primary/20 active:scale-95'
-                                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80 hover:text-primary'
-                                    }`}
-                            >
-                                {item.icon}
-                                {item.label}
-                            </Link>
+                            <div key={group.title} className="space-y-1">
+                                <button
+                                    onClick={() => toggleGroup(group.title)}
+                                    className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all duration-200 ${hasActiveChild && !isExpanded
+                                        ? 'bg-primary/10 text-primary dark:bg-primary/20'
+                                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80 hover:text-primary'
+                                        }`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        {group.icon}
+                                        {group.title}
+                                    </div>
+                                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                                </button>
+                                
+                                {isExpanded && (
+                                    <div className="pl-4 pr-2 space-y-1 mt-1 animate-in slide-in-from-top-2 duration-200">
+                                        {group.items.map(item => {
+                                            const isActive = pathname === item.href;
+                                            return (
+                                                <Link
+                                                    key={item.href}
+                                                    href={item.href}
+                                                    onClick={onClose}
+                                                    className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${isActive
+                                                        ? 'bg-primary text-white shadow-md shadow-primary/20'
+                                                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200'
+                                                        }`}
+                                                >
+                                                    {item.icon}
+                                                    {item.label}
+                                                </Link>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
                         );
                     })}
                 </nav>

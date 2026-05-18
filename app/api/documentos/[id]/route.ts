@@ -62,14 +62,16 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         const data = await req.json();
         const {
             titulo, tipoDocumento, area, estado,
-            responsableId, responsableNombre, aprobadorId, aprobadorNombre,
+            responsableId, responsableNombre, 
+            revisadorId, revisadorNombre,
+            aprobadorId, aprobadorNombre,
             requiereConfirmacionLectura, requiereCapacitacion, nivelCriticidad,
             documentoReemplazadoId, motivoCambio,
             tags, observaciones, proximaRevision,
             userId, userName
         } = data;
 
-        const oldDoc = await prisma.controlledDocument.findUnique({ where: { id: params.id } });
+        const oldDoc = await prisma.controlledDocument.findUnique({ where: { id: params.id } }) as any;
         if (!oldDoc) {
             return NextResponse.json({ error: 'Documento no encontrado' }, { status: 404 });
         }
@@ -81,6 +83,8 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         if (estado !== undefined) updateData.estado = estado;
         if (responsableId !== undefined) updateData.responsableId = responsableId || null;
         if (responsableNombre !== undefined) updateData.responsableNombre = responsableNombre || null;
+        if (revisadorId !== undefined) updateData.revisadorId = revisadorId || null;
+        if (revisadorNombre !== undefined) updateData.revisadorNombre = revisadorNombre || null;
         if (aprobadorId !== undefined) updateData.aprobadorId = aprobadorId || null;
         if (aprobadorNombre !== undefined) updateData.aprobadorNombre = aprobadorNombre || null;
         if (requiereConfirmacionLectura !== undefined) updateData.requiereConfirmacionLectura = requiereConfirmacionLectura;
@@ -91,6 +95,33 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         if (tags !== undefined) updateData.tags = tags;
         if (observaciones !== undefined) updateData.observaciones = observaciones;
         if (proximaRevision !== undefined) updateData.proximaRevision = proximaRevision ? new Date(proximaRevision) : null;
+
+        // If the document is modified (e.g. while in borrador or en_revision), reset signoffs to pending
+        if (oldDoc.estado === 'borrador' || oldDoc.estado === 'en_revision') {
+            let workflow: any = oldDoc.workflowState || {};
+            if (workflow && typeof workflow === 'object') {
+                workflow.revisadorStatus = (revisadorId || oldDoc.revisadorId) ? 'pending' : 'none';
+                workflow.revisadorComment = null;
+                workflow.revisadorSignature = null;
+                workflow.revisadorSignatureDate = null;
+                
+                workflow.aprobadorStatus = (aprobadorId || oldDoc.aprobadorId) ? 'pending' : 'none';
+                workflow.aprobadorComment = null;
+                workflow.aprobadorSignature = null;
+                workflow.aprobadorSignatureDate = null;
+
+                if (!workflow.history) workflow.history = [];
+                workflow.history.push({
+                    user: userName || 'Creador',
+                    action: 'modified',
+                    date: new Date().toISOString(),
+                    comment: motivoCambio || 'Modificaciones aplicadas'
+                });
+
+                updateData.workflowState = workflow;
+                updateData.estado = 'en_revision'; // Re-submit for review!
+            }
+        }
 
         const doc = await prisma.controlledDocument.update({
             where: { id: params.id },

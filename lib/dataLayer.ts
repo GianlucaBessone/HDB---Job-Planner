@@ -85,7 +85,14 @@ export const dataLayer = {
             // Get DB-defined templates
             const tagTemplates = await prisma.projectTag.findMany({
                 where: { name: { in: data.tags } },
-                include: { checklists: { where: { active: true } } }
+                include: {
+                    checklists: { where: { active: true } },
+                    templates: {
+                        include: {
+                            checklistTemplate: true
+                        }
+                    }
+                }
             });
 
             for (const tagName of data.tags) {
@@ -104,6 +111,35 @@ export const dataLayer = {
                             completed: false
                         }
                     });
+                }
+
+                // NEW: Create DocumentChecklist snapshots from ChecklistTemplates
+                if (dbTag?.templates) {
+                    let order = 0;
+                    for (const link of dbTag.templates) {
+                        const tmpl = link.checklistTemplate;
+                        if (tmpl.status !== 'active') continue;
+
+                        await prisma.documentChecklist.create({
+                            data: {
+                                projectId: project.id,
+                                templateId: tmpl.id,
+                                templateVersion: tmpl.version,
+                                templateName: tmpl.name,
+                                snapshotData: {
+                                    requiresEvidence: tmpl.requiresEvidence,
+                                    requiresPhotos: tmpl.requiresPhotos,
+                                    requiresSignature: tmpl.requiresSignature,
+                                    riskLevel: tmpl.riskLevel,
+                                    items: tmpl.checklistItems
+                                } as any,
+                                editable: false,
+                                mandatory: true,
+                                order: order++,
+                                status: 'pending'
+                            }
+                        });
+                    }
                 }
             }
         }
@@ -185,7 +221,14 @@ export const dataLayer = {
 
                 const tagTemplates = await prisma.projectTag.findMany({
                     where: { name: { in: tagsToAdd } },
-                    include: { checklists: { where: { active: true } } }
+                    include: {
+                        checklists: { where: { active: true } },
+                        templates: {
+                            include: {
+                                checklistTemplate: true
+                            }
+                        }
+                    }
                 });
 
                 for (const tagName of tagsToAdd) {
@@ -207,11 +250,46 @@ export const dataLayer = {
                             });
                         }
                     }
+
+                    // NEW: Create DocumentChecklist snapshots from ChecklistTemplates
+                    if (dbTag?.templates) {
+                        const count = await prisma.documentChecklist.count({ where: { projectId: id } });
+                        let order = count;
+                        for (const link of dbTag.templates) {
+                            const tmpl = link.checklistTemplate;
+                            if (tmpl.status !== 'active') continue;
+
+                            const alreadySnapshot = await prisma.documentChecklist.findFirst({
+                                where: { projectId: id, templateId: tmpl.id }
+                            });
+
+                            if (!alreadySnapshot) {
+                                await prisma.documentChecklist.create({
+                                    data: {
+                                        projectId: id,
+                                        templateId: tmpl.id,
+                                        templateVersion: tmpl.version,
+                                        templateName: tmpl.name,
+                                        snapshotData: {
+                                            requiresEvidence: tmpl.requiresEvidence,
+                                            requiresPhotos: tmpl.requiresPhotos,
+                                            requiresSignature: tmpl.requiresSignature,
+                                            riskLevel: tmpl.riskLevel,
+                                            items: tmpl.checklistItems
+                                        } as any,
+                                        editable: false,
+                                        mandatory: true,
+                                        order: order++,
+                                        status: 'pending'
+                                    }
+                                });
+                            }
+                        }
+                    }
                 }
             }
 
-            // Remove removed items (only those that are NOT completed to preserve history if desired?)
-            // Usually, if a tag is removed, its items should disappear from the list.
+            // Remove removed items
             if (tagsToRemove.length > 0) {
                 await prisma.checklistItem.deleteMany({
                     where: {
@@ -219,6 +297,25 @@ export const dataLayer = {
                         tag: { in: tagsToRemove }
                     }
                 });
+
+                // Also remove DocumentChecklist snapshots of templates linked to removed tags if still pending
+                const tagsWithTemplates = await prisma.projectTag.findMany({
+                    where: { name: { in: tagsToRemove } },
+                    include: {
+                        templates: true
+                    }
+                });
+
+                const templateIdsToRemove = tagsWithTemplates.flatMap(t => t.templates.map(l => l.checklistTemplateId));
+                if (templateIdsToRemove.length > 0) {
+                    await prisma.documentChecklist.deleteMany({
+                        where: {
+                            projectId: id,
+                            templateId: { in: templateIdsToRemove },
+                            status: 'pending'
+                        }
+                    });
+                }
             }
 
             // Re-evaluate pending items if project is finalized and flagged

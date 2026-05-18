@@ -89,10 +89,11 @@ export async function POST(req: Request) {
         const {
             codigoDocumental, titulo, tipoDocumento, area,
             responsableId, responsableNombre, aprobadorId, aprobadorNombre,
+            revisadorId, revisadorNombre, descripcion,
             requiereConfirmacionLectura, requiereCapacitacion, nivelCriticidad,
             documentoReemplazadoId, motivoCambio,
             tags, observaciones, proximaRevision,
-            userId, userName
+            userId, userName, creatorSignature
         } = data;
 
         if (!codigoDocumental?.trim() || !titulo?.trim()) {
@@ -110,17 +111,44 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Ya existe un documento con ese código documental' }, { status: 409 });
         }
 
+        const estadoInicial = (revisadorId || aprobadorId) ? 'en_revision' : 'borrador';
+
+        const workflowState = {
+            creatorSignature: creatorSignature || null,
+            creatorSignatureDate: new Date().toISOString(),
+            revisadorStatus: revisadorId ? 'pending' : 'none',
+            revisadorComment: null,
+            revisadorSignature: null,
+            revisadorSignatureDate: null,
+            aprobadorStatus: aprobadorId ? 'pending' : 'none',
+            aprobadorComment: null,
+            aprobadorSignature: null,
+            aprobadorSignatureDate: null,
+            history: [
+                {
+                    user: userName || 'Creador',
+                    action: 'created',
+                    date: new Date().toISOString(),
+                    comment: 'Creación inicial del documento',
+                    signature: creatorSignature || null
+                }
+            ]
+        };
+
         const doc = await prisma.controlledDocument.create({
             data: {
                 codigoDocumental: codigoDocumental.trim().toUpperCase(),
                 titulo: titulo.trim(),
                 tipoDocumento,
                 area,
-                estado: 'borrador',
+                estado: estadoInicial,
                 versionMayor: 1,
                 versionMenor: 0,
+                descripcion: descripcion || null,
                 responsableId: responsableId || null,
                 responsableNombre: responsableNombre || null,
+                revisadorId: revisadorId || null,
+                revisadorNombre: revisadorNombre || null,
                 aprobadorId: aprobadorId || null,
                 aprobadorNombre: aprobadorNombre || null,
                 requiereConfirmacionLectura: requiereConfirmacionLectura || false,
@@ -133,6 +161,7 @@ export async function POST(req: Request) {
                 proximaRevision: proximaRevision ? new Date(proximaRevision) : null,
                 createdBy: userId || null,
                 createdByName: userName || null,
+                workflowState: workflowState as any,
             }
         });
 
@@ -143,7 +172,7 @@ export async function POST(req: Request) {
                 versionMayor: 1,
                 versionMenor: 0,
                 versionLabel: '1.0',
-                estado: 'borrador',
+                estado: estadoInicial,
                 autorId: userId || null,
                 autorNombre: userName || null,
                 motivoCambio: 'Creación inicial del documento',

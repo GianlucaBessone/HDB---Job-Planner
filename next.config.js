@@ -18,3 +18,4 @@ const nextConfig = {
 };
 
 module.exports = withPWA(nextConfig);
+// Force reload Prisma client cache
