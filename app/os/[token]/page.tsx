@@ -694,7 +694,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
     const openFirmaModal = () => {
         const errors = checkQmsBlocks();
         if (errors.length > 0) {
-            alert('No se puede firmar la orden: Existen requisitos de calidad (QMS) pendientes por el operador.');
+            alert('No se puede firmar la orden. Existen requisitos de calidad (QMS) pendientes:\n\n- ' + errors.join('\n- ') + '\n\nPor favor, dirígete a la pestaña "Calidad" de la Orden de Servicio y completalos.');
             return;
         }
         setFirmaNombre('');

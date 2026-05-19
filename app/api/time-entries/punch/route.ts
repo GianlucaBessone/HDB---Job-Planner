@@ -126,6 +126,42 @@ export async function POST(req: Request) {
 
         let isUnassignedProject = false;
         if (projectId && action === 'IN') {
+            // --- VALIDACIÓN QMS COMPLIANCE AL INICIAR TRABAJO ---
+            try {
+                const project = await prisma.project.findUnique({ where: { id: projectId } });
+                if (project) {
+                    const projectTags: string[] = project.tags ? (Array.isArray(project.tags) ? project.tags as string[] : JSON.parse(project.tags as string)) : [];
+                    
+                    // Buscar todos los documentos vigentes aplicables
+                    const allVigentes = await prisma.controlledDocument.findMany({
+                        where: { estado: 'vigente' }
+                    });
+
+                    const applicableDocs = allVigentes.filter(d => {
+                        if (d.nivelCriticidad === 'alta' || d.nivelCriticidad === 'critica') return true;
+                        const docTags: string[] = d.tags ? (Array.isArray(d.tags) ? d.tags as string[] : JSON.parse(d.tags as string)) : [];
+                        return docTags.some(t => projectTags.includes(t));
+                    });
+
+                    const applicableDocIds = applicableDocs.map(d => d.id);
+                    if (applicableDocIds.length > 0) {
+                        const { validateTechnicianEligibility } = await import('../../qms/compliance-engine');
+                        const eligibility = await validateTechnicianEligibility(operatorId, applicableDocIds);
+                        
+                        if (eligibility.eligible === 'no_apto') {
+                            return NextResponse.json({
+                                error: 'COMPLIANCE_BLOCKED',
+                                code: 'COMPLIANCE_BLOCKED',
+                                message: `No puedes iniciar jornada: No cumples con los requerimientos QMS obligatorios de este proyecto.`,
+                                reasons: eligibility.reasons
+                            }, { status: 403 });
+                        }
+                    }
+                }
+            } catch (qmsErr) {
+                console.error('QMS Punch Validation error:', qmsErr);
+            }
+
             try {
                 const planning = await prisma.planning.findUnique({ where: { fecha: dateStr } });
                 if (planning) {

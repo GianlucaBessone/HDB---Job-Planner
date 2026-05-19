@@ -17,7 +17,7 @@ export async function GET(req: Request) {
 
         let whereClause: any;
 
-        if (role === 'supervisor' || role === 'admin') {
+        if (role === 'supervisor' || role === 'admin' || role === 'qa') {
             // Supervisors/Admins see notifications for them OR notifications for all supervisors
             whereClause = {
                 OR: [

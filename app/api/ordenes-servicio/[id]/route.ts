@@ -83,6 +83,23 @@ export async function POST(req: Request, { params }: { params: { id: string } })
                 throw new Error('No se puede firmar: Existen documentos críticos pendientes de lectura.');
             }
 
+            // Validar que los operadores asignados tengan las capacitaciones obligatorias aprobadas
+            const osOperators = await tx.ordenServicioOperador.findMany({
+                where: { ordenServicioId: os.id },
+                include: { operador: true }
+            });
+
+            const documentIds = osDocs.map(d => d.documentId).filter(Boolean) as string[];
+            if (documentIds.length > 0) {
+                const { validateTechnicianEligibility } = await import('../../qms/compliance-engine');
+                for (const op of osOperators) {
+                    const eligibility = await validateTechnicianEligibility(op.operadorId, documentIds);
+                    if (eligibility.eligible === 'no_apto') {
+                        throw new Error(`No se puede firmar/cerrar la OS: El técnico "${op.operador?.nombreCompleto || 'asignado'}" no cumple con la capacitación QMS obligatoria o certificaciones vigentes: ${eligibility.reasons.join(', ')}`);
+                    }
+                }
+            }
+
             // --- VALIDACIÓN DE DOCUMENTCHECKLIST SNAPSHOTS (QMS) ---
             const docChecklists = await tx.documentChecklist.findMany({
                 where: { projectId: os.projectId }
@@ -135,7 +152,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             const notifMsg = `La OS fue firmada por ${nombre} (DNI: ${dni}).`;
 
             const supervisorsAdmins = await tx.operator.findMany({
-                where: { role: { in: ['supervisor', 'admin'] }, activo: true },
+                where: { role: { in: ['supervisor', 'admin', 'qa'] }, activo: true },
                 select: { id: true },
             });
             

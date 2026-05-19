@@ -3,17 +3,18 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-    FileCheck, BookOpen, AlertTriangle, History, LayoutDashboard, Search
+    FileCheck, BookOpen, AlertTriangle, History, LayoutDashboard, GraduationCap, Award
 } from 'lucide-react';
-import { safeApiRequest } from '@/lib/offline';
 
 import DashboardTab from './components/DashboardTab';
 import LibraryTab from './components/LibraryTab';
 import TemplatesTab from './components/TemplatesTab';
 import ExpirationsTab from './components/ExpirationsTab';
 import HistoryTab from './components/HistoryTab';
+import LmsTab from './components/LmsTab';
+import CompetenciesTab from './components/CompetenciesTab';
 
-type TabId = 'dashboard' | 'library' | 'templates' | 'expirations' | 'history';
+type TabId = 'dashboard' | 'library' | 'templates' | 'expirations' | 'history' | 'training' | 'competencies';
 
 export default function CalidadPageWrapper() {
     return (
@@ -24,7 +25,7 @@ export default function CalidadPageWrapper() {
 function CalidadPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const initialTab = (searchParams.get('tab') as TabId) || 'dashboard';
+    const initialTab = (searchParams.get('tab') as TabId) || 'library';
 
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [activeTab, setActiveTab] = useState<TabId>(initialTab);
@@ -41,11 +42,13 @@ function CalidadPage() {
     const role = currentUser?.role?.toLowerCase() || 'operador';
 
     const tabs: { id: TabId; label: string; icon: React.ReactNode; roles: string[] }[] = [
-        { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" />, roles: ['supervisor', 'admin'] },
-        { id: 'library', label: 'Biblioteca Documental', icon: <BookOpen className="w-4 h-4" />, roles: ['operador', 'supervisor', 'admin'] },
-        { id: 'templates', label: 'Plantillas de Checklist', icon: <FileCheck className="w-4 h-4" />, roles: ['supervisor', 'admin'] },
-        { id: 'expirations', label: 'Vencimientos', icon: <AlertTriangle className="w-4 h-4" />, roles: ['supervisor', 'admin'] },
-        { id: 'history', label: 'Historial', icon: <History className="w-4 h-4" />, roles: ['supervisor', 'admin'] },
+        { id: 'dashboard', label: 'Dashboard QMS', icon: <LayoutDashboard className="w-4 h-4" />, roles: ['supervisor', 'admin', 'qa'] },
+        { id: 'library', label: 'Biblioteca Documental', icon: <BookOpen className="w-4 h-4" />, roles: ['operador', 'supervisor', 'admin', 'qa'] },
+        { id: 'training', label: 'Capacitación LMS', icon: <GraduationCap className="w-4 h-4" />, roles: ['operador', 'supervisor', 'admin', 'qa'] },
+        { id: 'competencies', label: 'Matriz de Competencias', icon: <Award className="w-4 h-4" />, roles: ['operador', 'supervisor', 'admin', 'qa'] },
+        { id: 'templates', label: 'Plantillas de Checklist', icon: <FileCheck className="w-4 h-4" />, roles: ['supervisor', 'admin', 'qa'] },
+        { id: 'expirations', label: 'Vencimientos', icon: <AlertTriangle className="w-4 h-4" />, roles: ['supervisor', 'admin', 'qa'] },
+        { id: 'history', label: 'Historial QMS', icon: <History className="w-4 h-4" />, roles: ['supervisor', 'admin', 'qa'] },
     ];
 
     const allowedTabs = useMemo(() => tabs.filter(t => t.roles.includes(role)), [role]);
@@ -68,10 +71,10 @@ function CalidadPage() {
                 <div className="space-y-1">
                     <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
                         <FileCheck className="w-6 h-6 md:w-8 md:h-8 text-primary" />
-                        Calidad y Documentación
+                        Gestión Operativa y Calidad
                     </h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium hidden md:block">
-                        Sistema de Gestión de Calidad (QMS) y Control Documental
+                        Plataforma de Cumplimiento, Capacitación Obligatoria (LMS) y Competencias QMS
                     </p>
                 </div>
             </div>
@@ -88,7 +91,7 @@ function CalidadPage() {
                         }`}
                     >
                         {tab.icon}
-                        <span className="hidden sm:inline">{tab.label}</span>
+                        <span>{tab.label}</span>
                     </button>
                 ))}
             </div>
@@ -96,6 +99,8 @@ function CalidadPage() {
             <div className="animate-in fade-in duration-300">
                 {activeTab === 'dashboard' && <DashboardTab user={currentUser} />}
                 {activeTab === 'library' && <LibraryTab user={currentUser} />}
+                {activeTab === 'training' && <LmsTab user={currentUser} />}
+                {activeTab === 'competencies' && <CompetenciesTab user={currentUser} />}
                 {activeTab === 'templates' && <TemplatesTab user={currentUser} />}
                 {activeTab === 'expirations' && <ExpirationsTab user={currentUser} />}
                 {activeTab === 'history' && <HistoryTab user={currentUser} />}

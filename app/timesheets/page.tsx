@@ -242,12 +242,7 @@ export default function TimesheetsPage() {
             return;
         }
 
-        if (formData.horaIngreso && formData.horaEgreso) {
-            if (formData.horaEgreso < formData.horaIngreso) {
-                showToast('La hora de egreso no puede ser menor a la de ingreso', 'error');
-                return;
-            }
-        }
+
 
         try {
             const payload: any = {
@@ -594,17 +589,17 @@ export default function TimesheetsPage() {
                     {viewMode === 'tarjetas' && (
                         <>
                             {/* Desktop: Table */}
-                            <table className="w-full text-left border-collapse hidden md:table">
+                            <table className="w-full text-left border-collapse hidden md:table min-w-[1100px]">
                                 <thead>
                                     <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
-                                        <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Fecha</th>
-                                        <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Operador</th>
-                                        <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Proyecto</th>
-                                        <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Horario</th>
-                                        <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Horas</th>
-                                        <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Tipo</th>
-                                        <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Estado</th>
-                                        <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Acciones</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap">Fecha</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap">Operador</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap">Proyecto / Causa</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center whitespace-nowrap">Horario</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center whitespace-nowrap">Horas</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center whitespace-nowrap">Tipo</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center whitespace-nowrap">Estado</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right whitespace-nowrap">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -615,37 +610,39 @@ export default function TimesheetsPage() {
                                     ) : (
                                         filteredCompleted.map(entry => (
                                             <tr key={entry.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors [&>td]:align-middle">
-                                                <td className="p-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight whitespace-nowrap">{formatEntryDate(entry.fecha)}</td>
-                                                <td className="p-4 text-sm font-black text-primary">{entry.operator?.nombreCompleto || 'Sistema / Central'}</td>
+                                                <td className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight whitespace-nowrap">{formatEntryDate(entry.fecha)}</td>
+                                                <td className="p-4 text-sm font-black text-primary whitespace-nowrap">{entry.operator?.nombreCompleto || 'Sistema / Central'}</td>
                                                 <td className="p-4">
                                                     {entry.causaRegistro ? (
-                                                        <div className="flex items-center gap-2 text-xs font-bold">
+                                                        <div className="flex items-center gap-2 text-xs font-bold whitespace-nowrap">
                                                             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-lg border border-orange-200 dark:border-orange-800">
                                                                 <UserX className="w-3 h-3" />
                                                                 {entry.causaRegistro}
                                                             </span>
                                                         </div>
                                                     ) : (
-                                                        <div className="flex items-center gap-2 flex-wrap text-xs font-bold text-slate-600 dark:text-slate-300 truncate max-w-[200px]" title={entry.project?.nombre || 'Sin proyecto'}>
-                                                            {entry.project?.nombre || 'Sin proyecto'}
+                                                        <div className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                                                            <span className="truncate max-w-[280px]" title={entry.project?.nombre || 'Sin proyecto'}>
+                                                                {entry.project?.nombre || 'Sin proyecto'}
+                                                            </span>
                                                             {entry.project?.codigoProyecto && <CodeBadge code={entry.project.codigoProyecto} variant="project" size="sm" showCopy={false} />}
                                                         </div>
                                                     )}
                                                 </td>
-                                                <td className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 text-center">
+                                                <td className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 text-center whitespace-nowrap">
                                                     {entry.horaIngreso} - {entry.horaEgreso}
                                                 </td>
-                                                <td className="p-4 text-center">
+                                                <td className="p-4 text-center whitespace-nowrap">
                                                     <span className="px-3 py-1 bg-indigo-50 text-indigo-600 font-black rounded-xl text-sm border border-indigo-100">{entry.horasTrabajadas}h</span>
                                                 </td>
-                                                <td className="p-4 text-center">
+                                                <td className="p-4 text-center whitespace-nowrap">
                                                     {entry.isExtra ? (
                                                         <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-1 rounded-md">EXTRA</span>
                                                     ) : (
                                                         <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 px-2 py-1 rounded-md">NORMAL</span>
                                                     )}
                                                 </td>
-                                                <td className="p-4 text-center">
+                                                <td className="p-4 text-center whitespace-nowrap">
                                                     {entry.estadoConfirmado ? (
                                                         <span className="inline-flex items-center gap-1 text-emerald-600 text-[10px] font-black uppercase tracking-widest bg-emerald-50 px-2 py-1 rounded-lg">
                                                             <CheckCircle2 className="w-3 h-3" /> Confirmado
@@ -659,7 +656,7 @@ export default function TimesheetsPage() {
                                                         </button>
                                                     )}
                                                 </td>
-                                                <td className="p-4 flex items-center justify-end gap-2">
+                                                <td className="p-4 flex items-center justify-end gap-2 whitespace-nowrap">
                                                     <button
                                                         onClick={() => openEditModal(entry)}
                                                         className={`btn-icon-inline p-2 rounded-xl transition-all ${entry.estadoConfirmado ? 'text-amber-500 hover:bg-amber-50' : 'text-slate-400 dark:text-slate-500 hover:text-indigo-500 hover:bg-indigo-50'}`}

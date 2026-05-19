@@ -129,6 +129,8 @@ model Operator {
   toolMovements             ToolMovement[]
   primaryDeviceId           String?
   OSDocumentAcknowledgement OSDocumentAcknowledgement[]
+  competencies              TechnicianCompetency[]
+  trainings                 TechnicianTraining[]
 }
 
 model FavoriteBlock {
@@ -588,6 +590,7 @@ model ControlledDocument {
   requiereConfirmacionLectura Boolean @default(false)
   requiereCapacitacion        Boolean @default(false)
   nivelCriticidad             String  @default("media") // baja | media | alta | critica
+  validezMeses                Int?    // Periodo de validez de la capacitación en meses (opcional)
 
   // Trazabilidad
   documentoReemplazadoId  String?
@@ -616,6 +619,8 @@ model ControlledDocument {
   // OS Integrations
   applicabilityRules DocumentApplicabilityRule[]
   osAssignments      OrdenServicioDocumento[]
+  competencies       TechnicianCompetency[]
+  trainings          TechnicianTraining[]
 
   @@index([tipoDocumento])
   @@index([area])
@@ -895,4 +900,53 @@ model DocumentChecklist {
   @@index([projectId])
   @@index([documentId])
   @@index([templateId])
+}
+
+model TechnicianCompetency {
+  id              String             @id @default(cuid())
+  operatorId      String
+  operator        Operator           @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  nombre          String             // e.g. "Seguridad eléctrica", "Trabajo en altura", "Protocolo sanitario"
+  documentId      String?
+  document        ControlledDocument? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  estado          String             @default("pendiente") // pendiente | vigente | vencida | inactiva
+  vencimiento     DateTime?
+  evidencia       String?            @db.Text // Descripción o Base64 o URL
+  evaluacion      String?            @db.Text // Nota o comentarios
+  aprobadorId     String?
+  aprobadorNombre String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([operatorId])
+  @@index([documentId])
+  @@index([estado])
+}
+
+model TechnicianTraining {
+  id              String             @id @default(cuid())
+  operatorId      String
+  operator        Operator           @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  documentId      String?
+  document        ControlledDocument? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  titulo          String             // Título de la capacitación
+  estado          String             @default("pendiente") // pendiente | en_progreso | aprobado | reprobado
+  tipoContenido   String             @default("video") // video | pdf | cuestionario | mixto
+  urlContenido    String?            @db.Text // URL externa, video embed o path
+  cuestionario    Json?              // Array de preguntas, opciones, y correcta
+  respuestas      Json?              // Array de respuestas del usuario
+  puntaje         Float?
+  puntajeMinimo   Float              @default(70.0)
+  tiempoInvertido Int?               // En segundos
+  fechaInicio     DateTime?
+  fechaFin        DateTime?
+  evaluadorId     String?
+  evaluadorNombre String?
+  observaciones   String?            @db.Text
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([operatorId])
+  @@index([documentId])
+  @@index([estado])
 }

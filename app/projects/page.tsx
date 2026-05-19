@@ -106,6 +106,7 @@ function ProjectsContent() {
     const [projectLogs, setProjectLogs] = useState<any[]>([]);
     const [projectDelays, setProjectDelays] = useState<any[]>([]);
     const [configOptions, setConfigOptions] = useState<any[]>([]);
+    const [systemTags, setSystemTags] = useState<any[]>([]);
 
     const categoryOptions = configOptions.filter((o: any) => o.category === 'CATEGORIA' && o.active).map((o: any) => o.value);
     const activityOptions = configOptions.filter((o: any) => o.category === 'TIPO_ACTIVIDAD' && o.active).map((o: any) => o.value);
@@ -128,16 +129,18 @@ function ProjectsContent() {
     const loadData = async (silent = false) => {
         if (!silent) setIsLoading(true);
         try {
-            const [projectsData, operatorsData, clientsData, configOptionsData] = await Promise.all([
+            const [projectsData, operatorsData, clientsData, configOptionsData, tagsData] = await Promise.all([
                 safeApiRequest('/api/projects').then(res => res.json()),
                 safeApiRequest('/api/operators').then(res => res.json()),
                 safeApiRequest('/api/clients').then(res => res.json()),
                 safeApiRequest('/api/config/options').then(res => res.json()), // Fixed path
+                safeApiRequest('/api/config/tags').then(res => res.json()),
             ]);
             setProjects(projectsData);
             setOperators(operatorsData);
             setClients(clientsData);
             setConfigOptions(configOptionsData);
+            setSystemTags(Array.isArray(tagsData) ? tagsData.filter((t: any) => t.active) : []);
         } catch (e) {
             console.error(e);
         } finally {
@@ -542,6 +545,7 @@ function ProjectsContent() {
                     clients={clients}
                     categoryOptions={categoryOptions}
                     activityOptions={activityOptions}
+                    systemTags={systemTags}
                     onSubmit={handleSubmit}
                     onClose={() => setIsModalOpen(false)}
                 />
@@ -633,7 +637,7 @@ function ProjectDetailsModal({
     onUpdateChecklist: (itemId: string, updates: any) => void;
     onClose: () => void;
 }) {
-    const isSupervisor = currentUser?.role === 'supervisor' || currentUser?.role === 'admin';
+    const isSupervisor = currentUser?.role === 'supervisor' || currentUser?.role === 'admin' || currentUser?.role === 'qa';
     const [newLog, setNewLog] = useState({ fecha: new Date().toISOString().split('T')[0], responsable: '', observacion: '' });
 
     const visibleItems = checklist.filter(i => !i.excluded || isSupervisor);
@@ -1046,6 +1050,7 @@ function ProjectModal({
     clients,
     categoryOptions,
     activityOptions,
+    systemTags,
     onSubmit,
     onClose,
 }: {
@@ -1056,6 +1061,7 @@ function ProjectModal({
     clients: { id: string; nombre: string }[];
     categoryOptions: string[];
     activityOptions: string[];
+    systemTags: any[];
     onSubmit: (e: React.FormEvent) => void;
     onClose: () => void;
 }) {
@@ -1185,9 +1191,10 @@ function ProjectModal({
 
                         {/* Etiquetas Técnicas */}
                         <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Etiquetas Técnicas (Checklist)</label>
+                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Etiquetas Técnicas / Especialidades</label>
                             <div className="flex flex-wrap gap-2 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-700">
-                                {Object.keys(CHECKLIST_TEMPLATES).map(tag => {
+                                {systemTags.map(tagObj => {
+                                    const tag = tagObj.name;
                                     const active = formData.tags.includes(tag);
                                     return (
                                         <button

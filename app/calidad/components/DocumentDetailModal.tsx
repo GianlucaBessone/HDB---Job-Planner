@@ -1,21 +1,41 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { X, FileText, CheckCircle2, ShieldAlert, Plus, Trash2, Save, FileBox, AlertCircle, FileSignature, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { X, FileText, CheckCircle2, ShieldAlert, Plus, Trash2, Save, FileBox, AlertCircle, FileSignature, ThumbsUp, ThumbsDown, Download, Upload, BookOpen, Award, Clock, UserCheck, UserX } from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
 
 export default function DocumentDetailModal({ documentId, onClose, user }: { documentId: string, onClose: () => void, user?: any }) {
     const [doc, setDoc] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const [tab, setTab] = useState<'info' | 'versiones' | 'reglas' | 'checklist'>('info');
+    const [tab, setTab] = useState<'info' | 'lms' | 'versiones' | 'reglas' | 'checklist'>('info');
 
     // Checklist template state
     const [checklistItems, setChecklistItems] = useState<{ descripcion: string, esObligatorio: boolean }[]>([]);
+    const [activityOptions, setActivityOptions] = useState<string[]>([]);
+    const [projectTags, setProjectTags] = useState<string[]>([]);
+
+    // LMS/Quiz state hooks
+    const [uploading, setUploading] = useState(false);
+    const [quizQuestions, setQuizQuestions] = useState<{ question: string, options: string[], correctAnswerIndex: number }[]>([]);
+    const [newQuestion, setNewQuestion] = useState('');
+    const [newOptions, setNewOptions] = useState(['', '', '', '']);
+    const [newCorrectIndex, setNewCorrectIndex] = useState(0);
+    const [showQuestionBuilder, setShowQuestionBuilder] = useState(false);
 
     // New rule modal state
     const [showRuleModal, setShowRuleModal] = useState(false);
-    const [newRule, setNewRule] = useState({ tipoActividad: '', bloqueanteDeInicio: false, generaChecklist: false });
+    const [newRule, setNewRule] = useState<{
+        tipoActividad: string;
+        bloqueanteDeInicio: boolean;
+        generaChecklist: boolean;
+        tagsRequeridos: string[];
+    }>({
+        tipoActividad: '',
+        bloqueanteDeInicio: false,
+        generaChecklist: false,
+        tagsRequeridos: []
+    });
 
     // Workflow state hooks
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -24,6 +44,48 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
     const [comments, setComments] = useState('');
     const [submittingWorkflow, setSubmittingWorkflow] = useState(false);
 
+    // Inline Requirements Editing State
+    const [editReqLectura, setEditReqLectura] = useState(false);
+    const [editReqCapacitacion, setEditReqCapacitacion] = useState(false);
+    const [editValidezMeses, setEditValidezMeses] = useState('');
+    const [savingReqs, setSavingReqs] = useState(false);
+
+    useEffect(() => {
+        if (doc) {
+            setEditReqLectura(doc.requiereConfirmacionLectura || false);
+            setEditReqCapacitacion(doc.requiereCapacitacion || false);
+            setEditValidezMeses(doc.validezMeses?.toString() || '');
+        }
+    }, [doc]);
+
+    const handleSaveRequirements = async () => {
+        setSavingReqs(true);
+        try {
+            const res = await safeApiRequest(`/api/documentos/${documentId}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    requiereConfirmacionLectura: editReqLectura,
+                    requiereCapacitacion: editReqCapacitacion,
+                    validezMeses: editReqCapacitacion ? (editValidezMeses ? parseInt(editValidezMeses) : null) : null,
+                    userId: user?.id || 'admin',
+                    userName: user?.nombreCompleto || user?.nombre || 'Usuario Administrador'
+                })
+            });
+            if (res.ok) {
+                showToast('Requerimientos actualizados con éxito', 'success');
+                loadDocument();
+            } else {
+                const err = await res.json();
+                showToast(err.error || 'Error al actualizar requerimientos', 'error');
+            }
+        } catch (err: any) {
+            console.error(err);
+            showToast('Error de red al actualizar requerimientos', 'error');
+        } finally {
+            setSavingReqs(false);
+        }
+    };
+
     const getCoordinates = (e: any) => {
         const canvas = canvasRef.current;
         if (!canvas) return { x: 0, y: 0 };
@@ -31,8 +93,8 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         return {
-            x: clientX - rect.left,
-            y: clientY - rect.top
+            x: (clientX - rect.left) * (canvas.width / rect.width),
+            y: (clientY - rect.top) * (canvas.height / rect.height)
         };
     };
 
@@ -97,8 +159,18 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
 
         setSubmittingWorkflow(true);
         try {
-            const isRevisador = user && doc.revisadorId === user.id;
-            const role = isRevisador ? 'revisador' : 'aprobador';
+            const isRevisadorPending = user && doc.revisadorId === user.id && doc.workflowState?.revisadorStatus === 'pending';
+            const isAprobadorPending = user && doc.aprobadorId === user.id && doc.workflowState?.aprobadorStatus === 'pending';
+            
+            let role = 'revisador';
+            if (isRevisadorPending) {
+                role = 'revisador';
+            } else if (isAprobadorPending) {
+                role = 'aprobador';
+            } else {
+                role = doc.revisadorId === user.id ? 'revisador' : 'aprobador';
+            }
+            
             const status = agreement === 'ACUERDO' ? 'approved' : 'rejected';
 
             const res = await safeApiRequest(`/api/documentos/${documentId}/firmar`, {
@@ -139,9 +211,36 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
     const loadDocument = async () => {
         setLoading(true);
         try {
-            const res = await safeApiRequest(`/api/documentos/${documentId}`);
-            if (res.ok) {
-                const data = await res.json();
+            const [docRes, optRes, tagsRes] = await Promise.all([
+                safeApiRequest(`/api/documentos/${documentId}`),
+                safeApiRequest('/api/config/options'),
+                safeApiRequest('/api/config/tags')
+            ]);
+            
+            if (optRes.ok) {
+                const optionsData = await optRes.json();
+                if (Array.isArray(optionsData)) {
+                    setActivityOptions(
+                        optionsData
+                            .filter((o: any) => o.category === 'TIPO_ACTIVIDAD' && o.active)
+                            .map((o: any) => o.value)
+                    );
+                }
+            }
+
+            if (tagsRes.ok) {
+                const tagsData = await tagsRes.json();
+                if (Array.isArray(tagsData)) {
+                    setProjectTags(
+                        tagsData
+                            .filter((t: any) => t.active)
+                            .map((t: any) => t.name)
+                    );
+                }
+            }
+
+            if (docRes.ok) {
+                const data = await docRes.json();
                 setDoc(data);
 
                 // Load checklist from the latest version if available
@@ -150,6 +249,13 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                     if (latest.checklistTemplate) {
                         setChecklistItems(latest.checklistTemplate);
                     }
+                }
+
+                // Load quiz questions from workflowState if present
+                if (data.workflowState && typeof data.workflowState === 'object' && Array.isArray(data.workflowState.cuestionario)) {
+                    setQuizQuestions(data.workflowState.cuestionario);
+                } else {
+                    setQuizQuestions([]);
                 }
             }
         } catch (e) {
@@ -204,6 +310,103 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
         }
     };
 
+    const handleDownloadTemplate = () => {
+        window.open(`/api/documentos/${documentId}/template`, '_blank');
+    };
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploading(true);
+        try {
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const base64Content = event.target?.result as string;
+                const payload = {
+                    fileName: file.name,
+                    fileType: file.type,
+                    fileSize: file.size,
+                    fileContent: base64Content,
+                    userId: user?.id || 'admin',
+                    userName: user?.nombreCompleto || 'Usuario Administrador'
+                };
+
+                const res = await safeApiRequest(`/api/documentos/${documentId}/upload`, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    showToast('Archivo subido y asociado con éxito', 'success');
+                    loadDocument();
+                } else {
+                    const err = await res.json();
+                    showToast(err.error || 'Error al subir el archivo', 'error');
+                }
+            };
+            reader.readAsDataURL(file);
+        } catch (err: any) {
+            console.error(err);
+            showToast('Error al procesar el archivo', 'error');
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleSaveQuiz = async () => {
+        try {
+            const res = await safeApiRequest(`/api/documentos/${documentId}/quiz`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    cuestionario: quizQuestions,
+                    userId: user?.id || 'admin',
+                    userName: user?.nombreCompleto || 'Usuario Administrador'
+                })
+            });
+
+            if (res.ok) {
+                showToast('Evaluación guardada con éxito', 'success');
+                loadDocument();
+            } else {
+                const err = await res.json();
+                showToast(err.error || 'Error al guardar la evaluación', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Error al conectar con el servidor', 'error');
+        }
+    };
+
+    const addQuizQuestion = () => {
+        if (!newQuestion.trim()) {
+            return showToast('La pregunta no puede estar vacía', 'error');
+        }
+        if (newOptions.some(opt => !opt.trim())) {
+            return showToast('Todas las opciones de respuesta son obligatorias', 'error');
+        }
+
+        const newQ = {
+            question: newQuestion.trim(),
+            options: [...newOptions],
+            correctAnswerIndex: newCorrectIndex
+        };
+
+        setQuizQuestions([...quizQuestions, newQ]);
+        setNewQuestion('');
+        setNewOptions(['', '', '', '']);
+        setNewCorrectIndex(0);
+        setShowQuestionBuilder(false);
+        showToast('Pregunta agregada (recuerde Guardar los cambios)', 'success');
+    };
+
+    const removeQuizQuestion = (index: number) => {
+        const updated = [...quizQuestions];
+        updated.splice(index, 1);
+        setQuizQuestions(updated);
+        showToast('Pregunta eliminada (recuerde Guardar los cambios)', 'success');
+    };
+
     if (loading) return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
             <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 flex flex-col items-center gap-4">
@@ -249,6 +452,7 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                 <div className="flex border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 px-6 gap-6 pt-2">
                     {[
                         { id: 'info', label: 'Información General' },
+                        { id: 'lms', label: 'LMS & Capacitación' },
                         { id: 'versiones', label: 'Historial y Versiones' },
                         { id: 'reglas', label: 'Matriz de Aplicabilidad (Reglas)' },
                         { id: 'checklist', label: 'Plantilla de Checklist' }
@@ -270,7 +474,7 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                 {/* Body */}
                 <div className="flex-1 overflow-y-auto p-6 bg-slate-50 dark:bg-slate-900/20">
                     {tab === 'info' && (
-                        <div className="space-y-6 max-w-3xl">
+                        <div className="space-y-6 max-w-3xl mx-auto">
                             {/* Descripción larga */}
                             {doc.descripcion && (
                                 <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
@@ -330,26 +534,86 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                         {(doc.tags as string[]).map((tag: string) => (
                                             <span key={tag} className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-3 py-1 rounded-lg text-xs font-bold border border-indigo-100 dark:border-indigo-800">
                                                 {tag}
-                                            </span>
+                                             </span>
                                         ))}
                                     </div>
                                 </div>
                             )}
 
-                            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Requerimientos Operativos Obligatorios</p>
-                                <div className="flex gap-4 flex-wrap">
-                                    {doc.requiereConfirmacionLectura && (
-                                        <div className="flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-3 py-1.5 rounded-lg text-sm font-bold">
-                                            <CheckCircle2 className="w-4 h-4" /> Requiere Confirmación de Lectura
-                                        </div>
-                                    )}
-                                    {doc.requiereCapacitacion && (
-                                        <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-3 py-1.5 rounded-lg text-sm font-bold">
-                                            <ShieldAlert className="w-4 h-4" /> Requiere Capacitación
-                                        </div>
+                            <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+                                <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
+                                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Requerimientos Operativos Obligatorios</p>
+                                    {(user?.role?.toLowerCase() === 'supervisor' || user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'qa') && (
+                                        <span className="text-[10px] font-black uppercase text-indigo-500 bg-indigo-50 dark:bg-indigo-950/30 px-2 py-0.5 rounded">Editor</span>
                                     )}
                                 </div>
+                                
+                                {(user?.role?.toLowerCase() === 'supervisor' || user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'qa') ? (
+                                    <div className="space-y-4">
+                                        <div className="flex flex-col sm:flex-row gap-4">
+                                            <label className="flex items-center gap-2.5 cursor-pointer group flex-1">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={editReqLectura}
+                                                    onChange={e => setEditReqLectura(e.target.checked)}
+                                                    className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-indigo-600 focus:ring-indigo-500"
+                                                />
+                                                <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Requiere Confirmación de Lectura</span>
+                                            </label>
+
+                                            <label className="flex items-center gap-2.5 cursor-pointer group flex-1">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={editReqCapacitacion}
+                                                    onChange={e => setEditReqCapacitacion(e.target.checked)}
+                                                    className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-indigo-600 focus:ring-indigo-500"
+                                                />
+                                                <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Requiere Capacitación Obligatoria (LMS)</span>
+                                            </label>
+                                        </div>
+
+                                        {editReqCapacitacion && (
+                                            <div className="space-y-1.5 animate-in slide-in-from-top-1 duration-150 pl-4 border-l-2 border-indigo-500">
+                                                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider">Periodo de Validez / Vencimiento (en meses)</label>
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    placeholder="Ej. 12"
+                                                    value={editValidezMeses}
+                                                    onChange={e => setEditValidezMeses(e.target.value)}
+                                                    className="w-full max-w-[200px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold focus:border-indigo-500 outline-none"
+                                                />
+                                            </div>
+                                        )}
+
+                                        <div className="flex justify-end pt-2 border-t border-slate-100 dark:border-slate-700/50">
+                                            <button
+                                                type="button"
+                                                onClick={handleSaveRequirements}
+                                                disabled={savingReqs}
+                                                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/10 disabled:opacity-50"
+                                            >
+                                                {savingReqs ? 'Guardando...' : 'Guardar Requerimientos'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex gap-4 flex-wrap">
+                                        {doc.requiereConfirmacionLectura && (
+                                            <div className="flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-3 py-1.5 rounded-lg text-sm font-bold">
+                                                <CheckCircle2 className="w-4 h-4" /> Requiere Confirmación de Lectura
+                                            </div>
+                                        )}
+                                        {doc.requiereCapacitacion && (
+                                            <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-3 py-1.5 rounded-lg text-sm font-bold">
+                                                <ShieldAlert className="w-4 h-4" /> Requiere Capacitación {doc.validezMeses ? `(Vence c/ ${doc.validezMeses} meses)` : '(Sin vto. establecido)'}
+                                            </div>
+                                        )}
+                                        {!doc.requiereConfirmacionLectura && !doc.requiereCapacitacion && (
+                                            <p className="text-xs text-slate-400">Este documento no tiene requerimientos obligatorios asociados.</p>
+                                        )}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Workflow de Firmas y Aprobaciones */}
@@ -472,6 +736,33 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                             const isAprobador = doc.aprobadorId === user.id && doc.workflowState.aprobadorStatus === 'pending';
                                             
                                             if (!isRevisador && !isAprobador) return null;
+
+                                            // Enforce file upload and evaluation checklist/quiz checks
+                                            const latestVersion = doc.versions?.[0];
+                                            const hasFile = latestVersion && latestVersion.files && latestVersion.files.some((f: any) => f.esPrincipal);
+                                            const hasQuiz = !doc.requiereCapacitacion || (doc.workflowState?.cuestionario && Array.isArray(doc.workflowState.cuestionario) && doc.workflowState.cuestionario.length > 0);
+                                            const isComplete = hasFile && hasQuiz;
+
+                                            if (!isComplete) {
+                                                return (
+                                                    <div className="mt-6 bg-amber-50/50 dark:bg-amber-950/10 p-5 rounded-2xl border border-amber-200 dark:border-amber-900/50 space-y-3">
+                                                        <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
+                                                            <AlertCircle className="w-5 h-5 text-amber-500" />
+                                                            <span className="font-bold text-sm">Firma Bloqueada: Requisitos Pendientes</span>
+                                                        </div>
+                                                        <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                                                            Este documento no se puede revisar ni aprobar todavía porque no se ha completado su material ni su evaluación LMS:
+                                                        </p>
+                                                        <ul className="list-disc pl-5 text-xs text-slate-600 dark:text-slate-400 space-y-1">
+                                                            {!hasFile && <li>Falta subir el archivo final (procedimiento Word o PDF).</li>}
+                                                            {!hasQuiz && <li>Falta configurar las preguntas de la evaluación (Multiple Choice).</li>}
+                                                        </ul>
+                                                        <p className="text-xs text-slate-500 font-bold italic pt-1">
+                                                            Vaya a la pestaña "LMS & Capacitación" para completar los requisitos y desbloquear las firmas.
+                                                        </p>
+                                                    </div>
+                                                );
+                                            }
 
                                             return (
                                                 <div className="mt-6 bg-indigo-50/50 dark:bg-indigo-950/10 p-5 rounded-2xl border border-indigo-100 dark:border-indigo-900/50 space-y-4">
@@ -625,6 +916,18 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                                         {rule.tipoActividad ? `Solo para OS de tipo: ${rule.tipoActividad}` : 'Para cualquier tipo de OS'}
                                                     </p>
                                                 </div>
+                                                {rule.tagsRequeridos && Array.isArray(rule.tagsRequeridos) && rule.tagsRequeridos.length > 0 && (
+                                                    <div>
+                                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Etiquetas de Proyecto Requeridas</p>
+                                                        <div className="flex flex-wrap gap-1 mt-1">
+                                                            {rule.tagsRequeridos.map((t: string) => (
+                                                                <span key={t} className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-[10px] font-bold px-2 py-0.5 rounded border border-indigo-100/50 dark:border-indigo-800/50">
+                                                                    {t}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
                                                 <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100 dark:border-slate-700">
                                                     {rule.bloqueanteDeInicio && (
                                                         <span className="bg-amber-100 text-amber-700 text-xs font-bold px-2 py-1 rounded flex items-center gap-1">
@@ -646,7 +949,7 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                     )}
 
                     {tab === 'checklist' && (
-                        <div className="space-y-6 max-w-3xl">
+                        <div className="space-y-6 max-w-3xl mx-auto">
                             <div className="flex justify-between items-center bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-800">
                                 <div>
                                     <h3 className="text-sm font-bold text-indigo-900 dark:text-indigo-100 flex items-center gap-2">
@@ -715,7 +1018,417 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                             </div>
                         </div>
                     )}
-                    
+
+                    {tab === 'lms' && (
+                        <div className="space-y-6">
+                            {/* Material de Capacitación Block */}
+                            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4 shadow-sm animate-in fade-in duration-200">
+                                <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-3">
+                                    <div className="flex items-center gap-2">
+                                        <BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                                        <h3 className="font-bold text-base text-slate-800 dark:text-slate-100">1. Material Didáctico y Control Documental</h3>
+                                    </div>
+                                    <div>
+                                        {doc.versions?.[0]?.files?.some((f: any) => f.esPrincipal) ? (
+                                            <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 flex items-center gap-1.5">
+                                                <CheckCircle2 className="w-3.5 h-3.5" /> Archivo Subido
+                                            </span>
+                                        ) : (
+                                            <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 flex items-center gap-1.5">
+                                                <AlertCircle className="w-3.5 h-3.5 animate-pulse" /> Archivo Pendiente
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <p className="text-xs text-slate-500 leading-relaxed">
+                                    Para este documento QMS, debe pre-llenar y completar la información técnica del control documental. Use la plantilla oficial pre-cargada con los datos de esta versión para asegurar la trazabilidad ISO 9001.
+                                </p>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                                    {/* Download Template */}
+                                    <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex flex-col justify-between space-y-3">
+                                        <div>
+                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Paso A: Plantilla Pre-llenada</span>
+                                            <span className="text-[11px] text-slate-400 leading-normal block">
+                                                Descargue el archivo de Word precargado con el Código, Título, Autor, Versión y Firmantes autorizados.
+                                            </span>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={handleDownloadTemplate}
+                                            className="w-full bg-white dark:bg-slate-800 hover:bg-slate-100 text-slate-700 dark:text-slate-200 dark:border-slate-700 border border-slate-200 px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm"
+                                        >
+                                            <Download className="w-4 h-4 text-indigo-600" />
+                                            Descargar Plantilla Word
+                                        </button>
+                                    </div>
+
+                                    {/* Upload Final File */}
+                                    <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex flex-col justify-between space-y-3">
+                                        <div>
+                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Paso B: Subir Documento Final</span>
+                                            <span className="text-[11px] text-slate-400 leading-normal block">
+                                                Suba la capacitación finalizada en formato Word o PDF. Este archivo será visible para todos los técnicos asignados.
+                                            </span>
+                                        </div>
+                                        <label className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer text-center">
+                                            <Upload className="w-4 h-4" />
+                                            {uploading ? 'Subiendo...' : 'Seleccionar y Subir Archivo'}
+                                            <input
+                                                type="file"
+                                                accept=".doc,.docx,.pdf"
+                                                onChange={handleFileUpload}
+                                                disabled={uploading}
+                                                className="hidden"
+                                            />
+                                        </label>
+                                    </div>
+                                </div>
+
+                                {doc.versions?.[0]?.files?.some((f: any) => f.esPrincipal) && (
+                                    <div className="mt-4 p-3.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-xl flex items-center justify-between">
+                                        <div className="flex items-center gap-2.5">
+                                            <div className="w-9 h-9 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 flex items-center justify-center">
+                                                <FileText className="w-5 h-5 text-indigo-600" />
+                                            </div>
+                                            <div>
+                                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
+                                                    {doc.versions[0].files.find((f: any) => f.esPrincipal).nombreArchivo}
+                                                </span>
+                                                <span className="text-[10px] text-slate-400">
+                                                    Tamaño: {Math.round(doc.versions[0].files.find((f: any) => f.esPrincipal).tamanioBytes / 1024)} KB
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <a
+                                            href={`/api/documentos/${doc.id}/download`}
+                                            download
+                                            className="px-3.5 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 rounded-lg text-xs font-bold text-indigo-600 flex items-center gap-1.5 transition-all shadow-sm"
+                                        >
+                                            <Download className="w-3.5 h-3.5" /> Descargar Archivo
+                                        </a>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Evaluación Multiple Choice Block */}
+                            {doc.requiereCapacitacion && (
+                                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-5 shadow-sm">
+                                    <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-3">
+                                        <div className="flex items-center gap-2">
+                                            <Award className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                                            <h3 className="font-bold text-base text-slate-800 dark:text-slate-100">2. Cuestionario de Evaluación (LMS Multiple Choice)</h3>
+                                        </div>
+                                        <div>
+                                            {quizQuestions.length > 0 ? (
+                                                <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950/30 dark:text-indigo-400 flex items-center gap-1.5">
+                                                    <CheckCircle2 className="w-3.5 h-3.5" /> {quizQuestions.length} Preguntas
+                                                </span>
+                                            ) : (
+                                                <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 flex items-center gap-1.5">
+                                                    <AlertCircle className="w-3.5 h-3.5 animate-pulse" /> Sin Preguntas
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <p className="text-xs text-slate-500 leading-relaxed">
+                                        Dado que este documento requiere capacitación obligatoria, debe estructurar una evaluación de opción múltiple. Cada técnico asignado deberá aprobar esta evaluación antes de considerarse apto para la operación técnica.
+                                    </p>
+
+                                    {/* Action bar for adding questions when questions exist */}
+                                    {quizQuestions.length > 0 && !showQuestionBuilder && (
+                                        <div className="flex justify-between items-center bg-indigo-50/50 dark:bg-indigo-950/10 p-4 rounded-xl border border-indigo-100/50 dark:border-indigo-900/30">
+                                            <div>
+                                                <p className="text-xs font-bold text-slate-700 dark:text-slate-300">¿Desea agregar más preguntas?</p>
+                                                <p className="text-[10px] text-slate-400">Puede agregar múltiples preguntas de opción múltiple a la evaluación.</p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setNewQuestion('');
+                                                    setNewOptions(['', '', '', '']);
+                                                    setNewCorrectIndex(0);
+                                                    setShowQuestionBuilder(true);
+                                                }}
+                                                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm"
+                                            >
+                                                <Plus className="w-4 h-4" /> Añadir Pregunta
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {/* Question Builder Form */}
+                                    {(showQuestionBuilder || quizQuestions.length === 0) && (
+                                        <div className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-4 animate-in fade-in duration-200">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-xs font-black uppercase tracking-widest text-indigo-600 block">Diseñador de Preguntas</span>
+                                                {quizQuestions.length > 0 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowQuestionBuilder(false)}
+                                                        className="text-xs font-bold text-slate-400 hover:text-slate-650 dark:hover:text-slate-200 transition-colors"
+                                                    >
+                                                        Cancelar
+                                                    </button>
+                                                )}
+                                            </div>
+                                        
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Enunciado de la Pregunta</label>
+                                            <input
+                                                type="text"
+                                                value={newQuestion}
+                                                onChange={e => setNewQuestion(e.target.value)}
+                                                className="w-full bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-100"
+                                                placeholder="Ej: ¿Qué EPP es obligatorio para la manipulación de alta tensión?"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2.5">
+                                            <div className="flex justify-between items-center">
+                                                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">Opciones de Respuesta (Mínimo 2)</label>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setNewOptions([...newOptions, ''])}
+                                                    className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-750 dark:hover:text-indigo-300 transition-colors flex items-center gap-1"
+                                                >
+                                                    <Plus className="w-3.5 h-3.5" /> Agregar Opción
+                                                </button>
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                {newOptions.map((opt, oIdx) => (
+                                                    <div key={oIdx} className="flex items-center gap-2">
+                                                        <div className="flex-1">
+                                                            <input
+                                                                type="text"
+                                                                value={opt}
+                                                                onChange={e => {
+                                                                    const copy = [...newOptions];
+                                                                    copy[oIdx] = e.target.value;
+                                                                    setNewOptions(copy);
+                                                                }}
+                                                                className="w-full bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-xs outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-100"
+                                                                placeholder={`Opción ${oIdx + 1}`}
+                                                            />
+                                                        </div>
+                                                        {newOptions.length > 2 && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const copy = [...newOptions];
+                                                                    copy.splice(oIdx, 1);
+                                                                    setNewOptions(copy);
+                                                                    if (newCorrectIndex >= copy.length) {
+                                                                        setNewCorrectIndex(copy.length - 1);
+                                                                    }
+                                                                }}
+                                                                className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors shrink-0"
+                                                                title="Eliminar esta opción"
+                                                            >
+                                                                <Trash2 className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-2">
+                                            <div className="flex-1 max-w-xs">
+                                                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Respuesta Correcta</label>
+                                                <select
+                                                    value={newCorrectIndex}
+                                                    onChange={e => setNewCorrectIndex(parseInt(e.target.value))}
+                                                    className="w-full bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-xs outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-100"
+                                                >
+                                                    {newOptions.map((opt, oIdx) => (
+                                                        <option key={oIdx} value={oIdx}>Opción {oIdx + 1} {opt ? `(${opt.substring(0, 20)}...)` : ''}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                onClick={addQuizQuestion}
+                                                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm"
+                                            >
+                                                <Plus className="w-4 h-4" /> Agregar Pregunta
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                    {/* Questions List */}
+                                    {quizQuestions.length > 0 ? (
+                                        <div className="space-y-3">
+                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block">Preguntas del Cuestionario ({quizQuestions.length})</span>
+                                            <div className="divide-y divide-slate-100 dark:divide-slate-800 border border-slate-150 dark:border-slate-800 rounded-xl overflow-hidden bg-slate-50/50 dark:bg-slate-900/10">
+                                                {quizQuestions.map((q, idx) => (
+                                                    <div key={idx} className="p-4 flex justify-between gap-4 items-start hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors">
+                                                        <div className="space-y-2 flex-1">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="w-5 h-5 rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-[10px] font-black text-indigo-600 flex items-center justify-center shrink-0">
+                                                                    {idx + 1}
+                                                                </span>
+                                                                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">{q.question}</h4>
+                                                            </div>
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-7">
+                                                                {q.options?.map((opt, oIdx) => (
+                                                                    <div
+                                                                        key={oIdx}
+                                                                        className={`px-3 py-1.5 rounded-lg text-[11px] font-medium border ${
+                                                                            oIdx === q.correctAnswerIndex
+                                                                                ? 'bg-emerald-50 border-emerald-100 text-emerald-850 dark:bg-emerald-950/10 dark:border-emerald-900/30 dark:text-emerald-450'
+                                                                                : 'bg-white border-slate-100 text-slate-505 dark:bg-slate-800 dark:border-slate-800'
+                                                                        }`}
+                                                                    >
+                                                                        <span className="font-bold mr-1">{String.fromCharCode(65 + oIdx)})</span> {opt}
+                                                                        {oIdx === q.correctAnswerIndex && <span className="ml-1 text-[9px] font-bold text-emerald-600 uppercase tracking-widest">(Correcta)</span>}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeQuizQuestion(idx)}
+                                                            className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-6 border border-dashed border-slate-250 dark:border-slate-800 rounded-2xl bg-slate-50/30 dark:bg-slate-900/5">
+                                            <AlertCircle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                                            <p className="text-xs font-medium text-slate-400">No hay preguntas agregadas todavía. Complete el formulario anterior.</p>
+                                        </div>
+                                    )}
+
+                                    {/* Save Cuestionario Action */}
+                                    <div className="flex justify-end pt-2 border-t border-slate-100 dark:border-slate-700">
+                                        <button
+                                            type="button"
+                                            onClick={handleSaveQuiz}
+                                            className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm"
+                                        >
+                                            <Save className="w-4 h-4" /> Guardar Cuestionario en Servidor
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Seguimiento de Operarios LMS (Real-time tracking) */}
+                            {doc.estado === 'vigente' && doc.requiereCapacitacion && (
+                                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-5 shadow-sm">
+                                    <div className="border-b border-slate-100 dark:border-slate-700 pb-3">
+                                        <div className="flex items-center gap-2">
+                                            <Clock className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                                            <h3 className="font-bold text-base text-slate-800 dark:text-slate-100">3. Estado de Avance de Técnicos Asignados (LMS Tracker)</h3>
+                                        </div>
+                                    </div>
+
+                                    {(() => {
+                                        const activeTrainings = doc.trainings?.filter((t: any) => t.operator?.activo) || [];
+                                        const total = activeTrainings.length;
+                                        const approved = activeTrainings.filter((t: any) => t.estado === 'aprobado').length;
+                                        const failed = activeTrainings.filter((t: any) => t.estado === 'reprobado').length;
+                                        const pending = total - approved - failed;
+
+                                        const approvedPct = total > 0 ? Math.round((approved / total) * 100) : 0;
+                                        const failedPct = total > 0 ? Math.round((failed / total) * 100) : 0;
+                                        const pendingPct = total > 0 ? Math.round((pending / total) * 100) : 0;
+
+                                        if (total === 0) {
+                                            return (
+                                                <div className="text-center py-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl">
+                                                    <p className="text-xs text-slate-400">No hay técnicos activos afectados a la capacitación de este documento.</p>
+                                                </div>
+                                            );
+                                        }
+
+                                        return (
+                                            <div className="space-y-5">
+                                                {/* Stats Cards */}
+                                                <div className="grid grid-cols-3 gap-3">
+                                                    <div className="bg-emerald-50/50 dark:bg-emerald-950/10 p-3.5 rounded-xl border border-emerald-100 dark:border-emerald-900/30 text-center animate-in zoom-in-95 duration-200">
+                                                        <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-600 dark:text-emerald-400 block mb-1">Aprobados</span>
+                                                        <span className="text-lg font-black text-emerald-700 dark:text-emerald-300 block">{approved}</span>
+                                                        <span className="text-[10px] text-slate-405 font-bold">{approvedPct}%</span>
+                                                    </div>
+                                                    <div className="bg-rose-50/50 dark:bg-rose-950/10 p-3.5 rounded-xl border border-rose-100 dark:border-rose-900/30 text-center animate-in zoom-in-95 duration-200">
+                                                        <span className="text-[10px] uppercase font-bold tracking-wider text-rose-600 dark:text-rose-400 block mb-1">Desaprobados</span>
+                                                        <span className="text-lg font-black text-rose-700 dark:text-rose-300 block">{failed}</span>
+                                                        <span className="text-[10px] text-slate-405 font-bold">{failedPct}%</span>
+                                                    </div>
+                                                    <div className="bg-slate-50 dark:bg-slate-900/30 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 text-center animate-in zoom-in-95 duration-200">
+                                                        <span className="text-[10px] uppercase font-bold tracking-wider text-slate-505 block mb-1">Pendientes</span>
+                                                        <span className="text-lg font-black text-slate-600 dark:text-slate-300 block">{pending}</span>
+                                                        <span className="text-[10px] text-slate-405 font-bold">{pendingPct}%</span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Visual Bar Stacked */}
+                                                <div className="h-3 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden flex shadow-inner">
+                                                    {approved > 0 && <div className="h-full bg-emerald-500 transition-all duration-500" style={{ width: `${approvedPct}%` }} title={`Aprobados: ${approvedPct}%`} />}
+                                                    {failed > 0 && <div className="h-full bg-rose-500 transition-all duration-500" style={{ width: `${failedPct}%` }} title={`Desaprobados: ${failedPct}%`} />}
+                                                    {pending > 0 && <div className="h-full bg-amber-400 transition-all duration-500" style={{ width: `${pendingPct}%` }} title={`Pendientes: ${pendingPct}%`} />}
+                                                </div>
+
+                                                {/* Table list */}
+                                                <div className="border border-slate-150 dark:border-slate-850 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-slate-805">
+                                                    <table className="w-full border-collapse text-left text-xs">
+                                                        <thead>
+                                                            <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-150 dark:border-slate-800">
+                                                                <th className="p-3 font-bold text-slate-700 dark:text-slate-300">Técnico / Operario</th>
+                                                                <th className="p-3 font-bold text-slate-700 dark:text-slate-300">Estado LMS</th>
+                                                                <th className="p-3 font-bold text-slate-700 dark:text-slate-300">Puntaje</th>
+                                                                <th className="p-3 font-bold text-slate-700 dark:text-slate-300">Última Actividad</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                                            {activeTrainings.map((t: any) => (
+                                                                <tr key={t.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/20 transition-colors">
+                                                                    <td className="p-3 font-bold text-slate-800 dark:text-slate-200">
+                                                                        {t.operator?.nombreCompleto || 'Operario desconocido'}
+                                                                    </td>
+                                                                    <td className="p-3">
+                                                                        {t.estado === 'aprobado' ? (
+                                                                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30 inline-flex items-center gap-1">
+                                                                                <UserCheck className="w-3 h-3" /> Aprobado
+                                                                            </span>
+                                                                        ) : t.estado === 'reprobado' ? (
+                                                                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/20 dark:text-rose-400 border border-rose-100 dark:border-rose-900/30 inline-flex items-center gap-1">
+                                                                                <UserX className="w-3 h-3" /> No Aprobado
+                                                                            </span>
+                                                                        ) : (
+                                                                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30 inline-flex items-center gap-1">
+                                                                                <Clock className="w-3 h-3 animate-pulse" /> Pendiente
+                                                                            </span>
+                                                                        )}
+                                                                    </td>
+                                                                    <td className="p-3 font-bold text-slate-650 dark:text-slate-350">
+                                                                        {t.puntajeObtenido !== null ? `${t.puntajeObtenido}%` : 'N/A'}
+                                                                    </td>
+                                                                    <td className="p-3 text-[11px] text-slate-400">
+                                                                        {t.completadoAt ? new Date(t.completadoAt).toLocaleDateString() : 'Pendiente de inicio'}
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     {tab === 'versiones' && (
                         <div className="space-y-4">
                             {doc.versions?.map((v: any) => (
@@ -747,21 +1460,65 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                     <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
                         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
                             <h3 className="font-bold text-slate-800 dark:text-slate-100">Nueva Regla Rápida</h3>
-                            <button onClick={() => setShowRuleModal(false)} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors text-slate-500">
+                            <button 
+                                onClick={() => {
+                                    setShowRuleModal(false);
+                                    setNewRule({ tipoActividad: '', bloqueanteDeInicio: false, generaChecklist: false, tagsRequeridos: [] });
+                                }} 
+                                className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors text-slate-500"
+                            >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
                         <div className="p-6 space-y-4">
                             <div>
                                 <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Tipo de Actividad</label>
-                                <input
-                                    type="text"
+                                <select
                                     value={newRule.tipoActividad}
                                     onChange={e => setNewRule({...newRule, tipoActividad: e.target.value})}
-                                    placeholder="Ej. Mantenimiento, Instalación (deja vacío para todas)"
                                     className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                                />
+                                >
+                                    <option value="">Todas las actividades</option>
+                                    {activityOptions.map(opt => (
+                                        <option key={opt} value={opt}>{opt}</option>
+                                    ))}
+                                </select>
                             </div>
+
+                            {projectTags.length > 0 && (
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+                                        Etiquetas de Proyecto Requeridas (Opcional)
+                                    </label>
+                                    <div className="flex flex-wrap gap-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 max-h-32 overflow-y-auto">
+                                        {projectTags.map(tag => {
+                                            const isSelected = newRule.tagsRequeridos?.includes(tag);
+                                            return (
+                                                <button
+                                                    key={tag}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const current = newRule.tagsRequeridos || [];
+                                                        const updated = isSelected
+                                                            ? current.filter(t => t !== tag)
+                                                            : [...current, tag];
+                                                        setNewRule({ ...newRule, tagsRequeridos: updated });
+                                                    }}
+                                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                                                        isSelected
+                                                            ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm'
+                                                            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                                                    }`}
+                                                >
+                                                    {tag}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                    <p className="text-[10px] text-slate-400 mt-1">La regla se aplicará si el proyecto tiene alguna de estas etiquetas.</p>
+                                </div>
+                            )}
+
                             <div className="flex flex-col gap-3 pt-2">
                                 <label className="flex items-center gap-3 cursor-pointer">
                                     <input
@@ -785,7 +1542,10 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                         </div>
                         <div className="p-6 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3">
                             <button
-                                onClick={() => setShowRuleModal(false)}
+                                onClick={() => {
+                                    setShowRuleModal(false);
+                                    setNewRule({ tipoActividad: '', bloqueanteDeInicio: false, generaChecklist: false, tagsRequeridos: [] });
+                                }}
                                 className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                             >
                                 Cancelar
@@ -794,7 +1554,7 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                 onClick={() => {
                                     addRule(newRule);
                                     setShowRuleModal(false);
-                                    setNewRule({ tipoActividad: '', bloqueanteDeInicio: false, generaChecklist: false });
+                                    setNewRule({ tipoActividad: '', bloqueanteDeInicio: false, generaChecklist: false, tagsRequeridos: [] });
                                 }}
                                 className="px-5 py-2.5 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-colors"
                             >

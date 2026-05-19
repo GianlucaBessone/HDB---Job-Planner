@@ -27,6 +27,11 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
                 applicabilityRules: true,
                 documentosReemplazantes: {
                     select: { id: true, codigoDocumental: true, titulo: true }
+                },
+                trainings: {
+                    include: {
+                        operator: true
+                    }
                 }
             }
         });
@@ -67,7 +72,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
             aprobadorId, aprobadorNombre,
             requiereConfirmacionLectura, requiereCapacitacion, nivelCriticidad,
             documentoReemplazadoId, motivoCambio,
-            tags, observaciones, proximaRevision,
+            tags, observaciones, proximaRevision, validezMeses,
             userId, userName
         } = data;
 
@@ -90,6 +95,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         if (requiereConfirmacionLectura !== undefined) updateData.requiereConfirmacionLectura = requiereConfirmacionLectura;
         if (requiereCapacitacion !== undefined) updateData.requiereCapacitacion = requiereCapacitacion;
         if (nivelCriticidad !== undefined) updateData.nivelCriticidad = nivelCriticidad;
+        if (validezMeses !== undefined) updateData.validezMeses = validezMeses ? parseInt(validezMeses) : null;
         if (documentoReemplazadoId !== undefined) updateData.documentoReemplazadoId = documentoReemplazadoId || null;
         if (motivoCambio !== undefined) updateData.motivoCambio = motivoCambio;
         if (tags !== undefined) updateData.tags = tags;

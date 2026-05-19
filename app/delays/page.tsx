@@ -422,7 +422,7 @@ export default function DelaysPage() {
                                                 </td>
                                                 <td className="p-4 text-right">
                                                     <div className="flex items-center justify-end gap-1">
-                                                        {(currentUser?.role === 'admin' || currentUser?.role === 'supervisor') && (
+                                                        {(currentUser?.role === 'admin' || currentUser?.role === 'supervisor' || currentUser?.role === 'qa') && (
                                                             <button onClick={() => handleEditClick(delay)} className="btn-icon-inline p-2 rounded-xl text-slate-300 hover:text-indigo-500 hover:bg-indigo-50 transition-all">
                                                                 <Edit2 className="w-4 h-4" />
                                                             </button>
@@ -460,7 +460,7 @@ export default function DelaysPage() {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-1 shrink-0">
-                                                {(currentUser?.role === 'admin' || currentUser?.role === 'supervisor') && (
+                                                {(currentUser?.role === 'admin' || currentUser?.role === 'supervisor' || currentUser?.role === 'qa') && (
                                                     <button onClick={() => handleEditClick(delay)} className="btn-icon-inline p-2 md:p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-500 transition-colors">
                                                         <Edit2 className="w-4 h-4 md:w-3.5 md:h-3.5" />
                                                     </button>

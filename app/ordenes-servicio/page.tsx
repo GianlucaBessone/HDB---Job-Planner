@@ -757,7 +757,7 @@ function OrdenesServicioContent() {
 
                                     {/* Actions */}
                                     <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
-                                        {currentUser?.role === 'admin' && os.cobroGenerado && (
+                                        {(currentUser?.role === 'admin' || currentUser?.role === 'qa') && os.cobroGenerado && (
                                             <a
                                                 href={`/api/ordenes-servicio/${os.id}/cobro/pdf`}
                                                 target="_blank"
@@ -768,7 +768,7 @@ function OrdenesServicioContent() {
                                                 <FileText className="w-3.5 h-3.5" /> PDF Cobro
                                             </a>
                                         )}
-                                        {currentUser?.role === 'admin' && os.estado === 'cobrada' && (
+                                        {(currentUser?.role === 'admin' || currentUser?.role === 'qa') && os.estado === 'cobrada' && (
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -779,7 +779,7 @@ function OrdenesServicioContent() {
                                                 <CheckCircle2 className="w-3.5 h-3.5" /> Pagada
                                             </button>
                                         )}
-                                        {currentUser?.role === 'admin' && (os.estado === 'pendiente' || os.estado === 'firmada' || os.estado === 'cobrada') && (
+                                        {(currentUser?.role === 'admin' || currentUser?.role === 'qa') && (os.estado === 'pendiente' || os.estado === 'firmada' || os.estado === 'cobrada') && (
                                             <>
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); setOsCobroToOpen(os); }}

@@ -211,7 +211,7 @@ export default function MyProjectsPage() {
     };
 
     const handleToggleItem = async (item: ChecklistItem) => {
-        const isSupervisorOrAdmin = user?.role === 'supervisor' || user?.role === 'admin';
+        const isSupervisorOrAdmin = user?.role === 'supervisor' || user?.role === 'admin' || user?.role === 'qa';
 
         if (item.confirmedBySupervisor && !isSupervisorOrAdmin) {
             setItemToChange(item);
@@ -424,7 +424,7 @@ export default function MyProjectsPage() {
     const handleFinalizeProject = async (force = false) => {
         if (!selectedProject) return;
 
-        const isSupervisorOrAdmin = user?.role === 'supervisor' || user?.role === 'admin';
+        const isSupervisorOrAdmin = user?.role === 'supervisor' || user?.role === 'admin' || user?.role === 'qa';
         if (!isSupervisorOrAdmin && !force) {
             handleRequestFinalization();
             return;
@@ -499,7 +499,7 @@ export default function MyProjectsPage() {
                             <p className="text-sm text-slate-500 dark:text-slate-400 font-medium hidden md:block">Gestión técnica y cierre de obra</p>
                         </div>
 
-                        {(user?.role === 'supervisor' || user?.role === 'admin') && (
+                        {(user?.role === 'supervisor' || user?.role === 'admin' || user?.role === 'qa') && (
                             <div className="flex items-center gap-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2.5 rounded-2xl shadow-sm self-start md:self-auto">
                                 <span className={`text-[10px] font-black uppercase tracking-widest ${!viewAll ? 'text-primary' : 'text-slate-400 dark:text-slate-500'}`}>Mis Proyectos</span>
                                 <button
@@ -937,13 +937,13 @@ export default function MyProjectsPage() {
                             <button
                                 onClick={() => handleFinalizeProject()}
                                 disabled={isFinalizing}
-                                className={`w-full text-white py-4 rounded-2xl font-black text-base shadow-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${(user?.role === 'supervisor' || user?.role === 'admin')
+                                className={`w-full text-white py-4 rounded-2xl font-black text-base shadow-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${(user?.role === 'supervisor' || user?.role === 'admin' || user?.role === 'qa')
                                     ? 'bg-primary shadow-primary/20 hover:bg-primary/90'
                                     : 'bg-indigo-600 shadow-indigo-200 hover:bg-indigo-700'
                                     }`}
                             >
                                 {isFinalizing ? <Loader2 className="w-5 h-5 animate-spin" /> : <ClipboardCheck className="w-6 h-6" />}
-                                {(user?.role === 'supervisor' || user?.role === 'admin')
+                                {(user?.role === 'supervisor' || user?.role === 'admin' || user?.role === 'qa')
                                     ? 'FINALIZAR PROYECTO'
                                     : 'SOLICITAR FINALIZACIÓN'}
                             </button>

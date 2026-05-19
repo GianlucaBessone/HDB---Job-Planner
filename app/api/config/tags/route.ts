@@ -1,8 +1,47 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET() {
+import { CHECKLIST_TEMPLATES } from '@/lib/checklistTemplates';
+
+export async function GET(req: Request) {
     try {
+        const { searchParams } = new URL(req.url);
+        const forceSeed = searchParams.get('seed') === 'true';
+
+        const targetTags = [
+            "Seguridad eléctrica",
+            "Trabajo en altura",
+            "Protocolo sanitario",
+            "Instalación dispenser",
+            "Mantenimiento refrigeración"
+        ];
+
+        const count = await prisma.projectTag.count({
+            where: { name: { in: targetTags } }
+        });
+
+        if (count < 5 || forceSeed) {
+            // Reseed tags
+            await prisma.projectTag.deleteMany({});
+            for (const tagName of targetTags) {
+                const items = CHECKLIST_TEMPLATES[tagName] || [];
+                await prisma.projectTag.create({
+                    data: {
+                        name: tagName,
+                        active: true,
+                        impactsMetrics: true,
+                        checklists: {
+                            create: items.map((item, index) => ({
+                                description: item,
+                                active: true,
+                                order: index
+                            }))
+                        }
+                    }
+                });
+            }
+        }
+
         const tags = await prisma.projectTag.findMany({
             orderBy: { name: 'asc' },
             include: { 

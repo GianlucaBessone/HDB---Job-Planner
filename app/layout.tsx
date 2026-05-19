@@ -233,8 +233,8 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
             title: "Principal",
             icon: <Home className="w-5 h-5" />,
             items: [
-                { href: '/', icon: <Home className="w-4 h-4" />, label: 'Inicio', roles: ['operador', 'supervisor', 'admin', 'vendedor'] },
-                { href: '/dashboard', icon: <LayoutDashboard className="w-4 h-4" />, label: 'Panel de Análisis', roles: ['supervisor', 'admin'] },
+                { href: '/', icon: <Home className="w-4 h-4" />, label: 'Inicio', roles: ['operador', 'supervisor', 'admin', 'qa', 'vendedor'] },
+                { href: '/dashboard', icon: <LayoutDashboard className="w-4 h-4" />, label: 'Panel de Análisis', roles: ['supervisor', 'admin', 'qa'] },
             ]
         },
         {
@@ -242,46 +242,46 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
             icon: <Wrench className="w-5 h-5" />,
             items: [
                 { href: '/fichado', icon: <MapPin className="w-4 h-4" />, label: 'Fichado (GPS/QR)', roles: ['operador', 'supervisor'] },
-                { href: '/timesheets', icon: <Clock className="w-4 h-4" />, label: 'Registro de Tiempos', roles: ['operador', 'supervisor', 'admin'] },
-                { href: '/my-projects', icon: <ClipboardList className="w-4 h-4" />, label: 'Mis Proyectos (Resp.)', roles: ['operador', 'supervisor', 'admin'] },
-                { href: '/delays', icon: <Timer className="w-4 h-4" />, label: 'Demoras del Cliente', roles: ['operador', 'supervisor', 'admin'] },
-                { href: '/herramientas', icon: <Wrench className="w-4 h-4" />, label: 'Herramientas y Carros', roles: ['operador', 'supervisor', 'admin'] },
+                { href: '/timesheets', icon: <Clock className="w-4 h-4" />, label: 'Registro de Tiempos', roles: ['operador', 'supervisor', 'admin', 'qa'] },
+                { href: '/my-projects', icon: <ClipboardList className="w-4 h-4" />, label: 'Mis Proyectos (Resp.)', roles: ['operador', 'supervisor', 'admin', 'qa'] },
+                { href: '/delays', icon: <Timer className="w-4 h-4" />, label: 'Demoras del Cliente', roles: ['operador', 'supervisor', 'admin', 'qa'] },
+                { href: '/herramientas', icon: <Wrench className="w-4 h-4" />, label: 'Herramientas y Carros', roles: ['operador', 'supervisor', 'admin', 'qa'] },
             ]
         },
         {
             title: "Gestión y Seguimiento",
             icon: <LayoutGrid className="w-5 h-5" />,
             items: [
-                { href: '/planning', icon: <Calendar className="w-4 h-4" />, label: 'Planificación', roles: ['supervisor', 'admin'] },
-                { href: '/projects', icon: <LayoutGrid className="w-4 h-4" />, label: 'Gestión de Proyectos', roles: ['supervisor', 'admin'] },
-                { href: '/ordenes-servicio', icon: <FileSignature className="w-4 h-4" />, label: 'Órdenes de Servicio', roles: ['supervisor', 'admin'] },
-                { href: '/monitoreo-fichadas', icon: <ShieldAlert className="w-4 h-4" />, label: 'Monitoreo de Fichadas', roles: ['supervisor', 'admin'] },
-                { href: '/aprobaciones', icon: <ShieldCheck className="w-4 h-4" />, label: 'Aprobaciones', roles: ['supervisor', 'admin'] },
+                { href: '/planning', icon: <Calendar className="w-4 h-4" />, label: 'Planificación', roles: ['supervisor', 'admin', 'qa'] },
+                { href: '/projects', icon: <LayoutGrid className="w-4 h-4" />, label: 'Gestión de Proyectos', roles: ['supervisor', 'admin', 'qa'] },
+                { href: '/ordenes-servicio', icon: <FileSignature className="w-4 h-4" />, label: 'Órdenes de Servicio', roles: ['supervisor', 'admin', 'qa'] },
+                { href: '/monitoreo-fichadas', icon: <ShieldAlert className="w-4 h-4" />, label: 'Monitoreo de Fichadas', roles: ['supervisor', 'admin', 'qa'] },
+                { href: '/aprobaciones', icon: <ShieldCheck className="w-4 h-4" />, label: 'Aprobaciones', roles: ['supervisor', 'admin', 'qa'] },
             ]
         },
         {
             title: "Logística y Materiales",
             icon: <Package className="w-5 h-5" />,
             items: [
-                { href: '/inventario', icon: <PackageSearch className="w-4 h-4" />, label: 'Inventario de Materiales', roles: ['admin', 'vendedor'] },
-                { href: '/provision-materiales', icon: <Package className="w-4 h-4" />, label: 'Provisión de Materiales', roles: ['vendedor', 'supervisor', 'admin'] },
+                { href: '/inventario', icon: <PackageSearch className="w-4 h-4" />, label: 'Inventario de Materiales', roles: ['admin', 'qa', 'vendedor'] },
+                { href: '/provision-materiales', icon: <Package className="w-4 h-4" />, label: 'Provisión de Materiales', roles: ['vendedor', 'supervisor', 'admin', 'qa'] },
             ]
         },
         {
             title: "Calidad",
             icon: <FileCheck className="w-5 h-5" />,
             items: [
-                { href: '/calidad', icon: <FileCheck className="w-4 h-4" />, label: 'Calidad y Documentación', roles: ['admin', 'supervisor'] },
-                { href: '/auditoria', icon: <History className="w-4 h-4" />, label: 'Auditoría', roles: ['admin', 'supervisor'] },
+                { href: '/calidad', icon: <FileCheck className="w-4 h-4" />, label: 'Calidad y Documentación', roles: ['admin', 'qa', 'supervisor'] },
+                { href: '/auditoria', icon: <History className="w-4 h-4" />, label: 'Auditoría', roles: ['admin', 'qa', 'supervisor'] },
             ]
         },
         {
             title: "Administración",
             icon: <Settings className="w-5 h-5" />,
             items: [
-                { href: '/operators', icon: <Users className="w-4 h-4" />, label: 'Gestión de Operadores', roles: ['operador', 'supervisor', 'admin'] },
-                { href: '/clients', icon: <Landmark className="w-4 h-4" />, label: 'Gestión de Clientes', roles: ['supervisor', 'admin'] },
-                { href: '/configuracion', icon: <Settings className="w-4 h-4" />, label: 'Configuración', roles: ['admin', 'supervisor'] },
+                { href: '/operators', icon: <Users className="w-4 h-4" />, label: 'Gestión de Operadores', roles: ['operador', 'supervisor', 'admin', 'qa'] },
+                { href: '/clients', icon: <Landmark className="w-4 h-4" />, label: 'Gestión de Clientes', roles: ['supervisor', 'admin', 'qa'] },
+                { href: '/configuracion', icon: <Settings className="w-4 h-4" />, label: 'Configuración', roles: ['admin', 'qa', 'supervisor'] },
             ]
         }
     ];

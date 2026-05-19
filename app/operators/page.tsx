@@ -21,7 +21,7 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import { safeApiRequest } from '@/lib/offline';
 import SearchableSelect from '@/components/SearchableSelect';
 
-const PREDEFINED_TAGS = ['Electricista', 'Ayudante', 'Técnico CCTV', 'Supervisor', 'Otro'];
+// PREDEFINED_TAGS is now loaded dynamically from the backend config
 
 export default function OperatorsPage() {
     const [operators, setOperators] = useState<any[]>([]);
@@ -40,6 +40,7 @@ export default function OperatorsPage() {
     });
     const [customTag, setCustomTag] = useState('');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+    const [systemTags, setSystemTags] = useState<string[]>([]);
 
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [operatorToDelete, setOperatorToDelete] = useState<string | null>(null);
@@ -53,20 +54,33 @@ export default function OperatorsPage() {
                 setCurrentUser(parsed);
             } catch (e) { }
         }
-        loadOperators(false, parsed);
+        loadData(false, parsed);
     }, []);
 
-    const loadOperators = async (silent = false, userObj?: any) => {
+    const loadData = async (silent = false, userObj?: any) => {
         if (!silent) setIsLoading(true);
         try {
             const user = userObj || currentUser;
-            let data = await safeApiRequest('/api/operators').then(res => res.json());
-            if (user?.role === 'operador' || user?.role === 'vendedor') {
-                data = data.filter((op: any) => op.id === user.id);
+            const [opsRes, tagsRes] = await Promise.all([
+                safeApiRequest('/api/operators'),
+                safeApiRequest('/api/config/tags')
+            ]);
+            
+            if (opsRes.ok) {
+                let data = await opsRes.json();
+                if (user?.role === 'operador' || user?.role === 'vendedor') {
+                    data = data.filter((op: any) => op.id === user.id);
+                }
+                setOperators(Array.isArray(data) ? data : []);
             }
-            setOperators(data);
+            if (tagsRes.ok) {
+                const tagsData = await tagsRes.json();
+                if (Array.isArray(tagsData)) {
+                    setSystemTags(tagsData.filter((t: any) => t.active).map((t: any) => t.name));
+                }
+            }
         } catch (e) {
-            console.error(e);
+            console.error('Error loading data:', e);
         } finally {
             if (!silent) setIsLoading(false);
         }
@@ -104,7 +118,8 @@ export default function OperatorsPage() {
         });
 
         setIsModalOpen(false);
-        loadOperators(true);
+        setEditingOperator(null);
+        loadData(true);
     };
 
     const toggleTag = (tag: string) => {
@@ -239,7 +254,8 @@ export default function OperatorsPage() {
                                                 { id: 'operador', label: 'Operador' },
                                                 { id: 'supervisor', label: 'Supervisor' },
                                                 { id: 'admin', label: 'Administrador' },
-                                                { id: 'vendedor', label: 'Vendedor' }
+                                                { id: 'vendedor', label: 'Vendedor' },
+                                                { id: 'qa', label: 'QA' }
                                             ]}
                                             value={formData.role}
                                             onChange={(val) => setFormData({ ...formData, role: val })}
@@ -296,7 +312,7 @@ export default function OperatorsPage() {
                                             onKeyDown={handleAddCustomTag}
                                         />
                                         <div className="flex flex-wrap gap-2 pt-2">
-                                            {Array.from(new Set([...PREDEFINED_TAGS, ...formData.etiquetas])).map(tag => (
+                                            {Array.from(new Set([...systemTags, ...formData.etiquetas])).map(tag => (
                                                 <button
                                                     key={tag}
                                                     type="button"
@@ -355,8 +371,10 @@ export default function OperatorsPage() {
                                                 <h4 className="font-bold text-slate-800 dark:text-slate-100 truncate">{op.nombreCompleto}</h4>
                                                 <div className="flex flex-wrap gap-1 mt-1 mb-1">
                                                     <span className={`px-2 py-[2px] rounded-md text-[9px] font-bold uppercase tracking-wider ${
-                                                        op.role === 'admin' || op.role === 'supervisor' ? 'bg-indigo-100 text-indigo-700' : 
-                                                        op.role === 'vendedor' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400'
+                                                        op.role === 'admin' || op.role === 'qa' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300' : 
+                                                        op.role === 'supervisor' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' :
+                                                        op.role === 'vendedor' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 
+                                                        'bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400'
                                                     }`}>
                                                         {op.role || 'operador'}
                                                     </span>
@@ -432,7 +450,8 @@ export default function OperatorsPage() {
                                     <div className="relative z-10">
                                         <div className="flex flex-wrap gap-1 mt-1 mb-2">
                                             <span className={`px-2 py-[2px] rounded-md text-[9px] font-bold uppercase tracking-wider ${
-                                                op.role === 'admin' || op.role === 'supervisor' ? 'bg-indigo-100 text-indigo-700' : 
+                                                op.role === 'admin' || op.role === 'qa' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300' : 
+                                                op.role === 'supervisor' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' :
                                                 op.role === 'vendedor' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400'
                                             }`}>
                                                 {op.role || 'operador'}

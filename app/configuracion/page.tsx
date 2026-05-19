@@ -46,7 +46,7 @@ export default function ConfigPage() {
             try {
                 const user = JSON.parse(stored);
                 const role = user.role?.toLowerCase();
-                if (role !== 'admin' && role !== 'supervisor') {
+                if (role !== 'admin' && role !== 'supervisor' && role !== 'qa') {
                     router.replace('/');
                 } else {
                     setUserRole(role);
@@ -1093,6 +1093,7 @@ function ViewsSection() {
         { id: 'operador', label: 'Operador', color: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300' },
         { id: 'supervisor', label: 'Supervisor', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' },
         { id: 'admin', label: 'Admin', color: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300' },
+        { id: 'qa', label: 'QA', color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300' },
         { id: 'vendedor', label: 'Vendedor', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' },
     ];
 

@@ -36,7 +36,7 @@ export async function POST(req: Request) {
         // Destinatarios: Supervisores y Hernan Bassignana
         const supervisors = await prisma.operator.findMany({
             where: {
-                role: { in: ['supervisor', 'admin'] },
+                role: { in: ['supervisor', 'admin', 'qa'] },
                 activo: true
             },
             select: { id: true }

@@ -663,8 +663,8 @@ function MaterialesTable({
     const [editTarget, setEditTarget] = useState<Material | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<Material | null>(null);
     const userRole = user?.role?.toLowerCase()?.trim();
-    const isVendedor = ['vendedor', 'supervisor', 'admin'].includes(userRole || '');
-    const isAdmin = userRole === 'admin';
+    const isVendedor = ['vendedor', 'supervisor', 'admin', 'qa'].includes(userRole || '');
+    const isAdmin = userRole === 'admin' || userRole === 'qa';
 
     const handleUpdate = async (id: string, field: string, value: number) => {
         const mat = proyecto.materialesProyecto.find(m => m.id === id);

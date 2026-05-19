@@ -376,6 +376,14 @@ export const dataLayer = {
             newValue: operator
         });
 
+        // Trigger dynamic QMS training sync
+        try {
+            const { syncOperatorTrainings } = require('@/app/api/qms/compliance-engine');
+            await syncOperatorTrainings(operator.id);
+        } catch (err) {
+            console.error('Failed to sync operator QMS trainings on create:', err);
+        }
+
         return operator;
     },
     async updateOperator(id: string, data: { nombreCompleto?: string; activo?: boolean; enVacaciones?: boolean; etiquetas?: string[]; pin?: string; role?: string }) {
@@ -392,6 +400,14 @@ export const dataLayer = {
             oldValue: oldOperator,
             newValue: operator
         });
+
+        // Trigger dynamic QMS training sync
+        try {
+            const { syncOperatorTrainings } = require('@/app/api/qms/compliance-engine');
+            await syncOperatorTrainings(operator.id);
+        } catch (err) {
+            console.error('Failed to sync operator QMS trainings on update:', err);
+        }
 
         return operator;
     },

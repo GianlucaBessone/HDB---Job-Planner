@@ -66,7 +66,7 @@ export async function POST(req: Request) {
 
         // 2. Summary for Administrators
         const administrators = await prisma.operator.findMany({
-            where: { role: 'admin' }
+            where: { role: { in: ['admin', 'qa'] } }
         });
 
         // Format summary message

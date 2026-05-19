@@ -93,6 +93,14 @@ export async function POST(req: Request, { params }: { params: { id: string } })
                         }
                     });
                 }
+
+                // Disparar capacitaciones automáticas (Motor de cumplimiento QMS)
+                try {
+                    const { triggerAutomaticTraining } = await import('../../../qms/compliance-engine');
+                    await triggerAutomaticTraining(doc.id);
+                } catch (qmsErr) {
+                    console.error('QMS Automatic Training Trigger Error:', qmsErr);
+                }
             }
 
             const updatedDoc = await prisma.controlledDocument.update({

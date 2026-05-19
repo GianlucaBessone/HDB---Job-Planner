@@ -322,7 +322,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                                     </div>
                                 )}
 
-                                {(user?.role === 'supervisor' || user?.role === 'admin') && (
+                                {(user?.role === 'supervisor' || user?.role === 'admin' || user?.role === 'qa') && (
                                     <div className="flex gap-3">
                                         <button onClick={handleRejectModification} className="flex-1 py-4 bg-rose-50 text-rose-600 rounded-xl font-bold hover:bg-rose-100 transition-colors">Rechazar</button>
                                         <button onClick={handleAcceptModification} className="flex-1 py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95">Aprobar</button>

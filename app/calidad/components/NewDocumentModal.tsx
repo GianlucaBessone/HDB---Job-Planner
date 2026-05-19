@@ -17,6 +17,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
         nivelCriticidad: 'medio',
         requiereConfirmacionLectura: true,
         requiereCapacitacion: false,
+        validezMeses: '12',
         revisadorId: '',
         aprobadorId: '',
         tags: [] as string[]
@@ -109,6 +110,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                 method: 'POST',
                 body: JSON.stringify({
                     ...formData,
+                    validezMeses: formData.requiereCapacitacion ? parseInt(formData.validezMeses) : null,
                     autorId: user?.id,
                     autorNombre: user?.nombreCompleto || user?.nombre,
                     userId: user?.id,
@@ -200,9 +202,11 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                 className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-indigo-500 outline-none"
                             >
                                 <option value="">(Sin asignar)</option>
-                                {operators.map(op => (
-                                    <option key={op.id} value={op.id}>{op.nombreCompleto || op.nombre}</option>
-                                ))}
+                                {operators
+                                    .filter(op => ['supervisor', 'admin', 'qa'].includes((op.role || '').toLowerCase()))
+                                    .map(op => (
+                                        <option key={op.id} value={op.id}>{op.nombreCompleto || op.nombre}</option>
+                                    ))}
                             </select>
                         </div>
                         <div>
@@ -212,9 +216,11 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                 className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-indigo-500 outline-none"
                             >
                                 <option value="">(Sin asignar)</option>
-                                {operators.map(op => (
-                                    <option key={op.id} value={op.id}>{op.nombreCompleto || op.nombre}</option>
-                                ))}
+                                {operators
+                                    .filter(op => ['supervisor', 'admin', 'qa'].includes((op.role || '').toLowerCase()))
+                                    .map(op => (
+                                        <option key={op.id} value={op.id}>{op.nombreCompleto || op.nombre}</option>
+                                    ))}
                             </select>
                         </div>
                     </div>
@@ -272,7 +278,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                         </div>
                     </div>
 
-                    <div className="pt-4 border-t border-slate-100 dark:border-slate-700 space-y-3">
+                    <div className="pt-4 border-t border-slate-100 dark:border-slate-700 space-y-4">
                         <label className="flex items-center gap-3 cursor-pointer group">
                             <div className="relative flex items-center justify-center">
                                 <input
@@ -285,6 +291,34 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                             </div>
                             <span className="text-sm font-bold text-slate-700 dark:text-slate-200">Requiere Confirmación de Lectura (OS)</span>
                         </label>
+
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                            <div className="relative flex items-center justify-center">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.requiereCapacitacion}
+                                    onChange={e => setFormData({ ...formData, requiereCapacitacion: e.target.checked })}
+                                    className="peer sr-only"
+                                />
+                                <div className="w-10 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-indigo-600"></div>
+                            </div>
+                            <span className="text-sm font-bold text-slate-700 dark:text-slate-200">Requiere Capacitación Obligatoria (LMS)</span>
+                        </label>
+
+                        {formData.requiereCapacitacion && (
+                            <div className="pl-13 space-y-1.5 animate-in slide-in-from-top-2 duration-200">
+                                <label className="block text-xs font-bold text-slate-500 uppercase">Periodo de Validez / Vencimiento (en meses)</label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    required
+                                    placeholder="Ej. 12"
+                                    value={formData.validezMeses}
+                                    onChange={e => setFormData({ ...formData, validezMeses: e.target.value })}
+                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-sm font-bold focus:border-indigo-500 outline-none"
+                                />
+                            </div>
+                        )}
                     </div>
 
                     {/* Firma digital del creador */}

@@ -231,6 +231,15 @@ export default function PunchInPage() {
 
             if (!res.ok) {
                 const err = await res.json();
+                if (res.status === 403 && err.code === 'COMPLIANCE_BLOCKED') {
+                    showToast(err.message || 'Bloqueo de Compliance QMS', "error");
+                    if (err.reasons && err.reasons.length > 0) {
+                        setTimeout(() => {
+                            alert("Requisitos de Calidad (QMS) pendientes:\n\n- " + err.reasons.join('\n- ') + "\n\nPor favor, dirígete a la pestaña 'Calidad' para completarlos.");
+                        }, 500);
+                    }
+                    return;
+                }
                 if (res.status === 403 && err.code === 'CONFIRM_REQUIRED') {
                     setPendingPunchAction({ action, entryId, projId });
                     setUnassignedConfirmOpen(true);

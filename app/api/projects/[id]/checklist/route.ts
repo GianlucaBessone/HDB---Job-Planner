@@ -16,29 +16,70 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
         const projectTags = (project.tags as string[]) || [];
 
+        // 1.5 Get checklists from QMS controlled documents assigned to these tags
+        const qmsDocuments = await prisma.controlledDocument.findMany({
+            where: {
+                estado: 'vigente',
+                // We'll filter tags in JS because JSON array querying is complex across DB engines
+            },
+            include: {
+                versions: {
+                    where: { estado: 'vigente' },
+                    orderBy: { createdAt: 'desc' },
+                    take: 1
+                }
+            }
+        });
+
         // 2. Get existing items
         const existingItems = await prisma.checklistItem.findMany({
             where: { projectId: id },
             orderBy: { createdAt: 'asc' }
         });
 
-        // 3. Sync: If new tags added, create new items (don't delete removed ones for traceability, but they might be filtered in UI)
+        // 3. Sync: If new tags added, create new items
         let newlyCreated = false;
-        for (const tag of projectTags) {
-            const templateItems = CHECKLIST_TEMPLATES[tag] || [];
-            for (const desc of templateItems) {
-                const alreadyExists = existingItems.find(item => item.tag === tag && item.description === desc);
-                if (!alreadyExists) {
-                    await prisma.checklistItem.create({
-                        data: {
-                            projectId: id,
-                            tag,
-                            description: desc,
-                            completed: false
+        
+        // Find documents that match project tags
+        const matchedDocs = qmsDocuments.filter(doc => {
+            const docTags = (doc.tags as string[]) || [];
+            return projectTags.some(pt => docTags.includes(pt));
+        });
+
+        // Extract checklists from matched documents
+        let documentChecklistItems: { tag: string, description: string }[] = [];
+        matchedDocs.forEach(doc => {
+            if (doc.versions && doc.versions.length > 0) {
+                const version = doc.versions[0];
+                const template = version.checklistTemplate as any[];
+                if (Array.isArray(template)) {
+                    // We assign the first matching tag from the document for the item's tag categorization
+                    const primaryTag = Array.isArray(doc.tags) && doc.tags.length > 0 ? String(doc.tags[0]) : 'General';
+                    template.forEach(item => {
+                        if (item.descripcion) {
+                            documentChecklistItems.push({
+                                tag: primaryTag,
+                                description: item.descripcion
+                            });
                         }
                     });
-                    newlyCreated = true;
                 }
+            }
+        });
+
+        // Create missing checklist items
+        for (const item of documentChecklistItems) {
+            const alreadyExists = existingItems.find(ex => ex.description === item.description);
+            if (!alreadyExists) {
+                await prisma.checklistItem.create({
+                    data: {
+                        projectId: id,
+                        tag: item.tag,
+                        description: item.description,
+                        completed: false
+                    }
+                });
+                newlyCreated = true;
             }
         }
 

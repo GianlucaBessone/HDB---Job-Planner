@@ -92,7 +92,7 @@ export async function POST(req: Request) {
             revisadorId, revisadorNombre, descripcion,
             requiereConfirmacionLectura, requiereCapacitacion, nivelCriticidad,
             documentoReemplazadoId, motivoCambio,
-            tags, observaciones, proximaRevision,
+            tags, observaciones, proximaRevision, validezMeses,
             userId, userName, creatorSignature
         } = data;
 
@@ -154,6 +154,7 @@ export async function POST(req: Request) {
                 requiereConfirmacionLectura: requiereConfirmacionLectura || false,
                 requiereCapacitacion: requiereCapacitacion || false,
                 nivelCriticidad: nivelCriticidad || 'media',
+                validezMeses: validezMeses ? parseInt(validezMeses) : null,
                 documentoReemplazadoId: documentoReemplazadoId || null,
                 motivoCambio: motivoCambio || null,
                 tags: tags || [],

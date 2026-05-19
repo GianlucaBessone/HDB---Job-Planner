@@ -73,7 +73,7 @@ export async function POST(req: Request) {
 
     if (material) {
         const supervisors = await prisma.operator.findMany({
-            where: { role: { in: ['supervisor', 'admin'] }, activo: true },
+            where: { role: { in: ['supervisor', 'admin', 'qa'] }, activo: true },
             select: { id: true },
         });
 
