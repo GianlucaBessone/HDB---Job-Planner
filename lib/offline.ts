@@ -76,7 +76,7 @@ async function notifyObservers() {
   try {
     const db = await getDB();
     const actions = await db.getAll('pendingActions');
-    const status = !navigator.onLine ? 'offline' : (currentStatus === 'syncing' ? 'syncing' : 'online');
+    const status = !navigator.onLine ? 'offline' : currentStatus;
     observers.forEach(obs => obs(status, actions.length));
   } catch {
     observers.forEach(obs => obs(currentStatus, 0));
@@ -239,7 +239,7 @@ export async function verifyRealConnectivity(): Promise<boolean> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-    const res = await fetch('/api/healthcheck', {
+    const res = await fetch('/api/audit/ping', {
       method: 'GET',
       headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' },
       signal: controller.signal
@@ -370,6 +370,9 @@ export async function processSyncQueue() {
 // ============= Auto-init listeners (client only) =============
 
 if (typeof window !== 'undefined') {
+  (window as any).processSyncQueue = processSyncQueue;
+  (window as any).verifyRealConnectivity = verifyRealConnectivity;
+
   window.addEventListener('online', () => {
     console.log('[Offline] Window online event fired');
     setStatus('online');

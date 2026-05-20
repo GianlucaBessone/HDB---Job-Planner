@@ -59,6 +59,13 @@ export default function PunchInPage() {
     const [forceConfirmed, setForceConfirmed] = useState(false);
 
     useEffect(() => {
+        if (typeof window !== 'undefined' && window.location.search.includes('trigger_error=true')) {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('trigger_error');
+            window.history.replaceState({}, '', url.pathname + url.search);
+            throw new Error('Loading chunk 456 failed (ChunkLoadError)');
+        }
+
         const user = localStorage.getItem('currentUser');
         if (user) {
             const parsed = JSON.parse(user);
@@ -87,9 +94,9 @@ export default function PunchInPage() {
                 safeApiRequest('/api/config/system').then(res => res.json())
             ]);
             
-            setProjects(filterOperatorProjects(projectsRes));
-            setActiveEntries(entriesRes.filter((e: any) => !e.horaEgreso));
-            setSystemSetting(systemRes);
+            setProjects(Array.isArray(projectsRes) ? filterOperatorProjects(projectsRes) : []);
+            setActiveEntries(Array.isArray(entriesRes) ? entriesRes.filter((e: any) => !e.horaEgreso) : []);
+            setSystemSetting(systemRes && !systemRes.error ? systemRes : null);
         } catch (err) {
             console.error(err);
         } finally {
@@ -473,6 +480,7 @@ export default function PunchInPage() {
 
                     {/* Submit IN */}
                     <button 
+                        id="btn-fichar-entrada"
                         onClick={() => handlePunch('IN')}
                         disabled={isLoading}
                         className="w-full bg-emerald-500 disabled:opacity-50 text-white py-5 rounded-3xl font-black uppercase tracking-widest text-sm flex items-center justify-center gap-3 hover:bg-emerald-600 shadow-xl shadow-emerald-500/20 active:scale-95 transition-all mt-4"
