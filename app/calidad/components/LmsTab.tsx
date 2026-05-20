@@ -137,22 +137,77 @@ export default function LmsTab({ user }: { user: any }) {
                                 Por favor, lee y estudia detalladamente el siguiente procedimiento controlado antes de proceder a la realización del cuestionario de suficiencia teórica obligatoria.
                             </p>
 
-                            {/* Emulador de Visualización de Documento */}
-                            <div className="aspect-video bg-slate-950 rounded-2xl flex flex-col items-center justify-center border border-slate-800 p-6 text-center space-y-4">
-                                <BookOpen className="w-16 h-16 text-primary animate-pulse" />
-                                <div>
-                                    <h4 className="text-base font-black text-white">{activeCourse.document?.titulo || activeCourse.titulo}</h4>
-                                    <p className="text-xs font-bold text-slate-400 mt-1">Procedimiento de Calidad QMS • PDF Oficial Autorizado</p>
-                                </div>
-                                <a 
-                                    href={activeCourse.urlContenido || '#'} 
-                                    target="_blank" 
-                                    rel="noreferrer"
-                                    className="bg-primary hover:bg-primary-dark text-white font-black text-xs px-6 py-3 rounded-full transition-all shadow-lg shadow-primary/20 flex items-center gap-2"
-                                >
-                                    <Play className="w-4 h-4" /> Abrir Documento Controlado
-                                </a>
-                            </div>
+                            {/* Visualización de Documento Real */}
+                            {(() => {
+                                const doc = activeCourse.document;
+                                const digitalData = typeof doc?.descripcion === 'string' ? (() => { try { return JSON.parse(doc.descripcion); } catch(e) { return null; } })() : doc?.descripcion;
+                                const isDigital = digitalData?.isDigital === true;
+                                const pdfFile = doc?.versions?.[0]?.files?.find((f: any) => f.esPrincipal) || doc?.versions?.[0]?.files?.[0];
+                                
+                                if (isDigital && digitalData) {
+                                    const ytUrl = digitalData.videoUrl?.includes('youtube.com/watch?v=') 
+                                        ? digitalData.videoUrl.replace('watch?v=', 'embed/') 
+                                        : digitalData.videoUrl;
+
+                                    return (
+                                        <div className="space-y-4">
+                                            {ytUrl && (
+                                                <div className="bg-black rounded-2xl overflow-hidden border border-slate-700 shadow-xl">
+                                                    <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 border-b border-slate-800">
+                                                        <Play className="w-4 h-4 text-primary" />
+                                                        <span className="text-xs font-bold text-slate-300">Video de Capacitación</span>
+                                                    </div>
+                                                    <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                                                        <iframe src={ytUrl} allow="autoplay; encrypted-media" allowFullScreen className="absolute inset-0 w-full h-full" />
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {[
+                                                { title: 'Objetivo', content: digitalData.objetivo },
+                                                { title: 'Alcance', content: digitalData.alcance },
+                                                { title: 'Desarrollo', content: digitalData.desarrollo },
+                                                { title: 'Responsabilidades', content: digitalData.responsabilidades },
+                                            ].filter(s => s.content).map((section, idx) => (
+                                                <div key={idx} className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                                    <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-2">{section.title}</p>
+                                                    <p className="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">{section.content}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    );
+                                } else if (pdfFile) {
+                                    return (
+                                        <div className="relative w-full h-[600px] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm bg-slate-100 dark:bg-slate-900">
+                                            <iframe 
+                                                src={pdfFile.url} 
+                                                className="absolute inset-0 w-full h-full"
+                                                title="Visor PDF"
+                                            />
+                                        </div>
+                                    );
+                                }
+
+                                return (
+                                    <div className="aspect-video bg-slate-950 rounded-2xl flex flex-col items-center justify-center border border-slate-800 p-6 text-center space-y-4">
+                                        <BookOpen className="w-16 h-16 text-primary animate-pulse" />
+                                        <div>
+                                            <h4 className="text-base font-black text-white">{activeCourse.document?.titulo || activeCourse.titulo}</h4>
+                                            <p className="text-xs font-bold text-slate-400 mt-1">Procedimiento de Calidad QMS • PDF Oficial Autorizado</p>
+                                        </div>
+                                        {activeCourse.urlContenido && (
+                                            <a 
+                                                href={activeCourse.urlContenido} 
+                                                target="_blank" 
+                                                rel="noreferrer"
+                                                className="bg-primary hover:bg-primary-dark text-white font-black text-xs px-6 py-3 rounded-full transition-all shadow-lg shadow-primary/20 flex items-center gap-2"
+                                            >
+                                                <Play className="w-4 h-4" /> Abrir Documento Controlado
+                                            </a>
+                                        )}
+                                    </div>
+                                );
+                            })()}
                         </div>
                     </div>
 
@@ -321,15 +376,24 @@ export default function LmsTab({ user }: { user: any }) {
                         >
                             <div className="space-y-3">
                                 <div className="flex justify-between items-start">
-                                    <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full ${
-                                        isApproved 
-                                            ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400' 
-                                            : isReproved 
-                                                ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
-                                                : 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400'
-                                    }`}>
-                                        {t.estado === 'pendiente' ? 'Pendiente' : t.estado === 'aprobado' ? 'Aprobado' : 'Reprobado'}
-                                    </span>
+                                    <div className="flex gap-2 items-center">
+                                        <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full ${
+                                            isApproved 
+                                                ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400' 
+                                                : isReproved 
+                                                    ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+                                                    : t.estado === 'obsoleto'
+                                                        ? 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                                                        : 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400'
+                                        }`}>
+                                            {t.estado === 'pendiente' ? 'Pendiente' : t.estado === 'aprobado' ? 'Aprobado' : t.estado === 'reprobado' ? 'Reprobado' : 'Historial Obsoleto'}
+                                        </span>
+                                        {t.estado === 'pendiente' && t.document?.versions?.[0]?.versionMayor > 1 && (
+                                            <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                                                Nueva Versión
+                                            </span>
+                                        )}
+                                    </div>
                                     <span className="text-[10px] font-bold text-slate-400">
                                         v{t.document?.versiones?.[0]?.versionLabel || '1.0'}
                                     </span>

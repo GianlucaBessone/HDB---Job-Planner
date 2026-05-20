@@ -119,7 +119,8 @@ model Operator {
   enVacaciones              Boolean                     @default(false)
   etiquetas                 Json // Now using native Json type
   pin                       String                      @default("1234")
-  role                      String                      @default("operador") // operador | supervisor | admin | vendedor
+  role                      String                      @default("operador") // operador | supervisor | admin | vendedor | qa
+  posicion                  String?                     // e.g. "Director", "QA Manager", "Gerente"
   responsibleProjects       Project[]                   @relation("ProjectResponsable")
   createdAt                 DateTime                    @default(now())
   timeEntries               TimeEntry[]
@@ -661,6 +662,7 @@ model DocumentVersion {
   files                  DocumentFile[]
   OrdenServicioDocumento OrdenServicioDocumento[]
   OSChecklist            OSChecklist[]
+  trainings              TechnicianTraining[]
 
   @@unique([documentId, versionMayor, versionMenor])
   @@index([documentId])
@@ -929,6 +931,8 @@ model TechnicianTraining {
   operator        Operator           @relation(fields: [operatorId], references: [id], onDelete: Cascade)
   documentId      String?
   document        ControlledDocument? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  versionId       String?
+  version         DocumentVersion?    @relation(fields: [versionId], references: [id], onDelete: SetNull)
   titulo          String             // Título de la capacitación
   estado          String             @default("pendiente") // pendiente | en_progreso | aprobado | reprobado
   tipoContenido   String             @default("video") // video | pdf | cuestionario | mixto
@@ -948,5 +952,6 @@ model TechnicianTraining {
 
   @@index([operatorId])
   @@index([documentId])
+  @@index([versionId])
   @@index([estado])
 }

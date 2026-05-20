@@ -73,6 +73,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
             requiereConfirmacionLectura, requiereCapacitacion, nivelCriticidad,
             documentoReemplazadoId, motivoCambio,
             tags, observaciones, proximaRevision, validezMeses,
+            descripcion, creatorSignature,
             userId, userName
         } = data;
 
@@ -101,11 +102,27 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         if (tags !== undefined) updateData.tags = tags;
         if (observaciones !== undefined) updateData.observaciones = observaciones;
         if (proximaRevision !== undefined) updateData.proximaRevision = proximaRevision ? new Date(proximaRevision) : null;
+        if (descripcion !== undefined) updateData.descripcion = descripcion;
 
-        // If the document is modified (e.g. while in borrador or en_revision), reset signoffs to pending
-        if (oldDoc.estado === 'borrador' || oldDoc.estado === 'en_revision') {
+        // Fetch user's position for signature block
+        const operator = await prisma.operator.findUnique({
+            where: { id: userId },
+            select: { posicion: true }
+        });
+        const userPosition = operator?.posicion || '';
+
+        // Si el documento entra en un nuevo ciclo de revisión, actualizamos las firmas
+        if (oldDoc.estado === 'borrador' || oldDoc.estado === 'en_revision' || estado === 'en_revision') {
             let workflow: any = oldDoc.workflowState || {};
             if (workflow && typeof workflow === 'object') {
+                workflow.creatorStatus = creatorSignature ? 'approved' : (workflow.creatorStatus || 'pending');
+                workflow.creatorSignature = creatorSignature || workflow.creatorSignature;
+                workflow.creatorSignatureDate = creatorSignature ? new Date().toISOString() : workflow.creatorSignatureDate;
+                
+                // Track the actual person doing this specific edit/version
+                workflow.editorName = userName || null;
+                workflow.editorPosition = userPosition || null;
+
                 workflow.revisadorStatus = (revisadorId || oldDoc.revisadorId) ? 'pending' : 'none';
                 workflow.revisadorComment = null;
                 workflow.revisadorSignature = null;
@@ -118,10 +135,12 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
                 if (!workflow.history) workflow.history = [];
                 workflow.history.push({
-                    user: userName || 'Creador',
+                    user: userName || 'Editor',
+                    posicion: userPosition || '',
                     action: 'modified',
                     date: new Date().toISOString(),
-                    comment: motivoCambio || 'Modificaciones aplicadas'
+                    comment: motivoCambio || 'Modificaciones aplicadas / Nueva versión',
+                    signature: creatorSignature || null
                 });
 
                 updateData.workflowState = workflow;
@@ -133,6 +152,35 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
             where: { id: params.id },
             data: updateData
         });
+
+        if (updateData.estado === 'en_revision') {
+            const notifiedUserIds: string[] = [];
+            if (doc.revisadorId) notifiedUserIds.push(doc.revisadorId);
+            if (doc.aprobadorId && doc.aprobadorId !== doc.revisadorId) notifiedUserIds.push(doc.aprobadorId);
+
+            if (notifiedUserIds.length > 0) {
+                const { sendPushNotification } = await import('@/lib/onesignal');
+                await sendPushNotification({
+                    userIds: notifiedUserIds,
+                    title: "Revisión Documental Requerida",
+                    message: `El documento "${doc.codigoDocumental}" ha sido modificado y requiere tu firma/revisión nuevamente.`,
+                    data: { route: `/calidad/documentos/${doc.id}` }
+                }).catch(e => console.error("Error sending push notification to reviewers:", e));
+
+                for (const targetId of notifiedUserIds) {
+                    await prisma.notification.create({
+                        data: {
+                            operatorId: targetId,
+                            title: "Revisión Documental Requerida",
+                            message: `El documento "${doc.codigoDocumental}" ha sido modificado y requiere tu firma/revisión nuevamente.`,
+                            type: 'QMS_DOCUMENT_REVIEW',
+                            relatedId: doc.id,
+                            forSupervisors: false
+                        }
+                    }).catch(e => console.error("Error creating internal QMS notification:", e));
+                }
+            }
+        }
 
         await logAudit({
             userId,

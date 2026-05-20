@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { X, FileText, CheckCircle2, ShieldAlert, Plus, Trash2, Save, FileBox, AlertCircle, FileSignature, ThumbsUp, ThumbsDown, Download, Upload, BookOpen, Award, Clock, UserCheck, UserX } from 'lucide-react';
+import { X, FileText, CheckCircle2, ShieldAlert, Plus, Trash2, Save, FileBox, AlertCircle, FileSignature, ThumbsUp, ThumbsDown, Download, Upload, BookOpen, Award, Clock, UserCheck, UserX, Sparkles, Search, PlusCircle, Play, Loader2, FileCheck } from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
 
@@ -50,6 +50,344 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
     const [editValidezMeses, setEditValidezMeses] = useState('');
     const [savingReqs, setSavingReqs] = useState(false);
 
+    // Version Control Modal State
+    const [showVersionModal, setShowVersionModal] = useState(false);
+    const [versionAction, setVersionAction] = useState<'mayor' | 'menor' | 'none'>('menor');
+    const [versionJustification, setVersionJustification] = useState('');
+    const [pendingSaveType, setPendingSaveType] = useState<'digital' | 'requirements' | 'quiz' | 'checklist' | null>(null);
+    const [pendingSaveData, setPendingSaveData] = useState<any>(null);
+    const [executingSave, setExecutingSave] = useState(false);
+
+    // Version Control Modal specific state
+    const [operators, setOperators] = useState<any[]>([]);
+    const [newRevisadorId, setNewRevisadorId] = useState('');
+    const [newAprobadorId, setNewAprobadorId] = useState('');
+    const versionCanvasRef = useRef<HTMLCanvasElement>(null);
+    const [isVersionDrawing, setIsVersionDrawing] = useState(false);
+    const [hasVersionSigned, setHasVersionSigned] = useState(false);
+    const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+
+    useEffect(() => {
+        const handleOnline = () => setIsOnline(true);
+        const handleOffline = () => setIsOnline(false);
+        if (typeof window !== 'undefined') {
+            window.addEventListener('online', handleOnline);
+            window.addEventListener('offline', handleOffline);
+        }
+        return () => {
+            if (typeof window !== 'undefined') {
+                window.removeEventListener('online', handleOnline);
+                window.removeEventListener('offline', handleOffline);
+            }
+        };
+    }, []);
+
+    // Digital SOP edit/view states
+    const [isEditingDigital, setIsEditingDigital] = useState(false);
+    const [editedDigitalData, setEditedDigitalData] = useState<any>({
+        objetivo: '',
+        alcance: '',
+        desarrollo: '',
+        responsabilidades: '',
+        videoUrl: '',
+        definiciones: [],
+        referencias: []
+    });
+    const [allDocs, setAllDocs] = useState<any[]>([]);
+    const [customAbbrevs, setCustomAbbrevs] = useState<{ term: string; definition: string }[]>([]);
+    const [newTerm, setNewTerm] = useState('');
+    const [newDef, setNewDef] = useState('');
+    const [saveToFrequents, setSaveToFrequents] = useState(true);
+    const [refSearch, setRefSearch] = useState('');
+    const [showRefResults, setShowRefResults] = useState(false);
+    const [customRefText, setCustomRefText] = useState('');
+    const [savingDigital, setSavingDigital] = useState(false);
+
+    useEffect(() => {
+        const saved = localStorage.getItem('hdb_custom_definitions');
+        if (saved) {
+            try { setCustomAbbrevs(JSON.parse(saved)); } catch(e){}
+        }
+    }, []);
+
+    const handleSaveDigitalData = () => {
+        setPendingSaveType('digital');
+        setPendingSaveData({ isDigital: true, ...editedDigitalData });
+        setVersionAction('menor');
+        setVersionJustification('');
+        setShowVersionModal(true);
+    };
+
+    const getYoutubeEmbedUrl = (url: string) => {
+        if (!url) return null;
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        if (match && match[2] && match[2].length === 11) {
+            return `https://www.youtube.com/embed/${match[2]}`;
+        }
+        // Fallback for simple watch URLs
+        if (url.includes('youtube.com/watch?v=')) {
+            const parts = url.split('v=');
+            if (parts[1]) {
+                const id = parts[1].split('&')[0];
+                return `https://www.youtube.com/embed/${id}`;
+            }
+        }
+        return null;
+    };
+
+    const handleExportPDF = () => {
+        if (!doc) return;
+        
+        let digitalData = null;
+        try {
+            if (doc.descripcion && doc.descripcion.trim().startsWith('{')) {
+                digitalData = JSON.parse(doc.descripcion);
+            }
+        } catch (e) {}
+
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            alert('Por favor, permita las ventanas emergentes para exportar el PDF.');
+            return;
+        }
+
+        const dateStr = new Date().toLocaleDateString('es-AR');
+        
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>${doc.codigoDocumental} - ${doc.titulo}</title>
+                    <style>
+                        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+                        body {
+                            font-family: 'Inter', sans-serif;
+                            color: #0f172a;
+                            margin: 0;
+                            padding: 40px;
+                            line-height: 1.6;
+                            font-size: 13px;
+                        }
+                        .header-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-bottom: 30px;
+                        }
+                        .header-table td {
+                            border: 1px solid #cbd5e1;
+                            padding: 10px;
+                            vertical-align: middle;
+                        }
+                        .logo-cell {
+                            width: 120px;
+                            text-align: center;
+                            font-weight: 900;
+                            font-size: 20px;
+                            color: #4f46e5;
+                            letter-spacing: -0.05em;
+                        }
+                        .title-cell {
+                            text-align: center;
+                            font-weight: 800;
+                            font-size: 14px;
+                            text-transform: uppercase;
+                        }
+                        .meta-cell {
+                            width: 180px;
+                            font-size: 10px;
+                            font-weight: 700;
+                            color: #475569;
+                            line-height: 1.4;
+                        }
+                        .section-title {
+                            font-size: 14px;
+                            font-weight: 900;
+                            color: #1e3a8a;
+                            border-bottom: 2px solid #e2e8f0;
+                            padding-bottom: 5px;
+                            margin-top: 25px;
+                            margin-bottom: 10px;
+                            text-transform: uppercase;
+                            letter-spacing: 0.05em;
+                        }
+                        .section-content {
+                            margin-bottom: 20px;
+                            text-align: justify;
+                            font-weight: 500;
+                            color: #334155;
+                            white-space: pre-wrap;
+                        }
+                        .glossary-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 10px;
+                        }
+                        .glossary-table th, .glossary-table td {
+                            border: 1px solid #e2e8f0;
+                            padding: 8px 12px;
+                            text-align: left;
+                        }
+                        .glossary-table th {
+                            background-color: #f8fafc;
+                            font-weight: 800;
+                            font-size: 11px;
+                            color: #475569;
+                            text-transform: uppercase;
+                        }
+                        .glossary-term {
+                            font-weight: 900;
+                            color: #4f46e5;
+                        }
+                        .references-list {
+                            margin: 10px 0 0 0;
+                            padding-left: 20px;
+                        }
+                        .references-list li {
+                            margin-bottom: 5px;
+                        }
+                        .signature-section {
+                            margin-top: 50px;
+                            display: flex;
+                            justify-content: space-between;
+                            page-break-inside: avoid;
+                        }
+                        .signature-block {
+                            width: 30%;
+                            text-align: center;
+                            font-size: 10px;
+                            border-top: 1px solid #cbd5e1;
+                            padding-top: 8px;
+                        }
+                        .signature-title {
+                            font-weight: 800;
+                            color: #475569;
+                            text-transform: uppercase;
+                            margin-bottom: 20px;
+                        }
+                        .signature-img {
+                            height: 50px;
+                            margin-bottom: 5px;
+                            mix-blend-mode: multiply;
+                        }
+                        @media print {
+                            body {
+                                padding: 0;
+                            }
+                            @page {
+                                size: A4;
+                                margin: 20mm;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <table class="header-table">
+                        <tr>
+                            <td rowspan="2" class="logo-cell">HDB</td>
+                            <td rowspan="2" class="title-cell">
+                                SISTEMA DE GESTIÓN DE CALIDAD (QMS)<br>
+                                <span style="font-size:11px; font-weight:600; color:#64748b;">PROCEDIMIENTO DE CONTROL DE DOCUMENTOS</span><br>
+                                <span style="font-size:12px; font-weight:800; color:#1e293b;">${doc.titulo}</span>
+                            </td>
+                            <td class="meta-cell">
+                                <strong>CÓDIGO:</strong> ${doc.codigoDocumental}<br>
+                                <strong>VERSION:</strong> v${doc.versionMayor}.${doc.versionMenor}<br>
+                                <strong>ÁREA:</strong> ${doc.area}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="meta-cell">
+                                <strong>CRITICIDAD:</strong> ${doc.nivelCriticidad.toUpperCase()}<br>
+                                <strong>FECHA EMISIÓN:</strong> ${new Date(doc.createdAt).toLocaleDateString('es-AR')}<br>
+                                <strong>ESTADO:</strong> ${doc.estado.toUpperCase()}
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div class="section-title">1. Introducción y Registro</div>
+                    <div class="section-content">Este documento establece las directivas oficiales de calidad y seguridad de HDB. Todo el personal alcanzado debe leer, comprender y confirmar su conformidad según las exigencias del departamento de Calidad.</div>
+
+                    <div class="section-title">2. Objetivo</div>
+                    <div class="section-content">${(digitalData && digitalData.objetivo) || 'No especificado.'}</div>
+
+                    <div class="section-title">3. Alcance</div>
+                    <div class="section-content">${(digitalData && digitalData.alcance) || 'No especificado.'}</div>
+
+                    <div class="section-title">4. Desarrollo de la Actividad</div>
+                    <div class="section-content">${(digitalData && digitalData.desarrollo) || 'No especificado.'}</div>
+
+                    <div class="section-title">5. Responsabilidades</div>
+                    <div class="section-content">${(digitalData && digitalData.responsabilidades) || 'No especificado.'}</div>
+
+                    <div class="section-title">6. Definiciones y Abreviaturas</div>
+                    ${digitalData && digitalData.definiciones && digitalData.definiciones.length > 0 ? `
+                        <table class="glossary-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 25%;">Término</th>
+                                    <th>Definición / Significado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${digitalData.definiciones.map((d: any) => `
+                                    <tr>
+                                        <td class="glossary-term">${d.term}</td>
+                                        <td>${d.definition}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    ` : `
+                        <div class="section-content">No se han registrado términos específicos en el glosario.</div>
+                    `}
+
+                    <div class="section-title">7. Referencias y Documentación Anexa</div>
+                    ${digitalData && digitalData.referencias && digitalData.referencias.length > 0 ? `
+                        <ul class="references-list">
+                            ${digitalData.referencias.map((r: any) => `
+                                <li><strong>[${r.codigo}]</strong> ${r.titulo}</li>
+                            `).join('')}
+                        </ul>
+                    ` : `
+                        <div class="section-content">No se han registrado documentos o normas anexas de referencia.</div>
+                    `}
+
+                    <div class="signature-section">
+                        <div class="signature-block">
+                            <div class="signature-title">Editado Por</div>
+                            ${doc.workflowState?.creatorSignature ? `<img class="signature-img" src="${doc.workflowState.creatorSignature}" />` : '<div style="height:50px;"></div>'}
+                            <div style="font-weight:700;">${doc.workflowState?.editorName || doc.createdByName || 'N/A'}</div>
+                            <div style="color:#64748b;">${doc.workflowState?.editorPosition || doc.workflowState?.creatorPosition || ''}</div>
+                        </div>
+                        <div class="signature-block">
+                            <div class="signature-title">Revisado Por</div>
+                            ${doc.workflowState?.revisadorSignature ? `<img class="signature-img" src="${doc.workflowState.revisadorSignature}" />` : '<div style="height:50px;"></div>'}
+                            <div style="font-weight:700;">${doc.revisadorNombre || 'N/A'}</div>
+                            <div style="color:#64748b;">${doc.workflowState?.revisadorPosition || ''}</div>
+                        </div>
+                        <div class="signature-block">
+                            <div class="signature-title">Aprobado Por</div>
+                            ${doc.workflowState?.aprobadorSignature ? `<img class="signature-img" src="${doc.workflowState.aprobadorSignature}" />` : '<div style="height:50px;"></div>'}
+                            <div style="font-weight:700;">${doc.aprobadorNombre || 'N/A'}</div>
+                            <div style="color:#64748b;">${doc.workflowState?.aprobadorPosition || ''}</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:60px; font-size:9px; color:#94a3b8; text-align:center; border-top:1px solid #e2e8f0; padding-top:10px;">
+                        Documento oficial controlado de HDB. Copia no controlada si se imprime. Impreso el ${dateStr}.
+                    </div>
+
+                    <script>
+                        window.onload = function() {
+                            setTimeout(function() { window.print(); }, 500);
+                        }
+                    </script>
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
+    };
+
     useEffect(() => {
         if (doc) {
             setEditReqLectura(doc.requiereConfirmacionLectura || false);
@@ -58,31 +396,148 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
         }
     }, [doc]);
 
-    const handleSaveRequirements = async () => {
-        setSavingReqs(true);
+    const handleSaveRequirements = () => {
+        setPendingSaveType('requirements');
+        setPendingSaveData({
+            requiereConfirmacionLectura: editReqLectura,
+            requiereCapacitacion: editReqCapacitacion,
+            validezMeses: editReqCapacitacion ? (editValidezMeses ? parseInt(editValidezMeses) : null) : null,
+        });
+        setVersionAction('menor');
+        setVersionJustification('');
+        setShowVersionModal(true);
+    };
+
+    const executeVersionedSave = async () => {
+        if (versionAction === 'none' && !versionJustification.trim()) {
+            showToast('Debe justificar por qué no incrementa la versión', 'error');
+            return;
+        }
+        setExecutingSave(true);
+        const uId = user?.id || 'admin';
+        const uName = user?.nombreCompleto || user?.nombre || 'Usuario Administrador';
         try {
+            const canvas = versionCanvasRef.current;
+            const sigData = canvas ? canvas.toDataURL('image/png') : null;
+
+            // Step 1: Apply the document update. If versionAction !== 'none', we force it into 'en_revision'
+            let updateBody: any = { 
+                userId: uId, 
+                userName: uName,
+                creatorSignature: sigData,
+                revisadorId: newRevisadorId,
+                aprobadorId: newAprobadorId
+            };
+
+            const revOp = operators.find(o => o.id === newRevisadorId);
+            if (revOp) updateBody.revisadorNombre = revOp.nombreCompleto || revOp.nombre;
+            
+            const apOp = operators.find(o => o.id === newAprobadorId);
+            if (apOp) updateBody.aprobadorNombre = apOp.nombreCompleto || apOp.nombre;
+
+            if (versionAction !== 'none') {
+                updateBody.estado = 'en_revision';
+            }
+            
+            if (pendingSaveType !== 'checklist') {
+                if (pendingSaveType === 'digital') {
+                    updateBody.descripcion = JSON.stringify(pendingSaveData);
+                } else if (pendingSaveType === 'requirements') {
+                    Object.assign(updateBody, pendingSaveData);
+                }
+            }
+
+            if (versionAction === 'none') {
+                updateBody.motivoCambio = `[Sin incremento de versión] ${versionJustification}`;
+            } else {
+                let desc = 'Actualización de documento';
+                if (pendingSaveType === 'digital') desc = 'Actualización de procedimiento digital';
+                if (pendingSaveType === 'requirements') desc = 'Actualización de requerimientos LMS';
+                if (pendingSaveType === 'quiz') desc = 'Actualización de evaluación LMS';
+                if (pendingSaveType === 'checklist') desc = 'Actualización de checklist';
+                updateBody.motivoCambio = versionJustification || desc;
+            }
+
             const res = await safeApiRequest(`/api/documentos/${documentId}`, {
                 method: 'PUT',
-                body: JSON.stringify({
-                    requiereConfirmacionLectura: editReqLectura,
-                    requiereCapacitacion: editReqCapacitacion,
-                    validezMeses: editReqCapacitacion ? (editValidezMeses ? parseInt(editValidezMeses) : null) : null,
-                    userId: user?.id || 'admin',
-                    userName: user?.nombreCompleto || user?.nombre || 'Usuario Administrador'
-                })
+                body: JSON.stringify(updateBody)
             });
-            if (res.ok) {
-                showToast('Requerimientos actualizados con éxito', 'success');
-                loadDocument();
-            } else {
+            if (!res.ok) {
                 const err = await res.json();
-                showToast(err.error || 'Error al actualizar requerimientos', 'error');
+                showToast(err.error || 'Error al guardar cambios en documento', 'error');
+                setExecutingSave(false);
+                return;
             }
+            
+            // If quiz, we also need to call the quiz API to set the workflowState.cuestionario
+            if (pendingSaveType === 'quiz') {
+                await safeApiRequest(`/api/documentos/${documentId}/quiz`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        cuestionario: pendingSaveData,
+                        userId: uId,
+                        userName: uName
+                    })
+                });
+            }
+
+            // Step 2: Handle Versioning
+            if (versionAction !== 'none') {
+                const payload: any = {
+                    tipoVersion: versionAction,
+                    motivoCambio: versionJustification || (pendingSaveType === 'checklist' ? 'Actualización de plantilla de checklist' : 'Actualización de documento'),
+                    autorId: uId,
+                    autorNombre: uName,
+                    userId: uId,
+                    userName: uName
+                };
+                // If we are creating a new version while saving a checklist, we can pass it here
+                if (pendingSaveType === 'checklist') {
+                    payload.checklistTemplate = pendingSaveData;
+                }
+
+                const vRes = await safeApiRequest(`/api/documentos/${documentId}/versions`, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                if (vRes.ok) {
+                    showToast(`Versión ${versionAction === 'mayor' ? 'mayor' : 'menor'} creada con éxito. Documento enviado a revisión.`, 'success');
+                } else {
+                    showToast('Cambios guardados pero error al crear versión', 'error');
+                }
+            } else {
+                // No version increment
+                // If it was a checklist, we just update the latest version
+                if (pendingSaveType === 'checklist') {
+                    if (!doc.versions || doc.versions.length === 0) {
+                        showToast('No hay versiones para actualizar', 'error');
+                    } else {
+                        const latestVersion = doc.versions[0];
+                        await safeApiRequest(`/api/documentos/${documentId}/versions/${latestVersion.id}`, {
+                            method: 'PUT',
+                            body: JSON.stringify({
+                                checklistTemplate: pendingSaveData
+                            })
+                        });
+                        showToast('Plantilla de checklist actualizada sin incrementar versión', 'success');
+                    }
+                } else {
+                    showToast('Cambios guardados sin incremento de versión', 'success');
+                }
+            }
+
+            if (pendingSaveType === 'digital') setIsEditingDigital(false);
+            setShowVersionModal(false);
+            setPendingSaveType(null);
+            setPendingSaveData(null);
+            loadDocument();
         } catch (err: any) {
             console.error(err);
-            showToast('Error de red al actualizar requerimientos', 'error');
+            showToast('Error de red al guardar', 'error');
         } finally {
+            setExecutingSave(false);
             setSavingReqs(false);
+            setSavingDigital(false);
         }
     };
 
@@ -135,6 +590,55 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+    };
+
+    const getVersionCoordinates = (e: any) => {
+        const canvas = versionCanvasRef.current;
+        if (!canvas) return { x: 0, y: 0 };
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
+    };
+
+    const startVersionDrawing = (e: any) => {
+        const coords = getVersionCoordinates(e);
+        const canvas = versionCanvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        
+        ctx.beginPath();
+        ctx.moveTo(coords.x, coords.y);
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = '#0f172a';
+        setIsVersionDrawing(true);
+        setHasVersionSigned(true);
+    };
+
+    const drawVersion = (e: any) => {
+        if (!isVersionDrawing) return;
+        const coords = getVersionCoordinates(e);
+        const canvas = versionCanvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.lineTo(coords.x, coords.y);
+        ctx.stroke();
+    };
+
+    const stopVersionDrawing = () => {
+        setIsVersionDrawing(false);
+    };
+
+    const clearVersionCanvas = () => {
+        const canvas = versionCanvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        setHasVersionSigned(false);
     };
 
     const handleWorkflowSubmit = async () => {
@@ -211,12 +715,24 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
     const loadDocument = async () => {
         setLoading(true);
         try {
-            const [docRes, optRes, tagsRes] = await Promise.all([
+            const [docRes, optRes, tagsRes, allDocsRes, opsRes] = await Promise.all([
                 safeApiRequest(`/api/documentos/${documentId}`),
                 safeApiRequest('/api/config/options'),
-                safeApiRequest('/api/config/tags')
+                safeApiRequest('/api/config/tags'),
+                safeApiRequest('/api/documentos'),
+                safeApiRequest('/api/operators')
             ]);
             
+            if (opsRes.ok) {
+                const opsData = await opsRes.json();
+                if (Array.isArray(opsData)) setOperators(opsData);
+            }
+
+            if (allDocsRes.ok) {
+                const docsData = await allDocsRes.json();
+                if (Array.isArray(docsData)) setAllDocs(docsData);
+            }
+
             if (optRes.ok) {
                 const optionsData = await optRes.json();
                 if (Array.isArray(optionsData)) {
@@ -242,6 +758,33 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
             if (docRes.ok) {
                 const data = await docRes.json();
                 setDoc(data);
+                setNewRevisadorId(data.revisadorId || '');
+                setNewAprobadorId(data.aprobadorId || '');
+
+                if (data.descripcion && data.descripcion.trim().startsWith('{')) {
+                    try {
+                        const parsed = JSON.parse(data.descripcion);
+                        setEditedDigitalData({
+                            objetivo: parsed.objetivo || '',
+                            alcance: parsed.alcance || '',
+                            desarrollo: parsed.desarrollo || '',
+                            responsabilidades: parsed.responsabilidades || '',
+                            videoUrl: parsed.videoUrl || '',
+                            definiciones: parsed.definiciones || [],
+                            referencias: parsed.referencias || []
+                        });
+                    } catch (e) {}
+                } else {
+                    setEditedDigitalData({
+                        objetivo: '',
+                        alcance: '',
+                        desarrollo: '',
+                        responsabilidades: '',
+                        videoUrl: '',
+                        definiciones: [],
+                        referencias: []
+                    });
+                }
 
                 // Load checklist from the latest version if available
                 if (data.versions && data.versions.length > 0) {
@@ -290,29 +833,14 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
         }
     };
 
-    const saveChecklistTemplate = async () => {
-        if (!doc.versions || doc.versions.length === 0) return showToast('No hay versiones para actualizar', 'error');
-        const latestVersion = doc.versions[0];
-        
-        try {
-            const res = await safeApiRequest(`/api/documentos/${documentId}/versions/${latestVersion.id}`, {
-                method: 'PUT',
-                body: JSON.stringify({
-                    checklistTemplate: checklistItems
-                })
-            });
-            if (res.ok) {
-                showToast('Plantilla de checklist guardada con éxito', 'success');
-            }
-        } catch (e) {
-            console.error(e);
-            showToast('Error al guardar checklist', 'error');
-        }
+    const saveChecklistTemplate = () => {
+        setPendingSaveType('checklist');
+        setPendingSaveData(checklistItems);
+        setVersionAction('menor');
+        setVersionJustification('');
+        setShowVersionModal(true);
     };
 
-    const handleDownloadTemplate = () => {
-        window.open(`/api/documentos/${documentId}/template`, '_blank');
-    };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -354,28 +882,12 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
         }
     };
 
-    const handleSaveQuiz = async () => {
-        try {
-            const res = await safeApiRequest(`/api/documentos/${documentId}/quiz`, {
-                method: 'POST',
-                body: JSON.stringify({
-                    cuestionario: quizQuestions,
-                    userId: user?.id || 'admin',
-                    userName: user?.nombreCompleto || 'Usuario Administrador'
-                })
-            });
-
-            if (res.ok) {
-                showToast('Evaluación guardada con éxito', 'success');
-                loadDocument();
-            } else {
-                const err = await res.json();
-                showToast(err.error || 'Error al guardar la evaluación', 'error');
-            }
-        } catch (err) {
-            console.error(err);
-            showToast('Error al conectar con el servidor', 'error');
-        }
+    const handleSaveQuiz = () => {
+        setPendingSaveType('quiz');
+        setPendingSaveData(quizQuestions);
+        setVersionAction('menor');
+        setVersionJustification('');
+        setShowVersionModal(true);
     };
 
     const addQuizQuestion = () => {
@@ -419,6 +931,146 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
     if (!doc) return null;
 
     return (
+        <>
+            {showVersionModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+                            <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                <FileCheck className="w-5 h-5 text-indigo-600" />
+                                Control de Versiones
+                            </h3>
+                            <p className="text-xs text-slate-500 mt-1">Ha modificado el documento. Seleccione cómo proceder con el versionado.</p>
+                        </div>
+                        <div className="p-6 space-y-5">
+                            <div className="space-y-3">
+                                <label className="flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700/50 border-slate-200 dark:border-slate-700">
+                                    <input type="radio" name="versionAction" value="mayor" checked={versionAction === 'mayor'} onChange={() => setVersionAction('mayor')} className="mt-1" />
+                                    <div>
+                                        <p className="text-sm font-bold text-slate-800 dark:text-slate-100">Incrementar Versión MAYOR (+1.0)</p>
+                                        <p className="text-xs text-slate-500">Cambios estructurales, nuevo alcance, o reescritura significativa.</p>
+                                    </div>
+                                </label>
+                                <label className="flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700/50 border-slate-200 dark:border-slate-700">
+                                    <input type="radio" name="versionAction" value="menor" checked={versionAction === 'menor'} onChange={() => setVersionAction('menor')} className="mt-1" />
+                                    <div>
+                                        <p className="text-sm font-bold text-slate-800 dark:text-slate-100">Incrementar Versión MENOR (+0.1)</p>
+                                        <p className="text-xs text-slate-500">Correcciones ortográficas, actualizaciones menores o adición de detalles sin afectar el procedimiento general.</p>
+                                    </div>
+                                </label>
+                                <label className="flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700/50 border-slate-200 dark:border-slate-700">
+                                    <input type="radio" name="versionAction" value="none" checked={versionAction === 'none'} onChange={() => setVersionAction('none')} className="mt-1" />
+                                    <div>
+                                        <p className="text-sm font-bold text-slate-800 dark:text-slate-100">No incrementar versión</p>
+                                        <p className="text-xs text-slate-500">Solo aplicable para correcciones mínimas (typos) que NO alteran en absoluto el contenido normativo. Requiere justificación.</p>
+                                    </div>
+                                </label>
+                            </div>
+                            
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                                    Justificación del cambio / Motivo {versionAction === 'none' && <span className="text-rose-500">* (Obligatorio)</span>}
+                                </label>
+                                <textarea
+                                    value={versionJustification}
+                                    onChange={e => setVersionJustification(e.target.value)}
+                                    placeholder={versionAction === 'none' ? "Explique por qué no es necesario incrementar la versión..." : "Describa brevemente los cambios realizados..."}
+                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 resize-none h-24"
+                                />
+                            </div>
+
+                            {versionAction !== 'none' && (
+                                <>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Revisado Por</label>
+                                            <select
+                                                value={newRevisadorId}
+                                                onChange={e => setNewRevisadorId(e.target.value)}
+                                                className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-xs font-bold focus:border-indigo-500 outline-none"
+                                            >
+                                                <option value="">(Sin asignar)</option>
+                                                {operators
+                                                    .filter(op => ['supervisor', 'admin', 'qa'].includes((op.role || '').toLowerCase()))
+                                                    .map(op => (
+                                                        <option key={op.id} value={op.id}>{op.nombreCompleto || op.nombre}</option>
+                                                    ))}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Aprobado Por</label>
+                                            <select
+                                                value={newAprobadorId}
+                                                onChange={e => setNewAprobadorId(e.target.value)}
+                                                className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-xs font-bold focus:border-indigo-500 outline-none"
+                                            >
+                                                <option value="">(Sin asignar)</option>
+                                                {operators
+                                                    .filter(op => ['supervisor', 'admin', 'qa'].includes((op.role || '').toLowerCase()))
+                                                    .map(op => (
+                                                        <option key={op.id} value={op.id}>{op.nombreCompleto || op.nombre}</option>
+                                                    ))}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Firma Digital del Creador (Modificador)</label>
+                                        <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-white relative h-32">
+                                            <canvas
+                                                ref={versionCanvasRef}
+                                                width={400}
+                                                height={128}
+                                                onMouseDown={startVersionDrawing}
+                                                onMouseMove={drawVersion}
+                                                onMouseUp={stopVersionDrawing}
+                                                onMouseLeave={stopVersionDrawing}
+                                                onTouchStart={startVersionDrawing}
+                                                onTouchMove={drawVersion}
+                                                onTouchEnd={stopVersionDrawing}
+                                                className="w-full h-full touch-none cursor-crosshair"
+                                            />
+                                            {hasVersionSigned && (
+                                                <button
+                                                    type="button"
+                                                    onClick={clearVersionCanvas}
+                                                    className="absolute top-2 right-2 p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-[10px] font-bold transition-colors"
+                                                >
+                                                    Limpiar
+                                                </button>
+                                            )}
+                                            {!hasVersionSigned && (
+                                                <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                                                    <span className="text-slate-300 dark:text-slate-600 font-medium text-sm">Firme aquí</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                        <div className="p-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={() => { setShowVersionModal(false); setPendingSaveType(null); setPendingSaveData(null); }}
+                                className="px-5 py-2.5 text-sm font-bold text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                type="button"
+                                onClick={executeVersionedSave}
+                                disabled={executingSave || (versionAction !== 'none' && !hasVersionSigned) || (versionAction === 'none' && !versionJustification.trim())}
+                                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition-all flex items-center gap-2 disabled:opacity-50"
+                            >
+                                {executingSave ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                {executingSave ? 'Guardando...' : 'Confirmar y Guardar'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 sm:p-6">
             <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
                 {/* Header */}
@@ -475,13 +1127,271 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                 <div className="flex-1 overflow-y-auto p-6 bg-slate-50 dark:bg-slate-900/20">
                     {tab === 'info' && (
                         <div className="space-y-6 max-w-3xl mx-auto">
-                            {/* Descripción larga */}
-                            {doc.descripcion && (
-                                <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
-                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Descripción</p>
-                                    <p className="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">{doc.descripcion}</p>
-                                </div>
-                            )}
+                            {/* Digital SOP Procedure Section */}
+                            {(() => {
+                                let isDigital = false;
+                                let digitalData: any = null;
+                                try {
+                                    if (doc.descripcion && doc.descripcion.trim().startsWith('{')) {
+                                        const parsed = JSON.parse(doc.descripcion);
+                                        if (parsed.isDigital) { isDigital = true; digitalData = parsed; }
+                                    }
+                                } catch (e) {}
+                                const canEdit = ['supervisor', 'admin', 'qa'].includes((user?.role || '').toLowerCase());
+                                const youtubeUrl = isDigital && digitalData?.videoUrl ? getYoutubeEmbedUrl(digitalData.videoUrl) : null;
+                                const DEFAULT_ABBREVIATIONS = [
+                                    { term: 'EPP', definition: 'Equipos de Protección Personal' },
+                                    { term: 'OS', definition: 'Orden de Servicio' },
+                                    { term: 'QMS', definition: 'Quality Management System (Sistema de Gestión de Calidad)' },
+                                    { term: 'ISO', definition: 'Organización Internacional de Normalización' },
+                                    { term: 'QA', definition: 'Quality Assurance (Aseguramiento de la Calidad)' },
+                                    { term: 'HSE', definition: 'Health, Safety and Environment (Higiene, Seguridad y Medio Ambiente)' },
+                                    { term: 'SOP', definition: 'Standard Operating Procedure (Procedimiento Operativo Estándar)' },
+                                    { term: 'SST', definition: 'Seguridad y Salud en el Trabajo' }
+                                ];
+                                const allAbbreviations = [...DEFAULT_ABBREVIATIONS, ...customAbbrevs];
+
+                                // EDITING MODE
+                                if (isDigital && isEditingDigital) {
+                                    return (
+                                        <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border-2 border-indigo-300 dark:border-indigo-700 space-y-6 shadow-xl shadow-indigo-500/5">
+                                            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
+                                                <div className="flex items-center gap-2">
+                                                    <Sparkles className="w-5 h-5 text-indigo-500" />
+                                                    <h3 className="font-black text-slate-800 dark:text-slate-100">Editor de Procedimiento Digital</h3>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => setIsEditingDigital(false)} className="px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-700 bg-slate-100 dark:bg-slate-700 rounded-lg">Cancelar</button>
+                                                    <button onClick={handleSaveDigitalData} disabled={savingDigital} className="px-4 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg flex items-center gap-1.5 disabled:opacity-50">
+                                                        {savingDigital && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                                                        {savingDigital ? 'Guardando...' : 'Guardar Procedimiento'}
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* Objetivo */}
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider">2. Objetivo</label>
+                                                <textarea value={editedDigitalData.objetivo} onChange={e => setEditedDigitalData({...editedDigitalData, objetivo: e.target.value})} rows={3} placeholder="Describa el propósito y metas operativas..." className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:border-indigo-500 outline-none resize-none" />
+                                            </div>
+
+                                            {/* Alcance */}
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider">3. Alcance</label>
+                                                <textarea value={editedDigitalData.alcance} onChange={e => setEditedDigitalData({...editedDigitalData, alcance: e.target.value})} rows={3} placeholder="Defina el alcance del documento..." className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:border-indigo-500 outline-none resize-none" />
+                                            </div>
+
+                                            {/* Desarrollo */}
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider">4. Desarrollo de la Actividad</label>
+                                                <textarea value={editedDigitalData.desarrollo} onChange={e => setEditedDigitalData({...editedDigitalData, desarrollo: e.target.value})} rows={6} placeholder="Detalle paso a paso las actividades..." className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:border-indigo-500 outline-none resize-none" />
+                                            </div>
+
+                                            {/* Responsabilidades */}
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider">5. Responsabilidades</label>
+                                                <textarea value={editedDigitalData.responsabilidades} onChange={e => setEditedDigitalData({...editedDigitalData, responsabilidades: e.target.value})} rows={3} placeholder="Defina roles y responsabilidades..." className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:border-indigo-500 outline-none resize-none" />
+                                            </div>
+
+                                            {/* Video URL */}
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider">Link de Video / Capacitación (YouTube)</label>
+                                                <input type="url" value={editedDigitalData.videoUrl} onChange={e => setEditedDigitalData({...editedDigitalData, videoUrl: e.target.value})} placeholder="https://www.youtube.com/watch?v=..." className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:border-indigo-500 outline-none" />
+                                            </div>
+
+                                            {/* Definiciones / Abreviaturas */}
+                                            <div className="space-y-3 border-t border-slate-200 dark:border-slate-700 pt-4">
+                                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider">6. Definiciones y Abreviaturas</label>
+                                                {/* Existing definitions list */}
+                                                {editedDigitalData.definiciones && editedDigitalData.definiciones.length > 0 && (
+                                                    <div className="space-y-1.5">
+                                                        {editedDigitalData.definiciones.map((d: any, i: number) => (
+                                                            <div key={i} className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/30 px-3 py-2 rounded-lg text-xs">
+                                                                <span className="font-black text-indigo-600 min-w-[60px]">{d.term}</span>
+                                                                <span className="text-slate-600 dark:text-slate-300 flex-1">{d.definition}</span>
+                                                                <button onClick={() => { const updated = [...editedDigitalData.definiciones]; updated.splice(i, 1); setEditedDigitalData({...editedDigitalData, definiciones: updated}); }} className="text-red-400 hover:text-red-600"><Trash2 className="w-3.5 h-3.5" /></button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                                {/* Quick-pick from known abbreviations */}
+                                                <div className="bg-indigo-50 dark:bg-indigo-950/30 p-3 rounded-xl space-y-2">
+                                                    <p className="text-[10px] font-black text-indigo-500 uppercase tracking-wider">Seleccionar abreviatura conocida</p>
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {allAbbreviations.filter(a => !(editedDigitalData.definiciones || []).some((d: any) => d.term === a.term)).map(a => (
+                                                            <button key={a.term} onClick={() => setEditedDigitalData({...editedDigitalData, definiciones: [...(editedDigitalData.definiciones || []), { term: a.term, definition: a.definition }]})} className="px-2 py-1 text-[10px] font-bold bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-700 rounded-md hover:bg-indigo-100 text-indigo-700 dark:text-indigo-300 transition-colors">{a.term}</button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                {/* Add custom definition */}
+                                                <div className="flex gap-2 items-end">
+                                                    <div className="flex-shrink-0 w-24">
+                                                        <label className="text-[9px] font-bold text-slate-400 uppercase">Término</label>
+                                                        <input value={newTerm} onChange={e => setNewTerm(e.target.value.toUpperCase())} placeholder="EJ" className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs font-bold outline-none focus:border-indigo-500" />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <label className="text-[9px] font-bold text-slate-400 uppercase">Definición</label>
+                                                        <input value={newDef} onChange={e => setNewDef(e.target.value)} placeholder="Descripción del término..." className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-indigo-500" />
+                                                    </div>
+                                                    <button onClick={() => {
+                                                        if (!newTerm || !newDef) return;
+                                                        setEditedDigitalData({...editedDigitalData, definiciones: [...(editedDigitalData.definiciones || []), { term: newTerm, definition: newDef }]});
+                                                        if (saveToFrequents) {
+                                                            const updated = [...customAbbrevs, { term: newTerm, definition: newDef }];
+                                                            setCustomAbbrevs(updated);
+                                                            localStorage.setItem('hdb_custom_definitions', JSON.stringify(updated));
+                                                        }
+                                                        setNewTerm(''); setNewDef('');
+                                                    }} className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 flex-shrink-0">+ Agregar</button>
+                                                </div>
+                                                <label className="flex items-center gap-1.5 text-[10px] text-slate-500">
+                                                    <input type="checkbox" checked={saveToFrequents} onChange={e => setSaveToFrequents(e.target.checked)} className="rounded border-slate-300 text-indigo-600 w-3 h-3" />
+                                                    Guardar nuevo término en mis frecuentes
+                                                </label>
+                                            </div>
+
+                                            {/* Referencias a documentos internos */}
+                                            <div className="space-y-3 border-t border-slate-200 dark:border-slate-700 pt-4">
+                                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider">7. Referencias a Documentos Internos</label>
+                                                {editedDigitalData.referencias && editedDigitalData.referencias.length > 0 && (
+                                                    <div className="space-y-1.5">
+                                                        {editedDigitalData.referencias.map((r: any, i: number) => (
+                                                            <div key={i} className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/30 px-3 py-2 rounded-lg text-xs">
+                                                                <span className="font-black text-emerald-600 min-w-[80px]">[{r.codigo}]</span>
+                                                                <span className="text-slate-600 dark:text-slate-300 flex-1">{r.titulo}</span>
+                                                                <button onClick={() => { const updated = [...editedDigitalData.referencias]; updated.splice(i, 1); setEditedDigitalData({...editedDigitalData, referencias: updated}); }} className="text-red-400 hover:text-red-600"><Trash2 className="w-3.5 h-3.5" /></button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                                {/* Search existing docs */}
+                                                <div className="relative">
+                                                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+                                                    <input value={refSearch} onChange={e => { setRefSearch(e.target.value); setShowRefResults(e.target.value.length > 1); }} placeholder="Buscar documento interno por código o título..." className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl pl-8 pr-3 py-2 text-xs outline-none focus:border-indigo-500" />
+                                                    {showRefResults && (
+                                                        <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-40 overflow-y-auto z-10">
+                                                            {allDocs.filter((d: any) => d.id !== documentId && ((d.codigoDocumental || '').toLowerCase().includes(refSearch.toLowerCase()) || (d.titulo || '').toLowerCase().includes(refSearch.toLowerCase()))).slice(0, 8).map((d: any) => (
+                                                                <button key={d.id} onClick={() => {
+                                                                    const already = (editedDigitalData.referencias || []).some((r: any) => r.codigo === d.codigoDocumental);
+                                                                    if (!already) setEditedDigitalData({...editedDigitalData, referencias: [...(editedDigitalData.referencias || []), { codigo: d.codigoDocumental, titulo: d.titulo }]});
+                                                                    setRefSearch(''); setShowRefResults(false);
+                                                                }} className="w-full text-left px-3 py-2 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-xs flex items-center gap-2 border-b border-slate-100 dark:border-slate-700 last:border-0">
+                                                                    <PlusCircle className="w-4 h-4 text-indigo-500" />
+                                                                    <span className="font-bold text-indigo-600">{d.codigoDocumental}</span>
+                                                                    <span className="text-slate-500 truncate">{d.titulo}</span>
+                                                                </button>
+                                                            ))}
+                                                            {allDocs.filter((d: any) => d.id !== documentId && ((d.codigoDocumental || '').toLowerCase().includes(refSearch.toLowerCase()) || (d.titulo || '').toLowerCase().includes(refSearch.toLowerCase()))).length === 0 && (
+                                                                <p className="px-3 py-2 text-xs text-slate-400">Sin resultados</p>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                {/* Manual reference */}
+                                                <div className="flex gap-2">
+                                                    <input value={customRefText} onChange={e => setCustomRefText(e.target.value)} placeholder="O agregar referencia manual (ej: ISO 9001:2015)..." className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-indigo-500" />
+                                                    <button onClick={() => { if (!customRefText) return; setEditedDigitalData({...editedDigitalData, referencias: [...(editedDigitalData.referencias || []), { codigo: 'EXT', titulo: customRefText }]}); setCustomRefText(''); }} className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 flex-shrink-0">+ Ref</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                }
+
+                                // VIEW MODE (digital)
+                                if (isDigital && digitalData) {
+                                    return (
+                                        <div className="space-y-4">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+                                                    <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Procedimiento Digital</span>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    {canEdit && (
+                                                        <button onClick={() => { setEditedDigitalData({...digitalData}); setIsEditingDigital(true); }} className="px-3 py-1.5 text-xs font-bold text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors">✏️ Editar</button>
+                                                    )}
+                                                    <button onClick={handleExportPDF} className="px-3 py-1.5 text-xs font-bold text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors flex items-center gap-1"><Download className="w-3.5 h-3.5" /> Exportar PDF</button>
+                                                </div>
+                                            </div>
+
+                                            {/* Video embed */}
+                                            {youtubeUrl && isOnline && (
+                                                <div className="bg-black rounded-2xl overflow-hidden border border-slate-700">
+                                                    <div className="flex items-center gap-2 px-4 py-2 bg-slate-900">
+                                                        <Play className="w-4 h-4 text-indigo-500" />
+                                                        <span className="text-xs font-bold text-slate-300">Video de Capacitación</span>
+                                                    </div>
+                                                    <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                                                        <iframe src={youtubeUrl} title="Video de capacitación" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="absolute inset-0 w-full h-full" />
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {youtubeUrl && !isOnline && (
+                                                <div className="bg-slate-100 dark:bg-slate-900/50 rounded-2xl p-6 text-center border border-slate-200 dark:border-slate-700">
+                                                    <Play className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                                                    <p className="text-xs font-bold text-slate-500">Video no disponible sin conexión a internet</p>
+                                                </div>
+                                            )}
+
+                                            {/* Read-only sections */}
+                                            {[
+                                                { title: '2. Objetivo', content: digitalData.objetivo },
+                                                { title: '3. Alcance', content: digitalData.alcance },
+                                                { title: '4. Desarrollo de la Actividad', content: digitalData.desarrollo },
+                                                { title: '5. Responsabilidades', content: digitalData.responsabilidades },
+                                            ].filter(s => s.content).map((section, idx) => (
+                                                <div key={idx} className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                                                    <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-2">{section.title}</p>
+                                                    <p className="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">{section.content}</p>
+                                                </div>
+                                            ))}
+
+                                            {/* Definiciones table */}
+                                            {digitalData.definiciones && digitalData.definiciones.length > 0 && (
+                                                <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                                                    <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-3">6. Definiciones y Abreviaturas</p>
+                                                    <div className="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
+                                                        <table className="w-full text-xs">
+                                                            <thead><tr className="bg-slate-50 dark:bg-slate-900/50"><th className="text-left px-3 py-2 font-black text-slate-500 uppercase text-[10px]">Término</th><th className="text-left px-3 py-2 font-black text-slate-500 uppercase text-[10px]">Definición</th></tr></thead>
+                                                            <tbody>{digitalData.definiciones.map((d: any, i: number) => (<tr key={i} className="border-t border-slate-100 dark:border-slate-700"><td className="px-3 py-2 font-black text-indigo-600">{d.term}</td><td className="px-3 py-2 text-slate-600 dark:text-slate-300">{d.definition}</td></tr>))}</tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Referencias */}
+                                            {digitalData.referencias && digitalData.referencias.length > 0 && (
+                                                <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                                                    <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-3">7. Referencias</p>
+                                                    <div className="space-y-1.5">
+                                                        {digitalData.referencias.map((r: any, i: number) => (
+                                                            <div key={i} className="flex items-center gap-2 text-xs"><span className="font-black text-emerald-600">[{r.codigo}]</span><span className="text-slate-600 dark:text-slate-300">{r.titulo}</span></div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                }
+
+                                // NON-DIGITAL (plain text description or empty)
+                                return (
+                                    <div className="space-y-3">
+                                        {doc.descripcion ? (
+                                            <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Descripción General</p>
+                                                <p className="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">{doc.descripcion}</p>
+                                            </div>
+                                        ) : null}
+                                        {canEdit && (
+                                            <button onClick={() => { setEditedDigitalData({ objetivo: '', alcance: '', desarrollo: '', responsabilidades: '', videoUrl: '', definiciones: [], referencias: [] }); handleSaveDigitalData(); setTimeout(() => { setIsEditingDigital(true); loadDocument(); }, 500); }} className="w-full py-3 border-2 border-dashed border-indigo-300 dark:border-indigo-700 rounded-2xl text-sm font-bold text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors flex items-center justify-center gap-2">
+                                                <Sparkles className="w-4 h-4" /> Convertir a Procedimiento Digital (formulario interactivo)
+                                            </button>
+                                        )}
+                                    </div>
+                                );
+                            })()}
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
@@ -507,13 +1417,17 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                 </div>
                             </div>
 
-                            {/* Responsables: Creador, Revisador, Aprobador */}
+                            {/* Responsables: Creado Por (original), Editado Por, Revisado Por, Aprobado Por */}
                             <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
                                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Responsables del Documento</p>
-                                <div className="grid grid-cols-3 gap-4">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     <div className="text-center p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl">
                                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Creado Por</p>
                                         <p className="font-bold text-sm text-slate-700 dark:text-slate-200">{doc.createdByName || 'N/A'}</p>
+                                    </div>
+                                    <div className="text-center p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-1">Editado Por</p>
+                                        <p className="font-bold text-sm text-indigo-700 dark:text-indigo-300">{doc.workflowState?.editorName || doc.createdByName || 'N/A'}</p>
                                     </div>
                                     <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
                                         <p className="text-[10px] font-black uppercase tracking-widest text-blue-400 mb-1">Revisado Por</p>
@@ -627,10 +1541,20 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                     {/* Signers status list */}
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         {/* Creator Sign */}
-                                        <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 flex flex-col justify-between min-h-[140px]">
+                                        <div className={`p-4 rounded-xl border flex flex-col justify-between min-h-[140px] ${
+                                            doc.workflowState.creatorStatus === 'approved' || doc.workflowState.creatorSignature
+                                                ? 'bg-emerald-50/30 dark:bg-emerald-950/10 border-emerald-200 dark:border-emerald-900/50'
+                                                : 'bg-slate-50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-800'
+                                        }`}>
                                             <div>
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Autor / Creador</p>
-                                                <p className="font-bold text-sm text-slate-700 dark:text-slate-200 mt-1">{doc.createdByName || 'Creador'}</p>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Editado Por</p>
+                                                <p className="font-bold text-sm text-slate-700 dark:text-slate-200 mt-1">{doc.workflowState?.editorName || doc.createdByName || 'Editor'}</p>
+                                                <p className="text-[10px] text-slate-500">{doc.workflowState?.editorPosition || doc.workflowState?.creatorPosition || ''}</p>
+                                                {(doc.workflowState.creatorStatus === 'approved' || doc.workflowState.creatorSignature) && (
+                                                    <span className="inline-block text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded mt-2 bg-emerald-100 text-emerald-700">
+                                                        De Acuerdo
+                                                    </span>
+                                                )}
                                             </div>
                                             <div className="mt-3">
                                                 {doc.workflowState.creatorSignature ? (
@@ -656,6 +1580,7 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                                 <div>
                                                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Verificador / Revisado Por</p>
                                                     <p className="font-bold text-sm text-slate-700 dark:text-slate-200 mt-1">{doc.revisadorNombre || 'Sin asignar'}</p>
+                                                    <p className="text-[10px] text-slate-500">{doc.workflowState?.revisadorPosition || ''}</p>
                                                     <span className={`inline-block text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded mt-2 ${
                                                         doc.workflowState.revisadorStatus === 'approved' ? 'bg-emerald-100 text-emerald-700' :
                                                         doc.workflowState.revisadorStatus === 'rejected' ? 'bg-red-100 text-red-700' :
@@ -697,6 +1622,7 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                                 <div>
                                                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Autorizante / Aprobado Por</p>
                                                     <p className="font-bold text-sm text-slate-700 dark:text-slate-200 mt-1">{doc.aprobadorNombre || 'Sin asignar'}</p>
+                                                    <p className="text-[10px] text-slate-500">{doc.workflowState?.aprobadorPosition || ''}</p>
                                                     <span className={`inline-block text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded mt-2 ${
                                                         doc.workflowState.aprobadorStatus === 'approved' ? 'bg-emerald-100 text-emerald-700' :
                                                         doc.workflowState.aprobadorStatus === 'rejected' ? 'bg-red-100 text-red-700' :
@@ -737,11 +1663,9 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                             
                                             if (!isRevisador && !isAprobador) return null;
 
-                                            // Enforce file upload and evaluation checklist/quiz checks
-                                            const latestVersion = doc.versions?.[0];
-                                            const hasFile = latestVersion && latestVersion.files && latestVersion.files.some((f: any) => f.esPrincipal);
+                                            // Enforce evaluation checklist/quiz checks
                                             const hasQuiz = !doc.requiereCapacitacion || (doc.workflowState?.cuestionario && Array.isArray(doc.workflowState.cuestionario) && doc.workflowState.cuestionario.length > 0);
-                                            const isComplete = hasFile && hasQuiz;
+                                            const isComplete = hasQuiz;
 
                                             if (!isComplete) {
                                                 return (
@@ -751,14 +1675,13 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                                             <span className="font-bold text-sm">Firma Bloqueada: Requisitos Pendientes</span>
                                                         </div>
                                                         <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                                                            Este documento no se puede revisar ni aprobar todavía porque no se ha completado su material ni su evaluación LMS:
+                                                            Este documento no se puede revisar ni aprobar todavía porque no se ha configurado su evaluación LMS:
                                                         </p>
                                                         <ul className="list-disc pl-5 text-xs text-slate-600 dark:text-slate-400 space-y-1">
-                                                            {!hasFile && <li>Falta subir el archivo final (procedimiento Word o PDF).</li>}
                                                             {!hasQuiz && <li>Falta configurar las preguntas de la evaluación (Multiple Choice).</li>}
                                                         </ul>
                                                         <p className="text-xs text-slate-500 font-bold italic pt-1">
-                                                            Vaya a la pestaña "LMS & Capacitación" para completar los requisitos y desbloquear las firmas.
+                                                            Vaya a la pestaña "LMS & Capacitación" para completar el cuestionario y desbloquear las firmas.
                                                         </p>
                                                     </div>
                                                 );
@@ -1034,45 +1957,27 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                                 <CheckCircle2 className="w-3.5 h-3.5" /> Archivo Subido
                                             </span>
                                         ) : (
-                                            <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 flex items-center gap-1.5">
-                                                <AlertCircle className="w-3.5 h-3.5 animate-pulse" /> Archivo Pendiente
+                                            <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 flex items-center gap-1.5">
+                                                Archivo Opcional
                                             </span>
                                         )}
                                     </div>
                                 </div>
 
                                 <p className="text-xs text-slate-500 leading-relaxed">
-                                    Para este documento QMS, debe pre-llenar y completar la información técnica del control documental. Use la plantilla oficial pre-cargada con los datos de esta versión para asegurar la trazabilidad ISO 9001.
+                                    Opcionalmente, puede subir un documento de respaldo en formato Word o PDF para acompañar el contenido digital de esta versión del procedimiento.
                                 </p>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                                    {/* Download Template */}
-                                    <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex flex-col justify-between space-y-3">
-                                        <div>
-                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Paso A: Plantilla Pre-llenada</span>
-                                            <span className="text-[11px] text-slate-400 leading-normal block">
-                                                Descargue el archivo de Word precargado con el Código, Título, Autor, Versión y Firmantes autorizados.
-                                            </span>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={handleDownloadTemplate}
-                                            className="w-full bg-white dark:bg-slate-800 hover:bg-slate-100 text-slate-700 dark:text-slate-200 dark:border-slate-700 border border-slate-200 px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm"
-                                        >
-                                            <Download className="w-4 h-4 text-indigo-600" />
-                                            Descargar Plantilla Word
-                                        </button>
-                                    </div>
-
+                                <div className="pt-2">
                                     {/* Upload Final File */}
-                                    <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex flex-col justify-between space-y-3">
-                                        <div>
-                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Paso B: Subir Documento Final</span>
-                                            <span className="text-[11px] text-slate-400 leading-normal block">
-                                                Suba la capacitación finalizada en formato Word o PDF. Este archivo será visible para todos los técnicos asignados.
+                                    <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                        <div className="space-y-1">
+                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block">Subir Archivo de Respaldo (Opcional)</span>
+                                            <span className="text-[11px] text-slate-500 leading-normal block">
+                                                Soporta formatos Word (.doc, .docx) y PDF.
                                             </span>
                                         </div>
-                                        <label className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer text-center">
+                                        <label className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer shrink-0">
                                             <Upload className="w-4 h-4" />
                                             {uploading ? 'Subiendo...' : 'Seleccionar y Subir Archivo'}
                                             <input
@@ -1565,5 +2470,6 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                 </div>
             )}
         </div>
+        </>
     );
 }

@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { sendPushNotification } from '@/lib/onesignal';
 
 /**
  * Motor de cumplimiento y calidad (QMS & Compliance Engine)
@@ -19,33 +20,53 @@ export async function triggerAutomaticTraining(documentId: string) {
             where: { activo: true }
         });
 
-        let assignedCount = 0;
         const docTags = doc.tags ? (Array.isArray(doc.tags) ? doc.tags : JSON.parse(doc.tags as string)) : [];
+
+        // Obtener la versión vigente específica
+        const latestVersion = await prisma.documentVersion.findFirst({
+            where: {
+                documentId: doc.id,
+                versionMayor: doc.versionMayor,
+                versionMenor: doc.versionMenor
+            }
+        });
+        const versionId = latestVersion?.id || null;
+
+        let assignedCount = 0;
+        const notifiedUserIds: string[] = [];
 
         for (const op of operators) {
             let matches = false;
 
             // Si es de criticidad alta o crítica, aplica a todos los técnicos obligatoriamente
-            if (doc.nivelCriticidad === 'alta' || doc.nivelCriticidad === 'critica') {
+            if (doc.nivelCriticidad === 'alta' || doc.nivelCriticidad === 'alto' || doc.nivelCriticidad === 'critica' || doc.nivelCriticidad === 'critico') {
                 matches = true;
             } else {
                 // De lo contrario, verificar coincidencia de etiquetas
-                const opTags = op.etiquetas ? (Array.isArray(op.etiquetas) ? op.etiquetas : JSON.parse(op.etiquetas as string)) : [];
-                matches = docTags.some((tag: string) => opTags.includes(tag));
+                const opTagsArr = op.etiquetas ? (Array.isArray(op.etiquetas) ? op.etiquetas : JSON.parse(op.etiquetas as string)) : [];
+                matches = docTags.some((tag: string) => opTagsArr.includes(tag));
             }
 
             if (matches) {
-                // Verificar si ya existe una capacitación pendiente o en curso para esta versión del documento
+                // Verificar si ya existe una capacitación para esta versión específica
                 const existing = await prisma.technicianTraining.findFirst({
                     where: {
                         operatorId: op.id,
                         documentId: doc.id,
-                        estado: { in: ['pendiente', 'en_progreso'] }
+                        versionId: versionId || undefined
                     }
                 });
 
                 if (!existing) {
-                    // Crear capacitación obligatoria
+                    // Verificar si tenía una versión anterior aprobada
+                    const approvedTraining = await prisma.technicianTraining.findFirst({
+                        where: {
+                            operatorId: op.id,
+                            documentId: doc.id,
+                            estado: 'aprobado'
+                        }
+                    });
+
                     // Cuestionario de ejemplo si no existe en la base de datos
                     const defaultQuiz = [
                         {
@@ -76,14 +97,16 @@ export async function triggerAutomaticTraining(documentId: string) {
                         questionnaireToUse = workflow.cuestionario;
                     }
 
+                    // Crear capacitación obligatoria para esta versión específica (preservando el historial anterior)
                     await prisma.technicianTraining.create({
                         data: {
                             operatorId: op.id,
                             documentId: doc.id,
-                            titulo: `Capacitación Obligatoria: ${doc.titulo}`,
+                            versionId: versionId,
+                            titulo: `Capacitación Obligatoria (v${doc.versionMayor}.${doc.versionMenor}): ${doc.titulo}`,
                             estado: 'pendiente',
                             tipoContenido: 'pdf',
-                            urlContenido: `/api/documentos/${doc.id}/download`, // Link al archivo real
+                            urlContenido: `/api/documentos/${doc.id}/download`,
                             cuestionario: questionnaireToUse as any,
                             puntajeMinimo: 70.0
                         }
@@ -93,8 +116,12 @@ export async function triggerAutomaticTraining(documentId: string) {
                     await prisma.notification.create({
                         data: {
                             operatorId: op.id,
-                            title: 'Capacitación Obligatoria Asignada',
-                            message: `Se ha publicado una nueva versión crítica del documento "${doc.titulo}". Debes completar la capacitación obligatoria para poder operar.`,
+                            title: approvedTraining 
+                                ? 'Nueva Versión: Re-capacitación Obligatoria' 
+                                : 'Capacitación Obligatoria Asignada',
+                            message: approvedTraining
+                                ? `Se ha publicado una nueva versión (${doc.versionMayor}.${doc.versionMenor}) del documento "${doc.titulo}". Tu capacitación anterior ha quedado registrada en tu historial y debes completar esta nueva evaluación.`
+                                : `Se ha publicado una nueva versión crítica del documento "${doc.titulo}". Debes completar la capacitación obligatoria para poder operar.`,
                             type: 'QMS_TRAINING',
                             relatedId: doc.id
                         }
@@ -117,7 +144,7 @@ export async function triggerAutomaticTraining(documentId: string) {
                                 estado: 'pendiente'
                             }
                         });
-                    } else if (existingComp.estado === 'vigente') {
+                    } else {
                         // Vuelve a pendiente por cambio de versión documental
                         await prisma.technicianCompetency.update({
                             where: { id: existingComp.id },
@@ -125,9 +152,21 @@ export async function triggerAutomaticTraining(documentId: string) {
                         });
                     }
 
+                    if (op.id) {
+                        notifiedUserIds.push(op.id);
+                    }
                     assignedCount++;
                 }
             }
+        }
+
+        if (notifiedUserIds.length > 0) {
+            await sendPushNotification({
+                userIds: notifiedUserIds,
+                title: "Nueva Capacitación Obligatoria",
+                message: `Se ha publicado la versión aprobada de "${doc.titulo}". Entra al portal LMS para completar la capacitación requerida.`,
+                data: { route: '/capacitacion' }
+            }).catch(e => console.error("Error sending push notification to operators:", e));
         }
 
         return { count: assignedCount, message: `Capacitaciones asignadas exitosamente a ${assignedCount} técnicos.` };
@@ -263,6 +302,15 @@ export async function syncOperatorTrainings(operatorId: string) {
                     assignedCount++;
                 }
             }
+        }
+
+        if (assignedCount > 0 && op.id) {
+            await sendPushNotification({
+                userIds: [op.id],
+                title: "Nuevas Capacitaciones Asignadas",
+                message: `Se te han asignado ${assignedCount} capacitaciones obligatorias nuevas. Revisa tu portal LMS.`,
+                data: { route: '/capacitacion' }
+            }).catch(e => console.error("Error sending push notification to operator:", e));
         }
 
         return { count: assignedCount, message: `Capacitaciones sincronizadas: ${assignedCount} nuevas asignadas.` };

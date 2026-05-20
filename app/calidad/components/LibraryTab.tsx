@@ -89,7 +89,10 @@ export default function LibraryTab({ user }: { user: any }) {
             {selectedDocId && (
                 <DocumentDetailModal 
                     documentId={selectedDocId} 
-                    onClose={() => setSelectedDocId(null)} 
+                    onClose={() => {
+                        setSelectedDocId(null);
+                        loadDocs();
+                    }} 
                     user={user}
                 />
             )}

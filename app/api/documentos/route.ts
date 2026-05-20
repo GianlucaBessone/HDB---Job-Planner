@@ -111,11 +111,29 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Ya existe un documento con ese código documental' }, { status: 409 });
         }
 
-        const estadoInicial = (revisadorId || aprobadorId) ? 'en_revision' : 'borrador';
+        // Fetch user's position for signature block
+        const operator = await prisma.operator.findUnique({
+            where: { id: userId },
+            select: { posicion: true }
+        });
+        const userPosition = operator?.posicion || '';
+
+        // If there are reviewers/approvers, it must go to en_revision. 
+        // If there are none AND the creator signed, it goes straight to vigente.
+        let estadoInicial = 'borrador';
+        if (revisadorId || aprobadorId) {
+            estadoInicial = 'en_revision';
+        } else if (creatorSignature) {
+            estadoInicial = 'vigente';
+        }
 
         const workflowState = {
+            creatorStatus: creatorSignature ? 'approved' : 'pending',
             creatorSignature: creatorSignature || null,
             creatorSignatureDate: new Date().toISOString(),
+            creatorPosition: userPosition,
+            editorName: userName || null,
+            editorPosition: userPosition,
             revisadorStatus: revisadorId ? 'pending' : 'none',
             revisadorComment: null,
             revisadorSignature: null,
@@ -127,6 +145,7 @@ export async function POST(req: Request) {
             history: [
                 {
                     user: userName || 'Creador',
+                    posicion: userPosition,
                     action: 'created',
                     date: new Date().toISOString(),
                     comment: 'Creación inicial del documento',
@@ -188,6 +207,23 @@ export async function POST(req: Request) {
             entityId: doc.id,
             newValue: doc,
         });
+
+        // Push Notifications for Reviewers and Approvers
+        if (estadoInicial === 'en_revision') {
+            const notifiedUserIds: string[] = [];
+            if (revisadorId) notifiedUserIds.push(revisadorId);
+            if (aprobadorId && aprobadorId !== revisadorId) notifiedUserIds.push(aprobadorId);
+
+            if (notifiedUserIds.length > 0) {
+                const { sendPushNotification } = await import('@/lib/onesignal');
+                await sendPushNotification({
+                    userIds: notifiedUserIds,
+                    title: "Revisión Documental Requerida",
+                    message: `Se ha creado el documento "${doc.codigoDocumental}" y requiere tu firma/revisión.`,
+                    data: { route: `/calidad/documentos/${doc.id}` }
+                }).catch(e => console.error("Error sending push notification to reviewers:", e));
+            }
+        }
 
         return NextResponse.json(doc);
     } catch (e: any) {

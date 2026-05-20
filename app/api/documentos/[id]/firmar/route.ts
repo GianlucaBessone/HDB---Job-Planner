@@ -31,6 +31,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         let workflow: any = doc.workflowState;
         if (!workflow || typeof workflow !== 'object') {
             workflow = {
+                creatorStatus: doc.createdBy ? 'approved' : 'pending',
                 creatorSignature: null,
                 creatorSignatureDate: null,
                 revisadorStatus: doc.revisadorId ? 'pending' : 'none',
@@ -44,6 +45,10 @@ export async function POST(req: Request, { params }: { params: { id: string } })
                 history: []
             };
         }
+        // Backfill creatorStatus for legacy documents that don't have it
+        if (workflow.creatorStatus === undefined) {
+            workflow.creatorStatus = workflow.creatorSignature ? 'approved' : 'pending';
+        }
 
         if (!workflow.history) {
             workflow.history = [];
@@ -51,21 +56,36 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
         const nowStr = new Date().toISOString();
 
+        // Fetch user's current position to snapshot it
+        const operator = await prisma.operator.findUnique({
+            where: { id: userId },
+            select: { posicion: true }
+        });
+        const userPosition = operator?.posicion || '';
+
         if (status === 'approved') {
-            if (role === 'revisador') {
+            if (role === 'creador') {
+                workflow.creatorStatus = 'approved';
+                workflow.creatorSignature = signature;
+                workflow.creatorSignatureDate = nowStr;
+                workflow.creatorPosition = userPosition;
+            } else if (role === 'revisador') {
                 workflow.revisadorStatus = 'approved';
                 workflow.revisadorComment = comment || 'Aprobado de conformidad';
                 workflow.revisadorSignature = signature;
                 workflow.revisadorSignatureDate = nowStr;
+                workflow.revisadorPosition = userPosition;
             } else if (role === 'aprobador') {
                 workflow.aprobadorStatus = 'approved';
                 workflow.aprobadorComment = comment || 'Aprobado de conformidad';
                 workflow.aprobadorSignature = signature;
                 workflow.aprobadorSignatureDate = nowStr;
+                workflow.aprobadorPosition = userPosition;
             }
 
             workflow.history.push({
                 user: userName || 'Firmante',
+                posicion: userPosition,
                 action: 'approved',
                 date: nowStr,
                 comment: comment || 'Firma de conformidad',
@@ -73,11 +93,12 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             });
 
             // Check if all active signers approved
+            const reqCreatorApproved = workflow.creatorStatus === 'approved' || workflow.creatorStatus === 'none';
             const reqRevApproved = workflow.revisadorStatus === 'approved' || workflow.revisadorStatus === 'none';
             const reqAprApproved = workflow.aprobadorStatus === 'approved' || workflow.aprobadorStatus === 'none';
 
             let nuevoEstado = doc.estado;
-            if (reqRevApproved && reqAprApproved) {
+            if (reqCreatorApproved && reqRevApproved && reqAprApproved) {
                 nuevoEstado = 'vigente';
 
                 // Promote latest version to vigente
@@ -92,6 +113,44 @@ export async function POST(req: Request, { params }: { params: { id: string } })
                             fechaAprobacion: new Date()
                         }
                     });
+
+                    // If it's a MAJOR version (versionMenor === 0), invalidate old trainings and versions
+                    if (latestVersion.versionMenor === 0) {
+                        // Mark all other versions as obsoleta
+                        await prisma.documentVersion.updateMany({
+                            where: { 
+                                documentId: doc.id,
+                                id: { not: latestVersion.id }
+                            },
+                            data: { estado: 'obsoleta' }
+                        });
+
+                        // Invalidate operator trainings for this document
+                        await prisma.technicianTraining.updateMany({
+                            where: { documentId: doc.id },
+                            data: { estado: 'obsoleto' }
+                        });
+
+                        // Delete read confirmations so they have to read the new major version
+                        await prisma.documentReadConfirmation.deleteMany({
+                            where: { documentId: doc.id }
+                        });
+
+                        // Reset competencies to pendiente
+                        await prisma.technicianCompetency.updateMany({
+                            where: { documentId: doc.id },
+                            data: { estado: 'pendiente', evidencia: null, evaluacion: null }
+                        });
+                    } else {
+                        // For minor versions, we still obsolete older versions but we KEEP trainings intact
+                        await prisma.documentVersion.updateMany({
+                            where: { 
+                                documentId: doc.id,
+                                id: { not: latestVersion.id }
+                            },
+                            data: { estado: 'obsoleta' }
+                        });
+                    }
                 }
 
                 // Disparar capacitaciones automáticas (Motor de cumplimiento QMS)
@@ -123,7 +182,9 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             return NextResponse.json(updatedDoc);
 
         } else if (status === 'rejected') {
-            if (role === 'revisador') {
+            if (role === 'creador') {
+                workflow.creatorStatus = 'rejected';
+            } else if (role === 'revisador') {
                 workflow.revisadorStatus = 'rejected';
                 workflow.revisadorComment = comment;
             } else if (role === 'aprobador') {
@@ -159,6 +220,25 @@ export async function POST(req: Request, { params }: { params: { id: string } })
                         destinatarioNombre: doc.createdByName
                     }
                 });
+
+                await prisma.notification.create({
+                    data: {
+                        operatorId: doc.createdBy,
+                        title: "Documento Observado",
+                        message: `El revisador/aprobador ${userName} ha dejado observaciones en tu documento "${doc.titulo}".`,
+                        type: 'QMS_DOCUMENT_REJECTED',
+                        relatedId: doc.id,
+                        forSupervisors: false
+                    }
+                }).catch(e => console.error("Error creating document observed notification:", e));
+
+                const { sendPushNotification } = await import('@/lib/onesignal');
+                await sendPushNotification({
+                    userIds: [doc.createdBy],
+                    title: "Documento Observado",
+                    message: `El revisador/aprobador ${userName} ha dejado observaciones en tu documento "${doc.titulo}".`,
+                    data: { route: `/calidad/documentos/${doc.id}` }
+                }).catch(e => console.error("Error sending push notification to creator:", e));
             }
 
             await logAudit({

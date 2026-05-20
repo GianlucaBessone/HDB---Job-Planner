@@ -15,7 +15,24 @@ export async function GET(req: Request) {
             where,
             include: {
                 operator: { select: { id: true, nombreCompleto: true } },
-                document: { select: { id: true, titulo: true, tipoDocumento: true, nivelCriticidad: true } }
+                document: { 
+                    select: { 
+                        id: true, 
+                        titulo: true, 
+                        tipoDocumento: true, 
+                        nivelCriticidad: true, 
+                        validezMeses: true, 
+                        codigoDocumental: true,
+                        descripcion: true,
+                        versions: {
+                            orderBy: { createdAt: 'desc' },
+                            take: 1,
+                            include: {
+                                files: true
+                            }
+                        }
+                    } 
+                }
             },
             orderBy: { createdAt: 'desc' }
         });

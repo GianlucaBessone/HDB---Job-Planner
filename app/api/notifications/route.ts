@@ -123,4 +123,59 @@ export async function POST(req: Request) {
     });
 }
 
+export async function DELETE(req: Request) {
+    try {
+        const url = new URL(req.url);
+        const operatorId = url.searchParams.get('operatorId');
+        const role = url.searchParams.get('role');
+
+        if (!operatorId) {
+            return NextResponse.json({ error: 'Falta operatorId' }, { status: 400 });
+        }
+
+        let ids: string[] | undefined;
+        try {
+            const body = await req.json();
+            if (body && Array.isArray(body.ids)) {
+                ids = body.ids;
+            }
+        } catch (e) {
+            // No body or invalid JSON, ignore and delete all
+        }
+
+        let whereClause: any;
+        if (role === 'supervisor' || role === 'admin' || role === 'qa') {
+            whereClause = {
+                OR: [
+                    { operatorId: operatorId },
+                    { forSupervisors: true }
+                ]
+            };
+        } else {
+            whereClause = {
+                operatorId: operatorId,
+                forSupervisors: false
+            };
+        }
+
+        if (ids && ids.length > 0) {
+            whereClause = {
+                AND: [
+                    whereClause,
+                    { id: { in: ids } }
+                ]
+            };
+        }
+
+        await prisma.notification.deleteMany({
+            where: whereClause
+        });
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error('Error clearing notifications:', error);
+        return NextResponse.json({ error: 'Error del servidor' }, { status: 500 });
+    }
+}
+
 

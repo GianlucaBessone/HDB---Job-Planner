@@ -35,6 +35,7 @@ export default function OperatorsPage() {
         activo: true,
         enVacaciones: false,
         role: 'operador',
+        posicion: '',
         pin: '1234',
         etiquetas: [] as string[]
     });
@@ -88,7 +89,7 @@ export default function OperatorsPage() {
 
     const openCreate = () => {
         setEditingOperator(null);
-        setFormData({ nombreCompleto: '', activo: true, enVacaciones: false, etiquetas: [], role: 'operador', pin: '1234' });
+        setFormData({ nombreCompleto: '', activo: true, enVacaciones: false, etiquetas: [], role: 'operador', posicion: '', pin: '1234' });
         setIsModalOpen(true);
     };
 
@@ -100,6 +101,7 @@ export default function OperatorsPage() {
             enVacaciones: op.enVacaciones || false,
             etiquetas: op.etiquetas || [],
             role: op.role || 'operador',
+            posicion: op.posicion || '',
             pin: op.pin || '1234'
         });
         setIsModalOpen(true);
@@ -248,7 +250,7 @@ export default function OperatorsPage() {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Rol</label>
+                                        <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Rol en Sistema</label>
                                         <SearchableSelect
                                             options={[
                                                 { id: 'operador', label: 'Operador' },
@@ -264,19 +266,31 @@ export default function OperatorsPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">PIN / Contraseña</label>
+                                        <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Cargo / Posición (Firma)</label>
                                         <input
-                                            type="password"
-                                            inputMode="numeric"
-                                            pattern="[0-9]*"
-                                            maxLength={8}
-                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-4 px-5 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium tracking-widest"
-                                            value={formData.pin}
-                                            onChange={e => setFormData({ ...formData, pin: e.target.value.replace(/\D/g, '').slice(0, 8) })}
-                                            placeholder="Ej: 1234"
-                                            required
+                                            type="text"
+                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-4 px-5 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium disabled:opacity-50"
+                                            value={formData.posicion}
+                                            onChange={e => setFormData({ ...formData, posicion: e.target.value })}
+                                            placeholder="Ej: Gerente de Calidad"
+                                            disabled={currentUser?.role === 'operador' || currentUser?.role === 'vendedor'}
                                         />
                                     </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">PIN / Contraseña</label>
+                                    <input
+                                        type="password"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
+                                        maxLength={8}
+                                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-4 px-5 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium tracking-widest"
+                                        value={formData.pin}
+                                        onChange={e => setFormData({ ...formData, pin: e.target.value.replace(/\D/g, '').slice(0, 8) })}
+                                        placeholder="Ej: 1234"
+                                        required
+                                    />
                                 </div>
 
                                 <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
