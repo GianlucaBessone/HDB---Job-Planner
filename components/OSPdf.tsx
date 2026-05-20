@@ -214,7 +214,7 @@ export function OSPdf({ os, logoUrl }: OSPdfProps) {
 
                 {/* ── Footer ── */}
                 <View style={S.footer} fixed>
-                    <Text style={S.footerText}>HDB Job Planner — Gestión de Órdenes de Servicio</Text>
+                    <Text style={S.footerText}>HDB SGI — Gestión de Órdenes de Servicio</Text>
                     <Text style={S.footerText}>{osCode}{prCode ? ` — ${prCode}` : ''} — {fmtDate(os.fechaCreacion)}</Text>
                 </View>
 

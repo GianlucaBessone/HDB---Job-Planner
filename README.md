@@ -1,4 +1,4 @@
-# 📋 HDB Job Planner
+# 📋 HDB SGI - Sistema de Gestión Integral
 
 Sistema de planificación diaria para equipos técnicos con generación automática de mensajes de WhatsApp.
 
@@ -179,7 +179,7 @@ La app estará disponible en [http://localhost:3000](http://localhost:3000)
 
 ## 📝 Licencia
 
-Este proyecto es privado y de uso interno para HDB.
+Este proyecto es privado y de uso interno para HDB Servicios Eléctricos.
 
 ---
 

@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-// Custom Service Worker for HDB Planner
+// Custom Service Worker for HDB SGI
 // This file is compiled by @ducanh2912/next-pwa into public/sw.js
 
 importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");

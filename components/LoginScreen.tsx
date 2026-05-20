@@ -86,7 +86,7 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
                     <div className="bg-indigo-500 p-3 rounded-2xl shadow-lg shadow-indigo-500/30 mb-4">
                         <ClipboardList className="w-8 h-8 text-white" />
                     </div>
-                    <h1 className="text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tighter">HDB<span className="text-indigo-500">Planner</span></h1>
+                    <h1 className="text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tighter">HDB<span className="text-indigo-500">SGI</span></h1>
                     <p className="text-sm font-bold text-slate-400 dark:text-slate-500 mt-2 uppercase tracking-widest text-center">Acceso al Sistema Operativo</p>
                 </div>
 

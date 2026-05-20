@@ -199,7 +199,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
             </div>` : ''}
 
             <div class="footer">
-                <span>HDB Job Planner — Gestión de Órdenes de Servicio</span>
+                <span>HDB SGI — Gestión de Órdenes de Servicio</span>
                 <span>${(os as any).codigoOS || 'OS #' + os.id.slice(-8).toUpperCase()} — ${(os as any).project.codigoProyecto || ''} — ${formatDate(os.fechaCreacion)}</span>
             </div>
         `;

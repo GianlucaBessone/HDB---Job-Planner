@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { safeApiRequest } from '@/lib/offline';
+import { formatDateInline } from '@/lib/formatDate';
 import { 
     ShieldAlert, CheckCircle2, FileText, ChevronRight, 
     AlertTriangle, ExternalLink, Camera, Award, PenTool, 
@@ -457,7 +458,7 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                                                                 </p>
                                                                 {item.completado && (item.completadoPorNombre || item.fechaCompletado) && (
                                                                     <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-semibold">
-                                                                        Verificado por {item.completadoPorNombre || 'Operador'} el {item.fechaCompletado ? new Date(item.fechaCompletado).toLocaleDateString() : ''}
+                                                                        Verificado por {item.completadoPorNombre || 'Operador'} el {item.fechaCompletado ? formatDateInline(item.fechaCompletado) : ''}
                                                                     </p>
                                                                 )}
                                                             </div>

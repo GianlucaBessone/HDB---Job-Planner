@@ -320,7 +320,7 @@ export const ProjectReportPDF = ({
 
                 {/* ── Footer ── */}
                 <Text style={S.footer}>
-                    Reporte Oficial · Generado por HDBPlanner para HDB Servicios Eléctricos el {formatDate(new Date())}
+                    Reporte Oficial · Generado por HDB SGI para HDB Servicios Eléctricos el {formatDate(new Date())}
                 </Text>
             </Page>
         </Document>

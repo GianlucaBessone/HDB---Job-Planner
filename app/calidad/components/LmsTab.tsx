@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { safeApiRequest } from '@/lib/offline';
+import { formatDateInline } from '@/lib/formatDate';
 import { 
     BookOpen, Award, CheckCircle2, XCircle, Play, 
     ArrowLeft, HelpCircle, GraduationCap, Clock, Check
@@ -425,7 +426,7 @@ export default function LmsTab({ user }: { user: any }) {
                                 {t.fechaFin && (
                                     <div className="flex justify-between text-xs font-bold text-slate-500">
                                         <span>Completado el:</span>
-                                        <span className="text-slate-800 dark:text-slate-100">{new Date(t.fechaFin).toLocaleDateString()}</span>
+                                        <span className="text-slate-800 dark:text-slate-100">{formatDateInline(t.fechaFin)}</span>
                                     </div>
                                 )}
                                 {t.puntaje !== null && (

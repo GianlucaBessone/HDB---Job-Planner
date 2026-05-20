@@ -347,7 +347,7 @@ export default async function ProjectReportPage({ params, searchParams }: { para
 
                 {/* Footer */}
                 <div className="mt-16 pt-6 border-t border-slate-200 dark:border-slate-700 text-center text-xs font-bold text-slate-400 dark:text-slate-500">
-                    <p>Reporte Oficial | Generado automáticamente por HDB Job Planner el {formatDate(new Date())}</p>
+                    <p>Reporte Oficial | Generado automáticamente por HDB SGI el {formatDate(new Date())}</p>
                 </div>
             </div>
         </div>

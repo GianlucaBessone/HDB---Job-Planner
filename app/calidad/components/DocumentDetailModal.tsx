@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, FileText, CheckCircle2, ShieldAlert, Plus, Trash2, Save, FileBox, AlertCircle, FileSignature, ThumbsUp, ThumbsDown, Download, Upload, BookOpen, Award, Clock, UserCheck, UserX, Sparkles, Search, PlusCircle, Play, Loader2, FileCheck } from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
+import { formatDateInline, formatDateTimeInline } from '@/lib/formatDate';
 import { showToast } from '@/components/Toast';
 
 export default function DocumentDetailModal({ documentId, onClose, user }: { documentId: string, onClose: () => void, user?: any }) {
@@ -152,7 +153,7 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
             return;
         }
 
-        const dateStr = new Date().toLocaleDateString('es-AR');
+        const dateStr = formatDateInline(new Date());
         
         printWindow.document.write(`
             <html>
@@ -298,7 +299,7 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                         <tr>
                             <td class="meta-cell">
                                 <strong>CRITICIDAD:</strong> ${doc.nivelCriticidad.toUpperCase()}<br>
-                                <strong>FECHA EMISIÓN:</strong> ${new Date(doc.createdAt).toLocaleDateString('es-AR')}<br>
+                                <strong>FECHA EMISIÓN:</strong> ${formatDateInline(doc.createdAt)}<br>
                                 <strong>ESTADO:</strong> ${doc.estado.toUpperCase()}
                             </td>
                         </tr>
@@ -1565,7 +1566,7 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                                     <span className="text-xs text-slate-400 italic">No firmado</span>
                                                 )}
                                                 <p className="text-[9px] text-slate-400 mt-1">
-                                                    {doc.workflowState.creatorSignatureDate ? new Date(doc.workflowState.creatorSignatureDate).toLocaleString() : ''}
+                                                    {doc.workflowState.creatorSignatureDate ? formatDateTimeInline(doc.workflowState.creatorSignatureDate) : ''}
                                                 </p>
                                             </div>
                                         </div>
@@ -1605,7 +1606,7 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                                     )}
                                                     {doc.workflowState.revisadorSignatureDate && (
                                                         <p className="text-[9px] text-slate-400 mt-1">
-                                                            {new Date(doc.workflowState.revisadorSignatureDate).toLocaleString()}
+                                                            {formatDateTimeInline(doc.workflowState.revisadorSignatureDate)}
                                                         </p>
                                                     )}
                                                 </div>
@@ -1647,7 +1648,7 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                                     )}
                                                     {doc.workflowState.aprobadorSignatureDate && (
                                                         <p className="text-[9px] text-slate-400 mt-1">
-                                                            {new Date(doc.workflowState.aprobadorSignatureDate).toLocaleString()}
+                                                            {formatDateTimeInline(doc.workflowState.aprobadorSignatureDate)}
                                                         </p>
                                                     )}
                                                 </div>
@@ -2319,7 +2320,7 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                                                         {t.puntajeObtenido !== null ? `${t.puntajeObtenido}%` : 'N/A'}
                                                                     </td>
                                                                     <td className="p-3 text-[11px] text-slate-400">
-                                                                        {t.completadoAt ? new Date(t.completadoAt).toLocaleDateString() : 'Pendiente de inicio'}
+                                                                        {t.completadoAt ? formatDateInline(t.completadoAt) : 'Pendiente de inicio'}
                                                                     </td>
                                                                 </tr>
                                                             ))}
@@ -2348,7 +2349,7 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                             </span>
                                         </div>
                                         <span className="text-xs font-medium text-slate-400">
-                                            {new Date(v.createdAt).toLocaleDateString()}
+                                            {formatDateInline(v.createdAt)}
                                         </span>
                                     </div>
                                     <p className="text-sm text-slate-600 dark:text-slate-300 mt-2">{v.motivoCambio}</p>

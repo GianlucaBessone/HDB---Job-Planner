@@ -817,7 +817,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
             </div>` : ''}
 
             <div class="footer">
-                <span>HDB Job Planner — Gestión de Órdenes de Servicio</span>
+                <span>HDB SGI — Gestión de Órdenes de Servicio</span>
                 <span>${os.codigoOS || 'OS #' + os.id.slice(-8).toUpperCase()} — ${os.project.codigoProyecto || ''} — ${formatDate(os.fechaCreacion)}</span>
             </div>
         `;
@@ -869,7 +869,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                     </div>
                     <div>
                         <div className="flex items-center gap-2 flex-wrap mb-1">
-                            <p className="text-[10px] font-black text-blue-600/70 uppercase tracking-widest">HDB Job Planner</p>
+                            <p className="text-[10px] font-black text-blue-600/70 uppercase tracking-widest">HDB SGI</p>
                             {os.codigoOS && <CodeBadge code={os.codigoOS} variant="os" size="sm" showCopy={false} />}
                         </div>
                         <h1 className="text-lg font-black text-slate-800 dark:text-slate-100 leading-tight">Orden de Servicio</h1>

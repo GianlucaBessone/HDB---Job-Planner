@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { formatDateInline } from '@/lib/formatDate';
 
 export async function GET(req: Request) {
     try {
@@ -118,8 +119,8 @@ export async function POST(req: Request) {
                         estado: 'vigente',
                         vencimiento: vencimientoDate,
                         evidencia: totalQuestions > 0
-                            ? `Aprobación de examen teórico LMS en fecha ${new Date().toLocaleDateString()} con score de ${Math.round(score)}%`
-                            : `Lectura y conformidad del documento realizada el ${new Date().toLocaleDateString()}`,
+                            ? `Aprobación de examen teórico LMS en fecha ${formatDateInline(new Date())} con score de ${Math.round(score)}%`
+                            : `Lectura y conformidad del documento realizada el ${formatDateInline(new Date())}`,
                         evaluacion: `Competencia acreditada por aprobación de capacitación obligatoria. Validez de ${months} meses.`,
                         aprobadorNombre: 'QMS Auto-Validation Engine'
                     }
@@ -133,8 +134,8 @@ export async function POST(req: Request) {
                         estado: 'vigente',
                         vencimiento: vencimientoDate,
                         evidencia: totalQuestions > 0
-                            ? `Aprobación de examen teórico LMS en fecha ${new Date().toLocaleDateString()} con score de ${Math.round(score)}%`
-                            : `Lectura y conformidad del documento realizada el ${new Date().toLocaleDateString()}`,
+                            ? `Aprobación de examen teórico LMS en fecha ${formatDateInline(new Date())} con score de ${Math.round(score)}%`
+                            : `Lectura y conformidad del documento realizada el ${formatDateInline(new Date())}`,
                         evaluacion: `Competencia acreditada por aprobación de capacitación obligatoria. Validez de ${months} meses.`,
                         aprobadorNombre: 'QMS Auto-Validation Engine'
                     }

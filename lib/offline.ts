@@ -218,76 +218,152 @@ async function handleOfflineRequest(
 
 const MAX_RETRIES = 5;
 let isSyncing = false;
+let cachedOnlineState = false;
+let lastPingTime = 0;
 
-export async function processSyncQueue() {
-  if (typeof navigator === 'undefined' || !navigator.onLine || isSyncing) return;
+/**
+ * Performs a lightweight healthcheck ping to verify actual IP-routing to the internet.
+ * Uses 5-second caching to prevent duplicate network calls.
+ */
+export async function verifyRealConnectivity(): Promise<boolean> {
+  if (typeof navigator === 'undefined') return false;
+  if (!navigator.onLine) return false;
 
+  const now = Date.now();
+  if (now - lastPingTime < 5000) {
+    return cachedOnlineState;
+  }
+
+  lastPingTime = now;
   try {
-    const db = await getDB();
-    const pending = await db.getAll('pendingActions');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-    if (pending.length === 0) {
-      setStatus('online');
-      return;
+    const res = await fetch('/api/healthcheck', {
+      method: 'GET',
+      headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' },
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+    cachedOnlineState = res.status === 200;
+  } catch (e) {
+    console.warn('[SyncEngine] Passive connection ping failed:', e);
+    cachedOnlineState = false;
+  }
+
+  return cachedOnlineState;
+}
+
+/**
+ * Sequential FIFO sync execution loop.
+ * Halts processing immediately on transient or permanent failures to prevent out-of-order execution.
+ */
+async function executeSyncLoop() {
+  const db = await getDB();
+  const pending = await db.getAll('pendingActions');
+
+  if (pending.length === 0) {
+    setStatus('online');
+    return;
+  }
+
+  // Sort chronologically by timestamp to enforce strict FIFO ordering
+  pending.sort((a, b) => a.timestamp - b.timestamp);
+
+  console.log(`[SyncEngine] Processing queue sequentially. Length: ${pending.length}`);
+  isSyncing = true;
+  setStatus('syncing');
+  let syncedCount = 0;
+
+  for (const action of pending) {
+    if (action.retryCount >= MAX_RETRIES) {
+      console.error(`[SyncEngine] Action ${action.id} reached max retries. Mark status as failed.`);
+      action.status = 'failed';
+      await db.put('pendingActions', action);
+      continue;
     }
 
-    console.log(`[SyncEngine] Starting synchronization of ${pending.length} actions...`);
-    isSyncing = true;
-    setStatus('syncing');
-    let syncedCount = 0;
+    try {
+      const hasRealInternet = await verifyRealConnectivity();
+      if (!hasRealInternet) {
+        console.warn('[SyncEngine] Real network check failed. Stopping queue.');
+        break;
+      }
 
-    for (const action of pending) {
-      if (action.retryCount >= MAX_RETRIES) continue;
+      console.log(`[SyncEngine] Syncing: ${action.method} ${action.endpoint}`);
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'X-Idempotency-Key': action.id,
+      };
 
-      try {
-        console.log(`[SyncEngine] Syncing: ${action.method} ${action.endpoint}`);
-        const headers: Record<string, string> = {
-          'Content-Type': 'application/json',
-          'X-Idempotency-Key': action.id,
-        };
+      const response = await fetch(action.endpoint, {
+        method: action.method,
+        headers,
+        body: action.payload ? JSON.stringify(action.payload) : undefined,
+      });
 
-        const response = await fetch(action.endpoint, {
-          method: action.method,
-          headers,
-          body: action.payload ? JSON.stringify(action.payload) : undefined,
-        });
-
-        if (response.ok || response.status === 409) {
-          await db.delete('pendingActions', action.id);
-          syncedCount++;
-          console.log(`[SyncEngine] Successfully synced ${action.id}`);
-        } else {
-          console.warn(`[SyncEngine] Failed to sync ${action.id}: Status ${response.status}`);
-          action.retryCount += 1;
-          action.status = 'failed';
-          await db.put('pendingActions', action);
-        }
-      } catch (err) {
-        console.error(`[SyncEngine] Network error syncing ${action.id}:`, err);
+      if (response.ok) {
+        await db.delete('pendingActions', action.id);
+        syncedCount++;
+        console.log(`[SyncEngine] Successfully synced ${action.id}`);
+      } else if (response.status >= 400 && response.status < 500 && response.status !== 409 && response.status !== 408) {
+        // Permanent application error (Business logic / Validation failure)
+        console.error(`[SyncEngine] Permanent failure (Status ${response.status}) on ${action.id}. Halting queue to preserve consistency.`);
+        action.status = 'failed';
+        await db.put('pendingActions', action);
+        break;
+      } else {
+        // Transient errors (5xx server errors, timeouts, etc.)
+        console.warn(`[SyncEngine] Transient failure (Status ${response.status}) for ${action.id}. Will retry later.`);
         action.retryCount += 1;
         await db.put('pendingActions', action);
+        break;
       }
+    } catch (err) {
+      console.error(`[SyncEngine] Network error syncing ${action.id}:`, err);
+      // Pure network/fetch drop: halt queue processing immediately but do not penalize retry count
+      break;
     }
+  }
 
-    isSyncing = false;
-    console.log(`[SyncEngine] Sync cycle finished. Synced: ${syncedCount}`);
+  isSyncing = false;
+  const remaining = await db.getAll('pendingActions');
+  const activeRemaining = remaining.filter((a) => a.status === 'pending');
+  setStatus(activeRemaining.length > 0 ? 'offline' : 'online');
 
-    if (syncedCount > 0) {
-      window.dispatchEvent(
-        new CustomEvent('offline-sync', {
-          detail: { message: `Datos sincronizados correctamente. (${syncedCount})` },
-        })
-      );
-    }
-
-    const remaining = (await db.getAll('pendingActions')).filter(
-      (a) => a.retryCount < MAX_RETRIES
+  if (syncedCount > 0 && typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent('offline-sync', {
+        detail: { message: `Datos sincronizados correctamente. (${syncedCount})` },
+      })
     );
-    setStatus(remaining.length > 0 ? 'offline' : 'online');
-  } catch (err) {
-    console.error('[SyncEngine] Critical error in processSyncQueue:', err);
-    isSyncing = false;
-    setStatus('offline');
+  }
+}
+
+/**
+ * Public function to trigger queue synchronization.
+ * Uses Web Locks API to guarantee mutual exclusion (mutex) across multiple browser tabs.
+ */
+export async function processSyncQueue() {
+  if (typeof window === 'undefined') return;
+  if (typeof navigator === 'undefined' || !navigator.onLine || isSyncing) return;
+
+  if ('locks' in navigator) {
+    try {
+      await navigator.locks.request('sync_queue_lock', { ifAvailable: true }, async (lock) => {
+        if (!lock) {
+          console.log('[SyncEngine] Sync lock busy in another tab. Skipping execution.');
+          return;
+        }
+        await executeSyncLoop();
+      });
+    } catch (err) {
+      console.error('[SyncEngine] Web lock error, falling back to direct execution:', err);
+      await executeSyncLoop();
+    }
+  } else {
+    await executeSyncLoop();
   }
 }
 
@@ -305,7 +381,7 @@ if (typeof window !== 'undefined') {
     setStatus('offline');
   });
 
-  // Periodic sync every 20 seconds
+  // Periodic sync check every 20 seconds
   setInterval(() => {
     if (typeof navigator !== 'undefined' && navigator.onLine && !isSyncing) {
       processSyncQueue();

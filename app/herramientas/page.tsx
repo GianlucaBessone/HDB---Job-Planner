@@ -12,6 +12,7 @@ import { Html5Qrcode } from 'html5-qrcode';
 import { QRCodeCanvas } from 'qrcode.react';
 import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
+import { formatDateInline, formatDateTimeInline } from '@/lib/formatDate';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import SearchableSelect from '@/components/SearchableSelect';
 import * as XLSX from 'xlsx';
@@ -1268,14 +1269,14 @@ function VerificacionTab({ user }: { user: any }) {
 
         const rows = itemsToPrint.map((h: any) => {
             const estadoActual = h.estadoHerramienta || '-';
-            const fechaUltimo = h.ultimoControlFecha ? new Date(h.ultimoControlFecha).toLocaleDateString('es-AR') : '-';
+            const fechaUltimo = h.ultimoControlFecha ? formatDateInline(h.ultimoControlFecha) : '-';
             const respUltimo = h.ultimoControlOperador || '-';
             let estadoVerif = '-';
             if (h.estadoControl && ESTADO_CONTROL_STYLES[h.estadoControl as keyof typeof ESTADO_CONTROL_STYLES]) {
                 estadoVerif = ESTADO_CONTROL_STYLES[h.estadoControl as keyof typeof ESTADO_CONTROL_STYLES].label;
                 if (h.diasRestantes !== null && h.diasRestantes >= 0) estadoVerif += ` (${h.diasRestantes}D)`;
             }
-            const fechaProx = h.proximoControlFecha ? new Date(h.proximoControlFecha).toLocaleDateString('es-AR') : '-';
+            const fechaProx = h.proximoControlFecha ? formatDateInline(h.proximoControlFecha) : '-';
             
             return `
                 <tr>
@@ -1309,7 +1310,7 @@ function VerificacionTab({ user }: { user: any }) {
         </style>
         </head><body>
             <h1>${title}</h1>
-            <p>Generado el: ${new Date().toLocaleString('es-AR')}</p>
+            <p>Generado el: ${formatDateTimeInline(new Date())}</p>
             <table>
                 <thead>
                     <tr>
@@ -1411,8 +1412,8 @@ function VerificacionTab({ user }: { user: any }) {
                             )}
                             {tool.estadoHerramienta && <p className="text-xs font-bold text-slate-500">Estado: <span className={`font-black ${tool.estadoHerramienta === 'APROBADA' ? 'text-emerald-600' : 'text-red-600'}`}>{tool.estadoHerramienta}</span></p>}
                             {tool.ultimoControlOperador && <p className="text-xs font-bold text-slate-500">Último control por: {tool.ultimoControlOperador}</p>}
-                            {tool.ultimoControlFecha && <p className="text-xs font-bold text-slate-500">Fecha: {new Date(tool.ultimoControlFecha).toLocaleDateString('es-AR')}</p>}
-                            {tool.proximoControlFecha && <p className="text-xs font-bold text-slate-500">Próxima verificación: <span className="text-slate-700 dark:text-slate-300 font-black">{new Date(tool.proximoControlFecha).toLocaleDateString('es-AR')}</span></p>}
+                            {tool.ultimoControlFecha && <p className="text-xs font-bold text-slate-500">Fecha: {formatDateInline(tool.ultimoControlFecha)}</p>}
+                            {tool.proximoControlFecha && <p className="text-xs font-bold text-slate-500">Próxima verificación: <span className="text-slate-700 dark:text-slate-300 font-black">{formatDateInline(tool.proximoControlFecha)}</span></p>}
 
                             {/* Verify Actions */}
                             {!verifyMode ? (
@@ -1445,7 +1446,7 @@ function VerificacionTab({ user }: { user: any }) {
                                         {v.estado === 'APROBADA' ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> : <X className="w-3.5 h-3.5 text-red-500" />}
                                         <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{v.operadorNombre}</span>
                                     </div>
-                                    <span className="text-[10px] font-bold text-slate-400">{new Date(v.fecha).toLocaleDateString('es-AR')}</span>
+                                    <span className="text-[10px] font-bold text-slate-400">{formatDateInline(v.fecha)}</span>
                                 </div>
                             ))}
                         </div>
@@ -1490,14 +1491,14 @@ function VerificacionTab({ user }: { user: any }) {
                                                                 <div className="flex justify-between">
                                                                     <span>Último control:</span>
                                                                     <span className="font-bold text-slate-700 dark:text-slate-300 text-right">
-                                                                        {h.ultimoControlFecha ? `${new Date(h.ultimoControlFecha).toLocaleDateString('es-AR')}` : 'Nunca'}
+                                                                        {h.ultimoControlFecha ? formatDateInline(h.ultimoControlFecha) : 'Nunca'}
                                                                         {h.ultimoControlOperador ? ` por ${h.ultimoControlOperador}` : ''}
                                                                     </span>
                                                                 </div>
                                                                 {h.proximoControlFecha && (
                                                                     <div className="flex justify-between">
                                                                         <span>Próxima verificación:</span>
-                                                                        <span className="font-black text-slate-800 dark:text-slate-200">{new Date(h.proximoControlFecha).toLocaleDateString('es-AR')}</span>
+                                                                        <span className="font-black text-slate-800 dark:text-slate-200">{formatDateInline(h.proximoControlFecha)}</span>
                                                                     </div>
                                                                 )}
                                                             </div>
@@ -1612,8 +1613,8 @@ function HistorialTab({ user }: { user: any }) {
                                                 <span className="font-bold text-slate-600 dark:text-slate-300">{mov.operator?.nombreCompleto}</span> → {mov.project?.nombre}
                                             </p>
                                             <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1.5">
-                                                <span className="text-[10px] font-bold text-slate-400">Salida: {new Date(mov.fechaSalida).toLocaleDateString('es-AR')}</span>
-                                                <span className="text-[10px] font-bold text-slate-400">Devolución: {mov.fechaDevolucion ? new Date(mov.fechaDevolucion).toLocaleDateString('es-AR') : '—'}</span>
+                                                <span className="text-[10px] font-bold text-slate-400">Salida: {formatDateInline(mov.fechaSalida)}</span>
+                                                <span className="text-[10px] font-bold text-slate-400">Devolución: {mov.fechaDevolucion ? formatDateInline(mov.fechaDevolucion) : '—'}</span>
                                             </div>
                                         </div>
                                         {isExpanded ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}

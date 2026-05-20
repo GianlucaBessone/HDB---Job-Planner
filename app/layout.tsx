@@ -111,7 +111,7 @@ export default function RootLayout({
                                     <ClipboardList className="w-5 h-5 text-white" />
                                 </div>
                                 <span className="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-100">
-                                    HDB<span className="text-primary">Planner</span>
+                                    HDB<span className="text-primary">SGI</span>
                                 </span>
                             </Link>
                         </div>
@@ -119,7 +119,7 @@ export default function RootLayout({
                         <div className="flex items-center gap-2 md:gap-4">
                             <Link href="/" className="flex items-center gap-2 md:hidden hover:opacity-80 transition-opacity">
                                 <span className="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-100">
-                                    HDB<span className="text-primary">Planner</span>
+                                    HDB<span className="text-primary">SGI</span>
                                 </span>
                             </Link>
                             <div className="flex items-center gap-2">
@@ -152,7 +152,7 @@ export default function RootLayout({
 
                 <footer className="hidden md:block border-t bg-white dark:bg-slate-800 py-6">
                     <div className="container mx-auto px-4 text-center text-sm text-slate-500 dark:text-slate-400">
-                        © 2026 HDB Job Planner - Eficiencia en cada tarea
+                        © 2026 HDB SGI - Sistema de Gestión Integral
                     </div>
                 </footer>
 
@@ -168,7 +168,7 @@ export default function RootLayout({
                 <meta name="mobile-web-app-capable" content="yes" />
                 <meta name="apple-mobile-web-app-capable" content="yes" />
                 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-                <meta name="apple-mobile-web-app-title" content="HDB Planner" />
+                <meta name="apple-mobile-web-app-title" content="HDB SGI" />
                 <meta name="theme-color" content="#2563eb" />
                 <link rel="manifest" href="/manifest.json" />
                 <link rel="apple-touch-icon" href="/images/ios/180.png" />
@@ -178,7 +178,7 @@ export default function RootLayout({
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
                 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
-                <title>HDB | Job Planner</title>
+                <title>HDB | SGI</title>
                 <meta name="description" content="Sistema premium de planificación para técnicos" />
             </head>
             <body className="font-sans min-h-[100dvh] bg-slate-50/50 dark:bg-slate-900 overscroll-none text-slate-900 dark:text-slate-100" style={{ fontFamily: '"Outfit", sans-serif' }}>
@@ -309,7 +309,7 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
                 <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <div className="flex items-center gap-2 text-primary">
                         <ClipboardList className="w-6 h-6 shrink-0" />
-                        <span className="font-extrabold text-xl tracking-tighter text-slate-800 dark:text-slate-100">HDB<span className="text-primary">Planner</span></span>
+                        <span className="font-extrabold text-xl tracking-tighter text-slate-800 dark:text-slate-100">HDB<span className="text-primary">SGI</span></span>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400 dark:text-slate-500">
                         <X className="w-5 h-5" />

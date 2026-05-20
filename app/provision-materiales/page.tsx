@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { formatDateInline } from '@/lib/formatDate';
 import Link from 'next/link';
 import { Search } from 'lucide-react';
 import {
@@ -317,7 +318,7 @@ function DevolucionModal({
                                     >
                                         <div className="flex justify-between items-center">
                                             <span className="text-sm font-black text-slate-700 dark:text-slate-200">{d.cantidadADevolver} {material.unidad}</span>
-                                            <span className="text-[10px] font-bold text-slate-400">{new Date(d.id.startsWith('c') ? Date.now() : 0).toLocaleDateString()}</span>
+                                            <span className="text-[10px] font-bold text-slate-400">{formatDateInline(new Date(d.id.startsWith('c') ? Date.now() : 0))}</span>
                                         </div>
                                         {d.comentario && <p className="text-[11px] text-slate-500 mt-1 italic">"{d.comentario}"</p>}
                                     </button>
@@ -381,7 +382,7 @@ function DevolucionModal({
                                                 <span className="text-xs font-black text-slate-700 dark:text-slate-200">{d.cantidadADevolver} {material.unidad}</span>
                                                 <EstadoBadge estado={d.estado} />
                                             </div>
-                                            <p className="text-[9px] text-slate-400 mt-0.5 font-bold uppercase">Confirmado por {d.confirmadoPor} · {d.fechaConfirm ? new Date(d.fechaConfirm).toLocaleDateString() : '-'}</p>
+                                            <p className="text-[9px] text-slate-400 mt-0.5 font-bold uppercase">Confirmado por {d.confirmadoPor} · {d.fechaConfirm ? formatDateInline(d.fechaConfirm) : '-'}</p>
                                             {d.comentario && <p className="text-[10px] text-slate-500 mt-1 italic">"{d.comentario}"</p>}
                                         </div>
                                     </div>

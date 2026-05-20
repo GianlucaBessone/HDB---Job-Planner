@@ -411,7 +411,7 @@ export default function TimesheetsPage() {
         const aoa: any[][] = [];
 
         if (viewMode === 'tarjetas') {
-            aoa.push(['Fecha', 'Operador', 'Proyecto', 'Ingreso', 'Egreso', 'Horas', 'Tipo', 'Estado']);
+            aoa.push(['Fecha', 'Operador', 'Proyecto', 'Ingreso', 'Egreso', 'Horas', 'Tipo', 'Estado', 'Comentario Devolución']);
             filteredCompleted.forEach(e => {
                 aoa.push([
                     formatDate(e.fecha),
@@ -421,7 +421,8 @@ export default function TimesheetsPage() {
                     e.horaEgreso || '',
                     e.horasTrabajadas,
                     e.isDevolucion ? 'DEVOLUCIÓN' : (e.isExtra ? 'EXTRA' : 'NORMAL'),
-                    e.estadoConfirmado ? 'Confirmado' : 'Pendiente'
+                    e.estadoConfirmado ? 'Confirmado' : 'Pendiente',
+                    e.isDevolucion && e.descripcionDevolucion ? e.descripcionDevolucion : ''
                 ]);
             });
         } else if (viewMode === 'planilla') {
@@ -656,7 +657,11 @@ export default function TimesheetsPage() {
                                                 </td>
                                                 <td className="p-4 text-center whitespace-nowrap">
                                                     {entry.isDevolucion ? (
-                                                        <span className="text-[10px] font-bold bg-purple-100 text-purple-700 px-2 py-1 rounded-md">DEVOLUCIÓN</span>
+                                                        <button
+                                                            onClick={() => showToast(entry.descripcionDevolucion || 'Sin comentario', 'info')}
+                                                            className="text-[10px] font-bold bg-purple-100 text-purple-700 px-2 py-1 rounded-md cursor-pointer hover:bg-purple-200 hover:ring-2 hover:ring-purple-300 transition-all"
+                                                            title="Click para ver comentario"
+                                                        >DEVOLUCIÓN</button>
                                                     ) : entry.isExtra ? (
                                                         <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-1 rounded-md">EXTRA</span>
                                                     ) : (
@@ -743,7 +748,7 @@ export default function TimesheetsPage() {
                                                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{entry.horaIngreso} - {entry.horaEgreso}</span>
                                                 <div className="flex items-center gap-2">
                                                     <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 font-black rounded-lg text-xs border border-indigo-100">{entry.horasTrabajadas}h</span>
-                                                    {entry.isDevolucion && <span className="text-[9px] font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-md">DEV</span>}
+                                                    {entry.isDevolucion && <button onClick={() => showToast(entry.descripcionDevolucion || 'Sin comentario', 'info')} className="text-[9px] font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-md cursor-pointer hover:bg-purple-200 transition-all" title="Ver comentario">DEV</button>}
                                                     {entry.isExtra && !entry.isDevolucion && <span className="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-md">EXTRA</span>}
                                                     {entry.estadoConfirmado ? (
                                                         <CheckCircle2 className="w-4 h-4 text-emerald-500" />
