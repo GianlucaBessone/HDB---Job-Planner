@@ -178,6 +178,8 @@ model TimeEntry {
   estadoConfirmado        Boolean   @default(false)
   confirmadoPorSupervisor String?
   isExtra                 Boolean   @default(false)
+  isDevolucion            Boolean   @default(false)
+  descripcionDevolucion   String?   @db.Text
   causaRegistro           String? // "Falta", "Permiso", "Carpeta Médica", etc. (from ConfigOption CAUSA_REGISTRO)
   // Legacy punch-in fields (kept for data integrity, new punch-ins go to Fichada table)
   deviceId                String?

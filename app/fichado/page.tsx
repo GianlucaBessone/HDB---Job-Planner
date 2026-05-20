@@ -120,6 +120,7 @@ export default function PunchInPage() {
         );
     };
 
+
     const getDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
         const R = 6371000;
         const dLat = (lat1 - lat2) * Math.PI / 180;
@@ -183,7 +184,7 @@ export default function PunchInPage() {
         return true; // No geofence configured
     };
 
-    const handlePunch = async (action: 'IN' | 'OUT', entryId?: string, projId?: string) => {
+    const handlePunch = async (action: 'IN' | 'OUT', entryId?: string, projId?: string, isForced: boolean = false) => {
         // Enforce validations based on mode (Only for Clock IN)
         if (action === 'IN') {
             if (validationMode === 'gps' && !location) {
@@ -199,7 +200,7 @@ export default function PunchInPage() {
             }
 
             // Client-side geofence check — show modal instead of blocking
-            if (!forceConfirmed && !checkGeofenceClientSide()) {
+            if (!isForced && !checkGeofenceClientSide()) {
                 setPendingPunchAction({ action, entryId, projId });
                 setGeoConfirmOpen(true);
                 return;
@@ -215,12 +216,12 @@ export default function PunchInPage() {
                 action,
                 projectId: targetProjId || null,
                 deviceId,
-                latitude: location?.lat || null,
-                longitude: location?.lng || null,
+                latitude: location?.lat ?? null,
+                longitude: location?.lng ?? null,
                 qrToken: (validationMode === 'qr' ? scannedToken : null) || null,
                 timestamp: new Date().toISOString(),
                 validationMethod: validationMode,
-                forceConfirmed: forceConfirmed
+                forceConfirmed: isForced
             };
 
             const res = await safeApiRequest('/api/time-entries/punch', {
@@ -524,7 +525,7 @@ export default function PunchInPage() {
                     setForceConfirmed(true);
                     if (pendingPunchAction) {
                         setTimeout(() => {
-                            handlePunch(pendingPunchAction.action, pendingPunchAction.entryId, pendingPunchAction.projId);
+                            handlePunch(pendingPunchAction.action, pendingPunchAction.entryId, pendingPunchAction.projId, true);
                         }, 100);
                     }
                 }}
@@ -547,7 +548,7 @@ export default function PunchInPage() {
                     setForceConfirmed(true);
                     if (pendingPunchAction) {
                         setTimeout(() => {
-                            handlePunch(pendingPunchAction.action, pendingPunchAction.entryId, pendingPunchAction.projId);
+                            handlePunch(pendingPunchAction.action, pendingPunchAction.entryId, pendingPunchAction.projId, true);
                         }, 100);
                     }
                 }}

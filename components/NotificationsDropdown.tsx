@@ -88,6 +88,13 @@ export default function NotificationsDropdown({ user }: { user: any }) {
 
         if (hasOwnModal) {
             setSelectedNotification(notif);
+        } else if (notif.type === 'FICHADA_ALERTA' || notif.type === 'approval_required') {
+            // Deep-link directly to Monitoring view
+            const meta = notif.metadata && typeof notif.metadata === 'object' ? notif.metadata : {};
+            router.push(meta.url || '/monitoreo-fichadas');
+        } else if (notif.metadata?.url) {
+            // Generic metadata url deep-link
+            router.push(notif.metadata.url);
         } else {
             // No modal: navigate to notifications page and scroll to this notification
             router.push(`/notifications?highlight=${notif.id}`);

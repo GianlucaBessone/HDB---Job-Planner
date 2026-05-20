@@ -264,6 +264,7 @@ export default async function ProjectReportPage({ params, searchParams }: { para
                                             <td className="py-2 pr-4">
                                                 {e.operator.nombreCompleto}
                                                 {e.isExtra && <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest ml-1.5">(Extra)</span>}
+                                                {(e as any).isDevolucion && <span className="text-[9px] font-black text-purple-500 uppercase tracking-widest ml-1.5">(Devolución)</span>}
                                             </td>
                                             <td className="py-2 font-bold">{e.horaIngreso} → {e.horaEgreso}</td>
                                         </tr>

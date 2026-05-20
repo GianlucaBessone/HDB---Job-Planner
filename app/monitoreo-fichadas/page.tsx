@@ -161,7 +161,12 @@ export default function FichadasAdminPage() {
             'QR_INVALID': 'Token de código QR inválido o expirado',
             'NO_LOCATION': 'No se capturó ubicación GPS',
             'DEVICE_SHARED': 'Este dispositivo fue usado por otro operario recientemente',
-            'OFFLINE_PENDING': 'El registro se tomó sin internet y se sincronizó luego'
+            'OFFLINE_PENDING': 'El registro se tomó sin internet y se sincronizó luego',
+            'UNASSIGNED_PROJECT': 'Proyecto no asignado en la planificación del día',
+            'VERY_SHORT_SHIFT': 'Jornada demasiado corta (menos de 10 minutos)',
+            'EXCESSIVE_SHIFT': 'Jornada excesiva (más de 12 horas)',
+            'OVERLAP_DETECTED': 'Superposición de jornadas detectada',
+            'RETROACTIVE_CHARGE': 'Carga retroactiva (más de 48 horas después del evento)',
         };
         return descriptions[flag] || flag;
     };

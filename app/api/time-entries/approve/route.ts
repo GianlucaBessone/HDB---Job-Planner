@@ -7,7 +7,7 @@ export async function GET(req: Request) {
     const status = searchParams.get('status') || 'PENDING_APPROVAL';
 
     try {
-        const entries = await prisma.timeEntry.findMany({
+        const entries = await prisma.fichada.findMany({
             where: { status },
             include: {
                 operator: {
@@ -35,15 +35,13 @@ export async function PATCH(req: Request) {
             return NextResponse.json({ error: 'Acción no permitida' }, { status: 400 });
         }
 
-        const existing = await prisma.timeEntry.findUnique({ where: { id } });
+        const existing = await prisma.fichada.findUnique({ where: { id } });
         if (!existing) return NextResponse.json({ error: 'Fichada no encontrada' }, { status: 404 });
 
-        const updated = await prisma.timeEntry.update({
+        const updated = await prisma.fichada.update({
             where: { id },
             data: {
-                status: action,
-                approvedById,
-                approvedAt: new Date()
+                status: action
             }
         });
 
@@ -53,7 +51,7 @@ export async function PATCH(req: Request) {
             userId: approvedById,
             userName: approver?.nombreCompleto,
             action: action === 'APPROVED' ? 'APPROVE' : 'REJECT',
-            entity: 'TIME_ENTRY',
+            entity: 'FICHADA',
             entityId: id,
             oldValue: existing,
             newValue: updated
@@ -64,3 +62,4 @@ export async function PATCH(req: Request) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
+

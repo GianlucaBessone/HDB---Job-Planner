@@ -825,6 +825,7 @@ function ProjectDetailsModal({
                                                                 <td className="px-4 py-2 font-bold text-slate-700 dark:text-slate-200">
                                                                     {entry.operator.nombreCompleto}
                                                                     {entry.isExtra && <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest ml-1.5">(Extra)</span>}
+                                                                    {entry.isDevolucion && <span className="text-[9px] font-black text-purple-500 uppercase tracking-widest ml-1.5">(Dev)</span>}
                                                                 </td>
                                                                 <td className="px-4 py-2 text-right font-black text-slate-900 dark:text-slate-50">{entry.horasTrabajadas}h</td>
                                                             </tr>

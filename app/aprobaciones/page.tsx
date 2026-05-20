@@ -19,6 +19,38 @@ import { safeApiRequest } from "@/lib/offline";
 import { showToast } from "@/components/Toast";
 import TimeEntryMapView from "@/components/TimeEntryMapView";
 
+const parseFlags = (flags: any): string[] => {
+    if (!flags) return [];
+    if (Array.isArray(flags)) return flags;
+    try {
+        if (typeof flags === 'string') {
+            const parsed = JSON.parse(flags);
+            if (Array.isArray(parsed)) return parsed;
+            return [];
+        }
+    } catch (e) {}
+    return [];
+};
+
+const getRiskStyle = (risk: string) => {
+    switch (risk) {
+        case 'HIGH_RISK': return 'bg-rose-500 text-white';
+        case 'SOSPECHOSO': return 'bg-amber-500 text-white';
+        case 'REVISAR': return 'bg-indigo-500 text-white';
+        default: return 'bg-emerald-500 text-white';
+    }
+};
+
+const getRiskLabel = (risk: string) => {
+    const labels: Record<string, string> = {
+        'HIGH_RISK': 'Alto Riesgo',
+        'SOSPECHOSO': 'Sospechoso',
+        'REVISAR': 'A Revisar',
+        'OK': 'Sin Alertas',
+    };
+    return labels[risk] || risk;
+};
+
 export default function ApprovalsPage() {
     const [entries, setEntries] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -72,14 +104,6 @@ export default function ApprovalsPage() {
         }
     };
 
-    const getRiskStyle = (risk: string) => {
-        switch (risk) {
-            case 'HIGH_RISK': return 'bg-rose-500 text-white';
-            case 'SOSPECHOSO': return 'bg-amber-500 text-white';
-            case 'REVISAR': return 'bg-indigo-500 text-white';
-            default: return 'bg-emerald-500 text-white';
-        }
-    };
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
@@ -119,25 +143,25 @@ export default function ApprovalsPage() {
                             <button
                                 key={entry.id}
                                 onClick={() => setSelectedEntry(entry)}
-                                className={`w-full text-left p-5 rounded-3xl border transition-all hover:scale-[1.02] cursor-pointer ${
+                                className={`w-full text-left p-5 rounded-3xl border transition-all duration-200 cursor-pointer ${
                                     selectedEntry?.id === entry.id 
                                     ? 'bg-white dark:bg-slate-800 border-primary shadow-xl shadow-primary/10 ring-2 ring-primary/5' 
-                                    : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-800 shadow-sm hover:border-slate-300 dark:hover:border-slate-600'
+                                    : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600'
                                 }`}
                             >
                                 <div className="flex justify-between items-start mb-3">
                                     <div className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${getRiskStyle(entry.riskLevel)}`}>
-                                        {entry.riskLevel}
+                                        {getRiskLabel(entry.riskLevel)}
                                     </div>
                                     <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">{format(new Date(entry.createdAt || entry.fecha), 'HH:mm')}</span>
                                 </div>
-                                <h4 className="font-bold text-slate-800 dark:text-slate-100 leading-tight mb-1">{entry.operador?.nombreCompleto || entry.operator?.nombreCompleto}</h4>
+                                <h4 className="font-bold text-slate-800 dark:text-slate-100 leading-tight mb-1">{entry.operator?.nombreCompleto}</h4>
                                 <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-3">{entry.project?.nombre || 'Base / Empresa'}</p>
                                 
                                 <div className="flex flex-wrap gap-2">
-                                    {JSON.parse(entry.validationFlags || '[]').map((flag: string) => (
-                                        <span key={flag} className="px-2 py-1 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 rounded-md text-[9px] font-bold border border-slate-200 dark:border-slate-700">
-                                            {flag}
+                                    {parseFlags(entry.validationFlags).map((flag: string) => (
+                                        <span key={flag} className="px-2 py-1 bg-amber-50 text-amber-700 rounded-md text-[9px] font-bold border border-amber-100">
+                                            {getFlagLabel(flag)}
                                         </span>
                                     ))}
                                 </div>
@@ -166,7 +190,7 @@ export default function ApprovalsPage() {
 }
 
 function EntryDetail({ entry, onAction }: { entry: any, onAction: (id: string, action: 'APPROVED' | 'REJECTED') => void }) {
-    const flags = JSON.parse(entry.validationFlags || '[]');
+    const flags = parseFlags(entry.validationFlags);
     
     return (
         <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden animate-in zoom-in-95 duration-300">
@@ -212,7 +236,7 @@ function EntryDetail({ entry, onAction }: { entry: any, onAction: (id: string, a
                                 <User className="w-8 h-8" />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">{entry.operador?.nombreCompleto}</h2>
+                                <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">{entry.operator?.nombreCompleto}</h2>
                                 <p className="text-slate-500 dark:text-slate-400 font-bold">{entry.project?.nombre || 'Base / Empresa Central'}</p>
                             </div>
                         </div>
@@ -224,7 +248,7 @@ function EntryDetail({ entry, onAction }: { entry: any, onAction: (id: string, a
                              </div>
                              <div className="flex items-center gap-2">
                                 <AlertTriangle className="w-4 h-4 text-amber-500" />
-                                <span className="text-sm font-bold text-slate-700 dark:text-slate-200">Riesgo: {entry.riskLevel} (Score: {entry.score})</span>
+                                <span className="text-sm font-bold text-slate-700 dark:text-slate-200">Riesgo: {getRiskLabel(entry.riskLevel)} (Score: {entry.score})</span>
                              </div>
                         </div>
                     </div>
@@ -294,7 +318,8 @@ function getFlagLabel(flag: string) {
         'VERY_SHORT_SHIFT': 'Jornada Demasiado Corta',
         'EXCESSIVE_SHIFT': 'Jornada Excesiva (>12h)',
         'QR_INVALID': 'Token QR Inválido',
-        'NO_LOCATION': 'Sin Ubicación'
+        'NO_LOCATION': 'Sin Ubicación',
+        'UNASSIGNED_PROJECT': 'Proyecto no Asignado'
     };
     return labels[flag] || flag;
 }

@@ -74,7 +74,12 @@ export async function POST(req: Request) {
         try {
             const data = await req.json();
 
-            const { operatorId, projectId, causaRegistro, fecha, horaIngreso, horaEgreso, isExtra, requestUserId, requestUserRole } = data;
+            const { operatorId, projectId, causaRegistro, fecha, horaIngreso, horaEgreso, isExtra, isDevolucion, descripcionDevolucion, requestUserId, requestUserRole } = data;
+
+            // DEVOLUCIÓN requires a description
+            if (isDevolucion && (!descripcionDevolucion || !descripcionDevolucion.trim())) {
+                return NextResponse.json({ error: 'Para tipo DEVOLUCIÓN debe ingresar una descripción obligatoria.' }, { status: 400 });
+            }
 
             if (!operatorId || !fecha) {
                 console.error("POST Error: Missing required fields", { operatorId, fecha });
@@ -99,6 +104,8 @@ export async function POST(req: Request) {
             }
 
             console.log("Creating time entry in Prisma...", { operatorId, projectId, causaRegistro, fecha });
+            // When DEVOLUCIÓN, force isExtra to false
+            const finalIsExtra = isDevolucion ? false : (isExtra || false);
             const entry = await prisma.timeEntry.create({
                 data: {
                     operatorId,
@@ -108,7 +115,9 @@ export async function POST(req: Request) {
                     horaIngreso,
                     horaEgreso,
                     horasTrabajadas,
-                    isExtra: isExtra || false
+                    isExtra: finalIsExtra,
+                    isDevolucion: isDevolucion || false,
+                    descripcionDevolucion: isDevolucion ? (descripcionDevolucion?.trim() || null) : null
                 }
             });
 
@@ -116,9 +125,10 @@ export async function POST(req: Request) {
             // Also update project total hours roughly, though normally this is kept separate or aggregated upon need.
             // If we want to automatically add consumed hours to the project:
             // Overtime hours (isExtra) count double for project consumption
+            // DEVOLUCIÓN hours are NOT counted towards project consumption
             // Only update project hours if linked to a project (not a causa)
-            if (horasTrabajadas > 0 && projectId) {
-                const projectHoursImpact = (isExtra || false) ? Math.ceil(horasTrabajadas) * 2 : Math.ceil(horasTrabajadas);
+            if (horasTrabajadas > 0 && projectId && !isDevolucion) {
+                const projectHoursImpact = finalIsExtra ? Math.ceil(horasTrabajadas) * 2 : Math.ceil(horasTrabajadas);
                 await prisma.project.update({
                     where: { id: projectId },
                     data: { horasConsumidas: { increment: projectHoursImpact } }
@@ -134,7 +144,7 @@ export async function POST(req: Request) {
                 entity: 'TIME_ENTRY',
                 entityId: entry.id,
                 newValue: entry,
-                metadata: { operatorId, projectId, fecha, horaIngreso, horaEgreso, isExtra, causaRegistro }
+                metadata: { operatorId, projectId, fecha, horaIngreso, horaEgreso, isExtra: finalIsExtra, isDevolucion: isDevolucion || false, descripcionDevolucion, causaRegistro }
             });
 
             return NextResponse.json(entry, { status: 201 });
@@ -149,7 +159,12 @@ export async function POST(req: Request) {
 export async function PUT(req: Request) {
     try {
         const data = await req.json();
-        const { id, projectId, causaRegistro, fecha, horaIngreso, horaEgreso, estadoConfirmado, isExtra, requestUserId, requestUserRole } = data;
+        const { id, projectId, causaRegistro, fecha, horaIngreso, horaEgreso, estadoConfirmado, isExtra, isDevolucion, descripcionDevolucion, requestUserId, requestUserRole } = data;
+
+        // DEVOLUCIÓN requires a description
+        if (isDevolucion && (!descripcionDevolucion || !descripcionDevolucion.trim())) {
+            return NextResponse.json({ error: 'Para tipo DEVOLUCIÓN debe ingresar una descripción obligatoria.' }, { status: 400 });
+        }
 
         // Check if existing
         const existing = await prisma.timeEntry.findUnique({ where: { id } });
@@ -179,6 +194,10 @@ export async function PUT(req: Request) {
             horasTrabajadas = calculateHours(newHoraIngreso, newHoraEgreso);
         }
 
+        // When DEVOLUCIÓN, force isExtra to false
+        const newIsDevolucion = isDevolucion !== undefined ? isDevolucion : existing.isDevolucion;
+        const finalIsExtraForUpdate = newIsDevolucion ? false : (isExtra !== undefined ? isExtra : existing.isExtra);
+
         const updated = await prisma.timeEntry.update({
             where: { id },
             data: {
@@ -188,7 +207,9 @@ export async function PUT(req: Request) {
                 horaIngreso: newHoraIngreso,
                 horaEgreso: newHoraEgreso,
                 horasTrabajadas,
-                isExtra: isExtra !== undefined ? isExtra : existing.isExtra,
+                isExtra: finalIsExtraForUpdate,
+                isDevolucion: newIsDevolucion,
+                descripcionDevolucion: newIsDevolucion ? ((descripcionDevolucion !== undefined ? descripcionDevolucion?.trim() : existing.descripcionDevolucion) || null) : null,
                 estadoConfirmado: estadoConfirmado !== undefined ? estadoConfirmado : existing.estadoConfirmado,
                 confirmadoPorSupervisor: estadoConfirmado ? requestUserId : null
             }
@@ -196,13 +217,15 @@ export async function PUT(req: Request) {
 
         // Overtime hours (isExtra) count double for project consumption
         const oldIsExtra = existing.isExtra;
-        const newIsExtra = isExtra !== undefined ? isExtra : existing.isExtra;
+        const newIsExtra = finalIsExtraForUpdate;
+        const oldIsDevolucion = existing.isDevolucion;
 
         // Only adjust project hours when projects are involved
+        // DEVOLUCIÓN hours are NOT counted towards project consumption
         if (oldProjectId && newProjectId && oldProjectId === newProjectId) {
             // Same project: compute delta considering overtime multiplier
-            const oldProjectImpact = oldIsExtra ? Math.ceil(existing.horasTrabajadas) * 2 : Math.ceil(existing.horasTrabajadas);
-            const newProjectImpact = newIsExtra ? Math.ceil(horasTrabajadas) * 2 : Math.ceil(horasTrabajadas);
+            const oldProjectImpact = oldIsDevolucion ? 0 : (oldIsExtra ? Math.ceil(existing.horasTrabajadas) * 2 : Math.ceil(existing.horasTrabajadas));
+            const newProjectImpact = newIsDevolucion ? 0 : (newIsExtra ? Math.ceil(horasTrabajadas) * 2 : Math.ceil(horasTrabajadas));
             const deltaHours = newProjectImpact - oldProjectImpact;
             if (deltaHours !== 0) {
                 await prisma.project.update({
@@ -212,14 +235,14 @@ export async function PUT(req: Request) {
             }
         } else {
             // Project changed or switched to/from causa
-            if (oldProjectId && existing.horasTrabajadas > 0) {
+            if (oldProjectId && existing.horasTrabajadas > 0 && !oldIsDevolucion) {
                 const oldProjectImpact = oldIsExtra ? Math.ceil(existing.horasTrabajadas) * 2 : Math.ceil(existing.horasTrabajadas);
                 await prisma.project.update({
                     where: { id: oldProjectId },
                     data: { horasConsumidas: { decrement: oldProjectImpact } }
                 });
             }
-            if (newProjectId && horasTrabajadas > 0) {
+            if (newProjectId && horasTrabajadas > 0 && !newIsDevolucion) {
                 const newProjectImpact = newIsExtra ? Math.ceil(horasTrabajadas) * 2 : Math.ceil(horasTrabajadas);
                 await prisma.project.update({
                     where: { id: newProjectId },
@@ -242,7 +265,7 @@ export async function PUT(req: Request) {
 
         return NextResponse.json(updated);
     } catch (error: any) {
-        console.error("PUT Error: ", error);
+        console.error("PUT Error [Detailed]: ", error, error?.stack);
         return NextResponse.json({ error: error?.message || 'Failed to update time entry' }, { status: 500 });
     }
 }
@@ -271,8 +294,8 @@ export async function DELETE(req: Request) {
 
         await prisma.timeEntry.delete({ where: { id } });
 
-        // Only decrement project hours if linked to a project (not a causa)
-        if (existing.horasTrabajadas > 0 && existing.projectId) {
+        // Only decrement project hours if linked to a project (not a causa) and not DEVOLUCIÓN
+        if (existing.horasTrabajadas > 0 && existing.projectId && !existing.isDevolucion) {
             const projectHoursImpact = existing.isExtra ? Math.ceil(existing.horasTrabajadas) * 2 : Math.ceil(existing.horasTrabajadas);
             await prisma.project.update({
                 where: { id: existing.projectId },

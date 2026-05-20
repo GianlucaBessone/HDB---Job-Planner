@@ -37,6 +37,8 @@ interface TimeEntry {
     estadoConfirmado: boolean;
     confirmadoPorSupervisor: string | null;
     isExtra: boolean;
+    isDevolucion: boolean;
+    descripcionDevolucion: string | null;
 }
 
 interface CausaOption {
@@ -79,7 +81,9 @@ export default function TimesheetsPage() {
         fecha: new Date().toISOString().split('T')[0],
         horaIngreso: '',
         horaEgreso: '',
-        isExtra: false
+        isExtra: false,
+        isDevolucion: false,
+        descripcionDevolucion: ''
     });
 
     const [pendingAction, setPendingAction] = useState<any>(null);
@@ -178,7 +182,9 @@ export default function TimesheetsPage() {
                 fecha: entry.fecha,
                 horaIngreso: entry.horaIngreso || '',
                 horaEgreso: entry.horaEgreso || '',
-                isExtra: entry.isExtra || false
+                isExtra: entry.isExtra || false,
+                isDevolucion: entry.isDevolucion || false,
+                descripcionDevolucion: entry.descripcionDevolucion || ''
             });
 
             if (entry.estadoConfirmado) {
@@ -198,7 +204,9 @@ export default function TimesheetsPage() {
                 fecha: new Date().toISOString().split('T')[0],
                 horaIngreso: '',
                 horaEgreso: '',
-                isExtra: false
+                isExtra: false,
+                isDevolucion: false,
+                descripcionDevolucion: ''
             });
         }
         setIsModalOpen(true);
@@ -220,8 +228,11 @@ export default function TimesheetsPage() {
     const handleCausaChange = (causaValue: string) => {
         setFormData(fd => {
             const update: any = { ...fd, causaRegistro: causaValue };
-            // Auto-fill times when selecting a causa (if not already set)
-            if (causaValue && !fd.horaIngreso && !fd.horaEgreso) {
+            // Auto-fill times when selecting a causa
+            if (causaValue === 'Carpeta Médica') {
+                update.horaIngreso = '08:00';
+                update.horaEgreso = '16:00';
+            } else if (causaValue && !fd.horaIngreso && !fd.horaEgreso) {
                 update.horaIngreso = '08:00';
                 update.horaEgreso = '17:00';
             }
@@ -242,7 +253,11 @@ export default function TimesheetsPage() {
             return;
         }
 
-
+        // DEVOLUCIÓN requires description
+        if (formData.isDevolucion && !formData.descripcionDevolucion.trim()) {
+            showToast('Para tipo DEVOLUCIÓN debe ingresar una descripción obligatoria.', 'error');
+            return;
+        }
 
         try {
             const payload: any = {
@@ -250,7 +265,9 @@ export default function TimesheetsPage() {
                 fecha: formData.fecha,
                 horaIngreso: formData.horaIngreso,
                 horaEgreso: formData.horaEgreso,
-                isExtra: formData.isExtra,
+                isExtra: formData.isDevolucion ? false : formData.isExtra,
+                isDevolucion: formData.isDevolucion,
+                descripcionDevolucion: formData.isDevolucion ? formData.descripcionDevolucion.trim() : null,
                 requestUserId: currentUser?.id,
                 requestUserRole: currentUser?.role
             };
@@ -339,7 +356,9 @@ export default function TimesheetsPage() {
             const metadata = isDelete ? null : {
                 horaIngreso: formData.horaIngreso,
                 horaEgreso: formData.horaEgreso,
-                isExtra: formData.isExtra
+                isExtra: formData.isDevolucion ? false : formData.isExtra,
+                isDevolucion: formData.isDevolucion,
+                descripcionDevolucion: formData.isDevolucion ? formData.descripcionDevolucion : null
             };
 
             const res = await safeApiRequest('/api/notifications', {
@@ -401,7 +420,7 @@ export default function TimesheetsPage() {
                     e.horaIngreso || '',
                     e.horaEgreso || '',
                     e.horasTrabajadas,
-                    e.isExtra ? 'EXTRA' : 'NORMAL',
+                    e.isDevolucion ? 'DEVOLUCIÓN' : (e.isExtra ? 'EXTRA' : 'NORMAL'),
                     e.estadoConfirmado ? 'Confirmado' : 'Pendiente'
                 ]);
             });
@@ -636,7 +655,9 @@ export default function TimesheetsPage() {
                                                     <span className="px-3 py-1 bg-indigo-50 text-indigo-600 font-black rounded-xl text-sm border border-indigo-100">{entry.horasTrabajadas}h</span>
                                                 </td>
                                                 <td className="p-4 text-center whitespace-nowrap">
-                                                    {entry.isExtra ? (
+                                                    {entry.isDevolucion ? (
+                                                        <span className="text-[10px] font-bold bg-purple-100 text-purple-700 px-2 py-1 rounded-md">DEVOLUCIÓN</span>
+                                                    ) : entry.isExtra ? (
                                                         <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-1 rounded-md">EXTRA</span>
                                                     ) : (
                                                         <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 px-2 py-1 rounded-md">NORMAL</span>
@@ -722,7 +743,8 @@ export default function TimesheetsPage() {
                                                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{entry.horaIngreso} - {entry.horaEgreso}</span>
                                                 <div className="flex items-center gap-2">
                                                     <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 font-black rounded-lg text-xs border border-indigo-100">{entry.horasTrabajadas}h</span>
-                                                    {entry.isExtra && <span className="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-md">EXTRA</span>}
+                                                    {entry.isDevolucion && <span className="text-[9px] font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-md">DEV</span>}
+                                                    {entry.isExtra && !entry.isDevolucion && <span className="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-md">EXTRA</span>}
                                                     {entry.estadoConfirmado ? (
                                                         <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                                                     ) : (
@@ -976,26 +998,50 @@ export default function TimesheetsPage() {
                                         />
                                     </div>
 
-                                    {/* Horas Extras */}
+                                    {/* Tipo de Horas */}
                                     <div className="space-y-2 md:col-span-2">
                                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">Tipo de Horas</label>
-                                        <div className="flex gap-4">
+                                        <div className="flex gap-3">
                                             <button
                                                 type="button"
-                                                onClick={() => setFormData({ ...formData, isExtra: false })}
-                                                className={`flex-1 py-3 px-4 rounded-2xl font-bold transition-colors ${!formData.isExtra ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
+                                                onClick={() => setFormData({ ...formData, isExtra: false, isDevolucion: false, descripcionDevolucion: '' })}
+                                                className={`flex-1 py-3 px-3 rounded-2xl font-bold transition-all text-sm ${!formData.isExtra && !formData.isDevolucion ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500 shadow-md shadow-indigo-500/10' : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
                                             >
-                                                Normales
+                                                Normal
                                             </button>
                                             <button
                                                 type="button"
-                                                onClick={() => setFormData({ ...formData, isExtra: true })}
-                                                className={`flex-1 py-3 px-4 rounded-2xl font-bold transition-colors ${formData.isExtra ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
+                                                onClick={() => setFormData({ ...formData, isExtra: true, isDevolucion: false, descripcionDevolucion: '' })}
+                                                className={`flex-1 py-3 px-3 rounded-2xl font-bold transition-all text-sm ${formData.isExtra && !formData.isDevolucion ? 'bg-amber-100 text-amber-700 border-2 border-amber-500 shadow-md shadow-amber-500/10' : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
                                             >
-                                                Extras
+                                                Extra
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, isExtra: false, isDevolucion: true })}
+                                                className={`flex-1 py-3 px-3 rounded-2xl font-bold transition-all text-sm ${formData.isDevolucion ? 'bg-purple-100 text-purple-700 border-2 border-purple-500 shadow-md shadow-purple-500/10' : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
+                                            >
+                                                Devolución
                                             </button>
                                         </div>
                                     </div>
+
+                                    {/* Descripción obligatoria para DEVOLUCIÓN */}
+                                    {formData.isDevolucion && (
+                                        <div className="space-y-2 md:col-span-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                                            <label className="text-[10px] font-black text-purple-500 uppercase tracking-widest flex items-center gap-2 px-1">
+                                                <AlertCircle className="w-3 h-3" />
+                                                Descripción de Devolución (obligatoria)
+                                            </label>
+                                            <textarea
+                                                required
+                                                placeholder="Describa el motivo de la devolución de horas..."
+                                                value={formData.descripcionDevolucion}
+                                                onChange={e => setFormData({ ...formData, descripcionDevolucion: e.target.value })}
+                                                className="w-full bg-purple-50/50 dark:bg-purple-900/10 border-2 border-purple-300 dark:border-purple-700 rounded-2xl py-3 px-4 resize-none h-24 outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 font-medium text-slate-700 dark:text-slate-200 transition-all text-sm placeholder:text-purple-300 dark:placeholder:text-purple-600"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -1062,20 +1108,27 @@ export default function TimesheetsPage() {
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">Tipo de Horas</label>
-                                        <div className="flex gap-4">
+                                        <div className="flex gap-3">
                                             <button
                                                 type="button"
-                                                onClick={() => setFormData({ ...formData, isExtra: false })}
-                                                className={`flex-1 py-3 px-4 rounded-2xl font-bold transition-colors ${!formData.isExtra ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
+                                                onClick={() => setFormData({ ...formData, isExtra: false, isDevolucion: false, descripcionDevolucion: '' })}
+                                                className={`flex-1 py-3 px-3 rounded-2xl font-bold transition-all text-sm ${!formData.isExtra && !formData.isDevolucion ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
                                             >
-                                                Normales
+                                                Normal
                                             </button>
                                             <button
                                                 type="button"
-                                                onClick={() => setFormData({ ...formData, isExtra: true })}
-                                                className={`flex-1 py-3 px-4 rounded-2xl font-bold transition-colors ${formData.isExtra ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
+                                                onClick={() => setFormData({ ...formData, isExtra: true, isDevolucion: false, descripcionDevolucion: '' })}
+                                                className={`flex-1 py-3 px-3 rounded-2xl font-bold transition-all text-sm ${formData.isExtra && !formData.isDevolucion ? 'bg-amber-100 text-amber-700 border-2 border-amber-500' : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
                                             >
-                                                Extras
+                                                Extra
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, isExtra: false, isDevolucion: true })}
+                                                className={`flex-1 py-3 px-3 rounded-2xl font-bold transition-all text-sm ${formData.isDevolucion ? 'bg-purple-100 text-purple-700 border-2 border-purple-500' : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
+                                            >
+                                                Devolución
                                             </button>
                                         </div>
                                     </div>

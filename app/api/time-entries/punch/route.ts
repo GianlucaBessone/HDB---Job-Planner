@@ -297,11 +297,55 @@ export async function POST(req: Request) {
 
         // Notification if Pending
         if (entry.status === 'PENDING_APPROVAL') {
+            const flagLabels: Record<string, string> = {
+                'OUT_OF_GEOFENCE': 'Fuera del radio GPS del proyecto',
+                'DEVICE_MISMATCH': 'Dispositivo no reconocido',
+                'DEVICE_SHARED': 'Dispositivo compartido con otro operador',
+                'OFFLINE_PENDING': 'Fichado sin conexión',
+                'OVERLAP_DETECTED': 'Superposición de jornadas',
+                'RETROACTIVE_CHARGE': 'Carga retroactiva (más de 48 horas)',
+                'VERY_SHORT_SHIFT': 'Jornada muy corta (menos de 10 min)',
+                'EXCESSIVE_SHIFT': 'Jornada excesiva (más de 12 horas)',
+                'QR_INVALID': 'Código QR inválido',
+                'NO_LOCATION': 'Sin ubicación GPS',
+                'UNASSIGNED_PROJECT': 'Proyecto no asignado en planificación',
+            };
+            const humanFlags = validationFlags.map(f => flagLabels[f] || f);
+            const projectName = projectId
+                ? (await prisma.project.findUnique({ where: { id: projectId }, select: { nombre: true } }))?.nombre || 'Proyecto'
+                : 'Base / Empresa';
+
+            const notifTitle = `⚠️ Fichada con Alertas — ${operator.nombreCompleto}`;
+            const notifMessage = `Destino: ${projectName}\nAlertas: ${humanFlags.join(' • ')}\nToca para revisar en Monitoreo.`;
+
+            // 1. Store notification in DB (visible in bell dropdown for supervisors)
+            await prisma.notification.create({
+                data: {
+                    forSupervisors: true,
+                    title: notifTitle,
+                    message: notifMessage,
+                    type: 'FICHADA_ALERTA',
+                    relatedId: entry.id,
+                    metadata: {
+                        operatorName: operator.nombreCompleto,
+                        projectName,
+                        flags: validationFlags,
+                        url: '/monitoreo-fichadas',
+                        entryId: entry.id
+                    }
+                }
+            });
+
+            // 2. Push notification to native app
             await sendPushNotification({
                 forSupervisors: true,
-                title: "Fichada Pendiente de Aprobación",
-                message: `${operator.nombreCompleto} ha fichado en ${projectId ? 'Proyecto' : 'Base'} con avisos: ${validationFlags.join(', ')}`,
-                data: { type: 'approval_required', entryId: entry.id }
+                title: notifTitle,
+                message: notifMessage,
+                data: {
+                    type: 'approval_required',
+                    entryId: entry.id,
+                    url: '/monitoreo-fichadas'
+                }
             });
         }
 
