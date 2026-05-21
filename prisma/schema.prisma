@@ -49,6 +49,7 @@ model Project {
   geofenceRadius          Float? // radius in meters
   qrToken                 String? // current token signature for QR validation
   fichajeHabilitado       Boolean             @default(false)
+  proyectoFijo            Boolean             @default(false)
   qrHistory               QrTokenHistory[]
   toolMovements           ToolMovement[]
   documentChecklists      DocumentChecklist[]

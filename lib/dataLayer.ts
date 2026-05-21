@@ -62,6 +62,8 @@ export const dataLayer = {
         geofenceLng?: number;
         geofenceRadius?: number;
         qrToken?: string;
+        fichajeHabilitado?: boolean;
+        proyectoFijo?: boolean;
     }) {
         const sanitizedData = { ...data };
         if (sanitizedData.clientId === "") delete sanitizedData.clientId;
@@ -177,6 +179,8 @@ export const dataLayer = {
         geofenceLng?: number;
         geofenceRadius?: number;
         qrToken?: string;
+        fichajeHabilitado?: boolean;
+        proyectoFijo?: boolean;
     }) {
         const sanitizedData = { ...data };
         if (sanitizedData.clientId === "") sanitizedData.clientId = null as any;

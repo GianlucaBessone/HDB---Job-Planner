@@ -37,7 +37,8 @@ import {
     Play,
     MapPin,
     QrCode,
-    Save
+    Save,
+    Pin
 } from 'lucide-react';
 import MapPicker from '@/components/MapPicker';
 import ConfirmDialog from '@/components/ConfirmDialog';
@@ -181,6 +182,7 @@ function ProjectsContent() {
             geofenceRadius: project.geofenceRadius || null,
             qrToken: project.qrToken || null,
             fichajeHabilitado: (project as any).fichajeHabilitado || false,
+            proyectoFijo: (project as any).proyectoFijo || false,
         });
 
         setIsModalOpen(true);
@@ -1069,11 +1071,19 @@ function ProjectModal({
     const set = (field: keyof FormData, value: any) =>
         setFormData(prev => ({ ...prev, [field]: value }));
 
+    const [modalTab, setModalTab] = useState<'general' | 'config' | 'gps'>('general');
+
+    const MODAL_TABS = [
+        { id: 'general' as const, label: 'General' },
+        { id: 'config' as const, label: 'Configuración' },
+        { id: 'gps' as const, label: 'GPS / QR' },
+    ];
+
     return (
         <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="bg-white dark:bg-slate-800 w-full max-w-xl rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] flex flex-col overflow-hidden">
-                {/* Header - Fixed */}
-                <div className="p-5 md:p-7 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
+                {/* Header */}
+                <div className="p-5 md:p-7 pb-0 flex items-center justify-between flex-shrink-0">
                     <h3 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100">
                         {editingProject ? 'Editar Proyecto' : 'Nuevo Proyecto'}
                     </h3>
@@ -1081,10 +1091,21 @@ function ProjectModal({
                         <X className="w-5 h-5" />
                     </button>
                 </div>
+                {/* Tab Bar */}
+                <div className="px-5 md:px-7 pt-4 flex gap-1 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
+                    {MODAL_TABS.map(tab => (
+                        <button key={tab.id} type="button" onClick={() => setModalTab(tab.id)}
+                            className={`px-4 py-2 text-xs font-black uppercase tracking-widest rounded-t-xl transition-all border-b-2 ${modalTab === tab.id ? 'text-primary border-primary bg-primary/5' : 'text-slate-400 dark:text-slate-500 border-transparent hover:text-slate-600'}`}>
+                            {tab.label}
+                        </button>
+                    ))}
+                </div>
 
                 <form onSubmit={onSubmit} className="flex-1 flex flex-col min-h-0">
                     {/* Scrollable Content */}
                     <div className="flex-1 overflow-y-auto p-5 md:p-7 space-y-4 custom-scrollbar">
+                        {/* ── GENERAL TAB ── */}
+                        {modalTab === 'general' && <>
                         {/* Nombre + Toggle Metricas */}
                         <div className="flex flex-col sm:flex-row sm:items-end gap-4">
                             <div className="flex-1 space-y-1.5">
@@ -1303,7 +1324,10 @@ function ProjectModal({
                                 placeholder="Notas adicionales..."
                             />
                         </div>
+                        </>}
 
+                        {/* ── CONFIGURACIÓN TAB ── */}
+                        {modalTab === 'config' && <>
                         {/* Generar OS Switch */}
                         <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3.5">
                             <div className="space-y-0.5">
@@ -1323,8 +1347,37 @@ function ProjectModal({
                             </button>
                         </div>
 
-                        {/* Fichaje GPS/QR Section — independent save */}
-                        <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                        {/* Aprovisionamiento Switch */}
+                        <div className="flex items-center justify-between bg-primary/5 border border-primary/20 rounded-2xl px-4 py-3.5">
+                            <div className="space-y-0.5">
+                                <p className="text-sm font-bold text-primary">Aprovisionamiento de Materiales</p>
+                                <p className="text-xs text-primary/70 font-medium">Habilita la gestión y trazabilidad de materiales para este proyecto</p>
+                            </div>
+                            <button type="button" onClick={() => set('aprovisionamiento', !(formData as any).aprovisionamiento)}
+                                className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-300 focus:outline-none shrink-0 ${(formData as any).aprovisionamiento ? 'bg-primary' : 'bg-slate-200 dark:bg-slate-700'}`}>
+                                <span className={`inline-block h-5 w-5 transform rounded-full bg-white dark:bg-slate-800 shadow-md transition-transform duration-300 ${(formData as any).aprovisionamiento ? 'translate-x-8' : 'translate-x-1'}`} />
+                            </button>
+                        </div>
+
+                        {/* Proyecto Fijo Switch */}
+                        <div className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3.5">
+                            <div className="space-y-0.5 flex items-start gap-3">
+                                <Pin className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+                                <div>
+                                    <p className="text-sm font-bold text-amber-800">Proyecto Fijo</p>
+                                    <p className="text-xs text-amber-700 font-medium">Cualquier operador puede fichar en este proyecto aunque no esté planificado. El supervisor será notificado.</p>
+                                </div>
+                            </div>
+                            <button type="button" onClick={() => set('proyectoFijo', !(formData as any).proyectoFijo)}
+                                className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-300 focus:outline-none shrink-0 ml-4 ${(formData as any).proyectoFijo ? 'bg-amber-500' : 'bg-slate-200 dark:bg-slate-700'}`}>
+                                <span className={`inline-block h-5 w-5 transform rounded-full bg-white dark:bg-slate-800 shadow-md transition-transform duration-300 ${(formData as any).proyectoFijo ? 'translate-x-8' : 'translate-x-1'}`} />
+                            </button>
+                        </div>
+                        </>}
+
+                        {/* ── GPS / QR TAB ── */}
+                        {modalTab === 'gps' && <>
+                        <div className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <div>
                                     <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
@@ -1332,32 +1385,17 @@ function ProjectModal({
                                     </h4>
                                     <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">Habilita fichado con geovalla y código QR para este proyecto</p>
                                 </div>
-                                <button
-                                    type="button"
-                                    onClick={() => set('fichajeHabilitado', !(formData as any).fichajeHabilitado)}
-                                    className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-300 focus:outline-none shrink-0 ${
-                                        (formData as any).fichajeHabilitado ? 'bg-primary' : 'bg-slate-200 dark:bg-slate-700'
-                                    }`}
-                                >
-                                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white dark:bg-slate-800 shadow-md transition-transform duration-300 ${
-                                        (formData as any).fichajeHabilitado ? 'translate-x-8' : 'translate-x-1'
-                                    }`} />
+                                <button type="button" onClick={() => set('fichajeHabilitado', !(formData as any).fichajeHabilitado)}
+                                    className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-300 focus:outline-none shrink-0 ${(formData as any).fichajeHabilitado ? 'bg-primary' : 'bg-slate-200 dark:bg-slate-700'}`}>
+                                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white dark:bg-slate-800 shadow-md transition-transform duration-300 ${(formData as any).fichajeHabilitado ? 'translate-x-8' : 'translate-x-1'}`} />
                                 </button>
                             </div>
 
                             {(formData as any).fichajeHabilitado && (
                                 <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                                     <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest italic px-1">Haz clic en el mapa para posicionar el centro de la geovalla</p>
-                                    <MapPicker 
-                                        lat={(formData as any).geofenceLat} 
-                                        lng={(formData as any).geofenceLng} 
-                                        radius={(formData as any).geofenceRadius} 
-                                        onChange={(lat, lng, radius) => {
-                                            set('geofenceLat', lat);
-                                            set('geofenceLng', lng);
-                                            set('geofenceRadius', radius);
-                                        }}
-                                    />
+                                    <MapPicker lat={(formData as any).geofenceLat} lng={(formData as any).geofenceLng} radius={(formData as any).geofenceRadius}
+                                        onChange={(lat, lng, radius) => { set('geofenceLat', lat); set('geofenceLng', lng); set('geofenceRadius', radius); }} />
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
                                             <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Latitud</label>
@@ -1381,7 +1419,6 @@ function ProjectModal({
                                             </div>
                                         </div>
                                     </div>
-
                                     {(formData as any).qrToken && (
                                         <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl flex flex-col items-center gap-4 animate-in fade-in zoom-in-95 duration-300">
                                             <div id="project-qr" className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
@@ -1390,55 +1427,22 @@ function ProjectModal({
                                             <button type="button" onClick={() => { const canvas = document.querySelector('#project-qr canvas') as HTMLCanvasElement; if (canvas) { const win = window.open('', '_blank'); if (win) { win.document.write(`<html><head><title>Imprimir QR - ${formData.nombre}</title><style>body{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;}.container{text-align:center;border:2px solid #000;padding:40px;border-radius:20px;}h1{margin-bottom:20px;font-size:24px;}h2{margin-bottom:10px;font-size:20px;}p{margin-top:20px;font-weight:bold;font-size:18px;color:#666;}img{width:300px;height:300px;}</style></head><body><div class="container"><h1>HDB SERVICIOS ELÉCTRICOS</h1><h2>PROYECTO: ${formData.nombre}</h2>${editingProject?.codigoProyecto ? `<h3>CÓDIGO: ${editingProject.codigoProyecto}</h3>` : ''}<img src="${canvas.toDataURL()}" /><p>TOKEN: ${(formData as any).qrToken}</p></div><script>window.onload=()=>{setTimeout(()=>{window.print();window.onafterprint=()=>window.close();},500);};</script></body></html>`); } } }} className="flex items-center gap-2 px-6 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold hover:bg-slate-700 transition-all active:scale-95"><QrCode className="w-4 h-4" /> Imprimir QR para Obra</button>
                                         </div>
                                     )}
-
-                                    {/* Independent save button for fichaje config */}
-                                    <button
-                                        type="button"
-                                        onClick={async () => {
-                                            if (!editingProject) return;
-                                            try {
-                                                await safeApiRequest(`/api/projects/${editingProject.id}`, {
-                                                    method: 'PUT',
-                                                    headers: { 'Content-Type': 'application/json' },
-                                                    body: JSON.stringify({
-                                                        fichajeHabilitado: (formData as any).fichajeHabilitado,
-                                                        geofenceLat: (formData as any).geofenceLat,
-                                                        geofenceLng: (formData as any).geofenceLng,
-                                                        geofenceRadius: (formData as any).geofenceRadius,
-                                                        qrToken: (formData as any).qrToken,
-                                                    })
-                                                });
-                                                showToast('Configuración de fichaje guardada correctamente.', 'success');
-                                            } catch (e) {
-                                                showToast('Error al guardar configuración de fichaje.', 'error');
-                                            }
-                                        }}
-                                        className="w-full bg-emerald-600 text-white font-bold rounded-xl py-3 hover:bg-emerald-700 transition-all active:scale-95 flex items-center justify-center gap-2"
-                                    >
+                                    <button type="button" onClick={async () => {
+                                        if (!editingProject) return;
+                                        try {
+                                            await safeApiRequest(`/api/projects/${editingProject.id}`, {
+                                                method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ fichajeHabilitado: (formData as any).fichajeHabilitado, geofenceLat: (formData as any).geofenceLat, geofenceLng: (formData as any).geofenceLng, geofenceRadius: (formData as any).geofenceRadius, qrToken: (formData as any).qrToken })
+                                            });
+                                            showToast('Configuración de fichaje guardada correctamente.', 'success');
+                                        } catch (e) { showToast('Error al guardar configuración de fichaje.', 'error'); }
+                                    }} className="w-full bg-emerald-600 text-white font-bold rounded-xl py-3 hover:bg-emerald-700 transition-all active:scale-95 flex items-center justify-center gap-2">
                                         <Save className="w-4 h-4" /> Guardar Config. Fichaje
                                     </button>
                                 </div>
                             )}
                         </div>
-
-                        {/* Aprovisionamiento Switch */}
-                        <div className="flex items-center justify-between bg-primary/5 border border-primary/20 rounded-2xl px-4 py-3.5">
-                            <div className="space-y-0.5">
-                                <p className="text-sm font-bold text-primary">Aprovisionamiento de Materiales</p>
-                                <p className="text-xs text-primary/70 font-medium">Habilita la gestión y trazabilidad de materiales para este proyecto</p>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => set('aprovisionamiento', !(formData as any).aprovisionamiento)}
-                                className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-300 focus:outline-none shrink-0 ${
-                                    (formData as any).aprovisionamiento ? 'bg-primary' : 'bg-slate-200 dark:bg-slate-700'
-                                }`}
-                            >
-                                <span className={`inline-block h-5 w-5 transform rounded-full bg-white dark:bg-slate-800 shadow-md transition-transform duration-300 ${
-                                    (formData as any).aprovisionamiento ? 'translate-x-8' : 'translate-x-1'
-                                }`} />
-                            </button>
-                        </div>
+                        </>}
                     </div>
 
                     {/* Footer - Fixed */}

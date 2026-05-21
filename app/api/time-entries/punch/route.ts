@@ -171,16 +171,24 @@ export async function POST(req: Request) {
                         return block.projectId === projectId && opIds.includes(operatorId);
                     });
                     if (!isAssigned) {
-                        if (!forceConfirmed) {
+                        // Check if project is marked as "Fijo" — any operator can punch in
+                        const punchProject = await prisma.project.findUnique({ where: { id: projectId }, select: { proyectoFijo: true } });
+                        if (punchProject?.proyectoFijo) {
+                            // Allow without confirmation, but flag it so supervisor gets notified
+                            validationFlags.push('UNASSIGNED_PROJECT');
+                            isUnassignedProject = true;
+                            score += 1;
+                        } else if (!forceConfirmed) {
                             return NextResponse.json({ 
                                 error: 'UNASSIGNED_PROJECT', 
                                 code: 'CONFIRM_REQUIRED', 
                                 message: 'No estás asignado a este proyecto hoy.' 
                             }, { status: 403 });
+                        } else {
+                            validationFlags.push('UNASSIGNED_PROJECT');
+                            isUnassignedProject = true;
+                            score += 1;
                         }
-                        validationFlags.push('UNASSIGNED_PROJECT');
-                        isUnassignedProject = true;
-                        score += 1;
                     }
                 }
             } catch (e) { /* No planning for today — allow */ }
@@ -309,6 +317,7 @@ export async function POST(req: Request) {
                 'QR_INVALID': 'Código QR inválido',
                 'NO_LOCATION': 'Sin ubicación GPS',
                 'UNASSIGNED_PROJECT': 'Proyecto no asignado en planificación',
+                'PROYECTO_FIJO': 'Fichada en proyecto fijo (sin planificación)',
             };
             const humanFlags = validationFlags.map(f => flagLabels[f] || f);
             const projectName = projectId

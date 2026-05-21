@@ -47,6 +47,7 @@ export interface Project {
     fechaFin?: string;
     publicToken?: string;
     generarOS?: boolean;
+    proyectoFijo?: boolean;
 }
 
 export interface FormData {
@@ -73,6 +74,7 @@ export interface FormData {
     geofenceRadius: number | null;
     qrToken: string | null;
     fichajeHabilitado: boolean;
+    proyectoFijo: boolean;
 }
 
 export interface Filters {
@@ -125,6 +127,7 @@ export const EMPTY_FORM: FormData = {
     geofenceRadius: null,
     qrToken: null,
     fichajeHabilitado: false,
+    proyectoFijo: false,
 };
 
 export const EMPTY_FILTERS: Filters = {
