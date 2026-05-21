@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { X, FileText, Download, Calculator, Percent, Save, Loader2 } from 'lucide-react';
+import { X, FileText, Download, Calculator, Percent, Save, Loader2, FileSpreadsheet } from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
+import * as XLSX from 'xlsx';
 
 export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, onClose: () => void, onSaveSuccess: (updatedOS: any) => void }) {
     const defaultMO = os.cobroValorManoObra ?? 0;
@@ -82,7 +83,74 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
 
     const round2 = (num: number) => Math.round(num * 100) / 100;
 
+    const handleExportExcel = () => {
+        if (materiales.some(m => m.precioUnitario === '' || m.precioUnitario === null || m.precioUnitario === undefined)) {
+            return showToast('Faltan cargar precios a los materiales', 'error');
+        }
+        if (materiales.some(m => safeNum(m.precioUnitario) < 0)) return showToast('Precios de materiales inválidos', 'error');
+        if (parsedValorMo < 0) return showToast('Valor MO inválido', 'error');
 
+        const currencyCell = (val: number) => ({ t: 'n', v: val, z: '"$"#,##0.00' });
+        const quantityCell = (val: number) => ({ t: 'n', v: val, z: '#,##0' });
+        const hoursCell = (val: number) => ({ t: 'n', v: val, z: '0.00' });
+
+        const aoa: any[][] = [
+            ['ORDEN DE COBRO'],
+            ['HDB - Job Planner'],
+            [],
+            ['Código OS', os.codigoOS || '#' + os.id.slice(-6)],
+            ['Proyecto', os.project.nombre],
+            ['Cliente', os.project.client?.nombre || os.project.cliente || 'Sin cliente'],
+            ['Condición de Pago', condicionPago || '-'],
+            ['Fecha Generación', new Date().toLocaleDateString('es-AR')],
+            ['Observaciones', observaciones || '-'],
+            [],
+            ['DETALLE DE MANO DE OBRA'],
+            ['Concepto', 'Horas / Cantidad', 'Valor Unitario', 'Subtotal'],
+            ['Horas Normales', hoursCell(horasNormales), currencyCell(parsedValorMo), currencyCell(horasNormales * parsedValorMo)],
+            ['Horas Extras (Recargo x2)', hoursCell(horasExtras * 2), currencyCell(parsedValorMo), currencyCell(horasExtras * 2 * parsedValorMo)],
+            ['Subtotal Mano de Obra', '', '', currencyCell(subtotalMo)],
+            [],
+            ['DETALLE DE MATERIALES'],
+            ['Código', 'Material', 'Cantidad', 'Precio Unitario', 'Subtotal']
+        ];
+
+        materiales.forEach(m => {
+            aoa.push([
+                m.codigo || '-',
+                m.material,
+                quantityCell(m.cantidad),
+                currencyCell(safeNum(m.precioUnitario)),
+                currencyCell(m.cantidad * safeNum(m.precioUnitario))
+            ]);
+        });
+
+        aoa.push(
+            ['Subtotal Materiales', '', '', '', currencyCell(subtotalMat)],
+            [],
+            ['RESUMEN DE TOTALES'],
+            ['Subtotal Bruto', '', '', '', currencyCell(subtotalBruto)],
+            [`Descuento (${descuentoAplicado ? parsedDescuento : 0}%)`, '', '', '', currencyCell(-montoDescuento)],
+            [`IVA (${ivaAplicado ? '21' : '0'}%)`, '', '', '', currencyCell(ivaAplicado ? montoIva : 0)],
+            ['TOTAL FINAL', '', '', '', currencyCell(totalFinal)]
+        );
+
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        
+        ws['!cols'] = [
+            { wch: 25 },
+            { wch: 30 },
+            { wch: 18 },
+            { wch: 18 },
+            { wch: 18 }
+        ];
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Orden de Cobro');
+        
+        const osCode = os.codigoOS || 'OS-' + os.id.slice(-6);
+        XLSX.writeFile(wb, `Cobro_${osCode}.xlsx`);
+    };
 
     const handleSaveAndGenerate = async () => {
         if (materiales.some(m => m.precioUnitario === '' || m.precioUnitario === null || m.precioUnitario === undefined)) {
@@ -303,12 +371,21 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
                                 </div>
                             </div>
                             
+// ... existing code ...
+
                             <div className="bg-slate-900 p-6">
                                 <p className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-widest font-black mb-1">Total a Cobrar</p>
                                 <p className="text-3xl font-black text-white">${formatARS(totalFinal)}</p>
                             </div>
 
-                            <div className="p-4 bg-slate-900/50">
+                            <div className="p-4 bg-slate-900/50 space-y-2">
+                                <button
+                                    onClick={handleExportExcel}
+                                    type="button"
+                                    className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 text-sm"
+                                >
+                                    <FileSpreadsheet className="w-4.5 h-4.5 text-emerald-400" /> Exportar a Excel
+                                </button>
                                 <button
                                     onClick={handleSaveAndGenerate}
                                     disabled={loading || parsedValorMo < 0}
