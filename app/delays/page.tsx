@@ -25,7 +25,7 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import { showToast } from '@/components/Toast';
 import * as XLSX from 'xlsx';
 import SearchableSelect from '@/components/SearchableSelect';
-import { formatDate, formatTime } from '@/lib/formatDate';
+import { formatDate, formatTime, formatSheetDates } from '@/lib/formatDate';
 import { safeApiRequest } from '@/lib/offline';
 import { getProjectOptions } from '@/lib/projectSelectHelper';
 
@@ -236,6 +236,7 @@ export default function DelaysPage() {
             aoa.push([formatDate(d.fecha), d.hora, d.project.nombre, d.operador, d.area, d.responsableArea || '-', d.motivo, d.duracion]);
         });
         const ws = XLSX.utils.aoa_to_sheet(aoa);
+        formatSheetDates(ws);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Demoras Cliente');
         XLSX.writeFile(wb, `Demoras_Cliente_${filterDateFrom}_${filterDateTo}.xlsx`);

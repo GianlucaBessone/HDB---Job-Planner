@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { showToast } from './Toast';
 import { safeApiRequest } from '@/lib/offline';
+import { formatDate } from '@/lib/formatDate';
 
 interface Project {
     id: string;
@@ -326,7 +327,7 @@ export default function ProjectFinalizeAuthModal({
                                                 <tr key={stat.name} className="hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors">
                                                     <td className="px-4 py-3">
                                                         <div className="font-bold text-slate-700 dark:text-slate-200 text-sm">{stat.name}</div>
-                                                        <div className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Carga: {stat.lastSeen}</div>
+                                                        <div className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Carga: {formatDate(stat.lastSeen)}</div>
                                                     </td>
                                                     <td className="px-4 py-3 text-right">
                                                         <span className="inline-block px-3 py-1 rounded-xl bg-primary/5 text-primary font-black text-sm border border-primary/10">
@@ -358,7 +359,7 @@ export default function ProjectFinalizeAuthModal({
                                             <tbody className="divide-y divide-slate-50">
                                                 {entries.slice(0, 5).map((entry: any) => (
                                                     <tr key={entry.id}>
-                                                        <td className="px-4 py-2 text-slate-500 dark:text-slate-400 font-medium">{entry.fecha}</td>
+                                                        <td className="px-4 py-2 text-slate-500 dark:text-slate-400 font-medium">{formatDate(entry.fecha)}</td>
                                                         <td className="px-4 py-2 font-bold text-slate-700 dark:text-slate-200">{entry.operator?.nombreCompleto}</td>
                                                         <td className="px-4 py-2 text-right font-black text-slate-900 dark:text-slate-50">{entry.horasTrabajadas}h</td>
                                                     </tr>

@@ -544,7 +544,7 @@ function MetadataSection({ metadata }: { metadata: any }) {
                     <MetaBadge icon={<Database className="w-3 h-3" />} label="Proyecto ID" value={metadata.projectId.slice(0, 12) + '...'} />
                 )}
                 {metadata.fecha && (
-                    <MetaBadge icon={<Clock className="w-3 h-3" />} label="Fecha Registro" value={metadata.fecha} />
+                    <MetaBadge icon={<Clock className="w-3 h-3" />} label="Fecha Registro" value={formatFieldValue('fecha', metadata.fecha)} />
                 )}
                 {metadata.horaIngreso && (
                     <MetaBadge icon={<Clock className="w-3 h-3" />} label="Ingreso" value={metadata.horaIngreso} />

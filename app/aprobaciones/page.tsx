@@ -16,6 +16,7 @@ import {
     User
 } from "lucide-react";
 import { safeApiRequest } from "@/lib/offline";
+import { formatDate } from "@/lib/formatDate";
 import { showToast } from "@/components/Toast";
 import TimeEntryMapView from "@/components/TimeEntryMapView";
 
@@ -243,8 +244,8 @@ function EntryDetail({ entry, onAction }: { entry: any, onAction: (id: string, a
                         
                         <div className="flex flex-wrap gap-4">
                              <div className="flex items-center gap-2">
-                                <Clock className="w-4 h-4 text-primary" />
-                                <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{entry.fecha} a las {entry.horaIngreso || entry.horaEgreso}</span>
+                                 <Clock className="w-4 h-4 text-primary" />
+                                <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{formatDate(entry.fecha)} a las {entry.horaIngreso || entry.horaEgreso}</span>
                              </div>
                              <div className="flex items-center gap-2">
                                 <AlertTriangle className="w-4 h-4 text-amber-500" />

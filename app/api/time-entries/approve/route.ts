@@ -38,12 +38,21 @@ export async function PATCH(req: Request) {
         const existing = await prisma.fichada.findUnique({ where: { id } });
         if (!existing) return NextResponse.json({ error: 'Fichada no encontrada' }, { status: 404 });
 
-        const updated = await prisma.fichada.update({
-            where: { id },
-            data: {
-                status: action
-            }
-        });
+        let result;
+        if (action === 'APPROVED') {
+            result = await prisma.fichada.update({
+                where: { id },
+                data: {
+                    status: 'APPROVED',
+                    isSuspicious: false // Approved entries become verified
+                }
+            });
+        } else {
+            // REJECTED -> Delete from DB
+            result = await prisma.fichada.delete({
+                where: { id }
+            });
+        }
 
         // Audit Log
         const approver = approvedById ? await prisma.operator.findUnique({ where: { id: approvedById }, select: { nombreCompleto: true } }) : null;
@@ -54,10 +63,10 @@ export async function PATCH(req: Request) {
             entity: 'FICHADA',
             entityId: id,
             oldValue: existing,
-            newValue: updated
+            newValue: action === 'APPROVED' ? result : null
         });
 
-        return NextResponse.json(updated);
+        return NextResponse.json({ success: true, action, deleted: action === 'REJECTED' });
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }

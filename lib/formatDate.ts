@@ -73,3 +73,36 @@ export function formatDateTimeInline(date: string | Date | null | undefined): st
         return String(date);
     }
 }
+
+/**
+ * Post-processes a SheetJS worksheet to format all date strings or objects
+ * to actual Excel Date cells with a strict 'dd/mm/yyyy' number format.
+ */
+export function formatSheetDates(ws: any) {
+    if (!ws || !ws['!ref']) return;
+    try {
+        for (const key in ws) {
+            if (key.startsWith('!')) continue;
+            const cell = ws[key];
+            if (cell && cell.t === 's' && typeof cell.v === 'string') {
+                if (/^\d{2}\/\d{2}\/\d{4}$/.test(cell.v)) {
+                    const [d, m, y] = cell.v.split('/').map(Number);
+                    cell.t = 'd';
+                    cell.v = new Date(y, m - 1, d, 12, 0, 0);
+                    cell.z = 'dd/mm/yyyy';
+                } else if (/^\d{4}-\d{2}-\d{2}$/.test(cell.v)) {
+                    const [y, m, d] = cell.v.split('-').map(Number);
+                    cell.t = 'd';
+                    cell.v = new Date(y, m - 1, d, 12, 0, 0);
+                    cell.z = 'dd/mm/yyyy';
+                }
+            } else if (cell && (cell.t === 'd' || cell.v instanceof Date)) {
+                cell.t = 'd';
+                cell.z = 'dd/mm/yyyy';
+            }
+        }
+    } catch (e) {
+        console.error('Error formatting sheet dates:', e);
+    }
+}
+

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
     Clock, 
     Calendar, 
@@ -18,10 +18,18 @@ import {
     Map as MapIcon,
     ShieldAlert,
     ExternalLink,
-    RefreshCcw
+    RefreshCcw,
+    GitCompareArrows,
+    X,
+    TrendingUp,
+    TrendingDown,
+    Minus,
+    Info,
+    ChevronDown,
+    ChevronUp,
 } from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
-import { formatDate, formatTime } from '@/lib/formatDate';
+import { formatDate, formatTime, formatSheetDates } from '@/lib/formatDate';
 import { showToast } from '@/components/Toast';
 import SearchableSelect from '@/components/SearchableSelect';
 import CodeBadge from '@/components/CodeBadge';
@@ -65,6 +73,19 @@ export default function FichadasAdminPage() {
     const [filterOperator, setFilterOperator] = useState('');
     const [filterProject, setFilterProject] = useState('');
     const [filterSuspicious, setFilterSuspicious] = useState(false);
+
+    // Verificar Cruce modal
+    const [isCruceOpen, setIsCruceOpen] = useState(false);
+    const [cruceFrom, setCruceFrom] = useState(() => {
+        const d = new Date();
+        d.setDate(d.getDate() - 7);
+        return d.toISOString().split('T')[0];
+    });
+    const [cruceTo, setCruceTo] = useState(new Date().toISOString().split('T')[0]);
+    const [cruceOperator, setCruceOperator] = useState('');
+    const [cruceRows, setCruceRows] = useState<any[]>([]);
+    const [cruceLoading, setCruceLoading] = useState(false);
+    const [cruceStatusFilter, setCruceStatusFilter] = useState<string | null>(null);
 
     useEffect(() => {
         const user = localStorage.getItem('currentUser');
@@ -138,9 +159,88 @@ export default function FichadasAdminPage() {
         });
 
         const ws = XLSX.utils.aoa_to_sheet(aoa);
+        formatSheetDates(ws);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Historial Fichadas');
         XLSX.writeFile(wb, `Fichadas_${filterDateFrom}_${filterDateTo}.xlsx`);
+    };
+
+    const loadCruce = async () => {
+        setCruceLoading(true);
+        setCruceStatusFilter(null);
+        try {
+            let url = `/api/verificar-cruce?from=${cruceFrom}&to=${cruceTo}`;
+            if (cruceOperator) url += `&operatorId=${cruceOperator}`;
+            const data = await safeApiRequest(url).then(res => res.json());
+            setCruceRows(Array.isArray(data) ? data : []);
+        } catch (err) {
+            showToast('Error al cargar cruce de datos', 'error');
+        } finally {
+            setCruceLoading(false);
+        }
+    };
+
+    const exportCruceToExcel = () => {
+        const checkStr = (v: boolean | null) => v === null ? 'N/A' : v ? '✓' : '✗';
+        const statusLabel: Record<string, string> = {
+            OK: 'CORRECTO',
+            ALERTA: 'ALERTA',
+            SIN_FICHADA: 'SIN FICHADA',
+            SIN_MANUAL: 'SIN REGISTRO MANUAL',
+        };
+        const aoa: any[][] = [[
+            'Estado', 'Fecha', 'Operador',
+            'Manual: 1ra Entrada', 'Manual: Última Salida', 'Manual Horas', 'Manual Registros',
+            'Fichada: 1ra Entrada', 'Fichada: Última Salida', 'Fichada Horas', 'Fichada Cantidad',
+            'Fichada Abierta', 'Fichada AutoCerrada',
+            'Entrada OK', 'Salida OK', 'Horas OK',
+        ]];
+        for (const r of cruceRows) {
+            aoa.push([
+                statusLabel[r.status] ?? r.status,
+                formatDate(r.fecha),
+                r.operatorName,
+                r.manualPrimeraEntrada ?? '-',
+                r.manualUltimaSalida ?? '-',
+                r.manualHoras,
+                r.manualRegistros,
+                r.fichadaPrimeraEntrada ?? '-',
+                r.fichadaUltimaSalida ?? '-',
+                r.fichadaHoras,
+                r.fichadaCantidad,
+                r.fichadaTieneAbierta ? 'SI' : 'NO',
+                r.fichadaAutoCerrada ? 'SI' : 'NO',
+                checkStr(r.entradaOk),
+                checkStr(r.salidaOk),
+                checkStr(r.horasOk),
+            ]);
+        }
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        formatSheetDates(ws);
+        // Apply column widths
+        ws['!cols'] = [14, 12, 22, 16, 16, 12, 14, 16, 16, 12, 14, 14, 16, 11, 10, 10].map(w => ({ wch: w }));
+
+        // Color-code rows
+        const statusColors: Record<string, string> = {
+            'CORRECTO': 'FF00B050',
+            'ALERTA': 'FFFF0000',
+            'SIN FICHADA': 'FFFF9900',
+            'SIN REGISTRO MANUAL': 'FF0070C0',
+        };
+        const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+        for (let R = 1; R <= range.e.r; R++) {
+            const cellAddr = XLSX.utils.encode_cell({ r: R, c: 0 });
+            const cell = ws[cellAddr];
+            if (!cell) continue;
+            const color = statusColors[cell.v as string];
+            if (color) {
+                cell.s = { fill: { patternType: 'solid', fgColor: { rgb: color } }, font: { bold: true, color: { rgb: 'FFFFFFFF' } } };
+            }
+        }
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Cruce Fichadas-Registros');
+        XLSX.writeFile(wb, `CruceFichadas_${cruceFrom}_${cruceTo}.xlsx`);
     };
 
     const getFlagIcon = (flagsJson: string | null) => {
@@ -192,6 +292,13 @@ export default function FichadasAdminPage() {
                         title="Refrescar"
                     >
                         <RefreshCcw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
+                    </button>
+                    <button
+                        onClick={() => setIsCruceOpen(true)}
+                        className="flex-1 md:flex-none bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 active:scale-95 transition-all text-sm"
+                    >
+                        <GitCompareArrows className="w-4 h-4" />
+                        Verificar Cruce
                     </button>
                     <button
                         onClick={exportToExcel}
@@ -535,6 +642,282 @@ export default function FichadasAdminPage() {
                         {/* Modal Footer */}
                         <div className="p-6 bg-slate-50/50 border-t border-slate-100 dark:border-slate-800 flex justify-end">
                             <button onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all text-xs"> Cerrar Detalle </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Verificar Cruce Modal */}
+            {isCruceOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 overflow-hidden">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsCruceOpen(false)} />
+                    <div className="relative bg-white dark:bg-slate-950 w-full max-w-7xl h-[90vh] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-300">
+                        {/* Header */}
+                        <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800/50 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/20">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                                    <GitCompareArrows className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Verificación y Cruce de Horas</h3>
+                                    <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">Compara fichadas de GPS/QR con los registros manuales cargados por operarios</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setIsCruceOpen(false)} className="p-3 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-2xl text-slate-400 dark:text-slate-500 transition-colors">
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        {/* Search and Filters Bar */}
+                        <div className="p-6 border-b border-slate-100 dark:border-slate-800/50 bg-slate-50/20 dark:bg-slate-900/10 flex flex-wrap gap-4 items-end">
+                            <div className="space-y-1.5 flex-1 min-w-[150px]">
+                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Desde</label>
+                                <div className="relative">
+                                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
+                                    <input 
+                                        type="date"
+                                        value={cruceFrom}
+                                        onChange={e => setCruceFrom(e.target.value)}
+                                        className="w-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 pl-10 pr-4 font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-1.5 flex-1 min-w-[150px]">
+                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Hasta</label>
+                                <div className="relative">
+                                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
+                                    <input 
+                                        type="date"
+                                        value={cruceTo}
+                                        onChange={e => setCruceTo(e.target.value)}
+                                        className="w-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 pl-10 pr-4 font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex-[2] min-w-[200px]">
+                                <SearchableSelect 
+                                    label="Filtrar por Operador"
+                                    options={operators.map(o => ({ id: o.id, label: o.nombreCompleto }))}
+                                    value={cruceOperator}
+                                    onChange={setCruceOperator}
+                                    placeholder="Todos los operadores"
+                                />
+                            </div>
+
+                            <div className="flex gap-2 w-full md:w-auto">
+                                <button
+                                    onClick={loadCruce}
+                                    disabled={cruceLoading}
+                                    className="flex-1 md:flex-none bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-indigo-500/20 active:scale-95 transition-all text-xs flex items-center justify-center gap-2 disabled:opacity-55"
+                                >
+                                    {cruceLoading ? (
+                                        <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                                    ) : (
+                                        <Search className="w-4 h-4" />
+                                    )}
+                                    Buscar y Procesar
+                                </button>
+
+                                <button
+                                    onClick={exportCruceToExcel}
+                                    disabled={cruceRows.length === 0}
+                                    className="flex-1 md:flex-none bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-emerald-500/20 active:scale-95 transition-all text-xs flex items-center justify-center gap-2 disabled:opacity-55 disabled:shadow-none"
+                                >
+                                    <FileSpreadsheet className="w-4 h-4" />
+                                    Exportar Excel
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Content Scroll Area */}
+                        <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 custom-scrollbar bg-slate-50/30 dark:bg-slate-900/5">
+                            {/* Summary cards */}
+                            {cruceRows.length > 0 && (
+                                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                    <div 
+                                        onClick={() => setCruceStatusFilter(null)}
+                                        className={`bg-white dark:bg-slate-900 p-4 rounded-3xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all active:scale-95 ${cruceStatusFilter === null ? 'border-indigo-500 ring-2 ring-indigo-500/20 shadow-md scale-[1.02]' : 'border-slate-100 dark:border-slate-800'}`}
+                                    >
+                                        <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Días Evaluados</span>
+                                        <span className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-2">{cruceRows.length}</span>
+                                    </div>
+                                    <div 
+                                        onClick={() => setCruceStatusFilter(cruceStatusFilter === 'OK' ? null : 'OK')}
+                                        className={`p-4 rounded-3xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all active:scale-95 ${cruceStatusFilter === 'OK' ? 'bg-emerald-500/10 border-emerald-500 ring-2 ring-emerald-500/20 shadow-md scale-[1.02]' : 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900/40'}`}
+                                    >
+                                        <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Correctos (OK)</span>
+                                        <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-2">
+                                            {cruceRows.filter(r => r.status === 'OK').length}
+                                        </span>
+                                    </div>
+                                    <div 
+                                        onClick={() => setCruceStatusFilter(cruceStatusFilter === 'ALERTA' ? null : 'ALERTA')}
+                                        className={`p-4 rounded-3xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all active:scale-95 ${cruceStatusFilter === 'ALERTA' ? 'bg-rose-500/10 border-rose-500 ring-2 ring-rose-500/20 shadow-md scale-[1.02]' : 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-900/40'}`}
+                                    >
+                                        <span className="text-[10px] font-black text-rose-600 dark:text-rose-400 uppercase tracking-widest">Alertas / Desvíos</span>
+                                        <span className="text-2xl font-black text-rose-600 dark:text-rose-400 mt-2">
+                                            {cruceRows.filter(r => r.status === 'ALERTA').length}
+                                        </span>
+                                    </div>
+                                    <div 
+                                        onClick={() => setCruceStatusFilter(cruceStatusFilter === 'SIN_FICHADA' ? null : 'SIN_FICHADA')}
+                                        className={`p-4 rounded-3xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all active:scale-95 ${cruceStatusFilter === 'SIN_FICHADA' ? 'bg-amber-500/10 border-amber-500 ring-2 ring-amber-500/20 shadow-md scale-[1.02]' : 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-100 dark:border-amber-900/40'}`}
+                                    >
+                                        <span className="text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest">Sin Fichada (Manual)</span>
+                                        <span className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-2">
+                                            {cruceRows.filter(r => r.status === 'SIN_FICHADA').length}
+                                        </span>
+                                    </div>
+                                    <div 
+                                        onClick={() => setCruceStatusFilter(cruceStatusFilter === 'SIN_MANUAL' ? null : 'SIN_MANUAL')}
+                                        className={`p-4 rounded-3xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all active:scale-95 ${cruceStatusFilter === 'SIN_MANUAL' ? 'bg-blue-500/10 border-blue-500 ring-2 ring-blue-500/20 shadow-md scale-[1.02]' : 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-100 dark:border-blue-900/40'}`}
+                                    >
+                                        <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Sin Registro Manual</span>
+                                        <span className="text-2xl font-black text-blue-600 dark:text-blue-400 mt-2">
+                                            {cruceRows.filter(r => r.status === 'SIN_MANUAL').length}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Table */}
+                            <div className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
+                                {cruceLoading ? (
+                                    <div className="p-20 text-center space-y-3">
+                                        <div className="inline-block w-8 h-8 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
+                                        <p className="text-sm font-bold text-slate-400 dark:text-slate-500">Procesando y cruzando bases de datos relacionales...</p>
+                                    </div>
+                                ) : cruceRows.length === 0 ? (
+                                    <div className="p-16 text-center space-y-3 text-slate-400 dark:text-slate-500">
+                                        <Info className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-700" />
+                                        <p className="font-bold">No hay datos procesados en este rango.</p>
+                                        <p className="text-xs">Selecciona un rango de fechas y presiona "Buscar y Procesar".</p>
+                                    </div>
+                                ) : (
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-left border-collapse text-xs">
+                                            <thead>
+                                                <tr className="bg-slate-50/50 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800">
+                                                    <th className="p-4 font-black uppercase text-slate-400 tracking-wider">Estado</th>
+                                                    <th className="p-4 font-black uppercase text-slate-400 tracking-wider">Operador</th>
+                                                    <th className="p-4 font-black uppercase text-slate-400 tracking-wider text-center">Registro Manual (Declarado)</th>
+                                                    <th className="p-4 font-black uppercase text-slate-400 tracking-wider text-center">Fichada Digital (Auditoría)</th>
+                                                    <th className="p-4 font-black uppercase text-slate-400 tracking-wider text-center">Resultado Cruce</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                                {cruceRows.filter((r: any) => !cruceStatusFilter || r.status === cruceStatusFilter).map((r, i) => {
+                                                    const statusThemes: Record<string, string> = {
+                                                        OK: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/40',
+                                                        ALERTA: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-900/40',
+                                                        SIN_FICHADA: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/40',
+                                                        SIN_MANUAL: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-900/40',
+                                                    };
+                                                    const statusLabel: Record<string, string> = {
+                                                        OK: 'CORRECTO',
+                                                        ALERTA: 'ALERTA / DESVÍO',
+                                                        SIN_FICHADA: 'SIN FICHADA',
+                                                        SIN_MANUAL: 'SIN MANUAL',
+                                                    };
+
+                                                    return (
+                                                        <tr key={i} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                                                            <td className="p-4 font-medium">
+                                                                <span className={`px-2 py-1 rounded-lg border font-black text-[9px] tracking-wide ${statusThemes[r.status]}`}>
+                                                                    {statusLabel[r.status]}
+                                                                </span>
+                                                            </td>
+                                                            <td className="p-4">
+                                                                <div className="font-bold text-slate-800 dark:text-slate-200">{r.operatorName}</div>
+                                                                <div className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold">{formatDate(r.fecha)}</div>
+                                                            </td>
+                                                            <td className="p-4 bg-slate-50/30 dark:bg-slate-900/20">
+                                                                {r.manualRegistros > 0 ? (
+                                                                    <div className="flex flex-col items-center gap-1">
+                                                                        <div className="flex gap-2">
+                                                                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono font-bold">{r.manualPrimeraEntrada ?? '--:--'}</span>
+                                                                            <span className="text-slate-300">→</span>
+                                                                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono font-bold">{r.manualUltimaSalida ?? '--:--'}</span>
+                                                                        </div>
+                                                                        <div className="text-[10px] text-slate-500 font-semibold">{r.manualHoras} hs en {r.manualRegistros} registro(s)</div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="text-center italic text-slate-400">Sin carga manual</div>
+                                                                )}
+                                                            </td>
+                                                            <td className="p-4">
+                                                                {r.fichadaCantidad > 0 ? (
+                                                                    <div className="flex flex-col items-center gap-1">
+                                                                        <div className="flex gap-2 items-center">
+                                                                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono font-bold">{r.fichadaPrimeraEntrada ?? '--:--'}</span>
+                                                                            <span className="text-slate-300">→</span>
+                                                                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono font-bold">{r.fichadaUltimaSalida ?? '--:--'}</span>
+                                                                            {r.fichadaTieneAbierta && (
+                                                                                <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" title="Fichada abierta actualmente" />
+                                                                            )}
+                                                                        </div>
+                                                                        <div className="text-[10px] text-slate-500 font-semibold flex items-center gap-1.5">
+                                                                            <span>{r.fichadaHoras} hs en {r.fichadaCantidad} fichada(s)</span>
+                                                                            {r.fichadaAutoCerrada && (
+                                                                                <span className="bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400 px-1 rounded text-[8px] font-black uppercase">AutoCorte 16h</span>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="text-center italic text-slate-400">Sin fichadas registradas</div>
+                                                                )}
+                                                            </td>
+                                                            <td className="p-4 text-center">
+                                                                {r.status === 'SIN_FICHADA' && (
+                                                                    <div className="inline-flex items-center gap-1 text-amber-600 bg-amber-50 dark:bg-amber-950/20 px-2.5 py-1 rounded-xl border border-amber-200 dark:border-amber-900/40 text-[10px] font-bold">
+                                                                        <AlertTriangle className="w-3.5 h-3.5" /> No Fichó
+                                                                    </div>
+                                                                )}
+                                                                {r.status === 'SIN_MANUAL' && (
+                                                                    <div className="inline-flex items-center gap-1 text-blue-600 bg-blue-50 dark:bg-blue-950/20 px-2.5 py-1 rounded-xl border border-blue-200 dark:border-blue-900/40 text-[10px] font-bold">
+                                                                        <AlertTriangle className="w-3.5 h-3.5" /> No Declaró Horas
+                                                                    </div>
+                                                                )}
+                                                                {r.status === 'OK' && (
+                                                                    <div className="inline-flex items-center gap-1 text-emerald-600 bg-emerald-50 dark:bg-emerald-950/20 px-2.5 py-1 rounded-xl border border-emerald-200 dark:border-emerald-900/40 text-[10px] font-bold">
+                                                                        <CheckCircle2 className="w-3.5 h-3.5" /> Todo OK
+                                                                    </div>
+                                                                )}
+                                                                {r.status === 'ALERTA' && (
+                                                                    <div className="flex flex-col gap-1 items-center">
+                                                                        {r.entradaOk === false && (
+                                                                            <span className="text-[10px] font-black text-rose-600 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40 px-2 py-0.5 rounded-lg flex items-center gap-1">
+                                                                                <TrendingDown className="w-3 h-3" /> Fichó Tarde (Ingreso Fichado: {r.fichadaPrimeraEntrada} &gt; Manual: {r.manualPrimeraEntrada})
+                                                                            </span>
+                                                                        )}
+                                                                        {r.salidaOk === false && (
+                                                                            <span className="text-[10px] font-black text-rose-600 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40 px-2 py-0.5 rounded-lg flex items-center gap-1">
+                                                                                <TrendingUp className="w-3 h-3" /> Fichó Temprano (Egreso Fichado: {r.fichadaUltimaSalida} &lt; Manual: {r.manualUltimaSalida})
+                                                                            </span>
+                                                                        )}
+                                                                        {r.horasOk === false && (
+                                                                            <span className="text-[10px] font-black text-rose-600 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40 px-2 py-0.5 rounded-lg flex items-center gap-1">
+                                                                                <Minus className="w-3 h-3" /> Diferencia Horas (Fichado: {r.fichadaHoras}h &lt; Manual: {r.manualHoras}h)
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="p-6 bg-slate-50 dark:bg-slate-900/40 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+                            <button onClick={() => setIsCruceOpen(false)} className="px-6 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all text-xs"> Cerrar </button>
                         </div>
                     </div>
                 </div>

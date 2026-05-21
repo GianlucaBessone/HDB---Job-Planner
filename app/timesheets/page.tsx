@@ -8,7 +8,7 @@ import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
 import * as XLSX from 'xlsx';
 import SearchableSelect from '@/components/SearchableSelect';
-import { formatDate, formatTime } from '@/lib/formatDate';
+import { formatDate, formatTime, formatSheetDates } from '@/lib/formatDate';
 import { getProjectOptions, filterOperatorProjects } from '@/lib/projectSelectHelper';
 import CodeBadge from '@/components/CodeBadge';
 
@@ -367,7 +367,7 @@ export default function TimesheetsPage() {
                     operatorId: currentUser.id,
                     forSupervisors: true,
                     title: `Solicitud para ${actionText} registro`,
-                    message: `El operador ${currentUser.nombreCompleto} solicita ${actionText} su registro de horas del ${pendingAction.entry.fecha} (${pendingAction.entry.causaRegistro ? `Causa: ${pendingAction.entry.causaRegistro}` : (pendingAction.entry.project?.nombre || 'Sin proyecto')}).\nMotivo: ${requestMessage}`,
+                    message: `El operador ${currentUser.nombreCompleto} solicita ${actionText} su registro de horas del ${formatDate(pendingAction.entry.fecha)} (${pendingAction.entry.causaRegistro ? `Causa: ${pendingAction.entry.causaRegistro}` : (pendingAction.entry.project?.nombre || 'Sin proyecto')}).\nMotivo: ${requestMessage}`,
                     type: 'TIME_MODIFICATION_REQUEST',
                     relatedId: pendingAction.entry.id,
                     metadata
@@ -454,6 +454,7 @@ export default function TimesheetsPage() {
         }
 
         const ws = XLSX.utils.aoa_to_sheet(aoa);
+        formatSheetDates(ws);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, `Reporte-${viewMode.toUpperCase()}`);
         XLSX.writeFile(wb, `Reporte_Jornadas_${filterDateFrom}_${filterDateTo}.xlsx`);
