@@ -482,6 +482,130 @@ export async function analyzeDocumentOcr(
 }
 
 /**
+ * Service to analyze certificates via OCR and extract course info
+ */
+export async function analyzeCertificateOcr(
+    base64Data: string,
+    mimeType: string,
+    options: AiRequestOptions = {}
+): Promise<AiServiceResponse> {
+    const start = Date.now();
+    const modelName = options.model || 'gemini-2.5-flash';
+    const timeoutMs = options.timeoutMs || 45000;
+    const promptKey = 'CERTIFICATE_ANALYSIS';
+
+    try {
+        await rateLimiter.waitIfLimitReached();
+
+        const defaultPrompt = DEFAULT_PROMPTS[promptKey];
+        const userPrompt = defaultPrompt.template;
+
+        const docPart = {
+            inlineData: {
+                data: base64Data.replace(/^data:(application|image)\/\w+;base64,/, ""),
+                mimeType: mimeType
+            }
+        };
+
+        const apiCall = () => ai.models.generateContent({
+            model: modelName,
+            contents: [
+                docPart,
+                { text: userPrompt }
+            ],
+            config: {
+                systemInstruction: defaultPrompt.systemInstruction,
+                responseMimeType: 'application/json',
+                temperature: 0.1
+            }
+        });
+
+        const response = await withRetries(
+            () => withTimeout(apiCall(), timeoutMs),
+            2,
+            1000
+        );
+
+        const latencyMs = Date.now() - start;
+        const textResult = response.text || '';
+        
+        const inputTokens = response.usageMetadata?.promptTokenCount || 0;
+        const outputTokens = response.usageMetadata?.candidatesTokenCount || 0;
+        const totalTokens = response.usageMetadata?.totalTokenCount || 0;
+        const estimatedCost = calculateCost(inputTokens, outputTokens);
+
+        const usage: TokenUsage = {
+            inputTokens,
+            outputTokens,
+            totalTokens,
+            estimatedCost
+        };
+
+        let parsedData = undefined;
+        try {
+            parsedData = JSON.parse(textResult);
+        } catch {
+            throw new Error('La respuesta de extracción de certificado no pudo formatearse en JSON.');
+        }
+
+        await logAiRequest({
+            action: 'OCR',
+            model: modelName,
+            promptKey,
+            promptVersion: defaultPrompt.version,
+            inputTokens,
+            outputTokens,
+            totalTokens,
+            estimatedCost,
+            latencyMs,
+            userId: options.userId,
+            userName: options.userName,
+            userRole: options.userRole,
+            entity: options.entity,
+            entityId: options.entityId,
+            success: true
+        });
+
+        return {
+            success: true,
+            data: parsedData,
+            text: textResult,
+            usage,
+            latencyMs
+        };
+
+    } catch (err: any) {
+        const latencyMs = Date.now() - start;
+        console.error(`[AiService] Error in certificate OCR analysis:`, err);
+
+        await logAiRequest({
+            action: 'OCR',
+            model: modelName,
+            promptKey,
+            promptVersion: 1,
+            inputTokens: 0,
+            outputTokens: 0,
+            totalTokens: 0,
+            estimatedCost: 0,
+            latencyMs,
+            userId: options.userId,
+            userName: options.userName,
+            userRole: options.userRole,
+            entity: options.entity,
+            entityId: options.entityId,
+            success: false,
+            errorMessage: err.message || String(err)
+        }).catch(dbErr => console.error('[AiService] Failed to log certificate OCR failure:', dbErr));
+
+        return {
+            success: false,
+            error: err.message || 'Error al analizar el certificado.',
+            latencyMs
+        };
+    }
+}
+
+/**
  * Basic prompt injection protection
  */
 function sanitizePrompt(prompt: string): string {

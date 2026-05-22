@@ -133,6 +133,7 @@ model Operator {
   OSDocumentAcknowledgement OSDocumentAcknowledgement[]
   competencies              TechnicianCompetency[]
   trainings                 TechnicianTraining[]
+  externalCertificates      ExternalCertificate[]
 }
 
 model FavoriteBlock {
@@ -1033,5 +1034,23 @@ model AiConversationMessage {
   createdAt      DateTime       @default(now())
 
   @@index([conversationId])
+}
+
+model ExternalCertificate {
+  id              String    @id @default(cuid())
+  operatorId      String
+  operator        Operator  @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  nombreCurso     String
+  institucion     String
+  descripcion     String?   @db.Text
+  horas           Float?
+  fechaEmision    String?   // YYYY-MM-DD
+  estado          String    @default("pendiente") // pendiente | aprobado | rechazado
+  archivoUrl      String?   @db.Text
+  aiData          Json?     // To store AI extraction details like hours, dates, entities
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([operatorId])
 }
 

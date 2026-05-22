@@ -31,6 +31,7 @@ import {
 import SearchableSelect from '@/components/SearchableSelect';
 import CodeBadge from '@/components/CodeBadge';
 import { safeApiRequest } from '@/lib/offline';
+import OperadoresTab from './OperadoresTab';
 
 interface DashboardData {
     kpis: {
@@ -84,7 +85,7 @@ export default function DashboardPage() {
     const [data, setData] = useState<DashboardData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [clients, setClients] = useState<{ id: string; nombre: string }[]>([]);
-    const [activeTab, setActiveTab] = useState<'proyectos' | 'servicios'>('proyectos');
+    const [activeTab, setActiveTab] = useState<'proyectos' | 'servicios' | 'operadores'>('proyectos');
 
     // Filter States
     const [filterFrom, setFilterFrom] = useState('');
@@ -187,9 +188,23 @@ export default function DashboardPage() {
                         Servicios
                     </span>
                 </button>
+                <button
+                    onClick={() => setActiveTab('operadores')}
+                    className={`px-5 py-2.5 rounded-xl text-sm font-black transition-all ${
+                        activeTab === 'operadores'
+                            ? 'bg-violet-600 text-white shadow-md shadow-violet-200'
+                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80'
+                    }`}
+                >
+                    <span className="flex items-center gap-2">
+                        <Award className="w-4 h-4" />
+                        Operadores
+                    </span>
+                </button>
             </div>
 
             {activeTab === 'servicios' && <ServiciosTab clients={clients} />}
+            {activeTab === 'operadores' && <OperadoresTab />}
             {activeTab === 'proyectos' && <>
 
             {/* Advanced Filters (Requirement 2) */}

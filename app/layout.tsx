@@ -298,7 +298,7 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
             icon: <FileCheck className="w-5 h-5" />,
             items: [
                 { href: '/calidad', icon: <FileCheck className="w-4 h-4" />, label: 'Calidad y Documentación', roles: ['admin', 'qa', 'supervisor'] },
-                { href: '/capacitacion', icon: <BookOpen className="w-4 h-4" />, label: 'Capacitación LMS', roles: ['operador', 'supervisor', 'admin', 'qa'] },
+                { href: '/capacitacion', icon: <BookOpen className="w-4 h-4" />, label: 'Formación Integral', roles: ['operador', 'supervisor', 'admin', 'qa'] },
                 { href: '/auditoria', icon: <History className="w-4 h-4" />, label: 'Auditoría', roles: ['admin', 'qa', 'supervisor'] },
                 { href: '/auditoria-ia', icon: <Sparkles className="w-4 h-4" />, label: 'Auditoría de IA', roles: ['admin', 'qa', 'supervisor'] },
             ]

@@ -1,14 +1,22 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BookOpen, CheckCircle2, Clock, AlertCircle, Play, FileText, Download, Award, ChevronRight, X, Loader2, ShieldAlert } from 'lucide-react';
+import { 
+    BookOpen, CheckCircle2, Clock, AlertCircle, Play, FileText, 
+    Download, Award, ChevronRight, X, Loader2, ShieldAlert, 
+    UploadCloud, Plus, Calendar, Landmark, Eye, CheckCircle, HelpCircle
+} from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
 
 export default function CapacitacionPage() {
     const [user, setUser] = useState<any>(null);
     const [trainings, setTrainings] = useState<any[]>([]);
+    const [certificates, setCertificates] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState<'internal' | 'external'>('internal');
+    
+    // Internal Training States
     const [selectedTraining, setSelectedTraining] = useState<any>(null);
     const [docDetail, setDocDetail] = useState<any>(null);
     const [loadingDoc, setLoadingDoc] = useState(false);
@@ -16,6 +24,18 @@ export default function CapacitacionPage() {
     const [submitting, setSubmitting] = useState(false);
     const [quizResult, setQuizResult] = useState<any>(null);
     const [viewMode, setViewMode] = useState<'list' | 'detail' | 'quiz'>('list');
+    
+    // External Certificate States
+    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+    const [certFileBase64, setCertFileBase64] = useState<string>('');
+    const [certFileName, setCertFileName] = useState('');
+    const [certFileType, setCertFileType] = useState('');
+    const [manualNombreCurso, setManualNombreCurso] = useState('');
+    const [manualInstitucion, setManualInstitucion] = useState('');
+    const [manualDescripcion, setManualDescripcion] = useState('');
+    const [analyzingCert, setAnalyzingCert] = useState(false);
+    const [previewCert, setPreviewCert] = useState<any>(null);
+
     const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
 
     useEffect(() => {
@@ -41,7 +61,10 @@ export default function CapacitacionPage() {
     }, []);
 
     useEffect(() => {
-        if (user?.id) loadTrainings();
+        if (user?.id) {
+            loadTrainings();
+            loadCertificates();
+        }
     }, [user]);
 
     const loadTrainings = async () => {
@@ -52,8 +75,24 @@ export default function CapacitacionPage() {
                 const data = await res.json();
                 setTrainings(Array.isArray(data) ? data : []);
             }
-        } catch (e) { console.error(e); }
-        finally { setLoading(false); }
+        } catch (e) { 
+            console.error(e); 
+        } finally { 
+            setLoading(false); 
+        }
+    };
+
+    const loadCertificates = async () => {
+        if (!user?.id) return;
+        try {
+            const res = await safeApiRequest(`/api/qms/certificados?operatorId=${user.id}`);
+            if (res.ok) {
+                const data = await res.json();
+                setCertificates(Array.isArray(data) ? data : []);
+            }
+        } catch (e) {
+            console.error(e);
+        }
     };
 
     const openTraining = async (training: any) => {
@@ -115,6 +154,68 @@ export default function CapacitacionPage() {
         } finally { setSubmitting(false); }
     };
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Size check (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            showToast('El archivo no debe superar los 5MB', 'error');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setCertFileBase64(reader.result as string);
+            setCertFileName(file.name);
+            setCertFileType(file.type);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleUploadCertificate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!certFileBase64) {
+            showToast('Seleccione un archivo de certificado', 'error');
+            return;
+        }
+
+        setAnalyzingCert(true);
+        try {
+            const res = await safeApiRequest('/api/qms/certificados', {
+                method: 'POST',
+                body: JSON.stringify({
+                    operatorId: user.id,
+                    nombreCurso: manualNombreCurso,
+                    institucion: manualInstitucion,
+                    descripcion: manualDescripcion,
+                    archivoUrl: certFileBase64,
+                    fileType: certFileType,
+                    runAiAnalysis: true
+                })
+            });
+
+            if (res.ok) {
+                showToast('Certificado subido y analizado por IA con éxito', 'success');
+                setIsUploadModalOpen(false);
+                setCertFileBase64('');
+                setCertFileName('');
+                setCertFileType('');
+                setManualNombreCurso('');
+                setManualInstitucion('');
+                setManualDescripcion('');
+                loadCertificates();
+            } else {
+                const err = await res.json();
+                showToast(err.error || 'Error al subir el certificado', 'error');
+            }
+        } catch (error) {
+            showToast('Error de conexión', 'error');
+        } finally {
+            setAnalyzingCert(false);
+        }
+    };
+
     const pendingCount = trainings.filter(t => t.estado === 'pendiente').length;
     const approvedCount = trainings.filter(t => t.estado === 'aprobado').length;
     const failedCount = trainings.filter(t => t.estado === 'reprobado').length;
@@ -142,10 +243,10 @@ export default function CapacitacionPage() {
         );
     }
 
-    // DETAIL / QUIZ VIEW
+    // DETAIL / QUIZ VIEW (for QMS / LMS trainings)
     if (viewMode !== 'list' && selectedTraining) {
         return (
-            <div className="max-w-3xl mx-auto space-y-6">
+            <div className="max-w-3xl mx-auto space-y-6 px-4 py-6">
                 {/* Header */}
                 <div className="flex items-center gap-3">
                     <button onClick={() => { setViewMode('list'); setSelectedTraining(null); setDocDetail(null); setQuizResult(null); }} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
@@ -307,75 +408,378 @@ export default function CapacitacionPage() {
         );
     }
 
-    // LIST VIEW
     return (
-        <div className="max-w-3xl mx-auto space-y-6">
-            <div>
-                <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Capacitación LMS</h1>
-                <p className="text-sm text-slate-500 mt-1">Documentos y capacitaciones obligatorias asignadas a su perfil.</p>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-3">
-                <div className="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-2xl border border-amber-100 dark:border-amber-800 text-center">
-                    <span className="text-2xl font-black text-amber-700 dark:text-amber-300">{pendingCount}</span>
-                    <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider mt-1">Pendientes</p>
+        <div className="max-w-4xl mx-auto space-y-6 px-4 py-6">
+            {/* Elegant Premium Title Header */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-gradient-to-r from-slate-900 to-indigo-950 text-white p-6 rounded-3xl shadow-xl">
+                <div>
+                    <h1 className="text-2xl font-black tracking-tight">Centro de Formación Integral</h1>
+                    <p className="text-xs text-indigo-200 mt-1">HSB Servicios Eléctricos • HDB SGI Portal de Desarrollo Profesional</p>
                 </div>
-                <div className="bg-emerald-50 dark:bg-emerald-950/20 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-800 text-center">
-                    <span className="text-2xl font-black text-emerald-700 dark:text-emerald-300">{approvedCount}</span>
-                    <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mt-1">Aprobadas</p>
-                </div>
-                <div className="bg-rose-50 dark:bg-rose-950/20 p-4 rounded-2xl border border-rose-100 dark:border-rose-800 text-center">
-                    <span className="text-2xl font-black text-rose-700 dark:text-rose-300">{failedCount}</span>
-                    <p className="text-[10px] font-bold text-rose-600 uppercase tracking-wider mt-1">No Aprobadas</p>
+                <div className="flex items-center gap-2">
+                    <button 
+                        onClick={() => setIsUploadModalOpen(true)}
+                        className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black rounded-xl transition-all shadow-md flex items-center gap-1.5"
+                    >
+                        <Plus className="w-4 h-4" /> Subir Certificado Externo
+                    </button>
                 </div>
             </div>
 
-            {/* Training List */}
-            {trainings.length === 0 ? (
-                <div className="text-center py-16 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700">
-                    <BookOpen className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                    <p className="text-sm font-bold text-slate-400">No tiene capacitaciones asignadas actualmente.</p>
+            {/* Main Tabs Selection */}
+            <div className="flex border-b border-slate-200 dark:border-slate-800">
+                <button
+                    onClick={() => setActiveTab('internal')}
+                    className={`flex items-center gap-2 px-5 py-3 text-sm font-bold transition-all border-b-2 -mb-px ${
+                        activeTab === 'internal'
+                            ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+                            : 'border-transparent text-slate-400 hover:text-slate-600'
+                    }`}
+                >
+                    <BookOpen className="w-4 h-4" />
+                    Mis Capacitaciones
+                </button>
+                <button
+                    onClick={() => setActiveTab('external')}
+                    className={`flex items-center gap-2 px-5 py-3 text-sm font-bold transition-all border-b-2 -mb-px ${
+                        activeTab === 'external'
+                            ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+                            : 'border-transparent text-slate-400 hover:text-slate-600'
+                    }`}
+                >
+                    <Award className="w-4 h-4" />
+                    Certificados Externos ({certificates.length})
+                </button>
+            </div>
+
+            {/* TAB CONTENT: INTERNAL TRAININGS */}
+            {activeTab === 'internal' && (
+                <div className="space-y-6">
+                    {/* Stats Widget */}
+                    <div className="grid grid-cols-3 gap-3">
+                        <div className="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-2xl border border-amber-100 dark:border-amber-800 text-center">
+                            <span className="text-2xl font-black text-amber-700 dark:text-amber-300">{pendingCount}</span>
+                            <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider mt-1">Pendientes</p>
+                        </div>
+                        <div className="bg-emerald-50 dark:bg-emerald-950/20 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-800 text-center">
+                            <span className="text-2xl font-black text-emerald-700 dark:text-emerald-300">{approvedCount}</span>
+                            <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mt-1">Aprobadas</p>
+                        </div>
+                        <div className="bg-rose-50 dark:bg-rose-950/20 p-4 rounded-2xl border border-rose-100 dark:border-rose-800 text-center">
+                            <span className="text-2xl font-black text-rose-700 dark:text-rose-300">{failedCount}</span>
+                            <p className="text-[10px] font-bold text-rose-600 uppercase tracking-wider mt-1">No Aprobadas</p>
+                        </div>
+                    </div>
+
+                    {/* Trainings list */}
+                    {trainings.length === 0 ? (
+                        <div className="text-center py-16 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700">
+                            <BookOpen className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                            <p className="text-sm font-bold text-slate-400">No tiene capacitaciones obligatorias asignadas actualmente.</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            {[...trainings].filter(t => t.estado !== 'obsoleto').sort((a, b) => {
+                                const order: Record<string, number> = { pendiente: 0, reprobado: 1, aprobado: 2 };
+                                return (order[a.estado] ?? 3) - (order[b.estado] ?? 3);
+                            }).map(t => {
+                                const isExpired = t.vencimiento && new Date(t.vencimiento) < new Date();
+                                const isNewVersion = t.estado === 'pendiente' && t.document?.versions?.[0]?.versionMayor > 1;
+                                return (
+                                    <button key={t.id} onClick={() => openTraining(t)} className="w-full text-left bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-700 transition-all flex items-center gap-4 group">
+                                        <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                                            t.estado === 'aprobado' ? 'bg-emerald-100 dark:bg-emerald-900/40' :
+                                            t.estado === 'reprobado' ? 'bg-rose-100 dark:bg-rose-900/40' :
+                                            'bg-amber-100 dark:bg-amber-900/40'
+                                        }`}>
+                                            {t.estado === 'aprobado' ? <CheckCircle2 className="w-5 h-5 text-emerald-600" /> :
+                                             t.estado === 'reprobado' ? <AlertCircle className="w-5 h-5 text-rose-600" /> :
+                                             <Clock className="w-5 h-5 text-amber-600" />}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{t.document?.titulo || 'Documento'}</p>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <span className={`text-[10px] font-black uppercase tracking-wider ${
+                                                    t.estado === 'aprobado' ? 'text-emerald-600' : t.estado === 'reprobado' ? 'text-rose-600' : 'text-amber-600'
+                                                }`}>{t.estado === 'aprobado' ? 'Completada' : t.estado === 'reprobado' ? 'No aprobada' : 'Pendiente'}</span>
+                                                {isNewVersion && (
+                                                    <span className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400">
+                                                        Nueva Versión
+                                                    </span>
+                                                )}
+                                                {t.puntaje !== null && t.puntaje !== undefined && <span className="text-[10px] text-slate-400">• Evaluado: {Math.round(t.puntaje)}%</span>}
+                                                {isExpired && <span className="text-[10px] font-bold text-red-500 flex items-center gap-0.5"><ShieldAlert className="w-3 h-3" /> Vencida</span>}
+                                            </div>
+                                        </div>
+                                        <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-500 transition-colors flex-shrink-0" />
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
-            ) : (
-                <div className="space-y-3">
-                    {/* Pending first, then failed, then approved */}
-                    {[...trainings].filter(t => t.estado !== 'obsoleto').sort((a, b) => {
-                        const order: Record<string, number> = { pendiente: 0, reprobado: 1, aprobado: 2 };
-                        return (order[a.estado] ?? 3) - (order[b.estado] ?? 3);
-                    }).map(t => {
-                        const isExpired = t.vencimiento && new Date(t.vencimiento) < new Date();
-                        const isNewVersion = t.estado === 'pendiente' && t.document?.versions?.[0]?.versionMayor > 1;
-                        return (
-                            <button key={t.id} onClick={() => openTraining(t)} className="w-full text-left bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-700 transition-all flex items-center gap-4 group">
-                                <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                                    t.estado === 'aprobado' ? 'bg-emerald-100 dark:bg-emerald-900/40' :
-                                    t.estado === 'reprobado' ? 'bg-rose-100 dark:bg-rose-900/40' :
-                                    'bg-amber-100 dark:bg-amber-900/40'
-                                }`}>
-                                    {t.estado === 'aprobado' ? <CheckCircle2 className="w-5 h-5 text-emerald-600" /> :
-                                     t.estado === 'reprobado' ? <AlertCircle className="w-5 h-5 text-rose-600" /> :
-                                     <Clock className="w-5 h-5 text-amber-600" />}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{t.document?.titulo || 'Documento'}</p>
-                                    <div className="flex items-center gap-2 mt-0.5">
-                                        <span className={`text-[10px] font-black uppercase tracking-wider ${
-                                            t.estado === 'aprobado' ? 'text-emerald-600' : t.estado === 'reprobado' ? 'text-rose-600' : 'text-amber-600'
-                                        }`}>{t.estado === 'aprobado' ? 'Completada' : t.estado === 'reprobado' ? 'No aprobada' : 'Pendiente'}</span>
-                                        {isNewVersion && (
-                                            <span className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400">
-                                                Nueva Versión
+            )}
+
+            {/* TAB CONTENT: EXTERNAL CERTIFICATES */}
+            {activeTab === 'external' && (
+                <div className="space-y-6">
+                    {/* Welcome Card to External Certificates */}
+                    <div className="bg-slate-50 dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex gap-3">
+                            <Award className="w-8 h-8 text-indigo-500 flex-shrink-0" />
+                            <div>
+                                <p className="text-sm font-bold text-slate-800 dark:text-slate-100">Certificaciones y Cursos Externos</p>
+                                <p className="text-xs text-slate-500">Suba certificados de capacitaciones externas. El sistema HDB SGI utilizará IA Gemini para analizar, validar y extraer los detalles clave del certificado.</p>
+                            </div>
+                        </div>
+                        <button 
+                            onClick={() => setIsUploadModalOpen(true)}
+                            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 self-start md:self-auto"
+                        >
+                            <Plus className="w-4 h-4" /> Cargar Certificado
+                        </button>
+                    </div>
+
+                    {certificates.length === 0 ? (
+                        <div className="text-center py-16 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700">
+                            <UploadCloud className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                            <p className="text-sm font-bold text-slate-400">No ha subido certificados externos todavía.</p>
+                            <p className="text-xs text-slate-400 mt-1">Toque "Cargar Certificado" para empezar.</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {certificates.map((cert) => (
+                                <div key={cert.id} className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+                                    <div className="space-y-2">
+                                        <div className="flex items-start justify-between">
+                                            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 line-clamp-1">{cert.nombreCurso}</h3>
+                                            <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                                                cert.estado === 'aprobado' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' :
+                                                cert.estado === 'rechazado' ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400' :
+                                                'bg-slate-100 text-slate-600 dark:bg-slate-900/60 dark:text-slate-400'
+                                            }`}>
+                                                {cert.estado === 'aprobado' ? 'Aprobado' : cert.estado === 'rechazado' ? 'Rechazado' : 'Pendiente'}
                                             </span>
-                                        )}
-                                        {t.puntaje !== null && t.puntaje !== undefined && <span className="text-[10px] text-slate-400">• {Math.round(t.puntaje)}%</span>}
-                                        {isExpired && <span className="text-[10px] font-bold text-red-500 flex items-center gap-0.5"><ShieldAlert className="w-3 h-3" /> Vencida</span>}
+                                        </div>
+                                        
+                                        <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                                            <Landmark className="w-3.5 h-3.5 text-slate-400" />
+                                            <span>{cert.institucion}</span>
+                                        </div>
+
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">{cert.descripcion || 'Sin descripción'}</p>
+                                    </div>
+
+                                    <div className="pt-2 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-[11px] text-slate-400">
+                                        <div className="flex items-center gap-3">
+                                            {cert.horas && (
+                                                <span className="flex items-center gap-1">
+                                                    <Clock className="w-3 h-3 text-slate-400" /> {cert.horas} horas
+                                                </span>
+                                            )}
+                                            {cert.fechaEmision && (
+                                                <span className="flex items-center gap-1">
+                                                    <Calendar className="w-3 h-3 text-slate-400" /> {new Date(cert.fechaEmision).toLocaleDateString()}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="flex gap-2">
+                                            {cert.archivoUrl && (
+                                                <button 
+                                                    onClick={() => setPreviewCert(cert)}
+                                                    className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-indigo-500 transition-colors"
+                                                    title="Ver documento"
+                                                >
+                                                    <Eye className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                                <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-500 transition-colors flex-shrink-0" />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* PREVIEW CERTIFICATE MODAL */}
+            {previewCert && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
+                            <div>
+                                <h2 className="text-sm font-black text-slate-800 dark:text-slate-100">{previewCert.nombreCurso}</h2>
+                                <p className="text-[10px] text-slate-400">{previewCert.institucion}</p>
+                            </div>
+                            <button 
+                                onClick={() => setPreviewCert(null)}
+                                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400 transition-colors"
+                            >
+                                <X className="w-5 h-5" />
                             </button>
-                        );
-                    })}
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                            {previewCert.archivoUrl && previewCert.archivoUrl.startsWith('data:image/') ? (
+                                <img src={previewCert.archivoUrl} alt="Certificado" className="max-w-full h-auto mx-auto rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm" />
+                            ) : previewCert.archivoUrl && previewCert.archivoUrl.startsWith('data:application/pdf') ? (
+                                <iframe src={previewCert.archivoUrl} className="w-full h-96 rounded-xl border border-slate-200 dark:border-slate-700" />
+                            ) : (
+                                <div className="p-8 text-center bg-slate-50 dark:bg-slate-900 rounded-2xl text-slate-400 text-xs">
+                                    Vista previa no soportada para este formato de archivo.
+                                </div>
+                            )}
+
+                            {previewCert.aiData && (
+                                <div className="bg-indigo-50/50 dark:bg-indigo-950/10 p-4 rounded-2xl border border-indigo-100/50 dark:border-indigo-800/40 space-y-2">
+                                    <p className="text-[10px] font-black text-indigo-600 uppercase tracking-wider flex items-center gap-1">
+                                        <Award className="w-3.5 h-3.5" /> Metadatos Extraídos por IA Gemini
+                                    </p>
+                                    <div className="grid grid-cols-2 gap-3 text-xs">
+                                        <div>
+                                            <p className="text-slate-400">Curso:</p>
+                                            <p className="font-bold text-slate-700 dark:text-slate-200">{previewCert.aiData.nombreCurso || 'N/A'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-slate-400">Institución:</p>
+                                            <p className="font-bold text-slate-700 dark:text-slate-200">{previewCert.aiData.institucion || 'N/A'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-slate-400">Horas Extraídas:</p>
+                                            <p className="font-bold text-slate-700 dark:text-slate-200">{previewCert.aiData.horas || 'N/A'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-slate-400">Fecha Emisión:</p>
+                                            <p className="font-bold text-slate-700 dark:text-slate-200">{previewCert.aiData.fechaEmision || 'N/A'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* UPLOAD EXTERNAL CERTIFICATE MODAL */}
+            {isUploadModalOpen && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl border border-slate-100 dark:border-slate-700">
+                        {/* Modal Header */}
+                        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                            <h2 className="text-base font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                <UploadCloud className="w-5 h-5 text-indigo-500" />
+                                Cargar Certificado Externo
+                            </h2>
+                            <button 
+                                onClick={() => { if (!analyzingCert) setIsUploadModalOpen(false); }}
+                                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400 transition-colors"
+                                disabled={analyzingCert}
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Modal Form */}
+                        <form onSubmit={handleUploadCertificate} className="p-6 space-y-4">
+                            {/* File Upload Area */}
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-slate-500">Archivo de Certificado (Imagen o PDF)</label>
+                                <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-600 rounded-2xl p-6 text-center cursor-pointer transition-all relative">
+                                    <input 
+                                        type="file" 
+                                        accept="image/*,application/pdf" 
+                                        onChange={handleFileChange}
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                        disabled={analyzingCert}
+                                    />
+                                    <div className="flex flex-col items-center justify-center space-y-2">
+                                        <div className="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center">
+                                            <UploadCloud className="w-5 h-5 text-slate-400" />
+                                        </div>
+                                        {certFileName ? (
+                                            <div className="space-y-1">
+                                                <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{certFileName}</p>
+                                                <p className="text-[10px] text-slate-400">Toque para cambiar</p>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-1">
+                                                <p className="text-xs text-slate-600">Haga clic o arrastre el archivo aquí</p>
+                                                <p className="text-[10px] text-slate-400">PDF, PNG, JPG hasta 5MB</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Additional details - Optional fields to guide Gemini */}
+                            <div className="space-y-3 pt-2">
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                                        Nombre del Curso <span title="Opcional. Si lo deja vacío, Gemini lo extraerá de manera automática."><HelpCircle className="w-3.5 h-3.5 text-slate-300" /></span>
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        placeholder="Ej. Curso de Seguridad Eléctrica en Alta Tensión"
+                                        value={manualNombreCurso}
+                                        onChange={(e) => setManualNombreCurso(e.target.value)}
+                                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                                        disabled={analyzingCert}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                                        Institución Organizadora <span title="Opcional. Si lo deja vacío, Gemini lo extraerá de manera automática."><HelpCircle className="w-3.5 h-3.5 text-slate-300" /></span>
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        placeholder="Ej. UTN (Universidad Tecnológica Nacional)"
+                                        value={manualInstitucion}
+                                        onChange={(e) => setManualInstitucion(e.target.value)}
+                                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                                        disabled={analyzingCert}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-slate-500">¿De qué se trata el curso?</label>
+                                    <textarea 
+                                        placeholder="Breve descripción del contenido o temario cubierto..."
+                                        value={manualDescripcion}
+                                        onChange={(e) => setManualDescripcion(e.target.value)}
+                                        className="w-full h-20 px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none"
+                                        disabled={analyzingCert}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Form Actions */}
+                            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-700">
+                                <button 
+                                    type="button" 
+                                    onClick={() => setIsUploadModalOpen(false)}
+                                    className="px-4 py-2.5 text-xs font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-all"
+                                    disabled={analyzingCert}
+                                >
+                                    Cancelar
+                                </button>
+                                <button 
+                                    type="submit" 
+                                    disabled={analyzingCert || !certFileBase64}
+                                    className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black rounded-xl transition-all shadow-md flex items-center gap-2 disabled:opacity-50"
+                                >
+                                    {analyzingCert ? (
+                                        <>
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            <span>Analizando con Gemini IA...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <CheckCircle className="w-3.5 h-3.5" />
+                                            <span>Subir y Analizar</span>
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             )}
         </div>
