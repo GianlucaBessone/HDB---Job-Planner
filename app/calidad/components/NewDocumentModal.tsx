@@ -6,12 +6,60 @@ import {
     Plus, Trash2, Search, Link2, BookOpen, Play, AlertCircle, Sparkles, PlusCircle 
 } from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
+import TechAssistantChat from '@/components/TechAssistantChat';
 
 export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose: () => void, onSuccess: (newDocId: string) => void, user: any }) {
     const [loading, setLoading] = useState(false);
     const [operators, setOperators] = useState<any[]>([]);
     const [tagsList, setTagsList] = useState<any[]>([]);
     const [allDocs, setAllDocs] = useState<any[]>([]);
+
+    // AI Assistant Drawer state
+    const [showAiDrawer, setShowAiDrawer] = useState(false);
+    const [aiLoading, setAiLoading] = useState(false);
+    const [aiError, setAiError] = useState('');
+    const [aiParams, setAiParams] = useState({
+        proceso: '',
+        alcance: '',
+        sector: '',
+        detallesAdicionales: ''
+    });
+    const [aiResult, setAiResult] = useState<any>(null);
+
+    const handleGenerateAiDoc = async () => {
+        if (!aiParams.proceso || !aiParams.alcance || !aiParams.sector) {
+            setAiError('Por favor complete Proceso, Alcance y Sector.');
+            return;
+        }
+        setAiError('');
+        setAiLoading(true);
+        try {
+            const res = await fetch('/api/ai/generate-doc', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tipoDocumento: formData.tipoDocumento,
+                    proceso: aiParams.proceso,
+                    alcance: aiParams.alcance,
+                    sector: aiParams.sector,
+                    detallesAdicionales: aiParams.detallesAdicionales,
+                    userId: user?.id,
+                    userName: user?.nombreCompleto || user?.nombre,
+                    userRole: user?.role
+                })
+            });
+            const data = await res.json();
+            if (res.ok && data.success && data.document) {
+                setAiResult(data.document);
+            } else {
+                setAiError(data.error || 'Error al generar el borrador con IA.');
+            }
+        } catch (e: any) {
+            setAiError('Error de red al conectar con el servicio de IA.');
+        } finally {
+            setAiLoading(false);
+        }
+    };
     
     // Toggle for digital vs traditional
     const [isDigital, setIsDigital] = useState(true);
@@ -272,7 +320,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 overflow-y-auto">
-            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl w-full max-w-4xl overflow-hidden my-8 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+            <div className={`relative bg-white dark:bg-slate-800 rounded-3xl shadow-xl w-full h-[90vh] max-h-[95vh] overflow-hidden my-4 animate-in zoom-in-95 duration-200 flex flex-col transition-all duration-300 ${showAiDrawer ? 'max-w-[95vw] sm:pr-[420px]' : 'max-w-6xl'}`}>
                 {/* Header */}
                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/20">
                     <div className="flex items-center gap-3">
@@ -280,13 +328,23 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                             <FileText className="w-5 h-5" />
                         </div>
                         <div>
-                            <h2 className="text-lg font-black text-slate-800 dark:text-slate-100">Nuevo Documento Controlado</h2>
+                            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Nuevo Documento Controlado</h2>
                             <p className="text-xs text-slate-400 font-bold">QMS Sistema de Gestión de Calidad ISO 9001</p>
                         </div>
                     </div>
-                    <button onClick={onClose} type="button" className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
-                        <X className="w-5 h-5 text-slate-500" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setShowAiDrawer(true)}
+                            className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-750 hover:to-indigo-750 text-white rounded-xl shadow-md shadow-indigo-600/10 hover:shadow-indigo-600/20 active:scale-95 transition-all"
+                        >
+                            <Sparkles className="w-3.5 h-3.5" />
+                            <span>Redactar con IA</span>
+                        </button>
+                        <button onClick={onClose} type="button" className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
+                            <X className="w-5 h-5 text-slate-500" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Main Form Area */}
@@ -296,7 +354,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                         <button
                             type="button"
                             onClick={() => setActiveStep('general')}
-                            className={`w-full text-left px-4 py-3 rounded-2xl text-xs font-black transition-all flex items-center gap-3 shrink-0 ${activeStep === 'general' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/10' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`w-full text-left px-4 py-3 rounded-2xl text-xs font-bold transition-all flex items-center gap-3 shrink-0 ${activeStep === 'general' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/10' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                         >
                             <FileText className="w-4 h-4" />
                             <span>Datos Generales</span>
@@ -306,19 +364,19 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
 
                         {/* Format Switcher */}
                         <div className="p-2 bg-indigo-50/50 dark:bg-indigo-950/20 rounded-2xl hidden md:block space-y-1">
-                            <span className="text-[9px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-widest px-2">Formato</span>
+                            <span className="text-[9px] font-bold text-indigo-500 dark:text-indigo-400 uppercase tracking-widest px-2">Formato</span>
                             <div className="flex gap-1">
                                 <button
                                     type="button"
                                     onClick={() => setIsDigital(true)}
-                                    className={`flex-1 py-1.5 rounded-xl text-[10px] font-black transition-all ${isDigital ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:bg-white/50'}`}
+                                    className={`flex-1 py-1.5 rounded-xl text-[10px] font-bold transition-all ${isDigital ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:bg-white/50'}`}
                                 >
                                     Digital SOP
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setIsDigital(false)}
-                                    className={`flex-1 py-1.5 rounded-xl text-[10px] font-black transition-all ${!isDigital ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:bg-white/50'}`}
+                                    className={`flex-1 py-1.5 rounded-xl text-[10px] font-bold transition-all ${!isDigital ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:bg-white/50'}`}
                                 >
                                     Básico
                                 </button>
@@ -330,7 +388,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                 <button
                                     type="button"
                                     onClick={() => setActiveStep('content_1')}
-                                    className={`w-full text-left px-4 py-3 rounded-2xl text-xs font-black transition-all flex items-center gap-3 shrink-0 ${activeStep === 'content_1' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/10' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                                    className={`w-full text-left px-4 py-3 rounded-2xl text-xs font-bold transition-all flex items-center gap-3 shrink-0 ${activeStep === 'content_1' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/10' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                                 >
                                     <BookOpen className="w-4 h-4" />
                                     <span>1. Objetivo y Alcance</span>
@@ -339,7 +397,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                 <button
                                     type="button"
                                     onClick={() => setActiveStep('content_2')}
-                                    className={`w-full text-left px-4 py-3 rounded-2xl text-xs font-black transition-all flex items-center gap-3 shrink-0 ${activeStep === 'content_2' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/10' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                                    className={`w-full text-left px-4 py-3 rounded-2xl text-xs font-bold transition-all flex items-center gap-3 shrink-0 ${activeStep === 'content_2' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/10' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                                 >
                                     <Sparkles className="w-4 h-4" />
                                     <span>2. Desarrollo y Responsabilidad</span>
@@ -348,7 +406,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                 <button
                                     type="button"
                                     onClick={() => setActiveStep('content_3')}
-                                    className={`w-full text-left px-4 py-3 rounded-2xl text-xs font-black transition-all flex items-center gap-3 shrink-0 ${activeStep === 'content_3' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/10' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                                    className={`w-full text-left px-4 py-3 rounded-2xl text-xs font-bold transition-all flex items-center gap-3 shrink-0 ${activeStep === 'content_3' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/10' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                                 >
                                     <Link2 className="w-4 h-4" />
                                     <span>3. Glosario y Referencias</span>
@@ -361,7 +419,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                         <button
                             type="button"
                             onClick={() => setActiveStep('signature')}
-                            className={`w-full text-left px-4 py-3 rounded-2xl text-xs font-black transition-all flex items-center gap-3 shrink-0 ${activeStep === 'signature' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/10' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`w-full text-left px-4 py-3 rounded-2xl text-xs font-bold transition-all flex items-center gap-3 shrink-0 ${activeStep === 'signature' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/10' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                         >
                             <FileSignature className="w-4 h-4" />
                             <span>Video y Firma Digital</span>
@@ -374,7 +432,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                         {/* STEP: GENERAL */}
                         {activeStep === 'general' && (
                             <div className="space-y-4">
-                                <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider border-b border-slate-100 dark:border-slate-850 pb-2">Información del Documento</h3>
+                                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider border-b border-slate-100 dark:border-slate-850 pb-2">Información del Documento</h3>
                                 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
@@ -517,7 +575,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
 
                                     {formData.requiereCapacitacion && (
                                         <div className="pl-7 space-y-1 animate-in slide-in-from-top-2 duration-200">
-                                            <label className="block text-[10px] font-black text-slate-400 uppercase">Vencimiento de la Capacitación (en meses)</label>
+                                            <label className="block text-[10px] font-bold text-slate-400 uppercase">Vencimiento de la Capacitación (en meses)</label>
                                             <input
                                                 type="number"
                                                 min="1"
@@ -547,7 +605,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                     <button
                                         type="button"
                                         onClick={() => setActiveStep(isDigital ? 'content_1' : 'signature')}
-                                        className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/10"
+                                        className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/10"
                                     >
                                         <span>Siguiente</span>
                                         <ChevronRight className="w-4 h-4" />
@@ -560,7 +618,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                         {activeStep === 'content_1' && (
                             <div className="space-y-5">
                                 <div>
-                                    <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">2. Objetivo</h3>
+                                    <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider">2. Objetivo</h3>
                                     <p className="text-[10px] text-slate-400 font-bold mb-2">Describa con precisión cuál es el propósito final de este procedimiento y qué metas operativas busca estandarizar para HDB.</p>
                                     <textarea
                                         required={isDigital}
@@ -572,7 +630,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                 </div>
 
                                 <div>
-                                    <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">3. Alcance</h3>
+                                    <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider">3. Alcance</h3>
                                     <p className="text-[10px] text-slate-400 font-bold mb-2">Indique a qué sucursales, puestos de trabajo, personal técnico, herramientas o tipos de órdenes de servicio aplica directamente este procedimiento.</p>
                                     <textarea
                                         required={isDigital}
@@ -587,7 +645,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                     <button
                                         type="button"
                                         onClick={() => setActiveStep('general')}
-                                        className="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-350 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5"
+                                        className="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-350 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
                                     >
                                         <ChevronLeft className="w-4 h-4" />
                                         <span>Atrás</span>
@@ -595,7 +653,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                     <button
                                         type="button"
                                         onClick={() => setActiveStep('content_2')}
-                                        className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/10"
+                                        className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/10"
                                     >
                                         <span>Siguiente</span>
                                         <ChevronRight className="w-4 h-4" />
@@ -608,7 +666,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                         {activeStep === 'content_2' && (
                             <div className="space-y-5">
                                 <div>
-                                    <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">4. Desarrollo de la Actividad</h3>
+                                    <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider">4. Desarrollo de la Actividad</h3>
                                     <p className="text-[10px] text-slate-400 font-bold mb-2">Describa detalladamente el desarrollo operativo paso a paso, tareas técnicas, métodos seguros, mejores prácticas.</p>
                                     <textarea
                                         required={isDigital}
@@ -620,7 +678,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                 </div>
 
                                 <div>
-                                    <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">5. Responsabilidades</h3>
+                                    <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider">5. Responsabilidades</h3>
                                     <p className="text-[10px] text-slate-400 font-bold mb-2">Detalle las responsabilidades de cada rol en la ejecución (ej: qué corresponde a Técnicos, Supervisores, QA).</p>
                                     <textarea
                                         required={isDigital}
@@ -635,7 +693,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                     <button
                                         type="button"
                                         onClick={() => setActiveStep('content_1')}
-                                        className="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-350 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5"
+                                        className="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-350 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
                                     >
                                         <ChevronLeft className="w-4 h-4" />
                                         <span>Atrás</span>
@@ -643,7 +701,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                     <button
                                         type="button"
                                         onClick={() => setActiveStep('content_3')}
-                                        className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/10"
+                                        className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/10"
                                     >
                                         <span>Siguiente</span>
                                         <ChevronRight className="w-4 h-4" />
@@ -658,7 +716,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                 {/* Definiciones y Abreviaturas */}
                                 <div className="space-y-3">
                                     <div>
-                                        <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
+                                        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
                                             <Sparkles className="w-4 h-4 text-indigo-500" />
                                             <span>6. Definiciones y Abreviaturas</span>
                                         </h3>
@@ -669,7 +727,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                     {digitalData.definiciones.length > 0 && (
                                         <div className="flex flex-wrap gap-2 p-3 bg-indigo-50/20 dark:bg-indigo-950/10 rounded-2xl border border-indigo-50/50 dark:border-indigo-950/20">
                                             {digitalData.definiciones.map((def, idx) => (
-                                                <div key={idx} className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-150 dark:border-slate-700 px-3 py-1.5 rounded-xl text-xs font-black text-slate-700 dark:text-slate-200">
+                                                <div key={idx} className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-150 dark:border-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200">
                                                     <span className="text-indigo-600 dark:text-indigo-400">{def.term}:</span>
                                                     <span className="font-bold text-[11px] text-slate-500">{def.definition}</span>
                                                     <button type="button" onClick={() => handleRemoveDefinition(idx)} className="text-red-500 hover:text-red-700 transition-colors ml-1">
@@ -682,14 +740,14 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
 
                                     {/* Predefined Helper Quickbox */}
                                     <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 p-3 rounded-2xl space-y-2">
-                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Sugeridas y Frecuentes:</span>
+                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Sugeridas y Frecuentes:</span>
                                         <div className="flex flex-wrap gap-1.5 max-h-[80px] overflow-y-auto pr-2">
                                             {mergedAbbreviations.map((item, idx) => (
                                                 <button
                                                     key={idx}
                                                     type="button"
                                                     onClick={() => handleSelectAbbreviation(item)}
-                                                    className="px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950 text-[10px] font-black border border-slate-150 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 transition-all hover:border-indigo-300"
+                                                    className="px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950 text-[10px] font-bold border border-slate-150 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 transition-all hover:border-indigo-300"
                                                 >
                                                     {item.term}
                                                 </button>
@@ -701,7 +759,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                             <input
                                                 type="text" placeholder="Term (e.g. EPP)"
                                                 value={newTerm} onChange={e => setNewTerm(e.target.value)}
-                                                className="w-full sm:w-1/4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-black focus:border-indigo-500 outline-none"
+                                                className="w-full sm:w-1/4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold focus:border-indigo-500 outline-none"
                                             />
                                             <input
                                                 type="text" placeholder="Definición..."
@@ -711,7 +769,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                             <button
                                                 type="button"
                                                 onClick={handleAddAbbreviation}
-                                                className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black transition-colors flex items-center justify-center gap-1 shrink-0"
+                                                className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1 shrink-0"
                                             >
                                                 <Plus className="w-3.5 h-3.5" />
                                                 <span>Añadir</span>
@@ -724,7 +782,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                                 onChange={e => setSaveToFrequents(e.target.checked)}
                                                 className="w-3.5 h-3.5 rounded border-slate-350 text-indigo-600 focus:ring-indigo-500"
                                             />
-                                            <span className="text-[10px] font-black text-slate-400 uppercase">Guardar en mis abreviaciones frecuentes</span>
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase">Guardar en mis abreviaciones frecuentes</span>
                                         </label>
                                     </div>
                                 </div>
@@ -732,7 +790,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                 {/* Referencias y Documentación Anexa */}
                                 <div className="space-y-3">
                                     <div>
-                                        <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
+                                        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
                                             <Link2 className="w-4 h-4 text-indigo-500" />
                                             <span>7. Referencias y Documentación Anexa</span>
                                         </h3>
@@ -745,7 +803,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                             {digitalData.referencias.map((ref, idx) => (
                                                 <div key={idx} className="flex items-center justify-between bg-slate-50 dark:bg-slate-900 border border-slate-150 dark:border-slate-800 p-2.5 rounded-xl">
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-[10px] font-black bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded">
+                                                        <span className="text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded">
                                                             {ref.codigo}
                                                         </span>
                                                         <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{ref.titulo}</span>
@@ -763,7 +821,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                         
                                         {/* QMS Search helper */}
                                         <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 p-3 rounded-2xl relative space-y-2">
-                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Buscar en QMS Interno:</span>
+                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Buscar en QMS Interno:</span>
                                             <div className="relative">
                                                 <input
                                                     type="text" placeholder="Escriba título o código..."
@@ -788,7 +846,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                                             className="w-full text-left px-3 py-2 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded-xl transition-colors flex items-center justify-between"
                                                         >
                                                             <div className="truncate pr-2">
-                                                                <span className="text-[9px] font-black bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 px-1.5 py-0.5 rounded mr-1.5">{doc.codigoDocumental}</span>
+                                                                <span className="text-[9px] font-bold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 px-1.5 py-0.5 rounded mr-1.5">{doc.codigoDocumental}</span>
                                                                 <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{doc.titulo}</span>
                                                             </div>
                                                             <PlusCircle className="w-4 h-4 text-indigo-500 shrink-0" />
@@ -803,7 +861,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
 
                                         {/* External Reference helper */}
                                         <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 p-3 rounded-2xl space-y-2">
-                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Norma o Instructivo Externo:</span>
+                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Norma o Instructivo Externo:</span>
                                             <div className="flex gap-2">
                                                 <input
                                                     type="text" placeholder="Ej. Norma ISO 9001:2015..."
@@ -813,7 +871,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                                 <button
                                                     type="button"
                                                     onClick={handleAddCustomRef}
-                                                    className="px-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-black transition-colors"
+                                                    className="px-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition-colors"
                                                 >
                                                     Agregar
                                                 </button>
@@ -827,7 +885,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                     <button
                                         type="button"
                                         onClick={() => setActiveStep('content_2')}
-                                        className="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-350 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5"
+                                        className="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-350 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
                                     >
                                         <ChevronLeft className="w-4 h-4" />
                                         <span>Atrás</span>
@@ -835,7 +893,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                     <button
                                         type="button"
                                         onClick={() => setActiveStep('signature')}
-                                        className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/10"
+                                        className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/10"
                                     >
                                         <span>Siguiente</span>
                                         <ChevronRight className="w-4 h-4" />
@@ -849,7 +907,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                             <div className="space-y-5">
                                 {/* Multimedia link */}
                                 <div>
-                                    <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
+                                    <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
                                         <Play className="w-4 h-4 text-indigo-500" />
                                         <span>Enlace Multimedia / Capacitación</span>
                                     </h3>
@@ -863,7 +921,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
 
                                 {/* Firma digital del creador */}
                                 <div className="space-y-2">
-                                    <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
+                                    <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
                                         <FileSignature className="w-4 h-4 text-indigo-500" />
                                         <span>Firma Digital del Creador <span className="text-red-500">*</span></span>
                                     </h3>
@@ -900,7 +958,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                     <button
                                         type="button"
                                         onClick={() => setActiveStep(isDigital ? 'content_3' : 'general')}
-                                        className="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-350 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5"
+                                        className="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-350 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
                                     >
                                         <ChevronLeft className="w-4 h-4" />
                                         <span>Atrás</span>
@@ -921,7 +979,169 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
 
                     </div>
                 </form>
+
+                {/* AI Assistant Drawer */}
+                {showAiDrawer && (
+                    <div className="absolute right-0 top-0 bottom-0 w-full sm:w-[420px] bg-slate-50 dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl z-30 flex flex-col animate-in slide-in-from-right duration-300 ease-out">
+                        {/* Drawer Header */}
+                        <div className="p-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-950">
+                            <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                                    <Sparkles className="w-4 h-4" />
+                                </div>
+                                <div>
+                                    <span className="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider block">Redactor Inteligente IA</span>
+                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Google Gemini</span>
+                                </div>
+                            </div>
+                            <button type="button" onClick={() => setShowAiDrawer(false)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
+                                <X className="w-4 h-4 text-slate-500" />
+                            </button>
+                        </div>
+
+                        {aiResult ? (
+                            /* Step 2: Show preview and let user apply the draft */
+                            <div className="flex-1 flex flex-col overflow-hidden">
+                                <div className="flex-1 p-5 overflow-y-auto space-y-4 text-xs">
+                                    <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-150 dark:border-emerald-900/30 rounded-2xl text-emerald-800 dark:text-emerald-350 font-bold text-[11px] leading-relaxed">
+                                        ¡Borrador generado con éxito! Verifique los campos sugeridos a continuación antes de aplicarlos.
+                                    </div>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <h4 className="font-bold text-slate-400 uppercase text-[9px] mb-1">Título del Procedimiento</h4>
+                                            <div className="bg-white dark:bg-slate-950 p-3 border border-slate-200 dark:border-slate-850 rounded-xl font-bold text-slate-805 dark:text-slate-200 leading-snug">{aiResult.titulo}</div>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-slate-400 uppercase text-[9px] mb-1">Código Sugerido</h4>
+                                            <div className="bg-white dark:bg-slate-950 p-2 border border-slate-200 dark:border-slate-850 rounded-xl font-mono text-indigo-600 dark:text-indigo-400 font-bold">{aiResult.codigoDocumental}</div>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-slate-400 uppercase text-[9px] mb-1">Objetivo del Procedimiento</h4>
+                                            <div className="bg-white dark:bg-slate-950 p-3 border border-slate-200 dark:border-slate-850 rounded-xl text-slate-600 dark:text-slate-350 max-h-[120px] overflow-y-auto whitespace-pre-wrap">{aiResult.objetivo}</div>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-slate-400 uppercase text-[9px] mb-1">Alcance y Límites</h4>
+                                            <div className="bg-white dark:bg-slate-950 p-3 border border-slate-200 dark:border-slate-850 rounded-xl text-slate-600 dark:text-slate-350 max-h-[120px] overflow-y-auto whitespace-pre-wrap">{aiResult.alcance}</div>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-slate-400 uppercase text-[9px] mb-1">Desarrollo de Pasos Operativos</h4>
+                                            <div className="bg-white dark:bg-slate-950 p-3 border border-slate-200 dark:border-slate-850 rounded-xl text-slate-600 dark:text-slate-350 max-h-[180px] overflow-y-auto whitespace-pre-wrap">{aiResult.desarrollo}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="p-5 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex gap-2">
+                                    <button 
+                                        type="button" 
+                                        onClick={() => {
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                titulo: aiResult.titulo,
+                                                codigoDocumental: aiResult.codigoDocumental || prev.codigoDocumental
+                                            }));
+                                            setDigitalData(prev => ({
+                                                ...prev,
+                                                objetivo: aiResult.objetivo,
+                                                alcance: aiResult.alcance,
+                                                desarrollo: aiResult.desarrollo,
+                                                responsabilidades: aiResult.responsabilidades || '',
+                                                definiciones: aiResult.definiciones || [],
+                                                referencias: aiResult.referencias || []
+                                            }));
+                                            setIsDigital(true);
+                                            setShowAiDrawer(false);
+                                            setAiResult(null);
+                                        }}
+                                        className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md flex items-center justify-center gap-1.5"
+                                    >
+                                        <Check className="w-3.5 h-3.5" />
+                                        <span>Aplicar Borrador</span>
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setAiResult(null)}
+                                        className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-colors"
+                                    >
+                                        Atrás
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            /* Step 1: Request parameters */
+                            <div className="flex-1 flex flex-col overflow-hidden">
+                                <div className="flex-1 p-5 overflow-y-auto space-y-4">
+                                    <p className="text-[11px] text-slate-400 font-bold leading-relaxed">
+                                        Escriba las directrices operativas básicas. La IA redactará el contenido estructurado bajo lineamientos ISO 9001.
+                                    </p>
+
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Proceso / Tarea principal</label>
+                                            <input 
+                                                type="text" 
+                                                required
+                                                placeholder="Ej. Prueba hidráulica de mangueras"
+                                                value={aiParams.proceso}
+                                                onChange={e => setAiParams({...aiParams, proceso: e.target.value})}
+                                                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs font-bold focus:border-indigo-500 outline-none" 
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Alcance / Instalación</label>
+                                            <input 
+                                                type="text" 
+                                                required
+                                                placeholder="Ej. Surtidores de combustible HDB"
+                                                value={aiParams.alcance}
+                                                onChange={e => setAiParams({...aiParams, alcance: e.target.value})}
+                                                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs font-bold focus:border-indigo-500 outline-none" 
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Sector Responsable</label>
+                                            <input 
+                                                type="text" 
+                                                required
+                                                placeholder="Ej. Técnicos de Operaciones Especiales"
+                                                value={aiParams.sector}
+                                                onChange={e => setAiParams({...aiParams, sector: e.target.value})}
+                                                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs font-bold focus:border-indigo-500 outline-none" 
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Notas / Detalles Adicionales</label>
+                                            <textarea 
+                                                placeholder="Ej. Indicar uso obligatorio de calzado aislante y despresurización previa de tuberías..."
+                                                value={aiParams.detallesAdicionales}
+                                                onChange={e => setAiParams({...aiParams, detallesAdicionales: e.target.value})}
+                                                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs font-bold focus:border-indigo-500 outline-none h-24 resize-none"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {aiError && (
+                                        <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-150 dark:border-red-900/30 text-red-600 dark:text-red-400 rounded-xl text-[11px] font-bold">
+                                            {aiError}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="p-5 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+                                    <button 
+                                        type="button" 
+                                        disabled={aiLoading} 
+                                        onClick={handleGenerateAiDoc}
+                                        className="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-750 hover:to-indigo-750 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/10 flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+                                    >
+                                        {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                                        <span>{aiLoading ? "Redactando borrador..." : "Redactar Borrador con Gemini"}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
+            {/* QMS floating virtual assistant chat */}
+            <TechAssistantChat user={user} />
         </div>
     );
 }

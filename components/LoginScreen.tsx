@@ -73,8 +73,34 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center">
-                <div className="w-12 h-12 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
+            <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-950 transition-colors duration-300">
+                <div className="flex flex-col items-center text-center px-4 animate-in fade-in duration-500">
+                    {/* Logo Squircle wrapper with modern shadow */}
+                    <div className="relative w-28 h-28 mb-6 transition-transform duration-300">
+                        <img 
+                            src="/images/android/launchericon-192x192.png" 
+                            alt="Logo HDB SGI" 
+                            className="w-full h-full object-contain drop-shadow-xl"
+                        />
+                    </div>
+                    {/* Elegant, modern text titles */}
+                    <h1 className="text-3xl sm:text-4xl font-black text-slate-800 dark:text-slate-100 tracking-tight">
+                        HDB<span className="text-indigo-500">SGI</span>
+                    </h1>
+                    <div className="h-[2px] w-12 bg-indigo-500/30 my-4 rounded-full"></div>
+                    <p className="text-sm font-black text-indigo-500 tracking-[0.25em] uppercase mb-1">
+                        SGI
+                    </p>
+                    <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest max-w-[280px]">
+                        Sistema de Gestión Integral
+                    </p>
+                    {/* Soft modern loader at the bottom */}
+                    <div className="mt-12 flex gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-indigo-500/60 animate-bounce [animation-delay:-0.3s]"></span>
+                        <span className="w-2 h-2 rounded-full bg-indigo-500/60 animate-bounce [animation-delay:-0.15s]"></span>
+                        <span className="w-2 h-2 rounded-full bg-indigo-500/60 animate-bounce"></span>
+                    </div>
+                </div>
             </div>
         );
     }

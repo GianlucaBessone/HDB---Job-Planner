@@ -34,10 +34,18 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     try {
         // Try by internal id first, then by linkPublico
         let os = await prisma.ordenServicio.findUnique({ where: { id }, include });
+        let isPublic = false;
         if (!os) {
             os = await prisma.ordenServicio.findUnique({ where: { linkPublico: id }, include });
+            isPublic = true;
         }
         if (!os) return NextResponse.json({ error: 'Orden de servicio no encontrada' }, { status: 404 });
+        
+        // Security: Remove internal note for public client-facing links
+        if (isPublic) {
+            (os as any).notaInterna = null;
+        }
+
         return NextResponse.json(os);
     } catch (e) {
         console.error('GET OS by id error:', e);
@@ -243,21 +251,27 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         if (!os) return NextResponse.json({ error: 'Orden de servicio no encontrada' }, { status: 404 });
 
         const body = await req.json();
-        const { reporte, comentario, materiales, operadores, estado } = body;
+        const { reporte, comentario, materiales, operadores, estado, notaInterna } = body;
 
         // If it's a structural update and it's signed/billed, prevent it
         if ((reporte || materiales || operadores) && (os.estado === 'firmada' || os.estado === 'cobrada' || os.estado === 'pagada')) {
             return NextResponse.json({ error: 'No se puede modificar el contenido de una orden ya procesada' }, { status: 400 });
         }
 
-        // If only updating status or archiving
-        if (estado && !reporte && !materiales && !operadores) {
-            const updated = await prisma.ordenServicio.update({
-                where: { id },
-                data: { estado },
-                include
-            });
-            return NextResponse.json(updated);
+        // If only updating non-structural fields (estado, notaInterna)
+        if (!reporte && !materiales && !operadores) {
+            const updateData: any = {};
+            if (estado !== undefined) updateData.estado = estado;
+            if (notaInterna !== undefined) updateData.notaInterna = notaInterna;
+
+            if (Object.keys(updateData).length > 0) {
+                const updated = await prisma.ordenServicio.update({
+                    where: { id },
+                    data: updateData,
+                    include
+                });
+                return NextResponse.json(updated);
+            }
         }
 
         // Transaction to delete relationships and recreate + update root

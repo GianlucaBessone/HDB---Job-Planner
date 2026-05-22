@@ -3,10 +3,11 @@ import { safeApiRequest } from '@/lib/offline';
 import { formatDateInline } from '@/lib/formatDate';
 import { 
     BookOpen, Award, CheckCircle2, XCircle, Play, 
-    ArrowLeft, HelpCircle, GraduationCap, Clock, Check
+    ArrowLeft, HelpCircle, GraduationCap, Clock, Check, Sparkles, Loader2, X
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { showToast } from '@/components/Toast';
 
 export default function LmsTab({ user }: { user: any }) {
     const [trainings, setTrainings] = useState<any[]>([]);
@@ -16,6 +17,18 @@ export default function LmsTab({ user }: { user: any }) {
     const [quizResult, setQuizResult] = useState<any>(null);
     const [seconds, setSeconds] = useState(0);
     const timerRef = useRef<any>(null);
+
+    // AI Training quiz generator states
+    const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+    const [aiData, setAiData] = useState({
+        documentId: '',
+        operatorId: '',
+        cantidadPreguntas: 5,
+        nivelDificultad: 'intermedio'
+    });
+    const [docs, setDocs] = useState<any[]>([]);
+    const [operators, setOperators] = useState<any[]>([]);
+    const [generatingTraining, setGeneratingTraining] = useState(false);
 
     const isTech = !(user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'supervisor' || user?.role?.toLowerCase() === 'qa');
 
@@ -51,6 +64,64 @@ export default function LmsTab({ user }: { user: any }) {
             console.error(e);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const openAiModal = async () => {
+        setIsAiModalOpen(true);
+        try {
+            const [docRes, opRes] = await Promise.all([
+                safeApiRequest('/api/documentos'),
+                safeApiRequest('/api/operators')
+            ]);
+            if (docRes.ok) {
+                const docData = await docRes.json();
+                setDocs(docData.filter((d: any) => d.estado === 'vigente'));
+            }
+            if (opRes.ok) setOperators(await opRes.json());
+        } catch (e) {
+            console.error('Error fetching data for AI modal:', e);
+        }
+    };
+
+    const handleGenerateTraining = async () => {
+        if (!aiData.documentId) {
+            return showToast('Debe seleccionar un documento controlado', 'error');
+        }
+        if (!aiData.operatorId) {
+            return showToast('Debe seleccionar un técnico u operador', 'error');
+        }
+
+        setGeneratingTraining(true);
+        try {
+            const res = await fetch('/api/ai/training', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    documentId: aiData.documentId,
+                    operatorId: aiData.operatorId,
+                    cantidadPreguntas: Number(aiData.cantidadPreguntas),
+                    nivelDificultad: aiData.nivelDificultad,
+                    userId: user.id,
+                    userName: user.nombreCompleto,
+                    userRole: user.role || 'ADMIN',
+                    saveAsTraining: true
+                })
+            });
+
+            const result = await res.json();
+            if (res.ok && result.success && result.trainingDb) {
+                showToast('Capacitación y Cuestionario IA asignados con éxito', 'success');
+                setIsAiModalOpen(false);
+                loadTrainings();
+            } else {
+                showToast(result.error || 'Error al generar material de capacitación', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Error de conexión al generar capacitación', 'error');
+        } finally {
+            setGeneratingTraining(false);
         }
     };
 
@@ -350,7 +421,7 @@ export default function LmsTab({ user }: { user: any }) {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-300">
-            <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
+            <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div className="flex items-center gap-3">
                     <div className="p-3 bg-primary/10 text-primary dark:text-primary-light rounded-2xl">
                         <GraduationCap className="w-6 h-6" />
@@ -362,6 +433,14 @@ export default function LmsTab({ user }: { user: any }) {
                         </p>
                     </div>
                 </div>
+                {!isTech && (
+                    <button
+                        onClick={openAiModal}
+                        className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-6 py-3 rounded-2xl font-black text-sm hover:opacity-95 transition-all active:scale-95 shadow-md shadow-indigo-500/20"
+                    >
+                        <Sparkles className="w-4 h-4" /> Asignar con IA
+                    </button>
+                )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -461,6 +540,118 @@ export default function LmsTab({ user }: { user: any }) {
                     </div>
                 )}
             </div>
+
+            {/* AI Training Quiz Builder Modal */}
+            {isAiModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 overflow-y-auto">
+                    <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-xl flex flex-col my-8 animate-in zoom-in-95 duration-200">
+                        {/* Header */}
+                        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50 rounded-t-3xl">
+                            <div className="flex items-center gap-3">
+                                <Sparkles className="w-6 h-6 text-indigo-500" />
+                                <h3 className="font-black text-slate-800 dark:text-slate-100 text-lg">
+                                    Diseñar Cuestionario con Gemini
+                                </h3>
+                            </div>
+                            <button onClick={() => setIsAiModalOpen(false)} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors text-slate-500">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">Documento Controlado (Vigente) *</label>
+                                <select
+                                    value={aiData.documentId}
+                                    onChange={e => setAiData({ ...aiData, documentId: e.target.value })}
+                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                >
+                                    <option value="">Seleccione un documento...</option>
+                                    {docs.map(doc => (
+                                        <option key={doc.id} value={doc.id}>
+                                            [{doc.codigoDocumental}] {doc.titulo}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">Asignar al Técnico / Operador *</label>
+                                <select
+                                    value={aiData.operatorId}
+                                    onChange={e => setAiData({ ...aiData, operatorId: e.target.value })}
+                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                >
+                                    <option value="">Seleccione un técnico...</option>
+                                    {operators.map(op => (
+                                        <option key={op.id} value={op.id}>
+                                            {op.nombreCompleto}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">Número de Preguntas</label>
+                                    <select
+                                        value={aiData.cantidadPreguntas}
+                                        onChange={e => setAiData({ ...aiData, cantidadPreguntas: Number(e.target.value) })}
+                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    >
+                                        <option value="3">3 Preguntas</option>
+                                        <option value="5">5 Preguntas</option>
+                                        <option value="8">8 Preguntas</option>
+                                        <option value="10">10 Preguntas</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">Nivel de Dificultad</label>
+                                    <select
+                                        value={aiData.nivelDificultad}
+                                        onChange={e => setAiData({ ...aiData, nivelDificultad: e.target.value })}
+                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    >
+                                        <option value="facil">Fácil</option>
+                                        <option value="intermedio">Intermedio</option>
+                                        <option value="dificil">Difícil</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3 rounded-b-3xl">
+                            <button
+                                type="button"
+                                onClick={() => setIsAiModalOpen(false)}
+                                className="px-5 py-2.5 rounded-xl text-sm font-black text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleGenerateTraining}
+                                disabled={generatingTraining}
+                                className="px-5 py-2.5 rounded-xl text-sm font-black bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:opacity-95 transition-all shadow-md shadow-indigo-500/20 flex items-center gap-1.5 disabled:opacity-50"
+                            >
+                                {generatingTraining ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        <span>Generando Cuestionario...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Sparkles className="w-4 h-4" />
+                                        <span>Generar y Asignar</span>
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

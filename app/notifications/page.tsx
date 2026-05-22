@@ -152,22 +152,23 @@ export default function NotificationsPage() {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-900/50 pb-20 pt-8 px-4 md:px-8 max-w-3xl mx-auto">
             <div className="flex items-center justify-between gap-3 mb-8">
-                <div className="flex items-center gap-3">
-                    <Link href="/" className="p-2 bg-white dark:bg-slate-800 rounded-full shadow-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                <div className="flex items-center gap-2 min-w-0">
+                    <Link href="/" className="p-2 bg-white dark:bg-slate-800 rounded-full shadow-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition shrink-0">
                         <ArrowRight className="w-5 h-5 text-slate-500 dark:text-slate-400 rotate-180" />
                     </Link>
-                    <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                        <Bell className="w-6 h-6 text-primary" />
-                        Centro de Notificaciones
+                    <h1 className="text-lg sm:text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-1.5 truncate">
+                        <Bell className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" />
+                        <span className="truncate">Centro de Notificaciones</span>
                     </h1>
                 </div>
                 {notifications.length > 0 && (
                     <button
                         onClick={() => setShowClearModal(true)}
-                        className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 dark:bg-rose-950/20 dark:border-rose-900 dark:text-rose-400 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border border-rose-100 shadow-sm"
+                        className="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 dark:bg-rose-950/20 dark:border-rose-900 dark:text-rose-400 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border border-rose-100 shadow-sm shrink-0"
                     >
                         <Trash2 className="w-3.5 h-3.5" />
-                        Limpiar Notificaciones
+                        <span className="hidden sm:inline">Limpiar Notificaciones</span>
+                        <span className="sm:hidden">Limpiar</span>
                     </button>
                 )}
             </div>

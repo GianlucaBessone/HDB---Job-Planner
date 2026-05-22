@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
-import { CheckCircle2, Loader2, FileText, User, Package, Clock, AlertCircle, AlertTriangle, PenLine, X, Star, MessageSquare, ThumbsUp, Smile, Download } from 'lucide-react';
+import { CheckCircle2, Loader2, FileText, User, Package, Clock, AlertCircle, AlertTriangle, PenLine, X, Star, MessageSquare, ThumbsUp, Smile, Download, Sparkles } from 'lucide-react';
 import CodeBadge from '@/components/CodeBadge';
+import TechAssistantChat from '@/components/TechAssistantChat';
 import { formatDate, formatDateTime, formatTime } from '@/lib/formatDate';
 import { useTheme } from 'next-themes';
 import QMSSection from '@/app/ordenes-servicio/qr/[id]/QMSSection';
@@ -23,6 +24,7 @@ interface OrdenServicio {
     comentario?: string;
     fechaCreacion: string;
     project: {
+        id: string;
         nombre: string;
         codigoProyecto?: string;
         cliente?: string;
@@ -566,6 +568,63 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
     const [showPostFirmaModal, setShowPostFirmaModal] = useState(false);
     const alreadyShownRef = useRef(false);
 
+    // AI observations generator
+    const [generatingObs, setGeneratingObs] = useState(false);
+
+    const handleGenerateObservations = async () => {
+        if (!os) return;
+        setGeneratingObs(true);
+        try {
+            // Extract QMS items summary
+            const docChecklists = os.project?.documentChecklists || [];
+            const summaryParts: string[] = [];
+            for (const chk of docChecklists) {
+                const snapshot = chk.snapshotData;
+                const items = Array.isArray(snapshot?.items)
+                    ? snapshot.items
+                    : Array.isArray(snapshot)
+                    ? snapshot
+                    : [];
+                summaryParts.push(`Checklist "${chk.templateName}":`);
+                items.forEach((item: any) => {
+                    summaryParts.push(`- ${item.descripcion}: ${item.completado ? 'Verificado' : 'No verificado'}${item.observacion ? ` (Obs: ${item.observacion})` : ''}`);
+                });
+            }
+            const checklistData = summaryParts.join('\n') || 'Sin checklists cargados en este proyecto';
+
+            const operatorId = os.operadores[0]?.operador?.id || 'public_user';
+            const operatorNombre = os.operadores[0]?.operador?.nombreCompleto || 'Técnico';
+
+            const res = await fetch('/api/ai/generate-observations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    checklistData,
+                    inspeccionDetalles: `Reporte de OS: ${os.reporte || 'Inspección técnica general'}`,
+                    anomaliasConfirmadas: [],
+                    ordenServicioId: os.id,
+                    userId: operatorId,
+                    userName: operatorNombre,
+                    userRole: 'OPERATOR'
+                })
+            });
+
+            const data = await res.json();
+            if (res.ok && data.success) {
+                // Reload OS to show updated comentario
+                await loadOS();
+                alert('¡Resumen técnico y observaciones autogenerados con éxito por Gemini!');
+            } else {
+                alert(data.error || 'Error al generar observaciones.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error de red al conectar con el servicio de generación de observaciones.');
+        } finally {
+            setGeneratingObs(false);
+        }
+    };
+
     const checkQmsBlocks = () => {
         if (!os) return [];
         const unreadBlocking = (os.documentosRequeridos || []).filter(
@@ -1011,15 +1070,53 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                     </div>
                 )}
 
-                {/* Comentario Adicional */}
-                {os.comentario && (
+                {/* Comentario Adicional / Observaciones */}
+                {isFirmada ? (
+                    os.comentario && (
+                        <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                            <div className="px-6 py-4 border-b border-slate-50 flex items-center gap-2">
+                                <MessageSquare className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+                                <h2 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Comentario Adicional</h2>
+                            </div>
+                            <div className="px-6 py-5">
+                                <p className="text-sm text-slate-700 dark:text-slate-200 font-medium leading-relaxed whitespace-pre-wrap">{os.comentario}</p>
+                            </div>
+                        </div>
+                    )
+                ) : (
                     <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-                        <div className="px-6 py-4 border-b border-slate-50 flex items-center gap-2">
-                            <MessageSquare className="w-4 h-4 text-slate-400 dark:text-slate-500" />
-                            <h2 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Comentario Adicional</h2>
+                        <div className="px-6 py-4 border-b border-slate-50 flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                                <MessageSquare className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+                                <h2 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Comentario / Observaciones Técnicas</h2>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={handleGenerateObservations}
+                                disabled={generatingObs}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-xl text-xs font-black transition-colors disabled:opacity-50"
+                            >
+                                {generatingObs ? (
+                                    <>
+                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                        <span>Generando...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+                                        <span>Generar con IA (Gemini)</span>
+                                    </>
+                                )}
+                            </button>
                         </div>
                         <div className="px-6 py-5">
-                            <p className="text-sm text-slate-700 dark:text-slate-200 font-medium leading-relaxed whitespace-pre-wrap">{os.comentario}</p>
+                            {os.comentario ? (
+                                <p className="text-sm text-slate-700 dark:text-slate-200 font-medium leading-relaxed whitespace-pre-wrap">{os.comentario}</p>
+                            ) : (
+                                <p className="text-sm text-slate-400 dark:text-slate-500 italic font-medium">
+                                    No se han ingresado observaciones. Presioná "Generar con IA" para redactarlas automáticamente a partir de los checklists completados.
+                                </p>
+                            )}
                         </div>
                     </div>
                 )}
@@ -1256,6 +1353,18 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                     onClose={() => setShowPostFirmaModal(false)}
                 />
             )}
+
+            {/* AI Technical Assistant Floating Chat */}
+            <TechAssistantChat 
+                projectId={os.project.id}
+                osId={os.id}
+                user={os.operadores[0] ? {
+                    id: os.operadores[0].operador.id,
+                    nombre: os.operadores[0].operador.nombreCompleto,
+                    nombreCompleto: os.operadores[0].operador.nombreCompleto,
+                    role: 'OPERATOR'
+                } : undefined}
+            />
         </div>
     );
 }

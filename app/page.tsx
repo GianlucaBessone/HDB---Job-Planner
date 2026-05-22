@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { ViewConfig, isViewAllowed } from '@/lib/viewAccess';
+import TechAssistantChat from '@/components/TechAssistantChat';
 
 export default function HomePage() {
     const router = useRouter();
@@ -286,6 +287,10 @@ export default function HomePage() {
                         />}
                     </div>
                 </div>
+            )}
+            
+            {userData && (
+                <TechAssistantChat user={userData} />
             )}
         </div>
     );

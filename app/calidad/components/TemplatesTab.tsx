@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { safeApiRequest } from '@/lib/offline';
-import { Search, Plus, FileText, CheckCircle2, ShieldAlert, Trash2, Edit3, Save, X, PlusCircle, CheckSquare, Camera, Award, RefreshCw, AlertTriangle, FileSignature, Check } from 'lucide-react';
+import { Search, Plus, FileText, CheckCircle2, ShieldAlert, Trash2, Edit3, Save, X, PlusCircle, CheckSquare, Camera, Award, RefreshCw, AlertTriangle, FileSignature, Check, Sparkles, Loader2 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 
 export default function TemplatesTab({ user }: { user: any }) {
@@ -8,6 +8,16 @@ export default function TemplatesTab({ user }: { user: any }) {
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [allTags, setAllTags] = useState<any[]>([]);
+
+    // AI checklist generator modal state
+    const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+    const [aiData, setAiData] = useState({
+        tipoTrabajo: '',
+        normativa: '',
+        categoria: 'General',
+        tagIds: [] as string[]
+    });
+    const [generatingChecklist, setGeneratingChecklist] = useState(false);
 
     // Signature Modal state
     const [signatureModal, setSignatureModal] = useState<any>({
@@ -131,6 +141,77 @@ export default function TemplatesTab({ user }: { user: any }) {
             tagIds: []
         });
         setIsModalOpen(true);
+    };
+
+    const handleGenerateChecklist = async () => {
+        if (!aiData.tipoTrabajo.trim()) {
+            return showToast('El tipo de trabajo es obligatorio', 'error');
+        }
+
+        setGeneratingChecklist(true);
+        try {
+            const selectedTagNames = aiData.tagIds
+                .map(id => allTags.find(t => t.id === id)?.name)
+                .filter(Boolean);
+
+            const res = await fetch('/api/ai/generate-checklist', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tipoTrabajo: aiData.tipoTrabajo,
+                    normativa: aiData.normativa || 'Normas internas HDB SGI',
+                    categoria: aiData.categoria,
+                    etiquetas: selectedTagNames,
+                    userId: user.id,
+                    userName: user.nombreCompleto,
+                    userRole: user.role || 'ADMIN',
+                    saveAsTemplate: false
+                })
+            });
+
+            const result = await res.json();
+            if (res.ok && result.success && result.checklist) {
+                const chk = result.checklist;
+                
+                const checklistItems = chk.items.map((item: any) => ({
+                    descripcion: item.descripcion,
+                    esObligatorio: item.esObligatorio ?? true
+                }));
+
+                const requiresEvidence = chk.items.some((i: any) => i.requiereEvidencia);
+                const requiresPhotos = chk.items.some((i: any) => i.tipoEvidencia === 'foto');
+                const requiresSignature = chk.items.some((i: any) => i.tipoEvidencia === 'firma');
+                
+                let riskLevel = 'low';
+                if (chk.items.some((i: any) => i.categoria === 'seguridad' && i.esObligatorio)) {
+                    riskLevel = 'high';
+                }
+
+                setSelectedTemplate(null);
+                setModalData({
+                    code: 'AI-CK-' + Math.floor(100 + Math.random() * 900),
+                    name: chk.titulo || aiData.tipoTrabajo,
+                    description: chk.descripcion || `Checklist para ${aiData.tipoTrabajo} generado automáticamente por IA.`,
+                    checklistItems,
+                    requiresEvidence,
+                    requiresPhotos,
+                    requiresSignature,
+                    riskLevel,
+                    tagIds: [...aiData.tagIds]
+                });
+
+                setIsAiModalOpen(false);
+                setIsModalOpen(true);
+                showToast('Checklist generado con éxito por Gemini', 'success');
+            } else {
+                showToast(result.error || 'Error al generar checklist', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Error de conexión al generar checklist', 'error');
+        } finally {
+            setGeneratingChecklist(false);
+        }
     };
 
     const handleOpenEdit = (template: any) => {
@@ -267,6 +348,20 @@ export default function TemplatesTab({ user }: { user: any }) {
                         className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:border-primary"
                     />
                 </div>
+                <button
+                    onClick={() => {
+                        setAiData({
+                            tipoTrabajo: '',
+                            normativa: '',
+                            categoria: 'General',
+                            tagIds: []
+                        });
+                        setIsAiModalOpen(true);
+                    }}
+                    className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-6 py-3 rounded-2xl font-black text-sm hover:opacity-95 transition-all active:scale-95 shadow-md shadow-indigo-500/20"
+                >
+                    <Sparkles className="w-4 h-4" /> Generar con IA
+                </button>
                 <button
                     onClick={handleOpenNew}
                     className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-2xl font-black text-sm hover:bg-primary/90 transition-all active:scale-95 shadow-md shadow-primary/20"
@@ -700,6 +795,123 @@ export default function TemplatesTab({ user }: { user: any }) {
                                 }`}
                             >
                                 <Check className="w-4 h-4" /> Confirmar Firma
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* AI Generator Modal */}
+            {isAiModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 overflow-y-auto">
+                    <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-xl flex flex-col my-8 animate-in zoom-in-95 duration-200">
+                        {/* Header */}
+                        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50 rounded-t-3xl">
+                            <div className="flex items-center gap-3">
+                                <Sparkles className="w-6 h-6 text-indigo-500" />
+                                <h3 className="font-black text-slate-800 dark:text-slate-100 text-lg">
+                                    Generar Checklist con Gemini
+                                </h3>
+                            </div>
+                            <button onClick={() => setIsAiModalOpen(false)} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors text-slate-500">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">Tipo de Trabajo / Actividad *</label>
+                                <input
+                                    type="text"
+                                    value={aiData.tipoTrabajo}
+                                    onChange={e => setAiData({ ...aiData, tipoTrabajo: e.target.value })}
+                                    placeholder="Ej. Trabajos en Altura, Mantenimiento Eléctrico..."
+                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">Normativa o Norma de Referencia (Opcional)</label>
+                                <input
+                                    type="text"
+                                    value={aiData.normativa}
+                                    onChange={e => setAiData({ ...aiData, normativa: e.target.value })}
+                                    placeholder="Ej. OSHA 1926, ISO 9001, Norma Interna..."
+                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">Categoría</label>
+                                    <select
+                                        value={aiData.categoria}
+                                        onChange={e => setAiData({ ...aiData, categoria: e.target.value })}
+                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    >
+                                        <option value="General">General</option>
+                                        <option value="Seguridad">Seguridad / EPP</option>
+                                        <option value="Operaciones">Operaciones / Técnico</option>
+                                        <option value="Calidad">Calidad / ISO 9001</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">Vincular a Etiquetas</label>
+                                    <div className="flex flex-wrap gap-1.5 p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl min-h-[46px] max-h-[120px] overflow-y-auto">
+                                        {allTags.map(tag => {
+                                            const isSelected = aiData.tagIds.includes(tag.id);
+                                            return (
+                                                <button
+                                                    key={tag.id}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const tagIds = isSelected 
+                                                            ? aiData.tagIds.filter((tid: string) => tid !== tag.id)
+                                                            : [...aiData.tagIds, tag.id];
+                                                        setAiData({ ...aiData, tagIds });
+                                                    }}
+                                                    className={`text-xs px-2.5 py-1 rounded-lg font-bold border transition-colors ${
+                                                        isSelected 
+                                                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                                                            : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-indigo-500/50'
+                                                    }`}
+                                                >
+                                                    {tag.name}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3 rounded-b-3xl">
+                            <button
+                                type="button"
+                                onClick={() => setIsAiModalOpen(false)}
+                                className="px-5 py-2.5 rounded-xl text-sm font-black text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleGenerateChecklist}
+                                disabled={generatingChecklist}
+                                className="px-5 py-2.5 rounded-xl text-sm font-black bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:opacity-95 transition-all shadow-md shadow-indigo-500/20 flex items-center gap-1.5 disabled:opacity-50"
+                            >
+                                {generatingChecklist ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        <span>Diseñando Checklist...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Sparkles className="w-4 h-4" />
+                                        <span>Generar Checklist</span>
+                                    </>
+                                )}
                             </button>
                         </div>
                     </div>

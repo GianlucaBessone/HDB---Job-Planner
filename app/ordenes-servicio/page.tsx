@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import {
     FileSignature, Search, Eye, Download, CheckCircle2, Clock, X,
     AlertCircle, Loader2, FileText, User, Package, PenLine, Building2,
-    CalendarDays, QrCode, Smartphone, Trash2, Calculator, MessageSquare
+    CalendarDays, QrCode, Smartphone, Trash2, Calculator, MessageSquare, StickyNote
 } from 'lucide-react';
 import Link from 'next/link';
 import { formatDate, formatDateTime } from '@/lib/formatDate';
@@ -28,6 +28,7 @@ interface OrdenServicio {
     estado: string;
     reporte: string;
     comentario?: string;
+    notaInterna?: string | null;
     fechaCreacion: string;
     cobroGenerado?: boolean;
     cobroFechaGeneracion?: string;
@@ -370,6 +371,17 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                         </div>
                     )}
 
+                    {os.notaInterna && (
+                        <div className="space-y-2">
+                            <h4 className="text-xs font-black text-amber-600 uppercase tracking-widest flex items-center gap-1.5">
+                                <StickyNote className="w-3.5 h-3.5 text-amber-500" /> Nota Interna (Privada)
+                            </h4>
+                            <div className="bg-amber-50/50 dark:bg-amber-500/5 rounded-2xl p-4 border border-amber-100 dark:border-amber-950/30">
+                                <p className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-wrap">{os.notaInterna}</p>
+                            </div>
+                        </div>
+                    )}
+
                     {/* QR + Link */}
                     <div className="space-y-2">
                         <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
@@ -488,6 +500,94 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
     );
 }
 
+interface OSNotaModalProps {
+    os: OrdenServicio;
+    onClose: () => void;
+    onSaveSuccess: (updated: OrdenServicio) => void;
+}
+
+function OSNotaModal({ os, onClose, onSaveSuccess }: OSNotaModalProps) {
+    const [note, setNote] = useState<string>(os.notaInterna || '');
+    const [isSaving, setIsSaving] = useState<boolean>(false);
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        try {
+            const res = await fetch(`/api/ordenes-servicio/${os.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notaInterna: note || null })
+            });
+            if (res.ok) {
+                const updated = await res.json();
+                onSaveSuccess(updated);
+                showToast('Nota interna guardada', 'success');
+            } else {
+                const err = await res.json();
+                showToast(err.error || 'Error al guardar la nota', 'error');
+            }
+        } catch (err) {
+            showToast('Error de conexión', 'error');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-[130] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-slate-800 w-full max-w-lg rounded-t-3xl md:rounded-[2rem] shadow-2xl border border-slate-200 dark:border-slate-700 p-6 space-y-4 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
+                <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                        <StickyNote className="w-5 h-5 text-amber-500" />
+                        Nota Interna (Privada)
+                    </h3>
+                    <button 
+                        onClick={onClose} 
+                        className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400 dark:text-slate-500 transition-all"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+
+                <div className="space-y-1">
+                    <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                        OS: {os.codigoOS || os.id.slice(-8).toUpperCase()} | {os.project.nombre}
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+                        Esta nota es estrictamente de uso interno para la empresa. No se plasmará en ningún PDF, factura, ni link público que vea el cliente.
+                    </p>
+                </div>
+
+                <textarea
+                    rows={6}
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    placeholder="Escribe comentarios u observaciones sobre este servicio..."
+                    className="w-full text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-3.5 outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 dark:text-slate-200 transition-all font-medium resize-none placeholder:text-slate-400"
+                />
+
+                <div className="flex justify-end gap-2 pt-2">
+                    <button
+                        onClick={onClose}
+                        disabled={isSaving}
+                        className="px-4 py-2 bg-slate-100 dark:bg-slate-700/50 hover:bg-slate-200 text-slate-600 dark:text-slate-300 rounded-xl font-bold text-xs transition-all active:scale-95 disabled:opacity-50"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-black text-xs transition-all shadow-md shadow-amber-500/20 active:scale-95 disabled:opacity-50 flex items-center gap-1.5"
+                    >
+                        {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                        Guardar Nota
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 function OrdenesServicioContent() {
     const searchParams = useSearchParams();
     const highlightId = searchParams.get('highlight') || '';
@@ -504,6 +604,7 @@ function OrdenesServicioContent() {
     const [osToPay, setOsToPay] = useState<OrdenServicio | null>(null);
     const [osToCancel, setOsToCancel] = useState<OrdenServicio | null>(null);
     const [osCobroToOpen, setOsCobroToOpen] = useState<OrdenServicio | null>(null);
+    const [osNoteToEdit, setOsNoteToEdit] = useState<OrdenServicio | null>(null);
     const [viewConfig, setViewConfig] = useState<ViewConfig[] | null>(null);
 
     useEffect(() => {
@@ -800,6 +901,19 @@ function OrdenesServicioContent() {
                                             </>
                                         )}
                                         <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setOsNoteToEdit(os);
+                                            }}
+                                            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black transition-all shadow-sm ${
+                                                os.notaInterna
+                                                    ? 'text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 hover:bg-amber-600 hover:text-white dark:hover:bg-amber-600'
+                                                    : 'text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-200 hover:text-slate-600 dark:hover:text-slate-300'
+                                            }`}
+                                        >
+                                            <StickyNote className="w-3.5 h-3.5" /> Notas
+                                        </button>
+                                        <button
                                             onClick={() => setSelectedOS(os)}
                                             className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-primary/40 hover:text-primary transition-all shadow-sm"
                                         >
@@ -834,6 +948,17 @@ function OrdenesServicioContent() {
                     onSaveSuccess={(updated) => {
                         setOrdenes(prev => prev.map(o => o.id === updated.id ? updated : o));
                         setOsCobroToOpen(null);
+                    }}
+                />
+            )}
+
+            {osNoteToEdit && (
+                <OSNotaModal
+                    os={osNoteToEdit}
+                    onClose={() => setOsNoteToEdit(null)}
+                    onSaveSuccess={(updated) => {
+                        setOrdenes(prev => prev.map(o => o.id === updated.id ? updated : o));
+                        setOsNoteToEdit(null);
                     }}
                 />
             )}

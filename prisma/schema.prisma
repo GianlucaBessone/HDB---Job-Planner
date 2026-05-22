@@ -303,6 +303,7 @@ model OrdenServicio {
   project       Project                 @relation(fields: [projectId], references: [id], onDelete: Cascade)
   reporte       String                  @db.Text
   comentario    String?                 @db.Text
+  notaInterna   String?                 @db.Text
   fechaCreacion DateTime                @default(now())
   estado        String                  @default("pendiente") // pendiente | firmada | cobrada | pagada | cancelada
   linkPublico   String                  @unique @default(uuid())
@@ -958,3 +959,79 @@ model TechnicianTraining {
   @@index([versionId])
   @@index([estado])
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INTELIGENCIA ARTIFICIAL (GEMINI INTEGRATION)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model AiPrompt {
+  id          String   @id @default(cuid())
+  key         String   @unique // e.g. "ISO_DOC_GEN", "TECH_ASSISTANT", etc.
+  name        String
+  description String?
+  template    String   @db.Text
+  version     Int      @default(1)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  logs        AiRequestLog[]
+}
+
+model AiRequestLog {
+  id            String    @id @default(cuid())
+  action        String    // e.g. "GEN_ISO_DOC", "TECH_CHAT", "OCR", "GEN_CHECKLIST", "TRAINING_GEN", "SEMANTIC_SEARCH", "GEN_OBS", "IMAGE_ANOMALY"
+  model         String    // e.g. "gemini-2.5-flash"
+  promptKey     String?
+  prompt        AiPrompt? @relation(fields: [promptKey], references: [key], onDelete: SetNull)
+  promptVersion Int?
+  
+  // Usage tracking
+  inputTokens   Int       @default(0)
+  outputTokens  Int       @default(0)
+  totalTokens   Int       @default(0)
+  estimatedCost Float     @default(0.0) // estimated cost in USD
+  latencyMs     Int       @default(0)
+  
+  // Auditoria
+  userId        String?
+  userName      String?
+  userRole      String?
+  entity        String?   // e.g. "ControlledDocument", "OrdenServicio", "Project"
+  entityId      String?
+  
+  // Payload (sanitized or status)
+  success       Boolean   @default(true)
+  errorMessage  String?   @db.Text
+  
+  createdAt     DateTime  @default(now())
+
+  @@index([action])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model AiConversation {
+  id         String                 @id @default(cuid())
+  userId     String
+  entity     String?                // e.g. "OrdenServicio", "Project", "Tool"
+  entityId   String?
+  title      String                 @default("Conversación técnica")
+  messages   AiConversationMessage[]
+  createdAt  DateTime               @default(now())
+  updatedAt  DateTime               @updatedAt
+
+  @@index([userId])
+  @@index([entity, entityId])
+}
+
+model AiConversationMessage {
+  id             String         @id @default(cuid())
+  conversationId String
+  conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String         // "user" | "model"
+  content        String         @db.Text
+  createdAt      DateTime       @default(now())
+
+  @@index([conversationId])
+}
+

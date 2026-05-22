@@ -4,7 +4,8 @@ import { formatDateInline } from '@/lib/formatDate';
 import { 
     ShieldAlert, CheckCircle2, FileText, ChevronRight, 
     AlertTriangle, ExternalLink, Camera, Award, PenTool, 
-    Check, RotateCcw, UploadCloud, X, ChevronDown, ChevronUp 
+    Check, RotateCcw, UploadCloud, X, ChevronDown, ChevronUp,
+    Sparkles, Loader2
 } from 'lucide-react';
 
 // ----- CANVAS SIGNATURE MODAL -----
@@ -145,6 +146,65 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
     // Signature Modal
     const [sigModalOpen, setSigModalOpen] = useState(false);
 
+    // AI Image Analysis State
+    const [analyzingImage, setAnalyzingImage] = useState(false);
+    const [analysisResult, setAnalysisResult] = useState<any>(null);
+
+    // AI technical observations state and handler
+    const [generatingObs, setGeneratingObs] = useState(false);
+
+    const handleGenerateObservations = async () => {
+        if (!os) return;
+        setGeneratingObs(true);
+        try {
+            const docChecklists = os.project?.documentChecklists || [];
+            const summaryParts: string[] = [];
+            for (const chk of docChecklists) {
+                const snapshot = chk.snapshotData;
+                const items = Array.isArray(snapshot?.items)
+                    ? snapshot.items
+                    : Array.isArray(snapshot)
+                    ? snapshot
+                    : [];
+                summaryParts.push(`Checklist "${chk.templateName}":`);
+                items.forEach((item: any) => {
+                    summaryParts.push(`- ${item.descripcion}: ${item.completado ? 'Verificado' : 'No verificado'}${item.observacion ? ` (Obs: ${item.observacion})` : ''}`);
+                });
+            }
+            const checklistData = summaryParts.join('\n') || 'Sin checklists cargados en este proyecto';
+
+            const operatorId = os.operadores?.[0]?.operadorId || 'public_user';
+            const operatorNombre = os.operadores?.[0]?.operador?.nombreCompleto || 'Técnico';
+
+            const res = await fetch('/api/ai/generate-observations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    checklistData,
+                    inspeccionDetalles: `Reporte de OS: ${os.reporte || 'Inspección técnica general'}`,
+                    anomaliasConfirmadas: [],
+                    ordenServicioId: os.id,
+                    userId: operatorId,
+                    userName: operatorNombre,
+                    userRole: 'OPERATOR'
+                })
+            });
+
+            const data = await res.json();
+            if (res.ok && data.success) {
+                onUpdate();
+                alert('¡Resumen técnico y observaciones autogenerados con éxito por Gemini!');
+            } else {
+                alert(data.error || 'Error al generar observaciones.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error de red al conectar con el servicio de generación de observaciones.');
+        } finally {
+            setGeneratingObs(false);
+        }
+    };
+
     useEffect(() => {
         safeApiRequest('/api/checklist-templates?status=active')
             .then(res => res.json())
@@ -240,6 +300,8 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
             // Needs visual criteria inputs: expand inline
             if (needsInputs) {
                 setExpandedItem(expandedItem === key ? null : key);
+                setAnalysisResult(null);
+                setAnalyzingImage(false);
                 setLocalForm({
                     observacion: item.observacion || '',
                     foto: item.foto || '',
@@ -285,6 +347,7 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
 
             if (res.ok) {
                 setExpandedItem(null);
+                setAnalysisResult(null);
                 onUpdate();
             } else {
                 const err = await res.json();
@@ -297,9 +360,49 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
         }
     };
 
+    const handleAnalyzeImage = async (itemDesc: string) => {
+        if (!localForm.foto) return;
+        setAnalyzingImage(true);
+        setAnalysisResult(null);
+        try {
+            const match = localForm.foto.match(/^data:(image\/\w+);base64,/);
+            const mimeType = match ? match[1] : 'image/jpeg';
+            
+            const operatorId = os.operadores[0]?.operadorId || 'public_user';
+            const operatorNombre = os.operadores[0]?.operador?.nombreCompleto || 'Técnico';
+
+            const res = await fetch('/api/ai/image-analysis', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    base64Image: localForm.foto,
+                    mimeType,
+                    tipoInstalacion: itemDesc,
+                    contexto: `Fase de verificación de checklist en OS ${os.codigoOS || ''}`,
+                    userId: operatorId,
+                    userName: operatorNombre,
+                    userRole: 'OPERATOR'
+                })
+            });
+
+            const data = await res.json();
+            if (res.ok && data.success) {
+                setAnalysisResult(data.analysis);
+            } else {
+                alert(data.error || 'Error al analizar la imagen.');
+            }
+        } catch (err) {
+            console.error('Error de red al analizar la imagen:', err);
+            alert('Error de red al conectar con el servicio de análisis de imágenes.');
+        } finally {
+            setAnalyzingImage(false);
+        }
+    };
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
+        setAnalysisResult(null);
         const reader = new FileReader();
         reader.onloadend = () => {
             if (reader.result) {
@@ -502,14 +605,39 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                                                                                     />
                                                                                 </label>
                                                                                 {localForm.foto && (
-                                                                                    <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-slate-200">
-                                                                                        <img src={localForm.foto} alt="Captura" className="w-full h-full object-cover" />
-                                                                                        <button 
-                                                                                            onClick={() => setLocalForm(p => ({ ...p, foto: '' }))}
-                                                                                            className="absolute top-0.5 right-0.5 p-0.5 bg-slate-900/80 hover:bg-slate-900 text-white rounded-full transition-colors"
-                                                                                        >
-                                                                                            <X className="w-2.5 h-2.5" />
-                                                                                        </button>
+                                                                                    <div className="flex items-center gap-2 shrink-0">
+                                                                                        <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-slate-200 bg-white">
+                                                                                            <img src={localForm.foto} alt="Captura" className="w-full h-full object-cover" />
+                                                                                            <button 
+                                                                                                onClick={() => {
+                                                                                                    setLocalForm(p => ({ ...p, foto: '' }));
+                                                                                                    setAnalysisResult(null);
+                                                                                                }}
+                                                                                                className="absolute top-0.5 right-0.5 p-0.5 bg-slate-900/80 hover:bg-slate-900 text-white rounded-full transition-colors"
+                                                                                            >
+                                                                                                <X className="w-2.5 h-2.5" />
+                                                                                            </button>
+                                                                                        </div>
+                                                                                        {!analysisResult && (
+                                                                                            <button
+                                                                                                type="button"
+                                                                                                onClick={() => handleAnalyzeImage(item.descripcion)}
+                                                                                                disabled={analyzingImage}
+                                                                                                className="flex items-center gap-1.5 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/30 dark:text-indigo-400 rounded-xl text-xs font-black transition-colors disabled:opacity-50"
+                                                                                            >
+                                                                                                {analyzingImage ? (
+                                                                                                    <>
+                                                                                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                                                                                        <span>Analizando...</span>
+                                                                                                    </>
+                                                                                                ) : (
+                                                                                                    <>
+                                                                                                        <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+                                                                                                        <span>Analizar con IA</span>
+                                                                                                    </>
+                                                                                                )}
+                                                                                            </button>
+                                                                                        )}
                                                                                     </div>
                                                                                 )}
                                                                             </div>
@@ -543,6 +671,82 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                                                                     )}
                                                                 </div>
 
+                                                                {/* AI Image Analysis Feedback */}
+                                                                {analysisResult && (
+                                                                    <div className="bg-indigo-50/40 dark:bg-indigo-950/15 border border-indigo-100 dark:border-indigo-900 rounded-2xl p-4 space-y-3 mt-2 text-left">
+                                                                        <div className="flex items-center justify-between">
+                                                                            <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-400">
+                                                                                <Sparkles className="w-4 h-4 text-indigo-500 animate-pulse" />
+                                                                                <span className="text-[10px] font-black uppercase tracking-wider">Reporte de Anomalías Gemini</span>
+                                                                            </div>
+                                                                            <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border ${
+                                                                                analysisResult.estadoGeneral === 'critico' ? 'bg-red-100 border-red-200 text-red-700' :
+                                                                                analysisResult.estadoGeneral === 'requiere_atencion' ? 'bg-amber-100 border-amber-200 text-amber-700' :
+                                                                                'bg-emerald-105 border-emerald-200 text-emerald-700'
+                                                                            }`}>
+                                                                                Estado: {analysisResult.estadoGeneral}
+                                                                            </span>
+                                                                        </div>
+
+                                                                        {analysisResult.anomaliasDetectadas.length > 0 ? (
+                                                                            <div className="space-y-2">
+                                                                                {analysisResult.anomaliasDetectadas.map((a: any, idx: number) => (
+                                                                                    <div key={idx} className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-xl p-3 space-y-1 shadow-sm">
+                                                                                        <div className="flex justify-between items-center gap-2">
+                                                                                            <span className="font-bold text-xs text-slate-800 dark:text-slate-200">{a.anomalia}</span>
+                                                                                            <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${
+                                                                                                a.gravedad === 'critica' || a.gravedad === 'alta' ? 'bg-red-50 text-red-650 border border-red-100' :
+                                                                                                a.gravedad === 'media' ? 'bg-amber-50 text-amber-650 border border-amber-100' :
+                                                                                                'bg-blue-50 text-blue-650 border border-blue-100'
+                                                                                            }`}>
+                                                                                                {a.gravedad}
+                                                                                            </span>
+                                                                                        </div>
+                                                                                        <p className="text-[10.5px] text-slate-500 dark:text-slate-400 leading-snug font-medium">{a.descripcion}</p>
+                                                                                        {a.ubicacionEnImagen && (
+                                                                                            <p className="text-[9px] text-slate-400 dark:text-slate-500 italic font-semibold">Ubicación: {a.ubicacionEnImagen}</p>
+                                                                                        )}
+                                                                                    </div>
+                                                                                ))}
+                                                                            </div>
+                                                                        ) : (
+                                                                            <div className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                                                                                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                                                                                No se detectaron anomalías visibles en la imagen.
+                                                                            </div>
+                                                                        )}
+
+                                                                        {analysisResult.observacionesSugeridas && analysisResult.observacionesSugeridas.length > 0 && (
+                                                                            <div className="space-y-1">
+                                                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Observaciones Sugeridas:</span>
+                                                                                <ul className="list-disc pl-4 text-[10.5px] font-semibold text-slate-600 dark:text-slate-350 space-y-0.5">
+                                                                                    {analysisResult.observacionesSugeridas.map((obs: string, idx: number) => (
+                                                                                        <li key={idx}>{obs}</li>
+                                                                                    ))}
+                                                                                </ul>
+                                                                            </div>
+                                                                        )}
+
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                const observationsText = [
+                                                                                    ...analysisResult.observacionesSugeridas,
+                                                                                    ...analysisResult.anomaliasDetectadas.map((a: any) => `[Anomalía ${a.gravedad.toUpperCase()}] ${a.anomalia}: ${a.descripcion}`)
+                                                                                ].join('\n');
+                                                                                setLocalForm(prev => ({
+                                                                                    ...prev,
+                                                                                    observacion: prev.observacion ? `${prev.observacion}\n${observationsText}` : observationsText
+                                                                                }));
+                                                                            }}
+                                                                            className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-sm"
+                                                                        >
+                                                                            <CheckCircle2 className="w-3.5 h-3.5" />
+                                                                            Aplicar Observaciones al Reporte
+                                                                        </button>
+                                                                    </div>
+                                                                )}
+
                                                                 <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                                                                     <button
                                                                         onClick={() => setExpandedItem(null)}
@@ -571,6 +775,52 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                                     </div>
                                 );
                             })}
+                        </div>
+                    </div>
+                )}
+
+                {/* AI Technical Observations Report Generator */}
+                {documentChecklists.length > 0 && (
+                    <div className="pt-5 border-t border-slate-200 dark:border-slate-700 space-y-4">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <div>
+                                <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                    <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+                                    <span>Informe Técnico QMS</span>
+                                </h4>
+                                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Analiza los checklists y sugiere observaciones técnicas automáticas.</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={handleGenerateObservations}
+                                disabled={generatingObs}
+                                className="flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black transition-colors disabled:opacity-50 shadow-sm shadow-indigo-600/10 active:scale-95"
+                            >
+                                {generatingObs ? (
+                                    <>
+                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                        <span>Generando observaciones...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Sparkles className="w-3.5 h-3.5" />
+                                        <span>Generar Observaciones con IA</span>
+                                    </>
+                                )}
+                            </button>
+                        </div>
+
+                        <div className="bg-slate-50 dark:bg-slate-900/40 rounded-2xl p-4 border border-slate-100 dark:border-slate-800 space-y-3">
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Observaciones Sugeridas / Reporte Final:</label>
+                            {os.comentario ? (
+                                <p className="text-xs font-medium text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed bg-white dark:bg-slate-950 p-3 rounded-xl border border-slate-150 dark:border-slate-850">
+                                    {os.comentario}
+                                </p>
+                            ) : (
+                                <p className="text-xs text-slate-400 italic font-medium p-3">
+                                    No se han generado observaciones aún. Presioná "Generar Observaciones con IA" para analizar las respuestas de los checklists preventivos.
+                                </p>
+                            )}
                         </div>
                     </div>
                 )}
