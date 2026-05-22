@@ -802,7 +802,6 @@ function OrdenesServicioContent() {
             ) : (
                 <div className="space-y-2">
                     {filtered.map(os => {
-                        const isFirmada = os.estado === 'firmada';
                         const clienteName = os.project.client?.nombre || os.project.cliente || '—';
                         const isHighlighted = os.id === highlightId;
                         return (
@@ -812,7 +811,13 @@ function OrdenesServicioContent() {
                             >
                                 <div className="flex items-center gap-3 flex-wrap">
                                     {/* Status dot */}
-                                    <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${isFirmada ? 'bg-emerald-500' : 'bg-amber-400'}`} />
+                                    <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                                        os.estado === 'firmada' ? 'bg-emerald-500' :
+                                        os.estado === 'cobrada' ? 'bg-indigo-500' :
+                                        os.estado === 'pagada' ? 'bg-blue-500' :
+                                        os.estado === 'pendiente' ? 'bg-amber-400' :
+                                        'bg-slate-400'
+                                    }`} />
 
                                     {/* Main info */}
                                     <div className="flex-1 min-w-0 space-y-1">

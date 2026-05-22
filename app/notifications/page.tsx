@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { Bell, Check, Trash2, ArrowRight, CheckCircle2, Circle } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
@@ -8,7 +8,7 @@ import { formatDateTime } from '@/lib/formatDate';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function NotificationsPage() {
+function NotificationsContent() {
     const [user, setUser] = useState<any>(null);
     const [notifications, setNotifications] = useState<any[]>([]);
     const [activeTab, setActiveTab] = useState<'unread' | 'read'>('unread');
@@ -312,5 +312,18 @@ export default function NotificationsPage() {
                 </div>
             )}
         </div>
+    );
+}
+
+export default function NotificationsPage() {
+    return (
+        <Suspense fallback={
+            <div className="space-y-4">
+                <div className="h-12 bg-slate-100 dark:bg-slate-800/50 rounded-2xl animate-pulse" />
+                {[1, 2, 3].map(i => <div key={i} className="h-20 bg-slate-100 dark:bg-slate-800/50 rounded-2xl animate-pulse" />)}
+            </div>
+        }>
+            <NotificationsContent />
+        </Suspense>
     );
 }
