@@ -4,7 +4,10 @@ import { DEFAULT_PROMPTS, compilePrompt } from './prompts';
 import { AiRequestOptions, AiServiceResponse, TokenUsage } from './types';
 
 // Initialize GenAI client
-const apiKey = process.env.GEMINI_API_KEY || 'AIzaSyA485ZmC5cOxmBuQz8Lwsjj061RKLFtPxM';
+const apiKey = process.env.GEMINI_API_KEY;
+if (!apiKey) {
+    throw new Error('GEMINI_API_KEY is not defined in environment variables');
+}
 const ai = new GoogleGenAI({ apiKey });
 
 // Cost constants for gemini-2.5-flash
@@ -516,6 +519,65 @@ export async function analyzeCertificateOcr(
             config: {
                 systemInstruction: defaultPrompt.systemInstruction,
                 responseMimeType: 'application/json',
+                responseSchema: {
+                    type: 'OBJECT',
+                    properties: {
+                        nombreCurso: {
+                            type: 'STRING',
+                            description: 'Nombre oficial del curso, taller o certificación encontrada'
+                        },
+                        institucion: {
+                            type: 'STRING',
+                            description: 'Entidad, universidad o empresa emisora del certificado'
+                        },
+                        horas: {
+                            type: 'INTEGER',
+                            description: 'Número de horas o duración total del curso (null si no figura)',
+                            nullable: true
+                        },
+                        fechaEmision: {
+                            type: 'STRING',
+                            description: 'Fecha de emisión en formato YYYY-MM-DD (null si no figura)',
+                            nullable: true
+                        },
+                        descripcion: {
+                            type: 'STRING',
+                            description: 'Breve resumen del contenido y de qué se trata la capacitación'
+                        },
+                        habilidadSugerida: {
+                            type: 'STRING',
+                            enum: [
+                                'Programación de PLC',
+                                'Automatización Industrial',
+                                'Electricidad Industrial',
+                                'Técnico de Dispensers',
+                                'Instalaciones de Baja Tensión',
+                                'Seguridad Eléctrica y NFPA 70E',
+                                'Trabajo en Altura',
+                                'Mantenimiento Preventivo',
+                                'Ninguna / Revisión Manual'
+                            ],
+                            description: 'Habilidad que mejor se alinee. Si no hay correspondencia clara, selecciona estrictamente "Ninguna / Revisión Manual".'
+                        },
+                        justificacionMapeo: {
+                            type: 'STRING',
+                            description: 'Breve explicación de la habilidad asignada o por qué se asignó para revisión manual'
+                        },
+                        confianzaAnalisis: {
+                            type: 'STRING',
+                            enum: ['ALTA', 'MEDIA', 'BAJA'],
+                            description: 'Nivel de confianza en el análisis'
+                        }
+                    },
+                    required: [
+                        'nombreCurso',
+                        'institucion',
+                        'descripcion',
+                        'habilidadSugerida',
+                        'justificacionMapeo',
+                        'confianzaAnalisis'
+                    ]
+                },
                 temperature: 0.1
             }
         });

@@ -3,7 +3,7 @@ import { safeApiRequest } from '@/lib/offline';
 import { 
     Award, Star, GraduationCap, Clock, AlertTriangle, 
     Calendar, CheckCircle, Activity, Heart, ShieldAlert, Sparkles, Loader2, User,
-    Check, X, Trash2, FileText, CheckCircle2, Shield, Eye, ThumbsUp, ThumbsDown
+    Check, X, Trash2, FileText, CheckCircle2, Shield, Eye, ThumbsUp, ThumbsDown, Info
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 
@@ -12,6 +12,7 @@ export default function OperadoresTab() {
     const [selectedOperator, setSelectedOperator] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [currentUser, setCurrentUser] = useState<any>(null);
+    const [showAuditModal, setShowAuditModal] = useState(false);
 
     // Competencies and Certificates states
     const [competencies, setCompetencies] = useState<any[]>([]);
@@ -319,8 +320,17 @@ export default function OperadoresTab() {
         if (score >= 90) {
             diagnosis = `${name} posee un desempeño sobresaliente en HSB Servicios Eléctricos, liderando el tablero de control de calidad.`;
             recommendation = `SGI Gemini aconseja considerarlo como mentor para nuevos ingresos y asignarle proyectos de alta complejidad técnica.`;
+        } else if (metrics.safetyInfractionsCount > 0) {
+            diagnosis = `${name} presenta un desvío crítico de seguridad (-${metrics.safetyPenalty} pts) debido a ${metrics.safetyInfractionsCount} infracciones o desvíos detectados en auditorías SST.`;
+            recommendation = `SGI Gemini recomienda de manera prioritaria coordinar una re-capacitación en Normativa de Seguridad Eléctrica y uso obligatorio de EPP / LOTO.`;
+        } else if (metrics.reworkCount > 0) {
+            diagnosis = `${name} registra ${metrics.reworkCount} órdenes de servicio catalogadas como Re-Trabajo (FTFR), afectando negativamente la penalización de calidad.`;
+            recommendation = `SGI Gemini sugiere revisar el procedimiento técnico en campo, auditar las órdenes originales y coordinar feedback técnico de mejora continua.`;
         } else if (metrics.absences > 0) {
-            diagnosis = `${name} presenta un desvío en el score global debido a ${metrics.absences} inasistencias registradas.`;
+            const unjustifiedText = metrics.unjustifiedAbsences > 0 ? `${metrics.unjustifiedAbsences} injustificadas` : '';
+            const justifiedText = metrics.justifiedAbsences > 0 ? `${metrics.justifiedAbsences} justificadas` : '';
+            const combinedText = [unjustifiedText, justifiedText].filter(Boolean).join(' y ');
+            diagnosis = `${name} presenta un desvío en el score global debido a inasistencias registradas (${combinedText}).`;
             recommendation = `SGI Gemini sugiere programar una sesión de feedback con su supervisor directo para evaluar justificaciones y reajustar cronogramas en HSB Servicios Eléctricos.`;
         } else if (metrics.csat < 8.5) {
             diagnosis = `Se detecta margen de mejora en las calificaciones CSAT otorgadas por los clientes (${metrics.csat}/10).`;
@@ -339,16 +349,25 @@ export default function OperadoresTab() {
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-400">
             {/* Header section */}
-            <div className="flex items-center gap-4">
-                <div className="p-3 bg-violet-600 rounded-2xl text-white shadow-lg shadow-violet-200">
-                    <Award className="w-7 h-7" />
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-violet-600 rounded-2xl text-white shadow-lg shadow-violet-200">
+                        <Award className="w-7 h-7" />
+                    </div>
+                    <div>
+                        <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Score de Operadores</h3>
+                        <p className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">
+                            Evaluación integral de competencias · Capacitaciones · Desempeño y Asistencia
+                        </p>
+                    </div>
                 </div>
-                <div>
-                    <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Score de Operadores</h3>
-                    <p className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">
-                        Evaluación integral de competencias · Capacitaciones · Desempeño y Asistencia
-                    </p>
-                </div>
+                <button
+                    onClick={() => setShowAuditModal(true)}
+                    className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-black text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 border border-violet-100 dark:border-violet-900/50 hover:bg-violet-100 dark:hover:bg-violet-900/40 rounded-2xl transition-all shadow-sm self-start sm:self-auto"
+                >
+                    <Info className="w-4 h-4" />
+                    Fórmula & Auditoría SGC
+                </button>
             </div>
 
             {/* Split layout */}
@@ -459,7 +478,7 @@ export default function OperadoresTab() {
                             </div>
 
                             {/* Metrics Breakdown Grid */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
                                 
                                 {/* CSAT Client Score */}
                                 <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between">
@@ -526,11 +545,19 @@ export default function OperadoresTab() {
                                             <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${selectedOperator.metrics.timeCompliance}%` }} />
                                         </div>
                                     </div>
-                                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
-                                        <span>Días de Faltas:</span>
-                                        <span className={`font-black ${selectedOperator.metrics.absences > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
-                                            {selectedOperator.metrics.absences}
-                                        </span>
+                                    <div className="mt-2 pt-2 border-t border-slate-50 dark:border-slate-700/50 flex flex-col gap-1 text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
+                                        <div className="flex justify-between">
+                                            <span>Faltas Injustificadas:</span>
+                                            <span className={`font-black ${selectedOperator.metrics.unjustifiedAbsences > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                                {selectedOperator.metrics.unjustifiedAbsences || 0}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span>Faltas Justificadas:</span>
+                                            <span className={`font-black ${selectedOperator.metrics.justifiedAbsences > 0 ? 'text-amber-500' : 'text-emerald-500'}`}>
+                                                {selectedOperator.metrics.justifiedAbsences || 0}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -548,7 +575,7 @@ export default function OperadoresTab() {
                                             {selectedOperator.metrics.totalWorkedHours || 0} hs
                                         </h4>
                                         <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-900 rounded-full mt-2.5 overflow-hidden">
-                                            <div className="h-full bg-violet-500 rounded-full" style={{ width: `${Math.min(100, (selectedOperator.metrics.totalWorkedHours || 0) * 0.5)}%` }} />
+                                            <div className="h-full bg-violet-500 rounded-full" style={{ width: `${Math.min(100, ((selectedOperator.metrics.totalWorkedHours || 0) / 180) * 100)}%` }} />
                                         </div>
                                     </div>
                                     <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
@@ -556,6 +583,53 @@ export default function OperadoresTab() {
                                         <span className="font-black text-emerald-500">+{selectedOperator.metrics.hoursRewardBonus} pts</span>
                                     </div>
                                 </div>
+
+                                {/* Safety Audits Card */}
+                                <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between">
+                                    <div className="flex justify-between items-start">
+                                        <div className={`p-2 rounded-xl ${selectedOperator.metrics.safetyInfractionsCount > 0 ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}`}>
+                                            {selectedOperator.metrics.safetyInfractionsCount > 0 ? <ShieldAlert className="w-5 h-5" /> : <Shield className="w-5 h-5" />}
+                                        </div>
+                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Seguridad SST</span>
+                                    </div>
+                                    <div className="mt-4">
+                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Auditorías SST</p>
+                                        <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5">
+                                            {selectedOperator.metrics.safetyInfractionsCount > 0 ? `${selectedOperator.metrics.safetyInfractionsCount} Desvíos` : 'Sin desvíos'}
+                                        </h4>
+                                        <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-900 rounded-full mt-2.5 overflow-hidden">
+                                            <div className={`h-full rounded-full ${selectedOperator.metrics.safetyInfractionsCount > 0 ? 'bg-rose-500' : 'bg-emerald-500'}`} style={{ width: `${Math.max(0, 100 - (selectedOperator.metrics.safetyPenalty || 0))}%` }} />
+                                        </div>
+                                    </div>
+                                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
+                                        <span>Penalidad SST:</span>
+                                        <span className={`font-black ${selectedOperator.metrics.safetyPenalty > 0 ? 'text-rose-500' : 'text-slate-500'}`}>-{selectedOperator.metrics.safetyPenalty || 0} pts</span>
+                                    </div>
+                                </div>
+
+                                {/* Rework (FTFR) Card */}
+                                <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between">
+                                    <div className="flex justify-between items-start">
+                                        <div className={`p-2 rounded-xl ${selectedOperator.metrics.reworkCount > 0 ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}`}>
+                                            {selectedOperator.metrics.reworkCount > 0 ? <AlertTriangle className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
+                                        </div>
+                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Re-Trabajos</span>
+                                    </div>
+                                    <div className="mt-4">
+                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Ratio FTFR</p>
+                                        <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5">
+                                            {selectedOperator.metrics.reworkCount || 0} OS
+                                        </h4>
+                                        <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-900 rounded-full mt-2.5 overflow-hidden">
+                                            <div className={`h-full rounded-full ${selectedOperator.metrics.reworkCount > 0 ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${Math.max(0, 100 - (selectedOperator.metrics.reworkPenalty || 0))}%` }} />
+                                        </div>
+                                    </div>
+                                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
+                                        <span>Penalidad FTFR:</span>
+                                        <span className={`font-black ${selectedOperator.metrics.reworkPenalty > 0 ? 'text-rose-500' : 'text-slate-500'}`}>-{selectedOperator.metrics.reworkPenalty || 0} pts</span>
+                                    </div>
+                                </div>
+
                             </div>
 
                             {/* Gemini AI Smart Insight Card */}
@@ -816,6 +890,185 @@ export default function OperadoresTab() {
                             ) : (
                                 <img src={selectedCertFile} alt="Certificado" className="max-w-full max-h-full rounded-2xl shadow-md object-contain" />
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* SGC ISO9001 Audit Modal */}
+            {showAuditModal && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] flex justify-center items-center p-4">
+                    <div className="bg-white dark:bg-slate-800 w-full max-w-3xl max-h-[85vh] rounded-[2.5rem] overflow-hidden flex flex-col border border-slate-100 dark:border-slate-700 shadow-2xl animate-in zoom-in-95 duration-200">
+                        
+                        {/* Modal Header */}
+                        <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/40">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 bg-violet-100 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400 rounded-xl">
+                                    <Shield className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h4 className="font-black text-slate-850 dark:text-slate-100 text-lg">Cálculo del Score - Auditoría ISO 9001</h4>
+                                    <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">
+                                        Procedimiento Registrado del SGC · HSB Servicios Eléctricos
+                                    </p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => setShowAuditModal(false)}
+                                className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-650 rounded-xl text-slate-500 dark:text-slate-400 transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        
+                        {/* Modal Content */}
+                        <div className="flex-1 overflow-y-auto p-6 space-y-6 text-slate-700 dark:text-slate-300">
+                            
+                            {/* Summary/Introduction */}
+                            <div className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-2">
+                                <h5 className="text-xs font-black uppercase text-slate-800 dark:text-slate-250 tracking-wider">Objetivo del Procedimiento</h5>
+                                <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                                    Este módulo calcula automáticamente el desempeño global de los técnicos y operadores de campo de HSB Servicios Eléctricos. El sistema consolida datos operativos, capacitaciones homologadas e inasistencias en base mensual para asegurar el cumplimiento del estándar de calidad ISO 9001 y la trazabilidad del personal.
+                                </p>
+                            </div>
+
+                            {/* Main Pillars */}
+                            <div className="space-y-4">
+                                <h5 className="text-xs font-black uppercase text-slate-800 dark:text-slate-200 tracking-wider flex items-center gap-2">
+                                    <span className="w-1.5 h-3 bg-violet-600 rounded-full" />
+                                    Pilar Base: Score de Desempeño (100 Puntos Máximos)
+                                </h5>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {/* Competencies */}
+                                    <div className="p-4 bg-indigo-50/30 dark:bg-indigo-950/10 rounded-2xl border border-indigo-100/50 dark:border-indigo-900/30 space-y-2">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-xs font-black text-indigo-700 dark:text-indigo-400 uppercase tracking-wider">1. Matriz Competencias (35%)</span>
+                                            <span className="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 text-[10px] font-black rounded-lg">Peso: 35%</span>
+                                        </div>
+                                        <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                                            Evalúa las habilidades técnicas validadas y vigentes en el mes. Compara contra un perfil teórico de 8 habilidades predefinidas (PLC, Automatización, Electricidad, Dispensers, Baja Tensión, Seguridad NFPA 70E, Trabajo en Altura, y Mantenimiento) con un puntaje máximo de 54 puntos.
+                                        </p>
+                                        <div className="text-[10px] bg-white dark:bg-slate-900 p-2 rounded-xl border border-indigo-100/30 dark:border-slate-800 font-mono text-slate-500">
+                                            Score = Round((Sumatoria_Pesos_Activos / 54) * 100)
+                                        </div>
+                                    </div>
+
+                                    {/* Client Surveys */}
+                                    <div className="p-4 bg-amber-50/30 dark:bg-amber-950/10 rounded-2xl border border-amber-100/50 dark:border-amber-900/30 space-y-2">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-xs font-black text-amber-700 dark:text-amber-400 uppercase tracking-wider">2. Encuestas Cliente (20%)</span>
+                                            <span className="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 text-[10px] font-black rounded-lg">Peso: 20%</span>
+                                        </div>
+                                        <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                                            Combina la satisfacción CSAT (promedio de atención, calidad y tiempo del cliente, escala 1-10) y el impacto NPS. Promotores (9-10) otorgan 100 pts, Pasivos (7-8) 70 pts y Detractores (0-6) 0 pts.
+                                        </p>
+                                        <div className="text-[10px] bg-white dark:bg-slate-900 p-2 rounded-xl border border-amber-100/30 dark:border-slate-800 font-mono text-slate-500">
+                                            Score = (CSAT * 10 * 0.70) + (Avg_NPS_Impact * 0.30)
+                                        </div>
+                                    </div>
+
+                                    {/* Attendance */}
+                                    <div className="p-4 bg-emerald-50/30 dark:bg-emerald-950/10 rounded-2xl border border-emerald-100/50 dark:border-emerald-900/30 space-y-2">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-xs font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">3. Asistencia Neutra (20%)</span>
+                                            <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 text-[10px] font-black rounded-lg">Peso: 20%</span>
+                                        </div>
+                                        <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                                            Calcula la presencia efectiva sobre días hábiles. Las faltas justificadas (médicas, licencias) no penalizan y se restan de los días laborables del mes. Las faltas injustificadas restan 15 puntos por ocurrencia.
+                                        </p>
+                                        <div className="text-[10px] bg-white dark:bg-slate-900 p-2 rounded-xl border border-emerald-100/30 dark:border-slate-800 font-mono text-slate-500">
+                                            Asistencia = ((Hábiles - Justificadas - Injustificadas) / (Hábiles - Justificadas)) * 100 - (Injustificadas * 15)
+                                        </div>
+                                    </div>
+
+                                    {/* Time Compliance */}
+                                    <div className="p-4 bg-sky-50/30 dark:bg-sky-950/10 rounded-2xl border border-sky-100/50 dark:border-sky-900/30 space-y-2">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-xs font-black text-sky-700 dark:text-sky-400 uppercase tracking-wider">4. Cumplimiento Horario (25%)</span>
+                                            <span className="px-2 py-0.5 bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 text-[10px] font-black rounded-lg">Peso: 25%</span>
+                                        </div>
+                                        <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                                            Evalúa la precisión y consistencia del registro de jornada. Descuenta puntos si hay fichadas sospechosas y aplica una penalización (máx 20 pts) si la discrepancia entre horas declaradas manualmente y horas registradas por fichador automático supera el 15%.
+                                        </p>
+                                        <div className="text-[10px] bg-white dark:bg-slate-900 p-2 rounded-xl border border-sky-100/30 dark:border-slate-800 font-mono text-slate-500">
+                                            Score = 100 - (% Suspicious * 100) - Penalidad_Discrepancia
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Modifiers and Penalties */}
+                            <div className="space-y-4">
+                                <h5 className="text-xs font-black uppercase text-slate-800 dark:text-slate-200 tracking-wider flex items-center gap-2">
+                                    <span className="w-1.5 h-3 bg-violet-600 rounded-full" />
+                                    Modificadores Directos (Bonos y Penalidades)
+                                </h5>
+
+                                <div className="space-y-2.5">
+                                    {/* Bonus horas extras */}
+                                    <div className="flex items-start gap-3 p-3 bg-emerald-500/5 rounded-xl border border-emerald-500/10">
+                                        <span className="mt-0.5 px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[9px] font-black rounded-md uppercase tracking-wider shrink-0">Bono +</span>
+                                        <div>
+                                            <span className="text-xs font-black text-slate-800 dark:text-slate-200 block">Productividad por Carga Horaria</span>
+                                            <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Se otorga +1 punto por cada 2 horas de trabajo confirmadas que excedan las 180 horas mensuales, hasta un máximo de +15 puntos globales.</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Penalidad Demoras */}
+                                    <div className="flex items-start gap-3 p-3 bg-rose-500/5 rounded-xl border border-rose-500/10">
+                                        <span className="mt-0.5 px-2 py-0.5 bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-350 text-[9px] font-black rounded-md uppercase tracking-wider shrink-0">Descuento -</span>
+                                        <div>
+                                            <span className="text-xs font-black text-slate-800 dark:text-slate-200 block">Desvíos y Demoras de Proyectos (Máx: -10 pts)</span>
+                                            <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Descuenta 0.2 puntos por cada hora de demora en los proyectos en los que el operador participó activamente durante el período.</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Penalidad Seguridad */}
+                                    <div className="flex items-start gap-3 p-3 bg-rose-500/5 rounded-xl border border-rose-500/10">
+                                        <span className="mt-0.5 px-2 py-0.5 bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-350 text-[9px] font-black rounded-md uppercase tracking-wider shrink-0">Descuento -</span>
+                                        <div>
+                                            <span className="text-xs font-black text-slate-800 dark:text-slate-200 block">Infracciones de Seguridad SST (Sin Límite)</span>
+                                            <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Cada desvío crítico de seguridad reportado (EPP incompleto, no aplicación de bloqueo LOTO o incumplimiento de normativas como NFPA 70E) penaliza directamente con -15 puntos globales.</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Penalidad Re-Trabajos */}
+                                    <div className="flex items-start gap-3 p-3 bg-rose-500/5 rounded-xl border border-rose-500/10">
+                                        <span className="mt-0.5 px-2 py-0.5 bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-350 text-[9px] font-black rounded-md uppercase tracking-wider shrink-0">Descuento -</span>
+                                        <div>
+                                            <span className="text-xs font-black text-slate-800 dark:text-slate-200 block">Tasa de Retrabajos (FTFR - First Time Fix Rate)</span>
+                                            <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Penalización progresiva según la cantidad de órdenes de servicio repetidas (retrabajo): 1 retrabajo = -5 pts, 2 retrabajos = -15 pts, 3 o más = -30 pts globales.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Consolidated score explanation */}
+                            <div className="bg-slate-900 text-white rounded-[2rem] p-6 space-y-4">
+                                <div className="flex items-center gap-2">
+                                    <Award className="w-5 h-5 text-yellow-400" />
+                                    <h5 className="text-xs font-black uppercase tracking-wider">Cálculo del Score Global Consolidado</h5>
+                                </div>
+                                <div className="text-center py-4 bg-black/30 rounded-2xl border border-white/5 font-mono text-xs text-yellow-300">
+                                    Score Global = Max( 10, Min( 100, BaseScore + BonoHoras - PenalidadDemoras - PenalidadSeguridad - PenalidadRetrabajo ) )
+                                </div>
+                                <div className="text-xs leading-relaxed text-slate-350 space-y-1">
+                                    <p>• El **BaseScore** es la suma ponderada: `Competencias*0.35 + Encuestas*0.20 + Asistencia*0.20 + Cumplimiento*0.25`.</p>
+                                    <p>• El puntaje final resultante se redondea al entero más cercano y se encuentra acotado en el intervalo **[10, 100]**.</p>
+                                    <p>• Los datos son auditales mediante el historial de auditorías de seguridad, partes de horas validados por supervisores, encuestas directas de clientes e historial de aprobaciones del LMS.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="p-5 border-t border-slate-100 dark:border-slate-700 flex justify-end bg-slate-50/50 dark:bg-slate-900/40">
+                            <button 
+                                onClick={() => setShowAuditModal(false)}
+                                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-black rounded-xl transition-colors shadow-sm"
+                            >
+                                Entendido
+                            </button>
                         </div>
                     </div>
                 </div>

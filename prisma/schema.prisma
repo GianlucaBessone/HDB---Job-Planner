@@ -134,6 +134,7 @@ model Operator {
   competencies              TechnicianCompetency[]
   trainings                 TechnicianTraining[]
   externalCertificates      ExternalCertificate[]
+  safetyAudits              SafetyAudit[]
 }
 
 model FavoriteBlock {
@@ -326,6 +327,10 @@ model OrdenServicio {
   // QMS Integration
   documentosRequeridos OrdenServicioDocumento[]
   checklists           OSChecklist[]
+
+  // Rework tracking
+  esReTrabajo              Boolean   @default(false)
+  ordenOriginalId          String?
 
   @@index([projectId])
 }
@@ -1050,6 +1055,20 @@ model ExternalCertificate {
   aiData          Json?     // To store AI extraction details like hours, dates, entities
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+
+  @@index([operatorId])
+}
+
+model SafetyAudit {
+  id              String    @id @default(cuid())
+  operatorId      String
+  operator        Operator  @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  fecha           String    // YYYY-MM-DD
+  eppAprobado     Boolean   @default(true)
+  lotoAplicado    Boolean   @default(true)
+  cumpleNormativa Boolean   @default(true)
+  observaciones   String?   @db.Text
+  createdAt       DateTime  @default(now())
 
   @@index([operatorId])
 }

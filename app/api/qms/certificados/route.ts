@@ -165,25 +165,27 @@ export async function PUT(req: Request) {
         // Create pending competency if certificate is approved and has aiData
         if (estado === 'aprobado') {
             const aiJson = (updated.aiData || {}) as any;
-            const skillName = aiJson.habilidadSugerida || 'Mantenimiento Preventivo';
+            const skillName = aiJson.habilidadSugerida;
             
-            // Only create if skill is not already active
-            const existingComp = await prisma.technicianCompetency.findFirst({
-                where: {
-                    operatorId: updated.operatorId,
-                    nombre: skillName
-                }
-            });
-
-            if (!existingComp) {
-                await prisma.technicianCompetency.create({
-                    data: {
+            // Only create if skill is not already active and is a valid predefined skill (not 'Ninguna / Revisión Manual')
+            if (skillName && skillName !== 'Ninguna / Revisión Manual') {
+                const existingComp = await prisma.technicianCompetency.findFirst({
+                    where: {
                         operatorId: updated.operatorId,
-                        nombre: skillName,
-                        estado: 'pendiente',
-                        evidencia: `Certificado: ${updated.nombreCurso}`
+                        nombre: skillName
                     }
                 });
+
+                if (!existingComp) {
+                    await prisma.technicianCompetency.create({
+                        data: {
+                            operatorId: updated.operatorId,
+                            nombre: skillName,
+                            estado: 'pendiente',
+                            evidencia: `Certificado: ${updated.nombreCurso}`
+                        }
+                    });
+                }
             }
         }
 
