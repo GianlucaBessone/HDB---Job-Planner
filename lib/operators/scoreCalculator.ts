@@ -31,6 +31,47 @@ export interface OperatorScoreResult {
     globalScore: number;
 }
 
+// ==========================================
+// BUSINESS RULES & CONFIGURATION (ISO 9001)
+// ==========================================
+const SCORING_CONFIG = {
+    // Competency: A weight of 25 is considered a "Full Specialist" benchmark (e.g., 3-4 core skills).
+    // This prevents bias against specialized technicians compared to "master of all" generalists.
+    COMPETENCY_TARGET_WEIGHT: 25, 
+    
+    // CSAT & NPS Balance
+    CSAT_WEIGHT_PCT: 0.70,
+    NPS_WEIGHT_PCT: 0.30,
+    
+    // Time Compliance Thresholds
+    TIME_COMPLIANCE_DIFF_THRESHOLD_PCT: 15,
+    TIME_COMPLIANCE_MAX_PENALTY: 20,
+    
+    // Bonuses
+    OVERTIME_BONUS_THRESHOLD_HOURS: 180,
+    OVERTIME_BONUS_DIVISOR: 2, // +1 pt per 2 hours
+    OVERTIME_MAX_BONUS: 15,
+    
+    // Penalties
+    DELAY_PENALTY_RATE_PER_HOUR: 0.2,
+    DELAY_MAX_PENALTY: 10,
+    SAFETY_PENALTY_PER_INFRACTION: 15,
+    REWORK_PENALTY_1: 5,
+    REWORK_PENALTY_2: 15,
+    REWORK_PENALTY_3_PLUS: 30
+};
+
+const PREDEFINED_SKILLS = [
+    { name: 'Programación de PLC', weight: 10 },
+    { name: 'Automatización Industrial', weight: 9 },
+    { name: 'Electricidad Industrial', weight: 8 },
+    { name: 'Técnico de Dispensers', weight: 6 },
+    { name: 'Instalaciones de Baja Tensión', weight: 5 },
+    { name: 'Seguridad Eléctrica y NFPA 70E', weight: 8 },
+    { name: 'Trabajo en Altura', weight: 4 },
+    { name: 'Mantenimiento Preventivo', weight: 4 }
+];
+
 /**
  * Calculates the number of weekdays (excluding weekends) in a given month.
  */
@@ -49,7 +90,7 @@ function getWeekdayCount(year: number, monthIdx: number): number {
 
 /**
  * Robust monthly performance score calculator for SGI (HDB SGI)
- * complying with Argentina's LCT 20.744 for HSB Servicios Eléctricos.
+ * complying with Argentina's LCT 20.744 for HDB Servicios Eléctricos.
  */
 export async function calculateOperatorScore(
     operatorId: string,
@@ -120,27 +161,15 @@ export async function calculateOperatorScore(
     competencies.filter(c => c.estado === 'vigente').forEach(c => activeCompetencies.add(c.nombre));
     lmsSkills.forEach(skill => activeCompetencies.add(skill));
 
-    const PREDEFINED_SKILLS = [
-        { name: 'Programación de PLC', weight: 10 },
-        { name: 'Automatización Industrial', weight: 9 },
-        { name: 'Electricidad Industrial', weight: 8 },
-        { name: 'Técnico de Dispensers', weight: 6 },
-        { name: 'Instalaciones de Baja Tensión', weight: 5 },
-        { name: 'Seguridad Eléctrica y NFPA 70E', weight: 8 },
-        { name: 'Trabajo en Altura', weight: 4 },
-        { name: 'Mantenimiento Preventivo', weight: 4 }
-    ];
-
     let activeWeightSum = 0;
     PREDEFINED_SKILLS.forEach(skill => {
         if (activeCompetencies.has(skill.name)) {
             activeWeightSum += skill.weight;
         }
     });
-    const maxPossibleWeight = PREDEFINED_SKILLS.reduce((acc, s) => acc + s.weight, 0); // 54
-    const competencyScore = maxPossibleWeight > 0 
-        ? Math.round((activeWeightSum / maxPossibleWeight) * 100) 
-        : 0;
+    
+    // Use target weight benchmark instead of sum of all skills to avoid punishing specialists
+    const competencyScore = Math.min(100, Math.round((activeWeightSum / SCORING_CONFIG.COMPETENCY_TARGET_WEIGHT) * 100));
 
     const completedTrainings = trainings.filter(t => t.estado === 'aprobado').length;
     const totalTrainings = trainings.length;
@@ -191,10 +220,7 @@ export async function calculateOperatorScore(
             totalTiempo += encuesta.tiempo || 0;
             
             const npsVal = encuesta.nps;
-            // NPS Impact:
-            // Promotores (9-10) -> 100pts
-            // Pasivos (7-8) -> 70pts
-            // Detractores (0-6) -> 0pts
+            // NPS Impact
             if (npsVal >= 9) {
                 npsImpactSum += 100;
                 npsPromotores++;
@@ -207,9 +233,9 @@ export async function calculateOperatorScore(
         }
     });
 
-    // Default values if no surveys are present
-    let csat = 9.0; // scale 1-10 (default baseline)
-    let avgNpsImpact = 85.0; // scale 0-100 (default baseline)
+    // Default baseline values if no surveys
+    let csat = 9.0; 
+    let avgNpsImpact = 85.0; 
     let npsScore = 80;
 
     if (surveyCount > 0) {
@@ -219,7 +245,7 @@ export async function calculateOperatorScore(
     }
 
     const csatScale100 = csat * 10;
-    const csatNpsScore = (csatScale100 * 0.70) + (avgNpsImpact * 0.30);
+    const csatNpsScore = (csatScale100 * SCORING_CONFIG.CSAT_WEIGHT_PCT) + (avgNpsImpact * SCORING_CONFIG.NPS_WEIGHT_PCT);
 
     // 3. ATTENDANCE (AsistenciaNeutra) (Weight: 20%)
     const absencesEntries = await prisma.timeEntry.findMany({
@@ -266,12 +292,11 @@ export async function calculateOperatorScore(
     });
 
     const totalDays = getWeekdayCount(year, monthIdx);
-    // Exclude justified absences from the denominator
     const netDays = Math.max(1, totalDays - justifiedAbsences);
-    // Calculate the attendance rate of net work days
-    const attendanceRate = Math.max(0, ((netDays - unjustifiedAbsences) / netDays) * 100);
-    // Faltas Injustificadas subtract 15 points on base of 100
-    const attendanceComponent = Math.max(0, Math.round(attendanceRate) - (unjustifiedAbsences * 15));
+    
+    // Mathematical fix: Calculate proportional rate without double penalty
+    const attendanceRate = netDays > 0 ? ((netDays - unjustifiedAbsences) / netDays) * 100 : 100;
+    const attendanceComponent = Math.max(0, Math.round(attendanceRate));
 
     // 4. TIME COMPLIANCE (Cumplimiento) (Weight: 25%)
     const fichadas = await prisma.fichada.findMany({
@@ -284,7 +309,7 @@ export async function calculateOperatorScore(
     const totalFichadas = fichadas.length;
     const suspiciousFichadas = fichadas.filter(f => f.isSuspicious).length;
 
-    // Fetch manual hour load and validate against automatic Fichadas
+    // Validate manual hour load against automatic Fichadas
     const automaticHours = fichadas.reduce((acc, f) => acc + (f.horasTrabajadas || 0), 0);
     
     const timeEntries = await prisma.timeEntry.findMany({
@@ -298,14 +323,14 @@ export async function calculateOperatorScore(
         .filter(te => !te.causaRegistro)
         .reduce((acc, te) => acc + (te.horasTrabajadas || 0), 0);
 
-    // Compute discrepancy penalty: if they mismatch by > 15%, apply a penalty (max 20 pts)
+    // Compute discrepancy penalty proportionally 
     let discrepancyPenalty = 0;
     if (manualHours > 0 || automaticHours > 0) {
         const diff = Math.abs(automaticHours - manualHours);
         const avg = (automaticHours + manualHours) / 2;
         const pctDiff = avg > 0 ? (diff / avg) * 100 : 0;
-        if (pctDiff > 15) {
-            discrepancyPenalty = Math.min(20, Math.round(pctDiff / 4));
+        if (pctDiff > SCORING_CONFIG.TIME_COMPLIANCE_DIFF_THRESHOLD_PCT) {
+            discrepancyPenalty = Math.min(SCORING_CONFIG.TIME_COMPLIANCE_MAX_PENALTY, Math.round(pctDiff / 4));
         }
     }
 
@@ -325,12 +350,15 @@ export async function calculateOperatorScore(
 
     // 5. MODIFIERS (Deductions & Bonuses)
     
-    // worked target reward: +1 point per 2 hours over 180hs, max +15 points
+    // Overtime reward bonus
     const totalWorkedHours = Math.max(automaticHours, manualHours);
-    const extraHours = Math.max(0, totalWorkedHours - 180);
-    const hoursRewardBonus = Math.min(15, Math.round(extraHours / 2));
+    const extraHours = Math.max(0, totalWorkedHours - SCORING_CONFIG.OVERTIME_BONUS_THRESHOLD_HOURS);
+    const hoursRewardBonus = Math.min(
+        SCORING_CONFIG.OVERTIME_MAX_BONUS, 
+        Math.round(extraHours / SCORING_CONFIG.OVERTIME_BONUS_DIVISOR)
+    );
 
-    // Delay penalty: find projects the operator is assigned to in this month
+    // Delay penalty
     const osProjects = osAssignments.map(oo => oo.ordenServicio?.projectId).filter(Boolean) as string[];
     const fichadaProjects = fichadas.map(f => f.projectId).filter(Boolean) as string[];
     const assignedProjectIds = Array.from(new Set([...osProjects, ...fichadaProjects]));
@@ -346,9 +374,9 @@ export async function calculateOperatorScore(
 
     const totalDelayHours = clientDelays.reduce((acc, d) => acc + (d.duracion || 0), 0);
     const totalDelayEvents = clientDelays.length;
-    const delayPenalty = Math.min(10, totalDelayHours * 0.2);
+    const delayPenalty = Math.min(SCORING_CONFIG.DELAY_MAX_PENALTY, totalDelayHours * SCORING_CONFIG.DELAY_PENALTY_RATE_PER_HOUR);
 
-    // Safety violations (Auditoría Seguridad / SST / NFPA 70E)
+    // Safety violations (SST)
     const safetyAudits = await prisma.safetyAudit.findMany({
         where: {
             operatorId,
@@ -358,7 +386,7 @@ export async function calculateOperatorScore(
     const safetyInfractionsCount = safetyAudits.filter(
         a => !a.eppAprobado || !a.lotoAplicado || !a.cumpleNormativa
     ).length;
-    const safetyPenalty = safetyInfractionsCount * 15; // -15 points per safety infraction
+    const safetyPenalty = safetyInfractionsCount * SCORING_CONFIG.SAFETY_PENALTY_PER_INFRACTION; 
 
     // Rework penalty (FTFR)
     const reworkCount = await prisma.ordenServicioOperador.count({
@@ -373,8 +401,11 @@ export async function calculateOperatorScore(
             }
         }
     });
-    // Progressive penalty: 1 rework = -5, 2 reworks = -15, 3+ reworks = -30
-    const reworkPenalty = reworkCount === 1 ? 5 : reworkCount === 2 ? 15 : reworkCount >= 3 ? 30 : 0;
+    
+    // Apply progressive penalty array
+    const reworkPenalty = reworkCount === 1 ? SCORING_CONFIG.REWORK_PENALTY_1 
+                        : reworkCount === 2 ? SCORING_CONFIG.REWORK_PENALTY_2 
+                        : reworkCount >= 3 ? SCORING_CONFIG.REWORK_PENALTY_3_PLUS : 0;
 
     // FINAL GLOBAL SCORE (Bounded between 10 and 100)
     const globalScore = Math.max(10, Math.min(100, Math.round(
@@ -392,7 +423,7 @@ export async function calculateOperatorScore(
             completedTrainings,
             totalTrainings,
             approvedExternalCerts,
-            absences: unjustifiedAbsences + (justifiedAbsences * 0.5),
+            absences: unjustifiedAbsences + justifiedAbsences, // Fixed visual bug of 0.5 absences
             unjustifiedAbsences,
             justifiedAbsences,
             timeCompliance: Math.round(complianceComponent),

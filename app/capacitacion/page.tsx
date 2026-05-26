@@ -414,7 +414,7 @@ export default function CapacitacionPage() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-gradient-to-r from-slate-900 to-indigo-950 text-white p-6 rounded-3xl shadow-xl">
                 <div>
                     <h1 className="text-2xl font-black tracking-tight">Centro de Formación Integral</h1>
-                    <p className="text-xs text-indigo-200 mt-1">HSB Servicios Eléctricos • HDB SGI Portal de Desarrollo Profesional</p>
+                    <p className="text-xs text-indigo-200 mt-1">HDB Servicios Eléctricos • HDB SGI Portal de Desarrollo Profesional</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <button 

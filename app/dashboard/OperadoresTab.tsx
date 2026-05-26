@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { safeApiRequest } from '@/lib/offline';
-import { 
-    Award, Star, GraduationCap, Clock, AlertTriangle, 
+import {
+    Award, Star, GraduationCap, Clock, AlertTriangle,
     Calendar, CheckCircle, Activity, Heart, ShieldAlert, Sparkles, Loader2, User,
     Check, X, Trash2, FileText, CheckCircle2, Shield, Eye, ThumbsUp, ThumbsDown, Info
 } from 'lucide-react';
@@ -42,9 +42,9 @@ export default function OperadoresTab() {
         }
     }, [selectedOperator]);
 
-    const isSupervisorOrAdmin = 
-        currentUser?.role?.toLowerCase() === 'supervisor' || 
-        currentUser?.role?.toLowerCase() === 'admin' || 
+    const isSupervisorOrAdmin =
+        currentUser?.role?.toLowerCase() === 'supervisor' ||
+        currentUser?.role?.toLowerCase() === 'admin' ||
         currentUser?.role?.toLowerCase() === 'qa';
 
     const loadScoreboard = async () => {
@@ -189,7 +189,7 @@ export default function OperadoresTab() {
     const handleDeleteCertificate = async (certificateId: string) => {
         if (!selectedOperator) return;
         if (!confirm('¿Está seguro de que desea eliminar este certificado? Esta acción eliminará también la habilidad sugerida asociada.')) return;
-        
+
         try {
             const res = await safeApiRequest(`/api/qms/certificados?id=${certificateId}`, {
                 method: 'DELETE'
@@ -318,7 +318,7 @@ export default function OperadoresTab() {
         let recommendation = '';
 
         if (score >= 90) {
-            diagnosis = `${name} posee un desempeño sobresaliente en HSB Servicios Eléctricos, liderando el tablero de control de calidad.`;
+            diagnosis = `${name} posee un desempeño sobresaliente en HDB Servicios Eléctricos, liderando el tablero de control de calidad.`;
             recommendation = `SGI Gemini aconseja considerarlo como mentor para nuevos ingresos y asignarle proyectos de alta complejidad técnica.`;
         } else if (metrics.safetyInfractionsCount > 0) {
             diagnosis = `${name} presenta un desvío crítico de seguridad (-${metrics.safetyPenalty} pts) debido a ${metrics.safetyInfractionsCount} infracciones o desvíos detectados en auditorías SST.`;
@@ -331,7 +331,7 @@ export default function OperadoresTab() {
             const justifiedText = metrics.justifiedAbsences > 0 ? `${metrics.justifiedAbsences} justificadas` : '';
             const combinedText = [unjustifiedText, justifiedText].filter(Boolean).join(' y ');
             diagnosis = `${name} presenta un desvío en el score global debido a inasistencias registradas (${combinedText}).`;
-            recommendation = `SGI Gemini sugiere programar una sesión de feedback con su supervisor directo para evaluar justificaciones y reajustar cronogramas en HSB Servicios Eléctricos.`;
+            recommendation = `SGI Gemini sugiere programar una sesión de feedback con su supervisor directo para evaluar justificaciones y reajustar cronogramas en HDB Servicios Eléctricos.`;
         } else if (metrics.csat < 8.5) {
             diagnosis = `Se detecta margen de mejora en las calificaciones CSAT otorgadas por los clientes (${metrics.csat}/10).`;
             recommendation = `SGI Gemini recomienda inscribirlo en las capacitaciones internas de Calidad de Servicio y Habilidades Blandas del Formación LMS.`;
@@ -372,7 +372,7 @@ export default function OperadoresTab() {
 
             {/* Split layout */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                
+
                 {/* LEFT COLUMN: The Leaderboard */}
                 <div className="lg:col-span-4 bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
                     <h4 className="font-black text-slate-800 dark:text-slate-100 text-sm uppercase tracking-wider">Ranking de Técnicos</h4>
@@ -386,25 +386,23 @@ export default function OperadoresTab() {
                                 <button
                                     key={op.operatorId}
                                     onClick={() => setSelectedOperator(op)}
-                                    className={`w-full flex items-center justify-between p-3.5 rounded-2xl border transition-all text-left group ${
-                                        isSelected
+                                    className={`w-full flex items-center justify-between p-3.5 rounded-2xl border transition-all text-left group ${isSelected
                                             ? 'bg-slate-900 border-transparent text-white dark:bg-slate-100 dark:text-slate-950 shadow-md'
                                             : 'bg-slate-50/50 hover:bg-white dark:hover:bg-slate-800/80 border-slate-100 dark:border-slate-850 hover:shadow-sm'
-                                    }`}
+                                        }`}
                                 >
                                     <div className="flex items-center gap-3 min-w-0">
                                         {/* Rank Badge */}
-                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${
-                                            isPodium
-                                                ? index === 0 
-                                                    ? 'bg-yellow-100 text-yellow-700' 
-                                                    : index === 1 
-                                                        ? 'bg-slate-200 text-slate-700' 
+                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${isPodium
+                                                ? index === 0
+                                                    ? 'bg-yellow-100 text-yellow-700'
+                                                    : index === 1
+                                                        ? 'bg-slate-200 text-slate-700'
                                                         : 'bg-amber-100 text-amber-800'
-                                                : isSelected 
-                                                    ? 'bg-slate-800 text-slate-300 dark:bg-slate-200 dark:text-slate-700' 
+                                                : isSelected
+                                                    ? 'bg-slate-800 text-slate-300 dark:bg-slate-200 dark:text-slate-700'
                                                     : 'bg-slate-200/60 text-slate-500'
-                                        }`}>
+                                            }`}>
                                             {index + 1}
                                         </div>
 
@@ -445,7 +443,7 @@ export default function OperadoresTab() {
                                             </h3>
                                         </div>
                                         <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">
-                                            {selectedOperator.role} · HSB Servicios Eléctricos
+                                            {selectedOperator.role} · HDB Servicios Eléctricos
                                         </p>
                                     </div>
                                 </div>
@@ -455,9 +453,9 @@ export default function OperadoresTab() {
                                     <div className="relative w-16 h-16">
                                         <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
                                             <circle cx="18" cy="18" r="16" fill="none" stroke="#f1f5f9" strokeWidth="3" />
-                                            <circle cx="18" cy="18" r="16" fill="none" 
+                                            <circle cx="18" cy="18" r="16" fill="none"
                                                 className={`transition-all duration-700 ${getScoreRingColor(selectedOperator.globalScore)}`}
-                                                strokeWidth="3" 
+                                                strokeWidth="3"
                                                 strokeDasharray={`${selectedOperator.globalScore}, 100`}
                                                 strokeLinecap="round"
                                             />
@@ -470,8 +468,8 @@ export default function OperadoresTab() {
                                         <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Score Global</p>
                                         <p className="text-xs font-bold text-slate-700 dark:text-slate-300 mt-1">Nivel: {
                                             selectedOperator.globalScore >= 90 ? 'Excelente' :
-                                            selectedOperator.globalScore >= 75 ? 'Destacado' :
-                                            selectedOperator.globalScore >= 60 ? 'Regular' : 'A mejorar'
+                                                selectedOperator.globalScore >= 75 ? 'Destacado' :
+                                                    selectedOperator.globalScore >= 60 ? 'Regular' : 'A mejorar'
                                         }</p>
                                     </div>
                                 </div>
@@ -479,7 +477,7 @@ export default function OperadoresTab() {
 
                             {/* Metrics Breakdown Grid */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-                                
+
                                 {/* CSAT Client Score */}
                                 <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between">
                                     <div className="flex justify-between items-start">
@@ -517,8 +515,8 @@ export default function OperadoresTab() {
                                             {selectedOperator.metrics.competencyScore || 0}%
                                         </h4>
                                         <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-900 rounded-full mt-2.5 overflow-hidden">
-                                            <div className="h-full bg-indigo-600 rounded-full" 
-                                                style={{ width: `${selectedOperator.metrics.competencyScore || 0}%` }} 
+                                            <div className="h-full bg-indigo-600 rounded-full"
+                                                style={{ width: `${selectedOperator.metrics.competencyScore || 0}%` }}
                                             />
                                         </div>
                                     </div>
@@ -638,7 +636,7 @@ export default function OperadoresTab() {
                                 return (
                                     <div className="bg-gradient-to-r from-violet-600 to-indigo-600 rounded-[2rem] p-6 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden group">
                                         <div className="absolute right-0 bottom-0 top-0 w-1/3 bg-radial-gradient opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-500" />
-                                        
+
                                         <div className="space-y-4 relative">
                                             <div className="flex items-center gap-2">
                                                 <Sparkles className="w-5 h-5 text-yellow-300 animate-spin-slow" />
@@ -698,13 +696,12 @@ export default function OperadoresTab() {
                                                             Categoría: {skill.category}
                                                         </p>
                                                         <div className="flex items-center gap-2 mt-1">
-                                                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg border uppercase tracking-wider ${
-                                                                isActive 
-                                                                    ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400' 
-                                                                    : isPending 
+                                                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg border uppercase tracking-wider ${isActive
+                                                                    ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400'
+                                                                    : isPending
                                                                         ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-950/20 dark:text-amber-400 animate-pulse'
                                                                         : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-800/40 dark:text-slate-500'
-                                                            }`}>
+                                                                }`}>
                                                                 {skill.status === 'vigente' ? 'Vigente' : skill.status === 'pendiente' ? 'Pendiente' : 'Inactiva'}
                                                             </span>
                                                             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">
@@ -717,14 +714,14 @@ export default function OperadoresTab() {
                                                     <div>
                                                         {isPending && isSupervisorOrAdmin ? (
                                                             <div className="flex items-center gap-2">
-                                                                <button 
+                                                                <button
                                                                     onClick={() => handleApproveCompetency(skill.id, true)}
                                                                     className="p-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-xl transition-colors shadow-sm"
                                                                     title="Aprobar habilidad"
                                                                 >
                                                                     <ThumbsUp className="w-4 h-4" />
                                                                 </button>
-                                                                <button 
+                                                                <button
                                                                     onClick={() => handleApproveCompetency(skill.id, false)}
                                                                     className="p-2 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-xl transition-colors shadow-sm"
                                                                     title="Rechazar habilidad"
@@ -739,13 +736,11 @@ export default function OperadoresTab() {
                                                         ) : isSupervisorOrAdmin ? (
                                                             <button
                                                                 onClick={() => handleToggleSkill(skill.name, isActive)}
-                                                                className={`w-12 h-6 rounded-full p-1 transition-colors duration-200 ease-in-out shrink-0 focus:outline-none ${
-                                                                    isActive ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-700'
-                                                                }`}
+                                                                className={`w-12 h-6 rounded-full p-1 transition-colors duration-200 ease-in-out shrink-0 focus:outline-none ${isActive ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-700'
+                                                                    }`}
                                                             >
-                                                                <div className={`w-4 h-4 rounded-full bg-white transition-transform duration-200 ease-in-out transform ${
-                                                                    isActive ? 'translate-x-6' : 'translate-x-0'
-                                                                }`} />
+                                                                <div className={`w-4 h-4 rounded-full bg-white transition-transform duration-200 ease-in-out transform ${isActive ? 'translate-x-6' : 'translate-x-0'
+                                                                    }`} />
                                                             </button>
                                                         ) : (
                                                             <span className="text-xs font-bold text-slate-400">Solo Supervisor</span>
@@ -785,13 +780,12 @@ export default function OperadoresTab() {
                                                     <div className="space-y-1.5">
                                                         <div className="flex items-center gap-2 flex-wrap">
                                                             <h5 className="font-black text-sm text-slate-800 dark:text-slate-100">{cert.nombreCurso}</h5>
-                                                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg border uppercase tracking-wider ${
-                                                                cert.estado === 'aprobado' 
-                                                                    ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400' 
+                                                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg border uppercase tracking-wider ${cert.estado === 'aprobado'
+                                                                    ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400'
                                                                     : cert.estado === 'rechazado'
                                                                         ? 'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-950/20 dark:text-rose-400'
                                                                         : 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-950/20 dark:text-amber-400 animate-pulse'
-                                                            }`}>
+                                                                }`}>
                                                                 {cert.estado === 'pendiente' ? 'Pendiente' : cert.estado === 'aprobado' ? 'Aprobado' : 'Rechazado'}
                                                             </span>
                                                         </div>
@@ -802,7 +796,7 @@ export default function OperadoresTab() {
                                                             {cert.horas && <span>Duración: {cert.horas} hs</span>}
                                                             {cert.fechaEmision && <span>Emisión: {new Date(cert.fechaEmision).toLocaleDateString()}</span>}
                                                         </div>
-                                                        
+
                                                         {/* AI Extraction Info */}
                                                         {aiData.habilidadSugerida && (
                                                             <div className="mt-2 p-3 bg-violet-500/10 dark:bg-violet-950/20 rounded-xl border border-violet-100 dark:border-violet-900/40 text-xs text-violet-700 dark:text-violet-300">
@@ -816,7 +810,7 @@ export default function OperadoresTab() {
                                                     {/* Certificate Actions */}
                                                     <div className="flex items-center gap-2 self-end md:self-auto">
                                                         {cert.archivoUrl && (
-                                                            <button 
+                                                            <button
                                                                 onClick={() => setSelectedCertFile(cert.archivoUrl)}
                                                                 className="p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 rounded-xl transition-colors shadow-sm"
                                                                 title="Ver archivo"
@@ -824,16 +818,16 @@ export default function OperadoresTab() {
                                                                 <Eye className="w-4 h-4" />
                                                             </button>
                                                         )}
-                                                        
+
                                                         {cert.estado === 'pendiente' && isSupervisorOrAdmin && (
                                                             <>
-                                                                <button 
+                                                                <button
                                                                     onClick={() => handleApproveCertificate(cert.id, true)}
                                                                     className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-black rounded-xl transition-colors shadow-sm"
                                                                 >
                                                                     Aprobar
                                                                 </button>
-                                                                <button 
+                                                                <button
                                                                     onClick={() => handleApproveCertificate(cert.id, false)}
                                                                     className="px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-black rounded-xl transition-colors shadow-sm"
                                                                 >
@@ -842,7 +836,7 @@ export default function OperadoresTab() {
                                                             </>
                                                         )}
 
-                                                        <button 
+                                                        <button
                                                             onClick={() => handleDeleteCertificate(cert.id)}
                                                             className="p-2 bg-slate-100 hover:bg-rose-100 hover:text-rose-600 text-slate-400 rounded-xl transition-colors shadow-sm"
                                                             title="Eliminar certificado"
@@ -877,7 +871,7 @@ export default function OperadoresTab() {
                                 <h4 className="font-black text-slate-850 dark:text-slate-100">Vista Previa de Certificado</h4>
                                 <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">SGI Acreditaciones</p>
                             </div>
-                            <button 
+                            <button
                                 onClick={() => setSelectedCertFile(null)}
                                 className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-650 rounded-xl text-slate-500 dark:text-slate-400 transition-colors"
                             >
@@ -899,7 +893,7 @@ export default function OperadoresTab() {
             {showAuditModal && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] flex justify-center items-center p-4">
                     <div className="bg-white dark:bg-slate-800 w-full max-w-3xl max-h-[85vh] rounded-[2.5rem] overflow-hidden flex flex-col border border-slate-100 dark:border-slate-700 shadow-2xl animate-in zoom-in-95 duration-200">
-                        
+
                         {/* Modal Header */}
                         <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/40">
                             <div className="flex items-center gap-3">
@@ -909,26 +903,26 @@ export default function OperadoresTab() {
                                 <div>
                                     <h4 className="font-black text-slate-850 dark:text-slate-100 text-lg">Cálculo del Score - Auditoría ISO 9001</h4>
                                     <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">
-                                        Procedimiento Registrado del SGC · HSB Servicios Eléctricos
+                                        Procedimiento Registrado del SGC · HDB Servicios Eléctricos
                                     </p>
                                 </div>
                             </div>
-                            <button 
+                            <button
                                 onClick={() => setShowAuditModal(false)}
                                 className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-650 rounded-xl text-slate-500 dark:text-slate-400 transition-colors"
                             >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
-                        
+
                         {/* Modal Content */}
                         <div className="flex-1 overflow-y-auto p-6 space-y-6 text-slate-700 dark:text-slate-300">
-                            
+
                             {/* Summary/Introduction */}
                             <div className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-2">
                                 <h5 className="text-xs font-black uppercase text-slate-800 dark:text-slate-250 tracking-wider">Objetivo del Procedimiento</h5>
                                 <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-                                    Este módulo calcula automáticamente el desempeño global de los técnicos y operadores de campo de HSB Servicios Eléctricos. El sistema consolida datos operativos, capacitaciones homologadas e inasistencias en base mensual para asegurar el cumplimiento del estándar de calidad ISO 9001 y la trazabilidad del personal.
+                                    Este módulo calcula automáticamente el desempeño global de los técnicos y operadores de campo de HDB Servicios Eléctricos. El sistema consolida datos operativos, capacitaciones homologadas e inasistencias en base mensual para asegurar el cumplimiento del estándar de calidad ISO 9001 y la trazabilidad del personal.
                                 </p>
                             </div>
 
@@ -938,7 +932,7 @@ export default function OperadoresTab() {
                                     <span className="w-1.5 h-3 bg-violet-600 rounded-full" />
                                     Pilar Base: Score de Desempeño (100 Puntos Máximos)
                                 </h5>
-                                
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {/* Competencies */}
                                     <div className="p-4 bg-indigo-50/30 dark:bg-indigo-950/10 rounded-2xl border border-indigo-100/50 dark:border-indigo-900/30 space-y-2">
@@ -947,10 +941,10 @@ export default function OperadoresTab() {
                                             <span className="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 text-[10px] font-black rounded-lg">Peso: 35%</span>
                                         </div>
                                         <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-                                            Evalúa las habilidades técnicas validadas y vigentes en el mes. Compara contra un perfil teórico de 8 habilidades predefinidas (PLC, Automatización, Electricidad, Dispensers, Baja Tensión, Seguridad NFPA 70E, Trabajo en Altura, y Mantenimiento) con un puntaje máximo de 54 puntos.
+                                            Evalúa las habilidades técnicas validadas y vigentes en el mes. El sistema valora la especialización, midiendo el peso acumulado contra una meta base de 25 puntos (perfil especialista), permitiendo que técnicos enfocados alcancen el 100% sin ser penalizados por no poseer la totalidad de las 8 disciplinas posibles.
                                         </p>
                                         <div className="text-[10px] bg-white dark:bg-slate-900 p-2 rounded-xl border border-indigo-100/30 dark:border-slate-800 font-mono text-slate-500">
-                                            Score = Round((Sumatoria_Pesos_Activos / 54) * 100)
+                                            Score = Min(100, Round((Sumatoria_Pesos_Activos / Meta_Especialista_25) * 100))
                                         </div>
                                     </div>
 
@@ -975,10 +969,10 @@ export default function OperadoresTab() {
                                             <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 text-[10px] font-black rounded-lg">Peso: 20%</span>
                                         </div>
                                         <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-                                            Calcula la presencia efectiva sobre días hábiles. Las faltas justificadas (médicas, licencias) no penalizan y se restan de los días laborables del mes. Las faltas injustificadas restan 15 puntos por ocurrencia.
+                                            Calcula la presencia efectiva sobre días hábiles. Las faltas justificadas (médicas, licencias) no penalizan y se restan de los días laborables del mes. Las faltas injustificadas reducen de forma matemáticamente proporcional la tasa de cumplimiento del pilar de asistencia.
                                         </p>
                                         <div className="text-[10px] bg-white dark:bg-slate-900 p-2 rounded-xl border border-emerald-100/30 dark:border-slate-800 font-mono text-slate-500">
-                                            Asistencia = ((Hábiles - Justificadas - Injustificadas) / (Hábiles - Justificadas)) * 100 - (Injustificadas * 15)
+                                            Asistencia = ((Hábiles - Justificadas - Injustificadas) / (Hábiles - Justificadas)) * 100
                                         </div>
                                     </div>
 
@@ -1063,7 +1057,7 @@ export default function OperadoresTab() {
 
                         {/* Modal Footer */}
                         <div className="p-5 border-t border-slate-100 dark:border-slate-700 flex justify-end bg-slate-50/50 dark:bg-slate-900/40">
-                            <button 
+                            <button
                                 onClick={() => setShowAuditModal(false)}
                                 className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-black rounded-xl transition-colors shadow-sm"
                             >
