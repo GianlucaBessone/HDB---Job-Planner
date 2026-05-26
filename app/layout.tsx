@@ -205,7 +205,7 @@ export default function RootLayout({
                 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
                 <title>HDB | SGI</title>
-                <meta name="description" content="Sistema premium de planificación para técnicos" />
+                <meta name="description" content="Sistema de Gestión Integral" />
             </head>
             <body className="font-sans min-h-[100dvh] bg-slate-50/50 dark:bg-slate-900 overscroll-none text-slate-900 dark:text-slate-100" style={{ fontFamily: '"Outfit", sans-serif' }}>
                 <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
