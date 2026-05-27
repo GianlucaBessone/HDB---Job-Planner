@@ -74,32 +74,31 @@ export default function RootLayout({
     let content;
     if (isCheckingAuth) {
         content = (
-            <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-white dark:bg-slate-950 transition-colors duration-300">
-                <div className="flex flex-col items-center text-center px-4 animate-in fade-in duration-500">
-                    {/* Logo Squircle wrapper with modern shadow */}
-                    <div className="relative w-28 h-28 mb-6 transition-transform duration-300">
+            <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-gradient-to-b from-white via-slate-50/50 to-white dark:from-slate-950 dark:via-slate-900/50 dark:to-slate-950 transition-colors duration-300">
+                <div className="flex flex-col items-center text-center px-4 animate-in fade-in zoom-in-95 duration-700">
+                    {/* Logo directly rounded (zoomed in to hide baked-in white padding) */}
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 mb-8 rounded-[1.25rem] overflow-hidden shadow-xl shadow-slate-300/50 dark:shadow-slate-900/50 flex items-center justify-center">
                         <img 
                             src="/images/android/launchericon-192x192.png" 
                             alt="Logo HDB SGI" 
-                            className="w-full h-full object-contain drop-shadow-xl"
+                            className="w-full h-full object-cover scale-[1.4]"
                         />
                     </div>
-                    {/* Elegant, modern text titles */}
                     <h1 className="text-3xl sm:text-4xl font-black text-slate-800 dark:text-slate-100 tracking-tight">
                         HDB<span className="text-primary">SGI</span>
                     </h1>
-                    <div className="h-[2px] w-12 bg-primary/30 my-4 rounded-full"></div>
-                    <p className="text-sm font-black text-primary tracking-[0.25em] uppercase mb-1">
-                        SGI
-                    </p>
-                    <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest max-w-[280px]">
+                    <div className="h-[2px] w-16 bg-gradient-to-r from-transparent via-primary/40 to-transparent my-5 rounded-full" />
+                    <p className="text-[11px] font-black text-primary/80 tracking-[0.3em] uppercase mb-1">
                         Sistema de Gestión Integral
                     </p>
-                    {/* Soft modern loader at the bottom */}
-                    <div className="mt-12 flex gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-primary/60 animate-bounce [animation-delay:-0.3s]"></span>
-                        <span className="w-2 h-2 rounded-full bg-primary/60 animate-bounce [animation-delay:-0.15s]"></span>
-                        <span className="w-2 h-2 rounded-full bg-primary/60 animate-bounce"></span>
+                    <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                        Plataforma Operativa
+                    </p>
+                    {/* Loader */}
+                    <div className="mt-14 flex gap-2">
+                        <span className="w-2 h-2 rounded-full bg-primary/50 animate-bounce [animation-delay:-0.3s]" />
+                        <span className="w-2 h-2 rounded-full bg-primary/50 animate-bounce [animation-delay:-0.15s]" />
+                        <span className="w-2 h-2 rounded-full bg-primary/50 animate-bounce" />
                     </div>
                 </div>
             </div>

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { 
     BookOpen, CheckCircle2, Clock, AlertCircle, Play, FileText, 
     Download, Award, ChevronRight, X, Loader2, ShieldAlert, 
-    UploadCloud, Plus, Calendar, Landmark, Eye, CheckCircle, HelpCircle
+    UploadCloud, Plus, Calendar, Landmark, Eye, CheckCircle, HelpCircle, Trash2
 } from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
@@ -213,6 +213,24 @@ export default function CapacitacionPage() {
             showToast('Error de conexión', 'error');
         } finally {
             setAnalyzingCert(false);
+        }
+    };
+
+    const handleDeleteCertificate = async (id: string) => {
+        if (!confirm('¿Seguro que desea eliminar este certificado? Esta acción no se puede deshacer.')) return;
+        
+        try {
+            const res = await safeApiRequest(`/api/qms/certificados?id=${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                showToast('Certificado eliminado exitosamente', 'success');
+                loadCertificates();
+                if (previewCert?.id === id) setPreviewCert(null);
+            } else {
+                const err = await res.json();
+                showToast(err.error || 'Error al eliminar certificado', 'error');
+            }
+        } catch (error) {
+            showToast('Error de red al intentar eliminar', 'error');
         }
     };
 
@@ -584,6 +602,13 @@ export default function CapacitacionPage() {
                                             )}
                                         </div>
                                         <div className="flex gap-2">
+                                            <button 
+                                                onClick={() => handleDeleteCertificate(cert.id)}
+                                                className="p-1 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg text-rose-500 transition-colors"
+                                                title="Eliminar certificado"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
                                             {cert.archivoUrl && (
                                                 <button 
                                                     onClick={() => setPreviewCert(cert)}
@@ -630,7 +655,7 @@ export default function CapacitacionPage() {
                             )}
 
                             {previewCert.aiData && (
-                                <div className="bg-indigo-50/50 dark:bg-indigo-950/10 p-4 rounded-2xl border border-indigo-100/50 dark:border-indigo-800/40 space-y-2">
+                                <div className="bg-indigo-50/50 dark:bg-indigo-950/10 p-4 rounded-2xl border border-indigo-100/50 dark:border-indigo-800/40 space-y-4">
                                     <p className="text-[10px] font-black text-indigo-600 uppercase tracking-wider flex items-center gap-1">
                                         <Award className="w-3.5 h-3.5" /> Metadatos Extraídos por IA Gemini
                                     </p>
@@ -652,6 +677,31 @@ export default function CapacitacionPage() {
                                             <p className="font-bold text-slate-700 dark:text-slate-200">{previewCert.aiData.fechaEmision || 'N/A'}</p>
                                         </div>
                                     </div>
+                                    
+                                    {(previewCert.aiData.habilidadesRelevantes?.length > 0 || previewCert.aiData.otrasHabilidades?.length > 0) && (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-indigo-100/50 dark:border-indigo-800/30">
+                                            {previewCert.aiData.habilidadesRelevantes?.length > 0 && (
+                                                <div className="space-y-2">
+                                                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-wider">Habilidades Relevantes</p>
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {previewCert.aiData.habilidadesRelevantes.map((hab: string, i: number) => (
+                                                            <span key={i} className="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold rounded-lg border border-emerald-200 dark:border-emerald-800">{hab}</span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {previewCert.aiData.otrasHabilidades?.length > 0 && (
+                                                <div className="space-y-2">
+                                                    <p className="text-[10px] font-black text-amber-600 uppercase tracking-wider">Otras Habilidades</p>
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {previewCert.aiData.otrasHabilidades.map((hab: string, i: number) => (
+                                                            <span key={i} className="px-2 py-1 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-[10px] font-bold rounded-lg border border-amber-200 dark:border-amber-800">{hab}</span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>

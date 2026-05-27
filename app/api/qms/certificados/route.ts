@@ -58,7 +58,7 @@ export async function POST(req: Request) {
             const aiRes = await analyzeCertificateOcr(archivoUrl, fileType, {
                 userId: operatorId,
                 entity: 'ExternalCertificate'
-            });
+            }, { nombreCurso, institucion, descripcion });
 
             if (aiRes.success && aiRes.data) {
                 aiData = aiRes.data;
@@ -165,26 +165,30 @@ export async function PUT(req: Request) {
         // Create pending competency if certificate is approved and has aiData
         if (estado === 'aprobado') {
             const aiJson = (updated.aiData || {}) as any;
-            const skillName = aiJson.habilidadSugerida;
+            const relevant = Array.isArray(aiJson.habilidadesRelevantes) ? aiJson.habilidadesRelevantes : [];
+            const others = Array.isArray(aiJson.otrasHabilidades) ? aiJson.otrasHabilidades : [];
+            const allSkills = [...relevant, ...others];
             
-            // Only create if skill is not already active and is a valid predefined skill (not 'Ninguna / Revisión Manual')
-            if (skillName && skillName !== 'Ninguna / Revisión Manual') {
-                const existingComp = await prisma.technicianCompetency.findFirst({
-                    where: {
-                        operatorId: updated.operatorId,
-                        nombre: skillName
-                    }
-                });
-
-                if (!existingComp) {
-                    await prisma.technicianCompetency.create({
-                        data: {
+            for (const skillName of allSkills) {
+                // Only create if skill is not already active and is a valid predefined skill (not 'Ninguna / Revisión Manual')
+                if (skillName && skillName !== 'Ninguna / Revisión Manual') {
+                    const existingComp = await prisma.technicianCompetency.findFirst({
+                        where: {
                             operatorId: updated.operatorId,
-                            nombre: skillName,
-                            estado: 'pendiente',
-                            evidencia: `Certificado: ${updated.nombreCurso}`
+                            nombre: skillName
                         }
                     });
+
+                    if (!existingComp) {
+                        await prisma.technicianCompetency.create({
+                            data: {
+                                operatorId: updated.operatorId,
+                                nombre: skillName,
+                                estado: 'pendiente', // Pendiente para validación manual del supervisor
+                                evidencia: `Certificado: ${updated.nombreCurso}`
+                            }
+                        });
+                    }
                 }
             }
         }

@@ -27,6 +27,7 @@ export const DEFAULT_VIEWS: ViewConfig[] = [
     { key: '/carros-historial', label: 'Historial de Carros', roles: ['supervisor', 'admin', 'qa'], access: 'ambos' },
     { key: '/herramientas', label: 'Herramientas y Carros', roles: ['operador', 'supervisor', 'admin', 'qa'], access: 'ambos' },
     { key: '/calidad', label: 'Calidad y Documentación', roles: ['admin', 'qa', 'supervisor'], access: 'ambos' },
+    { key: '/capacitacion', label: 'Formación Integral', roles: ['operador', 'supervisor', 'admin', 'qa'], access: 'ambos' },
     { key: '/auditoria-ia', label: 'Auditoría de IA', roles: ['admin', 'qa', 'supervisor'], access: 'ambos' },
     { key: '/notifications', label: 'Notificaciones', roles: ['operador', 'supervisor', 'admin', 'qa', 'vendedor'], access: 'home' },
 ];

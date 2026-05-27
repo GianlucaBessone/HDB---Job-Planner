@@ -35,6 +35,9 @@ export interface OperatorScoreResult {
 // BUSINESS RULES & CONFIGURATION (ISO 9001)
 // ==========================================
 const SCORING_CONFIG = {
+    // Feature Flags
+    ENABLE_GPS_TIME_COMPARISON: false, // Set to true once GPS Clock-in feature is fully implemented
+    
     // Competency: A weight of 25 is considered a "Full Specialist" benchmark (e.g., 3-4 core skills).
     // This prevents bias against specialized technicians compared to "master of all" generalists.
     COMPETENCY_TARGET_WEIGHT: 25, 
@@ -62,15 +65,84 @@ const SCORING_CONFIG = {
 };
 
 const PREDEFINED_SKILLS = [
-    { name: 'Programación de PLC', weight: 10 },
-    { name: 'Automatización Industrial', weight: 9 },
-    { name: 'Electricidad Industrial', weight: 8 },
-    { name: 'Técnico de Dispensers', weight: 6 },
-    { name: 'Instalaciones de Baja Tensión', weight: 5 },
-    { name: 'Seguridad Eléctrica y NFPA 70E', weight: 8 },
-    { name: 'Trabajo en Altura', weight: 4 },
-    { name: 'Mantenimiento Preventivo', weight: 4 }
+    // Habilidades Relevantes
+    { name: 'HyS', weight: 2 },
+    { name: 'Técnico en Dispensers', weight: 2 },
+    { name: 'Técnico en Refrigeración', weight: 3 },
+    { name: 'Técnico en CCTV/Alarmas', weight: 3 },
+    { name: 'Electricista', weight: 4 },
+    { name: 'Instrumentista Industrial', weight: 4 },
+    { name: 'Especialista en Automatización (Neumática)', weight: 5 },
+    { name: 'Especialista en Automatización (PLC)', weight: 5 },
+    // Otras Habilidades
+    { name: 'Lectura de Planos Eléctricos', weight: 3 },
+    { name: 'Lectura de Planos Civiles', weight: 3 },
+    { name: 'Soft Skills (Habilidades Blandas)', weight: 4 },
+    { name: 'Herramientas de Informática', weight: 3 },
+    { name: 'Team Leader', weight: 5 }
 ];
+
+/**
+ * Helper to fetch Argentine holidays from nolaborables.com.ar
+ */
+const holidayCache: Record<number, any[]> = {};
+
+async function getHolidays(year: number) {
+    if (holidayCache[year]) return holidayCache[year];
+    try {
+        const res = await fetch(`https://nolaborables.com.ar/api/v2/feriados/${year}?incluir=opcional`);
+        if (!res.ok) return [];
+        const data = await res.json();
+        // Filtrar "nolaborable" ya que esos días se trabajan normal según reglas de la empresa
+        const feriados = data.filter((d: any) => d.tipo !== 'nolaborable');
+        holidayCache[year] = feriados;
+        return feriados;
+    } catch (e) {
+        console.error("Error fetching holidays:", e);
+        return [];
+    }
+}
+
+/**
+ * Calculates expected working hours between two dates:
+ * 9 hours per weekday (Mon-Fri) excluding holidays.
+ */
+async function calculateExpectedHours(startDate: Date, endDate: Date): Promise<number> {
+    let expectedHours = 0;
+    
+    const startYear = startDate.getFullYear();
+    const endYear = endDate.getFullYear();
+    
+    const holidaysByYear: Record<number, any[]> = {};
+    for (let y = startYear; y <= endYear; y++) {
+        holidaysByYear[y] = await getHolidays(y);
+    }
+
+    let current = new Date(startDate);
+    current.setHours(0, 0, 0, 0);
+    const end = new Date(endDate);
+    end.setHours(0, 0, 0, 0);
+
+    while (current <= end) {
+        const dayOfWeek = current.getDay();
+        // Lunes a Viernes (1-5)
+        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+            const y = current.getFullYear();
+            const m = current.getMonth() + 1;
+            const d = current.getDate();
+            
+            const holidays = holidaysByYear[y] || [];
+            const isHoliday = holidays.some(h => h.mes === m && h.dia === d);
+            
+            if (!isHoliday) {
+                expectedHours += 9; // 9 hs por día hábil
+            }
+        }
+        current.setDate(current.getDate() + 1);
+    }
+    
+    return expectedHours;
+}
 
 /**
  * Calculates the number of weekdays (excluding weekends) in a given month.
@@ -110,7 +182,8 @@ export async function calculateOperatorScore(
         select: {
             id: true,
             nombreCompleto: true,
-            role: true
+            role: true,
+            createdAt: true
         }
     });
 
@@ -298,7 +371,53 @@ export async function calculateOperatorScore(
     const attendanceRate = netDays > 0 ? ((netDays - unjustifiedAbsences) / netDays) * 100 : 100;
     const attendanceComponent = Math.max(0, Math.round(attendanceRate));
 
-    // 4. TIME COMPLIANCE (Cumplimiento) (Weight: 25%)
+    // 4. TIME COMPLIANCE (Cumplimiento Dinámico Histórico vs 180hs) (Weight: 25%)
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setHours(23, 59, 59, 999);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    const allTimeEntries = await prisma.timeEntry.findMany({
+        where: {
+            operatorId,
+            estadoConfirmado: true,
+            fecha: { lte: yesterdayStr }
+        },
+        orderBy: { fecha: 'asc' }
+    });
+
+    const totalHistoricWorkedHours = allTimeEntries
+        .filter(te => !te.causaRegistro)
+        .reduce((acc, te) => acc + (te.horasTrabajadas || 0), 0);
+
+    let expectedHours = 0;
+    if (allTimeEntries.length > 0) {
+        const firstEntryDate = new Date(allTimeEntries[0].fecha + "T00:00:00");
+        expectedHours = await calculateExpectedHours(firstEntryDate, yesterday);
+    } else if (operator.createdAt) {
+        // Fallback to operator creation date if no entries exist
+        expectedHours = await calculateExpectedHours(operator.createdAt, yesterday);
+    }
+
+    let complianceComponent = 100;
+    
+    if (expectedHours > 0) {
+        // Calculamos el porcentaje real, cap a 150 para que no rompa desproporcionadamente el baseScore
+        const complianceRate = (totalHistoricWorkedHours / expectedHours) * 100;
+        complianceComponent = Math.min(150, Math.max(0, Math.round(complianceRate)));
+    } else if (expectedHours === 0 && totalHistoricWorkedHours === 0) {
+        // Si no se esperaba que trabaje nada y no trabajó nada (ej: entró hoy mismo)
+        complianceComponent = 100;
+    } else if (expectedHours === 0 && totalHistoricWorkedHours > 0) {
+        // Trabajó sin tener horas esperadas (fines de semana al ingresar, etc)
+        complianceComponent = 150;
+    }
+
+    // Para el bono de carga mensual que se usa más abajo, necesitamos las horas del mes actual
+    const manualHours = allTimeEntries
+        .filter(te => te.fecha.startsWith(monthPrefix) && !te.causaRegistro)
+        .reduce((acc, te) => acc + (te.horasTrabajadas || 0), 0);
+
     const fichadas = await prisma.fichada.findMany({
         where: {
             operatorId,
@@ -306,40 +425,7 @@ export async function calculateOperatorScore(
         }
     });
 
-    const totalFichadas = fichadas.length;
-    const suspiciousFichadas = fichadas.filter(f => f.isSuspicious).length;
-
-    // Validate manual hour load against automatic Fichadas
     const automaticHours = fichadas.reduce((acc, f) => acc + (f.horasTrabajadas || 0), 0);
-    
-    const timeEntries = await prisma.timeEntry.findMany({
-        where: {
-            operatorId,
-            fecha: { startsWith: monthPrefix },
-            estadoConfirmado: true
-        }
-    });
-    const manualHours = timeEntries
-        .filter(te => !te.causaRegistro)
-        .reduce((acc, te) => acc + (te.horasTrabajadas || 0), 0);
-
-    // Compute discrepancy penalty proportionally 
-    let discrepancyPenalty = 0;
-    if (manualHours > 0 || automaticHours > 0) {
-        const diff = Math.abs(automaticHours - manualHours);
-        const avg = (automaticHours + manualHours) / 2;
-        const pctDiff = avg > 0 ? (diff / avg) * 100 : 0;
-        if (pctDiff > SCORING_CONFIG.TIME_COMPLIANCE_DIFF_THRESHOLD_PCT) {
-            discrepancyPenalty = Math.min(SCORING_CONFIG.TIME_COMPLIANCE_MAX_PENALTY, Math.round(pctDiff / 4));
-        }
-    }
-
-    let complianceComponent = 100;
-    if (totalFichadas > 0) {
-        complianceComponent = Math.max(0, 100 - ((suspiciousFichadas / totalFichadas) * 100) - discrepancyPenalty);
-    } else {
-        complianceComponent = Math.max(0, 100 - discrepancyPenalty);
-    }
 
     // BASE SCORE (Out of 100)
     const baseScore = 

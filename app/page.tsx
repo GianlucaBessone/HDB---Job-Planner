@@ -19,7 +19,11 @@ import {
     User as UserIcon,
     FileSignature,
     History as HistoryIcon,
-    Wrench
+    Wrench,
+    ShieldCheck,
+    Bot,
+    BookOpen,
+    FileCheck
 } from 'lucide-react';
 import Link from 'next/link';
 import { ViewConfig, isViewAllowed } from '@/lib/viewAccess';
@@ -101,6 +105,7 @@ export default function HomePage() {
 
     const hasOperaciones = show('/fichado') || show('/timesheets') || show('/herramientas') || show('/my-projects') || show('/delays');
     const hasGestion = show('/aprobaciones') || show('/planning') || show('/projects') || show('/ordenes-servicio') || show('/provision-materiales') || show('/clients');
+    const hasCalidad = show('/calidad') || show('/capacitacion') || show('/auditoria-ia');
     const hasAdmin = show('/dashboard') || show('/operators') || show('/auditoria') || show('/configuracion') || show('/notifications');
 
     return (
@@ -235,6 +240,38 @@ export default function HomePage() {
                             icon={<Activity className="w-6 h-6" />}
                             href="/clients"
                             color="bg-indigo-500"
+                            scale={cardScale}
+                        />}
+                    </div>
+                </div>
+            )}
+
+            {hasCalidad && (
+                <div className="space-y-6">
+                    <h3 className="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 animate-in fade-in duration-300">Calidad</h3>
+                    <div className={getGridClass(cardScale)}>
+                        {show('/calidad') && <ActionCard
+                            title="Calidad y QMS"
+                            description="Gestión documental ISO"
+                            icon={<FileCheck className="w-6 h-6" />}
+                            href="/calidad"
+                            color="bg-emerald-600"
+                            scale={cardScale}
+                        />}
+                        {show('/capacitacion') && <ActionCard
+                            title="Formación Integral"
+                            description="Capacitación y competencias"
+                            icon={<BookOpen className="w-6 h-6" />}
+                            href="/capacitacion"
+                            color="bg-sky-600"
+                            scale={cardScale}
+                        />}
+                        {show('/auditoria-ia') && <ActionCard
+                            title="Auditoría de IA"
+                            description="Validación inteligente"
+                            icon={<Bot className="w-6 h-6" />}
+                            href="/auditoria-ia"
+                            color="bg-fuchsia-600"
                             scale={cardScale}
                         />}
                     </div>

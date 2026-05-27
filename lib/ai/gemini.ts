@@ -490,7 +490,8 @@ export async function analyzeDocumentOcr(
 export async function analyzeCertificateOcr(
     base64Data: string,
     mimeType: string,
-    options: AiRequestOptions = {}
+    options: AiRequestOptions = {},
+    manualData?: { nombreCurso?: string; institucion?: string; descripcion?: string }
 ): Promise<AiServiceResponse> {
     const start = Date.now();
     const modelName = options.model || 'gemini-2.5-flash';
@@ -501,7 +502,10 @@ export async function analyzeCertificateOcr(
         await rateLimiter.waitIfLimitReached();
 
         const defaultPrompt = DEFAULT_PROMPTS[promptKey];
-        const userPrompt = defaultPrompt.template;
+        let userPrompt = defaultPrompt.template;
+        if (manualData && (manualData.nombreCurso || manualData.institucion || manualData.descripcion)) {
+            userPrompt += `\n\nEl operador ha proporcionado esta información de forma manual para ayudar (puede complementar o corregir lo que se ve en la imagen):\nNombre del Curso: ${manualData.nombreCurso || 'N/A'}\nInstitución: ${manualData.institucion || 'N/A'}\nDescripción/Temario: ${manualData.descripcion || 'N/A'}\n\nUsa estos datos como contexto principal si la imagen es ilegible o le falta información. Extrae las habilidades en base a la combinación de la imagen y esta información provista.`;
+        }
 
         const docPart = {
             inlineData: {
@@ -544,24 +548,19 @@ export async function analyzeCertificateOcr(
                             type: 'STRING',
                             description: 'Breve resumen del contenido y de qué se trata la capacitación'
                         },
-                        habilidadSugerida: {
-                            type: 'STRING',
-                            enum: [
-                                'Programación de PLC',
-                                'Automatización Industrial',
-                                'Electricidad Industrial',
-                                'Técnico de Dispensers',
-                                'Instalaciones de Baja Tensión',
-                                'Seguridad Eléctrica y NFPA 70E',
-                                'Trabajo en Altura',
-                                'Mantenimiento Preventivo',
-                                'Ninguna / Revisión Manual'
-                            ],
-                            description: 'Habilidad que mejor se alinee. Si no hay correspondencia clara, selecciona estrictamente "Ninguna / Revisión Manual".'
+                        habilidadesRelevantes: {
+                            type: 'ARRAY',
+                            items: { type: 'STRING' },
+                            description: 'Extraer habilidades clave si aplican: HyS, Técnico en Dispensers, Técnico en Refrigeración, Técnico en CCTV/Alarmas, Electricista, Instrumentista Industrial, Especialista en Automatización (Neumática), Especialista en Automatización (PLC)'
+                        },
+                        otrasHabilidades: {
+                            type: 'ARRAY',
+                            items: { type: 'STRING' },
+                            description: 'Otras habilidades o blandas: Lectura de Planos Eléctricos, Lectura de Planos Civiles, Soft Skills (Habilidades Blandas), Herramientas de Informática, Team Leader'
                         },
                         justificacionMapeo: {
                             type: 'STRING',
-                            description: 'Breve explicación de la habilidad asignada o por qué se asignó para revisión manual'
+                            description: 'Breve explicación de por qué se asignaron esas habilidades'
                         },
                         confianzaAnalisis: {
                             type: 'STRING',
@@ -573,7 +572,8 @@ export async function analyzeCertificateOcr(
                         'nombreCurso',
                         'institucion',
                         'descripcion',
-                        'habilidadSugerida',
+                        'habilidadesRelevantes',
+                        'otrasHabilidades',
                         'justificacionMapeo',
                         'confianzaAnalisis'
                     ]
