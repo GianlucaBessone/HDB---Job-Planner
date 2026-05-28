@@ -3,9 +3,42 @@ import { safeApiRequest } from '@/lib/offline';
 import {
     Award, Star, GraduationCap, Clock, AlertTriangle,
     Calendar, CheckCircle, Activity, Heart, ShieldAlert, Sparkles, Loader2, User,
-    Check, X, Trash2, FileText, CheckCircle2, Shield, Eye, ThumbsUp, ThumbsDown, Info
+    Check, X, Trash2, FileText, CheckCircle2, Shield, Eye, ThumbsUp, ThumbsDown, Info, Settings
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
+
+interface ScoreConfig {
+    enableCompetency: boolean;
+    enableCsat: boolean;
+    enableAttendance: boolean;
+    enableCompliance: boolean;
+    enableSafetyPenalty: boolean;
+    enableReworkPenalty: boolean;
+    enableDelayPenalty: boolean;
+    enableOvertimeBonus: boolean;
+}
+
+const DEFAULT_SCORE_CONFIG: ScoreConfig = {
+    enableCompetency: true,
+    enableCsat: true,
+    enableAttendance: true,
+    enableCompliance: false, // Disabled by default (GPS feature not fully rolled out)
+    enableSafetyPenalty: true,
+    enableReworkPenalty: true,
+    enableDelayPenalty: true,
+    enableOvertimeBonus: true,
+};
+
+const SCORE_CONFIG_ITEMS: { key: keyof ScoreConfig; label: string; description: string; category: 'base' | 'modifier'; icon: string }[] = [
+    { key: 'enableCompetency', label: 'Competencias Técnicas', description: 'Matriz de habilidades ponderada (Peso base: 35%)', category: 'base', icon: '🎓' },
+    { key: 'enableCsat', label: 'Opinión Cliente (CSAT/NPS)', description: 'Satisfacción del cliente y encuestas (Peso base: 20%)', category: 'base', icon: '⭐' },
+    { key: 'enableAttendance', label: 'Asistencia / Presentismo', description: 'Faltas justificadas e injustificadas (Peso base: 20%)', category: 'base', icon: '📅' },
+    { key: 'enableCompliance', label: 'Cumplimiento de Fichaje', description: 'Horas trabajadas vs horas esperadas (Peso base: 25%)', category: 'base', icon: '⏱️' },
+    { key: 'enableSafetyPenalty', label: 'Penalidad SST (Seguridad)', description: 'Infracciones de seguridad (-15 pts c/u)', category: 'modifier', icon: '🛡️' },
+    { key: 'enableReworkPenalty', label: 'Penalidad Re-Trabajos (FTFR)', description: 'Órdenes repetidas (hasta -30 pts)', category: 'modifier', icon: '🔄' },
+    { key: 'enableDelayPenalty', label: 'Penalidad por Demoras', description: 'Retrasos en proyectos (hasta -10 pts)', category: 'modifier', icon: '⏳' },
+    { key: 'enableOvertimeBonus', label: 'Bono Horas Extras', description: 'Horas sobre las 180hs mensuales (+pts)', category: 'modifier', icon: '💪' },
+];
 
 export default function OperadoresTab() {
     const [scoreboard, setScoreboard] = useState<any[]>([]);
@@ -13,13 +46,31 @@ export default function OperadoresTab() {
     const [loading, setLoading] = useState(true);
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [showAuditModal, setShowAuditModal] = useState(false);
+    const [showConfigModal, setShowConfigModal] = useState(false);
+    const [scoreConfig, setScoreConfig] = useState<ScoreConfig>(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('scoreConfig');
+            if (saved) { try { return { ...DEFAULT_SCORE_CONFIG, ...JSON.parse(saved) }; } catch { } }
+        }
+        return DEFAULT_SCORE_CONFIG;
+    });
 
     // Competencies and Certificates states
     const [competencies, setCompetencies] = useState<any[]>([]);
     const [loadingCompetencies, setLoadingCompetencies] = useState(false);
     const [certificates, setCertificates] = useState<any[]>([]);
     const [loadingCertificates, setLoadingCertificates] = useState(false);
-    const [selectedCertFile, setSelectedCertFile] = useState<string | null>(null);
+    const [previewCert, setPreviewCert] = useState<any>(null);
+    const [isEditingCert, setIsEditingCert] = useState(false);
+    const [editCertData, setEditCertData] = useState<any>({
+        nombreCurso: '',
+        institucion: '',
+        horas: '',
+        fechaEmision: '',
+        descripcion: '',
+        habilidadesRelevantes: '',
+        otrasHabilidades: ''
+    });
 
     useEffect(() => {
         // Load current user from local storage
@@ -40,17 +91,27 @@ export default function OperadoresTab() {
             loadOperatorCompetencies(selectedOperator.operatorId);
             loadOperatorCertificates(selectedOperator.operatorId);
         }
-    }, [selectedOperator]);
+    }, [selectedOperator?.operatorId]);
 
     const isSupervisorOrAdmin =
         currentUser?.role?.toLowerCase() === 'supervisor' ||
         currentUser?.role?.toLowerCase() === 'admin' ||
         currentUser?.role?.toLowerCase() === 'qa';
 
-    const loadScoreboard = async () => {
+    const buildFlagParams = (config: ScoreConfig) => {
+        const params = new URLSearchParams();
+        Object.entries(config).forEach(([k, v]) => {
+            if (!v) params.set(k, 'false');
+        });
+        return params.toString();
+    };
+
+    const loadScoreboard = async (config?: ScoreConfig) => {
         setLoading(true);
         try {
-            const res = await safeApiRequest('/api/dashboard/operator-scoreboard');
+            const flagStr = buildFlagParams(config || scoreConfig);
+            const url = `/api/dashboard/operator-scoreboard${flagStr ? `?${flagStr}` : ''}`;
+            const res = await safeApiRequest(url);
             if (res.ok) {
                 const data = await res.json();
                 setScoreboard(data);
@@ -68,8 +129,8 @@ export default function OperadoresTab() {
         }
     };
 
-    const loadOperatorCompetencies = async (operatorId: string) => {
-        setLoadingCompetencies(true);
+    const loadOperatorCompetencies = async (operatorId: string, silent = false) => {
+        if (!silent) setLoadingCompetencies(true);
         try {
             const res = await safeApiRequest(`/api/dashboard/operator-scoreboard/competencies?operatorId=${operatorId}`);
             if (res.ok) {
@@ -79,12 +140,12 @@ export default function OperadoresTab() {
         } catch (e) {
             console.error('Error loading competencies:', e);
         } finally {
-            setLoadingCompetencies(false);
+            if (!silent) setLoadingCompetencies(false);
         }
     };
 
-    const loadOperatorCertificates = async (operatorId: string) => {
-        setLoadingCertificates(true);
+    const loadOperatorCertificates = async (operatorId: string, silent = false) => {
+        if (!silent) setLoadingCertificates(true);
         try {
             const res = await safeApiRequest(`/api/qms/certificados?operatorId=${operatorId}`);
             if (res.ok) {
@@ -94,7 +155,7 @@ export default function OperadoresTab() {
         } catch (e) {
             console.error('Error loading certificates:', e);
         } finally {
-            setLoadingCertificates(false);
+            if (!silent) setLoadingCertificates(false);
         }
     };
 
@@ -117,7 +178,7 @@ export default function OperadoresTab() {
             if (res.ok) {
                 showToast(`Competencia actualizada con éxito`, 'success');
                 // Reload competencies and scoreboard to update score
-                loadOperatorCompetencies(selectedOperator.operatorId);
+                loadOperatorCompetencies(selectedOperator.operatorId, true);
                 loadScoreboardSilently();
             } else {
                 showToast('Error al actualizar competencia', 'error');
@@ -145,7 +206,7 @@ export default function OperadoresTab() {
 
             if (res.ok) {
                 showToast(approve ? 'Habilidad aprobada e incorporada a la matriz' : 'Habilidad rechazada', 'success');
-                loadOperatorCompetencies(selectedOperator.operatorId);
+                loadOperatorCompetencies(selectedOperator.operatorId, true);
                 loadScoreboardSilently();
             } else {
                 showToast('Error al procesar la habilidad', 'error');
@@ -173,8 +234,11 @@ export default function OperadoresTab() {
 
             if (res.ok) {
                 showToast(approved ? 'Certificado aprobado' : 'Certificado rechazado', 'success');
-                loadOperatorCertificates(selectedOperator.operatorId);
-                loadOperatorCompetencies(selectedOperator.operatorId);
+                if (previewCert && previewCert.id === certificateId) {
+                    setPreviewCert({ ...previewCert, estado: approved ? 'aprobado' : 'rechazado' });
+                }
+                loadOperatorCertificates(selectedOperator.operatorId, true);
+                loadOperatorCompetencies(selectedOperator.operatorId, true);
                 loadScoreboardSilently();
             } else {
                 showToast('Error al procesar el certificado', 'error');
@@ -197,8 +261,11 @@ export default function OperadoresTab() {
 
             if (res.ok) {
                 showToast('Certificado eliminado correctamente', 'success');
-                loadOperatorCertificates(selectedOperator.operatorId);
-                loadOperatorCompetencies(selectedOperator.operatorId);
+                if (previewCert && previewCert.id === certificateId) {
+                    setPreviewCert(null);
+                }
+                loadOperatorCertificates(selectedOperator.operatorId, true);
+                loadOperatorCompetencies(selectedOperator.operatorId, true);
                 loadScoreboardSilently();
             } else {
                 showToast('Error al eliminar certificado', 'error');
@@ -209,9 +276,70 @@ export default function OperadoresTab() {
         }
     };
 
-    const loadScoreboardSilently = async () => {
+    // Save edited certificate data
+    const handleSaveCertEdit = async () => {
         try {
-            const res = await safeApiRequest('/api/dashboard/operator-scoreboard');
+            const res = await safeApiRequest('/api/qms/certificados', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: previewCert.id,
+                    estado: previewCert.estado,
+                    nombreCurso: editCertData.nombreCurso,
+                    institucion: editCertData.institucion,
+                    horas: editCertData.horas ? parseFloat(editCertData.horas) : null,
+                    fechaEmision: editCertData.fechaEmision ? new Date(editCertData.fechaEmision).toISOString() : null,
+                    descripcion: editCertData.descripcion,
+                    aiData: {
+                        ...previewCert.aiData,
+                        habilidadesRelevantes: typeof editCertData.habilidadesRelevantes === 'string'
+                            ? editCertData.habilidadesRelevantes.split(',').map((s: string) => s.trim()).filter(Boolean)
+                            : editCertData.habilidadesRelevantes,
+                        otrasHabilidades: typeof editCertData.otrasHabilidades === 'string'
+                            ? editCertData.otrasHabilidades.split(',').map((s: string) => s.trim()).filter(Boolean)
+                            : editCertData.otrasHabilidades
+                    },
+                    userId: currentUser?.id,
+                    userName: currentUser?.nombreCompleto
+                })
+            });
+
+            if (res.ok) {
+                showToast('Certificado actualizado con éxito', 'success');
+                setIsEditingCert(false);
+                const updatedCert = {
+                    ...previewCert,
+                    ...editCertData,
+                    horas: editCertData.horas ? parseFloat(editCertData.horas) : null,
+                    aiData: {
+                        ...previewCert.aiData,
+                        habilidadesRelevantes: typeof editCertData.habilidadesRelevantes === 'string'
+                            ? editCertData.habilidadesRelevantes.split(',').map((s: string) => s.trim()).filter(Boolean)
+                            : editCertData.habilidadesRelevantes,
+                        otrasHabilidades: typeof editCertData.otrasHabilidades === 'string'
+                            ? editCertData.otrasHabilidades.split(',').map((s: string) => s.trim()).filter(Boolean)
+                            : editCertData.otrasHabilidades
+                    }
+                };
+                setPreviewCert(updatedCert);
+                if (selectedOperator?.operatorId) {
+                    loadOperatorCertificates(selectedOperator.operatorId, true);
+                    loadOperatorCompetencies(selectedOperator.operatorId, true);
+                }
+            } else {
+                showToast('Error al guardar los cambios', 'error');
+            }
+        } catch (e) {
+            console.error(e);
+            showToast('Error de conexión', 'error');
+        }
+    };
+
+    const loadScoreboardSilently = async (config?: ScoreConfig) => {
+        try {
+            const flagStr = buildFlagParams(config || scoreConfig);
+            const url = `/api/dashboard/operator-scoreboard${flagStr ? `?${flagStr}` : ''}`;
+            const res = await safeApiRequest(url);
             if (res.ok) {
                 const data = await res.json();
                 setScoreboard(data);
@@ -223,6 +351,13 @@ export default function OperadoresTab() {
         } catch (e) {
             console.error(e);
         }
+    };
+
+    const handleToggleConfig = (key: keyof ScoreConfig) => {
+        const updated = { ...scoreConfig, [key]: !scoreConfig[key] };
+        setScoreConfig(updated);
+        localStorage.setItem('scoreConfig', JSON.stringify(updated));
+        loadScoreboardSilently(updated);
     };
 
     if (loading) {
@@ -361,13 +496,22 @@ export default function OperadoresTab() {
                         </p>
                     </div>
                 </div>
-                <button
-                    onClick={() => setShowAuditModal(true)}
-                    className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-black text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 border border-violet-100 dark:border-violet-900/50 hover:bg-violet-100 dark:hover:bg-violet-900/40 rounded-2xl transition-all shadow-sm self-start sm:self-auto"
-                >
-                    <Info className="w-4 h-4" />
-                    Fórmula & Auditoría SGC
-                </button>
+                <div className="flex items-center gap-2 self-start sm:self-auto">
+                    <button
+                        onClick={() => setShowConfigModal(true)}
+                        className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-black text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-2xl transition-all shadow-sm"
+                    >
+                        <Settings className="w-4 h-4" />
+                        Configuración
+                    </button>
+                    <button
+                        onClick={() => setShowAuditModal(true)}
+                        className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-black text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 border border-violet-100 dark:border-violet-900/50 hover:bg-violet-100 dark:hover:bg-violet-900/40 rounded-2xl transition-all shadow-sm"
+                    >
+                        <Info className="w-4 h-4" />
+                        Fórmula & Auditoría SGC
+                    </button>
+                </div>
             </div>
 
             {/* Split layout */}
@@ -484,19 +628,24 @@ export default function OperadoresTab() {
                                         <div className="p-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl">
                                             <Star className="w-5 h-5" fill="currentColor" />
                                         </div>
-                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Opinión Cliente</span>
+                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1">
+                                            Opinión Cliente
+                                            {!scoreConfig.enableCsat && (
+                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[8px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-extrabold ml-1">Neutro</span>
+                                            )}
+                                        </span>
                                     </div>
                                     <div className="mt-4">
                                         <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Satisfacción CSAT</p>
                                         <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5">
-                                            {selectedOperator.metrics.csat} / 10
+                                            {scoreConfig.enableCsat ? `${selectedOperator.metrics.csat} / 10` : '10 / 10'}
                                         </h4>
                                         <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-900 rounded-full mt-2.5 overflow-hidden">
-                                            <div className="h-full bg-amber-500 rounded-full" style={{ width: `${selectedOperator.metrics.csat * 10}%` }} />
+                                            <div className="h-full bg-amber-500 rounded-full" style={{ width: scoreConfig.enableCsat ? `${selectedOperator.metrics.csat * 10}%` : '100%' }} />
                                         </div>
                                     </div>
                                     <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
-                                        <span>NPS: {selectedOperator.metrics.nps >= 0 ? `+${selectedOperator.metrics.nps}` : selectedOperator.metrics.nps}</span>
+                                        <span>NPS: {scoreConfig.enableCsat ? (selectedOperator.metrics.nps >= 0 ? `+${selectedOperator.metrics.nps}` : selectedOperator.metrics.nps) : '+100'}</span>
                                         <span>{selectedOperator.metrics.surveysCount} encuestas</span>
                                     </div>
                                 </div>
@@ -507,16 +656,21 @@ export default function OperadoresTab() {
                                         <div className="p-2 bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 rounded-xl">
                                             <GraduationCap className="w-5 h-5" />
                                         </div>
-                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Competencias</span>
+                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1">
+                                            Competencias
+                                            {!scoreConfig.enableCompetency && (
+                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[8px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-extrabold ml-1">Neutro</span>
+                                            )}
+                                        </span>
                                     </div>
                                     <div className="mt-4">
                                         <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Score Matriz</p>
                                         <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5">
-                                            {selectedOperator.metrics.competencyScore || 0}%
+                                            {scoreConfig.enableCompetency ? `${selectedOperator.metrics.competencyScore || 0}%` : '100%'}
                                         </h4>
                                         <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-900 rounded-full mt-2.5 overflow-hidden">
                                             <div className="h-full bg-indigo-600 rounded-full"
-                                                style={{ width: `${selectedOperator.metrics.competencyScore || 0}%` }}
+                                                style={{ width: scoreConfig.enableCompetency ? `${selectedOperator.metrics.competencyScore || 0}%` : '100%' }}
                                             />
                                         </div>
                                     </div>
@@ -532,28 +686,35 @@ export default function OperadoresTab() {
                                         <div className="p-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl">
                                             <Activity className="w-5 h-5" />
                                         </div>
-                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Asistencia</span>
+                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1">
+                                            Asistencia
+                                            {(!scoreConfig.enableAttendance || !scoreConfig.enableCompliance) && (
+                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[8px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-extrabold ml-1">
+                                                    {!scoreConfig.enableAttendance && !scoreConfig.enableCompliance ? 'Desact.' : !scoreConfig.enableAttendance ? 'Asist. Desact.' : 'Fich. Desact.'}
+                                                </span>
+                                            )}
+                                        </span>
                                     </div>
                                     <div className="mt-4">
                                         <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Cumplimiento Fichaje</p>
                                         <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5">
-                                            {selectedOperator.metrics.timeCompliance}%
+                                            {scoreConfig.enableCompliance ? `${selectedOperator.metrics.timeCompliance}%` : '100%'}
                                         </h4>
                                         <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-900 rounded-full mt-2.5 overflow-hidden">
-                                            <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${selectedOperator.metrics.timeCompliance}%` }} />
+                                            <div className="h-full bg-emerald-500 rounded-full" style={{ width: scoreConfig.enableCompliance ? `${selectedOperator.metrics.timeCompliance}%` : '100%' }} />
                                         </div>
                                     </div>
                                     <div className="mt-2 pt-2 border-t border-slate-50 dark:border-slate-700/50 flex flex-col gap-1 text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
                                         <div className="flex justify-between">
                                             <span>Faltas Injustificadas:</span>
-                                            <span className={`font-black ${selectedOperator.metrics.unjustifiedAbsences > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
-                                                {selectedOperator.metrics.unjustifiedAbsences || 0}
+                                            <span className={`font-black ${selectedOperator.metrics.unjustifiedAbsences > 0 && scoreConfig.enableAttendance ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                                {scoreConfig.enableAttendance ? (selectedOperator.metrics.unjustifiedAbsences || 0) : '0 (Desact.)'}
                                             </span>
                                         </div>
                                         <div className="flex justify-between">
                                             <span>Faltas Justificadas:</span>
-                                            <span className={`font-black ${selectedOperator.metrics.justifiedAbsences > 0 ? 'text-amber-500' : 'text-emerald-500'}`}>
-                                                {selectedOperator.metrics.justifiedAbsences || 0}
+                                            <span className={`font-black ${selectedOperator.metrics.justifiedAbsences > 0 && scoreConfig.enableAttendance ? 'text-amber-500' : 'text-emerald-500'}`}>
+                                                {scoreConfig.enableAttendance ? (selectedOperator.metrics.justifiedAbsences || 0) : '0 (Desact.)'}
                                             </span>
                                         </div>
                                     </div>
@@ -565,7 +726,12 @@ export default function OperadoresTab() {
                                         <div className="p-2 bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded-xl">
                                             <Clock className="w-5 h-5" />
                                         </div>
-                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Carga Horaria</span>
+                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1">
+                                            Carga Horaria
+                                            {!scoreConfig.enableOvertimeBonus && (
+                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[8px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-extrabold ml-1">Bono Desact.</span>
+                                            )}
+                                        </span>
                                     </div>
                                     <div className="mt-4">
                                         <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Horas Confirmadas</p>
@@ -578,40 +744,54 @@ export default function OperadoresTab() {
                                     </div>
                                     <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
                                         <span>Bono Carga:</span>
-                                        <span className="font-black text-emerald-500">+{selectedOperator.metrics.hoursRewardBonus} pts</span>
+                                        <span className="font-black text-emerald-500">
+                                            {scoreConfig.enableOvertimeBonus ? `+${selectedOperator.metrics.hoursRewardBonus} pts` : '0 pts (Desact.)'}
+                                        </span>
                                     </div>
                                 </div>
 
                                 {/* Safety Audits Card */}
                                 <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between">
                                     <div className="flex justify-between items-start">
-                                        <div className={`p-2 rounded-xl ${selectedOperator.metrics.safetyInfractionsCount > 0 ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}`}>
-                                            {selectedOperator.metrics.safetyInfractionsCount > 0 ? <ShieldAlert className="w-5 h-5" /> : <Shield className="w-5 h-5" />}
+                                        <div className={`p-2 rounded-xl ${selectedOperator.metrics.safetyInfractionsCount > 0 && scoreConfig.enableSafetyPenalty ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}`}>
+                                            {selectedOperator.metrics.safetyInfractionsCount > 0 && scoreConfig.enableSafetyPenalty ? <ShieldAlert className="w-5 h-5" /> : <Shield className="w-5 h-5" />}
                                         </div>
-                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Seguridad SST</span>
+                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1">
+                                            Seguridad SST
+                                            {!scoreConfig.enableSafetyPenalty && (
+                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[8px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-extrabold ml-1">Desact.</span>
+                                            )}
+                                        </span>
                                     </div>
                                     <div className="mt-4">
                                         <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Auditorías SST</p>
                                         <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5">
-                                            {selectedOperator.metrics.safetyInfractionsCount > 0 ? `${selectedOperator.metrics.safetyInfractionsCount} Desvíos` : 'Sin desvíos'}
+                                            {selectedOperator.metrics.safetyInfractionsCount > 0 && scoreConfig.enableSafetyPenalty ? `${selectedOperator.metrics.safetyInfractionsCount} Desvíos` : 'Sin desvíos'}
                                         </h4>
                                         <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-900 rounded-full mt-2.5 overflow-hidden">
-                                            <div className={`h-full rounded-full ${selectedOperator.metrics.safetyInfractionsCount > 0 ? 'bg-rose-500' : 'bg-emerald-500'}`} style={{ width: `${Math.max(0, 100 - (selectedOperator.metrics.safetyPenalty || 0))}%` }} />
+                                            <div className={`h-full rounded-full ${selectedOperator.metrics.safetyInfractionsCount > 0 && scoreConfig.enableSafetyPenalty ? 'bg-rose-500' : 'bg-emerald-500'}`} style={{ width: `${Math.max(0, 100 - (scoreConfig.enableSafetyPenalty ? (selectedOperator.metrics.safetyPenalty || 0) : 0))}%` }} />
                                         </div>
                                     </div>
                                     <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
                                         <span>Penalidad SST:</span>
-                                        <span className={`font-black ${selectedOperator.metrics.safetyPenalty > 0 ? 'text-rose-500' : 'text-slate-500'}`}>-{selectedOperator.metrics.safetyPenalty || 0} pts</span>
+                                        <span className={`font-black ${selectedOperator.metrics.safetyPenalty > 0 && scoreConfig.enableSafetyPenalty ? 'text-rose-500' : 'text-slate-500'}`}>
+                                            {scoreConfig.enableSafetyPenalty ? `-${selectedOperator.metrics.safetyPenalty || 0} pts` : '0 pts (Desact.)'}
+                                        </span>
                                     </div>
                                 </div>
 
                                 {/* Rework (FTFR) Card */}
                                 <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between">
                                     <div className="flex justify-between items-start">
-                                        <div className={`p-2 rounded-xl ${selectedOperator.metrics.reworkCount > 0 ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}`}>
-                                            {selectedOperator.metrics.reworkCount > 0 ? <AlertTriangle className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
+                                        <div className={`p-2 rounded-xl ${selectedOperator.metrics.reworkCount > 0 && scoreConfig.enableReworkPenalty ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}`}>
+                                            {selectedOperator.metrics.reworkCount > 0 && scoreConfig.enableReworkPenalty ? <AlertTriangle className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
                                         </div>
-                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Re-Trabajos</span>
+                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1">
+                                            Re-Trabajos
+                                            {!scoreConfig.enableReworkPenalty && (
+                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[8px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-extrabold ml-1">Desact.</span>
+                                            )}
+                                        </span>
                                     </div>
                                     <div className="mt-4">
                                         <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Ratio FTFR</p>
@@ -619,12 +799,14 @@ export default function OperadoresTab() {
                                             {selectedOperator.metrics.reworkCount || 0} OS
                                         </h4>
                                         <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-900 rounded-full mt-2.5 overflow-hidden">
-                                            <div className={`h-full rounded-full ${selectedOperator.metrics.reworkCount > 0 ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${Math.max(0, 100 - (selectedOperator.metrics.reworkPenalty || 0))}%` }} />
+                                            <div className={`h-full rounded-full ${selectedOperator.metrics.reworkCount > 0 && scoreConfig.enableReworkPenalty ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${Math.max(0, 100 - (scoreConfig.enableReworkPenalty ? (selectedOperator.metrics.reworkPenalty || 0) : 0))}%` }} />
                                         </div>
                                     </div>
                                     <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
                                         <span>Penalidad FTFR:</span>
-                                        <span className={`font-black ${selectedOperator.metrics.reworkPenalty > 0 ? 'text-rose-500' : 'text-slate-500'}`}>-{selectedOperator.metrics.reworkPenalty || 0} pts</span>
+                                        <span className={`font-black ${selectedOperator.metrics.reworkPenalty > 0 && scoreConfig.enableReworkPenalty ? 'text-rose-500' : 'text-slate-500'}`}>
+                                            {scoreConfig.enableReworkPenalty ? `-${selectedOperator.metrics.reworkPenalty || 0} pts` : '0 pts (Desact.)'}
+                                        </span>
                                     </div>
                                 </div>
 
@@ -776,8 +958,8 @@ export default function OperadoresTab() {
                                         {certificates.map((cert) => {
                                             const aiData = cert.aiData || {};
                                             return (
-                                                <div key={cert.id} className="p-4 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                                                    <div className="space-y-1.5">
+                                                <div key={cert.id} className="p-4 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-in fade-in duration-200">
+                                                    <div className="space-y-1.5 flex-1">
                                                         <div className="flex items-center gap-2 flex-wrap">
                                                             <h5 className="font-black text-sm text-slate-800 dark:text-slate-100">{cert.nombreCurso}</h5>
                                                             <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg border uppercase tracking-wider ${cert.estado === 'aprobado'
@@ -794,30 +976,73 @@ export default function OperadoresTab() {
                                                         </p>
                                                         <div className="flex gap-4 text-[10px] font-bold text-slate-400 dark:text-slate-500">
                                                             {cert.horas && <span>Duración: {cert.horas} hs</span>}
-                                                            {cert.fechaEmision && <span>Emisión: {new Date(cert.fechaEmision).toLocaleDateString()}</span>}
+                                                            {cert.fechaEmision && (
+                                                                <span>
+                                                                    Emisión: {(() => {
+                                                                        const d = new Date(cert.fechaEmision);
+                                                                        return `${String(d.getUTCDate()).padStart(2, '0')}/${String(d.getUTCMonth() + 1).padStart(2, '0')}/${d.getUTCFullYear()}`;
+                                                                    })()}
+                                                                </span>
+                                                            )}
                                                         </div>
 
+                                                        {/* Description snippet */}
+                                                        {cert.descripcion && (
+                                                            <p className="text-xs text-slate-600 dark:text-slate-400 italic bg-slate-100/50 dark:bg-slate-900/30 p-2 rounded-xl border border-slate-150 dark:border-slate-800/30 mt-1 max-w-2xl line-clamp-2">
+                                                                "{cert.descripcion}"
+                                                            </p>
+                                                        )}
+
                                                         {/* AI Extraction Info */}
-                                                        {aiData.habilidadSugerida && (
+                                                        {((aiData.habilidadesRelevantes && aiData.habilidadesRelevantes.length > 0) || 
+                                                          (aiData.otrasHabilidades && aiData.otrasHabilidades.length > 0)) && (
                                                             <div className="mt-2 p-3 bg-violet-500/10 dark:bg-violet-950/20 rounded-xl border border-violet-100 dark:border-violet-900/40 text-xs text-violet-700 dark:text-violet-300">
-                                                                <span className="font-black text-[9px] uppercase tracking-widest block text-violet-600 dark:text-violet-400">Extracción Gemini AI</span>
-                                                                Habilidad sugerida: <span className="font-black">{aiData.habilidadSugerida}</span>
-                                                                {aiData.descripcion && <p className="mt-1 text-[11px] opacity-90">{aiData.descripcion}</p>}
+                                                                <span className="font-black text-[9px] uppercase tracking-widest block text-violet-600 dark:text-violet-400 mb-1">Extracción Gemini AI</span>
+                                                                {aiData.habilidadesRelevantes && aiData.habilidadesRelevantes.length > 0 && (
+                                                                    <div className="mb-1">
+                                                                        <span className="font-bold text-[9px] text-slate-400 uppercase tracking-wider block">Habilidades Relevantes</span>
+                                                                        <div className="flex flex-wrap gap-1 mt-1">
+                                                                            {aiData.habilidadesRelevantes.map((hab: string, idx: number) => (
+                                                                                <span key={idx} className="px-1.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/40 rounded text-[9px] font-bold">{hab}</span>
+                                                                            ))}
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                                {aiData.otrasHabilidades && aiData.otrasHabilidades.length > 0 && (
+                                                                    <div className="mt-1.5">
+                                                                        <span className="font-bold text-[9px] text-slate-400 uppercase tracking-wider block">Otras Habilidades</span>
+                                                                        <div className="flex flex-wrap gap-1 mt-1">
+                                                                            {aiData.otrasHabilidades.map((hab: string, idx: number) => (
+                                                                                <span key={idx} className="px-1.5 py-0.5 bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/40 rounded text-[9px] font-bold">{hab}</span>
+                                                                            ))}
+                                                                        </div>
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         )}
                                                     </div>
 
                                                     {/* Certificate Actions */}
                                                     <div className="flex items-center gap-2 self-end md:self-auto">
-                                                        {cert.archivoUrl && (
-                                                            <button
-                                                                onClick={() => setSelectedCertFile(cert.archivoUrl)}
-                                                                className="p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 rounded-xl transition-colors shadow-sm"
-                                                                title="Ver archivo"
-                                                            >
-                                                                <Eye className="w-4 h-4" />
-                                                            </button>
-                                                        )}
+                                                        <button
+                                                            onClick={() => {
+                                                                setPreviewCert(cert);
+                                                                setEditCertData({
+                                                                    nombreCurso: cert.nombreCurso || '',
+                                                                    institucion: cert.institucion || '',
+                                                                    horas: cert.horas || '',
+                                                                    fechaEmision: cert.fechaEmision ? cert.fechaEmision.split('T')[0] : '',
+                                                                    descripcion: cert.descripcion || '',
+                                                                    habilidadesRelevantes: cert.aiData?.habilidadesRelevantes?.join(', ') || '',
+                                                                    otrasHabilidades: cert.aiData?.otrasHabilidades?.join(', ') || ''
+                                                                });
+                                                                setIsEditingCert(false);
+                                                            }}
+                                                            className="p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 rounded-xl transition-colors shadow-sm"
+                                                            title="Ver detalles y archivo"
+                                                        >
+                                                            <Eye className="w-4 h-4" />
+                                                        </button>
 
                                                         {cert.estado === 'pendiente' && isSupervisorOrAdmin && (
                                                             <>
@@ -862,28 +1087,207 @@ export default function OperadoresTab() {
 
             </div>
 
-            {/* Document preview modal */}
-            {selectedCertFile && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] flex justify-center items-center p-4">
-                    <div className="bg-white dark:bg-slate-800 w-full max-w-4xl h-[85vh] rounded-[2.5rem] overflow-hidden flex flex-col border border-slate-100 dark:border-slate-700 shadow-2xl animate-in zoom-in-95 duration-200">
+            {/* Detailed Certificate preview modal */}
+            {previewCert && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] flex justify-center items-center p-4 animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-slate-800 w-full max-w-5xl h-[85vh] rounded-[2.5rem] overflow-hidden flex flex-col border border-slate-105 dark:border-slate-700 shadow-2xl animate-in zoom-in-95 duration-200">
+                        {/* Header */}
                         <div className="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/40">
                             <div>
-                                <h4 className="font-black text-slate-850 dark:text-slate-100">Vista Previa de Certificado</h4>
+                                <h4 className="font-black text-slate-850 dark:text-slate-100 text-sm md:text-base">{previewCert.nombreCurso}</h4>
                                 <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">SGI Acreditaciones</p>
                             </div>
-                            <button
-                                onClick={() => setSelectedCertFile(null)}
-                                className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-650 rounded-xl text-slate-500 dark:text-slate-400 transition-colors"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
+                            <div className="flex items-center gap-3">
+                                <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg border uppercase tracking-wider ${
+                                    previewCert.estado === 'aprobado'
+                                        ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400'
+                                        : previewCert.estado === 'rechazado'
+                                            ? 'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-950/20 dark:text-rose-400'
+                                            : 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-950/20 dark:text-amber-400 animate-pulse'
+                                }`}>
+                                    {previewCert.estado === 'pendiente' ? 'Pendiente' : previewCert.estado === 'aprobado' ? 'Aprobado' : 'Rechazado'}
+                                </span>
+                                <button
+                                    onClick={() => { setPreviewCert(null); setIsEditingCert(false); }}
+                                    className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-650 rounded-xl text-slate-500 dark:text-slate-400 transition-colors"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
                         </div>
-                        <div className="flex-1 bg-slate-100 dark:bg-slate-900 p-4 flex justify-center items-center overflow-auto">
-                            {selectedCertFile.startsWith('data:application/pdf') || selectedCertFile.endsWith('.pdf') ? (
-                                <iframe src={selectedCertFile} className="w-full h-full rounded-2xl" />
-                            ) : (
-                                <img src={selectedCertFile} alt="Certificado" className="max-w-full max-h-full rounded-2xl shadow-md object-contain" />
-                            )}
+                        
+                        {/* Content */}
+                        <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
+                            {/* Left Column: Iframe/Image file viewer */}
+                            <div className="flex-1 bg-slate-100 dark:bg-slate-900 p-4 flex justify-center items-center overflow-auto min-h-[300px] md:min-h-0">
+                                {previewCert.archivoUrl ? (
+                                    previewCert.archivoUrl.startsWith('data:application/pdf') || previewCert.archivoUrl.endsWith('.pdf') ? (
+                                        <iframe src={previewCert.archivoUrl} className="w-full h-full rounded-2xl border-0" />
+                                    ) : (
+                                        <img src={previewCert.archivoUrl} alt="Certificado" className="max-w-full max-h-full rounded-2xl shadow-md object-contain" />
+                                    )
+                                ) : (
+                                    <div className="p-8 text-center bg-slate-50 dark:bg-slate-900 rounded-2xl text-slate-400 text-xs">
+                                        Vista previa no soportada para este formato de archivo.
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Right Column: Metadata & AI details & Actions */}
+                            <div className="w-full md:w-[450px] border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 overflow-y-auto flex flex-col justify-between">
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-[10px] font-black text-indigo-600 uppercase tracking-wider flex items-center gap-1">
+                                            <FileText className="w-3.5 h-3.5" /> Datos del Certificado
+                                        </p>
+                                        {previewCert.estado !== 'aprobado' && !isEditingCert && isSupervisorOrAdmin && (
+                                            <button 
+                                                onClick={() => setIsEditingCert(true)} 
+                                                className="text-[10px] font-bold px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
+                                            >
+                                                Editar Datos
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {isEditingCert ? (
+                                        <div className="space-y-3">
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-bold text-slate-500">Curso / Título</label>
+                                                <input type="text" value={editCertData.nombreCurso} onChange={(e) => setEditCertData({...editCertData, nombreCurso: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-750 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-bold text-slate-500">Institución</label>
+                                                <input type="text" value={editCertData.institucion} onChange={(e) => setEditCertData({...editCertData, institucion: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-755 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div className="space-y-1">
+                                                    <label className="text-[10px] font-bold text-slate-500">Horas</label>
+                                                    <input type="number" step="any" value={editCertData.horas} onChange={(e) => setEditCertData({...editCertData, horas: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-760 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <label className="text-[10px] font-bold text-slate-500">Fecha Emisión</label>
+                                                    <input type="date" value={editCertData.fechaEmision} onChange={(e) => setEditCertData({...editCertData, fechaEmision: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-765 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-bold text-slate-500">Descripción / Resumen</label>
+                                                <textarea value={editCertData.descripcion} onChange={(e) => setEditCertData({...editCertData, descripcion: e.target.value})} className="w-full h-20 px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-770 dark:text-slate-250 focus:outline-none focus:border-indigo-500 resize-none" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-bold text-slate-500">Habilidades Relevantes (separadas por coma)</label>
+                                                <input type="text" value={editCertData.habilidadesRelevantes} onChange={(e) => setEditCertData({...editCertData, habilidadesRelevantes: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-775 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-bold text-slate-500">Otras Habilidades (separadas por coma)</label>
+                                                <input type="text" value={editCertData.otrasHabilidades} onChange={(e) => setEditCertData({...editCertData, otrasHabilidades: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-780 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
+                                            </div>
+                                            <div className="flex gap-2 justify-end pt-2">
+                                                <button onClick={() => setIsEditingCert(false)} className="px-3 py-1.5 text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors">Cancelar</button>
+                                                <button onClick={handleSaveCertEdit} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-md transition-colors flex items-center gap-1">
+                                                    <Check className="w-3.5 h-3.5" /> Guardar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-3 text-xs">
+                                            <div className="grid grid-cols-2 gap-3 bg-slate-50 dark:bg-slate-900/40 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800">
+                                                <div>
+                                                    <p className="text-[10px] text-slate-400 font-bold uppercase">Curso:</p>
+                                                    <p className="font-bold text-slate-850 dark:text-slate-250">{previewCert.nombreCurso || 'N/A'}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] text-slate-400 font-bold uppercase">Institución:</p>
+                                                    <p className="font-bold text-slate-850 dark:text-slate-250">{previewCert.institucion || 'N/A'}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] text-slate-400 font-bold uppercase">Horas:</p>
+                                                    <p className="font-bold text-slate-850 dark:text-slate-250">{previewCert.horas || 'N/A'}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] text-slate-400 font-bold uppercase">Fecha Emisión:</p>
+                                                    <p className="font-bold text-slate-850 dark:text-slate-250">
+                                                        {previewCert.fechaEmision 
+                                                            ? (() => {
+                                                                const d = new Date(previewCert.fechaEmision);
+                                                                return `${String(d.getUTCDate()).padStart(2, '0')}/${String(d.getUTCMonth() + 1).padStart(2, '0')}/${d.getUTCFullYear()}`;
+                                                            })() 
+                                                            : 'N/A'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            
+                                            {/* Description / Resumen view */}
+                                            <div className="bg-slate-50 dark:bg-slate-900/40 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800">
+                                                <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Descripción / Resumen:</p>
+                                                <p className="text-slate-700 dark:text-slate-300 leading-relaxed font-semibold">{previewCert.descripcion || 'Sin descripción'}</p>
+                                            </div>
+
+                                            {/* AI Data Skills */}
+                                            {previewCert.aiData && (
+                                                <div className="mt-3 space-y-3 pt-3 border-t border-slate-100 dark:border-slate-700">
+                                                    <p className="text-[10px] font-black text-violet-600 uppercase tracking-widest block">Extracción Gemini AI</p>
+                                                    
+                                                    {previewCert.aiData.habilidadesRelevantes?.length > 0 && (
+                                                        <div className="space-y-1">
+                                                            <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Habilidades Relevantes</p>
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {previewCert.aiData.habilidadesRelevantes.map((hab: string, i: number) => (
+                                                                    <span key={i} className="px-2 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/40 text-[10px] font-bold rounded-lg">{hab}</span>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {previewCert.aiData.otrasHabilidades?.length > 0 && (
+                                                        <div className="space-y-1">
+                                                            <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">Otras Habilidades</p>
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {previewCert.aiData.otrasHabilidades.map((hab: string, i: number) => (
+                                                                    <span key={i} className="px-2 py-0.5 bg-amber-50 text-amber-600 border border-amber-100 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/40 text-[10px] font-bold rounded-lg">{hab}</span>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Modal Actions */}
+                                {!isEditingCert && (
+                                    <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center gap-3">
+                                        {previewCert.estado === 'pendiente' && isSupervisorOrAdmin ? (
+                                            <div className="flex gap-2 w-full">
+                                                <button
+                                                    onClick={() => handleApproveCertificate(previewCert.id, true)}
+                                                    className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-black rounded-xl transition-colors shadow-sm text-center"
+                                                >
+                                                    Aprobar
+                                                </button>
+                                                <button
+                                                    onClick={() => handleApproveCertificate(previewCert.id, false)}
+                                                    className="flex-1 py-2 bg-rose-500 hover:bg-rose-600 text-white text-xs font-black rounded-xl transition-colors shadow-sm text-center"
+                                                >
+                                                    Rechazar
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <span className="text-[10px] text-slate-400 font-bold uppercase italic">
+                                                Certificado procesado
+                                            </span>
+                                        )}
+                                        <button
+                                            onClick={() => handleDeleteCertificate(previewCert.id)}
+                                            className="p-2 bg-slate-100 hover:bg-rose-100 hover:text-rose-600 text-slate-400 rounded-xl transition-colors shadow-sm self-end"
+                                            title="Eliminar certificado"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1062,6 +1466,127 @@ export default function OperadoresTab() {
                                 className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-black rounded-xl transition-colors shadow-sm"
                             >
                                 Entendido
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* SCORE CONFIG MODAL */}
+            {showConfigModal && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl border border-slate-100 dark:border-slate-700 flex flex-col max-h-[85vh]">
+                        {/* Header */}
+                        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-slate-100 dark:bg-slate-700 rounded-xl">
+                                    <Settings className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                                </div>
+                                <div>
+                                    <h2 className="text-sm font-black text-slate-800 dark:text-slate-100">Configuración del Score</h2>
+                                    <p className="text-[10px] text-slate-400">Activa o desactiva componentes del cálculo global</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowConfigModal(false)}
+                                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400 transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                            {/* Base Components */}
+                            <div className="space-y-3">
+                                <p className="text-[10px] font-black text-indigo-600 uppercase tracking-wider">Componentes Base del Score</p>
+                                <p className="text-[10px] text-slate-400">Al desactivar un componente, se ignora su cálculo y se asume un valor neutro (100%)</p>
+                                <div className="space-y-2">
+                                    {SCORE_CONFIG_ITEMS.filter(i => i.category === 'base').map(item => (
+                                        <div key={item.key} className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all ${
+                                            scoreConfig[item.key]
+                                                ? 'bg-white dark:bg-slate-900/50 border-slate-200 dark:border-slate-700'
+                                                : 'bg-slate-50 dark:bg-slate-900/80 border-slate-100 dark:border-slate-800 opacity-60'
+                                        }`}>
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-lg">{item.icon}</span>
+                                                <div>
+                                                    <p className="text-xs font-bold text-slate-700 dark:text-slate-200">{item.label}</p>
+                                                    <p className="text-[10px] text-slate-400">{item.description}</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => handleToggleConfig(item.key)}
+                                                className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
+                                                    scoreConfig[item.key] ? 'bg-indigo-500' : 'bg-slate-300 dark:bg-slate-600'
+                                                }`}
+                                            >
+                                                <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-200 ${
+                                                    scoreConfig[item.key] ? 'translate-x-5' : 'translate-x-0'
+                                                }`} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Modifiers */}
+                            <div className="space-y-3">
+                                <p className="text-[10px] font-black text-amber-600 uppercase tracking-wider">Modificadores (Bonos y Penalidades)</p>
+                                <p className="text-[10px] text-slate-400">Se aplican después del cálculo base</p>
+                                <div className="space-y-2">
+                                    {SCORE_CONFIG_ITEMS.filter(i => i.category === 'modifier').map(item => (
+                                        <div key={item.key} className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all ${
+                                            scoreConfig[item.key]
+                                                ? 'bg-white dark:bg-slate-900/50 border-slate-200 dark:border-slate-700'
+                                                : 'bg-slate-50 dark:bg-slate-900/80 border-slate-100 dark:border-slate-800 opacity-60'
+                                        }`}>
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-lg">{item.icon}</span>
+                                                <div>
+                                                    <p className="text-xs font-bold text-slate-700 dark:text-slate-200">{item.label}</p>
+                                                    <p className="text-[10px] text-slate-400">{item.description}</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => handleToggleConfig(item.key)}
+                                                className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
+                                                    scoreConfig[item.key] ? 'bg-indigo-500' : 'bg-slate-300 dark:bg-slate-600'
+                                                }`}
+                                            >
+                                                <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-200 ${
+                                                    scoreConfig[item.key] ? 'translate-x-5' : 'translate-x-0'
+                                                }`} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Active summary */}
+                            <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
+                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2">Resumen Activo</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {SCORE_CONFIG_ITEMS.map(item => (
+                                        <span key={item.key} className={`px-2 py-1 text-[10px] font-bold rounded-lg ${
+                                            scoreConfig[item.key]
+                                                ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                                                : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 border border-slate-300 dark:border-slate-600 line-through'
+                                        }`}>
+                                            {item.icon} {item.label}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="p-5 border-t border-slate-100 dark:border-slate-700 flex justify-end bg-slate-50/50 dark:bg-slate-900/40">
+                            <button
+                                onClick={() => setShowConfigModal(false)}
+                                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-black rounded-xl transition-colors shadow-sm"
+                            >
+                                Cerrar
                             </button>
                         </div>
                     </div>

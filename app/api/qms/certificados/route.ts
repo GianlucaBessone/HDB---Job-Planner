@@ -137,7 +137,7 @@ export async function POST(req: Request) {
 export async function PUT(req: Request) {
     try {
         const data = await req.json();
-        const { id, estado, horas, fechaEmision, nombreCurso, institucion, userId, userName } = data;
+        const { id, estado, horas, fechaEmision, nombreCurso, institucion, descripcion, aiData, userId, userName } = data;
 
         if (!id || !estado) {
             return NextResponse.json({ error: 'El ID de certificado y el estado son obligatorios.' }, { status: 400 });
@@ -158,7 +158,9 @@ export async function PUT(req: Request) {
                 horas: horas !== undefined ? (horas !== null ? Number(horas) : null) : certificate.horas,
                 fechaEmision: fechaEmision !== undefined ? fechaEmision : certificate.fechaEmision,
                 nombreCurso: nombreCurso !== undefined ? nombreCurso : certificate.nombreCurso,
-                institucion: institucion !== undefined ? institucion : certificate.institucion
+                institucion: institucion !== undefined ? institucion : certificate.institucion,
+                descripcion: descripcion !== undefined ? descripcion : certificate.descripcion,
+                aiData: aiData !== undefined ? aiData : certificate.aiData
             }
         });
 

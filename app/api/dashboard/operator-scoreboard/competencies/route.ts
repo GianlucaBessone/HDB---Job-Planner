@@ -5,15 +5,33 @@ import { logAudit } from '@/lib/audit';
 export const dynamic = 'force-dynamic';
 
 const PREDEFINED_SKILLS = [
-    { name: 'Programación de PLC', weight: 10, category: 'Automatización' },
-    { name: 'Automatización Industrial', weight: 9, category: 'Automatización' },
-    { name: 'Electricidad Industrial', weight: 8, category: 'Eléctrica' },
-    { name: 'Técnico de Dispensers', weight: 6, category: 'Mecánica/Dispensers' },
-    { name: 'Instalaciones de Baja Tensión', weight: 5, category: 'Eléctrica' },
-    { name: 'Seguridad Eléctrica y NFPA 70E', weight: 8, category: 'Seguridad' },
-    { name: 'Trabajo en Altura', weight: 4, category: 'Seguridad' },
-    { name: 'Mantenimiento Preventivo', weight: 4, category: 'Mantenimiento' }
+    // Habilidades Relevantes
+    { name: 'HyS', weight: 2, category: 'Seguridad' },
+    { name: 'Técnico en Dispensers', weight: 2, category: 'Mecánica/Dispensers' },
+    { name: 'Técnico en Refrigeración', weight: 3, category: 'Mecánica/Refrigeración' },
+    { name: 'Técnico en CCTV/Alarmas', weight: 3, category: 'Sistemas' },
+    { name: 'Electricista', weight: 4, category: 'Eléctrica' },
+    { name: 'Instrumentista Industrial', weight: 4, category: 'Eléctrica' },
+    { name: 'Especialista en Automatización (Neumática)', weight: 5, category: 'Automatización' },
+    { name: 'Especialista en Automatización (PLC)', weight: 5, category: 'Automatización' },
+    // Otras Habilidades
+    { name: 'Lectura de Planos Eléctricos', weight: 3, category: 'Otras Habilidades' },
+    { name: 'Lectura de Planos Civiles', weight: 3, category: 'Otras Habilidades' },
+    { name: 'Soft Skills (Habilidades Blandas)', weight: 4, category: 'Otras Habilidades' },
+    { name: 'Herramientas de Informática', weight: 3, category: 'Otras Habilidades' },
+    { name: 'Team Leader', weight: 5, category: 'Otras Habilidades' }
 ];
+
+const SKILL_MIGRATION_MAP: Record<string, string> = {
+    'Programación de PLC': 'Especialista en Automatización (PLC)',
+    'Automatización Industrial': 'Especialista en Automatización (Neumática)',
+    'Electricidad Industrial': 'Electricista',
+    'Técnico de Dispensers': 'Técnico en Dispensers',
+    'Instalaciones de Baja Tensión': 'Electricista',
+    'Seguridad Eléctrica y NFPA 70E': 'HyS',
+    'Trabajo en Altura': 'HyS',
+    'Mantenimiento Preventivo': 'HyS'
+};
 
 export async function GET(request: Request) {
     try {
@@ -21,6 +39,28 @@ export async function GET(request: Request) {
         const operatorId = searchParams.get('operatorId');
         if (!operatorId) {
             return NextResponse.json({ error: 'El ID de operador es obligatorio.' }, { status: 400 });
+        }
+
+        // Self-healing migration for old competency names in the database
+        for (const [oldName, newName] of Object.entries(SKILL_MIGRATION_MAP)) {
+            const oldComps = await prisma.technicianCompetency.findMany({
+                where: { nombre: oldName }
+            });
+            for (const comp of oldComps) {
+                const exists = await prisma.technicianCompetency.findFirst({
+                    where: { operatorId: comp.operatorId, nombre: newName }
+                });
+                if (!exists) {
+                    await prisma.technicianCompetency.update({
+                        where: { id: comp.id },
+                        data: { nombre: newName }
+                    });
+                } else {
+                    await prisma.technicianCompetency.delete({
+                        where: { id: comp.id }
+                    });
+                }
+            }
         }
 
         // Fetch competencies
@@ -38,28 +78,44 @@ export async function GET(request: Request) {
         completedTrainings.forEach(t => {
             const title = t.titulo.toLowerCase();
             if (title.includes('plc') || title.includes('programación') || title.includes('programacion')) {
-                lmsSkills.add('Programación de PLC');
+                lmsSkills.add('Especialista en Automatización (PLC)');
             }
-            if (title.includes('automatización') || title.includes('automatizacion') || title.includes('industrial')) {
-                lmsSkills.add('Automatización Industrial');
+            if (title.includes('automatización') || title.includes('automatizacion')) {
+                lmsSkills.add('Especialista en Automatización (Neumática)');
             }
-            if (title.includes('eléctrica') || title.includes('electrica') || title.includes('electricidad')) {
-                lmsSkills.add('Electricidad Industrial');
+            if (title.includes('industrial')) {
+                lmsSkills.add('Instrumentista Industrial');
+            }
+            if (title.includes('eléctrica') || title.includes('electrica') || title.includes('electricidad') || title.includes('baja tensión') || title.includes('baja tension')) {
+                lmsSkills.add('Electricista');
             }
             if (title.includes('dispenser') || title.includes('dispensadores')) {
-                lmsSkills.add('Técnico de Dispensers');
+                lmsSkills.add('Técnico en Dispensers');
             }
-            if (title.includes('baja tensión') || title.includes('baja tension')) {
-                lmsSkills.add('Instalaciones de Baja Tensión');
+            if (title.includes('seguridad') || title.includes('nfpa') || title.includes('loto') || title.includes('altura') || title.includes('alturas')) {
+                lmsSkills.add('HyS');
             }
-            if (title.includes('seguridad') || title.includes('nfpa') || title.includes('loto')) {
-                lmsSkills.add('Seguridad Eléctrica y NFPA 70E');
+            if (title.includes('refrigeración') || title.includes('refrigeracion')) {
+                lmsSkills.add('Técnico en Refrigeración');
             }
-            if (title.includes('altura') || title.includes('alturas')) {
-                lmsSkills.add('Trabajo en Altura');
+            if (title.includes('cctv') || title.includes('alarma') || title.includes('alarmas')) {
+                lmsSkills.add('Técnico en CCTV/Alarmas');
             }
-            if (title.includes('mantenimiento') || title.includes('preventivo')) {
-                lmsSkills.add('Mantenimiento Preventivo');
+            if (title.includes('plano') || title.includes('planos')) {
+                if (title.includes('eléctrico') || title.includes('electrico')) {
+                    lmsSkills.add('Lectura de Planos Eléctricos');
+                } else if (title.includes('civil') || title.includes('civiles')) {
+                    lmsSkills.add('Lectura de Planos Civiles');
+                }
+            }
+            if (title.includes('soft') || title.includes('blanda') || title.includes('blandas')) {
+                lmsSkills.add('Soft Skills (Habilidades Blandas)');
+            }
+            if (title.includes('informática') || title.includes('informatica') || title.includes('computación') || title.includes('computacion')) {
+                lmsSkills.add('Herramientas de Informática');
+            }
+            if (title.includes('team') || title.includes('leader') || title.includes('líder') || title.includes('lider')) {
+                lmsSkills.add('Team Leader');
             }
         });
 

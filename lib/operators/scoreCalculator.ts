@@ -31,6 +31,17 @@ export interface OperatorScoreResult {
     globalScore: number;
 }
 
+export interface ScoreFeatureFlags {
+    enableCompetency?: boolean;
+    enableCsat?: boolean;
+    enableAttendance?: boolean;
+    enableCompliance?: boolean;
+    enableSafetyPenalty?: boolean;
+    enableReworkPenalty?: boolean;
+    enableDelayPenalty?: boolean;
+    enableOvertimeBonus?: boolean;
+}
+
 // ==========================================
 // BUSINESS RULES & CONFIGURATION (ISO 9001)
 // ==========================================
@@ -166,8 +177,20 @@ function getWeekdayCount(year: number, monthIdx: number): number {
  */
 export async function calculateOperatorScore(
     operatorId: string,
-    month: Date
+    month: Date,
+    flags?: ScoreFeatureFlags
 ): Promise<OperatorScoreResult> {
+    // Default all flags to true if not provided
+    const f = {
+        enableCompetency: flags?.enableCompetency ?? true,
+        enableCsat: flags?.enableCsat ?? true,
+        enableAttendance: flags?.enableAttendance ?? true,
+        enableCompliance: flags?.enableCompliance ?? true,
+        enableSafetyPenalty: flags?.enableSafetyPenalty ?? true,
+        enableReworkPenalty: flags?.enableReworkPenalty ?? true,
+        enableDelayPenalty: flags?.enableDelayPenalty ?? true,
+        enableOvertimeBonus: flags?.enableOvertimeBonus ?? true,
+    };
     const year = month.getFullYear();
     const monthIdx = month.getMonth();
     const monthStr = String(monthIdx + 1).padStart(2, '0');
@@ -401,16 +424,18 @@ export async function calculateOperatorScore(
 
     let complianceComponent = 100;
     
-    if (expectedHours > 0) {
-        // Calculamos el porcentaje real, cap a 150 para que no rompa desproporcionadamente el baseScore
-        const complianceRate = (totalHistoricWorkedHours / expectedHours) * 100;
-        complianceComponent = Math.min(150, Math.max(0, Math.round(complianceRate)));
-    } else if (expectedHours === 0 && totalHistoricWorkedHours === 0) {
-        // Si no se esperaba que trabaje nada y no trabajó nada (ej: entró hoy mismo)
-        complianceComponent = 100;
-    } else if (expectedHours === 0 && totalHistoricWorkedHours > 0) {
-        // Trabajó sin tener horas esperadas (fines de semana al ingresar, etc)
-        complianceComponent = 150;
+    if (SCORING_CONFIG.ENABLE_GPS_TIME_COMPARISON) {
+        if (expectedHours > 0) {
+            // Calculamos el porcentaje real, cap a 150 para que no rompa desproporcionadamente el baseScore
+            const complianceRate = (totalHistoricWorkedHours / expectedHours) * 100;
+            complianceComponent = Math.min(150, Math.max(0, Math.round(complianceRate)));
+        } else if (expectedHours === 0 && totalHistoricWorkedHours === 0) {
+            // Si no se esperaba que trabaje nada y no trabajó nada (ej: entró hoy mismo)
+            complianceComponent = 100;
+        } else if (expectedHours === 0 && totalHistoricWorkedHours > 0) {
+            // Trabajó sin tener horas esperadas (fines de semana al ingresar, etc)
+            complianceComponent = 150;
+        }
     }
 
     // Para el bono de carga mensual que se usa más abajo, necesitamos las horas del mes actual
@@ -427,12 +452,17 @@ export async function calculateOperatorScore(
 
     const automaticHours = fichadas.reduce((acc, f) => acc + (f.horasTrabajadas || 0), 0);
 
-    // BASE SCORE (Out of 100)
+    // BASE SCORE (Out of 100) — Option 2: Neutral 100% when disabled, fixed weights
+    const competencyVal = f.enableCompetency ? competencyScore : 100;
+    const csatVal = f.enableCsat ? csatNpsScore : 100;
+    const attendanceVal = f.enableAttendance ? attendanceComponent : 100;
+    const complianceVal = f.enableCompliance ? complianceComponent : 100;
+
     const baseScore = 
-        (competencyScore * 0.35) + 
-        (csatNpsScore * 0.20) + 
-        (attendanceComponent * 0.20) + 
-        (complianceComponent * 0.25);
+        (competencyVal * 0.35) + 
+        (csatVal * 0.20) + 
+        (attendanceVal * 0.20) + 
+        (complianceVal * 0.25);
 
     // 5. MODIFIERS (Deductions & Bonuses)
     
@@ -494,8 +524,12 @@ export async function calculateOperatorScore(
                         : reworkCount >= 3 ? SCORING_CONFIG.REWORK_PENALTY_3_PLUS : 0;
 
     // FINAL GLOBAL SCORE (Bounded between 10 and 100)
+    const effectiveDelayPenalty = f.enableDelayPenalty ? delayPenalty : 0;
+    const effectiveSafetyPenalty = f.enableSafetyPenalty ? safetyPenalty : 0;
+    const effectiveReworkPenalty = f.enableReworkPenalty ? reworkPenalty : 0;
+    const effectiveHoursBonus = f.enableOvertimeBonus ? hoursRewardBonus : 0;
     const globalScore = Math.max(10, Math.min(100, Math.round(
-        baseScore - delayPenalty - safetyPenalty - reworkPenalty + hoursRewardBonus
+        baseScore - effectiveDelayPenalty - effectiveSafetyPenalty - effectiveReworkPenalty + effectiveHoursBonus
     )));
 
     return {

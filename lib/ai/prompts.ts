@@ -297,9 +297,9 @@ Devuelve tu reporte en formato JSON estricto:
     CERTIFICATE_ANALYSIS: {
         key: "CERTIFICATE_ANALYSIS",
         name: "Análisis y Extracción de Certificados",
-        description: "Analiza imágenes o PDFs de certificados de formación y extrae el nombre del curso, institución, horas de cursado, fecha de emisión, habilidad sugerida, justificación y nivel de confianza.",
+        description: "Analiza imágenes o PDFs de certificados de formación y extrae el nombre del curso, institución, horas de cursado, fecha de emisión, habilidades relevantes, otras habilidades, justificación y nivel de confianza.",
         version: 3,
-        systemInstruction: "Eres un asistente de digitalización de recursos humanos en HDB Servicios Eléctricos, operando bajo el sistema HDB SGI. Tu trabajo es analizar certificados de capacitación técnica, cursos, posgrados o certificaciones y extraer la información relevante en formato JSON estructurado. Adicionalmente, debes identificar cuál de las habilidades predefinidas se alinea con el contenido del certificado.",
+        systemInstruction: "Eres un asistente de digitalización de recursos humanos en HDB Servicios Eléctricos, operando bajo el sistema HDB SGI. Tu trabajo es analizar certificados de capacitación técnica, cursos, posgrados o certificaciones y extraer la información relevante en formato JSON estructurado. Adicionalmente, debes identificar cuáles de las habilidades predefinidas se alinean con el contenido del certificado.",
         template: `Analiza este certificado y extrae los siguientes datos en formato JSON:
 {
   "nombreCurso": "Nombre oficial del curso, taller o certificación encontrada",
@@ -307,8 +307,9 @@ Devuelve tu reporte en formato JSON estricto:
   "horas": 40, // Número de horas o duración total del curso si se indica en el documento (formato numérico, ej. 40, 120, etc., o null si no figura)
   "fechaEmision": "YYYY-MM-DD (fecha en que se emitió el certificado, o null si no figura)",
   "descripcion": "Breve resumen del contenido y de qué se trata la capacitación",
-  "habilidadSugerida": "Elige la que mejor se alinee de la siguiente lista: 'Programación de PLC', 'Automatización Industrial', 'Electricidad Industrial', 'Técnico de Dispensers', 'Instalaciones de Baja Tensión', 'Seguridad Eléctrica y NFPA 70E', 'Trabajo en Altura', 'Mantenimiento Preventivo'. Si ninguna aplica de manera directa o hay dudas, selecciona estrictamente 'Ninguna / Revisión Manual'.",
-  "justificacionMapeo": "Breve explicación en español de por qué se asignó esa habilidad o por qué se dejó para revisión manual",
+  "habilidadesRelevantes": ["Elige las habilidades relevantes que apliquen de: 'HyS', 'Técnico en Dispensers', 'Técnico en Refrigeración', 'Técnico en CCTV/Alarmas', 'Electricista', 'Instrumentista Industrial', 'Especialista en Automatización (Neumática)', 'Especialista en Automatización (PLC)'"],
+  "otrasHabilidades": ["Elige las otras habilidades que apliquen de: 'Lectura de Planos Eléctricos', 'Lectura de Planos Civiles', 'Soft Skills (Habilidades Blandas)', 'Herramientas de Informática', 'Team Leader'"],
+  "justificacionMapeo": "Breve explicación en español de por qué se asignaron esas habilidades o por qué se dejaron vacías",
   "confianzaAnalisis": "Nivel de confianza en el análisis: 'ALTA', 'MEDIA' o 'BAJA'"
 }`
     }

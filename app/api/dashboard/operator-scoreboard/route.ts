@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { calculateOperatorScore } from '@/lib/operators/scoreCalculator';
+import { calculateOperatorScore, ScoreFeatureFlags } from '@/lib/operators/scoreCalculator';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,6 +8,18 @@ export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
         const monthParam = searchParams.get('month'); // YYYY-MM
+
+        // Parse feature flags from query params (default: all enabled)
+        const flags: ScoreFeatureFlags = {
+            enableCompetency: searchParams.get('enableCompetency') !== 'false',
+            enableCsat: searchParams.get('enableCsat') !== 'false',
+            enableAttendance: searchParams.get('enableAttendance') !== 'false',
+            enableCompliance: searchParams.get('enableCompliance') !== 'false',
+            enableSafetyPenalty: searchParams.get('enableSafetyPenalty') !== 'false',
+            enableReworkPenalty: searchParams.get('enableReworkPenalty') !== 'false',
+            enableDelayPenalty: searchParams.get('enableDelayPenalty') !== 'false',
+            enableOvertimeBonus: searchParams.get('enableOvertimeBonus') !== 'false',
+        };
 
         let month = new Date();
         if (monthParam) {
@@ -37,7 +49,7 @@ export async function GET(request: Request) {
 
         const scoreboard = await Promise.all(technicians.map(async (tech) => {
             try {
-                return await calculateOperatorScore(tech.id, month);
+                return await calculateOperatorScore(tech.id, month, flags);
             } catch (err: any) {
                 console.error(`Error calculating scoreboard for tech ${tech.id}:`, err);
                 return {
