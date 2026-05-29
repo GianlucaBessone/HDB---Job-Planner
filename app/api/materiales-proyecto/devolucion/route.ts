@@ -58,11 +58,27 @@ export async function POST(req: Request) {
             data: { estado: 'pendiente_devolucion' }
         });
     } else if (estado !== 'pendiente') {
-        // All returns confirmed, set to the requested final state
-        await prisma.materialProyecto.update({
+        // All returns confirmed. Check if the material is fully returned/accounted for.
+        const matDb = await prisma.materialProyecto.findUnique({
             where: { id: materialId },
-            data: { estado }
+            include: { usos: true, devoluciones: true }
         });
+        if (matDb) {
+            const totalUsado = matDb.usos.reduce((acc, u) => acc + u.cantidadUtilizada, 0);
+            const totalDevuelto = matDb.devoluciones.filter(d => d.estado !== 'pendiente').reduce((acc, d) => acc + d.cantidadADevolver, 0);
+            const aDevolver = Math.max(0, matDb.cantidadEntregada - totalUsado - totalDevuelto);
+            if (aDevolver <= 0) {
+                await prisma.materialProyecto.update({
+                    where: { id: materialId },
+                    data: { estado }
+                });
+            } else {
+                await prisma.materialProyecto.update({
+                    where: { id: materialId },
+                    data: { estado: totalUsado > 0 ? 'uso_confirmado' : 'material_entregado' }
+                });
+            }
+        }
     }
 
     // Notify if needed

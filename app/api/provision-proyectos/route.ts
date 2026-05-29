@@ -56,7 +56,7 @@ export async function GET() {
         }
 
         // Case 2 (damage repair): Fix materials wrongly set to pendiente_devolucion 
-        // with 0 balance or old 0-devolucion records.
+        // with 0 balance, no pending returns, or old 0-devolucion records.
         const wronglyPending = await prisma.materialProyecto.findMany({
             where: {
                 proyecto: { aprovisionamiento: true },
@@ -73,11 +73,18 @@ export async function GET() {
                     const aDevolver = Math.max(0, mat.cantidadEntregada - totalUsado - totalDevuelto);
                     const hasPending = mat.devoluciones.some(d => d.estado === 'pendiente');
 
-                    if (aDevolver <= 0 && !hasPending) {
-                        await tx.materialProyecto.update({
-                            where: { id: mat.id },
-                            data: { estado: 'cerrado_ok' }
-                        });
+                    if (!hasPending) {
+                        if (aDevolver <= 0) {
+                            await tx.materialProyecto.update({
+                                where: { id: mat.id },
+                                data: { estado: 'cerrado_ok' }
+                            });
+                        } else {
+                            await tx.materialProyecto.update({
+                                where: { id: mat.id },
+                                data: { estado: totalUsado > 0 ? 'uso_confirmado' : 'material_entregado' }
+                            });
+                        }
                         // Clean up any 0-pending returns
                         const zeroPendings = mat.devoluciones.filter(d => d.cantidadADevolver === 0 && d.estado === 'pendiente');
                         for (const zp of zeroPendings) {

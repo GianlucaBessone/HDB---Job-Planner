@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { formatDateInline } from '@/lib/formatDate';
 import Link from 'next/link';
 import { Search } from 'lucide-react';
@@ -706,6 +706,37 @@ function MaterialesTable({
 
     const materiales = proyecto.materialesProyecto;
     const hayPendientes = materiales.some(m => m.estado === 'pendiente_devolucion');
+
+    const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState('todos');
+
+    const filteredMateriales = useMemo(() => {
+        return materiales.filter(mat => {
+            const query = searchQuery.trim().toLowerCase();
+            const matchesSearch = !query || 
+                (mat.codigo && mat.codigo.toLowerCase().includes(query)) ||
+                (mat.nombre && mat.nombre.toLowerCase().includes(query));
+
+            if (!matchesSearch) return false;
+
+            if (statusFilter === 'todos') return true;
+
+            const pendingReturns = (mat.devoluciones || []).filter(d => d.estado === 'pendiente');
+            const hasPending = pendingReturns.length > 0;
+            const matEstado = hasPending ? 'pendiente_devolucion' : mat.estado;
+
+            if (statusFilter === 'pendiente_devolucion') {
+                return matEstado === 'pendiente_devolucion';
+            }
+            if (statusFilter === 'cerrado') {
+                return ['cerrado_ok', 'cerrado_con_reserva'].includes(matEstado);
+            }
+            if (statusFilter === 'activo') {
+                return !['pendiente_devolucion', 'cerrado_ok', 'cerrado_con_reserva'].includes(matEstado);
+            }
+            return matEstado === statusFilter;
+        });
+    }, [materiales, searchQuery, statusFilter]);
     
     const faltantes = materiales.filter(m => m.cantidadSolicitada > m.cantidadDisponible).map(m => ({
         ...m,
@@ -812,94 +843,132 @@ function MaterialesTable({
             {expanded && (
                 <div className="border-t border-slate-100 dark:border-slate-800 p-4 md:p-5 space-y-4">
                     {materiales.length > 0 ? (
-                        <div className="overflow-x-auto -mx-1">
-                            <table className="w-full text-sm min-w-[1000px] table-fixed">
-                                <thead>
-                                    <tr className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800">
-                                        <th className="text-left pb-3 pl-2 w-20">Cod.</th>
-                                        <th className="text-left pb-3 pr-4">Material</th>
-                                        <th className="text-center pb-3 w-24">Solicitada</th>
-                                        <th className="text-center pb-3 w-24">Disponible</th>
-                                        <th className="text-center pb-3 w-24">Entregada</th>
-                                        <th className="text-center pb-3 w-24">Utilizada</th>
-                                        <th className="text-center pb-3 w-28">A devolver</th>
-                                        <th className="text-center pb-3 w-32">Estado</th>
-                                        <th className="text-center pb-3 w-24">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
-                                    {materiales.map(mat => {
-                                        const totalUsado = mat.usos.reduce((a, u) => a + u.cantidadUtilizada, 0);
-                                        const pendingReturns = (mat.devoluciones || []).filter(d => d.estado === 'pendiente');
-                                        const hasPending = pendingReturns.length > 0;
-                                        const totalPending = pendingReturns.reduce((a, d) => a + d.cantidadADevolver, 0);
-                                        
-                                        const closed = ['cerrado_ok', 'cerrado_con_reserva'].includes(mat.estado);
-                                        return (
-                                            <tr key={mat.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                                                <td className="py-3 pl-2 truncate">
-                                                    <span className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500">{mat.codigo || '—'}</span>
-                                                </td>
-                                                <td className="py-3 pr-4 break-words">
-                                                    <span className="font-bold text-slate-700 dark:text-slate-200">{mat.nombre}</span>
-                                                    <span className="ml-1.5 text-[10px] text-slate-400 dark:text-slate-500 font-medium uppercase whitespace-nowrap">{mat.unidad}</span>
-                                                </td>
-                                                <td className="text-center py-3">
-                                                    <QtyCell value={mat.cantidadSolicitada} disabled={!isVendedor || closed}
-                                                        onSave={v => handleUpdate(mat.id, 'cantidadSolicitada', v)} />
-                                                </td>
-                                                <td className="text-center py-3">
-                                                    <QtyCell value={mat.cantidadDisponible} disabled={!isVendedor || closed}
-                                                        onSave={v => handleUpdate(mat.id, 'cantidadDisponible', v)} />
-                                                </td>
-                                                <td className="text-center py-3">
-                                                    <QtyCell value={mat.cantidadEntregada} disabled={!isVendedor || closed}
-                                                        onSave={v => handleUpdate(mat.id, 'cantidadEntregada', v)} />
-                                                </td>
-                                                <td className="text-center py-3 font-bold text-violet-600">{totalUsado}</td>
-                                                <td className={`text-center py-3 font-bold ${hasPending ? 'text-amber-600' : 'text-slate-400'}`}>
-                                                    {totalPending > 0 ? totalPending : '0'}
-                                                </td>
-                                                <td className="text-center py-3"><EstadoBadge estado={mat.estado} hasPending={hasPending} /></td>
-                                                <td className="text-center py-3">
-                                                    <div className="flex items-center justify-center gap-1">
-                                                        {isVendedor && !closed && (
-                                                            <button onClick={(e) => { e.stopPropagation(); setEditTarget(mat); }} title="Editar"
-                                                                className="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg transition-colors">
-                                                                <Edit2 className="w-3.5 h-3.5" />
-                                                            </button>
-                                                        )}
-                                                        {isVendedor && (hasPending || mat.devoluciones?.length > 0) && (
-                                                            <button onClick={(e) => { e.stopPropagation(); setDevolucionTarget(mat); }} title={hasPending ? "Confirmar recepción" : "Ver historial"}
-                                                                className={`p-1.5 rounded-lg transition-colors ${hasPending ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}>
-                                                                <RotateCcw className="w-3.5 h-3.5" />
-                                                            </button>
-                                                        )}
-                                                        {(() => {
-                                                            const osBilledIds = (proyecto as any).ordenesServicio?.filter((os: any) => os.cobroGenerado || os.estado === 'cobrada' || os.estado === 'pagada').map((os: any) => os.id) || [];
-                                                            const materialIsBilled = mat.usos.some(u => u.ordenServicioId && osBilledIds.includes(u.ordenServicioId));
-                                                            const canDelete = !materialIsBilled && (!closed || isAdmin);
-                                                            
-                                                            return canDelete && (
-                                                                <button onClick={(e) => { e.stopPropagation(); setDeleteTarget(mat); }} title="Eliminar"
-                                                                    className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-lg transition-colors">
-                                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                                </button>
-                                                            );
-                                                        })()}
-                                                        {mat.devoluciones?.some(d => d.comentario) && (
-                                                            <span title="Hay comentarios en las devoluciones" className="p-1.5 text-slate-400 dark:text-slate-500">
-                                                                <MessageSquare className="w-3.5 h-3.5" />
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </td>
+                        <>
+                            {/* Buscador y Filtros de Materiales */}
+                            <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between pb-2">
+                                <div className="relative flex-1 max-w-md">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
+                                    <input
+                                        type="text"
+                                        placeholder="Buscar por código o nombre..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-slate-800 dark:text-slate-100 placeholder:text-slate-400"
+                                    />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider whitespace-nowrap">Filtrar por:</span>
+                                    <select
+                                        value={statusFilter}
+                                        onChange={(e) => setStatusFilter(e.target.value)}
+                                        className="px-3 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-slate-800 dark:text-slate-100"
+                                    >
+                                        <option value="todos">Todos los estados</option>
+                                        <option value="material_cargado">Disponible</option>
+                                        <option value="material_entregado">Entregado</option>
+                                        <option value="uso_confirmado">Uso confirmado</option>
+                                        <option value="pendiente_devolucion">Pendiente devolución</option>
+                                        <option value="cerrado">Cerrado / Completo</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            {filteredMateriales.length > 0 ? (
+                                <div className="overflow-x-auto -mx-1">
+                                    <table className="w-full text-sm min-w-[1000px] table-fixed">
+                                        <thead>
+                                            <tr className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800">
+                                                <th className="text-left pb-3 pl-2 w-20">Cod.</th>
+                                                <th className="text-left pb-3 pr-4">Material</th>
+                                                <th className="text-center pb-3 w-24">Solicitada</th>
+                                                <th className="text-center pb-3 w-24">Disponible</th>
+                                                <th className="text-center pb-3 w-24">Entregada</th>
+                                                <th className="text-center pb-3 w-24">Utilizada</th>
+                                                <th className="text-center pb-3 w-28">A devolver</th>
+                                                <th className="text-center pb-3 w-32">Estado</th>
+                                                <th className="text-center pb-3 w-24">Acciones</th>
                                             </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+                                            {filteredMateriales.map(mat => {
+                                                const totalUsado = mat.usos.reduce((a, u) => a + u.cantidadUtilizada, 0);
+                                                const pendingReturns = (mat.devoluciones || []).filter(d => d.estado === 'pendiente');
+                                                const hasPending = pendingReturns.length > 0;
+                                                const totalPending = pendingReturns.reduce((a, d) => a + d.cantidadADevolver, 0);
+                                                
+                                                const closed = ['cerrado_ok', 'cerrado_con_reserva'].includes(mat.estado);
+                                                return (
+                                                    <tr key={mat.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                                                        <td className="py-3 pl-2 truncate">
+                                                            <span className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500">{mat.codigo || '—'}</span>
+                                                        </td>
+                                                        <td className="py-3 pr-4 break-words">
+                                                            <span className="font-bold text-slate-700 dark:text-slate-200">{mat.nombre}</span>
+                                                            <span className="ml-1.5 text-[10px] text-slate-400 dark:text-slate-500 font-medium uppercase whitespace-nowrap">{mat.unidad}</span>
+                                                        </td>
+                                                        <td className="text-center py-3">
+                                                            <QtyCell value={mat.cantidadSolicitada} disabled={!isVendedor || closed}
+                                                                onSave={v => handleUpdate(mat.id, 'cantidadSolicitada', v)} />
+                                                        </td>
+                                                        <td className="text-center py-3">
+                                                            <QtyCell value={mat.cantidadDisponible} disabled={!isVendedor || closed}
+                                                                onSave={v => handleUpdate(mat.id, 'cantidadDisponible', v)} />
+                                                        </td>
+                                                        <td className="text-center py-3">
+                                                            <QtyCell value={mat.cantidadEntregada} disabled={!isVendedor || closed}
+                                                                onSave={v => handleUpdate(mat.id, 'cantidadEntregada', v)} />
+                                                        </td>
+                                                        <td className="text-center py-3 font-bold text-violet-600">{totalUsado}</td>
+                                                        <td className={`text-center py-3 font-bold ${hasPending ? 'text-amber-600' : 'text-slate-400'}`}>
+                                                            {totalPending > 0 ? totalPending : '0'}
+                                                        </td>
+                                                        <td className="text-center py-3"><EstadoBadge estado={mat.estado} hasPending={hasPending} /></td>
+                                                        <td className="text-center py-3">
+                                                            <div className="flex items-center justify-center gap-1">
+                                                                {isVendedor && !closed && (
+                                                                    <button onClick={(e) => { e.stopPropagation(); setEditTarget(mat); }} title="Editar"
+                                                                        className="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg transition-colors">
+                                                                        <Edit2 className="w-3.5 h-3.5" />
+                                                                    </button>
+                                                                )}
+                                                                {isVendedor && (hasPending || mat.devoluciones?.length > 0) && (
+                                                                    <button onClick={(e) => { e.stopPropagation(); setDevolucionTarget(mat); }} title={hasPending ? "Confirmar recepción" : "Ver historial"}
+                                                                        className={`p-1.5 rounded-lg transition-colors ${hasPending ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}>
+                                                                        <RotateCcw className="w-3.5 h-3.5" />
+                                                                    </button>
+                                                                )}
+                                                                {(() => {
+                                                                    const osBilledIds = (proyecto as any).ordenesServicio?.filter((os: any) => os.cobroGenerado || os.estado === 'cobrada' || os.estado === 'pagada').map((os: any) => os.id) || [];
+                                                                    const materialIsBilled = mat.usos.some(u => u.ordenServicioId && osBilledIds.includes(u.ordenServicioId));
+                                                                    const canDelete = !materialIsBilled && (!closed || isAdmin);
+                                                                    
+                                                                    return canDelete && (
+                                                                        <button onClick={(e) => { e.stopPropagation(); setDeleteTarget(mat); }} title="Eliminar"
+                                                                            className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-lg transition-colors">
+                                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                                        </button>
+                                                                    );
+                                                                })()}
+                                                                {mat.devoluciones?.some(d => d.comentario) && (
+                                                                    <span title="Hay comentarios en las devoluciones" className="p-1.5 text-slate-400 dark:text-slate-500">
+                                                                        <MessageSquare className="w-3.5 h-3.5" />
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <div className="text-center py-8 bg-slate-50/50 dark:bg-slate-900/30 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500">
+                                    <Search className="w-8 h-8 mx-auto mb-2 opacity-40 text-slate-300 dark:text-slate-600" />
+                                    <p className="text-sm font-bold">No se encontraron materiales que coincidan con la búsqueda</p>
+                                </div>
+                            )}
+                        </>
                     ) : (
                         <div className="text-center py-8 text-slate-400 dark:text-slate-500">
                             <Package className="w-10 h-10 mx-auto mb-2 opacity-30" />

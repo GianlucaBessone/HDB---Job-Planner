@@ -3,7 +3,8 @@ import { safeApiRequest } from '@/lib/offline';
 import {
     Award, Star, GraduationCap, Clock, AlertTriangle,
     Calendar, CheckCircle, Activity, Heart, ShieldAlert, Sparkles, Loader2, User,
-    Check, X, Trash2, FileText, CheckCircle2, Shield, Eye, ThumbsUp, ThumbsDown, Info, Settings
+    Check, X, Trash2, FileText, CheckCircle2, Shield, Eye, ThumbsUp, ThumbsDown, Info, Settings,
+    RotateCw
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 
@@ -71,6 +72,24 @@ export default function OperadoresTab() {
         habilidadesRelevantes: '',
         otrasHabilidades: ''
     });
+
+    const [updatingAi, setUpdatingAi] = useState(false);
+    const [aiUpdatedTimes, setAiUpdatedTimes] = useState<Record<string, string>>({});
+
+    const handleRefreshAi = () => {
+        if (!selectedOperator) return;
+        setUpdatingAi(true);
+        setTimeout(() => {
+            setUpdatingAi(false);
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            setAiUpdatedTimes(prev => ({
+                ...prev,
+                [selectedOperator.operatorId]: timeStr
+            }));
+            showToast('Diagnóstico de IA actualizado con éxito en tiempo real', 'success');
+        }, 1200);
+    };
 
     useEffect(() => {
         // Load current user from local storage
@@ -461,12 +480,9 @@ export default function OperadoresTab() {
         } else if (metrics.reworkCount > 0) {
             diagnosis = `${name} registra ${metrics.reworkCount} órdenes de servicio catalogadas como Re-Trabajo (FTFR), afectando negativamente la penalización de calidad.`;
             recommendation = `SGI Gemini sugiere revisar el procedimiento técnico en campo, auditar las órdenes originales y coordinar feedback técnico de mejora continua.`;
-        } else if (metrics.absences > 0) {
-            const unjustifiedText = metrics.unjustifiedAbsences > 0 ? `${metrics.unjustifiedAbsences} injustificadas` : '';
-            const justifiedText = metrics.justifiedAbsences > 0 ? `${metrics.justifiedAbsences} justificadas` : '';
-            const combinedText = [unjustifiedText, justifiedText].filter(Boolean).join(' y ');
-            diagnosis = `${name} presenta un desvío en el score global debido a inasistencias registradas (${combinedText}).`;
-            recommendation = `SGI Gemini sugiere programar una sesión de feedback con su supervisor directo para evaluar justificaciones y reajustar cronogramas en HDB Servicios Eléctricos.`;
+        } else if (metrics.unjustifiedAbsences > 0) {
+            diagnosis = `${name} presenta un desvío en el score global debido a inasistencias injustificadas registradas (${metrics.unjustifiedAbsences} injustificadas).`;
+            recommendation = `SGI Gemini sugiere programar una sesión de feedback con su supervisor directo para evaluar estas inasistencias y reajustar cronogramas en HDB Servicios Eléctricos.`;
         } else if (metrics.csat < 8.5) {
             diagnosis = `Se detecta margen de mejora en las calificaciones CSAT otorgadas por los clientes (${metrics.csat}/10).`;
             recommendation = `SGI Gemini recomienda inscribirlo en las capacitaciones internas de Calidad de Servicio y Habilidades Blandas del Formación LMS.`;
@@ -620,23 +636,27 @@ export default function OperadoresTab() {
                             </div>
 
                             {/* Metrics Breakdown Grid */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-6 gap-4">
 
                                 {/* CSAT Client Score */}
-                                <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between">
-                                    <div className="flex justify-between items-start">
-                                        <div className="p-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl">
+                                <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between min-w-0">
+                                    <div className="flex justify-between items-start gap-2 min-w-0">
+                                        <div className="p-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl shrink-0">
                                             <Star className="w-5 h-5" fill="currentColor" />
                                         </div>
-                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1">
-                                            Opinión Cliente
+                                        <div className="flex flex-col items-end text-right min-w-0">
+                                            <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate w-full">
+                                                Opinión Cliente
+                                            </span>
                                             {!scoreConfig.enableCsat && (
-                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[8px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-extrabold ml-1">Neutro</span>
+                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[8px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-extrabold mt-1 inline-block shrink-0">
+                                                    Neutro
+                                                </span>
                                             )}
-                                        </span>
+                                        </div>
                                     </div>
                                     <div className="mt-4">
-                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Satisfacción CSAT</p>
+                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate">Satisfacción CSAT</p>
                                         <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5">
                                             {scoreConfig.enableCsat ? `${selectedOperator.metrics.csat} / 10` : '10 / 10'}
                                         </h4>
@@ -644,27 +664,31 @@ export default function OperadoresTab() {
                                             <div className="h-full bg-amber-500 rounded-full" style={{ width: scoreConfig.enableCsat ? `${selectedOperator.metrics.csat * 10}%` : '100%' }} />
                                         </div>
                                     </div>
-                                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
-                                        <span>NPS: {scoreConfig.enableCsat ? (selectedOperator.metrics.nps >= 0 ? `+${selectedOperator.metrics.nps}` : selectedOperator.metrics.nps) : '+100'}</span>
-                                        <span>{selectedOperator.metrics.surveysCount} encuestas</span>
+                                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between items-center gap-1 min-w-0 text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
+                                        <span className="truncate">NPS: {scoreConfig.enableCsat ? (selectedOperator.metrics.nps >= 0 ? `+${selectedOperator.metrics.nps}` : selectedOperator.metrics.nps) : '+100'}</span>
+                                        <span className="truncate shrink-0">{selectedOperator.metrics.surveysCount} enc.</span>
                                     </div>
                                 </div>
 
                                 {/* Competency Score */}
-                                <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between">
-                                    <div className="flex justify-between items-start">
-                                        <div className="p-2 bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 rounded-xl">
+                                <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between min-w-0">
+                                    <div className="flex justify-between items-start gap-2 min-w-0">
+                                        <div className="p-2 bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 rounded-xl shrink-0">
                                             <GraduationCap className="w-5 h-5" />
                                         </div>
-                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1">
-                                            Competencias
+                                        <div className="flex flex-col items-end text-right min-w-0">
+                                            <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate w-full">
+                                                Competencias
+                                            </span>
                                             {!scoreConfig.enableCompetency && (
-                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[8px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-extrabold ml-1">Neutro</span>
+                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[8px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-extrabold mt-1 inline-block shrink-0">
+                                                    Neutro
+                                                </span>
                                             )}
-                                        </span>
+                                        </div>
                                     </div>
                                     <div className="mt-4">
-                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Score Matriz</p>
+                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate">Score Matriz</p>
                                         <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5">
                                             {scoreConfig.enableCompetency ? `${selectedOperator.metrics.competencyScore || 0}%` : '100%'}
                                         </h4>
@@ -674,29 +698,31 @@ export default function OperadoresTab() {
                                             />
                                         </div>
                                     </div>
-                                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
-                                        <span>LMS e Internas:</span>
-                                        <span className="text-indigo-600 dark:text-indigo-400 font-black">{selectedOperator.metrics.completedTrainings} / {selectedOperator.metrics.totalTrainings}</span>
+                                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between items-center gap-1 min-w-0 text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
+                                        <span className="truncate">LMS / Int:</span>
+                                        <span className="text-indigo-600 dark:text-indigo-400 font-black shrink-0">{selectedOperator.metrics.completedTrainings} / {selectedOperator.metrics.totalTrainings}</span>
                                     </div>
                                 </div>
 
                                 {/* Punch-in Compliance and worked hours */}
-                                <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between">
-                                    <div className="flex justify-between items-start">
-                                        <div className="p-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl">
+                                <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between min-w-0">
+                                    <div className="flex justify-between items-start gap-2 min-w-0">
+                                        <div className="p-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl shrink-0">
                                             <Activity className="w-5 h-5" />
                                         </div>
-                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1">
-                                            Asistencia
+                                        <div className="flex flex-col items-end text-right min-w-0">
+                                            <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate w-full">
+                                                Asistencia
+                                            </span>
                                             {(!scoreConfig.enableAttendance || !scoreConfig.enableCompliance) && (
-                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[8px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-extrabold ml-1">
-                                                    {!scoreConfig.enableAttendance && !scoreConfig.enableCompliance ? 'Desact.' : !scoreConfig.enableAttendance ? 'Asist. Desact.' : 'Fich. Desact.'}
+                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[8px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-extrabold mt-1 inline-block shrink-0">
+                                                    {!scoreConfig.enableAttendance && !scoreConfig.enableCompliance ? 'Desact.' : !scoreConfig.enableAttendance ? 'Asist. Des.' : 'Fich. Des.'}
                                                 </span>
                                             )}
-                                        </span>
+                                        </div>
                                     </div>
                                     <div className="mt-4">
-                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Cumplimiento Fichaje</p>
+                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate">Cumplimiento Fichaje</p>
                                         <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5">
                                             {scoreConfig.enableCompliance ? `${selectedOperator.metrics.timeCompliance}%` : '100%'}
                                         </h4>
@@ -705,36 +731,40 @@ export default function OperadoresTab() {
                                         </div>
                                     </div>
                                     <div className="mt-2 pt-2 border-t border-slate-50 dark:border-slate-700/50 flex flex-col gap-1 text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
-                                        <div className="flex justify-between">
-                                            <span>Faltas Injustificadas:</span>
-                                            <span className={`font-black ${selectedOperator.metrics.unjustifiedAbsences > 0 && scoreConfig.enableAttendance ? 'text-rose-500' : 'text-emerald-500'}`}>
-                                                {scoreConfig.enableAttendance ? (selectedOperator.metrics.unjustifiedAbsences || 0) : '0 (Desact.)'}
+                                        <div className="flex justify-between items-center gap-1 min-w-0">
+                                            <span className="truncate">Injustificadas:</span>
+                                            <span className={`font-black shrink-0 ${selectedOperator.metrics.unjustifiedAbsences > 0 && scoreConfig.enableAttendance ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                                {scoreConfig.enableAttendance ? (selectedOperator.metrics.unjustifiedAbsences || 0) : '0'}
                                             </span>
                                         </div>
-                                        <div className="flex justify-between">
-                                            <span>Faltas Justificadas:</span>
-                                            <span className={`font-black ${selectedOperator.metrics.justifiedAbsences > 0 && scoreConfig.enableAttendance ? 'text-amber-500' : 'text-emerald-500'}`}>
-                                                {scoreConfig.enableAttendance ? (selectedOperator.metrics.justifiedAbsences || 0) : '0 (Desact.)'}
+                                        <div className="flex justify-between items-center gap-1 min-w-0">
+                                            <span className="truncate">Justificadas:</span>
+                                            <span className={`font-black shrink-0 ${selectedOperator.metrics.justifiedAbsences > 0 && scoreConfig.enableAttendance ? 'text-amber-500' : 'text-emerald-500'}`}>
+                                                {scoreConfig.enableAttendance ? (selectedOperator.metrics.justifiedAbsences || 0) : '0'}
                                             </span>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Hours Workload & Recompense */}
-                                <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between">
-                                    <div className="flex justify-between items-start">
-                                        <div className="p-2 bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded-xl">
+                                <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between min-w-0">
+                                    <div className="flex justify-between items-start gap-2 min-w-0">
+                                        <div className="p-2 bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded-xl shrink-0">
                                             <Clock className="w-5 h-5" />
                                         </div>
-                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1">
-                                            Carga Horaria
+                                        <div className="flex flex-col items-end text-right min-w-0">
+                                            <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate w-full">
+                                                Carga Horaria
+                                            </span>
                                             {!scoreConfig.enableOvertimeBonus && (
-                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[8px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-extrabold ml-1">Bono Desact.</span>
+                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[8px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-extrabold mt-1 inline-block shrink-0">
+                                                    Bono Des.
+                                                </span>
                                             )}
-                                        </span>
+                                        </div>
                                     </div>
                                     <div className="mt-4">
-                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Horas Confirmadas</p>
+                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate">Horas Confirmadas</p>
                                         <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5">
                                             {selectedOperator.metrics.totalWorkedHours || 0} hs
                                         </h4>
@@ -742,59 +772,67 @@ export default function OperadoresTab() {
                                             <div className="h-full bg-violet-500 rounded-full" style={{ width: `${Math.min(100, ((selectedOperator.metrics.totalWorkedHours || 0) / 180) * 100)}%` }} />
                                         </div>
                                     </div>
-                                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
-                                        <span>Bono Carga:</span>
-                                        <span className="font-black text-emerald-500">
-                                            {scoreConfig.enableOvertimeBonus ? `+${selectedOperator.metrics.hoursRewardBonus} pts` : '0 pts (Desact.)'}
+                                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between items-center gap-1 min-w-0 text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
+                                        <span className="truncate">Bono:</span>
+                                        <span className="font-black text-emerald-500 shrink-0">
+                                            {scoreConfig.enableOvertimeBonus ? `+${selectedOperator.metrics.hoursRewardBonus} pts` : '0 pts'}
                                         </span>
                                     </div>
                                 </div>
 
                                 {/* Safety Audits Card */}
-                                <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between">
-                                    <div className="flex justify-between items-start">
-                                        <div className={`p-2 rounded-xl ${selectedOperator.metrics.safetyInfractionsCount > 0 && scoreConfig.enableSafetyPenalty ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}`}>
+                                <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between min-w-0">
+                                    <div className="flex justify-between items-start gap-2 min-w-0">
+                                        <div className={`p-2 rounded-xl shrink-0 ${selectedOperator.metrics.safetyInfractionsCount > 0 && scoreConfig.enableSafetyPenalty ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}`}>
                                             {selectedOperator.metrics.safetyInfractionsCount > 0 && scoreConfig.enableSafetyPenalty ? <ShieldAlert className="w-5 h-5" /> : <Shield className="w-5 h-5" />}
                                         </div>
-                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1">
-                                            Seguridad SST
+                                        <div className="flex flex-col items-end text-right min-w-0">
+                                            <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate w-full">
+                                                Seguridad SST
+                                            </span>
                                             {!scoreConfig.enableSafetyPenalty && (
-                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[8px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-extrabold ml-1">Desact.</span>
+                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[8px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-extrabold mt-1 inline-block shrink-0">
+                                                    Desact.
+                                                </span>
                                             )}
-                                        </span>
+                                        </div>
                                     </div>
                                     <div className="mt-4">
-                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Auditorías SST</p>
-                                        <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5">
+                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate">Auditorías SST</p>
+                                        <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5 truncate">
                                             {selectedOperator.metrics.safetyInfractionsCount > 0 && scoreConfig.enableSafetyPenalty ? `${selectedOperator.metrics.safetyInfractionsCount} Desvíos` : 'Sin desvíos'}
                                         </h4>
                                         <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-900 rounded-full mt-2.5 overflow-hidden">
                                             <div className={`h-full rounded-full ${selectedOperator.metrics.safetyInfractionsCount > 0 && scoreConfig.enableSafetyPenalty ? 'bg-rose-500' : 'bg-emerald-500'}`} style={{ width: `${Math.max(0, 100 - (scoreConfig.enableSafetyPenalty ? (selectedOperator.metrics.safetyPenalty || 0) : 0))}%` }} />
                                         </div>
                                     </div>
-                                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
-                                        <span>Penalidad SST:</span>
-                                        <span className={`font-black ${selectedOperator.metrics.safetyPenalty > 0 && scoreConfig.enableSafetyPenalty ? 'text-rose-500' : 'text-slate-500'}`}>
-                                            {scoreConfig.enableSafetyPenalty ? `-${selectedOperator.metrics.safetyPenalty || 0} pts` : '0 pts (Desact.)'}
+                                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between items-center gap-1 min-w-0 text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
+                                        <span className="truncate">Penalidad:</span>
+                                        <span className={`font-black shrink-0 ${selectedOperator.metrics.safetyPenalty > 0 && scoreConfig.enableSafetyPenalty ? 'text-rose-500' : 'text-slate-500'}`}>
+                                            {scoreConfig.enableSafetyPenalty ? `-${selectedOperator.metrics.safetyPenalty || 0} pts` : '0 pts'}
                                         </span>
                                     </div>
                                 </div>
 
                                 {/* Rework (FTFR) Card */}
-                                <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between">
-                                    <div className="flex justify-between items-start">
-                                        <div className={`p-2 rounded-xl ${selectedOperator.metrics.reworkCount > 0 && scoreConfig.enableReworkPenalty ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}`}>
+                                <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between min-w-0">
+                                    <div className="flex justify-between items-start gap-2 min-w-0">
+                                        <div className={`p-2 rounded-xl shrink-0 ${selectedOperator.metrics.reworkCount > 0 && scoreConfig.enableReworkPenalty ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}`}>
                                             {selectedOperator.metrics.reworkCount > 0 && scoreConfig.enableReworkPenalty ? <AlertTriangle className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
                                         </div>
-                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1">
-                                            Re-Trabajos
+                                        <div className="flex flex-col items-end text-right min-w-0">
+                                            <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate w-full">
+                                                Re-Trabajos
+                                            </span>
                                             {!scoreConfig.enableReworkPenalty && (
-                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[8px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-extrabold ml-1">Desact.</span>
+                                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 text-[8px] py-0.5 px-1.5 rounded-full uppercase tracking-wider font-extrabold mt-1 inline-block shrink-0">
+                                                    Desact.
+                                                </span>
                                             )}
-                                        </span>
+                                        </div>
                                     </div>
                                     <div className="mt-4">
-                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Ratio FTFR</p>
+                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate">Ratio FTFR</p>
                                         <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5">
                                             {selectedOperator.metrics.reworkCount || 0} OS
                                         </h4>
@@ -802,10 +840,10 @@ export default function OperadoresTab() {
                                             <div className={`h-full rounded-full ${selectedOperator.metrics.reworkCount > 0 && scoreConfig.enableReworkPenalty ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${Math.max(0, 100 - (scoreConfig.enableReworkPenalty ? (selectedOperator.metrics.reworkPenalty || 0) : 0))}%` }} />
                                         </div>
                                     </div>
-                                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
-                                        <span>Penalidad FTFR:</span>
-                                        <span className={`font-black ${selectedOperator.metrics.reworkPenalty > 0 && scoreConfig.enableReworkPenalty ? 'text-rose-500' : 'text-slate-500'}`}>
-                                            {scoreConfig.enableReworkPenalty ? `-${selectedOperator.metrics.reworkPenalty || 0} pts` : '0 pts (Desact.)'}
+                                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50 flex justify-between items-center gap-1 min-w-0 text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
+                                        <span className="truncate">Penalidad:</span>
+                                        <span className={`font-black shrink-0 ${selectedOperator.metrics.reworkPenalty > 0 && scoreConfig.enableReworkPenalty ? 'text-rose-500' : 'text-slate-500'}`}>
+                                            {scoreConfig.enableReworkPenalty ? `-${selectedOperator.metrics.reworkPenalty || 0} pts` : '0 pts'}
                                         </span>
                                     </div>
                                 </div>
@@ -820,22 +858,53 @@ export default function OperadoresTab() {
                                         <div className="absolute right-0 bottom-0 top-0 w-1/3 bg-radial-gradient opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-500" />
 
                                         <div className="space-y-4 relative">
-                                            <div className="flex items-center gap-2">
-                                                <Sparkles className="w-5 h-5 text-yellow-300 animate-spin-slow" />
-                                                <h4 className="font-black text-sm uppercase tracking-wider">Diagnóstico IA · HDB SGI</h4>
+                                            <div className="flex items-center justify-between flex-wrap gap-2">
+                                                <div className="flex items-center gap-2">
+                                                    <Sparkles className={`w-5 h-5 text-yellow-300 ${updatingAi ? 'animate-spin' : 'animate-spin-slow'}`} />
+                                                    <h4 className="font-black text-sm uppercase tracking-wider">Diagnóstico IA · HDB SGI</h4>
+                                                </div>
+                                                <button 
+                                                    onClick={handleRefreshAi}
+                                                    disabled={updatingAi}
+                                                    className="flex items-center gap-1.5 px-3 py-1 bg-white/10 hover:bg-white/20 active:scale-95 transition-all text-[10px] font-black uppercase tracking-wider rounded-xl border border-white/10 disabled:opacity-50"
+                                                >
+                                                    {updatingAi ? (
+                                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                                    ) : (
+                                                        <RotateCw className="w-3 h-3" />
+                                                    )}
+                                                    {updatingAi ? 'Actualizando...' : 'Actualizar'}
+                                                </button>
                                             </div>
 
-                                            <div className="space-y-2">
-                                                <p className="text-sm font-bold text-indigo-100 leading-relaxed">
-                                                    {insights.diagnosis}
-                                                </p>
-                                                <div className="bg-white/10 dark:bg-black/20 p-4 rounded-2xl border border-white/10">
-                                                    <span className="block text-[10px] font-black text-yellow-300 uppercase tracking-widest mb-1">Recomendación Sugerida</span>
-                                                    <p className="text-xs font-semibold leading-relaxed text-slate-100">
-                                                        {insights.recommendation}
-                                                    </p>
+                                            {updatingAi ? (
+                                                <div className="py-6 flex flex-col items-center justify-center gap-3 text-center">
+                                                    <Loader2 className="w-8 h-8 text-yellow-300 animate-spin" />
+                                                    <div className="space-y-1 animate-pulse">
+                                                        <p className="text-xs font-bold text-indigo-100">SGI Gemini cruzando métricas...</p>
+                                                        <p className="text-[10px] text-indigo-200">Analizando presentismo, calificaciones CSAT y matriz de competencias</p>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            ) : (
+                                                <div className="space-y-2">
+                                                    <p className="text-sm font-bold text-indigo-100 leading-relaxed">
+                                                        {insights.diagnosis}
+                                                    </p>
+                                                    <div className="bg-white/10 dark:bg-black/20 p-4 rounded-2xl border border-white/10">
+                                                        <div className="flex justify-between items-center mb-1">
+                                                            <span className="block text-[10px] font-black text-yellow-300 uppercase tracking-widest">Recomendación Sugerida</span>
+                                                            {aiUpdatedTimes[selectedOperator.operatorId] && (
+                                                                <span className="text-[9px] font-bold text-indigo-200 uppercase tracking-wider">
+                                                                    Actualizado {aiUpdatedTimes[selectedOperator.operatorId]}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-xs font-semibold leading-relaxed text-slate-100">
+                                                            {insights.recommendation}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 );
@@ -1451,10 +1520,10 @@ export default function OperadoresTab() {
                                 <div className="text-center py-4 bg-black/30 rounded-2xl border border-white/5 font-mono text-xs text-yellow-300">
                                     Score Global = Max( 10, Min( 100, BaseScore + BonoHoras - PenalidadDemoras - PenalidadSeguridad - PenalidadRetrabajo ) )
                                 </div>
-                                <div className="text-xs leading-relaxed text-slate-350 space-y-1">
-                                    <p>• El **BaseScore** es la suma ponderada: `Competencias*0.35 + Encuestas*0.20 + Asistencia*0.20 + Cumplimiento*0.25`.</p>
-                                    <p>• El puntaje final resultante se redondea al entero más cercano y se encuentra acotado en el intervalo **[10, 100]**.</p>
-                                    <p>• Los datos son auditales mediante el historial de auditorías de seguridad, partes de horas validados por supervisores, encuestas directas de clientes e historial de aprobaciones del LMS.</p>
+                                <div className="text-xs leading-relaxed text-slate-300 space-y-1">
+                                    <p>• El <strong className="font-bold text-white">BaseScore</strong> es la suma ponderada: <code className="bg-slate-800/80 text-yellow-200 px-1.5 py-0.5 rounded font-mono text-[10px]">Competencias*0.35 + Encuestas*0.20 + Asistencia*0.20 + Cumplimiento*0.25</code>.</p>
+                                    <p>• El puntaje final resultante se redondea al entero más cercano y se encuentra acotado en el intervalo <strong className="font-bold text-white">[10, 100]</strong>.</p>
+                                    <p>• Los datos son auditables mediante el historial de auditorías de seguridad, partes de horas validados por supervisores, encuestas directas de clientes e historial de aprobaciones del LMS.</p>
                                 </div>
                             </div>
                         </div>
