@@ -48,9 +48,21 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
                 .then(inventario => {
                     if (Array.isArray(inventario)) {
                         setMateriales(prev => prev.map(m => {
-                            // Only prefill if the price is empty and we have a match in inventory
-                            if (m.precioUnitario === '' && m.codigo) {
-                                const invItem = inventario.find((i: any) => i.codigo === m.codigo);
+                            // Only prefill if the price is empty
+                            if (m.precioUnitario === '') {
+                                const invItem = inventario.find((i: any) => {
+                                    // Try to match by code first (case-insensitive and ignoring leading zeros)
+                                    if (m.codigo && i.codigo) {
+                                        const c1 = m.codigo.replace(/^0+/, '').toLowerCase().trim();
+                                        const c2 = i.codigo.replace(/^0+/, '').toLowerCase().trim();
+                                        if (c1 && c1 === c2) return true;
+                                    }
+                                    // Fallback: match by name (case-insensitive and trimmed)
+                                    if (m.material && i.nombre) {
+                                        return m.material.toLowerCase().trim() === i.nombre.toLowerCase().trim();
+                                    }
+                                    return false;
+                                });
                                 if (invItem && invItem.precioVenta != null) {
                                     return { ...m, precioUnitario: invItem.precioVenta };
                                 }

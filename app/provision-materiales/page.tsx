@@ -131,7 +131,8 @@ function AddMaterialForm({ proyectoId, onAdded }: { proyectoId: string; onAdded:
                         setForm(p => ({ 
                             ...p, 
                             nombre: data.nombre, 
-                            unidad: data.unidad || p.unidad 
+                            unidad: data.unidad || p.unidad,
+                            precioVenta: data.precioVenta !== null && data.precioVenta !== undefined ? String(data.precioVenta) : p.precioVenta
                         }));
                     }
                 }

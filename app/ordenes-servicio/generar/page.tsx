@@ -218,7 +218,8 @@ function GenerarOSContent() {
                                 ...newMats[i], 
                                 material: data.nombre, 
                                 unidadMedida: data.unidad || newMats[i].unidadMedida,
-                                codigo: value.toUpperCase()
+                                codigo: data.codigo || value.toUpperCase(),
+                                precioUnitario: data.precioVenta !== null && data.precioVenta !== undefined ? data.precioVenta : newMats[i].precioUnitario
                             };
                             return newMats;
                         });
