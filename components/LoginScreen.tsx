@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ClipboardList, Lock, LogIn, User as UserIcon } from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
 
@@ -47,6 +47,7 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
             if (!res.ok) {
                 const errData = await res.json();
                 setError(errData.error || 'Autenticación fallida');
+                setPin('');
                 setIsSubmitting(false);
                 return;
             }
@@ -60,6 +61,7 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
             onLoginSuccess(userData);
         } catch (err) {
             setError('Error de conexión');
+            setPin('');
             setIsSubmitting(false);
         }
     };
@@ -70,6 +72,26 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
     // ── Custom inline dropdown state ──────────────────────────────────────────
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const selectedOp = operators.find(o => o.id === selectedOperatorId);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    // Close dropdown on click outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+                setDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // Focus input when dropdown is opened
+    useEffect(() => {
+        if (dropdownOpen && inputRef.current) {
+            inputRef.current.focus();
+        }
+    }, [dropdownOpen]);
 
     if (isLoading) {
         return (
@@ -122,34 +144,48 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">
                             <UserIcon className="w-3 h-3" /> Operador / Usuario
                         </label>
-                        <div className="relative">
-                            {/* Trigger */}
-                            <button
-                                type="button"
-                                onClick={() => setDropdownOpen(prev => !prev)}
-                                className={`w-full bg-slate-50 dark:bg-slate-900/50 border rounded-2xl py-4 px-4 outline-none text-left font-bold transition-all flex items-center justify-between gap-2 ${dropdownOpen ? 'border-indigo-500 ring-4 ring-indigo-500/10' : 'border-slate-200 dark:border-slate-700'}`}
-                            >
-                                <span className={`truncate text-base ${selectedOp ? 'text-slate-700 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500'}`}>
-                                    {selectedOp ? selectedOp.nombreCompleto : '— Seleccionar Identidad —'}
-                                </span>
-                                <svg className={`w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                            </button>
+                        <div className="relative" ref={containerRef}>
+                            {/* Integrated Selector/Search Input */}
+                            <div className="relative flex items-center">
+                                <input
+                                    ref={inputRef}
+                                    type="text"
+                                    placeholder={dropdownOpen ? 'Escribe para buscar...' : (selectedOp ? selectedOp.nombreCompleto : '— Seleccionar Identidad —')}
+                                    className={`w-full bg-slate-50 dark:bg-slate-900/50 border rounded-2xl py-4 pl-4 pr-10 outline-none font-bold transition-all text-base ${
+                                        dropdownOpen 
+                                            ? 'border-indigo-500 ring-4 ring-indigo-500/10 text-slate-800 dark:text-slate-100' 
+                                            : (selectedOp ? 'text-slate-700 dark:text-slate-200 cursor-pointer' : 'text-slate-400 dark:text-slate-500 cursor-pointer')
+                                    }`}
+                                    value={dropdownOpen ? searchTerm : (selectedOp ? selectedOp.nombreCompleto : '')}
+                                    onChange={(e) => {
+                                        if (dropdownOpen) {
+                                            setSearchTerm(e.target.value);
+                                        }
+                                    }}
+                                    onClick={() => {
+                                        if (!dropdownOpen) {
+                                            setDropdownOpen(true);
+                                            setSelectedOperatorId('');
+                                            setSearchTerm('');
+                                        }
+                                    }}
+                                    readOnly={!dropdownOpen}
+                                />
+                                <div className="absolute right-4 flex items-center pointer-events-none">
+                                    <svg 
+                                        className={`w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} 
+                                        fill="none" 
+                                        viewBox="0 0 24 24" 
+                                        stroke="currentColor"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                            </div>
 
                             {/* Dropdown panel */}
                             {dropdownOpen && (
-                                <div className="absolute z-50 left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl overflow-hidden">
-                                    {/* Search */}
-                                    <div className="p-3 border-b border-slate-100 dark:border-slate-800">
-                                        <input
-                                            type="text"
-                                            autoFocus
-                                            placeholder="Buscar..."
-                                            className="w-full outline-none text-sm font-medium py-1 px-2 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10"
-                                            value={searchTerm}
-                                            onChange={e => setSearchTerm(e.target.value)}
-                                            onClick={e => e.stopPropagation()}
-                                        />
-                                    </div>
+                                <div className="absolute z-50 left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                                     {/* Options */}
                                     <div className="max-h-56 overflow-y-auto">
                                         {filteredOperators.length === 0 ? (
