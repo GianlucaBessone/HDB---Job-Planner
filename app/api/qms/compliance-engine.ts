@@ -48,12 +48,13 @@ export async function triggerAutomaticTraining(documentId: string) {
             }
 
             if (matches) {
-                // Verificar si ya existe una capacitación para esta versión específica
+                // Verificar si ya existe una capacitación activa para esta versión específica
                 const existing = await prisma.technicianTraining.findFirst({
                     where: {
                         operatorId: op.id,
                         documentId: doc.id,
-                        versionId: versionId || undefined
+                        versionId: versionId || undefined,
+                        estado: { not: 'obsoleto' }
                     }
                 });
 
@@ -213,11 +214,12 @@ export async function syncOperatorTrainings(operatorId: string) {
             }
 
             if (matches) {
-                // Verify if training already exists (any state)
+                // Verify if training already exists (any state except obsoleto)
                 const existing = await prisma.technicianTraining.findFirst({
                     where: {
                         operatorId: op.id,
-                        documentId: doc.id
+                        documentId: doc.id,
+                        estado: { not: 'obsoleto' }
                     }
                 });
 
@@ -414,14 +416,21 @@ export async function calculateComplianceScore(operatorId: string) {
             ? (readConfirms.length / reqDocs.length) * 100
             : 100;
 
-        // Capacitaciones asignadas vs aprobadas
+        // Capacitaciones asignadas vs aprobadas (excluyendo obsoletas que no fueron aprobadas)
         const assignedTrainings = await prisma.technicianTraining.findMany({
-            where: { operatorId }
+            where: { operatorId },
+            include: { document: true }
         });
 
-        const approvedTrainings = assignedTrainings.filter(t => t.estado === 'aprobado');
-        const trainingScore = assignedTrainings.length > 0
-            ? (approvedTrainings.length / assignedTrainings.length) * 100
+        const activeTrainings = assignedTrainings.filter(t => {
+            if (t.estado === 'obsoleto') return false;
+            if (t.document?.estado === 'obsoleto' && t.estado !== 'aprobado') return false;
+            return true;
+        });
+
+        const approvedTrainings = activeTrainings.filter(t => t.estado === 'aprobado');
+        const trainingScore = activeTrainings.length > 0
+            ? (approvedTrainings.length / activeTrainings.length) * 100
             : 100;
 
         // Competencias vigentes vs total competencias registradas

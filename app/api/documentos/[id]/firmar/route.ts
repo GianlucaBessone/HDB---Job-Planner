@@ -125,9 +125,20 @@ export async function POST(req: Request, { params }: { params: { id: string } })
                             data: { estado: 'obsoleta' }
                         });
 
-                        // Invalidate operator trainings for this document
+                        // Delete pending/unapproved operator trainings for this document
+                        await prisma.technicianTraining.deleteMany({
+                            where: {
+                                documentId: doc.id,
+                                estado: { not: 'aprobado' }
+                            }
+                        });
+
+                        // Archive approved operator trainings for this document as obsoleto
                         await prisma.technicianTraining.updateMany({
-                            where: { documentId: doc.id },
+                            where: {
+                                documentId: doc.id,
+                                estado: 'aprobado'
+                            },
                             data: { estado: 'obsoleto' }
                         });
 

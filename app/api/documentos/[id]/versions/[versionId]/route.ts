@@ -80,6 +80,23 @@ export async function PUT(req: Request, { params }: { params: { id: string; vers
                     where: { id: params.id },
                     data: { estado: 'obsoleto' }
                 });
+
+                // Delete pending/unapproved operator trainings for this document
+                await prisma.technicianTraining.deleteMany({
+                    where: {
+                        documentId: params.id,
+                        estado: { not: 'aprobado' }
+                    }
+                });
+
+                // Archive approved operator trainings for this document as obsoleto
+                await prisma.technicianTraining.updateMany({
+                    where: {
+                        documentId: params.id,
+                        estado: 'aprobado'
+                    },
+                    data: { estado: 'obsoleto' }
+                });
             }
         }
 

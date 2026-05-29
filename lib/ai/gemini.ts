@@ -4,11 +4,14 @@ import { DEFAULT_PROMPTS, compilePrompt } from './prompts';
 import { AiRequestOptions, AiServiceResponse, TokenUsage } from './types';
 
 // Initialize GenAI client
-const apiKey = process.env.GEMINI_API_KEY;
-if (!apiKey) {
-    throw new Error('GEMINI_API_KEY is not defined in environment variables');
-}
+const apiKey = process.env.GEMINI_API_KEY || 'DUMMY_API_KEY_FOR_BUILD';
 const ai = new GoogleGenAI({ apiKey });
+
+function checkApiKey() {
+    if (!process.env.GEMINI_API_KEY) {
+        throw new Error('GEMINI_API_KEY is not defined in environment variables. Please check your environment configuration or .env file.');
+    }
+}
 
 // Cost constants for gemini-2.5-flash
 const COST_PER_1M_INPUT_TOKENS = 0.075; // USD
@@ -91,6 +94,7 @@ export async function generateContent<T = any>(
     variables: Record<string, any>,
     options: AiRequestOptions = {}
 ): Promise<AiServiceResponse<T>> {
+    checkApiKey();
     const start = Date.now();
     const modelName = options.model || 'gemini-2.5-flash';
     const timeoutMs = options.timeoutMs || 30000;
@@ -241,6 +245,7 @@ export async function analyzeImageContent(
     contexto?: string,
     options: AiRequestOptions = {}
 ): Promise<AiServiceResponse> {
+    checkApiKey();
     const start = Date.now();
     const modelName = options.model || 'gemini-2.5-flash';
     const timeoutMs = options.timeoutMs || 45000;
@@ -368,6 +373,7 @@ export async function analyzeDocumentOcr(
     mimeType: string,
     options: AiRequestOptions = {}
 ): Promise<AiServiceResponse> {
+    checkApiKey();
     const start = Date.now();
     const modelName = options.model || 'gemini-2.5-flash';
     const timeoutMs = options.timeoutMs || 45000;
@@ -493,6 +499,7 @@ export async function analyzeCertificateOcr(
     options: AiRequestOptions = {},
     manualData?: { nombreCurso?: string; institucion?: string; descripcion?: string }
 ): Promise<AiServiceResponse> {
+    checkApiKey();
     const start = Date.now();
     const modelName = options.model || 'gemini-2.5-flash';
     const timeoutMs = options.timeoutMs || 45000;

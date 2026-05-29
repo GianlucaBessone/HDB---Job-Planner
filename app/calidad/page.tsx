@@ -29,6 +29,9 @@ function CalidadPage() {
 
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [activeTab, setActiveTab] = useState<TabId>(initialTab);
+    const [visitedTabs, setVisitedTabs] = useState<Record<TabId, boolean>>(() => {
+        return { [initialTab]: true } as Record<TabId, boolean>;
+    });
 
     useEffect(() => {
         const stored = localStorage.getItem('currentUser');
@@ -38,6 +41,15 @@ function CalidadPage() {
             router.replace('/');
         }
     }, [router]);
+
+    useEffect(() => {
+        if (activeTab) {
+            setVisitedTabs(prev => {
+                if (prev[activeTab]) return prev;
+                return { ...prev, [activeTab]: true };
+            });
+        }
+    }, [activeTab]);
 
     const role = currentUser?.role?.toLowerCase() || 'operador';
 
@@ -97,13 +109,41 @@ function CalidadPage() {
             </div>
 
             <div className="animate-in fade-in duration-300">
-                {activeTab === 'dashboard' && <DashboardTab user={currentUser} />}
-                {activeTab === 'library' && <LibraryTab user={currentUser} />}
-                {activeTab === 'training' && <LmsTab user={currentUser} />}
-                {activeTab === 'competencies' && <CompetenciesTab user={currentUser} />}
-                {activeTab === 'templates' && <TemplatesTab user={currentUser} />}
-                {activeTab === 'expirations' && <ExpirationsTab user={currentUser} />}
-                {activeTab === 'history' && <HistoryTab user={currentUser} />}
+                {visitedTabs['dashboard'] && (
+                    <div className={activeTab === 'dashboard' ? '' : 'hidden'}>
+                        <DashboardTab user={currentUser} />
+                    </div>
+                )}
+                {visitedTabs['library'] && (
+                    <div className={activeTab === 'library' ? '' : 'hidden'}>
+                        <LibraryTab user={currentUser} />
+                    </div>
+                )}
+                {visitedTabs['training'] && (
+                    <div className={activeTab === 'training' ? '' : 'hidden'}>
+                        <LmsTab user={currentUser} />
+                    </div>
+                )}
+                {visitedTabs['competencies'] && (
+                    <div className={activeTab === 'competencies' ? '' : 'hidden'}>
+                        <CompetenciesTab user={currentUser} />
+                    </div>
+                )}
+                {visitedTabs['templates'] && (
+                    <div className={activeTab === 'templates' ? '' : 'hidden'}>
+                        <TemplatesTab user={currentUser} />
+                    </div>
+                )}
+                {visitedTabs['expirations'] && (
+                    <div className={activeTab === 'expirations' ? '' : 'hidden'}>
+                        <ExpirationsTab user={currentUser} />
+                    </div>
+                )}
+                {visitedTabs['history'] && (
+                    <div className={activeTab === 'history' ? '' : 'hidden'}>
+                        <HistoryTab user={currentUser} />
+                    </div>
+                )}
             </div>
         </div>
     );

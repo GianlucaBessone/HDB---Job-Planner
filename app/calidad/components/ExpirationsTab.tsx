@@ -4,6 +4,8 @@ import { AlertTriangle, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
+let cachedExpirationsDocs: any[] | null = null;
+
 export default function ExpirationsTab({ user }: { user: any }) {
     const [docs, setDocs] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -13,10 +15,21 @@ export default function ExpirationsTab({ user }: { user: any }) {
     }, []);
 
     const loadExpirations = async () => {
-        setIsLoading(true);
+        let showLoader = true;
+        if (cachedExpirationsDocs) {
+            setDocs(cachedExpirationsDocs);
+            showLoader = false;
+        }
+        if (showLoader) {
+            setIsLoading(true);
+        }
         try {
             const res = await safeApiRequest('/api/documentos?vencidos=true');
-            if (res.ok) setDocs(await res.json());
+            if (res.ok) {
+                const data = await res.json();
+                cachedExpirationsDocs = data;
+                setDocs(data);
+            }
         } catch (e) {
             console.error(e);
         } finally {

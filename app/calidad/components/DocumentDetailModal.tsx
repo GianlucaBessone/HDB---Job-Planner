@@ -6,6 +6,13 @@ import { safeApiRequest } from '@/lib/offline';
 import { formatDateInline, formatDateTimeInline } from '@/lib/formatDate';
 import { showToast } from '@/components/Toast';
 
+// Module-level caches to speed up modal opens across the app session
+let cachedOperators: any[] | null = null;
+let cachedAllDocs: any[] | null = null;
+let cachedActivityOptions: string[] | null = null;
+let cachedProjectTags: string[] | null = null;
+const cachedDocuments: Record<string, any> = {};
+
 export default function DocumentDetailModal({ documentId, onClose, user }: { documentId: string, onClose: () => void, user?: any }) {
     const [doc, setDoc] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -23,6 +30,7 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
     const [newOptions, setNewOptions] = useState(['', '', '', '']);
     const [newCorrectIndex, setNewCorrectIndex] = useState(0);
     const [showQuestionBuilder, setShowQuestionBuilder] = useState(false);
+    const [generatingQuizWithAi, setGeneratingQuizWithAi] = useState(false);
 
     // New rule modal state
     const [showRuleModal, setShowRuleModal] = useState(false);
@@ -531,7 +539,8 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
             setShowVersionModal(false);
             setPendingSaveType(null);
             setPendingSaveData(null);
-            loadDocument();
+            cachedAllDocs = null;
+            loadDocument(true);
         } catch (err: any) {
             console.error(err);
             showToast('Error de red al guardar', 'error');
@@ -541,6 +550,8 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
             setSavingDigital(false);
         }
     };
+
+
 
     const getCoordinates = (e: any) => {
         const canvas = canvasRef.current;
@@ -696,7 +707,8 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                 setAgreement(null);
                 setComments('');
                 // Reload document
-                loadDocument();
+                cachedAllDocs = null;
+                loadDocument(true);
             } else {
                 const err = await res.json();
                 alert(err.error || 'Error al procesar firma');
@@ -713,51 +725,116 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
         loadDocument();
     }, [documentId]);
 
-    const loadDocument = async () => {
-        setLoading(true);
+    const loadDocument = async (forceRefresh = false) => {
+        if (forceRefresh) {
+            delete cachedDocuments[documentId];
+        }
+
+        const cachedDoc = cachedDocuments[documentId];
+        let showLoader = true;
+        if (cachedDoc) {
+            setDoc(cachedDoc);
+            setNewRevisadorId(cachedDoc.revisadorId || '');
+            setNewAprobadorId(cachedDoc.aprobadorId || '');
+
+            if (cachedDoc.descripcion && cachedDoc.descripcion.trim().startsWith('{')) {
+                try {
+                    const parsed = JSON.parse(cachedDoc.descripcion);
+                    setEditedDigitalData({
+                        objetivo: parsed.objetivo || '',
+                        alcance: parsed.alcance || '',
+                        desarrollo: parsed.desarrollo || '',
+                        responsabilidades: parsed.responsabilidades || '',
+                        videoUrl: parsed.videoUrl || '',
+                        definiciones: parsed.definiciones || [],
+                        referencias: parsed.referencias || []
+                    });
+                } catch (e) {}
+            } else {
+                setEditedDigitalData({
+                    objetivo: '',
+                    alcance: '',
+                    desarrollo: '',
+                    responsabilidades: '',
+                    videoUrl: '',
+                    definiciones: [],
+                    referencias: []
+                });
+            }
+
+            if (cachedDoc.versions && cachedDoc.versions.length > 0) {
+                const latest = cachedDoc.versions[0];
+                if (latest.checklistTemplate) {
+                    setChecklistItems(latest.checklistTemplate);
+                }
+            } else {
+                setChecklistItems([]);
+            }
+
+            if (cachedDoc.workflowState && typeof cachedDoc.workflowState === 'object' && Array.isArray(cachedDoc.workflowState.cuestionario)) {
+                setQuizQuestions(cachedDoc.workflowState.cuestionario);
+            } else {
+                setQuizQuestions([]);
+            }
+
+            setLoading(false);
+            showLoader = false;
+        }
+
+        if (showLoader) {
+            setLoading(true);
+        }
+
         try {
+            const docPromise = safeApiRequest(`/api/documentos/${documentId}`);
+            const optPromise = cachedActivityOptions ? Promise.resolve(null) : safeApiRequest('/api/config/options');
+            const tagsPromise = cachedProjectTags ? Promise.resolve(null) : safeApiRequest('/api/config/tags');
+            const allDocsPromise = cachedAllDocs ? Promise.resolve(null) : safeApiRequest('/api/documentos');
+            const opsPromise = cachedOperators ? Promise.resolve(null) : safeApiRequest('/api/operators');
+
             const [docRes, optRes, tagsRes, allDocsRes, opsRes] = await Promise.all([
-                safeApiRequest(`/api/documentos/${documentId}`),
-                safeApiRequest('/api/config/options'),
-                safeApiRequest('/api/config/tags'),
-                safeApiRequest('/api/documentos'),
-                safeApiRequest('/api/operators')
+                docPromise,
+                optPromise,
+                tagsPromise,
+                allDocsPromise,
+                opsPromise
             ]);
-            
-            if (opsRes.ok) {
+
+            if (opsRes && opsRes.ok) {
                 const opsData = await opsRes.json();
-                if (Array.isArray(opsData)) setOperators(opsData);
+                if (Array.isArray(opsData)) cachedOperators = opsData;
             }
+            if (cachedOperators) setOperators(cachedOperators);
 
-            if (allDocsRes.ok) {
+            if (allDocsRes && allDocsRes.ok) {
                 const docsData = await allDocsRes.json();
-                if (Array.isArray(docsData)) setAllDocs(docsData);
+                if (Array.isArray(docsData)) cachedAllDocs = docsData;
             }
+            if (cachedAllDocs) setAllDocs(cachedAllDocs);
 
-            if (optRes.ok) {
+            if (optRes && optRes.ok) {
                 const optionsData = await optRes.json();
                 if (Array.isArray(optionsData)) {
-                    setActivityOptions(
-                        optionsData
-                            .filter((o: any) => o.category === 'TIPO_ACTIVIDAD' && o.active)
-                            .map((o: any) => o.value)
-                    );
+                    cachedActivityOptions = optionsData
+                        .filter((o: any) => o.category === 'TIPO_ACTIVIDAD' && o.active)
+                        .map((o: any) => o.value);
                 }
             }
+            if (cachedActivityOptions) setActivityOptions(cachedActivityOptions);
 
-            if (tagsRes.ok) {
+            if (tagsRes && tagsRes.ok) {
                 const tagsData = await tagsRes.json();
                 if (Array.isArray(tagsData)) {
-                    setProjectTags(
-                        tagsData
-                            .filter((t: any) => t.active)
-                            .map((t: any) => t.name)
-                    );
+                    cachedProjectTags = tagsData
+                        .filter((t: any) => t.active)
+                        .map((t: any) => t.name);
                 }
             }
+            if (cachedProjectTags) setProjectTags(cachedProjectTags);
 
             if (docRes.ok) {
                 const data = await docRes.json();
+                cachedDocuments[documentId] = data;
                 setDoc(data);
                 setNewRevisadorId(data.revisadorId || '');
                 setNewAprobadorId(data.aprobadorId || '');
@@ -787,15 +864,15 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                     });
                 }
 
-                // Load checklist from the latest version if available
                 if (data.versions && data.versions.length > 0) {
                     const latest = data.versions[0];
                     if (latest.checklistTemplate) {
                         setChecklistItems(latest.checklistTemplate);
                     }
+                } else {
+                    setChecklistItems([]);
                 }
 
-                // Load quiz questions from workflowState if present
                 if (data.workflowState && typeof data.workflowState === 'object' && Array.isArray(data.workflowState.cuestionario)) {
                     setQuizQuestions(data.workflowState.cuestionario);
                 } else {
@@ -816,7 +893,8 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                 body: JSON.stringify(ruleData)
             });
             if (res.ok) {
-                loadDocument();
+                cachedAllDocs = null;
+                loadDocument(true);
             }
         } catch (e) {
             console.error(e);
@@ -828,7 +906,8 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
             await safeApiRequest(`/api/documentos/${documentId}/reglas?ruleId=${ruleId}`, {
                 method: 'DELETE'
             });
-            loadDocument();
+            cachedAllDocs = null;
+            loadDocument(true);
         } catch (e) {
             console.error(e);
         }
@@ -868,7 +947,8 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
 
                 if (res.ok) {
                     showToast('Archivo subido y asociado con éxito', 'success');
-                    loadDocument();
+                    cachedAllDocs = null;
+                    loadDocument(true);
                 } else {
                     const err = await res.json();
                     showToast(err.error || 'Error al subir el archivo', 'error');
@@ -918,6 +998,50 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
         updated.splice(index, 1);
         setQuizQuestions(updated);
         showToast('Pregunta eliminada (recuerde Guardar los cambios)', 'success');
+    };
+
+    const handleGenerateQuizWithAi = async () => {
+        setGeneratingQuizWithAi(true);
+        try {
+            const uId = user?.id || 'admin';
+            const uName = user?.nombreCompleto || user?.nombre || 'Usuario Administrador';
+            const res = await fetch('/api/ai/training', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    documentId: documentId,
+                    cantidadPreguntas: 5,
+                    nivelDificultad: 'intermedio',
+                    userId: uId,
+                    userName: uName,
+                    userRole: user?.role || 'ADMIN',
+                    saveAsTraining: false
+                })
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Error al conectar con el servidor');
+            }
+
+            const data = await res.json();
+            if (data.success && data.training && Array.isArray(data.training.cuestionario)) {
+                const generatedQuiz = data.training.cuestionario.map((q: any) => ({
+                    question: q.pregunta || q.question || 'Pregunta autogenerada',
+                    options: q.opciones || q.options || [],
+                    correctAnswerIndex: typeof q.correctaIdx === 'number' ? q.correctaIdx : (typeof q.correctAnswerIndex === 'number' ? q.correctAnswerIndex : 0)
+                }));
+                setQuizQuestions(generatedQuiz);
+                showToast('Cuestionario generado con éxito mediante IA (edítelo y guárdelo)', 'success');
+            } else {
+                showToast('La IA no pudo formatear el cuestionario correctamente.', 'error');
+            }
+        } catch (err: any) {
+            console.error(err);
+            showToast(err.message || 'Error al generar cuestionario con IA', 'error');
+        } finally {
+            setGeneratingQuizWithAi(false);
+        }
     };
 
     if (loading) return (
@@ -1386,7 +1510,7 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                             </div>
                                         ) : null}
                                         {canEdit && (
-                                            <button onClick={() => { setEditedDigitalData({ objetivo: '', alcance: '', desarrollo: '', responsabilidades: '', videoUrl: '', definiciones: [], referencias: [] }); handleSaveDigitalData(); setTimeout(() => { setIsEditingDigital(true); loadDocument(); }, 500); }} className="w-full py-3 border-2 border-dashed border-indigo-300 dark:border-indigo-700 rounded-2xl text-sm font-bold text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors flex items-center justify-center gap-2">
+                                            <button onClick={() => { setEditedDigitalData({ objetivo: '', alcance: '', desarrollo: '', responsabilidades: '', videoUrl: '', definiciones: [], referencias: [] }); handleSaveDigitalData(); setTimeout(() => { setIsEditingDigital(true); loadDocument(true); }, 500); }} className="w-full py-3 border-2 border-dashed border-indigo-300 dark:border-indigo-700 rounded-2xl text-sm font-bold text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors flex items-center justify-center gap-2">
                                                 <Sparkles className="w-4 h-4" /> Convertir a Procedimiento Digital (formulario interactivo)
                                             </button>
                                         )}
@@ -2042,6 +2166,36 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                     <p className="text-xs text-slate-500 leading-relaxed">
                                         Dado que este documento requiere capacitación obligatoria, debe estructurar una evaluación de opción múltiple. Cada técnico asignado deberá aprobar esta evaluación antes de considerarse apto para la operación técnica.
                                     </p>
+
+                                    {/* Generador de Cuestionario con IA */}
+                                    <div className="flex flex-col sm:flex-row justify-between sm:items-center bg-indigo-50/40 dark:bg-indigo-950/10 p-4 rounded-2xl border border-indigo-100/50 dark:border-indigo-900/20 gap-3">
+                                        <div className="space-y-0.5">
+                                            <p className="text-xs font-bold text-indigo-950 dark:text-indigo-100 flex items-center gap-1">
+                                                <Sparkles className="w-4 h-4 text-indigo-500" /> Cuestionario Inteligente con IA
+                                            </p>
+                                            <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                                                Genere automáticamente un borrador del cuestionario a partir de la Información General, video insertado y documentos de respaldo.
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={handleGenerateQuizWithAi}
+                                            disabled={generatingQuizWithAi}
+                                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-indigo-500/10 shrink-0 disabled:opacity-50"
+                                        >
+                                            {generatingQuizWithAi ? (
+                                                <>
+                                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                                    <span>Generando Cuestionario...</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Sparkles className="w-3.5 h-3.5" />
+                                                    <span>Generar con IA</span>
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
 
                                     {/* Action bar for adding questions when questions exist */}
                                     {quizQuestions.length > 0 && !showQuestionBuilder && (

@@ -14,13 +14,16 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Falta parámetro obligatorio: documentId.' }, { status: 400 });
         }
 
-        // 1. Buscar el documento en DB para obtener su contenido real
+        // 1. Buscar el documento en DB para obtener su contenido real con sus archivos asociados
         const doc = await prisma.controlledDocument.findUnique({
             where: { id: documentId },
             include: {
                 versions: {
                     orderBy: [{ versionMayor: 'desc' }, { versionMenor: 'desc' }],
-                    take: 1
+                    take: 1,
+                    include: {
+                        files: true
+                    }
                 }
             }
         });
@@ -30,14 +33,52 @@ export async function POST(req: Request) {
         }
 
         const latestVersion = doc.versions[0];
-        // Usamos el campo de notas, descripción o desarrollo para alimentar la IA
+        const backupFiles = latestVersion?.files || [];
+
+        // Parse general info (SOP sections) and video URL
+        let digitalContentText = '';
+        let videoContentText = '';
+        if (doc.descripcion && doc.descripcion.trim().startsWith('{')) {
+            try {
+                const parsed = JSON.parse(doc.descripcion);
+                digitalContentText = `
+--- INFORMACIÓN GENERAL DEL PROCEDIMIENTO ---
+Objetivo: ${parsed.objetivo || 'No especificado'}
+Alcance: ${parsed.alcance || 'No especificado'}
+Desarrollo de la Actividad: ${parsed.desarrollo || 'No especificado'}
+Responsabilidades: ${parsed.responsabilidades || 'No especificado'}
+`;
+                if (parsed.videoUrl) {
+                    videoContentText = `\n--- VIDEO DE CAPACITACIÓN INSERTADO ---
+URL del Video: ${parsed.videoUrl}
+Hay un video insertado en este procedimiento. Generar preguntas relacionadas con el aprendizaje esperado que el operario obtendrá al visualizar este video de capacitación.`;
+                }
+            } catch (e) {
+                digitalContentText = `Descripción del documento: ${doc.descripcion}`;
+            }
+        } else {
+            digitalContentText = `Descripción del documento: ${doc.descripcion || 'Sin descripción'}`;
+        }
+
+        // Parse backup documents / attachments
+        let backupDocsText = '';
+        if (backupFiles.length > 0) {
+            backupDocsText = `\n--- DOCUMENTOS DE RESPALDO / ARCHIVOS ADJUNTOS ---
+Se adjuntaron los siguientes archivos para respaldar la capacitación:
+${backupFiles.map((f: any) => `- Archivo: ${f.nombreArchivo} (Tipo: ${f.tipoArchivo}, Tamaño: ${Math.round(f.tamanioBytes / 1024)} KB)`).join('\n')}
+Generar preguntas específicas de evaluación sobre la información, especificaciones técnicas y manuales detallados en estos archivos de respaldo.`;
+        }
+
         const documentContent = `
-Código: ${doc.codigoDocumental}
+Código de Documento: ${doc.codigoDocumental}
 Título: ${doc.titulo}
-Tipo: ${doc.tipoDocumento}
+Tipo de Documento: ${doc.tipoDocumento}
 Área: ${doc.area}
-Descripción: ${doc.descripcion || 'Sin descripción'}
-Contenido Adicional/Notas de Versión: ${latestVersion?.notas || 'Sin contenido detallado en versión.'}
+Notas de versión: ${latestVersion?.notas || 'Sin notas de versión.'}
+
+${digitalContentText}
+${videoContentText}
+${backupDocsText}
         `.trim();
 
         // 2. Invocar la Capa Centralizada de IA

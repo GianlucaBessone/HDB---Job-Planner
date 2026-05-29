@@ -181,6 +181,11 @@ Contenido:
 {{documentContent}}
 \"\"\"
 
+INSTRUCCIONES PARA LA EVALUACIÓN (CUESTIONARIO):
+1. Debes diseñar las preguntas y respuestas basándote rigurosamente en la información de la pestaña "Información General" del documento (objetivo, alcance, desarrollo de la actividad, responsabilidades).
+2. Si se detalla la existencia de un video insertado en el procedimiento, incluye preguntas relacionadas con el contenido o aprendizaje de dicho video de capacitación.
+3. Si se detallan documentos de respaldo o archivos adjuntos (como manuales, especificaciones técnicas, etc.), incluye preguntas que evalúen la comprensión y los detalles de dichos archivos de respaldo.
+
 Genera un contenido interactivo para capacitación y una evaluación en formato JSON orientados a técnicos de HDB Servicios Eléctricos:
 - Cantidad de preguntas deseadas: {{cantidadPreguntas}}
 - Nivel: {{nivelDificultad}}

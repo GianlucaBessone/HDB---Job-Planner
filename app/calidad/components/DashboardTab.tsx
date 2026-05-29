@@ -4,6 +4,8 @@ import { FileText, AlertCircle, ShieldCheck, FileWarning, Clock, BookOpen, Histo
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
+let cachedDashboardStats: any = null;
+
 export default function DashboardTab({ user }: { user: any }) {
     const [stats, setStats] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -13,11 +15,20 @@ export default function DashboardTab({ user }: { user: any }) {
     }, []);
 
     const loadStats = async () => {
-        setIsLoading(true);
+        let showLoader = true;
+        if (cachedDashboardStats) {
+            setStats(cachedDashboardStats);
+            showLoader = false;
+        }
+        if (showLoader) {
+            setIsLoading(true);
+        }
         try {
             const res = await safeApiRequest('/api/documentos/stats');
             if (res.ok) {
-                setStats(await res.json());
+                const data = await res.json();
+                cachedDashboardStats = data;
+                setStats(data);
             }
         } catch (e) {
             console.error(e);

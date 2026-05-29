@@ -7,6 +7,8 @@ import {
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
+let cachedCompetenciesData: { competencies: any[]; operators: any[]; documents: any[] } | null = null;
+
 export default function CompetenciesTab({ user }: { user: any }) {
     const [competencies, setCompetencies] = useState<any[]>([]);
     const [operators, setOperators] = useState<any[]>([]);
@@ -27,24 +29,46 @@ export default function CompetenciesTab({ user }: { user: any }) {
     }, []);
 
     const loadData = async () => {
-        setIsLoading(true);
+        let showLoader = true;
+        if (cachedCompetenciesData) {
+            setCompetencies(cachedCompetenciesData.competencies);
+            setOperators(cachedCompetenciesData.operators);
+            setDocuments(cachedCompetenciesData.documents);
+            showLoader = false;
+        }
+        if (showLoader) {
+            setIsLoading(true);
+        }
         try {
             // Load competencies
             const compUrl = isTech ? `/api/qms/competencias?operatorId=${user.id}` : '/api/qms/competencias';
             const compRes = await safeApiRequest(compUrl);
             const compData = compRes.ok ? await compRes.json() : [];
-            setCompetencies(compData);
 
+            let opDataFiltered: any[] = [];
+            let docDataFiltered: any[] = [];
             if (!isTech) {
                 // Load all operators
                 const opRes = await safeApiRequest('/api/operators');
                 const opData = opRes.ok ? await opRes.json() : [];
-                setOperators(opData.filter((o: any) => o.activo));
+                opDataFiltered = opData.filter((o: any) => o.activo);
 
                 // Load all controlled docs
                 const docRes = await safeApiRequest('/api/documentos');
                 const docData = docRes.ok ? await docRes.json() : [];
-                setDocuments(docData.filter((d: any) => d.estado === 'vigente'));
+                docDataFiltered = docData.filter((d: any) => d.estado === 'vigente');
+            }
+
+            cachedCompetenciesData = {
+                competencies: compData,
+                operators: opDataFiltered,
+                documents: docDataFiltered
+            };
+
+            setCompetencies(compData);
+            if (!isTech) {
+                setOperators(opDataFiltered);
+                setDocuments(docDataFiltered);
             }
         } catch (e) {
             console.error(e);

@@ -4,6 +4,8 @@ import { History, ShieldCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
+let cachedHistoryVersions: any[] | null = null;
+
 export default function HistoryTab({ user }: { user: any }) {
     const [recentVersions, setRecentVersions] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -13,12 +15,21 @@ export default function HistoryTab({ user }: { user: any }) {
     }, []);
 
     const loadHistory = async () => {
-        setIsLoading(true);
+        let showLoader = true;
+        if (cachedHistoryVersions) {
+            setRecentVersions(cachedHistoryVersions);
+            showLoader = false;
+        }
+        if (showLoader) {
+            setIsLoading(true);
+        }
         try {
             const res = await safeApiRequest('/api/documentos/stats');
             if (res.ok) {
                 const data = await res.json();
-                setRecentVersions(data.recentVersions || []);
+                const versions = data.recentVersions || [];
+                cachedHistoryVersions = versions;
+                setRecentVersions(versions);
             }
         } catch (e) {
             console.error(e);

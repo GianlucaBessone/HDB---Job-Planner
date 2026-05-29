@@ -25,6 +25,8 @@ export async function GET(req: Request) {
                         validezMeses: true, 
                         codigoDocumental: true,
                         descripcion: true,
+                        estado: true,
+                        tags: true,
                         versions: {
                             orderBy: { createdAt: 'desc' },
                             take: 1,
@@ -38,7 +40,13 @@ export async function GET(req: Request) {
             orderBy: { createdAt: 'desc' }
         });
 
-        return NextResponse.json(trainings);
+        const filteredTrainings = trainings.filter(t => {
+            if (t.estado === 'obsoleto') return false;
+            if (t.document?.estado === 'obsoleto' && t.estado !== 'aprobado') return false;
+            return true;
+        });
+
+        return NextResponse.json(filteredTrainings);
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }

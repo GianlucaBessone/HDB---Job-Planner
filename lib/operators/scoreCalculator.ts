@@ -220,7 +220,8 @@ export async function calculateOperatorScore(
     });
 
     const trainings = await prisma.technicianTraining.findMany({
-        where: { operatorId }
+        where: { operatorId },
+        include: { document: true }
     });
 
     // Map LMS approved trainings to skill names
@@ -267,8 +268,14 @@ export async function calculateOperatorScore(
     // Use target weight benchmark instead of sum of all skills to avoid punishing specialists
     const competencyScore = Math.min(100, Math.round((activeWeightSum / SCORING_CONFIG.COMPETENCY_TARGET_WEIGHT) * 100));
 
-    const completedTrainings = trainings.filter(t => t.estado === 'aprobado').length;
-    const totalTrainings = trainings.length;
+    const activeTrainings = trainings.filter(t => {
+        if (t.estado === 'obsoleto') return false;
+        if (t.document?.estado === 'obsoleto' && t.estado !== 'aprobado') return false;
+        return true;
+    });
+
+    const completedTrainings = activeTrainings.filter(t => t.estado === 'aprobado').length;
+    const totalTrainings = activeTrainings.length;
 
     // Fetch approved external certificates
     const extCertificates = await prisma.externalCertificate.findMany({

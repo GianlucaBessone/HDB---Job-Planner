@@ -5,6 +5,8 @@ import { showToast } from '@/components/Toast';
 import DocumentDetailModal from './DocumentDetailModal';
 import NewDocumentModal from './NewDocumentModal';
 
+let cachedLibraryDocs: any[] | null = null;
+
 export default function LibraryTab({ user }: { user: any }) {
     const [docs, setDocs] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -12,17 +14,39 @@ export default function LibraryTab({ user }: { user: any }) {
     const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
     const [isNewModalOpen, setIsNewModalOpen] = useState(false);
 
+    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+
     useEffect(() => {
-        loadDocs();
+        const handler = setTimeout(() => {
+            setDebouncedSearchQuery(searchQuery);
+        }, 300);
+        return () => clearTimeout(handler);
     }, [searchQuery]);
 
+    useEffect(() => {
+        loadDocs();
+    }, [debouncedSearchQuery]);
+
     const loadDocs = async () => {
-        setIsLoading(true);
+        let showLoader = true;
+        if (cachedLibraryDocs && !debouncedSearchQuery) {
+            setDocs(cachedLibraryDocs);
+            showLoader = false;
+        }
+        if (showLoader) {
+            setIsLoading(true);
+        }
         try {
             const params = new URLSearchParams();
-            if (searchQuery) params.set('search', searchQuery);
+            if (debouncedSearchQuery) params.set('search', debouncedSearchQuery);
             const res = await safeApiRequest(`/api/documentos?${params}`);
-            if (res.ok) setDocs(await res.json());
+            if (res.ok) {
+                const data = await res.json();
+                if (!debouncedSearchQuery) {
+                    cachedLibraryDocs = data;
+                }
+                setDocs(data);
+            }
         } catch (e) {
             console.error(e);
         } finally {

@@ -4,11 +4,15 @@ import { formatDateInline } from '@/lib/formatDate';
 import { 
     BookOpen, Award, CheckCircle2, XCircle, Play, 
     ArrowLeft, HelpCircle, GraduationCap, Clock, Check, Sparkles, Loader2, X,
-    Calendar, Landmark, Eye, CheckCircle, ThumbsUp, ThumbsDown, Edit
+    Calendar, Landmark, Eye, CheckCircle, ThumbsUp, ThumbsDown, Edit,
+    FileText, Timer, AlertTriangle, ExternalLink, ShieldAlert
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { showToast } from '@/components/Toast';
+
+let cachedLmsTrainings: any[] | null = null;
+let cachedLmsCerts: any[] | null = null;
 
 export default function LmsTab({ user }: { user: any }) {
     const [trainings, setTrainings] = useState<any[]>([]);
@@ -71,12 +75,21 @@ export default function LmsTab({ user }: { user: any }) {
     }, [activeCourse, quizResult]);
 
     const loadTrainings = async () => {
-        setIsLoading(true);
+        let showLoader = true;
+        if (cachedLmsTrainings) {
+            setTrainings(cachedLmsTrainings);
+            showLoader = false;
+        }
+        if (showLoader) {
+            setIsLoading(true);
+        }
         try {
             const url = isTech ? `/api/qms/capacitaciones?operatorId=${user.id}` : '/api/qms/capacitaciones';
             const res = await safeApiRequest(url);
             if (res.ok) {
-                setTrainings(await res.json());
+                const data = await res.json();
+                cachedLmsTrainings = data;
+                setTrainings(data);
             }
         } catch (e) {
             console.error(e);
@@ -86,11 +99,20 @@ export default function LmsTab({ user }: { user: any }) {
     };
 
     const loadExternalCerts = async () => {
-        setLoadingCerts(true);
+        let showLoader = true;
+        if (cachedLmsCerts) {
+            setExternalCerts(cachedLmsCerts);
+            showLoader = false;
+        }
+        if (showLoader) {
+            setLoadingCerts(true);
+        }
         try {
             const res = await safeApiRequest('/api/qms/certificados');
             if (res.ok) {
-                setExternalCerts(await res.json());
+                const data = await res.json();
+                cachedLmsCerts = data;
+                setExternalCerts(data);
             }
         } catch (e) {
             console.error('Error loading external certs:', e);
@@ -257,29 +279,489 @@ export default function LmsTab({ user }: { user: any }) {
 
     if (activeCourse) {
         const quiz = activeCourse.cuestionario ? (Array.isArray(activeCourse.cuestionario) ? activeCourse.cuestionario : JSON.parse(activeCourse.cuestionario as string)) : [];
+        const isApproved = activeCourse.estado === 'aprobado';
+        const isReproved = activeCourse.estado === 'reprobado';
+        const isObsolete = activeCourse.estado === 'obsoleto';
+        const isCompleted = isApproved || isReproved || isObsolete;
+
+        // Parse answers
+        const userAnswers = activeCourse.respuestas 
+            ? (typeof activeCourse.respuestas === 'string' 
+                ? (() => { try { return JSON.parse(activeCourse.respuestas); } catch(e) { return {}; } })()
+                : activeCourse.respuestas) 
+            : {};
+
+        // Expiration calculations
+        const validezMeses = activeCourse.document?.validezMeses || null;
+        const fechaFinObj = activeCourse.fechaFin ? new Date(activeCourse.fechaFin) : null;
+        const fechaVencimiento = (fechaFinObj && validezMeses) 
+            ? new Date(fechaFinObj.getFullYear(), fechaFinObj.getMonth() + validezMeses, fechaFinObj.getDate())
+            : null;
+
+        // Skills / tags
+        const docTags = activeCourse.document?.tags 
+            ? (Array.isArray(activeCourse.document.tags) 
+                ? activeCourse.document.tags 
+                : (() => { try { return JSON.parse(activeCourse.document.tags as string); } catch(e) { return []; } })())
+            : [];
+
+        // PDF file mapping
+        const pdfFile = activeCourse.document?.versions?.[0]?.files?.find((f: any) => f.esPrincipal) || activeCourse.document?.versions?.[0]?.files?.[0];
+        const documentUrl = pdfFile?.url || activeCourse.urlContenido;
+        const hasDocumentFile = !!pdfFile || (!!activeCourse.urlContenido && !activeCourse.urlContenido.includes('/download'));
+
+        const getYoutubeEmbedUrl = (url: string) => {
+            if (!url) return '';
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            if (match && match[2] && match[2].length === 11) {
+                return `https://www.youtube.com/embed/${match[2]}`;
+            }
+            if (url.includes('youtube.com/watch?v=')) {
+                const parts = url.split('v=');
+                if (parts[1]) {
+                    const id = parts[1].split('&')[0];
+                    return `https://www.youtube.com/embed/${id}`;
+                }
+            }
+            return url;
+        };
+
+        // Duration string helper
+        const formatDuration = (secs: number | null) => {
+            if (secs === null || secs === undefined) return 'N/D';
+            if (secs < 60) return `${secs} segundos`;
+            const mins = Math.floor(secs / 60);
+            const remainder = secs % 60;
+            return `${mins} min ${remainder} seg`;
+        };
 
         return (
             <div className="space-y-6 animate-in fade-in duration-300">
                 <button 
-                    onClick={() => setActiveCourse(null)}
+                    onClick={() => {
+                        setActiveCourse(null);
+                        setQuizResult(null);
+                        setAnswers({});
+                    }}
                     className="flex items-center gap-2 text-sm font-black text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
                 >
                     <ArrowLeft className="w-4 h-4" /> Volver a capacitaciones
                 </button>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Contenido / Material */}
+                    {/* Column 1 & 2: Material / Study or General Info */}
                     <div className="lg:col-span-2 space-y-6">
-                        <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
+                        <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
                             <div className="flex justify-between items-start gap-4">
                                 <div className="space-y-1">
                                     <span className="text-[10px] font-black uppercase tracking-widest bg-primary/10 text-primary dark:text-primary-light px-2.5 py-1 rounded-full">
-                                        Material de Estudio
+                                        {isCompleted ? 'Detalle de la Capacitación' : 'Material de Estudio'}
                                     </span>
                                     <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">{activeCourse.titulo}</h3>
+                                    {activeCourse.document?.codigoDocumental && (
+                                        <p className="text-xs font-bold text-slate-400">Código de Documento: {activeCourse.document.codigoDocumental}</p>
+                                    )}
                                 </div>
+                                {!isCompleted && (
+                                    <div className="flex items-center gap-2 text-xs font-black text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 px-3 py-1.5 rounded-full border border-slate-100 dark:border-slate-800">
+                                        <Clock className="w-4 h-4 text-primary animate-pulse" />
+                                        <span>{Math.floor(seconds / 60)}:{(seconds % 60).toString().padStart(2, '0')}</span>
+                                    </div>
+                                )}
                             </div>
+
+                            {!isCompleted && (
+                                <p className="text-xs font-medium text-slate-500 leading-relaxed">
+                                    Por favor, estudia detenidamente el siguiente procedimiento controlado antes de responder el cuestionario de suficiencia teórica obligatorio.
+                                </p>
+                            )}
+
+                            {/* Study Material Viewer */}
+                            {(() => {
+                                const doc = activeCourse.document;
+                                const digitalData = typeof doc?.descripcion === 'string' ? (() => { try { return JSON.parse(doc.descripcion); } catch(e) { return null; } })() : doc?.descripcion;
+                                const isDigital = digitalData?.isDigital === true;
+                                
+                                if (isDigital && digitalData) {
+                                    const ytUrl = digitalData.videoUrl ? getYoutubeEmbedUrl(digitalData.videoUrl) : '';
+
+                                    return (
+                                        <div className="space-y-4">
+                                            {ytUrl && (
+                                                <div className="bg-black rounded-2xl overflow-hidden border border-slate-700 shadow-lg">
+                                                    <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 border-b border-slate-800">
+                                                        <Play className="w-4 h-4 text-primary" />
+                                                        <span className="text-xs font-bold text-slate-300">Video de Capacitación</span>
+                                                    </div>
+                                                    <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                                                        <iframe src={ytUrl} allow="autoplay; encrypted-media" allowFullScreen className="absolute inset-0 w-full h-full border-0" />
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {[
+                                                { title: 'Objetivo', content: digitalData.objetivo },
+                                                { title: 'Alcance', content: digitalData.alcance },
+                                                { title: 'Desarrollo', content: digitalData.desarrollo },
+                                                { title: 'Responsabilidades', content: digitalData.responsabilidades },
+                                            ].filter(s => s.content).map((section, idx) => (
+                                                <div key={idx} className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                                    <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-2">{section.title}</p>
+                                                    <p className="text-xs text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">{section.content}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    );
+                                } else if (pdfFile) {
+                                    return (
+                                        <div className="relative w-full h-[600px] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm bg-slate-100 dark:bg-slate-900">
+                                            <iframe 
+                                                src={pdfFile.url} 
+                                                className="absolute inset-0 w-full h-full border-0"
+                                                title="Visor PDF"
+                                            />
+                                        </div>
+                                    );
+                                }
+
+                                return (
+                                    <div className="aspect-video bg-slate-950 rounded-2xl flex flex-col items-center justify-center border border-slate-800 p-6 text-center space-y-4">
+                                        <BookOpen className="w-16 h-16 text-primary animate-pulse" />
+                                        <div>
+                                            <h4 className="text-base font-black text-white">{activeCourse.document?.titulo || activeCourse.titulo}</h4>
+                                            <p className="text-xs font-bold text-slate-400 mt-1">Procedimiento de Calidad QMS • PDF Oficial Autorizado</p>
+                                            {documentUrl && (
+                                                hasDocumentFile ? (
+                                                    <a 
+                                                        href={documentUrl} 
+                                                        target="_blank" 
+                                                        rel="noreferrer"
+                                                        className="bg-primary hover:bg-primary-dark text-white font-black text-xs px-6 py-3 rounded-full transition-all shadow-lg shadow-primary/20 flex items-center gap-2"
+                                                    >
+                                                        <ExternalLink className="w-4 h-4" /> Abrir Documento Controlado
+                                                    </a>
+                                                ) : (
+                                                    <button 
+                                                        disabled
+                                                        className="bg-slate-800 text-slate-500 border border-slate-700 font-black text-xs px-6 py-3 rounded-full cursor-not-allowed flex items-center gap-2"
+                                                    >
+                                                        <ExternalLink className="w-4 h-4" /> Sin Documento Adjunto
+                                                    </button>
+                                                )
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })()}
                         </div>
+                    </div>
+
+                    {/* Column 3: Quiz/Evaluation Form or Results */}
+                    <div className="space-y-6">
+                        {isCompleted ? (
+                            <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
+                                <div className="space-y-2">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                        Resultado de Evaluación
+                                    </span>
+                                    <div className="flex items-center gap-3">
+                                        <span className={`text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-xl flex items-center gap-1.5 ${
+                                            isApproved 
+                                                ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400' 
+                                                : isReproved 
+                                                    ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+                                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                                        }`}>
+                                            {isApproved ? (
+                                                <CheckCircle2 className="w-4 h-4" />
+                                            ) : isReproved ? (
+                                                <XCircle className="w-4 h-4" />
+                                            ) : (
+                                                <AlertTriangle className="w-4 h-4" />
+                                            )}
+                                            {isApproved ? 'Aprobado' : isReproved ? 'Reprobado' : 'Obsoleto'}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {activeCourse.puntaje !== null && (
+                                    <div className="flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800 text-center">
+                                        <div className="relative flex items-center justify-center">
+                                            <svg className="w-24 h-24 transform -rotate-90">
+                                                <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-100 dark:text-slate-800" />
+                                                <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" 
+                                                    strokeDasharray={251.2} 
+                                                    strokeDashoffset={251.2 - (251.2 * (activeCourse.puntaje || 0)) / 100}
+                                                    className={isApproved ? 'text-emerald-500' : 'text-red-500'} 
+                                                />
+                                            </svg>
+                                            <span className="absolute text-xl font-black text-slate-800 dark:text-slate-100">
+                                                {Math.round(activeCourse.puntaje)}%
+                                            </span>
+                                        </div>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3">Porcentaje obtenido</p>
+                                        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-bold mt-1">Mínimo aprobado: {activeCourse.puntajeMinimo}%</p>
+                                    </div>
+                                )}
+
+                                <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-700/50">
+                                    {fechaFinObj && (
+                                        <div className="flex justify-between items-center text-xs">
+                                            <span className="font-bold text-slate-400">Fecha Completado:</span>
+                                            <span className="font-black text-slate-700 dark:text-slate-200 flex items-center gap-1">
+                                                <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                                                {formatDateInline(fechaFinObj)}
+                                            </span>
+                                        </div>
+                                    )}
+                                    {validezMeses && (
+                                        <>
+                                            <div className="flex justify-between items-center text-xs">
+                                                <span className="font-bold text-slate-400">Periodo Validez:</span>
+                                                <span className="font-black text-slate-700 dark:text-slate-200">{validezMeses} meses</span>
+                                            </div>
+                                            {fechaVencimiento && (
+                                                <div className="flex justify-between items-center text-xs">
+                                                    <span className="font-bold text-slate-400">Vencimiento:</span>
+                                                    <span className={`font-black flex items-center gap-1 ${
+                                                        new Date() > fechaVencimiento 
+                                                            ? 'text-red-500 font-bold' 
+                                                            : 'text-slate-700 dark:text-slate-200'
+                                                    }`}>
+                                                        <Calendar className="w-3.5 h-3.5" />
+                                                        {formatDateInline(fechaVencimiento)}
+                                                        {new Date() > fechaVencimiento && ' (Vencido)'}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="font-bold text-slate-400">Tiempo de Evaluación:</span>
+                                        <span className="font-black text-slate-700 dark:text-slate-200 flex items-center gap-1">
+                                            <Timer className="w-3.5 h-3.5 text-slate-400" />
+                                            {formatDuration(activeCourse.tiempoInvertido)}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {documentUrl && (
+                                    <div className="pt-4 border-t border-slate-100 dark:border-slate-700/50 space-y-2">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
+                                            Documento Relacionado
+                                        </span>
+                                        {hasDocumentFile ? (
+                                            <a
+                                                href={documentUrl}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="w-full flex items-center justify-center gap-2 py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-black rounded-xl transition-all border border-slate-200/50 dark:border-slate-600"
+                                            >
+                                                <FileText className="w-4 h-4" />
+                                                Ver Documento de Calidad
+                                            </a>
+                                        ) : (
+                                            <button
+                                                disabled
+                                                className="w-full flex items-center justify-center gap-2 py-3 bg-slate-50 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 text-xs font-black rounded-xl cursor-not-allowed border border-slate-100 dark:border-slate-700/50"
+                                            >
+                                                <FileText className="w-4 h-4" />
+                                                Sin Documento Adjunto
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+
+                                {docTags.length > 0 && (
+                                    <div className="pt-4 border-t border-slate-100 dark:border-slate-700/50 space-y-2">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
+                                            Habilidades Validadas
+                                        </span>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {docTags.map((tag: string, index: number) => (
+                                                <span 
+                                                    key={index}
+                                                    className="text-[10px] font-black uppercase tracking-wider bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 px-2.5 py-1 rounded-lg border border-indigo-100/50 dark:border-indigo-900/30 flex items-center gap-1"
+                                                >
+                                                    <ShieldAlert className="w-3 h-3 text-indigo-500" />
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {quiz.length > 0 && (
+                                    <div className="pt-4 border-t border-slate-100 dark:border-slate-700/50 space-y-4">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
+                                            Revisión de Evaluación
+                                        </span>
+                                        <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1">
+                                            {quiz.map((q: any, qIndex: number) => {
+                                                const selectedOptIdx = userAnswers[qIndex];
+                                                const correctOptIdx = q.correctAnswerIndex;
+                                                const isCorrect = Number(selectedOptIdx) === Number(correctOptIdx);
+
+                                                return (
+                                                    <div key={qIndex} className="p-3 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-2.5">
+                                                        <p className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                                                            {qIndex + 1}. {q.question}
+                                                        </p>
+                                                        <div className="space-y-1.5">
+                                                            {q.options.map((opt: string, optIndex: number) => {
+                                                                const isSelected = Number(selectedOptIdx) === optIndex;
+                                                                const isCorrectOption = Number(correctOptIdx) === optIndex;
+
+                                                                return (
+                                                                    <div 
+                                                                        key={optIndex}
+                                                                        className={`p-2 rounded-xl text-[11px] font-medium flex items-center justify-between border ${
+                                                                            isSelected 
+                                                                                ? (isCorrect 
+                                                                                    ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-500 text-emerald-700 dark:text-emerald-400' 
+                                                                                    : 'bg-red-50 dark:bg-red-950/20 border-red-500 text-red-700 dark:text-red-400')
+                                                                                : (isCorrectOption 
+                                                                                    ? 'bg-emerald-50/55 dark:bg-emerald-950/15 border-emerald-300 text-emerald-700 dark:text-emerald-450 border-dashed'
+                                                                                    : 'bg-transparent border-slate-100 dark:border-slate-850 text-slate-500 dark:text-slate-400')
+                                                                        }`}
+                                                                    >
+                                                                        <span>{opt}</span>
+                                                                        {isSelected && (
+                                                                            isCorrect 
+                                                                                ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                                                                                : <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                                                                        )}
+                                                                        {!isSelected && isCorrectOption && (
+                                                                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-450/80 shrink-0" />
+                                                                        )}
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
+                                <div className="space-y-1">
+                                    <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full ${
+                                        quiz.length > 0 
+                                            ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400'
+                                            : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400'
+                                    }`}>
+                                        {quiz.length > 0 ? 'Examen de Suficiencia' : 'Confirmación de Lectura'}
+                                    </span>
+                                    <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">
+                                        {quiz.length > 0 ? 'Cuestionario QMS' : 'Conformidad de Documento'}
+                                    </h3>
+                                </div>
+
+                                {quizResult ? (
+                                    <div className="space-y-6 text-center py-4 animate-in zoom-in-95 duration-300">
+                                        {quizResult.approved ? (
+                                            <div className="space-y-4">
+                                                <div className="mx-auto w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center">
+                                                    <Award className="w-10 h-10" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-xl font-black text-emerald-600 dark:text-emerald-400">¡Completado!</h4>
+                                                    <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">
+                                                        Has completado la capacitación con éxito. Tu competencia técnica ha sido actualizada a "Vigente".
+                                                    </p>
+                                                </div>
+                                                {quiz.length > 0 && (
+                                                    <div className="bg-emerald-50 dark:bg-emerald-950/20 p-4 rounded-2xl">
+                                                        <p className="text-3xl font-black text-slate-800 dark:text-slate-100">{Math.round(quizResult.score)}%</p>
+                                                        <p className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mt-1">Score Obtenido</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-4">
+                                                <div className="mx-auto w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center">
+                                                    <XCircle className="w-10 h-10" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-xl font-black text-red-600 dark:text-red-400">Desaprobado</h4>
+                                                    <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">
+                                                        Tu puntaje no alcanzó el mínimo requerido ({activeCourse.puntajeMinimo}%). Por favor repasa el documento e inténtalo nuevamente.
+                                                    </p>
+                                                </div>
+                                                <div className="bg-red-50 dark:bg-red-950/20 p-4 rounded-2xl">
+                                                    <p className="text-3xl font-black text-slate-800 dark:text-slate-100">{Math.round(quizResult.score)}%</p>
+                                                    <p className="text-[10px] font-black text-red-600 dark:text-red-400 uppercase tracking-widest mt-1">Score Obtenido</p>
+                                                </div>
+                                                <button 
+                                                    onClick={() => setQuizResult(null)}
+                                                    className="w-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 font-black text-xs py-3 rounded-xl transition-all"
+                                                >
+                                                    Intentar de Nuevo
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : quiz.length > 0 ? (
+                                    <div className="space-y-6">
+                                        {quiz.map((q: any, qIndex: number) => (
+                                            <div key={qIndex} className="space-y-3">
+                                                <p className="text-xs font-black text-slate-700 dark:text-slate-200 flex gap-2">
+                                                    <span className="text-primary font-black">{qIndex + 1}.</span> {q.question}
+                                                </p>
+                                                <div className="space-y-2">
+                                                    {q.options.map((opt: string, optIndex: number) => {
+                                                        const isSelected = answers[qIndex] === optIndex;
+                                                        return (
+                                                            <button
+                                                                key={optIndex}
+                                                                onClick={() => handleAnswerSelect(qIndex, optIndex)}
+                                                                className={`w-full text-left p-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-between ${
+                                                                    isSelected 
+                                                                        ? 'border-primary bg-primary/5 text-primary' 
+                                                                        : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300'
+                                                                }`}
+                                                            >
+                                                                <span>{opt}</span>
+                                                                {isSelected && <Check className="w-4 h-4 text-primary shrink-0" />}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        ))}
+
+                                        <button
+                                            onClick={handleSubmitQuiz}
+                                            className="w-full bg-primary hover:bg-primary-dark text-white font-black text-xs py-3.5 rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+                                        >
+                                            <GraduationCap className="w-4 h-4" /> Enviar Cuestionario
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-6 text-center py-4">
+                                        <div className="mx-auto w-12 h-12 bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center">
+                                            <BookOpen className="w-6 h-6 animate-bounce" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">Lectura Obligatoria</h4>
+                                            <p className="text-xs text-slate-500 max-w-[240px] mx-auto">
+                                                Este documento no tiene evaluación. Por favor ábrelo y léelo con atención. Una vez hecho, confírmalo a continuación.
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={handleSubmitQuiz}
+                                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs py-3.5 rounded-xl transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2"
+                                        >
+                                            <Check className="w-4 h-4" /> Marcar como Leída y Completar
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
