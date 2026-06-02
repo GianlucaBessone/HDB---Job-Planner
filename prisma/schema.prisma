@@ -135,6 +135,7 @@ model Operator {
   trainings                 TechnicianTraining[]
   externalCertificates      ExternalCertificate[]
   safetyAudits              SafetyAudit[]
+  sugerencias               Sugerencia[]
 }
 
 model FavoriteBlock {
@@ -1071,5 +1072,52 @@ model SafetyAudit {
   createdAt       DateTime  @default(now())
 
   @@index([operatorId])
+}
+
+model Sugerencia {
+  id                  String                 @id @default(cuid())
+  fecha_creacion      DateTime               @default(now())
+  fecha_actualizacion DateTime               @default(now()) @updatedAt
+  tipo_registro       String
+  titulo              String
+  descripcion         String                 @db.Text
+  area_involucrada    String
+  beneficios          Json                   @default("[]")
+  impacto_estimado    String
+  propuesta_solucion  String?                @db.Text
+  frecuencia_problema String?
+  presentacion        String                 // "anonima" | "identificada"
+  usuario_id          String?
+  usuario             Operator?              @relation(fields: [usuario_id], references: [id], onDelete: SetNull)
+  estado              String                 @default("Pendiente") // Pendiente | En evaluación | Aprobada | Rechazada | Implementada | Cerrada
+  archivos_adjuntos   Json                   @default("[]") // [{nombre, url, size}]
+  historial           SugerenciaHistorial[]
+  comentarios         SugerenciaComentario[]
+  
+  @@index([usuario_id])
+  @@index([estado])
+}
+
+model SugerenciaHistorial {
+  id             String     @id @default(cuid())
+  sugerenciaId   String
+  sugerencia     Sugerencia @relation(fields: [sugerenciaId], references: [id], onDelete: Cascade)
+  estadoAnterior String
+  estadoNuevo    String
+  usuario        String     // Nombre del usuario/sistema
+  fecha          DateTime   @default(now())
+
+  @@index([sugerenciaId])
+}
+
+model SugerenciaComentario {
+  id             String     @id @default(cuid())
+  sugerenciaId   String
+  sugerencia     Sugerencia @relation(fields: [sugerenciaId], references: [id], onDelete: Cascade)
+  autor          String     // Nombre del autor
+  texto          String     @db.Text
+  fecha          DateTime   @default(now())
+
+  @@index([sugerenciaId])
 }
 

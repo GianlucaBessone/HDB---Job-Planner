@@ -69,7 +69,11 @@ export default function RootLayout({
         };
     }, []);
 
-    const isPublicPage = pathname ? (pathname.includes('/report') || pathname.startsWith('/os/')) : false;
+    const isPublicPage = pathname ? (
+        pathname.includes('/report') || 
+        pathname.startsWith('/os/') || 
+        pathname.startsWith('/ideas-sugerencias-reclamos')
+    ) : false;
 
     let content;
     if (isCheckingAuth) {
