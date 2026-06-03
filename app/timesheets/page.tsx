@@ -405,6 +405,13 @@ export default function TimesheetsPage() {
         if (filterOperator && e.operatorId !== filterOperator) return false;
         if (filterProject && e.project?.nombre !== filterProject) return false;
         return true;
+    }).sort((a, b) => {
+        if (a.fecha !== b.fecha) {
+            return b.fecha.localeCompare(a.fecha); // descendente por fecha
+        }
+        const nameA = a.operator?.nombreCompleto || '';
+        const nameB = b.operator?.nombreCompleto || '';
+        return nameA.localeCompare(nameB); // alfabético por operador
     });
 
     const exportToExcel = () => {
