@@ -27,6 +27,13 @@ function sanitizeInput(str: string): string {
     return str.trim();
 }
 
+// Helper to generate custom ID: XXX-XXX-XXX
+function generateSugerenciaId(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const group = () => Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    return `${group()}-${group()}-${group()}`;
+}
+
 export async function POST(req: Request) {
     try {
         const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1';
@@ -174,8 +181,17 @@ export async function POST(req: Request) {
         }
 
         // 5. Create the database record
+        let customId = generateSugerenciaId();
+        // Ensure uniqueness (simple retry mechanism)
+        for (let i = 0; i < 3; i++) {
+            const existing = await prisma.sugerencia.findUnique({ where: { id: customId } });
+            if (!existing) break;
+            customId = generateSugerenciaId();
+        }
+
         const sugerencia = await prisma.sugerencia.create({
             data: {
+                id: customId,
                 tipo_registro,
                 titulo,
                 descripcion,
@@ -231,11 +247,27 @@ export async function GET(req: Request) {
                         posicion: true
                     }
                 },
+                responsable: {
+                    select: {
+                        id: true,
+                        nombreCompleto: true,
+                        role: true,
+                        posicion: true
+                    }
+                },
                 comentarios: {
                     orderBy: { fecha: 'asc' }
                 },
                 historial: {
                     orderBy: { fecha: 'asc' }
+                },
+                acciones: {
+                    include: {
+                        responsable: {
+                            select: { id: true, nombreCompleto: true }
+                        }
+                    },
+                    orderBy: { createdAt: 'asc' }
                 }
             },
             orderBy: { fecha_creacion: 'desc' }

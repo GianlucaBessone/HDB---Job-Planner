@@ -105,7 +105,7 @@ export default function HomePage() {
 
     const hasOperaciones = show('/fichado') || show('/timesheets') || show('/herramientas') || show('/my-projects') || show('/delays');
     const hasGestion = show('/aprobaciones') || show('/planning') || show('/projects') || show('/ordenes-servicio') || show('/provision-materiales') || show('/clients');
-    const hasCalidad = show('/calidad') || show('/capacitacion') || show('/auditoria-ia');
+    const hasCalidad = show('/calidad') || show('/capacitacion') || show('/auditoria-ia') || show('/gestion-sugerencias');
     const hasAdmin = show('/dashboard') || show('/operators') || show('/auditoria') || show('/configuracion') || show('/notifications');
 
     return (

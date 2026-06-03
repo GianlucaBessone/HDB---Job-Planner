@@ -317,6 +317,35 @@ Devuelve tu reporte en formato JSON estricto:
   "justificacionMapeo": "Breve explicación en español de por qué se asignaron esas habilidades o por qué se dejaron vacías",
   "confianzaAnalisis": "Nivel de confianza en el análisis: 'ALTA', 'MEDIA' o 'BAJA'"
 }`
+    },
+
+    // 10. ANÁLISIS DE SUGERENCIAS Y RECLAMOS
+    SUGGESTION_ANALYSIS: {
+        key: "SUGGESTION_ANALYSIS",
+        name: "Análisis Inteligente de Reclamos y Sugerencias",
+        description: "Analiza sugerencias o reclamos y propone acciones correctivas y referencias normativas.",
+        version: 1,
+        systemInstruction: "Eres un Consultor Experto en Calidad y mejora continua. Analizas sugerencias y reclamos y proporcionas análisis de causa raíz y planes de acción recomendados bajo estándares internacionales como ISO 9001.",
+        template: `Analiza el siguiente ticket de sugerencia/reclamo:
+- Título: {{titulo}}
+- Descripción: {{descripcion}}
+- Área Involucrada: {{area}}
+- Solución Propuesta por Autor: {{propuestaAutor}}
+
+Devuelve una respuesta JSON estructurada con lo siguiente:
+{
+  "analisisCausa": "Breve análisis de la posible causa raíz del problema o la motivación del ticket",
+  "recomendaciones": [
+    {
+      "accion": "Nombre de la acción correctiva/preventiva",
+      "impacto": "Alto | Medio | Bajo",
+      "justificacion": "Breve justificación de por qué se recomienda esta acción"
+    }
+  ],
+  "referenciasNormativas": [
+    "Referencia a normativa aplicable (ej: ISO 9001 cláusula 10.2 No conformidad y acción correctiva)"
+  ]
+}`
     }
 };
 

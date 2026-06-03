@@ -18,11 +18,27 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
                         posicion: true
                     }
                 },
+                responsable: {
+                    select: {
+                        id: true,
+                        nombreCompleto: true,
+                        role: true,
+                        posicion: true
+                    }
+                },
                 comentarios: {
                     orderBy: { fecha: 'asc' }
                 },
                 historial: {
                     orderBy: { fecha: 'asc' }
+                },
+                acciones: {
+                    include: {
+                        responsable: {
+                            select: { id: true, nombreCompleto: true }
+                        }
+                    },
+                    orderBy: { createdAt: 'asc' }
                 }
             }
         });
@@ -41,7 +57,17 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
     try {
         const body = await req.json();
-        const { estado, comentario, actorId, actorNombre } = body;
+        const { 
+            estado, 
+            comentario, 
+            actorId, 
+            actorNombre,
+            responsable_id,
+            fecha_cierre,
+            reunion_programada,
+            notas_resolucion,
+            nuevaAccion
+        } = body;
 
         const sugerencia = await prisma.sugerencia.findUnique({
             where: { id: params.id }
@@ -56,9 +82,32 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         const auditUserName = actorNombre || 'Sistema';
         const auditUserId = actorId || null;
 
-        // 1. Handle state change
+        // 1. Handle fields update (responsable, fechas, notas, etc)
+        const updateData: any = {};
+        if (responsable_id !== undefined) updateData.responsable_id = responsable_id;
+        if (fecha_cierre !== undefined) updateData.fecha_cierre = fecha_cierre ? new Date(fecha_cierre) : null;
+        if (reunion_programada !== undefined) updateData.reunion_programada = reunion_programada ? new Date(reunion_programada) : null;
+        if (notas_resolucion !== undefined) updateData.notas_resolucion = notas_resolucion;
+
+        if (Object.keys(updateData).length > 0) {
+            await prisma.sugerencia.update({
+                where: { id: params.id },
+                data: updateData
+            });
+            
+            await logAudit({
+                userId: auditUserId,
+                userName: auditUserName,
+                action: 'UPDATE',
+                entity: 'SUGERENCIA',
+                entityId: sugerencia.id,
+                newValue: updateData
+            });
+        }
+
+        // 2. Handle state change
         if (estado && estado !== sugerencia.estado) {
-            const validStates = ['Pendiente', 'En evaluación', 'Aprobada', 'Rechazada', 'Implementada', 'Cerrada'];
+            const validStates = ['Pendiente', 'En evaluación', 'Solicita información adicional', 'Aprobada', 'Rechazada', 'En implementación', 'Implementada', 'Verificada', 'Cerrada'];
             if (!validStates.includes(estado)) {
                 return NextResponse.json({ error: 'Estado no válido.' }, { status: 400 });
             }
@@ -165,6 +214,51 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
             }
         }
 
+        // 3. Handle AccionMejora addition
+        if (nuevaAccion && nuevaAccion.descripcion && nuevaAccion.descripcion.trim() !== '') {
+            const accion = await prisma.accionMejora.create({
+                data: {
+                    sugerenciaId: sugerencia.id,
+                    descripcion: nuevaAccion.descripcion.trim(),
+                    responsableId: nuevaAccion.responsableId || null,
+                    fechaLimite: nuevaAccion.fechaLimite ? new Date(nuevaAccion.fechaLimite) : null,
+                    estado: 'Pendiente'
+                }
+            });
+
+            await logAudit({
+                userId: auditUserId,
+                userName: auditUserName,
+                action: 'CREATE',
+                entity: 'ACCION_MEJORA',
+                entityId: accion.id,
+                newValue: accion
+            });
+
+            if (accion.responsableId) {
+                const title = "Nueva Acción de Mejora Asignada";
+                const message = `Se te ha asignado una nueva acción: "${accion.descripcion}" vinculada al ticket #${sugerencia.id}.`;
+                
+                await prisma.notification.create({
+                    data: {
+                        operatorId: accion.responsableId,
+                        title,
+                        message,
+                        type: 'ACCION_MEJORA_ASSIGNED',
+                        relatedId: sugerencia.id,
+                        forSupervisors: false
+                    }
+                }).catch(e => console.error("Error creating action notification:", e));
+
+                await sendPushNotification({
+                    userIds: [accion.responsableId],
+                    title,
+                    message,
+                    data: { route: `/ideas-sugerencias-reclamos/${sugerencia.id}` }
+                }).catch(e => console.error("Error sending action push notification:", e));
+            }
+        }
+
         // Return updated suggestion details
         const updatedSugerencia = await prisma.sugerencia.findUnique({
             where: { id: params.id },
@@ -177,11 +271,27 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
                         posicion: true
                     }
                 },
+                responsable: {
+                    select: {
+                        id: true,
+                        nombreCompleto: true,
+                        role: true,
+                        posicion: true
+                    }
+                },
                 comentarios: {
                     orderBy: { fecha: 'asc' }
                 },
                 historial: {
                     orderBy: { fecha: 'asc' }
+                },
+                acciones: {
+                    include: {
+                        responsable: {
+                            select: { id: true, nombreCompleto: true }
+                        }
+                    },
+                    orderBy: { createdAt: 'asc' }
                 }
             }
         });

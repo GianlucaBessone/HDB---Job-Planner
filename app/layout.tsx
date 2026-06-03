@@ -6,7 +6,7 @@ import "./globals.css";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Script from "next/script";
-import { Calendar, LayoutGrid, Users, ClipboardList, Menu, X, Landmark, LayoutDashboard, Timer, Clock, LogOut, Home, Settings, FileSignature, Package, PackageSearch, MapPin, ShieldAlert, ShieldCheck, History, Wrench, FileCheck, ChevronDown, ChevronRight, BookOpen, Sparkles } from "lucide-react";
+import { Calendar, LayoutGrid, Users, ClipboardList, Menu, X, Landmark, LayoutDashboard, Timer, Clock, LogOut, Home, Settings, FileSignature, Package, PackageSearch, MapPin, ShieldAlert, ShieldCheck, History, Wrench, FileCheck, ChevronDown, ChevronRight, BookOpen, Sparkles, Lightbulb } from "lucide-react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import ToastContainer from "@/components/Toast";
@@ -301,6 +301,7 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
             icon: <FileCheck className="w-5 h-5" />,
             items: [
                 { href: '/calidad', icon: <FileCheck className="w-4 h-4" />, label: 'Calidad y Documentación', roles: ['admin', 'qa', 'supervisor'] },
+                { href: '/gestion-sugerencias', icon: <Lightbulb className="w-4 h-4" />, label: 'Gestión de Sugerencias', roles: ['admin', 'qa', 'supervisor'] },
                 { href: '/capacitacion', icon: <BookOpen className="w-4 h-4" />, label: 'Formación Integral', roles: ['operador', 'supervisor', 'admin', 'qa'] },
                 { href: '/auditoria', icon: <History className="w-4 h-4" />, label: 'Auditoría', roles: ['admin', 'qa', 'supervisor'] },
                 { href: '/auditoria-ia', icon: <Sparkles className="w-4 h-4" />, label: 'Auditoría de IA', roles: ['admin', 'qa', 'supervisor'] },

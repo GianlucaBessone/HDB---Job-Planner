@@ -44,7 +44,9 @@ const TIPO_OPCIONES = [
 ];
 
 const AREAS_OPCIONES = [
-    'Producción',
+    'Operaciones',
+    'Ventas',
+    'Atención al Cliente',
     'Mantenimiento',
     'Calidad',
     'Seguridad e Higiene',
@@ -1156,8 +1158,8 @@ export default function IdeasSugerenciasReclamosPage() {
 
                                                         {/* Code & Title */}
                                                         <div>
-                                                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 font-mono block mb-0.5 select-all">
-                                                                #{sug.id.substring(0, 8)}...
+                                                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 font-mono block mb-0.5 select-all uppercase">
+                                                                #{sug.id}
                                                             </span>
                                                             <h3 className="font-extrabold text-base text-slate-800 dark:text-slate-100 leading-tight">
                                                                 {decodeEntities(sug.titulo)}

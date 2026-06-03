@@ -135,7 +135,9 @@ model Operator {
   trainings                 TechnicianTraining[]
   externalCertificates      ExternalCertificate[]
   safetyAudits              SafetyAudit[]
-  sugerencias               Sugerencia[]
+  sugerencias_creadas       Sugerencia[]                @relation("SugerenciaAutor")
+  sugerencias_asignadas     Sugerencia[]                @relation("SugerenciaResponsable")
+  acciones_mejora           AccionMejora[]
 }
 
 model FavoriteBlock {
@@ -1088,13 +1090,20 @@ model Sugerencia {
   frecuencia_problema String?
   presentacion        String                 // "anonima" | "identificada"
   usuario_id          String?
-  usuario             Operator?              @relation(fields: [usuario_id], references: [id], onDelete: SetNull)
+  usuario             Operator?              @relation("SugerenciaAutor", fields: [usuario_id], references: [id], onDelete: SetNull)
+  responsable_id      String?
+  responsable         Operator?              @relation("SugerenciaResponsable", fields: [responsable_id], references: [id], onDelete: SetNull)
+  fecha_cierre        DateTime?
+  reunion_programada  DateTime?
+  notas_resolucion    String?                @db.Text
   estado              String                 @default("Pendiente") // Pendiente | En evaluación | Aprobada | Rechazada | Implementada | Cerrada
   archivos_adjuntos   Json                   @default("[]") // [{nombre, url, size}]
   historial           SugerenciaHistorial[]
   comentarios         SugerenciaComentario[]
+  acciones            AccionMejora[]
   
   @@index([usuario_id])
+  @@index([responsable_id])
   @@index([estado])
 }
 
@@ -1119,5 +1128,23 @@ model SugerenciaComentario {
   fecha          DateTime   @default(now())
 
   @@index([sugerenciaId])
+}
+
+model AccionMejora {
+  id              String     @id @default(cuid())
+  sugerenciaId    String
+  sugerencia      Sugerencia @relation(fields: [sugerenciaId], references: [id], onDelete: Cascade)
+  descripcion     String     @db.Text
+  responsableId   String?
+  responsable     Operator?  @relation(fields: [responsableId], references: [id], onDelete: SetNull)
+  fechaLimite     DateTime?
+  estado          String     @default("Pendiente") // Pendiente | En Progreso | Completada | Cancelada
+  evidencia       String?    @db.Text
+  fechaCompletada DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt @default(now())
+
+  @@index([sugerenciaId])
+  @@index([responsableId])
 }
 
