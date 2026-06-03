@@ -1,15 +1,22 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, Search, Filter, ShieldCheck, UserCheck, CalendarDays, NotebookTabs, ArrowRightCircle, Users, Lightbulb, BadgeCheck, FileClock, X, Check, Save, Brain, BarChart3, MessageSquare, History, ListTodo } from "lucide-react";
 import { showToast } from '@/components/Toast';
 
+// Module-level cache to persist data across component remounts
+// (caused by parent layout re-renders / React StrictMode double-mount)
+let _cachedSugerencias: any[] | null = null;
+let _cachedOperadores: any[] | null = null;
+let _lastFetchTime = 0;
+const STALE_THRESHOLD_MS = 30_000; // Consider data stale after 30 seconds
+
 export default function GestionSugerenciasPage() {
     const router = useRouter();
-    const [sugerencias, setSugerencias] = useState<any[]>([]);
-    const [operadores, setOperadores] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [sugerencias, setSugerencias] = useState<any[]>(_cachedSugerencias || []);
+    const [operadores, setOperadores] = useState<any[]>(_cachedOperadores || []);
+    const [loading, setLoading] = useState(_cachedSugerencias === null);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('Todos');
     const [activeTab, setActiveTab] = useState<'lista' | 'dashboard'>('lista');
@@ -38,31 +45,51 @@ export default function GestionSugerenciasPage() {
         fechaLimite: ''
     });
 
-    useEffect(() => {
-        fetchData();
-    }, []);
+    // Guard against duplicate fetches on remount
+    const fetchGuardRef = useRef(false);
 
-    const fetchData = async () => {
-        setLoading(true);
+    const fetchData = useCallback(async (force = false) => {
+        // Skip if already fetching, or if data is fresh and not forced
+        if (fetchGuardRef.current) return;
+        if (!force && _cachedSugerencias !== null && (Date.now() - _lastFetchTime) < STALE_THRESHOLD_MS) return;
+
+        fetchGuardRef.current = true;
+        // Only show full loading spinner if there's no cached data at all
+        if (_cachedSugerencias === null) setLoading(true);
         try {
             const [sugRes, opRes] = await Promise.all([
                 fetch('/api/sugerencias'),
                 fetch('/api/operators')
             ]);
             
-            if (sugRes.ok) setSugerencias(await sugRes.json());
-            if (opRes.ok) setOperadores(await opRes.json());
+            if (sugRes.ok) {
+                const data = await sugRes.json();
+                _cachedSugerencias = data;
+                setSugerencias(data);
+            }
+            if (opRes.ok) {
+                const data = await opRes.json();
+                _cachedOperadores = data;
+                setOperadores(data);
+            }
+            _lastFetchTime = Date.now();
         } catch (error) {
             showToast("Error al cargar datos", 'error');
         } finally {
             setLoading(false);
+            fetchGuardRef.current = false;
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
 
     const handleOpenModal = (sug: any) => {
         setSelectedSug(sug);
         setModalTab('detalle');
-        setAiAnalysis(null);
+        // Load persisted AI analysis from the suggestion record, if available
+        setAiAnalysis(sug.analisis_ia || null);
         setIsAnalyzing(false);
         setEditForm({
             estado: sug.estado || 'Pendiente',
@@ -87,6 +114,7 @@ export default function GestionSugerenciasPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    sugerenciaId: selectedSug.id,
                     titulo: selectedSug.titulo,
                     descripcion: selectedSug.descripcion,
                     area: selectedSug.area_involucrada,
@@ -96,6 +124,11 @@ export default function GestionSugerenciasPage() {
             if (res.ok) {
                 const data = await res.json();
                 setAiAnalysis(data);
+                // Update the local suggestion cache so re-opening the modal doesn't lose the analysis
+                setSugerencias(prev => prev.map(s => s.id === selectedSug.id ? { ...s, analisis_ia: data } : s));
+                if (_cachedSugerencias) {
+                    _cachedSugerencias = _cachedSugerencias.map(s => s.id === selectedSug.id ? { ...s, analisis_ia: data } : s);
+                }
             } else {
                 showToast("Error al analizar con IA", 'error');
             }
@@ -136,7 +169,7 @@ export default function GestionSugerenciasPage() {
             if (res.ok) {
                 showToast("Ticket actualizado correctamente", 'success');
                 setSelectedSug(null);
-                fetchData();
+                fetchData(true);
             } else {
                 showToast("Error al actualizar", 'error');
             }

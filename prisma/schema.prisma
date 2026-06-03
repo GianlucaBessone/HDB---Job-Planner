@@ -1101,6 +1101,7 @@ model Sugerencia {
   historial           SugerenciaHistorial[]
   comentarios         SugerenciaComentario[]
   acciones            AccionMejora[]
+  analisis_ia         Json?                  // AI analysis result (cached)
   
   @@index([usuario_id])
   @@index([responsable_id])
