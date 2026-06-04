@@ -49,45 +49,37 @@ export default function DashboardTab({ user }: { user: any }) {
 
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-xl">
-                            <ShieldCheck className="w-5 h-5" />
-                        </div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Vigentes</p>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                <div className="bg-white dark:bg-slate-800 p-2.5 md:p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-center h-[64px] md:h-[72px]">
+                    <div className="flex items-center gap-1.5 mb-1">
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                        <p className="text-[10px] md:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest truncate">Vigentes</p>
                     </div>
-                    <p className="text-3xl font-black text-slate-800 dark:text-slate-100">{totals.vigentes}</p>
+                    <p className="text-lg md:text-xl font-black text-slate-800 dark:text-slate-100 tabular-nums leading-none">{totals.vigentes}</p>
                 </div>
                 
-                <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-xl">
-                            <Clock className="w-5 h-5" />
-                        </div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">En Revisión</p>
+                <div className="bg-white dark:bg-slate-800 p-2.5 md:p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-center h-[64px] md:h-[72px]">
+                    <div className="flex items-center gap-1.5 mb-1">
+                        <Clock className="w-3.5 h-3.5 text-amber-500" />
+                        <p className="text-[10px] md:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest truncate">En Revisión</p>
                     </div>
-                    <p className="text-3xl font-black text-slate-800 dark:text-slate-100">{totals.enRevision + totals.borradores}</p>
+                    <p className="text-lg md:text-xl font-black text-slate-800 dark:text-slate-100 tabular-nums leading-none">{totals.enRevision + totals.borradores}</p>
                 </div>
 
-                <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl">
-                            <FileWarning className="w-5 h-5" />
-                        </div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Vencidos</p>
+                <div className="bg-white dark:bg-slate-800 p-2.5 md:p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-center h-[64px] md:h-[72px]">
+                    <div className="flex items-center gap-1.5 mb-1">
+                        <FileWarning className="w-3.5 h-3.5 text-rose-500" />
+                        <p className="text-[10px] md:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest truncate">Vencidos</p>
                     </div>
-                    <p className="text-3xl font-black text-slate-800 dark:text-slate-100">{totals.vencidos}</p>
+                    <p className="text-lg md:text-xl font-black text-slate-800 dark:text-slate-100 tabular-nums leading-none">{totals.vencidos}</p>
                 </div>
 
-                <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-xl">
-                            <BookOpen className="w-5 h-5" />
-                        </div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Confirmaciones</p>
+                <div className="bg-white dark:bg-slate-800 p-2.5 md:p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-center h-[64px] md:h-[72px]">
+                    <div className="flex items-center gap-1.5 mb-1">
+                        <BookOpen className="w-3.5 h-3.5 text-indigo-500" />
+                        <p className="text-[10px] md:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest truncate">Confirmaciones</p>
                     </div>
-                    <p className="text-3xl font-black text-slate-800 dark:text-slate-100">{totals.confirmacionesPendientes}</p>
+                    <p className="text-lg md:text-xl font-black text-slate-800 dark:text-slate-100 tabular-nums leading-none">{totals.confirmacionesPendientes}</p>
                 </div>
             </div>
 

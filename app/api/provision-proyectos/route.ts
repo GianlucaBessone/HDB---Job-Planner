@@ -4,8 +4,10 @@ import { prisma } from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 
 // GET /api/provision-proyectos — proyectos activos con aprovisionamiento habilitado
-export async function GET() {
+export async function GET(request: Request) {
     try {
+        const { searchParams } = new URL(request.url);
+        const projectId = searchParams.get('id');
         // ── Auto-repair: fix materials stuck in wrong states ─────────────────────
         // If an OS is signed, materials must be either 'pendiente_devolucion' or 'cerrado_ok'
         const stuckMaterials = await prisma.materialProyecto.findMany({
@@ -98,17 +100,19 @@ export async function GET() {
         // ── Main query ──────────────────────────────────────────────────────────────
         const proyectos = await prisma.project.findMany({
             where: {
-                aprovisionamiento: true,
-                OR: [
-                    { estado: { not: 'finalizado' } },
-                    // Include finalized projects that still have pending returns
-                    {
-                        estado: 'finalizado',
-                        materialesProyecto: {
-                            some: { estado: 'pendiente_devolucion' }
+                ...(projectId ? { id: projectId } : {
+                    aprovisionamiento: true,
+                    OR: [
+                        { estado: { not: 'finalizado' } },
+                        // Include finalized projects that still have pending returns
+                        {
+                            estado: 'finalizado',
+                            materialesProyecto: {
+                                some: { estado: 'pendiente_devolucion' }
+                            }
                         }
-                    }
-                ],
+                    ],
+                })
             },
             include: {
                 client: { select: { nombre: true } },

@@ -32,6 +32,7 @@ import SearchableSelect from '@/components/SearchableSelect';
 import CodeBadge from '@/components/CodeBadge';
 import { safeApiRequest } from '@/lib/offline';
 import OperadoresTab from './OperadoresTab';
+import { TrendChart, BasicBarChart, DonutChart, DivergentBarChart, TargetBarChart, MultiTrendChart } from './EChartsComponents';
 
 interface DashboardData {
     kpis: {
@@ -152,7 +153,7 @@ export default function DashboardPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div className="space-y-1">
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
+                    <h2 className="text-2xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
                         <LayoutDashboard className="w-6 h-6 md:w-8 md:h-8 text-primary" />
                         Panel de Análisis
                     </h2>
@@ -208,7 +209,7 @@ export default function DashboardPage() {
             {activeTab === 'proyectos' && <>
 
             {/* Advanced Filters (Requirement 2) */}
-            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-[2rem] p-4 md:p-6 shadow-sm space-y-3 md:space-y-4">
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-[2rem] p-3 md:p-4 shadow-sm space-y-2">
                 <div className="flex items-center justify-between mb-2">
                     <h3 className="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 text-sm">
                         <SlidersHorizontal className="w-4 h-4 text-primary" />
@@ -227,7 +228,7 @@ export default function DashboardPage() {
                         </label>
                         <input
                             type="date"
-                            className="w-full h-[42px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none"
+                            className="w-full h-11 md:h-9 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none"
                             value={filterFrom}
                             onChange={e => setFilterFrom(e.target.value)}
                         />
@@ -238,7 +239,7 @@ export default function DashboardPage() {
                         </label>
                         <input
                             type="date"
-                            className="w-full h-[42px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none"
+                            className="w-full h-11 md:h-9 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none"
                             value={filterTo}
                             onChange={e => setFilterTo(e.target.value)}
                         />
@@ -259,7 +260,7 @@ export default function DashboardPage() {
                             <Activity className="w-3 h-3" /> Estado <MetricTooltip def="Filtra proyectos por su estado de finalización." purpose="Permite comparar el rendimiento histórico con el operativo actual." calc="N/A" />
                         </label>
                         <select
-                            className="w-full h-[42px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none cursor-pointer"
+                            className="w-full h-11 md:h-9 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none cursor-pointer"
                             value={filterStatus}
                             onChange={e => setFilterStatus(e.target.value)}
                         >
@@ -272,7 +273,7 @@ export default function DashboardPage() {
             </div>
 
             {/* KPI Cards Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 auto-rows-fr">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 auto-rows-fr relative z-20">
                 <KpiCard
                     title="Eficiencia de Tiempo (IPT)"
                     value={data.kpis.avgIPT}
@@ -321,11 +322,11 @@ export default function DashboardPage() {
             {/* Performance Visualizations Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* IPT Comparison Chart */}
-                <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm relative group overflow-hidden">
+                <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative group overflow-hidden">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
                             <BarChart3 className="w-5 h-5 text-primary" />
-                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">IPT por Proyecto</h3>
+                            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">IPT por Proyecto</h3>
                         </div>
                         <MetricTooltip
                             def="Muestra la eficiencia individual de cada proyecto."
@@ -336,53 +337,46 @@ export default function DashboardPage() {
                     {data.performance.projects.length === 0 ? (
                         <div className="h-56 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Sin datos de proyectos</div>
                     ) : (
-                        <div className="h-56 flex items-end justify-between gap-3 px-2 relative px-4">
-                            <div className="absolute w-full h-[1px] bg-rose-500/20 border-t border-dashed border-rose-500 z-0 left-0" style={{ bottom: '50%' }} />
-
-                            {data.performance.projects.map((p, idx) => (
-                                <div key={idx} className="flex-1 flex flex-col items-center gap-2 group/bar relative h-full justify-end z-10">
-                                    <div className="absolute bottom-full mb-2 hidden group-hover/bar:block bg-slate-900 text-white text-[10px] py-1.5 px-3 rounded-xl whitespace-nowrap z-50 font-bold shadow-xl border border-white/10">
-                                        {p.codigoProyecto && <span className="text-primary/70 mr-1">{p.codigoProyecto} |</span>} {p.nombre}: <span className="text-primary font-black ml-1">{p.ipt.toFixed(2)}</span>
-                                    </div>
-                                    <div
-                                        className={`w-full rounded-t-xl transition-all duration-700 hover:brightness-110 shadow-sm ${p.ipt >= 1 ? 'bg-primary' : 'bg-rose-400'}`}
-                                        style={{ height: `${Math.min(p.ipt * 50, 100)}%` }}
-                                    />
-                                    <div className="flex flex-col items-center mt-4 translate-x-1 gap-1">
-                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 rotate-45 origin-left truncate max-w-[50px]">{p.codigoProyecto || p.nombre}</span>
-                                    </div>
-                                </div>
-                            ))}
+                        <div className="mt-4">
+                            <BasicBarChart 
+                                data={data.performance.projects.map(p => ({ name: p.nombre, value: p.ipt, code: p.codigoProyecto, isHighlight: p.ipt >= 1 }))} 
+                                height={224} 
+                            />
                         </div>
                     )}
                 </div>
 
-                {/* Performance Trend */}
-                <ElegantTrendChart
-                    title="Tendencia de Performance"
-                    data={data.performance.trend.map(t => ({ label: t.label, value: t.ipt }))}
-                    color="#6366f1"
-                    icon={<TrendingUp className="w-5 h-5 text-indigo-500" />}
-                    tooltip={{
-                        def: "Evolución del IPT promedio en el tiempo.",
-                        purpose: "Detectar si la eficiencia operativa está mejorando o deteriorándose mes a mes.",
-                        calc: "Promedio de IPT de todos los proyectos por mes (últimos 6 meses)."
-                    }}
-                    valuePrefix=""
-                    valueSuffix=""
-                    minY={0}
-                    maxY={2}
-                    yScale={50}
-                />
+                <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group">
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                            <TrendingUp className="w-5 h-5 text-indigo-500" />
+                            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Tendencia de Performance</h3>
+                        </div>
+                        <MetricTooltip
+                            def="Evolución del IPT promedio en el tiempo."
+                            purpose="Detectar si la eficiencia operativa está mejorando o deteriorándose mes a mes."
+                            calc="Promedio de IPT de todos los proyectos por mes (últimos 6 meses)."
+                        />
+                    </div>
+                    {data.performance.trend.length === 0 ? (
+                        <div className="h-56 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Sin datos históricos</div>
+                    ) : (
+                        <TrendChart 
+                            data={data.performance.trend.map(t => ({ label: t.label, value: t.ipt }))} 
+                            color="#3b82f6" 
+                            height={224} 
+                        />
+                    )}
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 overflow-visible">
                 {/* Classification Donut */}
-                <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col items-center overflow-visible">
+                <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col items-center overflow-visible">
                     <div className="flex items-center justify-between w-full mb-6">
                         <div className="flex items-center gap-3">
                             <PieChart className="w-5 h-5 text-emerald-500" />
-                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Clasificación</h3>
+                            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Clasificación</h3>
                         </div>
                         <MetricTooltip
                             def="Segmentación de proyectos por su nivel de eficiencia."
@@ -391,21 +385,21 @@ export default function DashboardPage() {
                         />
                     </div>
 
-                    <div className="relative w-48 h-48 mb-6 mt-6 group/donut overflow-visible rounded-none z-10">
-                        <svg className="w-full h-full -rotate-90" viewBox="-4 -4 40 40">
-                            <circle r="16" cx="16" cy="16" fill="transparent" stroke="#f1f5f9" strokeWidth="6" />
-                            <circle r="16" cx="16" cy="16" fill="transparent" stroke="#10b981" strokeWidth="6"
-                                strokeDasharray={`${(data.performance.classification.eficiente / Math.max(data.kpis.totalProjects, 1)) * 100} 100`}
-                                strokeLinecap="round"
-                            />
-                        </svg>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center group-hover/donut:scale-110 transition-transform duration-500">
-                            <span className="text-4xl font-black text-slate-800 dark:text-slate-100 tracking-tighter">{data.performance.classification.eficiente}</span>
-                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">Eficientes</span>
-                        </div>
+                    <div className="w-full h-48 mb-4 mt-2">
+                        <DonutChart 
+                            data={[
+                                { name: 'Eficientes', value: data.performance.classification.eficiente },
+                                { name: 'Exactos', value: data.performance.classification.exacto },
+                                { name: 'Con Desvío', value: data.performance.classification.desvio }
+                            ]}
+                            colors={['#10b981', '#3b82f6', '#f43f5e']}
+                            centerText={data.performance.classification.eficiente}
+                            centerSubtext="Eficientes"
+                            height={192}
+                        />
                     </div>
 
-                    <div className="w-full space-y-3">
+                    <div className="w-full space-y-2 mt-auto">
                         <LegendItem label="Eficientes" count={data.performance.classification.eficiente} color="bg-emerald-500" />
                         <LegendItem label="Exactos" count={data.performance.classification.exacto} color="bg-primary" />
                         <LegendItem label="Con Desvío" count={data.performance.classification.desvio} color="bg-rose-500" />
@@ -413,11 +407,11 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Savings Deviation (Bar Divergent) */}
-                <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
                             <Briefcase className="w-5 h-5 text-primary" />
-                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Balance de Horas por Proyecto</h3>
+                            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Balance de Horas por Proyecto</h3>
                         </div>
                         <MetricTooltip
                             def="Muestra el desvío absoluto en horas."
@@ -425,27 +419,11 @@ export default function DashboardPage() {
                             calc="Horas Estimadas - Horas Consumidas. Positivo = Ahorro, Negativo = Desvío."
                         />
                     </div>
-                    <div className="space-y-6">
-                        {data.performance.projects.slice(0, 5).map((p, idx) => (
-                            <div key={idx} className="space-y-2">
-                                <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                                    <span className="text-slate-500 dark:text-slate-400 line-clamp-1 max-w-[200px]">{p.nombre}</span>
-                                    <span className={p.savings >= 0 ? 'text-emerald-500' : 'text-rose-500'}>
-                                        {p.savings > 0 ? `+${p.savings}H AHORRO` : `${Math.abs(p.savings)}H DESVÍO`}
-                                    </span>
-                                </div>
-                                <div className="h-5 bg-slate-50 dark:bg-slate-900/50 rounded-xl relative overflow-hidden flex items-center border border-slate-100 dark:border-slate-800">
-                                    <div className="absolute left-1/2 w-[2px] h-full bg-slate-200 dark:bg-slate-700 z-10" />
-                                    <div
-                                        className={`h-full transition-all duration-1000 ${p.savings >= 0 ? 'bg-emerald-400 rounded-r-lg shadow-sm shadow-emerald-200' : 'bg-rose-400 rounded-l-lg self-end'}`}
-                                        style={{
-                                            width: `${Math.min(Math.abs(p.savings) * 2, 50)}%`,
-                                            marginLeft: p.savings >= 0 ? '50%' : `${50 - Math.min(Math.abs(p.savings) * 2, 50)}%`
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        ))}
+                    <div className="mt-4">
+                        <DivergentBarChart 
+                            data={data.performance.projects.slice(0, 6).map(p => ({ name: p.nombre, value: p.savings }))} 
+                            height={280} 
+                        />
                     </div>
                 </div>
             </div>
@@ -454,8 +432,8 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 <div className="lg:col-span-8 flex flex-col gap-6">
                     {/* Status Distribution */}
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3 mb-5">
+                    <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3 mb-5">
                             <Activity className="w-5 h-5 text-primary" />
                             Estado Operativo
                         </h3>
@@ -470,8 +448,8 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Alert List */}
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3 mb-5">
+                    <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3 mb-5">
                             <AlertTriangle className="w-5 h-5 text-rose-500" />
                             Alertas de Consumo
                         </h3>
@@ -505,7 +483,7 @@ export default function DashboardPage() {
 
                 <div className="lg:col-span-4 flex flex-col gap-6">
                     {/* Top Clients */}
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
                         <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3 mb-4">
                             <Building2 className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                             Top Clientes
@@ -525,7 +503,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Top Operators */}
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
                         <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3 mb-4">
                             <Users className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                             Mayor Actividad
@@ -553,12 +531,12 @@ export default function DashboardPage() {
                         <Timer className="w-7 h-7" />
                     </div>
                     <div>
-                        <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight leading-none">Análisis de Demoras Externas</h3>
+                        <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight leading-none">Análisis de Demoras Externas</h3>
                         <p className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1 px-0.5">Responsabilidad del Cliente</p>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 auto-rows-fr">
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 auto-rows-fr relative z-20">
                     <KpiCard
                         title="Total Tiempo Perdido"
                         value={`${data.delays.totalHours}h`}
@@ -599,11 +577,11 @@ export default function DashboardPage() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Delays by Area */}
-                    <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm relative group overflow-hidden">
+                    <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative group overflow-hidden">
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
                                 <Building2 className="w-5 h-5 text-amber-500" />
-                                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Demoras por Área del Cliente</h3>
+                                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Demoras por Área del Cliente</h3>
                             </div>
                             <MetricTooltip
                                 def="Distribución de horas perdidas según el departamento responsable del cliente."
@@ -611,49 +589,44 @@ export default function DashboardPage() {
                                 calc="Horas totales acumuladas por cada etiqueta de área."
                             />
                         </div>
-                        <div className="space-y-4">
+                        <div className="mt-4">
                             {data.delays.topAreas.length === 0 ? (
                                 <div className="h-48 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Sin datos de áreas</div>
                             ) : (
-                                data.delays.topAreas.slice(0, 5).map((area, idx) => {
-                                    const maxHours = Math.max(...data.delays.topAreas.map(a => a.hours), 1);
-                                    const percentage = (area.hours / maxHours) * 100;
-                                    return (
-                                        <div key={idx} className="space-y-1.5">
-                                            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
-                                                <span className="text-slate-500 dark:text-slate-400">{area.name}</span>
-                                                <span className="text-amber-600 font-black">{area.hours}h</span>
-                                            </div>
-                                            <div className="h-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg overflow-hidden border border-slate-100 dark:border-slate-800 p-0.5">
-                                                <div
-                                                    className="h-full bg-amber-400 rounded-md transition-all duration-1000 shadow-[0_0_10px_rgba(245,158,11,0.2)]"
-                                                    style={{ width: `${percentage}%` }}
-                                                />
-                                            </div>
-                                        </div>
-                                    );
-                                })
+                                <BasicBarChart 
+                                    data={data.delays.topAreas.slice(0, 5).map(area => ({ name: area.name, value: area.hours }))} 
+                                    height={224} 
+                                    isHorizontal={true}
+                                    colors={['#f59e0b', '#f59e0b']}
+                                    valueSuffix="h"
+                                />
                             )}
                         </div>
                     </div>
 
-                    {/* Delay Evolution */}
-                    <ElegantTrendChart
-                        title="Evolución de Demoras"
-                        data={data.delays.trend.map(t => ({ label: t.label, value: t.hours }))}
-                        color="#f59e0b"
-                        icon={<TrendingUp className="w-5 h-5 text-amber-500" />}
-                        tooltip={{
-                            def: "Muestra si las demoras del cliente están aumentando o disminuyendo mensualmente.",
-                            purpose: "Validar si las gestiones para reducir tiempos muertos externos están siendo efectivas.",
-                            calc: "Suma de horas de demora agrupadas por mes."
-                        }}
-                        valuePrefix=""
-                        valueSuffix="h"
-                        minY={0}
-                        maxY={Math.max(...data.delays.trend.map(d => d.hours), 1)}
-                        yScale={80}
-                    />
+                    <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group">
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-3">
+                                <TrendingUp className="w-5 h-5 text-amber-500" />
+                                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Evolución de Demoras</h3>
+                            </div>
+                            <MetricTooltip
+                                def="Muestra si las demoras del cliente están aumentando o disminuyendo mensualmente."
+                                purpose="Validar si las gestiones para reducir tiempos muertos externos están siendo efectivas."
+                                calc="Suma de horas de demora agrupadas por mes."
+                            />
+                        </div>
+                        {data.delays.trend.length === 0 ? (
+                            <div className="h-56 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Sin datos históricos</div>
+                        ) : (
+                            <TrendChart 
+                                data={data.delays.trend.map(t => ({ label: t.label, value: t.hours }))} 
+                                color="#f59e0b" 
+                                height={224} 
+                                valueSuffix="h"
+                            />
+                        )}
+                    </div>
                 </div>
             </div>
             </> /* end proyectos tab */
@@ -735,11 +708,11 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
 
     // Donut helpers
     const total3 = (m?.nps.promotores ?? 0) + (m?.nps.pasivos ?? 0) + (m?.nps.detractores ?? 0);
-    const promoPct = total3 > 0 ? (m!.nps.promotores / total3) * 100 : 33;
-    const pasivoPct = total3 > 0 ? (m!.nps.pasivos / total3) * 100 : 33;
-    const detracPct = total3 > 0 ? (m!.nps.detractores / total3) * 100 : 34;
+    const promoPct = total3 > 0 ? ((m?.nps.promotores || 0) / total3) * 100 : 33;
+    const pasivoPct = total3 > 0 ? ((m?.nps.pasivos || 0) / total3) * 100 : 33;
+    const detracPct = total3 > 0 ? ((m?.nps.detractores || 0) / total3) * 100 : 34;
 
-    // SVG donut: circumference = 2π×16 ≈ 100.5
+    // SVG donut: circumference = 2 * pi * 16 approx 100.5
     const C = 100.53;
     const promoArc = (promoPct / 100) * C;
     const pasivoArc = (pasivoPct / 100) * C;
@@ -753,13 +726,13 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                     <Star className="w-7 h-7" fill="white" />
                 </div>
                 <div>
-                    <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Métricas de Servicios</h3>
+                    <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Métricas de Servicios</h3>
                     <p className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">Satisfacción del cliente · NPS · Desempeño por operador</p>
                 </div>
             </div>
 
             {/* Filters */}
-            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-[2rem] p-4 md:p-6 shadow-sm space-y-3">
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-[2rem] p-3 md:p-4 shadow-sm space-y-2">
                 <div className="flex items-center justify-between mb-2">
                     <h4 className="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 text-sm">
                         <SlidersHorizontal className="w-4 h-4 text-indigo-500" />
@@ -774,11 +747,11 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                     <div className="space-y-1.5">
                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1"><Calendar className="w-3 h-3" /> Desde</label>
-                        <input type="date" className="w-full h-[42px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-indigo-100 outline-none appearance-none" value={filterFrom} onChange={e => setFilterFrom(e.target.value)} />
+                        <input type="date" className="w-full h-11 md:h-9 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-indigo-100 outline-none appearance-none" value={filterFrom} onChange={e => setFilterFrom(e.target.value)} />
                     </div>
                     <div className="space-y-1.5">
                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1"><Calendar className="w-3 h-3" /> Hasta</label>
-                        <input type="date" className="w-full h-[42px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-3 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-indigo-100 outline-none appearance-none" value={filterTo} onChange={e => setFilterTo(e.target.value)} />
+                        <input type="date" className="w-full h-11 md:h-9 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-indigo-100 outline-none appearance-none" value={filterTo} onChange={e => setFilterTo(e.target.value)} />
                     </div>
                     <div className="space-y-1.5 pt-0.5">
                         <SearchableSelect
@@ -830,7 +803,7 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
             {m && m.total > 0 && (
                 <>
                     {/* KPI Row */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 auto-rows-fr">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 auto-rows-fr relative z-20">
                         <KpiCard
                             title="NPS Global"
                             value={npsScore !== null ? (npsScore >= 0 ? `+${npsScore}` : npsScore) : '—'}
@@ -869,122 +842,51 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                     {/* Charts row: NPS Donut + Trend */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* NPS Donut */}
-                        <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col items-center">
+                        <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col items-center">
                             <div className="flex items-center justify-between w-full mb-4">
                                 <div className="flex items-center gap-3">
                                     <PieChart className="w-5 h-5 text-indigo-500" />
-                                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Distribución NPS</h3>
+                                    <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Distribución NPS</h3>
                                 </div>
                             </div>
 
-                            <div className="relative w-44 h-44 my-4">
-                                <svg className="w-full h-full -rotate-90" viewBox="-4 -4 40 40">
-                                    <circle r="16" cx="16" cy="16" fill="transparent" stroke="#f1f5f9" strokeWidth="6" />
-                                    {/* Detractores (rose) */}
-                                    <circle r="16" cx="16" cy="16" fill="transparent" stroke="#f43f5e" strokeWidth="6"
-                                        strokeDasharray={`${detracArc} ${C}`}
-                                        strokeDashoffset={0}
-                                        strokeLinecap="round"
-                                    />
-                                    {/* Pasivos (amber) */}
-                                    <circle r="16" cx="16" cy="16" fill="transparent" stroke="#f59e0b" strokeWidth="6"
-                                        strokeDasharray={`${pasivoArc} ${C}`}
-                                        strokeDashoffset={`${-detracArc}`}
-                                        strokeLinecap="round"
-                                    />
-                                    {/* Promotores (emerald) */}
-                                    <circle r="16" cx="16" cy="16" fill="transparent" stroke="#10b981" strokeWidth="6"
-                                        strokeDasharray={`${promoArc} ${C}`}
-                                        strokeDashoffset={`${-(detracArc + pasivoArc)}`}
-                                        strokeLinecap="round"
-                                    />
-                                </svg>
-                                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                    <span className={`text-3xl font-black tracking-tighter ${npsColor}`}>
-                                        {npsScore !== null ? (npsScore >= 0 ? `+${npsScore}` : npsScore) : '—'}
-                                    </span>
-                                    <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">NPS</span>
-                                </div>
+                            <div className="w-full h-48 my-2">
+                                <DonutChart 
+                                    data={[
+                                        { name: 'Promotores', value: m.nps.promotores },
+                                        { name: 'Pasivos', value: m.nps.pasivos },
+                                        { name: 'Detractores', value: m.nps.detractores }
+                                    ]}
+                                    colors={['#10b981', '#f59e0b', '#f43f5e']}
+                                    centerText={npsScore !== null ? (npsScore >= 0 ? `+${npsScore}` : npsScore) : '—'}
+                                    centerSubtext="NPS Global"
+                                    height={192}
+                                />
                             </div>
 
-                            <div className="w-full space-y-2.5 mt-2">
-                                <div className="flex items-center justify-between px-4 py-3 bg-emerald-50 rounded-2xl">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">Promotores (9-10)</span>
-                                    </div>
-                                    <div className="text-right">
-                                        <span className="text-sm font-black text-emerald-700">{m.nps.promotores}</span>
-                                        <span className="text-[10px] text-emerald-500 ml-1">{m.nps.pctPromo}%</span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center justify-between px-4 py-3 bg-amber-50 rounded-2xl">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-3 h-3 rounded-full bg-amber-400" />
-                                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">Pasivos (7-8)</span>
-                                    </div>
-                                    <div className="text-right">
-                                        <span className="text-sm font-black text-amber-700">{m.nps.pasivos}</span>
-                                        <span className="text-[10px] text-amber-500 ml-1">{m.nps.pctPasivos}%</span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center justify-between px-4 py-3 bg-rose-50 rounded-2xl">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-3 h-3 rounded-full bg-rose-500" />
-                                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">Detractores (0-6)</span>
-                                    </div>
-                                    <div className="text-right">
-                                        <span className="text-sm font-black text-rose-700">{m.nps.detractores}</span>
-                                        <span className="text-[10px] text-rose-500 ml-1">{m.nps.pctDetrac}%</span>
-                                    </div>
-                                </div>
+                            <div className="w-full space-y-2 mt-auto">
+                                <LegendItem label={`Promotores (${m.nps.pctPromo}%)`} count={m.nps.promotores} color="bg-emerald-500" />
+                                <LegendItem label={`Pasivos (${m.nps.pctPasivos}%)`} count={m.nps.pasivos} color="bg-amber-400" />
+                                <LegendItem label={`Detractores (${m.nps.pctDetrac}%)`} count={m.nps.detractores} color="bg-rose-500" />
                             </div>
                         </div>
 
                         {/* Promedios de servicio (bar chart with target line) */}
-                        <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
                             <div className="flex items-center gap-3 mb-6">
                                 <BarChart3 className="w-5 h-5 text-indigo-500" />
-                                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Promedios de Servicio</h3>
+                                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Promedios de Servicio</h3>
                             </div>
-                            <div className="space-y-5 relative">
-                                {/* Target line annotation */}
-                                <div className="flex items-center gap-2 mb-2">
-                                    <div className="w-8 h-0 border-t-2 border-dashed border-slate-300 dark:border-slate-600" />
-                                    <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Objetivo: {TARGET_CSAT}/10</span>
-                                </div>
-                                {[
-                                    { label: 'Atención', value: m.promedios.atencion, color: 'bg-blue-500', shadow: 'shadow-blue-200' },
-                                    { label: 'Calidad', value: m.promedios.calidad, color: 'bg-emerald-500', shadow: 'shadow-emerald-200' },
-                                    { label: 'Tiempo', value: m.promedios.tiempo, color: 'bg-amber-500', shadow: 'shadow-amber-200' },
-                                ].map(({ label, value, color, shadow }) => {
-                                    const pct = value !== null ? (value / 10) * 100 : 0;
-                                    const targetPct = (TARGET_CSAT / 10) * 100;
-                                    const isAboveTarget = value !== null && value >= TARGET_CSAT;
-                                    return (
-                                        <div key={label} className="space-y-1.5">
-                                            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
-                                                <span className="text-slate-500 dark:text-slate-400">{label}</span>
-                                                <span className={isAboveTarget ? 'text-emerald-600' : 'text-amber-500'}>
-                                                    {value ?? '—'}/10
-                                                </span>
-                                            </div>
-                                            <div className="h-5 bg-slate-50 dark:bg-slate-900/50 rounded-xl relative overflow-hidden border border-slate-100 dark:border-slate-800">
-                                                {/* Progress bar */}
-                                                <div
-                                                    className={`h-full rounded-xl transition-all duration-1000 ${color} ${shadow} shadow-sm`}
-                                                    style={{ width: `${pct}%` }}
-                                                />
-                                                {/* Target line */}
-                                                <div
-                                                    className="absolute top-0 bottom-0 w-0.5 bg-slate-400/60 border-l border-dashed border-slate-400 z-10"
-                                                    style={{ left: `${targetPct}%` }}
-                                                    title={`Objetivo: ${TARGET_CSAT}`}
-                                                />
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                            <div className="mt-4">
+                                <TargetBarChart 
+                                    data={[
+                                        { name: 'Atención', value: m.promedios.atencion ?? 0 },
+                                        { name: 'Calidad', value: m.promedios.calidad ?? 0 },
+                                        { name: 'Tiempo', value: m.promedios.tiempo ?? 0 },
+                                    ]}
+                                    target={TARGET_CSAT}
+                                    height={200}
+                                />
                             </div>
                         </div>
                     </div>
@@ -993,28 +895,26 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                     {m.porMes.length >= 2 && (
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             {/* NPS trend */}
-                            <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+                            <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
                                 <div className="flex items-center gap-3 mb-6">
                                     <TrendingUp className="w-5 h-5 text-indigo-500" />
-                                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Evolución del NPS</h3>
+                                    <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Evolución del NPS</h3>
                                 </div>
-                                <ServiceTrendChart
-                                    data={m.porMes.map(p => ({ label: p.label, value: p.nps }))}
-                                    color="#6366f1"
-                                    targetY={TARGET_NPS}
-                                    minY={-100}
-                                    maxY={100}
-                                    valueSuffix=""
-                                    targetLabel={`Objetivo NPS > ${TARGET_NPS}`}
+                                <TrendChart 
+                                    data={m.porMes.map(p => ({ label: p.label, value: p.nps }))} 
+                                    color="#6366f1" 
+                                    height={224} 
                                 />
                             </div>
                             {/* CSAT trend */}
                             <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
                                 <div className="flex items-center gap-3 mb-6">
                                     <BarChart3 className="w-5 h-5 text-blue-500" />
-                                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Satisfacción en el Tiempo</h3>
+                                    <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Evolución de CSAT</h3>
                                 </div>
-                                <ServiceMultiTrendChart data={m.porMes} targetCsat={TARGET_CSAT} />
+                                <div className="mt-4">
+                                    <MultiTrendChart data={m.porMes} target={TARGET_CSAT} height={224} />
+                                </div>
                             </div>
                         </div>
                     )}
@@ -1231,17 +1131,17 @@ function ServiceMultiTrendChart({ data, targetCsat }: {
 }
 function KpiCard({ title, value, icon, color, trend, tooltip }: { title: string; value: string | number; icon: any; color: string; trend: string; tooltip?: { def: string; purpose: string; calc: string } }) {
     return (
-        <div className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between h-[80px] gap-3">
-            <div className="flex items-center gap-3 min-w-0">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${color} text-white shadow-sm`}>
+        <div className="bg-white dark:bg-slate-800 p-2.5 md:p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between h-[64px] md:h-[72px] gap-2">
+            <div className="flex items-center gap-2.5 min-w-0">
+                <div className={`w-8 h-8 md:w-9 md:h-9 rounded-lg flex items-center justify-center shrink-0 ${color} text-white shadow-sm`}>
                     {/* El ícono ya viene como prop, aseguramos que encaje */}
-                    <div className="[&>svg]:w-5 [&>svg]:h-5">
+                    <div className="[&>svg]:w-4 [&>svg]:h-4 md:[&>svg]:w-5 md:[&>svg]:h-5">
                         {icon}
                     </div>
                 </div>
-                <div className="flex flex-col justify-center min-w-0 py-1">
-                    <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest line-clamp-1">{title}</p>
-                    <h4 className="text-xl lg:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tighter truncate leading-none mt-0.5">{value}</h4>
+                <div className="flex flex-col justify-center min-w-0 py-0.5">
+                    <p className="text-[10px] md:text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest line-clamp-1">{title}</p>
+                    <h4 className="text-lg md:text-xl lg:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tighter truncate leading-none mt-0.5">{value}</h4>
                 </div>
             </div>
             
@@ -1259,7 +1159,7 @@ function KpiCard({ title, value, icon, color, trend, tooltip }: { title: string;
 function MetricTooltip({ def, purpose, calc }: { def: string; purpose: string; calc: string }) {
     return (
         <div className="group/tooltip relative">
-            <Info className="w-5 h-5 text-slate-300 hover:text-primary transition-colors cursor-help" />
+            <Info className="w-5 h-5 text-slate-300 hover:text-primary transition-colors cursor-pointer" />
             <div className="absolute top-0 right-full mr-3 w-64 p-4 bg-slate-900 text-white rounded-2xl text-[10px] leading-relaxed hidden group-hover/tooltip:block z-[9999] shadow-2xl animate-in fade-in slide-in-from-right-2 duration-200">
                 <div className="space-y-3">
                     <div>
@@ -1312,142 +1212,3 @@ function StatusPill({ label, count, color }: { label: string; count: number; col
     );
 }
 
-function ElegantTrendChart({ title, data, color, icon, tooltip, valuePrefix = '', valueSuffix = '', minY = 0, maxY = 100, yScale = 80 }: {
-    title: string;
-    data: { label: string; value: number }[];
-    color: string;
-    icon: any;
-    tooltip: { def: string; purpose: string; calc: string };
-    valuePrefix?: string;
-    valueSuffix?: string;
-    minY?: number;
-    maxY?: number;
-    yScale?: number;
-}) {
-    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-
-    const maxVal = Math.max(...data.map(d => d.value), maxY || 1);
-    const points = data.map((d, i) => ({
-        x: (i / Math.max(data.length - 1, 1)) * 100,
-        y: 100 - ((d.value / maxVal) * yScale)
-    }));
-
-    // Cubic Bezier smoothing
-    const getSmoothingPath = () => {
-        if (points.length < 2) return '';
-        let d = `M ${points[0].x} ${points[0].y}`;
-
-        for (let i = 0; i < points.length - 1; i++) {
-            const p0 = points[i];
-            const p1 = points[i + 1];
-            // Smoothing factor
-            const dx = (p1.x - p0.x) / 3;
-            d += ` C ${p0.x + dx} ${p0.y}, ${p1.x - dx} ${p1.y}, ${p1.x} ${p1.y}`;
-        }
-        return d;
-    };
-
-    const linePath = getSmoothingPath();
-    const areaPath = points.length >= 2 ? `${linePath} L ${points[points.length - 1].x} 100 L ${points[0].x} 100 Z` : '';
-
-    return (
-        <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group">
-            <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-3">
-                    {icon}
-                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">{title}</h3>
-                </div>
-                <MetricTooltip {...tooltip} />
-            </div>
-
-            <div className="h-56 relative mt-4 cursor-crosshair" onMouseLeave={() => setHoveredIndex(null)}>
-                {data.length === 0 ? (
-                    <div className="h-full flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Sin datos históricos</div>
-                ) : (
-                    <>
-                        <svg className="w-full h-full overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
-                            {/* Area fill */}
-                            {areaPath && (
-                                <path
-                                    d={areaPath}
-                                    fill={color}
-                                    fillOpacity="0.05"
-                                    className="transition-all duration-700"
-                                />
-                            )}
-                            {/* Main line */}
-                            <path
-                                d={linePath}
-                                fill="none"
-                                stroke={color}
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="transition-all duration-700"
-                            />
-
-
-
-                            {/* Interaction zones */}
-                            {points.map((p, i) => (
-                                <rect
-                                    key={i}
-                                    x={p.x - 5}
-                                    y={0}
-                                    width={10}
-                                    height={100}
-                                    fill="transparent"
-                                    className="cursor-pointer"
-                                    onMouseEnter={() => setHoveredIndex(i)}
-                                />
-                            ))}
-                        </svg>
-
-                        {/* Hover point – rendered as HTML div to avoid SVG stretching */}
-                        {hoveredIndex !== null && points[hoveredIndex] && (
-                            <div
-                                className="absolute w-[10px] h-[10px] rounded-full border-2 bg-white dark:bg-slate-800 pointer-events-none animate-in zoom-in duration-200"
-                                style={{
-                                    borderColor: color,
-                                    left: `${points[hoveredIndex].x}%`,
-                                    top: `${points[hoveredIndex].y}%`,
-                                    transform: 'translate(-50%, -50%)',
-                                    boxShadow: `0 0 6px ${color}40`
-                                }}
-                            />
-                        )}
-
-                        {/* Labels */}
-                        <div className="absolute inset-x-0 bottom-[-1.5rem] flex justify-between px-2">
-                            {data.map((t, i) => (
-                                <span key={i} className={`text-[9px] font-black uppercase tracking-tighter transition-colors ${hoveredIndex === i ? 'text-slate-900 dark:text-slate-50 scale-110' : 'text-slate-400 dark:text-slate-500'}`}>
-                                    {t.label.split('-').length > 1 ? t.label.split('-')[1] : t.label}
-                                </span>
-                            ))}
-                        </div>
-
-                        {/* Floating Tooltip */}
-                        {hoveredIndex !== null && (
-                            <div
-                                className="absolute p-3 bg-slate-900 text-white rounded-xl shadow-2xl z-50 pointer-events-none animate-in fade-in zoom-in-95 duration-200"
-                                style={{
-                                    left: `${points[hoveredIndex].x}%`,
-                                    top: `${points[hoveredIndex].y}%`,
-                                    transform: `translate(${points[hoveredIndex].x > 80 ? '-100%' : points[hoveredIndex].x < 20 ? '0%' : '-50%'}, -130%)`
-                                }}
-                            >
-                                <div className="space-y-1">
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">{data[hoveredIndex].label}</p>
-                                    <p className="text-sm font-black flex items-center gap-2">
-                                        <span style={{ color }}>{valuePrefix}{data[hoveredIndex].value}{valueSuffix}</span>
-                                    </p>
-                                </div>
-                                <div className={`absolute bottom-[-4px] w-2 h-2 bg-slate-900 rotate-45 ${points[hoveredIndex].x > 80 ? 'right-4' : points[hoveredIndex].x < 20 ? 'left-4' : 'left-1/2 -translate-x-1/2'}`} />
-                            </div>
-                        )}
-                    </>
-                )}
-            </div>
-        </div>
-    );
-}

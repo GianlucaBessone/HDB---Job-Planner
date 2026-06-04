@@ -64,8 +64,6 @@ export const DEFAULT_VIEWS: ViewConfig[] = [
     { key: '/inventario',           label: 'Inventario de Materiales',  description: 'Stock y movimientos',                roles: ['admin', 'qa', 'vendedor'],                      access: 'ambos', section: 'logistica', iconName: 'PackageSearch', color: 'bg-amber-600' },
     { key: '/provision-materiales', label: 'Provisión de Materiales',   description: 'Gestión de suministros',             roles: ['vendedor', 'supervisor', 'admin', 'qa'],         access: 'ambos', section: 'logistica', iconName: 'Package',       color: 'bg-orange-500' },
     { key: '/herramientas',         label: 'Herramientas y Carros',     description: 'Retiro, devolución y verificación',  roles: ['operador', 'supervisor', 'admin', 'qa'],         access: 'ambos', section: 'logistica', iconName: 'Wrench',        color: 'bg-slate-600' },
-    { key: '/carros',               label: 'Carros de Herramientas',    description: 'Asignación y seguimiento',           roles: ['operador', 'supervisor', 'admin', 'qa'],         access: 'ambos', section: 'logistica', iconName: 'Wrench',        color: 'bg-zinc-600' },
-    { key: '/carros-historial',     label: 'Historial de Carros',       description: 'Movimientos y trazabilidad',         roles: ['supervisor', 'admin', 'qa'],                      access: 'ambos', section: 'logistica', iconName: 'History',       color: 'bg-zinc-500' },
 
     // ─ Calidad y Mejora Continua ─
     { key: '/calidad',              label: 'Calidad y Documentación',  description: 'Gestión documental ISO',       roles: ['admin', 'qa', 'supervisor'],              access: 'ambos', section: 'calidad', iconName: 'FileCheck',  color: 'bg-emerald-600' },

@@ -227,11 +227,14 @@ export default function TimesheetsPage() {
 
     const handleCausaChange = (causaValue: string) => {
         setFormData(fd => {
-            const update: any = { ...fd, causaRegistro: causaValue };
+            const update: any = { ...fd, causaRegistro: causaValue, isExtra: false, isDevolucion: false };
             // Auto-fill times when selecting a causa
             if (causaValue === 'Carpeta Médica') {
                 update.horaIngreso = '08:00';
                 update.horaEgreso = '16:00';
+            } else if (['Falta', 'Permiso', 'Administrativo'].includes(causaValue)) {
+                update.horaIngreso = '08:00';
+                update.horaEgreso = '17:00';
             } else if (causaValue && !fd.horaIngreso && !fd.horaEgreso) {
                 update.horaIngreso = '08:00';
                 update.horaEgreso = '17:00';
@@ -253,9 +256,13 @@ export default function TimesheetsPage() {
             return;
         }
 
-        // DEVOLUCIÓN requires description
+        // DEVOLUCIÓN or Administrativo requires description
         if (formData.isDevolucion && !formData.descripcionDevolucion.trim()) {
             showToast('Para tipo DEVOLUCIÓN debe ingresar una descripción obligatoria.', 'error');
+            return;
+        }
+        if (formMode === 'causa' && formData.causaRegistro === 'Administrativo' && !formData.descripcionDevolucion.trim()) {
+            showToast('Debe ingresar un texto explicativo para causa Administrativo.', 'error');
             return;
         }
 
@@ -265,9 +272,9 @@ export default function TimesheetsPage() {
                 fecha: formData.fecha,
                 horaIngreso: formData.horaIngreso,
                 horaEgreso: formData.horaEgreso,
-                isExtra: formData.isDevolucion ? false : formData.isExtra,
-                isDevolucion: formData.isDevolucion,
-                descripcionDevolucion: formData.isDevolucion ? formData.descripcionDevolucion.trim() : null,
+                isExtra: formData.isDevolucion || formMode === 'causa' ? false : formData.isExtra,
+                isDevolucion: formMode === 'causa' ? false : formData.isDevolucion,
+                descripcionDevolucion: formData.isDevolucion || (formMode === 'causa' && formData.causaRegistro === 'Administrativo') ? formData.descripcionDevolucion.trim() : null,
                 requestUserId: currentUser?.id,
                 requestUserRole: currentUser?.role
             };
@@ -968,7 +975,7 @@ export default function TimesheetsPage() {
                                                 {formData.causaRegistro && (
                                                     <p className="text-[10px] text-orange-500 dark:text-orange-400 font-bold mt-1.5 px-1 flex items-center gap-1 animate-in fade-in duration-300">
                                                         <Clock className="w-3 h-3" />
-                                                        Horario autocompletado: 08:00 – 17:00 (editable)
+                                                        {formData.causaRegistro === 'Carpeta Médica' ? 'Horario autocompletado: 08:00 – 16:00 (editable)' : 'Horario autocompletado: 08:00 – 17:00 (editable)'}
                                                     </p>
                                                 )}
                                             </div>
@@ -1012,43 +1019,53 @@ export default function TimesheetsPage() {
                                     </div>
 
                                     {/* Tipo de Horas */}
-                                    <div className="space-y-2 md:col-span-2">
-                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">Tipo de Horas</label>
-                                        <div className="flex gap-3">
-                                            <button
-                                                type="button"
-                                                onClick={() => setFormData({ ...formData, isExtra: false, isDevolucion: false, descripcionDevolucion: '' })}
-                                                className={`flex-1 py-3 px-3 rounded-2xl font-bold transition-all text-sm ${!formData.isExtra && !formData.isDevolucion ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500 shadow-md shadow-indigo-500/10' : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
-                                            >
-                                                Normal
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setFormData({ ...formData, isExtra: true, isDevolucion: false, descripcionDevolucion: '' })}
-                                                className={`flex-1 py-3 px-3 rounded-2xl font-bold transition-all text-sm ${formData.isExtra && !formData.isDevolucion ? 'bg-amber-100 text-amber-700 border-2 border-amber-500 shadow-md shadow-amber-500/10' : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
-                                            >
-                                                Extra
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setFormData({ ...formData, isExtra: false, isDevolucion: true })}
-                                                className={`flex-1 py-3 px-3 rounded-2xl font-bold transition-all text-sm ${formData.isDevolucion ? 'bg-purple-100 text-purple-700 border-2 border-purple-500 shadow-md shadow-purple-500/10' : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
-                                            >
-                                                Devolución
-                                            </button>
+                                    {formMode === 'proyecto' ? (
+                                        <div className="space-y-2 md:col-span-2">
+                                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">Tipo de Horas</label>
+                                            <div className="flex gap-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData({ ...formData, isExtra: false, isDevolucion: false, descripcionDevolucion: '' })}
+                                                    className={`flex-1 py-3 px-3 rounded-2xl font-bold transition-all text-sm ${!formData.isExtra && !formData.isDevolucion ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500 shadow-md shadow-indigo-500/10' : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
+                                                >
+                                                    Normal
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData({ ...formData, isExtra: true, isDevolucion: false, descripcionDevolucion: '' })}
+                                                    className={`flex-1 py-3 px-3 rounded-2xl font-bold transition-all text-sm ${formData.isExtra && !formData.isDevolucion ? 'bg-amber-100 text-amber-700 border-2 border-amber-500 shadow-md shadow-amber-500/10' : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
+                                                >
+                                                    Extra
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData({ ...formData, isExtra: false, isDevolucion: true })}
+                                                    className={`flex-1 py-3 px-3 rounded-2xl font-bold transition-all text-sm ${formData.isDevolucion ? 'bg-purple-100 text-purple-700 border-2 border-purple-500 shadow-md shadow-purple-500/10' : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
+                                                >
+                                                    Devolución
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
+                                    ) : (
+                                        <div className="space-y-2 md:col-span-2">
+                                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">Tipo de Horas</label>
+                                            <div className="w-full bg-red-50 dark:bg-red-900/10 border-2 border-red-200 dark:border-red-800 rounded-2xl py-3 px-4 text-red-600 dark:text-red-400 font-black flex items-center gap-2 justify-center shadow-inner uppercase tracking-widest text-sm">
+                                                <UserX className="w-5 h-5" />
+                                                Ausencia
+                                            </div>
+                                        </div>
+                                    )}
 
-                                    {/* Descripción obligatoria para DEVOLUCIÓN */}
-                                    {formData.isDevolucion && (
+                                    {/* Descripción obligatoria para DEVOLUCIÓN o ADMINISTRATIVO */}
+                                    {(formData.isDevolucion || (formMode === 'causa' && formData.causaRegistro === 'Administrativo')) && (
                                         <div className="space-y-2 md:col-span-2 animate-in fade-in slide-in-from-top-2 duration-300">
                                             <label className="text-[10px] font-black text-purple-500 uppercase tracking-widest flex items-center gap-2 px-1">
                                                 <AlertCircle className="w-3 h-3" />
-                                                Descripción de Devolución (obligatoria)
+                                                {formMode === 'causa' && formData.causaRegistro === 'Administrativo' ? 'Texto Explicativo (obligatorio)' : 'Descripción de Devolución (obligatoria)'}
                                             </label>
                                             <textarea
                                                 required
-                                                placeholder="Describa el motivo de la devolución de horas..."
+                                                placeholder={formMode === 'causa' && formData.causaRegistro === 'Administrativo' ? "Explique el motivo administrativo..." : "Describa el motivo de la devolución de horas..."}
                                                 value={formData.descripcionDevolucion}
                                                 onChange={e => setFormData({ ...formData, descripcionDevolucion: e.target.value })}
                                                 className="w-full bg-purple-50/50 dark:bg-purple-900/10 border-2 border-purple-300 dark:border-purple-700 rounded-2xl py-3 px-4 resize-none h-24 outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 font-medium text-slate-700 dark:text-slate-200 transition-all text-sm placeholder:text-purple-300 dark:placeholder:text-purple-600"

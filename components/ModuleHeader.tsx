@@ -104,13 +104,13 @@ export default function ModuleHeader({
                 <div className="flex flex-wrap items-center gap-2 shrink-0">
                     {onSearchChange !== undefined && (
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                             <input
                                 type="text"
                                 value={searchValue}
                                 onChange={(e) => onSearchChange(e.target.value)}
                                 placeholder={searchPlaceholder}
-                                className="h-9 pl-9 pr-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-[13px] font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none w-full md:w-[220px] lg:w-[280px] transition-all"
+                                className="h-9 !pl-10 pr-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-[13px] font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none w-full md:w-[220px] lg:w-[280px] transition-all"
                             />
                         </div>
                     )}
