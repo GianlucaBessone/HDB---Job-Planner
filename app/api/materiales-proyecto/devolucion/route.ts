@@ -138,7 +138,7 @@ export async function POST(req: Request) {
             // Project Log para auditoría
             await prisma.projectLog.create({
                 data: {
-                    proyectoId: material.proyectoId,
+                    projectId: material.proyectoId,
                     fecha: new Date().toISOString().split('T')[0],
                     responsable: delegadoPorNombre || 'Sistema',
                     observacion: `Delegación de devolución de material:\nMaterial: ${material.nombre}\nCantidad: ${cantidadADevolver} ${material.unidad}\nDelegado a: ${delegadoANombre}`,
@@ -147,11 +147,11 @@ export async function POST(req: Request) {
             });
         } else if (id && estado === 'pendiente') {
             // Un delegado aceptó la delegación, pasando el estado a 'pendiente' para almacén
-            const acceptedDelegation = await prisma.materialDevolucion.findUnique({ where: { id } });
+            const acceptedDelegation = await prisma.materialDevolucion.findUnique({ where: { id } }) as any;
             if (acceptedDelegation && acceptedDelegation.delegadoANombre) {
                 await prisma.projectLog.create({
                     data: {
-                        proyectoId: material.proyectoId,
+                        projectId: material.proyectoId,
                         fecha: new Date().toISOString().split('T')[0],
                         responsable: acceptedDelegation.delegadoANombre,
                         observacion: `El operador aceptó la responsabilidad de devolución delegada por ${acceptedDelegation.delegadoPorNombre}.\nMaterial: ${material.nombre}\nCantidad: ${acceptedDelegation.cantidadADevolver}`,
@@ -160,11 +160,11 @@ export async function POST(req: Request) {
                 });
             }
         } else if (id && estado === 'delegacion_rechazada') {
-            const rejectedDelegation = await prisma.materialDevolucion.findUnique({ where: { id } });
+            const rejectedDelegation = await prisma.materialDevolucion.findUnique({ where: { id } }) as any;
             if (rejectedDelegation && rejectedDelegation.delegadoANombre) {
                 await prisma.projectLog.create({
                     data: {
-                        proyectoId: material.proyectoId,
+                        projectId: material.proyectoId,
                         fecha: new Date().toISOString().split('T')[0],
                         responsable: rejectedDelegation.delegadoANombre,
                         observacion: `El operador rechazó la responsabilidad de devolución delegada por ${rejectedDelegation.delegadoPorNombre}.\nMaterial: ${material.nombre}\nCantidad: ${rejectedDelegation.cantidadADevolver}`,
