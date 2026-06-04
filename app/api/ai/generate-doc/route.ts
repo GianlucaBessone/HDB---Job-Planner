@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { generateContent } from '@/lib/ai/gemini';
+import { generateObject } from '@/lib/ai';
 import { IsoDocGenOutput } from '@/lib/ai/types';
 import { prisma } from '@/lib/prisma';
 
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
             : 'No hay otros documentos en el sistema.';
 
         // 3. Generación mediante la Capa Centralizada de IA
-        const aiResponse = await generateContent<IsoDocGenOutput>(
+        const aiResponse = await generateObject<IsoDocGenOutput>(
             'ISO_DOC_GEN',
             { 
                 proceso, 

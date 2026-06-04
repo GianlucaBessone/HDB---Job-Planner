@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { generateContent } from '@/lib/ai/gemini';
+import { generateObject } from '@/lib/ai';
 import { ChecklistGenOutput } from '@/lib/ai/types';
 import { prisma } from '@/lib/prisma';
 
@@ -15,7 +15,7 @@ export async function POST(req: Request) {
         }
 
         // 1. Invocar el Servicio Centralizado de Checklist
-        const aiResponse = await generateContent<ChecklistGenOutput>(
+        const aiResponse = await generateObject<ChecklistGenOutput>(
             'CHECKLIST_GEN',
             { 
                 tipoTrabajo, 

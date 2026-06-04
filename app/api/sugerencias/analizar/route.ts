@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { generateContent } from '@/lib/ai/gemini';
+import { generateObject } from '@/lib/ai';
 import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
         }
 
         // Llamada al servicio AI usando la key del prompt recién creada
-        const aiResponse = await generateContent('SUGGESTION_ANALYSIS', {
+        const aiResponse = await generateObject('SUGGESTION_ANALYSIS', {
             titulo,
             descripcion,
             area: area || 'No especificada',

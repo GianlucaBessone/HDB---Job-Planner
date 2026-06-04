@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { generateContent } from '@/lib/ai/gemini';
+import { generateObject } from '@/lib/ai';
 import { TrainingQuizOutput } from '@/lib/ai/types';
 import { prisma } from '@/lib/prisma';
 
@@ -82,7 +82,7 @@ ${backupDocsText}
         `.trim();
 
         // 2. Invocar la Capa Centralizada de IA
-        const aiResponse = await generateContent<TrainingQuizOutput>(
+        const aiResponse = await generateObject<TrainingQuizOutput>(
             'TRAINING_GEN',
             { 
                 documentId: doc.codigoDocumental,

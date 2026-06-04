@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { analyzeImageContent } from '@/lib/ai/gemini';
+import { analyzeImage } from '@/lib/ai';
 import { ImageAnomalyOutput } from '@/lib/ai/types';
 import { prisma } from '@/lib/prisma';
 
@@ -43,11 +43,14 @@ export async function POST(req: Request) {
         }
 
         // 4. Invocar el Servicio Centralizado de Análisis Multimodal
-        const aiResponse = await analyzeImageContent(
+        const aiResponse = await analyzeImage(
             base64Image,
             mimeType,
-            tipoInstalacion,
-            contexto || 'Inspección de rutina',
+            'IMAGE_ANALYSIS',
+            {
+                tipoInstalacion,
+                contexto: contexto || 'Inspección de rutina'
+            },
             {
                 userId,
                 userName,

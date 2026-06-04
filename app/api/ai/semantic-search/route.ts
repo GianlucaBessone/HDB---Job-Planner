@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { generateContent } from '@/lib/ai/gemini';
+import { generateObject } from '@/lib/ai';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
         }
 
         // 1. Invocar a Gemini para expandir semánticamente la búsqueda (intenciones + sinónimos)
-        const aiResponse = await generateContent<{
+        const aiResponse = await generateObject<{
             intencion: string;
             keywords: string[];
             sinonimos: string[];

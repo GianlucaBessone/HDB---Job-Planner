@@ -997,7 +997,8 @@ model AiPrompt {
 model AiRequestLog {
   id            String    @id @default(cuid())
   action        String    // e.g. "GEN_ISO_DOC", "TECH_CHAT", "OCR", "GEN_CHECKLIST", "TRAINING_GEN", "SEMANTIC_SEARCH", "GEN_OBS", "IMAGE_ANOMALY"
-  model         String    // e.g. "gemini-2.5-flash"
+  model         String    // e.g. "gemini-2.5-flash", "gpt-4o", "claude-sonnet-4"
+  provider      String    @default("gemini") // e.g. "gemini", "openai", "anthropic"
   promptKey     String?
   prompt        AiPrompt? @relation(fields: [promptKey], references: [key], onDelete: SetNull)
   promptVersion Int?

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { analyzeDocumentOcr } from '@/lib/ai/gemini';
+import { performOCR } from '@/lib/ai';
 import { OcrAnalysisOutput } from '@/lib/ai/types';
 import { prisma } from '@/lib/prisma';
 
@@ -38,9 +38,10 @@ export async function POST(req: Request) {
         }
 
         // 4. Invocar el Servicio Centralizado de OCR
-        const aiResponse = await analyzeDocumentOcr(
+        const aiResponse = await performOCR(
             base64Data,
             mimeType,
+            'OCR_ANALYSIS',
             {
                 userId,
                 userName,

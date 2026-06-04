@@ -430,6 +430,9 @@ export default function AiAuditPage() {
                                                             <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border ${getActionBadgeColor(log.action)}`}>
                                                                 {getActionLabel(log.action)}
                                                             </span>
+                                                            <span className="px-2 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-widest bg-slate-100 dark:bg-slate-700 text-slate-500 border border-slate-200 dark:border-slate-600">
+                                                                {log.provider || 'gemini'}
+                                                            </span>
                                                             <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                                                                 {log.model}
                                                             </span>

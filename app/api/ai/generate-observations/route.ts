@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { generateContent } from '@/lib/ai/gemini';
+import { generateObject } from '@/lib/ai';
 import { AutoObservationsOutput } from '@/lib/ai/types';
 import { prisma } from '@/lib/prisma';
 
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
         }
 
         // 1. Invocar el Servicio Centralizado de Observaciones
-        const aiResponse = await generateContent<AutoObservationsOutput>(
+        const aiResponse = await generateObject<AutoObservationsOutput>(
             'GENERATE_OBS',
             {
                 checklistData,

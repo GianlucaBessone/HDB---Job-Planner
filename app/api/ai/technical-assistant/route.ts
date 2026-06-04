@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { generateContent } from '@/lib/ai/gemini';
+import { generateObject } from '@/lib/ai';
 import { TechAssistantOutput } from '@/lib/ai/types';
 import { prisma } from '@/lib/prisma';
 
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
         }
 
         // 2. Generación mediante la Capa Centralizada de IA
-        const aiResponse = await generateContent<TechAssistantOutput>(
+        const aiResponse = await generateObject<TechAssistantOutput>(
             'TECH_ASSISTANT',
             { 
                 falla, 
