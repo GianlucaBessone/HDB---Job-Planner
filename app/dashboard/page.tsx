@@ -272,7 +272,7 @@ export default function DashboardPage() {
             </div>
 
             {/* KPI Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 auto-rows-fr">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 auto-rows-fr">
                 <KpiCard
                     title="Eficiencia de Tiempo (IPT)"
                     value={data.kpis.avgIPT}
@@ -558,7 +558,7 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 auto-rows-fr">
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 auto-rows-fr">
                     <KpiCard
                         title="Total Tiempo Perdido"
                         value={`${data.delays.totalHours}h`}
@@ -830,66 +830,40 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
             {m && m.total > 0 && (
                 <>
                     {/* KPI Row */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                        {/* NPS Score */}
-                        <div className="bg-white dark:bg-slate-800 p-4 md:p-6 rounded-2xl md:rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group col-span-2 md:col-span-1 flex flex-col">
-                            <div className="flex justify-between items-start mb-3">
-                                <div className="p-2.5 rounded-xl bg-indigo-600 text-white shadow-lg group-hover:scale-110 transition-transform">
-                                    <TrendingUp className="w-5 h-5" />
-                                </div>
-                                <div className="group/tooltip relative">
-                                    <Info className="w-4 h-4 text-slate-300 hover:text-indigo-500 cursor-help" />
-                                    <div className="absolute top-0 right-full mr-3 w-56 p-3 bg-slate-900 text-white rounded-xl text-[10px] leading-relaxed hidden group-hover/tooltip:block z-50 shadow-2xl">
-                                        <p className="font-black text-indigo-400 mb-1">NPS Global</p>
-                                        <p className="text-slate-300">% Promotores (9-10) − % Detractores (0-6). Objetivo: &gt; {TARGET_NPS}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">NPS Global</p>
-                            <h4 className={`text-3xl font-black tracking-tighter ${npsColor}`}>
-                                {npsScore !== null ? (npsScore >= 0 ? `+${npsScore}` : npsScore) : '—'}
-                            </h4>
-                            <div className="mt-3 pt-3 border-t border-slate-50 flex items-center gap-1.5">
-                                <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${npsScore !== null && npsScore >= TARGET_NPS ? 'bg-emerald-400' : 'bg-amber-400'}`} />
-                                <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Objetivo: &gt;{TARGET_NPS}</p>
-                            </div>
-                        </div>
-
-                        {/* Atención promedio */}
-                        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col">
-                            <div className="p-2.5 rounded-xl bg-blue-500 text-white shadow-lg w-fit mb-3 group-hover:scale-110 transition-transform">
-                                <Users className="w-5 h-5" />
-                            </div>
-                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Atención</p>
-                            <h4 className={`text-3xl font-black tracking-tighter ${(m.promedios.atencion ?? 0) >= TARGET_CSAT ? 'text-emerald-600' : 'text-amber-500'}`}>
-                                {m.promedios.atencion ?? '—'}
-                            </h4>
-                            <div className="mt-auto pt-3 border-t border-slate-50 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Objetivo: {TARGET_CSAT}+</div>
-                        </div>
-
-                        {/* Calidad promedio */}
-                        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col">
-                            <div className="p-2.5 rounded-xl bg-emerald-500 text-white shadow-lg w-fit mb-3 group-hover:scale-110 transition-transform">
-                                <Award className="w-5 h-5" />
-                            </div>
-                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Calidad</p>
-                            <h4 className={`text-3xl font-black tracking-tighter ${(m.promedios.calidad ?? 0) >= TARGET_CSAT ? 'text-emerald-600' : 'text-amber-500'}`}>
-                                {m.promedios.calidad ?? '—'}
-                            </h4>
-                            <div className="mt-auto pt-3 border-t border-slate-50 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Objetivo: {TARGET_CSAT}+</div>
-                        </div>
-
-                        {/* Tiempo promedio */}
-                        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col">
-                            <div className="p-2.5 rounded-xl bg-amber-500 text-white shadow-lg w-fit mb-3 group-hover:scale-110 transition-transform">
-                                <Clock className="w-5 h-5" />
-                            </div>
-                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Tiempo</p>
-                            <h4 className={`text-3xl font-black tracking-tighter ${(m.promedios.tiempo ?? 0) >= TARGET_CSAT ? 'text-emerald-600' : 'text-amber-500'}`}>
-                                {m.promedios.tiempo ?? '—'}
-                            </h4>
-                            <div className="mt-auto pt-3 border-t border-slate-50 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Objetivo: {TARGET_CSAT}+</div>
-                        </div>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 auto-rows-fr">
+                        <KpiCard
+                            title="NPS Global"
+                            value={npsScore !== null ? (npsScore >= 0 ? `+${npsScore}` : npsScore) : '—'}
+                            icon={<TrendingUp className="w-5 h-5" />}
+                            color={npsScore !== null ? (npsScore >= TARGET_NPS ? 'bg-emerald-500' : npsScore >= 0 ? 'bg-amber-500' : 'bg-rose-500') : 'bg-slate-500'}
+                            trend={`Objetivo: >${TARGET_NPS}`}
+                            tooltip={{
+                                def: "Net Promoter Score Global.",
+                                purpose: "Mide la lealtad y probabilidad de recomendación.",
+                                calc: "% Promotores (9-10) − % Detractores (0-6)"
+                            }}
+                        />
+                        <KpiCard
+                            title="Atención"
+                            value={m.promedios.atencion ?? '—'}
+                            icon={<Users className="w-5 h-5" />}
+                            color={(m.promedios.atencion ?? 0) >= TARGET_CSAT ? 'bg-emerald-500' : 'bg-amber-500'}
+                            trend={`Objetivo: >${TARGET_CSAT}`}
+                        />
+                        <KpiCard
+                            title="Calidad"
+                            value={m.promedios.calidad ?? '—'}
+                            icon={<Award className="w-5 h-5" />}
+                            color={(m.promedios.calidad ?? 0) >= TARGET_CSAT ? 'bg-emerald-500' : 'bg-amber-500'}
+                            trend={`Objetivo: >${TARGET_CSAT}`}
+                        />
+                        <KpiCard
+                            title="Tiempo"
+                            value={m.promedios.tiempo ?? '—'}
+                            icon={<Clock className="w-5 h-5" />}
+                            color={(m.promedios.tiempo ?? 0) >= TARGET_CSAT ? 'bg-emerald-500' : 'bg-amber-500'}
+                            trend={`Objetivo: >${TARGET_CSAT}`}
+                        />
                     </div>
 
                     {/* Charts row: NPS Donut + Trend */}
@@ -1257,25 +1231,26 @@ function ServiceMultiTrendChart({ data, targetCsat }: {
 }
 function KpiCard({ title, value, icon, color, trend, tooltip }: { title: string; value: string | number; icon: any; color: string; trend: string; tooltip?: { def: string; purpose: string; calc: string } }) {
     return (
-        <div className="bg-white dark:bg-slate-800 p-4 md:p-6 rounded-2xl md:rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 group relative flex flex-col h-full">
-            <div className="flex justify-between items-start mb-3 md:mb-4">
-                <div className={`p-2.5 md:p-3 rounded-xl md:rounded-2xl ${color} text-white shadow-lg group-hover:scale-110 transition-transform`}>
-                    {icon}
-                </div>
-                {tooltip && <MetricTooltip {...tooltip} />}
-                {!tooltip && (
-                    <div className="px-2 py-1 bg-slate-50 dark:bg-slate-900/50 rounded-lg text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">
-                        KPI Global
+        <div className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between h-[80px] gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${color} text-white shadow-sm`}>
+                    {/* El ícono ya viene como prop, aseguramos que encaje */}
+                    <div className="[&>svg]:w-5 [&>svg]:h-5">
+                        {icon}
                     </div>
-                )}
+                </div>
+                <div className="flex flex-col justify-center min-w-0 py-1">
+                    <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest line-clamp-1">{title}</p>
+                    <h4 className="text-xl lg:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tighter truncate leading-none mt-0.5">{value}</h4>
+                </div>
             </div>
-            <div className="space-y-0.5 md:space-y-1 flex-1">
-                <p className="text-[10px] md:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-0.5 md:px-1 line-clamp-2">{title}</p>
-                <h4 className="text-2xl md:text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tighter">{value}</h4>
-            </div>
-            <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-slate-50 flex items-center gap-1.5">
-                <div className={`w-1.5 h-1.5 rounded-full ${color.replace('bg-', 'bg-').replace('500', '400')} animate-pulse`} />
-                <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{trend}</p>
+            
+            <div className="flex flex-col items-end justify-between shrink-0 h-full py-0.5">
+                {tooltip ? <MetricTooltip {...tooltip} /> : <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1.5 py-0.5 bg-slate-50 dark:bg-slate-900/50 rounded-md">KPI</div>}
+                <div className="flex items-center gap-1.5 mt-auto">
+                    <div className={`w-1.5 h-1.5 rounded-full ${color.replace('bg-', 'bg-').replace('500', '400')} animate-pulse`} />
+                    <p className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase max-w-[60px] lg:max-w-[80px] truncate" title={trend}>{trend}</p>
+                </div>
             </div>
         </div>
     );

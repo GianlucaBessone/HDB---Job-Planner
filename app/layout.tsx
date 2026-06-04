@@ -164,7 +164,7 @@ export default function RootLayout({
         content = (
             <div className="flex flex-col min-h-[100dvh] overflow-x-hidden">
                 <header className="sticky top-0 z-[60] w-full border-b bg-white/80 dark:bg-slate-800/80 backdrop-blur-md safe-area-top">
-                    <div className="max-w-[2100px] mx-auto px-4 md:px-10 lg:px-12 xl:px-16 h-14 md:h-16 flex items-center justify-between">
+                    <div className="w-full px-4 md:px-6 h-14 md:h-16 flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <button
                                 onClick={() => setIsSidebarOpen(true)}
@@ -225,7 +225,7 @@ export default function RootLayout({
                     }}
                 />
 
-                <main className="flex-1 max-w-[2100px] mx-auto w-full px-4 md:px-10 lg:px-12 xl:px-16 py-6 md:py-8 pb-32 md:pb-8">
+                <main className="flex-1 w-full px-4 md:px-6 py-6 md:py-8 pb-32 md:pb-8">
                     {children}
                     <SpeedInsights />
                 </main>
@@ -337,7 +337,7 @@ function Sidebar({ isOpen, onClose, user, views, onLogout }: {
             )}
 
             {/* Sidebar */}
-            <aside className={`fixed top-0 left-0 bottom-0 w-[240px] md:w-[280px] bg-white dark:bg-slate-800 z-[110] shadow-2xl transition-transform duration-300 ease-out flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <aside className={`fixed top-0 left-0 bottom-0 w-[240px] bg-white dark:bg-slate-800 z-[110] shadow-2xl transition-transform duration-300 ease-out flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <div className="flex items-center gap-2 text-primary">
                         <ClipboardList className="w-6 h-6 shrink-0" />
@@ -353,13 +353,13 @@ function Sidebar({ isOpen, onClose, user, views, onLogout }: {
                     <Link
                         href="/"
                         onClick={onClose}
-                        className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                        className={`flex items-center gap-3 h-[40px] px-3 rounded-xl text-[13px] font-semibold transition-all duration-200 ${
                             pathname === '/'
                                 ? 'bg-primary text-white shadow-md shadow-primary/20'
                                 : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200'
                         }`}
                     >
-                        <Home className="w-4 h-4" />
+                        <Home className="w-[18px] h-[18px]" />
                         Inicio
                     </Link>
 
@@ -386,13 +386,13 @@ function Sidebar({ isOpen, onClose, user, views, onLogout }: {
                                             key={`fav-${item.key}`}
                                             href={item.key}
                                             onClick={onClose}
-                                            className={`flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                                            className={`flex items-center gap-3 h-[40px] px-3 rounded-xl text-[13px] font-semibold transition-all duration-200 ${
                                                 isActive
                                                     ? 'bg-primary text-white shadow-md shadow-primary/20'
                                                     : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200'
                                             }`}
                                         >
-                                            {renderIcon(item.iconName, 'w-4 h-4')}
+                                            {renderIcon(item.iconName, 'w-[18px] h-[18px]')}
                                             <span className="truncate">{item.label}</span>
                                         </Link>
                                     );
@@ -421,13 +421,13 @@ function Sidebar({ isOpen, onClose, user, views, onLogout }: {
                             <div key={section.key} className="space-y-1">
                                 <button
                                     onClick={() => toggleGroup(section.key)}
-                                    className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all duration-200 ${hasActiveChild && !isExpanded
+                                    className={`w-full flex items-center justify-between gap-3 h-[40px] px-3 rounded-xl text-[13px] font-bold transition-all duration-200 ${hasActiveChild && !isExpanded
                                         ? 'bg-primary/10 text-primary dark:bg-primary/20'
                                         : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80 hover:text-primary'
                                     }`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        {renderIcon(section.iconName, 'w-5 h-5')}
+                                        {renderIcon(section.iconName, 'w-[18px] h-[18px]')}
                                         {section.label}
                                     </div>
                                     <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
@@ -442,12 +442,12 @@ function Sidebar({ isOpen, onClose, user, views, onLogout }: {
                                                     key={item.key}
                                                     href={item.key}
                                                     onClick={onClose}
-                                                    className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${isActive
+                                                    className={`flex items-center gap-3 h-[40px] px-3 rounded-xl text-[13px] font-semibold transition-all duration-200 ${isActive
                                                         ? 'bg-primary text-white shadow-md shadow-primary/20'
                                                         : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200'
                                                     }`}
                                                 >
-                                                    {renderIcon(item.iconName, 'w-4 h-4')}
+                                                    {renderIcon(item.iconName, 'w-[18px] h-[18px]')}
                                                     {item.label}
                                                 </Link>
                                             );

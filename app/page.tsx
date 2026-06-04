@@ -32,14 +32,7 @@ export default function HomePage() {
         return null;
     });
 
-    const [cardScale, setCardScale] = useState<'0.5' | '1' | '2'>(() => {
-        if (typeof window !== 'undefined') {
-            const saved = localStorage.getItem('hdb_card_scale');
-            if (saved === '0.5' || saved === '1' || saved === '2') return saved;
-        }
-        return '1';
-    });
-
+    
     const [editMode, setEditMode] = useState(false);
     const [favorites, setFavoritesLocal] = useState<string[]>([]);
     const [recentKeys, setRecentKeys] = useState<string[]>([]);
@@ -47,10 +40,7 @@ export default function HomePage() {
     const [recentsExpanded, setRecentsExpanded] = useState(false);
     const [dragOverFavorites, setDragOverFavorites] = useState(false);
 
-    useEffect(() => {
-        localStorage.setItem('hdb_card_scale', cardScale);
-    }, [cardScale]);
-
+    
     useEffect(() => {
         const stored = localStorage.getItem('currentUser');
         if (stored) {
@@ -136,15 +126,7 @@ export default function HomePage() {
         if (key) addFavorite(key);
     };
 
-    const getGridClass = (scale: '0.5' | '1' | '2') => {
-        if (scale === '0.5') {
-            return "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 md:gap-3 transition-all duration-300";
-        } else if (scale === '2') {
-            return "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 transition-all duration-300";
-        } else {
-            return "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 transition-all duration-300";
-        }
-    };
+    const gridClass = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 transition-all duration-300";
 
     if (!userRole) {
         return (
@@ -180,28 +162,6 @@ export default function HomePage() {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                    {/* Zoom selector */}
-                    <div className="flex items-center bg-slate-100 dark:bg-slate-900/60 p-0.5 sm:p-1 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-800 shadow-inner gap-0.5">
-                        {(['0.5', '1', '2'] as const).map((s) => {
-                            const isActive = cardScale === s;
-                            return (
-                                <button
-                                    key={s}
-                                    onClick={() => setCardScale(s)}
-                                    className={`
-                                        w-8 h-6 sm:w-11 sm:h-7 flex items-center justify-center text-[10px] sm:text-xs font-black tracking-wider transition-all duration-300 active:scale-95 rounded-md sm:rounded-lg btn-icon-inline !min-h-0
-                                        ${isActive
-                                            ? 'bg-primary text-white shadow-sm shadow-primary/20 scale-105 border border-primary/10 -translate-y-[0.5px] sm:-translate-y-[1px] font-black'
-                                            : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 font-extrabold'
-                                        }
-                                    `}
-                                >
-                                    x{s}
-                                </button>
-                            );
-                        })}
-                    </div>
-
                     {/* Edit mode toggle */}
                     <button
                         onClick={() => setEditMode(!editMode)}
@@ -267,12 +227,11 @@ export default function HomePage() {
                         }
                     </button>
                     {recentsExpanded && (
-                        <div className={`${getGridClass(cardScale)} animate-in fade-in slide-in-from-top-2 duration-300`}>
+                        <div className={`${gridClass} animate-in fade-in slide-in-from-top-2 duration-300`}>
                             {recentViews.map(v => (
                                 <ActionCard
                                     key={`recent-${v.key}`}
                                     view={v}
-                                    scale={cardScale}
                                     editMode={editMode}
                                     onDragStart={handleDragStart}
                                 />
@@ -311,12 +270,11 @@ export default function HomePage() {
                                             Arrastrá tarjetas aquí para agregarlas a favoritos
                                         </p>
                                     ) : (
-                                        <div className={`${getGridClass(cardScale)} w-full`}>
+                                        <div className={`${gridClass} w-full`}>
                                             {favoriteViews.map(v => (
                                                 <div key={`fav-${v.key}`} className="relative group/fav">
                                                     <ActionCard
                                                         view={v}
-                                                        scale={cardScale}
                                                         editMode={false}
                                                         onDragStart={handleDragStart}
                                                     />
@@ -334,12 +292,11 @@ export default function HomePage() {
                             )}
 
                             {!editMode && favoriteViews.length > 0 && (
-                                <div className={getGridClass(cardScale)}>
+                                <div className={gridClass}>
                                     {favoriteViews.map(v => (
                                         <ActionCard
                                             key={`fav-${v.key}`}
                                             view={v}
-                                            scale={cardScale}
                                             editMode={false}
                                             onDragStart={handleDragStart}
                                         />
@@ -357,12 +314,11 @@ export default function HomePage() {
                     <h3 className="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 animate-in fade-in duration-300">
                         {section.label}
                     </h3>
-                    <div className={getGridClass(cardScale)}>
+                    <div className={gridClass}>
                         {sectionViews.map(v => (
                             <ActionCard
                                 key={v.key}
                                 view={v}
-                                scale={cardScale}
                                 editMode={editMode}
                                 onDragStart={handleDragStart}
                             />
@@ -380,37 +336,16 @@ export default function HomePage() {
 
 // ── ActionCard ─────────────────────────────────────────────────────
 
-function ActionCard({ view, scale, editMode, onDragStart }: {
+function ActionCard({ view, editMode, onDragStart }: {
     view: ViewConfig;
-    scale: '0.5' | '1' | '2';
     editMode: boolean;
     onDragStart: (e: React.DragEvent, key: string) => void;
 }) {
-    let containerClass = "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 flex flex-row items-center h-full outline-primary focus-visible:ring-4 focus-visible:ring-primary/20 overflow-hidden";
-    let iconWrapperClass = `${view.color} text-white shadow-lg group-hover:scale-110 transition-transform shrink-0`;
-    let titleClass = "font-extrabold text-slate-800 dark:text-slate-100 leading-tight group-hover:text-primary transition-colors";
-    let descClass = "font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider line-clamp-2";
+    let containerClass = "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:-translate-y-[1px] hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 flex flex-row items-center h-[72px] p-3 rounded-xl gap-3 outline-primary focus-visible:ring-2 focus-visible:ring-primary/20 overflow-hidden group";
+    let iconWrapperClass = `${view.color} text-white shadow-sm shrink-0 p-2 rounded-lg flex items-center justify-center`;
+    let titleClass = "font-bold text-[13px] text-slate-800 dark:text-slate-100 leading-tight group-hover:text-primary transition-colors";
+    let descClass = "font-medium text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide line-clamp-2 mt-0.5 leading-tight";
     let textContainerClass = "flex-1 min-w-0";
-
-    if (scale === '0.5') {
-        containerClass += " p-2.5 md:p-3 rounded-xl md:rounded-2xl gap-2 md:gap-2.5";
-        iconWrapperClass += " p-1.5 md:p-2 rounded-lg md:rounded-xl [&_svg]:w-4 [&_svg]:h-4 md:[&_svg]:w-4.5 md:[&_svg]:h-4.5";
-        titleClass += " text-xs md:text-sm";
-        descClass += " text-[8px] md:text-[9px]";
-        textContainerClass += " space-y-0";
-    } else if (scale === '2') {
-        containerClass += " p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] gap-4 md:gap-6";
-        iconWrapperClass += " p-4 md:p-5 rounded-2xl md:rounded-3xl [&_svg]:w-8 [&_svg]:h-8 md:[&_svg]:w-9 md:[&_svg]:h-9";
-        titleClass += " text-lg md:text-xl";
-        descClass += " text-xs md:text-sm";
-        textContainerClass += " space-y-1.5 md:space-y-2";
-    } else {
-        containerClass += " p-4 md:p-6 rounded-2xl md:rounded-[2rem] gap-3 md:gap-4";
-        iconWrapperClass += " p-3 md:p-4 rounded-xl md:rounded-2xl [&_svg]:w-6 [&_svg]:h-6";
-        titleClass += " text-base md:text-lg";
-        descClass += " text-[10px] md:text-xs";
-        textContainerClass += " space-y-0.5 md:space-y-1";
-    }
 
     if (editMode) {
         containerClass += " cursor-grab active:cursor-grabbing ring-2 ring-transparent hover:ring-primary/30";
@@ -422,7 +357,7 @@ function ActionCard({ view, scale, editMode, onDragStart }: {
                 <GripVertical className="w-4 h-4 text-slate-300 dark:text-slate-600 shrink-0" />
             )}
             <div className={iconWrapperClass}>
-                {renderIcon(view.iconName, scale === '0.5' ? 'w-4 h-4' : scale === '2' ? 'w-8 h-8' : 'w-6 h-6')}
+                {renderIcon(view.iconName, 'w-5 h-5')}
             </div>
             <div className={textContainerClass}>
                 <h4 className={titleClass}>{view.label}</h4>
@@ -436,7 +371,7 @@ function ActionCard({ view, scale, editMode, onDragStart }: {
             <div
                 draggable
                 onDragStart={(e) => onDragStart(e, view.key)}
-                className="group relative block focus:outline-none"
+                className="relative block focus:outline-none"
             >
                 {card}
             </div>
@@ -444,7 +379,7 @@ function ActionCard({ view, scale, editMode, onDragStart }: {
     }
 
     return (
-        <Link href={view.key} className="group relative block focus:outline-none">
+        <Link href={view.key} className="relative block focus:outline-none">
             {card}
         </Link>
     );

@@ -98,6 +98,32 @@
 /* ════════════════════════════════════════════════════════════════════════════ */
 @layer components {
 
+  /* ── 0. FORM CONTROLS (DESKTOP DEFAULT 36px) ────────────────────────── */
+  input[type="text"], input[type="email"], input[type="number"], input[type="tel"], input[type="password"], input[type="search"],
+  input[type="date"], input[type="time"], select {
+    @apply h-9 px-3 text-[13px] rounded-lg;
+  }
+
+  /* ── 0.5. DATA TABLES (DESKTOP DENSITY 36px) ────────────────────────── */
+  @media (min-width: 768px) {
+    table {
+      @apply text-[13px] !important;
+    }
+    table th, table td {
+      height: 36px !important;
+      padding-top: 4px !important;
+      padding-bottom: 4px !important;
+      padding-left: 12px !important;
+      padding-right: 12px !important;
+    }
+    table th {
+      @apply text-[11px] font-bold uppercase tracking-wide !important;
+    }
+    table td {
+      @apply text-[13px] !important;
+    }
+  }
+
   /* ── 1. FOCUS RINGS — softer in dark mode ─────────────────────────────── */
   .dark *:focus, 
   .dark *:focus-visible, 
@@ -439,7 +465,8 @@
     @apply p-4 max-h-[300px];
   }
 
-  /* ── Compact inputs on mobile ── */
+  /* ── Touch-friendly inputs on mobile (44px) ── */
+  input[type="text"], input[type="email"], input[type="number"], input[type="tel"], input[type="password"], input[type="search"],
   input[type="date"],
   input[type="time"],
   select {

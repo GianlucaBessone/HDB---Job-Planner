@@ -10,6 +10,23 @@ const config: Config = {
     ],
     theme: {
         extend: {
+            screens: {
+                'md': '768px',
+                'lg': '1024px',
+                'xl': '1200px',
+                '2xl': '1600px',
+            },
+            fontSize: {
+                'h1-desktop': ['24px', { lineHeight: '1.25', fontWeight: '700' }],
+                'h2-desktop': ['18px', { lineHeight: '1.375', fontWeight: '600' }],
+                'h3-desktop': ['14px', { lineHeight: '1.5', fontWeight: '500' }],
+                'body-desktop': ['13px', { lineHeight: '1.5' }],
+                'secondary-desktop': ['11px', { lineHeight: '1.5' }],
+                'label-desktop': ['10px', { lineHeight: '1.5', letterSpacing: '0.05em', fontWeight: '600' }],
+            },
+            maxWidth: {
+                '1800': '1800px',
+            },
             colors: {
                 border: "hsl(var(--border))",
                 input: "hsl(var(--input))",
