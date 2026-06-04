@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 // Each VIEW_ACCESS ConfigOption stores a JSON value:
-// { key: string, label: string, roles: string[], access: 'sidebar' | 'home' | 'ambos' }
+// { key, label, description, roles, access, section, iconName, color }
 
 export async function GET() {
     try {
@@ -18,7 +18,7 @@ export async function GET() {
                 return null;
             }
         }).filter(Boolean);
-        // Merge with defaults to include any new views
+        // Merge with defaults to include any new views and enrich missing fields
         const { getViewConfig } = await import('@/lib/viewAccess');
         const merged = getViewConfig(saved);
         return NextResponse.json(merged);
@@ -30,21 +30,39 @@ export async function GET() {
 export async function PUT(req: Request) {
     try {
         const body = await req.json();
-        // body is an array of { key, label, roles, access }
-        const views: Array<{ key: string; label: string; roles: string[]; access: string }> = body;
+        // body is an array of ViewConfig objects
+        const views: Array<{
+            key: string;
+            label: string;
+            description: string;
+            roles: string[];
+            access: string;
+            section: string;
+            iconName: string;
+            color: string;
+        }> = body;
 
         // Delete all existing VIEW_ACCESS entries
         await prisma.configOption.deleteMany({
             where: { category: 'VIEW_ACCESS' }
         });
 
-        // Create new entries
+        // Create new entries with all fields
         for (let i = 0; i < views.length; i++) {
             const v = views[i];
             await prisma.configOption.create({
                 data: {
                     category: 'VIEW_ACCESS',
-                    value: JSON.stringify({ key: v.key, label: v.label, roles: v.roles, access: v.access }),
+                    value: JSON.stringify({
+                        key: v.key,
+                        label: v.label,
+                        description: v.description || '',
+                        roles: v.roles,
+                        access: v.access,
+                        section: v.section || 'administracion',
+                        iconName: v.iconName || 'ClipboardList',
+                        color: v.color || 'bg-slate-500',
+                    }),
                     active: true,
                     order: i
                 }

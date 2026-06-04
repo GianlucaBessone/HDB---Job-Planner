@@ -1,32 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-    Clock,
-    Briefcase,
-    ClipboardCheck,
-    TrendingUp,
-    Bell,
-    CalendarCheck,
-    BarChart3,
-    Activity,
-    AlertTriangle,
-    Settings,
-    Home,
-    Package,
-    MapPin,
-    User as UserIcon,
-    FileSignature,
-    History as HistoryIcon,
-    Wrench,
-    ShieldCheck,
-    Bot,
-    BookOpen,
-    FileCheck
-} from 'lucide-react';
+import { Home, ChevronDown, ChevronUp, Pencil, X, Star, Clock as ClockIcon, GripVertical, Trash2 } from 'lucide-react';
 import Link from 'next/link';
-import { ViewConfig, isViewAllowed } from '@/lib/viewAccess';
+import {
+    ViewConfig, isViewAllowed, DEFAULT_VIEWS, DEFAULT_SECTIONS,
+    groupViewsBySection, getViewConfig
+} from '@/lib/viewAccess';
+import { renderIcon } from '@/lib/iconRegistry';
+import {
+    getRecentViews, getFavorites, setFavorites as saveFavorites,
+    getHomePrefs, setHomePrefs, HomePrefs
+} from '@/lib/viewPreferences';
 import TechAssistantChat from '@/components/TechAssistantChat';
 
 export default function HomePage() {
@@ -34,12 +20,13 @@ export default function HomePage() {
     const [userRole, setUserRole] = useState<string | null>(null);
     const [userName, setUserName] = useState<string>('');
     const [userData, setUserData] = useState<any>(null);
+    const [userId, setUserId] = useState<string>('default');
 
     const [viewConfig, setViewConfig] = useState<ViewConfig[] | null>(() => {
         if (typeof window !== 'undefined') {
             const cached = localStorage.getItem('cachedViewConfig');
             if (cached) {
-                try { return JSON.parse(cached); } catch { return null; }
+                try { return getViewConfig(JSON.parse(cached)); } catch { return null; }
             }
         }
         return null;
@@ -53,6 +40,13 @@ export default function HomePage() {
         return '1';
     });
 
+    const [editMode, setEditMode] = useState(false);
+    const [favorites, setFavoritesLocal] = useState<string[]>([]);
+    const [recentKeys, setRecentKeys] = useState<string[]>([]);
+    const [prefs, setPrefs] = useState<HomePrefs>({ showRecents: true, showFavorites: true });
+    const [recentsExpanded, setRecentsExpanded] = useState(false);
+    const [dragOverFavorites, setDragOverFavorites] = useState(false);
+
     useEffect(() => {
         localStorage.setItem('hdb_card_scale', cardScale);
     }, [cardScale]);
@@ -65,6 +59,11 @@ export default function HomePage() {
                 setUserData(user);
                 setUserRole(user.role?.toLowerCase() || 'operador');
                 setUserName(user.nombreCompleto || 'Usuario');
+                const uid = user.legajo || 'default';
+                setUserId(uid);
+                setFavoritesLocal(getFavorites(uid));
+                setRecentKeys(getRecentViews(uid));
+                setPrefs(getHomePrefs(uid));
             } catch (e) {
                 // Ignore
             }
@@ -82,8 +81,60 @@ export default function HomePage() {
     }, [router]);
 
     const role = userRole?.trim().toLowerCase() || 'operador';
+    const effectiveViews = viewConfig && viewConfig.length > 0 ? viewConfig : DEFAULT_VIEWS;
+    const show = (key: string) => isViewAllowed(key, role, 'home', effectiveViews);
 
-    const show = (href: string) => isViewAllowed(href, role, 'home', viewConfig);
+    // Get view by key
+    const getView = (key: string) => effectiveViews.find(v => v.key === key);
+
+    // Favorites management
+    const addFavorite = useCallback((key: string) => {
+        setFavoritesLocal(prev => {
+            if (prev.includes(key)) return prev;
+            const next = [...prev, key];
+            saveFavorites(userId, next);
+            return next;
+        });
+    }, [userId]);
+
+    const removeFavorite = useCallback((key: string) => {
+        setFavoritesLocal(prev => {
+            const next = prev.filter(k => k !== key);
+            saveFavorites(userId, next);
+            return next;
+        });
+    }, [userId]);
+
+    const togglePref = useCallback((key: keyof HomePrefs) => {
+        setPrefs(prev => {
+            const next = { ...prev, [key]: !prev[key] };
+            setHomePrefs(userId, next);
+            return next;
+        });
+    }, [userId]);
+
+    // Drag handlers
+    const handleDragStart = (e: React.DragEvent, viewKey: string) => {
+        e.dataTransfer.setData('text/plain', viewKey);
+        e.dataTransfer.effectAllowed = 'copy';
+    };
+
+    const handleDragOverFavorites = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+        setDragOverFavorites(true);
+    };
+
+    const handleDragLeaveFavorites = () => {
+        setDragOverFavorites(false);
+    };
+
+    const handleDropFavorites = (e: React.DragEvent) => {
+        e.preventDefault();
+        setDragOverFavorites(false);
+        const key = e.dataTransfer.getData('text/plain');
+        if (key) addFavorite(key);
+    };
 
     const getGridClass = (scale: '0.5' | '1' | '2') => {
         if (scale === '0.5') {
@@ -103,13 +154,22 @@ export default function HomePage() {
         );
     }
 
-    const hasOperaciones = show('/fichado') || show('/timesheets') || show('/herramientas') || show('/my-projects') || show('/delays');
-    const hasGestion = show('/aprobaciones') || show('/planning') || show('/projects') || show('/ordenes-servicio') || show('/provision-materiales') || show('/clients');
-    const hasCalidad = show('/calidad') || show('/capacitacion') || show('/auditoria-ia') || show('/gestion-sugerencias');
-    const hasAdmin = show('/dashboard') || show('/operators') || show('/auditoria') || show('/configuracion') || show('/notifications');
+    // Build section groups
+    const grouped = groupViewsBySection(effectiveViews, role, 'home');
+
+    // Recents
+    const recentViews = recentKeys
+        .map(key => getView(key))
+        .filter((v): v is ViewConfig => !!v && show(v.key));
+
+    // Favorites
+    const favoriteViews = favorites
+        .map(key => getView(key))
+        .filter((v): v is ViewConfig => !!v && show(v.key));
 
     return (
         <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
+            {/* Header with controls */}
             <div className="flex flex-row justify-between items-center gap-2 md:gap-4 w-full">
                 <div className="space-y-0.5 min-w-0">
                     <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-1.5 sm:gap-2 md:gap-3 truncate">
@@ -119,212 +179,197 @@ export default function HomePage() {
                     <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium tracking-tight uppercase tracking-widest font-black leading-none">{role}</p>
                 </div>
 
-                {/* Selector de tamaño premium - compacto y a la misma altura en mobile */}
-                <div className="flex items-center bg-slate-100 dark:bg-slate-900/60 p-0.5 sm:p-1 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-800 shadow-inner shrink-0 gap-0.5 self-center">
-                    {(['0.5', '1', '2'] as const).map((s) => {
-                        const isActive = cardScale === s;
-                        return (
-                            <button
-                                key={s}
-                                onClick={() => setCardScale(s)}
-                                className={`
-                                    w-8 h-6 sm:w-11 sm:h-7 flex items-center justify-center text-[10px] sm:text-xs font-black tracking-wider transition-all duration-300 active:scale-95 rounded-md sm:rounded-lg btn-icon-inline !min-h-0
-                                    ${isActive
-                                        ? 'bg-primary text-white shadow-sm shadow-primary/20 scale-105 border border-primary/10 -translate-y-[0.5px] sm:-translate-y-[1px] font-black'
-                                        : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 font-extrabold'
-                                    }
-                                `}
-                            >
-                                x{s}
-                            </button>
-                        );
-                    })}
+                <div className="flex items-center gap-2 shrink-0">
+                    {/* Zoom selector */}
+                    <div className="flex items-center bg-slate-100 dark:bg-slate-900/60 p-0.5 sm:p-1 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-800 shadow-inner gap-0.5">
+                        {(['0.5', '1', '2'] as const).map((s) => {
+                            const isActive = cardScale === s;
+                            return (
+                                <button
+                                    key={s}
+                                    onClick={() => setCardScale(s)}
+                                    className={`
+                                        w-8 h-6 sm:w-11 sm:h-7 flex items-center justify-center text-[10px] sm:text-xs font-black tracking-wider transition-all duration-300 active:scale-95 rounded-md sm:rounded-lg btn-icon-inline !min-h-0
+                                        ${isActive
+                                            ? 'bg-primary text-white shadow-sm shadow-primary/20 scale-105 border border-primary/10 -translate-y-[0.5px] sm:-translate-y-[1px] font-black'
+                                            : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 font-extrabold'
+                                        }
+                                    `}
+                                >
+                                    x{s}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {/* Edit mode toggle */}
+                    <button
+                        onClick={() => setEditMode(!editMode)}
+                        className={`p-2 rounded-xl transition-all duration-300 active:scale-95 ${
+                            editMode
+                                ? 'bg-primary text-white shadow-md shadow-primary/20'
+                                : 'bg-slate-100 dark:bg-slate-900/60 text-slate-400 dark:text-slate-500 hover:text-primary border border-slate-200 dark:border-slate-800'
+                        }`}
+                        title="Personalizar inicio"
+                    >
+                        {editMode ? <X className="w-4 h-4" /> : <Pencil className="w-4 h-4" />}
+                    </button>
                 </div>
             </div>
 
-            {hasOperaciones && (
-                <div className="space-y-6">
-                    <h3 className="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 animate-in fade-in duration-300">Operaciones</h3>
-                    <div className={getGridClass(cardScale)}>
-                        {show('/fichado') && <ActionCard
-                            title="Fichado GPS/QR"
-                            description="Iniciar/Finalizar jornada"
-                            icon={<MapPin className="w-6 h-6" />}
-                            href="/fichado"
-                            color="bg-emerald-500"
-                            scale={cardScale}
-                        />}
-                        {show('/timesheets') && <ActionCard
-                            title="Registro de Tiempos"
-                            description="Tus horas trabajadas"
-                            icon={<Clock className="w-6 h-6" />}
-                            href="/timesheets"
-                            color="bg-primary"
-                            scale={cardScale}
-                        />}
-                        {show('/herramientas') && <ActionCard
-                            title="Herramientas y Carros"
-                            description="Retiro, devolución y verificación"
-                            icon={<Wrench className="w-6 h-6" />}
-                            href="/herramientas?tab=retiros"
-                            color="bg-slate-600"
-                            scale={cardScale}
-                        />}
-                        {show('/my-projects') && <ActionCard
-                            title="Mis Proyectos"
-                            description="Proyectos a tu cargo"
-                            icon={<Briefcase className="w-6 h-6" />}
-                            href="/my-projects"
-                            color="bg-indigo-500"
-                            scale={cardScale}
-                        />}
-                        {show('/delays') && <ActionCard
-                            title="Demoras del Cliente"
-                            description="Registro de inconvenientes"
-                            icon={<AlertTriangle className="w-6 h-6" />}
-                            href="/delays"
-                            color="bg-amber-500"
-                            scale={cardScale}
-                        />}
+            {/* Edit mode controls */}
+            {editMode && (
+                <div className="bg-primary/5 dark:bg-primary/10 border border-primary/20 rounded-2xl p-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <p className="text-xs font-black text-primary uppercase tracking-widest">Personalizar Inicio</p>
+                    <div className="flex flex-wrap gap-3">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={prefs.showRecents}
+                                onChange={() => togglePref('showRecents')}
+                                className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary"
+                            />
+                            <span className="text-sm font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                                <ClockIcon className="w-3.5 h-3.5" /> Recientes
+                            </span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={prefs.showFavorites}
+                                onChange={() => togglePref('showFavorites')}
+                                className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary"
+                            />
+                            <span className="text-sm font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                                <Star className="w-3.5 h-3.5" /> Favoritos
+                            </span>
+                        </label>
                     </div>
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                        Arrastrá las tarjetas a la sección de Favoritos para agregarlas.
+                    </p>
                 </div>
             )}
 
-            {hasGestion && (
-                <div className="space-y-6">
-                    <h3 className="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 animate-in fade-in duration-300">Gestión y Seguimiento</h3>
-                    <div className={getGridClass(cardScale)}>
-                        {show('/aprobaciones') && <ActionCard
-                            title="Aprobaciones"
-                            description="Validar fichadas de riesgo"
-                            icon={<ClipboardCheck className="w-6 h-6" />}
-                            href="/aprobaciones"
-                            color="bg-teal-600"
-                            scale={cardScale}
-                        />}
-                        {show('/planning') && <ActionCard
-                            title="Planificación"
-                            description="Agenda y cronograma"
-                            icon={<CalendarCheck className="w-6 h-6" />}
-                            href="/planning"
-                            color="bg-violet-600"
-                            scale={cardScale}
-                        />}
-                        {show('/projects') && <ActionCard
-                            title="Gestión de Proyectos"
-                            description="Proyectos activos"
-                            icon={<Briefcase className="w-6 h-6" />}
-                            href="/projects"
-                            color="bg-indigo-500"
-                            scale={cardScale}
-                        />}
-                        {show('/ordenes-servicio') && <ActionCard
-                            title="Órdenes de Servicio"
-                            description="Gestión y firmas"
-                            icon={<FileSignature className="w-6 h-6" />}
-                            href="/ordenes-servicio"
-                            color="bg-blue-600"
-                            scale={cardScale}
-                        />}
-                        {show('/provision-materiales') && <ActionCard
-                            title="Provisión de Materiales"
-                            description="Gestión de suministros"
-                            icon={<Package className="w-6 h-6" />}
-                            href="/provision-materiales"
-                            color="bg-orange-500"
-                            scale={cardScale}
-                        />}
-                        {show('/clients') && <ActionCard
-                            title="Gestión de Clientes"
-                            description="Base de datos de clientes"
-                            icon={<Activity className="w-6 h-6" />}
-                            href="/clients"
-                            color="bg-indigo-500"
-                            scale={cardScale}
-                        />}
-                    </div>
+            {/* Recents section — collapsible */}
+            {prefs.showRecents && recentViews.length > 0 && (
+                <div className="space-y-2">
+                    <button
+                        onClick={() => setRecentsExpanded(!recentsExpanded)}
+                        className="flex items-center gap-2 text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 hover:text-primary transition-colors group w-full text-left"
+                    >
+                        <ClockIcon className="w-4 h-4" />
+                        <span>Recientes</span>
+                        <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 px-1.5 py-0.5 rounded-md">{recentViews.length}</span>
+                        {recentsExpanded
+                            ? <ChevronUp className="w-4 h-4 ml-auto" />
+                            : <ChevronDown className="w-4 h-4 ml-auto" />
+                        }
+                    </button>
+                    {recentsExpanded && (
+                        <div className={`${getGridClass(cardScale)} animate-in fade-in slide-in-from-top-2 duration-300`}>
+                            {recentViews.map(v => (
+                                <ActionCard
+                                    key={`recent-${v.key}`}
+                                    view={v}
+                                    scale={cardScale}
+                                    editMode={editMode}
+                                    onDragStart={handleDragStart}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 
-            {hasCalidad && (
-                <div className="space-y-6">
-                    <h3 className="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 animate-in fade-in duration-300">Calidad</h3>
-                    <div className={getGridClass(cardScale)}>
-                        {show('/calidad') && <ActionCard
-                            title="Calidad y QMS"
-                            description="Gestión documental ISO"
-                            icon={<FileCheck className="w-6 h-6" />}
-                            href="/calidad"
-                            color="bg-emerald-600"
-                            scale={cardScale}
-                        />}
-                        {show('/capacitacion') && <ActionCard
-                            title="Formación Integral"
-                            description="Capacitación y competencias"
-                            icon={<BookOpen className="w-6 h-6" />}
-                            href="/capacitacion"
-                            color="bg-sky-600"
-                            scale={cardScale}
-                        />}
-                        {show('/auditoria-ia') && <ActionCard
-                            title="Auditoría de IA"
-                            description="Validación inteligente"
-                            icon={<Bot className="w-6 h-6" />}
-                            href="/auditoria-ia"
-                            color="bg-fuchsia-600"
-                            scale={cardScale}
-                        />}
-                    </div>
+            {/* Favorites section */}
+            {prefs.showFavorites && (
+                <div className="space-y-2">
+                    {(favoriteViews.length > 0 || editMode) && (
+                        <>
+                            <div className="flex items-center gap-2 px-1">
+                                <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                                <span className="text-sm font-black text-amber-500 uppercase tracking-widest">Favoritos</span>
+                                {favoriteViews.length > 0 && (
+                                    <span className="text-[10px] font-bold bg-amber-50 dark:bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded-md">{favoriteViews.length}</span>
+                                )}
+                            </div>
+
+                            {editMode && (
+                                <div
+                                    onDragOver={handleDragOverFavorites}
+                                    onDragLeave={handleDragLeaveFavorites}
+                                    onDrop={handleDropFavorites}
+                                    className={`min-h-[80px] rounded-2xl border-2 border-dashed transition-all duration-300 flex items-center justify-center ${
+                                        dragOverFavorites
+                                            ? 'border-amber-400 bg-amber-50/50 dark:bg-amber-500/5 scale-[1.01]'
+                                            : 'border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30'
+                                    } ${favoriteViews.length > 0 ? 'p-3' : 'p-6'}`}
+                                >
+                                    {favoriteViews.length === 0 ? (
+                                        <p className="text-sm text-slate-400 dark:text-slate-500 font-medium text-center">
+                                            Arrastrá tarjetas aquí para agregarlas a favoritos
+                                        </p>
+                                    ) : (
+                                        <div className={`${getGridClass(cardScale)} w-full`}>
+                                            {favoriteViews.map(v => (
+                                                <div key={`fav-${v.key}`} className="relative group/fav">
+                                                    <ActionCard
+                                                        view={v}
+                                                        scale={cardScale}
+                                                        editMode={false}
+                                                        onDragStart={handleDragStart}
+                                                    />
+                                                    <button
+                                                        onClick={() => removeFavorite(v.key)}
+                                                        className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white rounded-full p-1 shadow-lg opacity-0 group-hover/fav:opacity-100 transition-all duration-200 hover:scale-110 z-10"
+                                                    >
+                                                        <Trash2 className="w-3 h-3" />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {!editMode && favoriteViews.length > 0 && (
+                                <div className={getGridClass(cardScale)}>
+                                    {favoriteViews.map(v => (
+                                        <ActionCard
+                                            key={`fav-${v.key}`}
+                                            view={v}
+                                            scale={cardScale}
+                                            editMode={false}
+                                            onDragStart={handleDragStart}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </>
+                    )}
                 </div>
             )}
 
-            {hasAdmin && (
-                <div className="space-y-6">
-                    <h3 className="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 animate-in fade-in duration-300">Administración</h3>
+            {/* Section groups — dynamically from config */}
+            {grouped.map(({ section, views: sectionViews }) => (
+                <div key={section.key} className="space-y-6">
+                    <h3 className="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 animate-in fade-in duration-300">
+                        {section.label}
+                    </h3>
                     <div className={getGridClass(cardScale)}>
-                        {show('/dashboard') && <ActionCard
-                            title="Panel de Análisis"
-                            description="Métricas globales"
-                            icon={<BarChart3 className="w-6 h-6" />}
-                            href="/dashboard"
-                            color="bg-cyan-600"
-                            scale={cardScale}
-                        />}
-                        {show('/operators') && <ActionCard
-                            title="Gestión de Usuarios"
-                            description="Operadores y permisos"
-                            icon={<UserIcon className="w-6 h-6" />}
-                            href="/operators"
-                            color="bg-slate-700"
-                            scale={cardScale}
-                        />}
-                        {show('/auditoria') && <ActionCard
-                            title="Registro Auditoría"
-                            description="Trazabilidad total"
-                            icon={<HistoryIcon className="w-6 h-6" />}
-                            href="/auditoria"
-                            color="bg-slate-900"
-                            scale={cardScale}
-                        />}
-                        {show('/configuracion') && <ActionCard
-                            title="Configuración"
-                            description="Ajustes de sistema"
-                            icon={<Settings className="w-6 h-6" />}
-                            href="/configuracion"
-                            color="bg-slate-400"
-                            scale={cardScale}
-                        />}
-                        {show('/notifications') && <ActionCard
-                            title="Notificaciones"
-                            description="Novedades y alertas"
-                            icon={<Bell className="w-6 h-6" />}
-                            href="/notifications"
-                            color="bg-rose-500"
-                            scale={cardScale}
-                        />}
+                        {sectionViews.map(v => (
+                            <ActionCard
+                                key={v.key}
+                                view={v}
+                                scale={cardScale}
+                                editMode={editMode}
+                                onDragStart={handleDragStart}
+                            />
+                        ))}
                     </div>
                 </div>
-            )}
+            ))}
             
             {userData && (
                 <TechAssistantChat user={userData} />
@@ -333,10 +378,16 @@ export default function HomePage() {
     );
 }
 
-function ActionCard({ title, description, icon, href, color, scale }: { title: string, description: string, icon: React.ReactNode, href: string, color: string, scale: '0.5' | '1' | '2' }) {
-    // Styling variables based on scale
+// ── ActionCard ─────────────────────────────────────────────────────
+
+function ActionCard({ view, scale, editMode, onDragStart }: {
+    view: ViewConfig;
+    scale: '0.5' | '1' | '2';
+    editMode: boolean;
+    onDragStart: (e: React.DragEvent, key: string) => void;
+}) {
     let containerClass = "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 flex flex-row items-center h-full outline-primary focus-visible:ring-4 focus-visible:ring-primary/20 overflow-hidden";
-    let iconWrapperClass = `${color} text-white shadow-lg group-hover:scale-110 transition-transform shrink-0`;
+    let iconWrapperClass = `${view.color} text-white shadow-lg group-hover:scale-110 transition-transform shrink-0`;
     let titleClass = "font-extrabold text-slate-800 dark:text-slate-100 leading-tight group-hover:text-primary transition-colors";
     let descClass = "font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider line-clamp-2";
     let textContainerClass = "flex-1 min-w-0";
@@ -354,7 +405,6 @@ function ActionCard({ title, description, icon, href, color, scale }: { title: s
         descClass += " text-xs md:text-sm";
         textContainerClass += " space-y-1.5 md:space-y-2";
     } else {
-        // scale === '1' (default)
         containerClass += " p-4 md:p-6 rounded-2xl md:rounded-[2rem] gap-3 md:gap-4";
         iconWrapperClass += " p-3 md:p-4 rounded-xl md:rounded-2xl [&_svg]:w-6 [&_svg]:h-6";
         titleClass += " text-base md:text-lg";
@@ -362,17 +412,40 @@ function ActionCard({ title, description, icon, href, color, scale }: { title: s
         textContainerClass += " space-y-0.5 md:space-y-1";
     }
 
-    return (
-        <Link href={href} className="group relative block focus:outline-none">
-            <div className={containerClass}>
-                <div className={iconWrapperClass}>
-                    {icon}
-                </div>
-                <div className={textContainerClass}>
-                    <h4 className={titleClass}>{title}</h4>
-                    <p className={descClass}>{description}</p>
-                </div>
+    if (editMode) {
+        containerClass += " cursor-grab active:cursor-grabbing ring-2 ring-transparent hover:ring-primary/30";
+    }
+
+    const card = (
+        <div className={containerClass}>
+            {editMode && (
+                <GripVertical className="w-4 h-4 text-slate-300 dark:text-slate-600 shrink-0" />
+            )}
+            <div className={iconWrapperClass}>
+                {renderIcon(view.iconName, scale === '0.5' ? 'w-4 h-4' : scale === '2' ? 'w-8 h-8' : 'w-6 h-6')}
             </div>
+            <div className={textContainerClass}>
+                <h4 className={titleClass}>{view.label}</h4>
+                <p className={descClass}>{view.description}</p>
+            </div>
+        </div>
+    );
+
+    if (editMode) {
+        return (
+            <div
+                draggable
+                onDragStart={(e) => onDragStart(e, view.key)}
+                className="group relative block focus:outline-none"
+            >
+                {card}
+            </div>
+        );
+    }
+
+    return (
+        <Link href={view.key} className="group relative block focus:outline-none">
+            {card}
         </Link>
     );
 }

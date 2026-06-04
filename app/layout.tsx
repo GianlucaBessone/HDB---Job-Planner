@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { ViewConfig, isViewAllowed } from '@/lib/viewAccess';
+import { ViewConfig, isViewAllowed, DEFAULT_VIEWS, DEFAULT_SECTIONS, groupViewsBySection, getViewConfig } from '@/lib/viewAccess';
+import { trackRecentView, getFavorites, getSidebarFavorites, setSidebarFavorites } from '@/lib/viewPreferences';
+import { renderIcon } from '@/lib/iconRegistry';
 import "./globals.css";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Script from "next/script";
-import { Calendar, LayoutGrid, Users, ClipboardList, Menu, X, Landmark, LayoutDashboard, Timer, Clock, LogOut, Home, Settings, FileSignature, Package, PackageSearch, MapPin, ShieldAlert, ShieldCheck, History, Wrench, FileCheck, ChevronDown, ChevronRight, BookOpen, Sparkles, Lightbulb } from "lucide-react";
+import { ClipboardList, Menu, X, LogOut, Home, ChevronDown, Star, Search } from "lucide-react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import ToastContainer from "@/components/Toast";
@@ -18,6 +20,7 @@ import SyncIndicator from "@/components/SyncIndicator";
 import { Loader2, BellRing } from "lucide-react";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import ViewSearch from "@/components/ViewSearch";
 
 
 export default function RootLayout({
@@ -30,6 +33,16 @@ export default function RootLayout({
     const [isCheckingAuth, setIsCheckingAuth] = useState(true);
     const [isOnline, setIsOnline] = useState(true);
 
+    const [viewConfig, setViewConfig] = useState<ViewConfig[] | null>(() => {
+        if (typeof window !== 'undefined') {
+            const cached = localStorage.getItem('cachedViewConfig');
+            if (cached) {
+                try { return getViewConfig(JSON.parse(cached)); } catch { return null; }
+            }
+        }
+        return null;
+    });
+
     const router = useRouter();
     const pathname = usePathname();
 
@@ -37,6 +50,13 @@ export default function RootLayout({
     useEffect(() => {
         setIsSidebarOpen(false);
     }, [pathname]);
+
+    // Track recent views
+    useEffect(() => {
+        if (currentUser?.legajo && pathname) {
+            trackRecentView(pathname, currentUser.legajo);
+        }
+    }, [pathname, currentUser?.legajo]);
 
     const handleLoginSuccess = (user: any) => {
         setCurrentUser(user);
@@ -69,11 +89,29 @@ export default function RootLayout({
         };
     }, []);
 
+    // Fetch view config from API
+    useEffect(() => {
+        fetch('/api/config/views')
+            .then(r => r.json())
+            .then(data => {
+                if (Array.isArray(data) && data.length > 0) {
+                    setViewConfig(data);
+                    localStorage.setItem('cachedViewConfig', JSON.stringify(data));
+                }
+            })
+            .catch(() => {});
+    }, []);
+
+
+
     const isPublicPage = pathname ? (
         pathname.includes('/report') || 
         pathname.startsWith('/os/') || 
         pathname.startsWith('/ideas-sugerencias-reclamos')
     ) : false;
+
+    const role = currentUser?.role?.toLowerCase() || 'operador';
+    const effectiveViews = viewConfig && viewConfig.length > 0 ? viewConfig : DEFAULT_VIEWS;
 
     let content;
     if (isCheckingAuth) {
@@ -146,6 +184,18 @@ export default function RootLayout({
                         </div>
                         {/* Mobile Logo version if needed or right-aligned items can go here */}
                         <div className="flex items-center gap-2 md:gap-4">
+                            {/* SAP-style Search trigger */}
+                            <button
+                                onClick={() => {
+                                    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }));
+                                }}
+                                className="flex items-center gap-2 px-2.5 py-1.5 sm:px-3 sm:py-2 bg-slate-100 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-400 dark:text-slate-500 transition-all"
+                            >
+                                <Search className="w-4 h-4" />
+                                <span className="hidden sm:inline font-medium text-xs">Buscar…</span>
+                                <kbd className="hidden sm:inline ml-1 px-1.5 py-0.5 bg-white dark:bg-slate-600 border border-slate-200 dark:border-slate-500 rounded text-[10px] font-bold shadow-sm">⌘K</kbd>
+                            </button>
+
                             <Link href="/" className="flex items-center gap-2 md:hidden hover:opacity-80 transition-opacity">
                                 <span className="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-100">
                                     HDB<span className="text-primary">SGI</span>
@@ -168,6 +218,7 @@ export default function RootLayout({
                     isOpen={isSidebarOpen}
                     onClose={() => setIsSidebarOpen(false)}
                     user={currentUser}
+                    views={effectiveViews}
                     onLogout={() => {
                         localStorage.removeItem('currentUser');
                         setCurrentUser(null);
@@ -213,6 +264,13 @@ export default function RootLayout({
             <body className="font-sans min-h-[100dvh] bg-slate-50/50 dark:bg-slate-900 overscroll-none text-slate-900 dark:text-slate-100" style={{ fontFamily: '"Outfit", sans-serif' }}>
                 <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
                     {content}
+                    {/* Global View Search — available when logged in */}
+                    {currentUser && (
+                        <ViewSearch
+                            views={effectiveViews}
+                            role={role}
+                        />
+                    )}
                     <Analytics />
                 </ThemeProvider>
             </body>
@@ -220,110 +278,53 @@ export default function RootLayout({
     );
 }
 
-function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose: () => void; user: any; onLogout: () => void }) {
+// ── Sidebar ────────────────────────────────────────────────────────
+
+function Sidebar({ isOpen, onClose, user, views, onLogout }: {
+    isOpen: boolean;
+    onClose: () => void;
+    user: any;
+    views: ViewConfig[];
+    onLogout: () => void;
+}) {
     const pathname = usePathname();
-    const [viewConfig, setViewConfig] = useState<ViewConfig[] | null>(() => {
-        if (typeof window !== 'undefined') {
-            const cached = localStorage.getItem('cachedViewConfig');
-            if (cached) {
-                try { return JSON.parse(cached); } catch { return null; }
-            }
-        }
-        return null;
-    });
+    const role = user?.role?.toLowerCase() || 'operador';
+    const userId = user?.legajo || 'default';
 
+    const [showFavorites, setShowFavorites] = useState(() => getSidebarFavorites(userId));
+    const [favorites, setFavoritesState] = useState<string[]>(() => getFavorites(userId));
+
+    // Refresh favorites when sidebar opens
     useEffect(() => {
-        fetch('/api/config/views')
-            .then(r => r.json())
-            .then(data => {
-                if (Array.isArray(data) && data.length > 0) {
-                    setViewConfig(data);
-                    localStorage.setItem('cachedViewConfig', JSON.stringify(data));
-                }
-            })
-            .catch(() => {});
-    }, []);
+        if (isOpen) {
+            setFavoritesState(getFavorites(userId));
+            setShowFavorites(getSidebarFavorites(userId));
+        }
+    }, [isOpen, userId]);
 
-    const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
-        "Principal": true,
-        "Operaciones": false,
-        "Gestión y Seguimiento": false,
-        "Logística y Materiales": false,
-        "Calidad": false,
-        "Administración": false
-    });
-
-    const toggleGroup = (title: string) => {
-        setExpandedGroups(prev => ({ ...prev, [title]: !prev[title] }));
+    const toggleFavorites = () => {
+        const next = !showFavorites;
+        setShowFavorites(next);
+        setSidebarFavorites(userId, next);
     };
 
-    const menuGroups = [
-        {
-            title: "Principal",
-            icon: <Home className="w-5 h-5" />,
-            items: [
-                { href: '/', icon: <Home className="w-4 h-4" />, label: 'Inicio', roles: ['operador', 'supervisor', 'admin', 'qa', 'vendedor'] },
-                { href: '/dashboard', icon: <LayoutDashboard className="w-4 h-4" />, label: 'Panel de Análisis', roles: ['supervisor', 'admin', 'qa'] },
-            ]
-        },
-        {
-            title: "Operaciones",
-            icon: <Wrench className="w-5 h-5" />,
-            items: [
-                { href: '/fichado', icon: <MapPin className="w-4 h-4" />, label: 'Fichado (GPS/QR)', roles: ['operador', 'supervisor'] },
-                { href: '/timesheets', icon: <Clock className="w-4 h-4" />, label: 'Registro de Tiempos', roles: ['operador', 'supervisor', 'admin', 'qa'] },
-                { href: '/my-projects', icon: <ClipboardList className="w-4 h-4" />, label: 'Mis Proyectos (Resp.)', roles: ['operador', 'supervisor', 'admin', 'qa'] },
-                { href: '/delays', icon: <Timer className="w-4 h-4" />, label: 'Demoras del Cliente', roles: ['operador', 'supervisor', 'admin', 'qa'] },
-                { href: '/herramientas', icon: <Wrench className="w-4 h-4" />, label: 'Herramientas y Carros', roles: ['operador', 'supervisor', 'admin', 'qa'] },
-            ]
-        },
-        {
-            title: "Gestión y Seguimiento",
-            icon: <LayoutGrid className="w-5 h-5" />,
-            items: [
-                { href: '/planning', icon: <Calendar className="w-4 h-4" />, label: 'Planificación', roles: ['supervisor', 'admin', 'qa'] },
-                { href: '/projects', icon: <LayoutGrid className="w-4 h-4" />, label: 'Gestión de Proyectos', roles: ['supervisor', 'admin', 'qa'] },
-                { href: '/ordenes-servicio', icon: <FileSignature className="w-4 h-4" />, label: 'Órdenes de Servicio', roles: ['supervisor', 'admin', 'qa'] },
-                { href: '/monitoreo-fichadas', icon: <ShieldAlert className="w-4 h-4" />, label: 'Monitoreo de Fichadas', roles: ['supervisor', 'admin', 'qa'] },
-                { href: '/aprobaciones', icon: <ShieldCheck className="w-4 h-4" />, label: 'Aprobaciones', roles: ['supervisor', 'admin', 'qa'] },
-            ]
-        },
-        {
-            title: "Logística y Materiales",
-            icon: <Package className="w-5 h-5" />,
-            items: [
-                { href: '/inventario', icon: <PackageSearch className="w-4 h-4" />, label: 'Inventario de Materiales', roles: ['admin', 'qa', 'vendedor'] },
-                { href: '/provision-materiales', icon: <Package className="w-4 h-4" />, label: 'Provisión de Materiales', roles: ['vendedor', 'supervisor', 'admin', 'qa'] },
-            ]
-        },
-        {
-            title: "Calidad",
-            icon: <FileCheck className="w-5 h-5" />,
-            items: [
-                { href: '/calidad', icon: <FileCheck className="w-4 h-4" />, label: 'Calidad y Documentación', roles: ['admin', 'qa', 'supervisor'] },
-                { href: '/gestion-sugerencias', icon: <Lightbulb className="w-4 h-4" />, label: 'Gestión de Sugerencias', roles: ['admin', 'qa', 'supervisor'] },
-                { href: '/capacitacion', icon: <BookOpen className="w-4 h-4" />, label: 'Formación Integral', roles: ['operador', 'supervisor', 'admin', 'qa'] },
-                { href: '/auditoria', icon: <History className="w-4 h-4" />, label: 'Auditoría', roles: ['admin', 'qa', 'supervisor'] },
-                { href: '/auditoria-ia', icon: <Sparkles className="w-4 h-4" />, label: 'Auditoría de IA', roles: ['admin', 'qa', 'supervisor'] },
-            ]
-        },
-        {
-            title: "Administración",
-            icon: <Settings className="w-5 h-5" />,
-            items: [
-                { href: '/operators', icon: <Users className="w-4 h-4" />, label: 'Gestión de Operadores', roles: ['operador', 'supervisor', 'admin', 'qa'] },
-                { href: '/clients', icon: <Landmark className="w-4 h-4" />, label: 'Gestión de Clientes', roles: ['supervisor', 'admin', 'qa'] },
-                { href: '/configuracion', icon: <Settings className="w-4 h-4" />, label: 'Configuración', roles: ['admin', 'qa', 'supervisor'] },
-            ]
-        }
-    ];
+    const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
+        const initial: Record<string, boolean> = {};
+        DEFAULT_SECTIONS.forEach((s, i) => { initial[s.key] = i === 0; });
+        return initial;
+    });
 
-    const role = user?.role?.toLowerCase() || 'operador';
-    
-    const allowedGroups = menuGroups.map(group => {
-        const allowedItems = group.items.filter(item => isViewAllowed(item.href, role, 'sidebar', viewConfig));
-        return { ...group, items: allowedItems };
-    }).filter(group => group.items.length > 0);
+    const toggleGroup = (key: string) => {
+        setExpandedGroups(prev => ({ ...prev, [key]: !prev[key] }));
+    };
+
+    // Build groups from centralized config — NO hardcoded roles
+    const grouped = groupViewsBySection(views, role, 'sidebar');
+
+    // Favorite views
+    const favoriteViews = favorites
+        .map(key => views.find(v => v.key === key))
+        .filter((v): v is ViewConfig => !!v && isViewAllowed(v.key, role, 'home', views));
 
     return (
         <>
@@ -348,41 +349,105 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
                 </div>
 
                 <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-                    {allowedGroups.map(group => {
-                        const isExpanded = expandedGroups[group.title];
-                        const hasActiveChild = group.items.some(item => pathname === item.href);
-                        
-                        return (
-                            <div key={group.title} className="space-y-1">
+                    {/* Inicio — always visible at top */}
+                    <Link
+                        href="/"
+                        onClick={onClose}
+                        className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                            pathname === '/'
+                                ? 'bg-primary text-white shadow-md shadow-primary/20'
+                                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200'
+                        }`}
+                    >
+                        <Home className="w-4 h-4" />
+                        Inicio
+                    </Link>
+
+                    {/* Favorites section */}
+                    {showFavorites && favoriteViews.length > 0 && (
+                        <div className="space-y-1 pt-1">
+                            <div className="flex items-center justify-between px-4 py-2">
+                                <div className="flex items-center gap-2">
+                                    <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                                    <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest">Favoritos</span>
+                                </div>
                                 <button
-                                    onClick={() => toggleGroup(group.title)}
+                                    onClick={toggleFavorites}
+                                    className="text-[9px] font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 uppercase tracking-wider"
+                                >
+                                    Ocultar
+                                </button>
+                            </div>
+                            <div className="pl-2 pr-1 space-y-0.5">
+                                {favoriteViews.map(item => {
+                                    const isActive = pathname === item.key;
+                                    return (
+                                        <Link
+                                            key={`fav-${item.key}`}
+                                            href={item.key}
+                                            onClick={onClose}
+                                            className={`flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                                                isActive
+                                                    ? 'bg-primary text-white shadow-md shadow-primary/20'
+                                                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200'
+                                            }`}
+                                        >
+                                            {renderIcon(item.iconName, 'w-4 h-4')}
+                                            <span className="truncate">{item.label}</span>
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Show favorites toggle when hidden but has favorites */}
+                    {!showFavorites && favorites.length > 0 && (
+                        <button
+                            onClick={toggleFavorites}
+                            className="flex items-center gap-2 px-4 py-2 text-[10px] font-bold text-slate-400 dark:text-slate-500 hover:text-amber-500 uppercase tracking-wider transition-colors"
+                        >
+                            <Star className="w-3.5 h-3.5" />
+                            Mostrar Favoritos ({favorites.length})
+                        </button>
+                    )}
+
+                    {/* Dynamic section groups — all from config */}
+                    {grouped.map(({ section, views: sectionViews }) => {
+                        const isExpanded = expandedGroups[section.key];
+                        const hasActiveChild = sectionViews.some(item => pathname === item.key);
+
+                        return (
+                            <div key={section.key} className="space-y-1">
+                                <button
+                                    onClick={() => toggleGroup(section.key)}
                                     className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all duration-200 ${hasActiveChild && !isExpanded
                                         ? 'bg-primary/10 text-primary dark:bg-primary/20'
                                         : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80 hover:text-primary'
-                                        }`}
+                                    }`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        {group.icon}
-                                        {group.title}
+                                        {renderIcon(section.iconName, 'w-5 h-5')}
+                                        {section.label}
                                     </div>
                                     <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                                 </button>
                                 
                                 {isExpanded && (
                                     <div className="pl-4 pr-2 space-y-1 mt-1 animate-in slide-in-from-top-2 duration-200">
-                                        {group.items.map(item => {
-                                            const isActive = pathname === item.href;
+                                        {sectionViews.map(item => {
+                                            const isActive = pathname === item.key;
                                             return (
                                                 <Link
-                                                    key={item.href}
-                                                    href={item.href}
+                                                    key={item.key}
+                                                    href={item.key}
                                                     onClick={onClose}
                                                     className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${isActive
                                                         ? 'bg-primary text-white shadow-md shadow-primary/20'
                                                         : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200'
-                                                        }`}
+                                                    }`}
                                                 >
-                                                    {item.icon}
+                                                    {renderIcon(item.iconName, 'w-4 h-4')}
                                                     {item.label}
                                                 </Link>
                                             );
@@ -395,10 +460,16 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
                 </nav>
 
                 <div className="p-6 border-t border-slate-100 dark:border-slate-800 space-y-4">
-                    <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 flex items-center justify-between">
-                        <div>
-                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 py-[2px] px-1.5 uppercase tracking-widest bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 inline-block rounded-md mb-1">{user?.role}</p>
-                            <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate max-w-[150px]" title={user?.nombreCompleto}>{user?.nombreCompleto}</p>
+                    <div className="bg-gradient-to-br from-slate-100 to-white dark:from-slate-800/80 dark:to-slate-900/50 rounded-2xl p-3 border border-slate-200/80 dark:border-slate-700/80 flex items-center gap-3 shadow-sm relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-20 h-20 bg-primary/10 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none"></div>
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary flex items-center justify-center font-black text-sm shrink-0 border border-primary/20 shadow-inner">
+                            {user?.nombreCompleto?.charAt(0)?.toUpperCase() || 'U'}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-[9px] font-black text-primary py-0.5 px-2 uppercase tracking-widest bg-primary/10 rounded-md inline-block mb-1 leading-none">{user?.role}</p>
+                            <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 truncate w-full" title={user?.nombreCompleto}>
+                                {user?.nombreCompleto}
+                            </p>
                         </div>
                     </div>
 
@@ -410,22 +481,22 @@ function Sidebar({ isOpen, onClose, user, onLogout }: { isOpen: boolean; onClose
                                 console.error("Error al solicitar permiso:", e);
                             }
                         }}
-                        className="w-full flex items-center justify-center gap-3 px-4 bg-primary/5 text-primary py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-primary/10 transition-all active:scale-95 border border-primary/10"
+                        className="w-full flex items-center justify-center gap-2 px-3 bg-primary/5 text-primary py-2.5 rounded-xl font-black text-[9px] sm:text-[10px] uppercase tracking-widest hover:bg-primary/10 transition-all active:scale-95 border border-primary/10"
                     >
                         <BellRing className="w-4 h-4 shrink-0" />
-                        <span className="text-center">Activar Notificaciones</span>
+                        <span className="text-center leading-tight">Activar Notificaciones</span>
                     </button>
 
                     <button
                         onClick={onLogout}
-                        className="w-full flex items-center justify-center gap-3 px-4 bg-rose-50 text-rose-500 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-rose-100 transition-all active:scale-95"
+                        className="w-full flex items-center justify-center gap-2 px-3 bg-rose-50 text-rose-500 py-2.5 rounded-xl font-black text-[9px] sm:text-[10px] uppercase tracking-widest hover:bg-rose-100 transition-all active:scale-95"
                     >
                         <LogOut className="w-4 h-4 shrink-0" />
                         <span>Cerrar Sesión</span>
                     </button>
 
                     <div className="text-center">
-                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500">v2.0.4 Premium</p>
+                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500">HDB SGI v2.0</p>
                     </div>
                 </div>
             </aside>
