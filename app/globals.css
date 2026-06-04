@@ -99,8 +99,8 @@
 @layer components {
 
   /* ── 0. FORM CONTROLS (DESKTOP DEFAULT 36px) ────────────────────────── */
-  input[type="text"], input[type="email"], input[type="number"], input[type="tel"], input[type="password"], input[type="search"],
-  input[type="date"], input[type="time"], select {
+  :where(input[type="text"], input[type="email"], input[type="number"], input[type="tel"], input[type="password"], input[type="search"],
+  input[type="date"], input[type="time"], select) {
     @apply h-9 px-3 text-[13px] rounded-lg;
   }
 

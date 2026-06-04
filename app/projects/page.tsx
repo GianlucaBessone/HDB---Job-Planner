@@ -70,6 +70,7 @@ import ProjectCardView from '@/components/projects/ProjectCardView';
 import ProjectSpreadsheetView from '@/components/projects/ProjectSpreadsheetView';
 import ProjectGanttView from '@/components/projects/ProjectGanttView';
 import ProjectCalendarView from '@/components/projects/ProjectCalendarView';
+import ModuleHeader from '@/components/ModuleHeader';
 
 // ── Content Component ──────────────────────────────────────────────────────────
 function ProjectsContent() {
@@ -86,6 +87,7 @@ function ProjectsContent() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [pendingFilters, setPendingFilters] = useState<Filters>(EMPTY_FILTERS);
     const [appliedFilters, setAppliedFilters] = useState<Filters>(EMPTY_FILTERS);
+    const [activeTab, setActiveTab] = useState('proyectos');
 
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
@@ -345,48 +347,45 @@ function ProjectsContent() {
 
             {/* ── Page Header ── */}
             <div className="flex flex-col gap-6 mb-8">
-                {/* Title row */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div className="space-y-1">
-                        <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
-                            <Layout className="w-6 h-6 md:w-8 md:h-8 text-primary" />
-                            Gestión de Proyectos
-                        </h2>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium hidden md:block">Control y seguimiento de proyectos activos</p>
-                    </div>
-
-                    <div className="flex items-center gap-2 w-full md:w-auto">
-                        <ProjectViewSelector 
-                            value={viewType} 
-                            onChange={(val) => {
-                                setViewType(val);
-                                localStorage.setItem(VIEW_STORAGE_KEY, val);
-                            }} 
-                        />
-                        <button
-                            onClick={openCreate}
-                            className="flex items-center gap-1.5 bg-primary text-white px-3 md:px-5 py-2.5 md:py-3.5 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-primary/90 shadow-lg shadow-primary/20 active:scale-95 transition-all shrink-0"
-                        >
-                            <Plus className="w-5 h-5" />
-                            <span className="hidden sm:inline">Nuevo Proyecto</span>
-                            <span className="sm:hidden">Nuevo</span>
-                        </button>
-                    </div>
-                </div>
-
-                {/* Filters Row */}
-                <div className="flex flex-col xl:flex-row items-stretch xl:items-center gap-4">
-                    {/* Search Field */}
-                    <div className="relative flex-1 group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500 group-focus-within:text-primary transition-colors" />
-                        <input
-                            type="text"
-                            placeholder="Buscar por nombre, código, cliente o responsable..."
-                            className="w-full h-[56px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl pl-12 pr-4 text-sm outline-none focus:ring-4 focus:ring-primary/10 transition-all font-bold text-slate-700 dark:text-slate-200 shadow-sm"
-                            value={searchTerm}
-                            onChange={e => setSearchTerm(e.target.value)}
-                        />
-                    </div>
+                <ModuleHeader
+                    title="Gestión de Proyectos"
+                    description="Control y seguimiento de proyectos activos"
+                    icon={<Layout className="w-5 h-5" />}
+                    tabs={[
+                        { id: 'dashboard', label: 'Dashboard' },
+                        { id: 'proyectos', label: 'Proyectos' },
+                        { id: 'cronograma', label: 'Cronograma' },
+                        { id: 'recursos', label: 'Recursos' },
+                        { id: 'riesgos', label: 'Riesgos' },
+                        { id: 'documentacion', label: 'Documentación' },
+                        { id: 'reportes', label: 'Reportes' },
+                    ]}
+                    activeTabId={activeTab}
+                    onTabChange={setActiveTab}
+                    actions={[
+                        {
+                            id: 'nuevo',
+                            label: 'Nuevo Proyecto',
+                            icon: <Plus className="w-4 h-4" />,
+                            variant: 'primary',
+                            onClick: openCreate,
+                            hideLabelOnMobile: true
+                        }
+                    ]}
+                    searchValue={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    searchPlaceholder="Buscar proyecto..."
+                />
+                
+                {/* View Selector and Filter Row */}
+                <div className="flex flex-col xl:flex-row justify-between items-stretch xl:items-center gap-4">
+                    <ProjectViewSelector 
+                        value={viewType} 
+                        onChange={(val) => {
+                            setViewType(val);
+                            localStorage.setItem(VIEW_STORAGE_KEY, val);
+                        }} 
+                    />
 
                     {/* Date Filters Area */}
                     <div className="flex flex-col sm:flex-row items-center gap-3">

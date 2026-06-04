@@ -98,12 +98,17 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             const reqAprApproved = workflow.aprobadorStatus === 'approved' || workflow.aprobadorStatus === 'none';
 
             let nuevoEstado = doc.estado;
+            let isMajorVersion = doc.versions.length === 0; // Default to true if no versions found (should not happen)
+            
             if (reqCreatorApproved && reqRevApproved && reqAprApproved) {
                 nuevoEstado = 'vigente';
 
                 // Promote latest version to vigente
                 if (doc.versions.length > 0) {
                     const latestVersion = doc.versions[0];
+                    if (latestVersion.versionMenor === 0) {
+                        isMajorVersion = true;
+                    }
                     await prisma.documentVersion.update({
                         where: { id: latestVersion.id },
                         data: {
@@ -163,14 +168,6 @@ export async function POST(req: Request, { params }: { params: { id: string } })
                         });
                     }
                 }
-
-                // Disparar capacitaciones automáticas (Motor de cumplimiento QMS)
-                try {
-                    const { triggerAutomaticTraining } = await import('../../../qms/compliance-engine');
-                    await triggerAutomaticTraining(doc.id);
-                } catch (qmsErr) {
-                    console.error('QMS Automatic Training Trigger Error:', qmsErr);
-                }
             }
 
             const updatedDoc = await prisma.controlledDocument.update({
@@ -180,6 +177,16 @@ export async function POST(req: Request, { params }: { params: { id: string } })
                     workflowState: workflow as any
                 }
             });
+
+            if (nuevoEstado === 'vigente' && isMajorVersion) {
+                // Disparar capacitaciones automáticas (Motor de cumplimiento QMS)
+                try {
+                    const { triggerAutomaticTraining } = await import('../../../qms/compliance-engine');
+                    await triggerAutomaticTraining(doc.id);
+                } catch (qmsErr) {
+                    console.error('QMS Automatic Training Trigger Error:', qmsErr);
+                }
+            }
 
             await logAudit({
                 userId,

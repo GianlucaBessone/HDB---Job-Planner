@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react';
 import { 
     BookOpen, CheckCircle2, Clock, AlertCircle, Play, FileText, 
     Download, Award, ChevronRight, X, Loader2, ShieldAlert, 
-    UploadCloud, Plus, Calendar, Landmark, Eye, CheckCircle, HelpCircle, Trash2
+    UploadCloud, Plus, Calendar, Landmark, Eye, CheckCircle, HelpCircle, Trash2, GraduationCap
 } from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
+import ModuleHeader from '@/components/ModuleHeader';
 
 export default function CapacitacionPage() {
     const [user, setUser] = useState<any>(null);
@@ -459,47 +460,27 @@ export default function CapacitacionPage() {
 
     return (
         <div className="max-w-4xl mx-auto space-y-6 px-4 py-6">
-            {/* Elegant Premium Title Header */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-gradient-to-r from-slate-900 to-indigo-950 text-white p-6 rounded-3xl shadow-xl">
-                <div>
-                    <h1 className="text-2xl font-black tracking-tight">Centro de Formación Integral</h1>
-                    <p className="text-xs text-indigo-200 mt-1">HDB Servicios Eléctricos • HDB SGI Portal de Desarrollo Profesional</p>
-                </div>
-                <div className="flex items-center gap-2">
-                    <button 
-                        onClick={() => setIsUploadModalOpen(true)}
-                        className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black rounded-xl transition-all shadow-md flex items-center gap-1.5"
-                    >
-                        <Plus className="w-4 h-4" /> Subir Certificado Externo
-                    </button>
-                </div>
-            </div>
-
-            {/* Main Tabs Selection */}
-            <div className="flex border-b border-slate-200 dark:border-slate-800">
-                <button
-                    onClick={() => setActiveTab('internal')}
-                    className={`flex items-center gap-2 px-5 py-3 text-sm font-bold transition-all border-b-2 -mb-px ${
-                        activeTab === 'internal'
-                            ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
-                            : 'border-transparent text-slate-400 hover:text-slate-600'
-                    }`}
-                >
-                    <BookOpen className="w-4 h-4" />
-                    Mis Capacitaciones
-                </button>
-                <button
-                    onClick={() => setActiveTab('external')}
-                    className={`flex items-center gap-2 px-5 py-3 text-sm font-bold transition-all border-b-2 -mb-px ${
-                        activeTab === 'external'
-                            ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
-                            : 'border-transparent text-slate-400 hover:text-slate-600'
-                    }`}
-                >
-                    <Award className="w-4 h-4" />
-                    Certificados Externos ({certificates.length})
-                </button>
-            </div>
+            <ModuleHeader
+                title="Centro de Formación Integral"
+                description="HDB Servicios Eléctricos • HDB SGI Portal de Desarrollo Profesional"
+                icon={<GraduationCap className="w-5 h-5" />}
+                tabs={[
+                    { id: 'internal', label: 'Mis Capacitaciones' },
+                    { id: 'external', label: `Certificados Externos (${certificates.length})` }
+                ]}
+                activeTabId={activeTab}
+                onTabChange={(id) => setActiveTab(id as 'internal' | 'external')}
+                actions={[
+                    {
+                        id: 'upload',
+                        label: 'Subir Certificado',
+                        icon: <Plus className="w-4 h-4" />,
+                        variant: 'primary',
+                        onClick: () => setIsUploadModalOpen(true),
+                        hideLabelOnMobile: true
+                    }
+                ]}
+            />
 
             {/* TAB CONTENT: INTERNAL TRAININGS */}
             {activeTab === 'internal' && (

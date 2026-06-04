@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { X, FileText, CheckCircle2, ShieldAlert, Plus, Trash2, Save, FileBox, AlertCircle, FileSignature, ThumbsUp, ThumbsDown, Download, Upload, BookOpen, Award, Clock, UserCheck, UserX, Sparkles, Search, PlusCircle, Play, Loader2, FileCheck } from 'lucide-react';
+import { X, FileText, CheckCircle2, ShieldAlert, Plus, Trash2, Save, FileBox, AlertCircle, FileSignature, ThumbsUp, ThumbsDown, Download, Upload, BookOpen, Award, Clock, UserCheck, UserX, Sparkles, Search, PlusCircle, Play, Loader2, FileCheck, GitCompare } from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
 import { formatDateInline, formatDateTimeInline } from '@/lib/formatDate';
 import { showToast } from '@/components/Toast';
+import VersionComparisonModal from './VersionComparisonModal';
 
 // Module-level caches to speed up modal opens across the app session
 let cachedOperators: any[] | null = null;
@@ -66,6 +67,7 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
     const [pendingSaveType, setPendingSaveType] = useState<'digital' | 'requirements' | 'quiz' | 'checklist' | null>(null);
     const [pendingSaveData, setPendingSaveData] = useState<any>(null);
     const [executingSave, setExecutingSave] = useState(false);
+    const [compareVersion, setCompareVersion] = useState<any>(null);
 
     // Version Control Modal specific state
     const [operators, setOperators] = useState<any[]>([]);
@@ -574,9 +576,12 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
         
         ctx.beginPath();
         ctx.moveTo(coords.x, coords.y);
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 5;
         ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
         ctx.strokeStyle = '#0f172a';
+        ctx.shadowBlur = 1;
+        ctx.shadowColor = '#0f172a';
         setIsDrawing(true);
     };
 
@@ -622,9 +627,12 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
         
         ctx.beginPath();
         ctx.moveTo(coords.x, coords.y);
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 5;
         ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
         ctx.strokeStyle = '#0f172a';
+        ctx.shadowBlur = 1;
+        ctx.shadowColor = '#0f172a';
         setIsVersionDrawing(true);
         setHasVersionSigned(true);
     };
@@ -1045,7 +1053,7 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
     };
 
     if (loading) return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm pt-20">
             <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 flex flex-col items-center gap-4">
                 <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
                 <p className="text-slate-500 font-medium">Cargando documento...</p>
@@ -1058,7 +1066,7 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
     return (
         <>
             {showVersionModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 pt-20">
                     <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
                         <div className="p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
                             <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
@@ -1100,7 +1108,7 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                     value={versionJustification}
                                     onChange={e => setVersionJustification(e.target.value)}
                                     placeholder={versionAction === 'none' ? "Explique por qué no es necesario incrementar la versión..." : "Describa brevemente los cambios realizados..."}
-                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 resize-none h-24"
+                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-indigo-500 transition-colors resize-none h-24"
                                 />
                             </div>
 
@@ -1141,11 +1149,11 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
 
                                     <div>
                                         <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Firma Digital del Creador (Modificador)</label>
-                                        <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-white relative h-32">
+                                        <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-900/50">
                                             <canvas
                                                 ref={versionCanvasRef}
-                                                width={400}
-                                                height={128}
+                                                width={800}
+                                                height={300}
                                                 onMouseDown={startVersionDrawing}
                                                 onMouseMove={drawVersion}
                                                 onMouseUp={stopVersionDrawing}
@@ -1153,22 +1161,19 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                                 onTouchStart={startVersionDrawing}
                                                 onTouchMove={drawVersion}
                                                 onTouchEnd={stopVersionDrawing}
-                                                className="w-full h-full touch-none cursor-crosshair"
+                                                className="w-full bg-transparent dark:invert cursor-crosshair touch-none h-[150px]"
                                             />
-                                            {hasVersionSigned && (
+                                            <div className="px-4 py-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900">
+                                                <span className="text-[10px] font-bold text-slate-400">Escriba su firma arriba</span>
                                                 <button
                                                     type="button"
                                                     onClick={clearVersionCanvas}
-                                                    className="absolute top-2 right-2 p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-[10px] font-bold transition-colors"
+                                                    disabled={!hasVersionSigned}
+                                                    className={`text-xs font-bold transition-colors px-2 py-1 rounded ${hasVersionSigned ? 'text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20' : 'text-slate-300 dark:text-slate-700 cursor-not-allowed'}`}
                                                 >
                                                     Limpiar
                                                 </button>
-                                            )}
-                                            {!hasVersionSigned && (
-                                                <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                                                    <span className="text-slate-300 dark:text-slate-600 font-medium text-sm">Firme aquí</span>
-                                                </div>
-                                            )}
+                                            </div>
                                         </div>
                                     </div>
                                 </>
@@ -1196,8 +1201,8 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                 </div>
             )}
 
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 sm:p-6">
-            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 sm:p-6 pt-20 sm:pt-24">
+            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-5xl max-h-[calc(100vh-8rem)] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
                 {/* Header */}
                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-start bg-slate-50 dark:bg-slate-900/50">
                     <div className="flex gap-4 items-start">
@@ -1683,8 +1688,8 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                             </div>
                                             <div className="mt-3">
                                                 {doc.workflowState.creatorSignature ? (
-                                                    <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-1 bg-white inline-block">
-                                                        <img src={doc.workflowState.creatorSignature} alt="Firma Creador" className="max-h-12 w-auto object-contain" />
+                                                    <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-1 bg-slate-50 dark:bg-slate-900 inline-block">
+                                                        <img src={doc.workflowState.creatorSignature} alt="Firma Creador" className="max-h-12 w-auto object-contain dark:invert" />
                                                     </div>
                                                 ) : (
                                                     <span className="text-xs text-slate-400 italic">No firmado</span>
@@ -1718,8 +1723,8 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                                 </div>
                                                 <div className="mt-3">
                                                     {doc.workflowState.revisadorSignature ? (
-                                                        <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-1 bg-white inline-block">
-                                                            <img src={doc.workflowState.revisadorSignature} alt="Firma Revisador" className="max-h-12 w-auto object-contain" />
+                                                        <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-1 bg-slate-50 dark:bg-slate-900 inline-block">
+                                                            <img src={doc.workflowState.revisadorSignature} alt="Firma Revisador" className="max-h-12 w-auto object-contain dark:invert" />
                                                         </div>
                                                     ) : doc.workflowState.revisadorComment ? (
                                                         <div className="bg-red-50 dark:bg-red-950/30 p-2 rounded text-xs text-red-700 dark:text-red-300 italic border border-red-100 dark:border-red-900/30">
@@ -1760,8 +1765,8 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                                 </div>
                                                 <div className="mt-3">
                                                     {doc.workflowState.aprobadorSignature ? (
-                                                        <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-1 bg-white inline-block">
-                                                            <img src={doc.workflowState.aprobadorSignature} alt="Firma Aprobador" className="max-h-12 w-auto object-contain" />
+                                                        <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-1 bg-slate-50 dark:bg-slate-900 inline-block">
+                                                            <img src={doc.workflowState.aprobadorSignature} alt="Firma Aprobador" className="max-h-12 w-auto object-contain dark:invert" />
                                                         </div>
                                                     ) : doc.workflowState.aprobadorComment ? (
                                                         <div className="bg-red-50 dark:bg-red-950/30 p-2 rounded text-xs text-red-700 dark:text-red-300 italic border border-red-100 dark:border-red-900/30">
@@ -1881,8 +1886,8 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                                             <div className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden bg-white dark:bg-slate-950">
                                                                 <canvas
                                                                     ref={canvasRef}
-                                                                    width={416}
-                                                                    height={150}
+                                                                    width={800}
+                                                                    height={300}
                                                                     onMouseDown={startDrawing}
                                                                     onMouseMove={draw}
                                                                     onMouseUp={stopDrawing}
@@ -1890,14 +1895,14 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                                                     onTouchStart={startDrawing}
                                                                     onTouchMove={draw}
                                                                     onTouchEnd={stopDrawing}
-                                                                    className="w-full bg-white dark:bg-slate-950 cursor-crosshair touch-none h-[150px]"
+                                                                    className="w-full bg-transparent dark:invert cursor-crosshair touch-none h-[150px]"
                                                                 />
                                                                 <div className="px-4 py-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900">
                                                                     <span className="text-[10px] font-bold text-slate-400">Dibuje su firma arriba</span>
                                                                     <button
                                                                         type="button"
                                                                         onClick={clearCanvas}
-                                                                        className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors px-2 py-1 rounded hover:bg-red-50"
+                                                                        className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-950/20"
                                                                     >
                                                                         Limpiar
                                                                     </button>
@@ -2392,7 +2397,7 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                     </div>
 
                                     {(() => {
-                                        const activeTrainings = doc.trainings?.filter((t: any) => t.operator?.activo) || [];
+                                        const activeTrainings = doc.trainings?.filter((t: any) => t.operator?.activo && t.estado !== 'obsoleto') || [];
                                         const total = activeTrainings.length;
                                         const approved = activeTrainings.filter((t: any) => t.estado === 'aprobado').length;
                                         const failed = activeTrainings.filter((t: any) => t.estado === 'reprobado').length;
@@ -2439,7 +2444,7 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                                 </div>
 
                                                 {/* Table list */}
-                                                <div className="border border-slate-150 dark:border-slate-850 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-slate-805">
+                                                <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-slate-800">
                                                     <table className="w-full border-collapse text-left text-xs">
                                                         <thead>
                                                             <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-150 dark:border-slate-800">
@@ -2471,10 +2476,10 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                                                                         )}
                                                                     </td>
                                                                     <td className="p-3 font-bold text-slate-650 dark:text-slate-350">
-                                                                        {t.puntajeObtenido !== null ? `${t.puntajeObtenido}%` : 'N/A'}
+                                                                        {t.puntaje !== null && t.puntaje !== undefined ? `${Math.round(t.puntaje)}%` : 'N/A'}
                                                                     </td>
                                                                     <td className="p-3 text-[11px] text-slate-400">
-                                                                        {t.completadoAt ? formatDateInline(t.completadoAt) : 'Pendiente de inicio'}
+                                                                        {t.fechaFin ? formatDateInline(t.fechaFin) : 'Pendiente de inicio'}
                                                                     </td>
                                                                 </tr>
                                                             ))}
@@ -2491,24 +2496,42 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
 
                     {tab === 'versiones' && (
                         <div className="space-y-4">
-                            {doc.versions?.map((v: any) => (
-                                <div key={v.id} className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
-                                    <div className="flex justify-between">
+                            {doc.versions?.map((v: any) => {
+                                const isVigente = v.estado === 'vigente';
+                                return (
+                                <div 
+                                    key={v.id} 
+                                    onClick={() => !isVigente && setCompareVersion(v)}
+                                    className={`bg-white dark:bg-slate-800 p-5 rounded-2xl border transition-all ${
+                                        !isVigente 
+                                            ? 'border-slate-200 dark:border-slate-700 cursor-pointer hover:border-indigo-400 hover:shadow-md dark:hover:border-indigo-600 group relative' 
+                                            : 'border-emerald-200 dark:border-emerald-900/50 cursor-default'
+                                    }`}
+                                >
+                                    <div className="flex justify-between items-start">
                                         <div>
                                             <span className="font-bold text-lg text-slate-800 dark:text-slate-100">v{v.versionLabel}</span>
                                             <span className={`ml-3 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest ${
-                                                v.estado === 'vigente' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'
+                                                isVigente ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'
                                             }`}>
                                                 {v.estado}
                                             </span>
                                         </div>
-                                        <span className="text-xs font-medium text-slate-400">
-                                            {formatDateInline(v.createdAt)}
-                                        </span>
+                                        <div className="flex flex-col items-end gap-1">
+                                            <span className="text-xs font-medium text-slate-400">
+                                                {formatDateInline(v.createdAt)}
+                                            </span>
+                                            {!isVigente && (
+                                                <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                                                    <GitCompare className="w-3 h-3" /> Click para comparar con la versión vigente
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                     <p className="text-sm text-slate-600 dark:text-slate-300 mt-2">{v.motivoCambio}</p>
                                 </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>
@@ -2516,8 +2539,8 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
 
             {/* New Rule Modal */}
             {showRuleModal && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 pt-20">
+                    <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl w-full max-w-md max-h-[80vh] overflow-hidden animate-in zoom-in-95 duration-200">
                         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
                             <h3 className="font-bold text-slate-800 dark:text-slate-100">Nueva Regla Rápida</h3>
                             <button 
@@ -2623,6 +2646,14 @@ export default function DocumentDetailModal({ documentId, onClose, user }: { doc
                         </div>
                     </div>
                 </div>
+            )}
+
+            {compareVersion && (
+                <VersionComparisonModal
+                    currentDoc={doc}
+                    selectedVersion={compareVersion}
+                    onClose={() => setCompareVersion(null)}
+                />
             )}
         </div>
         </>

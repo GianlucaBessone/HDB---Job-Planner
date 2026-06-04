@@ -1178,7 +1178,7 @@ export default function LmsTab({ user }: { user: any }) {
                                 <select
                                     value={aiData.documentId}
                                     onChange={e => setAiData({ ...aiData, documentId: e.target.value })}
-                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[44px] text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
                                 >
                                     <option value="">Seleccione un documento...</option>
                                     {docs.map(doc => (
@@ -1194,7 +1194,7 @@ export default function LmsTab({ user }: { user: any }) {
                                 <select
                                     value={aiData.operatorId}
                                     onChange={e => setAiData({ ...aiData, operatorId: e.target.value })}
-                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[44px] text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
                                 >
                                     <option value="">Seleccione un técnico...</option>
                                     {operators.map(op => (
@@ -1211,7 +1211,7 @@ export default function LmsTab({ user }: { user: any }) {
                                     <select
                                         value={aiData.cantidadPreguntas}
                                         onChange={e => setAiData({ ...aiData, cantidadPreguntas: Number(e.target.value) })}
-                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[44px] text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
                                     >
                                         <option value="3">3 Preguntas</option>
                                         <option value="5">5 Preguntas</option>
@@ -1224,7 +1224,7 @@ export default function LmsTab({ user }: { user: any }) {
                                     <select
                                         value={aiData.nivelDificultad}
                                         onChange={e => setAiData({ ...aiData, nivelDificultad: e.target.value })}
-                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[44px] text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
                                     >
                                         <option value="facil">Fácil</option>
                                         <option value="intermedio">Intermedio</option>

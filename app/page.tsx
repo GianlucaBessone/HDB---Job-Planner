@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Home, ChevronDown, ChevronUp, Pencil, X, Star, Clock as ClockIcon, GripVertical, Trash2 } from 'lucide-react';
+import { Home, ChevronDown, ChevronUp, Pencil, X, Star, Clock as ClockIcon, GripVertical, Trash2, Briefcase, Activity, AlertTriangle, ShieldAlert, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import {
     ViewConfig, isViewAllowed, DEFAULT_VIEWS, DEFAULT_SECTIONS,
@@ -176,6 +176,18 @@ export default function HomePage() {
                     </button>
                 </div>
             </div>
+
+            {/* Executive KPIs Zone (Dashboard Ejecutivo Evolutivo) */}
+            {role !== 'operador' && !editMode && (
+                <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-3 mb-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <ExecutiveKpi title="Proyectos Activos" value="-" icon={<Briefcase className="w-4 h-4" />} color="bg-indigo-600" />
+                    <ExecutiveKpi title="Órdenes Abiertas" value="-" icon={<Activity className="w-4 h-4" />} color="bg-blue-500" />
+                    <ExecutiveKpi title="SLA Próximos" value="-" icon={<AlertTriangle className="w-4 h-4" />} color="bg-amber-500" />
+                    <ExecutiveKpi title="SLA Vencidos" value="-" icon={<AlertTriangle className="w-4 h-4" />} color="bg-rose-500" />
+                    <ExecutiveKpi title="NC Abiertas" value="-" icon={<ShieldAlert className="w-4 h-4" />} color="bg-slate-700" className="hidden xl:flex" />
+                    <ExecutiveKpi title="Auditorías Prog." value="-" icon={<Calendar className="w-4 h-4" />} color="bg-emerald-500" className="hidden xl:flex" />
+                </div>
+            )}
 
             {/* Edit mode controls */}
             {editMode && (
@@ -382,5 +394,19 @@ function ActionCard({ view, editMode, onDragStart }: {
         <Link href={view.key} className="relative block focus:outline-none">
             {card}
         </Link>
+    );
+}
+
+function ExecutiveKpi({ title, value, icon, color, className = '' }: { title: string, value: string, icon: any, color: string, className?: string }) {
+    return (
+        <div className={`bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between h-[64px] gap-3 ${className}`}>
+            <div className="flex flex-col justify-center min-w-0">
+                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest line-clamp-1">{title}</p>
+                <h4 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tighter truncate leading-none mt-0.5">{value}</h4>
+            </div>
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${color} text-white shadow-sm opacity-90`}>
+                {icon}
+            </div>
+        </div>
     );
 }

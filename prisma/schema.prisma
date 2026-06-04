@@ -666,6 +666,7 @@ model DocumentVersion {
   notas             String? @db.Text
   hashDocumental    String? // SHA-256
   checklistTemplate Json?
+  documentSnapshot  Json? // Almacena el estado completo del documento (titulo, descripcion, requerimientos, tags, etc.) al momento de crear la version
 
   // Timestamps
   createdAt DateTime @default(now())

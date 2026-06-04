@@ -64,6 +64,25 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
         const versionLabel = `${newMayor}.${newMenor}`;
 
+        // Crear un snapshot de la informacion del documento actual para preservar la inmutabilidad de la version
+        const documentSnapshot = {
+            titulo: doc.titulo,
+            codigoDocumental: doc.codigoDocumental,
+            tipoDocumento: doc.tipoDocumento,
+            area: doc.area,
+            estado: doc.estado,
+            descripcion: doc.descripcion,
+            nivelCriticidad: doc.nivelCriticidad,
+            tags: doc.tags,
+            requiereConfirmacionLectura: doc.requiereConfirmacionLectura,
+            requiereCapacitacion: doc.requiereCapacitacion,
+            validezMeses: doc.validezMeses,
+            observaciones: doc.observaciones,
+            fechaEmision: doc.fechaEmision,
+            fechaRevision: doc.fechaRevision,
+            proximaRevision: doc.proximaRevision,
+        };
+
         // Create new version
         const version = await prisma.documentVersion.create({
             data: {
@@ -77,6 +96,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
                 motivoCambio: motivoCambio || null,
                 notas: notas || null,
                 checklistTemplate: checklistTemplate || null,
+                documentSnapshot: documentSnapshot,
             }
         });
 

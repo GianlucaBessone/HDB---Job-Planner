@@ -163,9 +163,12 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
         
         ctx.beginPath();
         ctx.moveTo(coords.x, coords.y);
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 5;
         ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
         ctx.strokeStyle = '#0f172a';
+        ctx.shadowBlur = 1;
+        ctx.shadowColor = '#0f172a';
         setIsDrawing(true);
         setHasSigned(true);
     };
@@ -319,8 +322,8 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
     );
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 overflow-y-auto">
-            <div className={`relative bg-white dark:bg-slate-800 rounded-3xl shadow-xl w-full h-[90vh] max-h-[95vh] overflow-hidden my-4 animate-in zoom-in-95 duration-200 flex flex-col transition-all duration-300 ${showAiDrawer ? 'max-w-[95vw] sm:pr-[420px]' : 'max-w-6xl'}`}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 pt-20 sm:pt-24 overflow-y-auto">
+            <div className={`relative bg-white dark:bg-slate-800 rounded-3xl shadow-xl w-full max-h-[calc(100vh-8rem)] overflow-hidden my-4 animate-in zoom-in-95 duration-200 flex flex-col transition-all duration-300 ${showAiDrawer ? 'max-w-[95vw] sm:pr-[420px]' : 'max-w-6xl'}`}>
                 {/* Header */}
                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/20">
                     <div className="flex items-center gap-3">
@@ -930,8 +933,8 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                     <div className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-900/50">
                                         <canvas
                                             ref={canvasRef}
-                                            width={550}
-                                            height={150}
+                                            width={800}
+                                            height={300}
                                             onMouseDown={startDrawing}
                                             onMouseMove={draw}
                                             onMouseUp={stopDrawing}
@@ -939,7 +942,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                             onTouchStart={startDrawing}
                                             onTouchMove={draw}
                                             onTouchEnd={stopDrawing}
-                                            className="w-full bg-white dark:bg-slate-950 cursor-crosshair touch-none h-[150px]"
+                                            className="w-full bg-transparent dark:invert cursor-crosshair touch-none h-[150px]"
                                         />
                                         <div className="px-4 py-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900">
                                             <span className="text-[10px] font-bold text-slate-400">Escriba su firma arriba</span>
