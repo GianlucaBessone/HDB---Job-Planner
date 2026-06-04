@@ -9,7 +9,14 @@ import { GoogleGenAI } from '@google/genai';
 import { BaseProvider, AICapability, AIProviderRequest, AIProviderResponse } from './base';
 
 const apiKey = process.env.GEMINI_API_KEY || 'DUMMY_API_KEY_FOR_BUILD';
-const ai = new GoogleGenAI({ apiKey });
+const gatewayUrl = process.env.VERCEL_AI_GATEWAY_URL;
+
+const aiOptions: any = { apiKey };
+if (gatewayUrl) {
+    aiOptions.baseUrl = `${gatewayUrl}/google-gemini`;
+}
+
+const ai = new GoogleGenAI(aiOptions);
 
 function checkApiKey() {
     if (!process.env.GEMINI_API_KEY) {
