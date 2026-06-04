@@ -21,7 +21,8 @@ import {
     Edit3,
     FileSignature,
     Clock,
-    QrCode
+    QrCode,
+    Share2
 } from 'lucide-react';
 import Link from 'next/link';
 import { useModalScroll } from '@/lib/useModalScroll';
