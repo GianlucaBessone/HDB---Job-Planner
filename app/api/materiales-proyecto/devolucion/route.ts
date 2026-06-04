@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma';
 // estado: 'cerrado_ok' | 'cerrado_con_reserva'
 export async function POST(req: Request) {
     const body = await req.json();
-    const { id, materialId, cantidadADevolver, estado, comentario, confirmadoPor } = body;
+    const { id, materialId, cantidadADevolver, estado, comentario, confirmadoPor, delegadoAId, delegadoANombre, firmaDelegacion, delegadoPorId, delegadoPorNombre } = body;
 
     if (!materialId || cantidadADevolver === undefined || !estado) {
         return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 });
@@ -27,7 +27,12 @@ export async function POST(req: Request) {
         estado,
         comentario: comentario || null,
         confirmadoPor: confirmadoPor || null,
-        fechaConfirm: estado !== 'pendiente' ? new Date() : null,
+        fechaConfirm: (estado !== 'pendiente' && estado !== 'delegacion_pendiente') ? new Date() : null,
+        delegadoAId: delegadoAId || null,
+        delegadoANombre: delegadoANombre || null,
+        firmaDelegacion: firmaDelegacion || null,
+        delegadoPorId: delegadoPorId || null,
+        delegadoPorNombre: delegadoPorNombre || null,
     };
 
     let devolucion;
@@ -48,7 +53,7 @@ export async function POST(req: Request) {
     const pendingCount = await prisma.materialDevolucion.count({
         where: {
             materialId,
-            estado: 'pendiente'
+            estado: { in: ['pendiente', 'delegacion_pendiente', 'delegacion_rechazada'] }
         }
     });
 
@@ -65,7 +70,7 @@ export async function POST(req: Request) {
         });
         if (matDb) {
             const totalUsado = matDb.usos.reduce((acc, u) => acc + u.cantidadUtilizada, 0);
-            const totalDevuelto = matDb.devoluciones.filter(d => d.estado !== 'pendiente').reduce((acc, d) => acc + d.cantidadADevolver, 0);
+            const totalDevuelto = matDb.devoluciones.filter(d => d.estado === 'cerrado_ok' || d.estado === 'cerrado_con_reserva').reduce((acc, d) => acc + d.cantidadADevolver, 0);
             const aDevolver = Math.max(0, matDb.cantidadEntregada - totalUsado - totalDevuelto);
             if (aDevolver <= 0) {
                 await prisma.materialProyecto.update({
@@ -99,6 +104,9 @@ export async function POST(req: Request) {
         if (estado === 'pendiente') {
             title = `Solicitud de devolución – ${material.proyecto.nombre}`;
             message = `El operador solicita devolver ${cantidadADevolver} ${material.unidad} de "${material.nombre}".${comentario ? ` Nota: ${comentario}` : ''}`;
+        } else if (estado === 'delegacion_pendiente') {
+            title = `Delegación de devolución – ${material.proyecto.nombre}`;
+            message = `${delegadoPorNombre} delegó la devolución de ${cantidadADevolver} ${material.unidad} de "${material.nombre}" a ${delegadoANombre}.`;
         } else {
             const estadoLabel = estado === 'cerrado_ok' ? 'sin reserva' : 'con reserva';
             title = `Devolución confirmada – ${material.proyecto.nombre}`;
@@ -114,6 +122,57 @@ export async function POST(req: Request) {
                 relatedId: material.proyectoId,
             })),
         });
+
+        // Notify the delegated user specifically
+        if (estado === 'delegacion_pendiente' && delegadoAId) {
+            await prisma.notification.create({
+                data: {
+                    operatorId: delegadoAId,
+                    title: `Te han delegado materiales`,
+                    message: `${delegadoPorNombre} te ha delegado ${cantidadADevolver} ${material.unidad} de "${material.nombre}" en la obra ${material.proyecto.nombre}.`,
+                    type: 'DELEGACION_MATERIAL',
+                    relatedId: material.proyectoId,
+                }
+            });
+
+            // Project Log para auditoría
+            await prisma.projectLog.create({
+                data: {
+                    proyectoId: material.proyectoId,
+                    fecha: new Date().toISOString().split('T')[0],
+                    responsable: delegadoPorNombre || 'Sistema',
+                    observacion: `Delegación de devolución de material:\nMaterial: ${material.nombre}\nCantidad: ${cantidadADevolver} ${material.unidad}\nDelegado a: ${delegadoANombre}`,
+                    categoria: 'Nota'
+                }
+            });
+        } else if (id && estado === 'pendiente') {
+            // Un delegado aceptó la delegación, pasando el estado a 'pendiente' para almacén
+            const acceptedDelegation = await prisma.materialDevolucion.findUnique({ where: { id } });
+            if (acceptedDelegation && acceptedDelegation.delegadoANombre) {
+                await prisma.projectLog.create({
+                    data: {
+                        proyectoId: material.proyectoId,
+                        fecha: new Date().toISOString().split('T')[0],
+                        responsable: acceptedDelegation.delegadoANombre,
+                        observacion: `El operador aceptó la responsabilidad de devolución delegada por ${acceptedDelegation.delegadoPorNombre}.\nMaterial: ${material.nombre}\nCantidad: ${acceptedDelegation.cantidadADevolver}`,
+                        categoria: 'Nota'
+                    }
+                });
+            }
+        } else if (id && estado === 'delegacion_rechazada') {
+            const rejectedDelegation = await prisma.materialDevolucion.findUnique({ where: { id } });
+            if (rejectedDelegation && rejectedDelegation.delegadoANombre) {
+                await prisma.projectLog.create({
+                    data: {
+                        proyectoId: material.proyectoId,
+                        fecha: new Date().toISOString().split('T')[0],
+                        responsable: rejectedDelegation.delegadoANombre,
+                        observacion: `El operador rechazó la responsabilidad de devolución delegada por ${rejectedDelegation.delegadoPorNombre}.\nMaterial: ${material.nombre}\nCantidad: ${rejectedDelegation.cantidadADevolver}`,
+                        categoria: 'Nota'
+                    }
+                });
+            }
+        }
     }
 
     return NextResponse.json(devolucion, { status: id ? 200 : 201 });

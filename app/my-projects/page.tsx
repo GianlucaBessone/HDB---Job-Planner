@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import {
     Search,
     CheckCircle2,
@@ -112,8 +112,51 @@ export default function MyProjectsPage() {
     const [materialNote, setMaterialNote] = useState('');
     const [isSubmittingMaterial, setIsSubmittingMaterial] = useState(false);
 
+    // Material List State (Tabs & Search)
+    const [activeMaterialTab, setActiveMaterialTab] = useState<'general' | 'devueltos'>('general');
+    const [materialSearch, setMaterialSearch] = useState('');
+
+    // Delegation State
+    const [isDelegationModalOpen, setIsDelegationModalOpen] = useState(false);
+    const [delegationQuantity, setDelegationQuantity] = useState('');
+    const [delegationTargetId, setDelegationTargetId] = useState('');
+    const [delegationNote, setDelegationNote] = useState('');
+    const [operatorsList, setOperatorsList] = useState<{id: string, nombreCompleto: string, role: string}[]>([]);
+    const [pendingDelegations, setPendingDelegations] = useState<any[]>([]);
+
+    // Signature Canvas State
+    const signatureCanvasRef = useRef<HTMLCanvasElement>(null);
+    const [isDrawing, setIsDrawing] = useState(false);
+    const [hasSignature, setHasSignature] = useState(false);
+
+    const filteredProjectMaterials = useMemo(() => {
+        return projectMaterials.filter(m => {
+            // Apply Search
+            const searchLower = materialSearch.toLowerCase();
+            const matchesSearch = !materialSearch || 
+                                m.nombre.toLowerCase().includes(searchLower) || 
+                                (m.codigo && m.codigo.toLowerCase().includes(searchLower));
+            
+            if (!matchesSearch) return false;
+
+            // Apply Tabs
+            const totalUsado = m.usos.reduce((acc: number, u: any) => acc + u.cantidadUtilizada, 0);
+            const totalDevuelto = (m.devoluciones || []).filter((d: any) => d.estado !== 'pendiente' && d.estado !== 'delegacion_pendiente').reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
+            const pendingDevolucion = (m.devoluciones || []).filter((d: any) => d.estado === 'pendiente' || d.estado === 'delegacion_pendiente').reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
+            const balance = m.cantidadEntregada - totalUsado - totalDevuelto - pendingDevolucion;
+
+            const hasPending = pendingDevolucion > 0;
+            const isDevuelto = ['cerrado_ok', 'cerrado_con_reserva'].includes(m.estado) || (balance <= 0 && !hasPending);
+
+            if (activeMaterialTab === 'general' && isDevuelto) return false;
+            if (activeMaterialTab === 'devueltos' && !isDevuelto) return false;
+
+            return true;
+        });
+    }, [projectMaterials, activeMaterialTab, materialSearch]);
+
     // Lock body scroll when any modal is open
-    const anyModalOpen = isJustifyModalOpen || isFinalizeModalOpen || isMaterialModalOpen;
+    const anyModalOpen = isJustifyModalOpen || isFinalizeModalOpen || isMaterialModalOpen || isDelegationModalOpen;
     useModalScroll(anyModalOpen);
 
     useEffect(() => {
@@ -122,8 +165,32 @@ export default function MyProjectsPage() {
             const parsed = JSON.parse(storedUser);
             setUser(parsed);
             loadMyProjects(parsed.id, viewAll, parsed.nombreCompleto);
+            loadPendingDelegations(parsed.id);
+            loadOperatorsList();
         }
     }, [viewAll]);
+
+    const loadOperatorsList = async () => {
+        try {
+            const res = await safeApiRequest('/api/operators');
+            const data = await res.json();
+            if (Array.isArray(data)) {
+                setOperatorsList(data.filter((op: any) => op.activo));
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const loadPendingDelegations = async (userId: string) => {
+        try {
+            const res = await safeApiRequest(`/api/materiales-proyecto/delegaciones?userId=${userId}`);
+            const data = await res.json();
+            if (Array.isArray(data)) setPendingDelegations(data);
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     const loadMyProjects = async (userId: string, all = false, nombre = '') => {
         setLoading(true);
@@ -343,6 +410,117 @@ export default function MyProjectsPage() {
         }
     };
 
+    const submitDelegation = async () => {
+        if (!selectedMaterial || !delegationQuantity || !delegationTargetId || isSubmittingMaterial) return;
+
+        const qty = parseFloat(delegationQuantity);
+        if (isNaN(qty) || qty <= 0) {
+            showToast('Ingrese una cantidad válida', 'error');
+            return;
+        }
+
+        const totalUsado = (selectedMaterial.usos || []).reduce((acc: number, u: any) => acc + u.cantidadUtilizada, 0);
+        const totalDevuelto = (selectedMaterial.devoluciones || []).reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
+        const balance = selectedMaterial.cantidadEntregada - totalUsado - totalDevuelto;
+
+        if (qty > balance) {
+            showToast(`No puede delegar más del balance disponible (${balance.toFixed(2)} ${selectedMaterial.unidad})`, 'error');
+            return;
+        }
+
+        const targetUser = operatorsList.find(op => op.id === delegationTargetId);
+        if (!targetUser) return;
+
+        let firmaData = null;
+        if (signatureCanvasRef.current && hasSignature) {
+            firmaData = signatureCanvasRef.current.toDataURL('image/png');
+        }
+
+        if (!firmaData) {
+            showToast('Debe firmar para autorizar la delegación', 'error');
+            return;
+        }
+
+        setIsSubmittingMaterial(true);
+        try {
+            const res = await safeApiRequest('/api/materiales-proyecto/devolucion', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    materialId: selectedMaterial.id,
+                    cantidadADevolver: qty,
+                    estado: 'delegacion_pendiente',
+                    comentario: delegationNote,
+                    delegadoAId: targetUser.id,
+                    delegadoANombre: targetUser.nombreCompleto,
+                    delegadoPorId: user?.id,
+                    delegadoPorNombre: user?.nombreCompleto,
+                    firmaDelegacion: firmaData
+                })
+            });
+
+            if (res.ok) {
+                showToast('Delegación solicitada con éxito', 'success');
+                setIsDelegationModalOpen(false);
+                setDelegationQuantity('');
+                setDelegationNote('');
+                setDelegationTargetId('');
+                loadMaterials(selectedProject?.id!);
+            } else {
+                const err = await res.json();
+                showToast(err.error || 'Error al delegar', 'error');
+            }
+        } catch (error) {
+            showToast('Error de conexión', 'error');
+        } finally {
+            setIsSubmittingMaterial(false);
+        }
+    };
+
+    const acceptDelegation = async (delegacionId: string) => {
+        try {
+            const res = await safeApiRequest('/api/materiales-proyecto/devolucion', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: delegacionId,
+                    estado: 'pendiente' // Aceptarlo lo pasa a estado normal pendiente de devolución en almacén
+                })
+            });
+
+            if (res.ok) {
+                showToast('Delegación aceptada', 'success');
+                loadPendingDelegations(user?.id!);
+            } else {
+                showToast('Error al aceptar la delegación', 'error');
+            }
+        } catch (error) {
+            showToast('Error de conexión', 'error');
+        }
+    };
+
+    const rejectDelegation = async (delegacionId: string) => {
+        try {
+            const res = await safeApiRequest('/api/materiales-proyecto/devolucion', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: delegacionId,
+                    estado: 'delegacion_rechazada'
+                })
+            });
+
+            if (res.ok) {
+                showToast('Delegación rechazada', 'success');
+                loadPendingDelegations(user?.id!);
+            } else {
+                showToast('Error al rechazar la delegación', 'error');
+            }
+        } catch (error) {
+            showToast('Error de conexión', 'error');
+        }
+    };
+
     const submitLog = async () => {
         if (!newLog.trim() || !selectedProject || !user) return;
         setIsSubmittingLog(true);
@@ -526,6 +704,39 @@ export default function MyProjectsPage() {
                         />
                     </div>
 
+                    {pendingDelegations.length > 0 && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-3xl p-5 space-y-4 shadow-sm">
+                            <h3 className="flex items-center gap-2 text-sm font-black text-blue-800 uppercase tracking-wide">
+                                <Package className="w-5 h-5 text-blue-600" />
+                                Delegaciones Pendientes
+                            </h3>
+                            <div className="grid gap-3">
+                                {pendingDelegations.map(del => (
+                                    <div key={del.id} className="bg-white border border-blue-100 rounded-2xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
+                                        <div>
+                                            <h4 className="text-sm font-bold text-slate-800">{del.material.nombre} <span className="text-slate-500 font-medium">({del.cantidadADevolver} {del.material.unidad})</span></h4>
+                                            <p className="text-[10px] text-slate-500 font-medium uppercase mt-1">De: {del.delegadoPorNombre} • Obra: {del.material.proyecto.nombre}</p>
+                                        </div>
+                                        <div className="flex gap-2 w-full md:w-auto mt-3 md:mt-0">
+                                            <button
+                                                onClick={() => rejectDelegation(del.id)}
+                                                className="flex-1 md:flex-none bg-slate-100 text-slate-600 hover:bg-slate-200 font-bold text-xs px-4 py-2.5 rounded-xl transition-all active:scale-95 border border-slate-200"
+                                            >
+                                                Rechazar
+                                            </button>
+                                            <button
+                                                onClick={() => acceptDelegation(del.id)}
+                                                className="flex-[2] md:flex-none bg-blue-600 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md hover:bg-blue-700 active:scale-95 transition-all"
+                                            >
+                                                Aceptar
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     {loading ? (
                         <div className="space-y-4">
                             {[1, 2].map(i => <div key={i} className="h-[200px] bg-slate-100 dark:bg-slate-800/50 rounded-3xl animate-pulse" />)}
@@ -682,22 +893,61 @@ export default function MyProjectsPage() {
                         {/* Materiales Section */}
                         {(selectedProject as any).aprovisionamiento && (
                             <div className="pt-6 border-t border-slate-50 space-y-5">
-                                <h3 className="flex items-center gap-2 text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-wide">
-                                    <Package className="w-4 h-4 text-primary" />
-                                    Materiales en Obra
-                                </h3>
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                    <h3 className="flex items-center gap-2 text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-wide">
+                                        <Package className="w-4 h-4 text-primary" />
+                                        Materiales en Obra
+                                    </h3>
+                                    
+                                    {/* Tabs */}
+                                    <div className="flex bg-slate-100/80 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-slate-200/50 dark:border-slate-700/50 self-start md:self-auto w-full md:w-auto">
+                                        <button
+                                            onClick={() => setActiveMaterialTab('general')}
+                                            className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-300 ${
+                                                activeMaterialTab === 'general'
+                                                    ? 'bg-white dark:bg-slate-700 text-primary shadow-sm shadow-slate-200/50 dark:shadow-none'
+                                                    : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                            }`}
+                                        >
+                                            General
+                                        </button>
+                                        <button
+                                            onClick={() => setActiveMaterialTab('devueltos')}
+                                            className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-300 ${
+                                                activeMaterialTab === 'devueltos'
+                                                    ? 'bg-white dark:bg-slate-700 text-primary shadow-sm shadow-slate-200/50 dark:shadow-none'
+                                                    : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                            }`}
+                                        >
+                                            Devueltos
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Search Bar */}
+                                <div className="relative group">
+                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+                                    <input
+                                        type="text"
+                                        placeholder="Buscar material o código..."
+                                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl py-3 pl-11 pr-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-sm"
+                                        value={materialSearch}
+                                        onChange={e => setMaterialSearch(e.target.value)}
+                                    />
+                                </div>
+
                                 {loadingMaterials ? (
                                     <div className="flex items-center justify-center py-4">
                                         <Loader2 className="w-5 h-5 animate-spin text-slate-400 dark:text-slate-500" />
                                     </div>
-                                ) : projectMaterials.length === 0 ? (
-                                    <p className="text-center text-xs text-slate-400 dark:text-slate-500 font-medium py-4">No hay materiales asignados.</p>
+                                ) : filteredProjectMaterials.length === 0 ? (
+                                    <p className="text-center text-xs text-slate-400 dark:text-slate-500 font-medium py-4">No hay materiales encontrados en esta vista.</p>
                                 ) : (
                                     <div className="grid gap-3">
-                                        {projectMaterials.map(m => {
+                                        {filteredProjectMaterials.map(m => {
                                             const totalUsado = m.usos.reduce((acc: number, u: any) => acc + u.cantidadUtilizada, 0);
-                                            const totalDevuelto = (m.devoluciones || []).filter((d: any) => d.estado !== 'pendiente').reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
-                                            const pendingDevolucion = (m.devoluciones || []).filter((d: any) => d.estado === 'pendiente').reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
+                                            const totalDevuelto = (m.devoluciones || []).filter((d: any) => d.estado !== 'pendiente' && d.estado !== 'delegacion_pendiente').reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
+                                            const pendingDevolucion = (m.devoluciones || []).filter((d: any) => d.estado === 'pendiente' || d.estado === 'delegacion_pendiente').reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
                                             const balance = m.cantidadEntregada - totalUsado - totalDevuelto - pendingDevolucion;
 
                                             return (
@@ -730,37 +980,54 @@ export default function MyProjectsPage() {
 
                                                     {pendingDevolucion > 0 && (
                                                         <div className="bg-amber-50 border border-amber-100 rounded-xl px-3 py-1.5 flex items-center justify-between anim-pulse">
-                                                            <span className="text-[10px] font-bold text-amber-700">Devolución pendiente: {pendingDevolucion}</span>
+                                                            <span className="text-[10px] font-bold text-amber-700">Devolución / Delegación pendiente: {pendingDevolucion}</span>
                                                             <History className="w-3 h-3 text-amber-500" />
                                                         </div>
                                                     )}
 
-                                                    <div className="flex gap-2">
-                                                        <button 
-                                                            onClick={() => {
-                                                                setSelectedMaterial(m);
-                                                                setMaterialAction('uso');
-                                                                setMaterialQuantity('');
-                                                                setIsMaterialModalOpen(true);
-                                                            }}
-                                                            className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all active:scale-95"
-                                                        >
-                                                            <PlusCircle className="w-3.5 h-3.5 text-emerald-500" />
-                                                            INFORMAR USO
-                                                        </button>
-                                                        <button 
-                                                            onClick={() => {
-                                                                setSelectedMaterial(m);
-                                                                setMaterialAction('devolucion');
-                                                                setMaterialQuantity('');
-                                                                setIsMaterialModalOpen(true);
-                                                            }}
-                                                            className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all active:scale-95"
-                                                        >
-                                                            <MinusCircle className="w-3.5 h-3.5 text-blue-500" />
-                                                            DEVOLVER
-                                                        </button>
-                                                    </div>
+                                                    {activeMaterialTab === 'general' && balance > 0 && (
+                                                        <div className="flex gap-2 pt-1">
+                                                            <button 
+                                                                onClick={() => {
+                                                                    setSelectedMaterial(m);
+                                                                    setMaterialAction('uso');
+                                                                    setMaterialQuantity('');
+                                                                    setIsMaterialModalOpen(true);
+                                                                }}
+                                                                className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
+                                                            >
+                                                                <PlusCircle className="w-3.5 h-3.5 text-emerald-500" />
+                                                                INFORMAR USO
+                                                            </button>
+                                                            <div className="flex-1 flex gap-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden p-0.5">
+                                                                <button 
+                                                                    onClick={() => {
+                                                                        setSelectedMaterial(m);
+                                                                        setMaterialAction('devolucion');
+                                                                        setMaterialQuantity('');
+                                                                        setIsMaterialModalOpen(true);
+                                                                    }}
+                                                                    className="flex-[2] flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all active:scale-95"
+                                                                >
+                                                                    <MinusCircle className="w-3.5 h-3.5 text-blue-500" />
+                                                                    DEVOLVER
+                                                                </button>
+                                                                <div className="w-[1px] bg-slate-200 dark:bg-slate-700 my-1" />
+                                                                <button 
+                                                                    onClick={() => {
+                                                                        setSelectedMaterial(m);
+                                                                        setDelegationQuantity('');
+                                                                        setHasSignature(false);
+                                                                        setIsDelegationModalOpen(true);
+                                                                    }}
+                                                                    className="flex-1 flex items-center justify-center py-1.5 rounded-lg hover:bg-slate-50 transition-all active:scale-95"
+                                                                    title="Delegar material"
+                                                                >
+                                                                    <Share2 className="w-3.5 h-3.5 text-indigo-500" />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             );
                                         })}
@@ -1029,6 +1296,146 @@ export default function MyProjectsPage() {
                             >
                                 {isSubmittingMaterial ? <Loader2 className="w-4 h-4 animate-spin" /> : <Package className="w-4 h-4" />}
                                 {materialAction === 'uso' ? 'Confirmar Uso' : 'Solicitar Devolución'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delegation Modal */}
+            {isDelegationModalOpen && selectedMaterial && (
+                <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl p-6 md:p-7 space-y-6 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 rounded-2xl bg-indigo-50 text-indigo-600">
+                                <Share2 className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">Delegar Devolución</h3>
+                                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{selectedMaterial.nombre}</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Delegar a *</label>
+                                <select
+                                    value={delegationTargetId}
+                                    onChange={(e) => setDelegationTargetId(e.target.value)}
+                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-bold outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-slate-700"
+                                >
+                                    <option value="" disabled>Seleccione un operador</option>
+                                    {operatorsList.map(op => (
+                                        <option key={op.id} value={op.id}>{op.nombreCompleto} ({op.role})</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Cantidad *</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value={delegationQuantity}
+                                    onChange={(e) => setDelegationQuantity(e.target.value)}
+                                    placeholder="Ej. 1"
+                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-lg font-bold outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all placeholder:text-slate-300"
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nota / Observación</label>
+                                <textarea
+                                    value={delegationNote}
+                                    onChange={(e) => setDelegationNote(e.target.value)}
+                                    rows={2}
+                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all resize-none"
+                                    placeholder="Opcional..."
+                                />
+                            </div>
+                            <div className="bg-amber-50 p-3 rounded-xl border border-amber-200 flex items-start gap-2 mt-2">
+                                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                                <p className="text-[10px] font-bold text-amber-800 leading-tight">Al delegar, el material seguirá pendiente de devolución. Deberás firmar tu autorización.</p>
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Firma del Responsable *</label>
+                                    {hasSignature && (
+                                        <button 
+                                            type="button" 
+                                            onClick={() => {
+                                                const ctx = signatureCanvasRef.current?.getContext('2d');
+                                                if (ctx && signatureCanvasRef.current) {
+                                                    ctx.clearRect(0, 0, signatureCanvasRef.current.width, signatureCanvasRef.current.height);
+                                                    setHasSignature(false);
+                                                }
+                                            }}
+                                            className="text-[10px] font-bold text-red-500 hover:underline"
+                                        >
+                                            Limpiar
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-2xl overflow-hidden shadow-inner touch-none relative">
+                                    <canvas
+                                        ref={signatureCanvasRef}
+                                        width={400}
+                                        height={150}
+                                        className="w-full h-[150px] cursor-crosshair touch-none"
+                                        onPointerDown={(e) => {
+                                            const canvas = signatureCanvasRef.current;
+                                            if (!canvas) return;
+                                            const rect = canvas.getBoundingClientRect();
+                                            const scaleX = canvas.width / rect.width;
+                                            const scaleY = canvas.height / rect.height;
+                                            const ctx = canvas.getContext('2d');
+                                            if (!ctx) return;
+                                            ctx.beginPath();
+                                            ctx.moveTo((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY);
+                                            setIsDrawing(true);
+                                        }}
+                                        onPointerMove={(e) => {
+                                            if (!isDrawing) return;
+                                            const canvas = signatureCanvasRef.current;
+                                            if (!canvas) return;
+                                            const rect = canvas.getBoundingClientRect();
+                                            const scaleX = canvas.width / rect.width;
+                                            const scaleY = canvas.height / rect.height;
+                                            const ctx = canvas.getContext('2d');
+                                            if (!ctx) return;
+                                            ctx.lineTo((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY);
+                                            ctx.stroke();
+                                            setHasSignature(true);
+                                        }}
+                                        onPointerUp={() => setIsDrawing(false)}
+                                        onPointerCancel={() => setIsDrawing(false)}
+                                        onPointerOut={() => setIsDrawing(false)}
+                                    />
+                                    {!hasSignature && (
+                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                            <span className="text-sm font-black text-slate-300 dark:text-slate-700 uppercase tracking-widest rotate-[-5deg]">Firmar Aquí</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setIsDelegationModalOpen(false)}
+                                className="flex-[1] py-3.5 rounded-2xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-all active:scale-95 text-sm"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={submitDelegation}
+                                disabled={!delegationTargetId || !delegationQuantity || isSubmittingMaterial}
+                                className="flex-[2] py-3.5 rounded-2xl font-black text-white bg-indigo-600 hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50"
+                            >
+                                {isSubmittingMaterial ? <Loader2 className="w-4 h-4 animate-spin" /> : <Share2 className="w-4 h-4" />}
+                                Solicitar Delegación
                             </button>
                         </div>
                     </div>

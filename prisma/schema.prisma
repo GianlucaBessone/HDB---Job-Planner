@@ -441,11 +441,18 @@ model MaterialDevolucion {
   material          MaterialProyecto @relation(fields: [materialId], references: [id], onDelete: Cascade)
   cantidadADevolver Float
   estado            String           @default("pendiente")
-  // pendiente | cerrado_ok | cerrado_con_reserva
+  // pendiente | cerrado_ok | cerrado_con_reserva | delegacion_pendiente | delegacion_rechazada
   comentario        String?          @db.Text
   confirmadoPor     String?
   fechaConfirm      DateTime?
   createdAt         DateTime         @default(now())
+
+  // Delegacion
+  delegadoAId       String?
+  delegadoANombre   String?
+  firmaDelegacion   String?          @db.Text
+  delegadoPorId     String?
+  delegadoPorNombre String?
 
   @@index([materialId])
 }
