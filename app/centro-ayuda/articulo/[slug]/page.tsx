@@ -42,10 +42,10 @@ export default async function ArticuloPage({ params }: { params: { slug: string 
 
       {/* Encabezado del Artículo */}
       <div className="space-y-4">
-        <h1 className="text-4xl font-black text-slate-800 dark:text-slate-100">
+        <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">
           {article.title}
         </h1>
-        <p className="text-lg text-slate-600 dark:text-slate-300">
+        <p className="text-base text-slate-500 dark:text-slate-400">
           {article.description}
         </p>
       </div>
@@ -57,7 +57,7 @@ export default async function ArticuloPage({ params }: { params: { slug: string 
           {/* Cómo Acceder */}
           {article.comoAcceder && (
             <div className="bg-blue-50 dark:bg-blue-900/20 p-5 rounded-2xl border border-blue-100 dark:border-blue-800">
-              <h3 className="text-xs font-black text-blue-600 uppercase tracking-widest mb-2 flex items-center gap-2">
+              <h3 className="text-xs font-bold text-blue-600 uppercase tracking-widest mb-2 flex items-center gap-2">
                 <Info className="w-4 h-4" /> Cómo acceder
               </h3>
               <p className="text-sm text-slate-700 dark:text-slate-200">{article.comoAcceder}</p>
@@ -67,7 +67,7 @@ export default async function ArticuloPage({ params }: { params: { slug: string 
           {/* Objetivo */}
           {article.objetivo && (
             <div className="bg-emerald-50 dark:bg-emerald-900/20 p-5 rounded-2xl border border-emerald-100 dark:border-emerald-800">
-              <h3 className="text-xs font-black text-emerald-600 uppercase tracking-widest mb-2 flex items-center gap-2">
+              <h3 className="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2 flex items-center gap-2">
                 <CheckCircle className="w-4 h-4" /> Objetivo del Módulo
               </h3>
               <p className="text-sm text-slate-700 dark:text-slate-200">{article.objetivo}</p>
@@ -75,7 +75,7 @@ export default async function ArticuloPage({ params }: { params: { slug: string 
           )}
 
           {/* Contenido Markdown */}
-          <div className="prose prose-slate dark:prose-invert max-w-none prose-headings:font-black prose-a:text-blue-600">
+          <div className="prose prose-slate dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-blue-600">
             <ReactMarkdown>
               {article.content}
             </ReactMarkdown>
@@ -120,7 +120,7 @@ export default async function ArticuloPage({ params }: { params: { slug: string 
         {/* Sidebar Info */}
         <div className="space-y-6 md:sticky md:top-6">
           <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700">
-            <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-4 border-b border-slate-100 dark:border-slate-700 pb-2">
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-4 border-b border-slate-100 dark:border-slate-700 pb-2">
               Detalles del Artículo
             </h3>
             

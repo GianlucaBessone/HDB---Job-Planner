@@ -70,15 +70,21 @@ function NotificationsContent() {
 
     useEffect(() => {
         const storedUser = localStorage.getItem('currentUser');
+        const abortController = new AbortController();
+
         if (storedUser) {
             const parsed = JSON.parse(storedUser);
             setUser(parsed);
             const highlight = searchParams.get('highlight');
             if (highlight) setHighlightId(highlight);
-            loadNotifications(parsed.id, parsed.role);
+            loadNotifications(parsed.id, parsed.role, abortController.signal);
         } else {
             router.push('/');
         }
+
+        return () => {
+            abortController.abort();
+        };
     }, [router]);
 
     // When data loads and we have a highlight target, switch tab and scroll
@@ -101,16 +107,19 @@ function NotificationsContent() {
         });
     }, [highlightId, loading, notifications]);
 
-    const loadNotifications = async (userId: string, role: string) => {
+    const loadNotifications = async (userId: string, role: string, signal?: AbortSignal) => {
         setLoading(true);
         try {
-            const res = await safeApiRequest(`/api/notifications?operatorId=${userId}&role=${role}`);
+            const res = await safeApiRequest(`/api/notifications?operatorId=${userId}&role=${role}`, { signal });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            
             const data = await res.json();
             if (Array.isArray(data)) {
                 setNotifications(data);
             }
-        } catch (error) {
-            console.error(error);
+        } catch (error: any) {
+            if (error.name === 'AbortError') return;
+            console.error('Error fetching notifications:', error);
             showToast('Error al cargar notificaciones', 'error');
         } finally {
             setLoading(false);

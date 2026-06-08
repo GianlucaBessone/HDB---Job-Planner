@@ -233,12 +233,12 @@ export default function GestionSugerenciasPage() {
                     </p>
                 </div>
                 <div className="flex flex-col md:flex-row items-center gap-4">
-                    <div className="flex items-stretch bg-blue-500 hover:bg-blue-400 rounded-xl shadow-lg border border-blue-400 transition-colors h-[64px]">
+                    <div className="flex items-stretch bg-blue-600 hover:bg-blue-500 rounded-lg shadow-sm border border-blue-500 transition-colors">
                         <button
                             onClick={() => router.push('/ideas-sugerencias-reclamos')}
-                            className="flex items-center gap-2 text-white px-5 font-bold text-sm border-r border-blue-400/50"
+                            className="flex items-center gap-2 text-white px-4 py-2.5 font-bold text-sm border-r border-blue-500/50"
                         >
-                            <Lightbulb className="w-5 h-5" />
+                            <Lightbulb className="w-4 h-4" />
                             Nuevo Registro
                         </button>
                         <button
@@ -246,21 +246,21 @@ export default function GestionSugerenciasPage() {
                                 navigator.clipboard.writeText(window.location.origin + '/ideas-sugerencias-reclamos');
                                 showToast("Enlace copiado", "success");
                             }}
-                            className="flex items-center justify-center text-white px-4 transition-colors hover:bg-white/10 rounded-r-xl"
+                            className="flex items-center justify-center text-white px-3.5 transition-colors hover:bg-white/10 rounded-r-lg"
                             title="Copiar enlace al formulario"
                         >
-                            <Copy className="w-5 h-5" />
+                            <Copy className="w-4 h-4" />
                         </button>
                     </div>
-                    <div className="flex items-center gap-4 bg-white/10 px-4 h-[64px] rounded-xl backdrop-blur-sm border border-white/20">
-                        <div className="text-center">
-                            <p className="text-xs text-blue-300 font-bold uppercase tracking-wider mb-1">Total Abiertos</p>
-                            <p className="text-2xl font-black">{sugerencias.filter(s => !['Cerrada', 'Implementada', 'Rechazada'].includes(s.estado)).length}</p>
+                    <div className="flex items-center gap-6 bg-white/10 px-6 py-2.5 rounded-lg backdrop-blur-sm border border-white/20 shadow-sm">
+                        <div className="flex flex-col items-center justify-center">
+                            <p className="text-[10px] text-blue-200 font-bold uppercase tracking-wider mb-0.5">Total Abiertos</p>
+                            <p className="text-xl font-black leading-none">{sugerencias.filter(s => !['Cerrada', 'Implementada', 'Rechazada'].includes(s.estado)).length}</p>
                         </div>
-                        <div className="w-px h-10 bg-white/20"></div>
-                        <div className="text-center">
-                            <p className="text-xs text-blue-300 font-bold uppercase tracking-wider mb-1">Sin Asignar</p>
-                            <p className="text-2xl font-black">{sugerencias.filter(s => !s.responsable_id).length}</p>
+                        <div className="w-px h-8 bg-white/20"></div>
+                        <div className="flex flex-col items-center justify-center">
+                            <p className="text-[10px] text-blue-200 font-bold uppercase tracking-wider mb-0.5">Sin Asignar</p>
+                            <p className="text-xl font-black leading-none">{sugerencias.filter(s => !s.responsable_id).length}</p>
                         </div>
                     </div>
                 </div>

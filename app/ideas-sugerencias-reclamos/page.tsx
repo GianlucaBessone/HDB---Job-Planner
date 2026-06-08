@@ -174,24 +174,37 @@ export default function IdeasSugerenciasReclamosPage() {
 
     // Fetch suggestions when activeTab changes to 'pizarra'
     useEffect(() => {
+        let isMounted = true;
+        const abortController = new AbortController();
+
         if (activeTab === 'pizarra') {
             setIsLoadingSugerencias(true);
             setErrorSugerencias('');
-            fetch('/api/sugerencias')
+            fetch('/api/sugerencias', { signal: abortController.signal })
                 .then(res => res.json())
                 .then(data => {
+                    if (!isMounted) return;
                     if (Array.isArray(data)) {
                         setSugerencias(data);
                     } else {
+                        console.error('API returned non-array:', data);
                         setErrorSugerencias('No se pudieron cargar las propuestas.');
                     }
                 })
                 .catch(err => {
+                    if (!isMounted || err.name === 'AbortError') return;
                     console.error('Error fetching suggestions:', err);
                     setErrorSugerencias('Error al cargar datos desde el servidor.');
                 })
-                .finally(() => setIsLoadingSugerencias(false));
+                .finally(() => {
+                    if (isMounted) setIsLoadingSugerencias(false);
+                });
         }
+
+        return () => {
+            isMounted = false;
+            abortController.abort();
+        };
     }, [activeTab]);
 
     // Handle benefits multiple selection toggle

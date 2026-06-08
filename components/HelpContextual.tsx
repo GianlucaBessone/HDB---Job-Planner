@@ -51,8 +51,8 @@ export default function HelpContextual({ slug, iconType = 'help' }: HelpContextu
           {/* Slide-over Panel */}
           <div className="fixed inset-y-0 right-0 max-w-md w-full bg-white dark:bg-slate-900 shadow-2xl z-50 flex flex-col transform transition-transform duration-300 ease-in-out">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
-              <h2 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-blue-500" />
+              <h2 className="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                <BookOpen className="w-4.5 h-4.5 text-blue-500" />
                 Ayuda Contextual
               </h2>
               <button 
@@ -72,13 +72,13 @@ export default function HelpContextual({ slug, iconType = 'help' }: HelpContextu
               ) : article ? (
                 <div className="space-y-6">
                   <div>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-blue-500">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-500">
                       {article.category?.title}
                     </span>
-                    <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-1">
+                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mt-1">
                       {article.title}
                     </h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5 font-normal">
                       {article.description}
                     </p>
                   </div>

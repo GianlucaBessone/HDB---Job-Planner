@@ -582,3 +582,96 @@ body.modal-open {
 .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #475569;
 }
+
+/* ────────────────────────────────────────────────────────── */
+/* TYPOGRAPHY STANDARDIZATION FOR HELP PANELS AND ARTICLES     */
+/* ────────────────────────────────────────────────────────── */
+.prose {
+  font-size: 0.875rem !important; /* 14px */
+  line-height: 1.5rem !important; /* 24px */
+  color: hsl(var(--foreground)) !important;
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4 {
+  font-weight: 600 !important; /* Semibold */
+  color: hsl(var(--foreground)) !important;
+  margin-top: 1.25rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.prose h1 { font-size: 1.25rem !important; }
+.prose h2 { font-size: 1.125rem !important; }
+.prose h3 { font-size: 0.95rem !important; }
+.prose h4 { font-size: 0.875rem !important; }
+
+.prose p {
+  margin-bottom: 0.75rem !important;
+  font-weight: 400 !important; /* Normal font weight */
+  font-size: 0.875rem !important;
+  line-height: 1.5 !important;
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+.dark .prose p {
+  color: #94a3b8 !important; /* Slate 400 */
+}
+
+.prose strong, .prose b {
+  font-weight: 600 !important;
+}
+
+.prose ul {
+  list-style-type: disc !important;
+  padding-left: 1.25rem !important;
+  margin-bottom: 0.75rem !important;
+}
+
+.prose ol {
+  list-style-type: decimal !important;
+  padding-left: 1.25rem !important;
+  margin-bottom: 0.75rem !important;
+}
+
+.prose li {
+  margin-bottom: 0.25rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 400 !important;
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+.dark .prose li {
+  color: #94a3b8 !important;
+}
+
+.prose li strong {
+  font-weight: 600 !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* prose-sm for compact view (sidebars/drawers) */
+.prose-sm {
+  font-size: 0.8125rem !important; /* 13px */
+  line-height: 1.375rem !important; /* 22px */
+}
+
+.prose-sm h1 { font-size: 1.125rem !important; }
+.prose-sm h2 { font-size: 1rem !important; }
+.prose-sm h3 { font-size: 0.875rem !important; }
+.prose-sm h4 { font-size: 0.8125rem !important; }
+
+.prose-sm p {
+  margin-bottom: 0.5rem !important;
+  font-size: 0.8125rem !important;
+  font-weight: 400 !important;
+}
+
+.prose-sm ul, .prose-sm ol {
+  padding-left: 1rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.prose-sm li {
+  margin-bottom: 0.125rem !important;
+  font-size: 0.8125rem !important;
+  font-weight: 400 !important;
+}

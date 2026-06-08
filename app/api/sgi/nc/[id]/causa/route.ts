@@ -19,6 +19,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
                 ncId: params.id,
                 metodologia: body.metodologia,
                 descripcion: body.descripcion,
+                descripcionAnalisis: body.descripcion || '',
                 participantes: participantesNombres,
                 fechaAnalisis: body.fechaAnalisis ? new Date(body.fechaAnalisis) : new Date()
             }

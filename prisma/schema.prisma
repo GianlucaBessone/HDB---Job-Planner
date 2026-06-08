@@ -1193,9 +1193,13 @@ model AnalisisCausaRaiz {
   noConformidad       NoConformidad @relation(fields: [ncId], references: [id], onDelete: Cascade)
   metodologia         String // 5 Porqués, Ishikawa, etc.
   descripcionAnalisis String        @db.Text
+  descripcion         String?       @db.Text
   causaInmediata      String?       @db.Text
   causaBasica         String?       @db.Text
   causaRaiz           String?       @db.Text
+
+  participantes       Json?         @default("[]")
+  fechaAnalisis       DateTime?     @default(now())
 
   responsableId String?
   responsable   Operator? @relation(fields: [responsableId], references: [id])
