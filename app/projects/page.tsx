@@ -351,6 +351,7 @@ function ProjectsContent() {
                     title="Gestión de Proyectos"
                     description="Control y seguimiento de proyectos activos"
                     icon={<Layout className="w-5 h-5" />}
+                    helpSlug="gestion-proyectos"
                     tabs={[
                         { id: 'dashboard', label: 'Dashboard' },
                         { id: 'proyectos', label: 'Proyectos' },

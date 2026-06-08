@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Search, Filter, ShieldCheck, UserCheck, CalendarDays, NotebookTabs, ArrowRightCircle, Users, Lightbulb, BadgeCheck, FileClock, X, Check, Save, Brain, BarChart3, MessageSquare, History, ListTodo } from "lucide-react";
+import { Loader2, Search, Filter, ShieldCheck, UserCheck, CalendarDays, NotebookTabs, ArrowRightCircle, Users, Lightbulb, BadgeCheck, FileClock, X, Check, Save, Brain, BarChart3, MessageSquare, History, ListTodo, Copy } from "lucide-react";
 import { showToast } from '@/components/Toast';
 
 // Module-level cache to persist data across component remounts
@@ -226,21 +226,33 @@ export default function GestionSugerenciasPage() {
                 <div>
                     <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
                         <ShieldCheck className="w-8 h-8 text-blue-400" />
-                        Gestión de Sugerencias y No Conformidades
+                        Gestión de Sugerencias y Reclamos
                     </h1>
                     <p className="text-blue-200 mt-2 font-medium max-w-2xl">
                         Tablero central para la evaluación, seguimiento y resolución de las ideas, sugerencias y reclamos presentados en la plataforma.
                     </p>
                 </div>
                 <div className="flex flex-col md:flex-row items-center gap-4">
-                    <button
-                        onClick={() => router.push('/ideas-sugerencias-reclamos')}
-                        className="flex items-center gap-2 bg-blue-500 hover:bg-blue-400 text-white px-4 py-3 rounded-xl shadow-lg border border-blue-400 transition-colors font-bold text-sm"
-                    >
-                        <Lightbulb className="w-5 h-5" />
-                        Nuevo Registro
-                    </button>
-                    <div className="flex items-center gap-4 bg-white/10 px-4 py-3 rounded-xl backdrop-blur-sm border border-white/20">
+                    <div className="flex items-stretch bg-blue-500 hover:bg-blue-400 rounded-xl shadow-lg border border-blue-400 transition-colors h-[64px]">
+                        <button
+                            onClick={() => router.push('/ideas-sugerencias-reclamos')}
+                            className="flex items-center gap-2 text-white px-5 font-bold text-sm border-r border-blue-400/50"
+                        >
+                            <Lightbulb className="w-5 h-5" />
+                            Nuevo Registro
+                        </button>
+                        <button
+                            onClick={() => {
+                                navigator.clipboard.writeText(window.location.origin + '/ideas-sugerencias-reclamos');
+                                showToast("Enlace copiado", "success");
+                            }}
+                            className="flex items-center justify-center text-white px-4 transition-colors hover:bg-white/10 rounded-r-xl"
+                            title="Copiar enlace al formulario"
+                        >
+                            <Copy className="w-5 h-5" />
+                        </button>
+                    </div>
+                    <div className="flex items-center gap-4 bg-white/10 px-4 h-[64px] rounded-xl backdrop-blur-sm border border-white/20">
                         <div className="text-center">
                             <p className="text-xs text-blue-300 font-bold uppercase tracking-wider mb-1">Total Abiertos</p>
                             <p className="text-2xl font-black">{sugerencias.filter(s => !['Cerrada', 'Implementada', 'Rechazada'].includes(s.estado)).length}</p>
@@ -279,15 +291,15 @@ export default function GestionSugerenciasPage() {
                     <input 
                         type="text"
                         placeholder="Buscar por código, título o área..."
-                        className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium transition-shadow dark:text-slate-200"
+                        className="w-full pl-10 pr-4 h-[46px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium transition-shadow dark:text-slate-200"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 h-[46px]">
                     <Filter className="w-4 h-4 text-slate-400" />
                     <select 
-                        className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-bold text-slate-700 dark:text-slate-200 cursor-pointer"
+                        className="h-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-bold text-slate-700 dark:text-slate-200 cursor-pointer"
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
                     >

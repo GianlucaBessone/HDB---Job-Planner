@@ -221,7 +221,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
                     sugerenciaId: sugerencia.id,
                     descripcion: nuevaAccion.descripcion.trim(),
                     responsableId: nuevaAccion.responsableId || null,
-                    fechaLimite: nuevaAccion.fechaLimite ? new Date(nuevaAccion.fechaLimite) : null,
+                    fechaCompromiso: nuevaAccion.fechaLimite ? new Date(nuevaAccion.fechaLimite) : null,
                     estado: 'Pendiente'
                 }
             });

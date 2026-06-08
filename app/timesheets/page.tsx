@@ -11,6 +11,7 @@ import SearchableSelect from '@/components/SearchableSelect';
 import { formatDate, formatTime, formatSheetDates } from '@/lib/formatDate';
 import { getProjectOptions, filterOperatorProjects } from '@/lib/projectSelectHelper';
 import CodeBadge from '@/components/CodeBadge';
+import HelpContextual from '@/components/HelpContextual';
 
 interface Project {
     id: string;
@@ -529,6 +530,7 @@ export default function TimesheetsPage() {
                     <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
                         <Clock className="w-6 h-6 md:w-8 md:h-8 text-indigo-500" />
                         Registro de Tiempos
+                        <HelpContextual slug="registro-tiempos-ausencias" />
                     </h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium italic hidden md:block">Gestión de jornadas de los operadores e ingresos por proyecto</p>
                 </div>

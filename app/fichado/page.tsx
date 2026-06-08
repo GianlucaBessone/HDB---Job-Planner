@@ -25,6 +25,7 @@ import { formatTime, formatDate } from '@/lib/formatDate';
 import { showToast } from '@/components/Toast';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { v4 as uuidv4 } from 'uuid';
+import HelpContextual from '@/components/HelpContextual';
 
 interface Project {
     id: string;
@@ -326,7 +327,10 @@ export default function PunchInPage() {
                         <User className="w-6 h-6" />
                     </div>
                     <div>
-                        <h2 className="font-bold text-slate-800 dark:text-slate-100">{currentUser?.nombreCompleto || 'Cargando...'}</h2>
+                        <h2 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                            {currentUser?.nombreCompleto || 'Cargando...'}
+                            <HelpContextual slug="fichado-gps-qr" />
+                        </h2>
                         <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1">
                             <Clock className="w-3 h-3" /> {formatTime(new Date())} — {formatDate(new Date())}
                         </p>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, GitCompare, ChevronRight, FileText, Sparkles, User, Calendar, CheckCircle2, AlertCircle } from 'lucide-react';
 import { formatDateInline } from '@/lib/formatDate';
+import { useModalScroll } from '@/lib/useModalScroll';
 
 interface VersionComparisonModalProps {
     currentDoc: any;
@@ -9,6 +10,7 @@ interface VersionComparisonModalProps {
 }
 
 export default function VersionComparisonModal({ currentDoc, selectedVersion, onClose }: VersionComparisonModalProps) {
+    useModalScroll(true);
     const [loading, setLoading] = useState(true);
     const [diffData, setDiffData] = useState<any>(null);
 

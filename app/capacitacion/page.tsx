@@ -686,6 +686,7 @@ export default function CapacitacionPage() {
         title="Centro de Formación Integral"
         description="HDB Servicios Eléctricos • HDB SGI Portal de Desarrollo Profesional"
         icon={<GraduationCap className="w-5 h-5" />}
+        helpSlug="formacion-integral"
         tabs={[
           { id: "internal", label: "Mis Capacitaciones" },
           {

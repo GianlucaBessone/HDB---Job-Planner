@@ -7,8 +7,10 @@ import {
 } from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
 import TechAssistantChat from '@/components/TechAssistantChat';
+import { useModalScroll } from '@/lib/useModalScroll';
 
 export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose: () => void, onSuccess: (newDocId: string) => void, user: any }) {
+    useModalScroll(true);
     const [loading, setLoading] = useState(false);
     const [operators, setOperators] = useState<any[]>([]);
     const [tagsList, setTagsList] = useState<any[]>([]);

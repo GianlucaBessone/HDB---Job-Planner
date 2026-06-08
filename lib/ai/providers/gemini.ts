@@ -11,9 +11,11 @@ import { BaseProvider, AICapability, AIProviderRequest, AIProviderResponse } fro
 const apiKey = process.env.GEMINI_API_KEY || 'DUMMY_API_KEY_FOR_BUILD';
 const gatewayUrl = process.env.VERCEL_AI_GATEWAY_URL;
 
-const aiOptions: any = { apiKey };
+const aiOptions: import('@google/genai').GoogleGenAIOptions = { apiKey };
 if (gatewayUrl) {
-    aiOptions.baseUrl = `${gatewayUrl}/google-gemini`;
+    aiOptions.httpOptions = {
+        baseUrl: `${gatewayUrl}/google-gemini`,
+    };
 }
 
 const ai = new GoogleGenAI(aiOptions);

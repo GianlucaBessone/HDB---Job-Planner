@@ -121,7 +121,7 @@ model Operator {
   etiquetas                 Json // Now using native Json type
   pin                       String                      @default("1234")
   role                      String                      @default("operador") // operador | supervisor | admin | vendedor | qa
-  posicion                  String?                     // e.g. "Director", "QA Manager", "Gerente"
+  posicion                  String? // e.g. "Director", "QA Manager", "Gerente"
   responsibleProjects       Project[]                   @relation("ProjectResponsable")
   createdAt                 DateTime                    @default(now())
   timeEntries               TimeEntry[]
@@ -138,6 +138,10 @@ model Operator {
   sugerencias_creadas       Sugerencia[]                @relation("SugerenciaAutor")
   sugerencias_asignadas     Sugerencia[]                @relation("SugerenciaResponsable")
   acciones_mejora           AccionMejora[]
+  ncRegistradas             NoConformidad[]             @relation("NCResponsableRegistro")
+  ncTratadas                NoConformidad[]             @relation("NCResponsableTratamiento")
+  analisisCausaRaiz         AnalisisCausaRaiz[]
+  verificacionesEficacia    VerificacionEficacia[]
 }
 
 model FavoriteBlock {
@@ -332,8 +336,8 @@ model OrdenServicio {
   checklists           OSChecklist[]
 
   // Rework tracking
-  esReTrabajo              Boolean   @default(false)
-  ordenOriginalId          String?
+  esReTrabajo     Boolean @default(false)
+  ordenOriginalId String?
 
   @@index([projectId])
 }
@@ -450,7 +454,7 @@ model MaterialDevolucion {
   // Delegacion
   delegadoAId       String?
   delegadoANombre   String?
-  firmaDelegacion   String?          @db.Text
+  firmaDelegacion   String? @db.Text
   delegadoPorId     String?
   delegadoPorNombre String?
 
@@ -611,7 +615,7 @@ model ControlledDocument {
   requiereConfirmacionLectura Boolean @default(false)
   requiereCapacitacion        Boolean @default(false)
   nivelCriticidad             String  @default("media") // baja | media | alta | critica
-  validezMeses                Int?    // Periodo de validez de la capacitación en meses (opcional)
+  validezMeses                Int? // Periodo de validez de la capacitación en meses (opcional)
 
   // Trazabilidad
   documentoReemplazadoId  String?
@@ -623,7 +627,7 @@ model ControlledDocument {
   // Metadata
   tags          Json    @default("[]") // Array de strings
   observaciones String? @db.Text
-  workflowState Json?   // Workflow de firmas y acuerdos
+  workflowState Json? // Workflow de firmas y acuerdos
 
   // Timestamps
   createdAt     DateTime @default(now())
@@ -638,10 +642,11 @@ model ControlledDocument {
   documentChecklists DocumentChecklist[]
 
   // OS Integrations
-  applicabilityRules DocumentApplicabilityRule[]
-  osAssignments      OrdenServicioDocumento[]
-  competencies       TechnicianCompetency[]
-  trainings          TechnicianTraining[]
+  applicabilityRules    DocumentApplicabilityRule[]
+  osAssignments         OrdenServicioDocumento[]
+  competencies          TechnicianCompetency[]
+  trainings             TechnicianTraining[]
+  documentacionAfectada DocumentacionAfectada[]
 
   @@index([tipoDocumento])
   @@index([area])
@@ -926,20 +931,20 @@ model DocumentChecklist {
 }
 
 model TechnicianCompetency {
-  id              String             @id @default(cuid())
+  id              String              @id @default(cuid())
   operatorId      String
-  operator        Operator           @relation(fields: [operatorId], references: [id], onDelete: Cascade)
-  nombre          String             // e.g. "Seguridad eléctrica", "Trabajo en altura", "Protocolo sanitario"
+  operator        Operator            @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  nombre          String // e.g. "Seguridad eléctrica", "Trabajo en altura", "Protocolo sanitario"
   documentId      String?
   document        ControlledDocument? @relation(fields: [documentId], references: [id], onDelete: SetNull)
-  estado          String             @default("pendiente") // pendiente | vigente | vencida | inactiva
+  estado          String              @default("pendiente") // pendiente | vigente | vencida | inactiva
   vencimiento     DateTime?
-  evidencia       String?            @db.Text // Descripción o Base64 o URL
-  evaluacion      String?            @db.Text // Nota o comentarios
+  evidencia       String?             @db.Text // Descripción o Base64 o URL
+  evaluacion      String?             @db.Text // Nota o comentarios
   aprobadorId     String?
   aprobadorNombre String?
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
 
   @@index([operatorId])
   @@index([documentId])
@@ -947,29 +952,29 @@ model TechnicianCompetency {
 }
 
 model TechnicianTraining {
-  id              String             @id @default(cuid())
+  id              String              @id @default(cuid())
   operatorId      String
-  operator        Operator           @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  operator        Operator            @relation(fields: [operatorId], references: [id], onDelete: Cascade)
   documentId      String?
   document        ControlledDocument? @relation(fields: [documentId], references: [id], onDelete: SetNull)
   versionId       String?
   version         DocumentVersion?    @relation(fields: [versionId], references: [id], onDelete: SetNull)
-  titulo          String             // Título de la capacitación
-  estado          String             @default("pendiente") // pendiente | en_progreso | aprobado | reprobado
-  tipoContenido   String             @default("video") // video | pdf | cuestionario | mixto
-  urlContenido    String?            @db.Text // URL externa, video embed o path
-  cuestionario    Json?              // Array de preguntas, opciones, y correcta
-  respuestas      Json?              // Array de respuestas del usuario
+  titulo          String // Título de la capacitación
+  estado          String              @default("pendiente") // pendiente | en_progreso | aprobado | reprobado
+  tipoContenido   String              @default("video") // video | pdf | cuestionario | mixto
+  urlContenido    String?             @db.Text // URL externa, video embed o path
+  cuestionario    Json? // Array de preguntas, opciones, y correcta
+  respuestas      Json? // Array de respuestas del usuario
   puntaje         Float?
-  puntajeMinimo   Float              @default(70.0)
-  tiempoInvertido Int?               // En segundos
+  puntajeMinimo   Float               @default(70.0)
+  tiempoInvertido Int? // En segundos
   fechaInicio     DateTime?
   fechaFin        DateTime?
   evaluadorId     String?
   evaluadorNombre String?
-  observaciones   String?            @db.Text
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  observaciones   String?             @db.Text
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
 
   @@index([operatorId])
   @@index([documentId])
@@ -982,46 +987,46 @@ model TechnicianTraining {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 model AiPrompt {
-  id          String   @id @default(cuid())
-  key         String   @unique // e.g. "ISO_DOC_GEN", "TECH_ASSISTANT", etc.
+  id          String         @id @default(cuid())
+  key         String         @unique // e.g. "ISO_DOC_GEN", "TECH_ASSISTANT", etc.
   name        String
   description String?
-  template    String   @db.Text
-  version     Int      @default(1)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  template    String         @db.Text
+  version     Int            @default(1)
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
   logs        AiRequestLog[]
 }
 
 model AiRequestLog {
   id            String    @id @default(cuid())
-  action        String    // e.g. "GEN_ISO_DOC", "TECH_CHAT", "OCR", "GEN_CHECKLIST", "TRAINING_GEN", "SEMANTIC_SEARCH", "GEN_OBS", "IMAGE_ANOMALY"
-  model         String    // e.g. "gemini-2.5-flash", "gpt-4o", "claude-sonnet-4"
+  action        String // e.g. "GEN_ISO_DOC", "TECH_CHAT", "OCR", "GEN_CHECKLIST", "TRAINING_GEN", "SEMANTIC_SEARCH", "GEN_OBS", "IMAGE_ANOMALY"
+  model         String // e.g. "gemini-2.5-flash", "gpt-4o", "claude-sonnet-4"
   provider      String    @default("gemini") // e.g. "gemini", "openai", "anthropic"
   promptKey     String?
   prompt        AiPrompt? @relation(fields: [promptKey], references: [key], onDelete: SetNull)
   promptVersion Int?
-  
+
   // Usage tracking
-  inputTokens   Int       @default(0)
-  outputTokens  Int       @default(0)
-  totalTokens   Int       @default(0)
-  estimatedCost Float     @default(0.0) // estimated cost in USD
-  latencyMs     Int       @default(0)
-  
+  inputTokens   Int   @default(0)
+  outputTokens  Int   @default(0)
+  totalTokens   Int   @default(0)
+  estimatedCost Float @default(0.0) // estimated cost in USD
+  latencyMs     Int   @default(0)
+
   // Auditoria
-  userId        String?
-  userName      String?
-  userRole      String?
-  entity        String?   // e.g. "ControlledDocument", "OrdenServicio", "Project"
-  entityId      String?
-  
+  userId   String?
+  userName String?
+  userRole String?
+  entity   String? // e.g. "ControlledDocument", "OrdenServicio", "Project"
+  entityId String?
+
   // Payload (sanitized or status)
-  success       Boolean   @default(true)
-  errorMessage  String?   @db.Text
-  
-  createdAt     DateTime  @default(now())
+  success      Boolean @default(true)
+  errorMessage String? @db.Text
+
+  createdAt DateTime @default(now())
 
   @@index([action])
   @@index([userId])
@@ -1029,14 +1034,14 @@ model AiRequestLog {
 }
 
 model AiConversation {
-  id         String                 @id @default(cuid())
-  userId     String
-  entity     String?                // e.g. "OrdenServicio", "Project", "Tool"
-  entityId   String?
-  title      String                 @default("Conversación técnica")
-  messages   AiConversationMessage[]
-  createdAt  DateTime               @default(now())
-  updatedAt  DateTime               @updatedAt
+  id        String                  @id @default(cuid())
+  userId    String
+  entity    String? // e.g. "OrdenServicio", "Project", "Tool"
+  entityId  String?
+  title     String                  @default("Conversación técnica")
+  messages  AiConversationMessage[]
+  createdAt DateTime                @default(now())
+  updatedAt DateTime                @updatedAt
 
   @@index([userId])
   @@index([entity, entityId])
@@ -1046,7 +1051,7 @@ model AiConversationMessage {
   id             String         @id @default(cuid())
   conversationId String
   conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  role           String         // "user" | "model"
+  role           String // "user" | "model"
   content        String         @db.Text
   createdAt      DateTime       @default(now())
 
@@ -1054,33 +1059,33 @@ model AiConversationMessage {
 }
 
 model ExternalCertificate {
-  id              String    @id @default(cuid())
-  operatorId      String
-  operator        Operator  @relation(fields: [operatorId], references: [id], onDelete: Cascade)
-  nombreCurso     String
-  institucion     String
-  descripcion     String?   @db.Text
-  horas           Float?
-  fechaEmision    String?   // YYYY-MM-DD
-  estado          String    @default("pendiente") // pendiente | aprobado | rechazado
-  archivoUrl      String?   @db.Text
-  aiData          Json?     // To store AI extraction details like hours, dates, entities
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id           String   @id @default(cuid())
+  operatorId   String
+  operator     Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  nombreCurso  String
+  institucion  String
+  descripcion  String?  @db.Text
+  horas        Float?
+  fechaEmision String? // YYYY-MM-DD
+  estado       String   @default("pendiente") // pendiente | aprobado | rechazado
+  archivoUrl   String?  @db.Text
+  aiData       Json? // To store AI extraction details like hours, dates, entities
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@index([operatorId])
 }
 
 model SafetyAudit {
-  id              String    @id @default(cuid())
+  id              String   @id @default(cuid())
   operatorId      String
-  operator        Operator  @relation(fields: [operatorId], references: [id], onDelete: Cascade)
-  fecha           String    // YYYY-MM-DD
-  eppAprobado     Boolean   @default(true)
-  lotoAplicado    Boolean   @default(true)
-  cumpleNormativa Boolean   @default(true)
-  observaciones   String?   @db.Text
-  createdAt       DateTime  @default(now())
+  operator        Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  fecha           String // YYYY-MM-DD
+  eppAprobado     Boolean  @default(true)
+  lotoAplicado    Boolean  @default(true)
+  cumpleNormativa Boolean  @default(true)
+  observaciones   String?  @db.Text
+  createdAt       DateTime @default(now())
 
   @@index([operatorId])
 }
@@ -1097,7 +1102,7 @@ model Sugerencia {
   impacto_estimado    String
   propuesta_solucion  String?                @db.Text
   frecuencia_problema String?
-  presentacion        String                 // "anonima" | "identificada"
+  presentacion        String // "anonima" | "identificada"
   usuario_id          String?
   usuario             Operator?              @relation("SugerenciaAutor", fields: [usuario_id], references: [id], onDelete: SetNull)
   responsable_id      String?
@@ -1110,8 +1115,8 @@ model Sugerencia {
   historial           SugerenciaHistorial[]
   comentarios         SugerenciaComentario[]
   acciones            AccionMejora[]
-  analisis_ia         Json?                  // AI analysis result (cached)
-  
+  analisis_ia         Json? // AI analysis result (cached)
+
   @@index([usuario_id])
   @@index([responsable_id])
   @@index([estado])
@@ -1123,38 +1128,271 @@ model SugerenciaHistorial {
   sugerencia     Sugerencia @relation(fields: [sugerenciaId], references: [id], onDelete: Cascade)
   estadoAnterior String
   estadoNuevo    String
-  usuario        String     // Nombre del usuario/sistema
+  usuario        String // Nombre del usuario/sistema
   fecha          DateTime   @default(now())
 
   @@index([sugerenciaId])
 }
 
 model SugerenciaComentario {
-  id             String     @id @default(cuid())
-  sugerenciaId   String
-  sugerencia     Sugerencia @relation(fields: [sugerenciaId], references: [id], onDelete: Cascade)
-  autor          String     // Nombre del autor
-  texto          String     @db.Text
-  fecha          DateTime   @default(now())
+  id           String     @id @default(cuid())
+  sugerenciaId String
+  sugerencia   Sugerencia @relation(fields: [sugerenciaId], references: [id], onDelete: Cascade)
+  autor        String // Nombre del autor
+  texto        String     @db.Text
+  fecha        DateTime   @default(now())
 
   @@index([sugerenciaId])
 }
 
-model AccionMejora {
-  id              String     @id @default(cuid())
-  sugerenciaId    String
-  sugerencia      Sugerencia @relation(fields: [sugerenciaId], references: [id], onDelete: Cascade)
-  descripcion     String     @db.Text
-  responsableId   String?
-  responsable     Operator?  @relation(fields: [responsableId], references: [id], onDelete: SetNull)
-  fechaLimite     DateTime?
-  estado          String     @default("Pendiente") // Pendiente | En Progreso | Completada | Cancelada
-  evidencia       String?    @db.Text
-  fechaCompletada DateTime?
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt @default(now())
+// ═══════════════════════════════════════════════════════════════════════════════
+// GESTIÓN DE NO CONFORMIDADES Y CAPA (ISO 9001:2015)
+// ═══════════════════════════════════════════════════════════════════════════════
 
+model NoConformidad {
+  id               String   @id @default(cuid())
+  codigoNC         String?  @unique
+  fechaDeteccion   DateTime
+  fechaRegistro    DateTime @default(now())
+  origen           String // Auditoría interna, Reclamo de cliente, etc.
+  tipoNC           String // Mayor, Menor, etc.
+  categoria        String
+  etiquetas        Json     @default("[]")
+  descripcion      String   @db.Text
+  evidenciaAdjunta Json     @default("[]")
+  procesoAfectado  String?
+  areaAfectada     String?
+
+  responsableRegistroId    String?
+  responsableRegistro      Operator? @relation("NCResponsableRegistro", fields: [responsableRegistroId], references: [id])
+  responsableTratamientoId String?
+  responsableTratamiento   Operator? @relation("NCResponsableTratamiento", fields: [responsableTratamientoId], references: [id])
+
+  estado          String    @default("Abierta")
+  criticidad      String    @default("Media")
+  impacto         String?
+  fechaCompromiso DateTime?
+  fechaCierre     DateTime?
+  resultadoFinal  String?   @db.Text
+  observaciones   String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  analisisCausaRaiz      AnalisisCausaRaiz[]
+  accionesMejora         AccionMejora[]
+  verificacionesEficacia VerificacionEficacia[]
+  reuniones              ReunionNC[]
+  documentacionAfectada  DocumentacionAfectada[]
+  capacitacionesReq      CapacitacionRequerida[]
+}
+
+model AnalisisCausaRaiz {
+  id                  String        @id @default(cuid())
+  ncId                String
+  noConformidad       NoConformidad @relation(fields: [ncId], references: [id], onDelete: Cascade)
+  metodologia         String // 5 Porqués, Ishikawa, etc.
+  descripcionAnalisis String        @db.Text
+  causaInmediata      String?       @db.Text
+  causaBasica         String?       @db.Text
+  causaRaiz           String?       @db.Text
+
+  responsableId String?
+  responsable   Operator? @relation(fields: [responsableId], references: [id])
+  fecha         DateTime  @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ncId])
+}
+
+model VerificacionEficacia {
+  id            String         @id @default(cuid())
+  ncId          String?
+  noConformidad NoConformidad? @relation(fields: [ncId], references: [id], onDelete: Cascade)
+
+  accionMejoraId String?
+  accionMejora   AccionMejora? @relation(fields: [accionMejoraId], references: [id], onDelete: Cascade)
+
+  responsableVerificacionId String?
+  responsableVerificacion   Operator? @relation(fields: [responsableVerificacionId], references: [id])
+  fechaVerificacion         DateTime
+  resultado                 String    @db.Text
+  observaciones             String?   @db.Text
+  eficaz                    Boolean
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ncId])
+  @@index([accionMejoraId])
+}
+
+model ReunionNC {
+  id            String        @id @default(cuid())
+  ncId          String
+  noConformidad NoConformidad @relation(fields: [ncId], references: [id], onDelete: Cascade)
+  fecha         DateTime
+  participantes Json          @default("[]")
+  agenda        String?       @db.Text
+  acta          String?       @db.Text
+  compromisos   Json          @default("[]")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ncId])
+}
+
+model DocumentacionAfectada {
+  id            String        @id @default(cuid())
+  ncId          String
+  noConformidad NoConformidad @relation(fields: [ncId], references: [id], onDelete: Cascade)
+
+  documentoId  String?
+  documento    ControlledDocument? @relation(fields: [documentoId], references: [id])
+  documentoRef String? // For reference when ControlledDocument is not available
+
+  tipoRelacion String // Documento incumplido, modificado, obsoleto, nuevo documento
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ncId])
+  @@index([documentoId])
+}
+
+model CapacitacionRequerida {
+  id            String        @id @default(cuid())
+  ncId          String
+  noConformidad NoConformidad @relation(fields: [ncId], references: [id], onDelete: Cascade)
+
+  capacitacion     String
+  motivo           String    @db.Text
+  personalAfectado Json      @default("[]") // Array of Operator IDs or Names
+  fechaProgramada  DateTime?
+  fechaRealizacion DateTime?
+  estado           String    @default("Pendiente")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ncId])
+}
+
+model AccionMejora {
+  id                String  @id @default(cuid())
+  codigoAccion      String? @unique
+  tipoAccion        String  @default("Mejora Continua") // Correctiva, Preventiva, Mejora Continua, Mitigación de Riesgo
+  origen            String  @default("Otro") // No Conformidad, Riesgo, Auditoría Interna, etc.
+  descripcion       String  @db.Text
+  justificacion     String? @db.Text
+  beneficioEsperado String? @db.Text
+
+  responsableId String?
+  responsable   Operator? @relation(fields: [responsableId], references: [id], onDelete: SetNull)
+
+  prioridad        String    @default("Media") // Baja, Media, Alta
+  fechaCreacion    DateTime  @default(now())
+  fechaInicio      DateTime?
+  fechaCompromiso  DateTime?
+  fechaCierre      DateTime?
+  porcentajeAvance Float     @default(0)
+  estado           String    @default("Pendiente") // Pendiente, En Progreso, Completada, Cerrada, Cancelada
+  eficacia         String? // Pendiente, Eficaz, Ineficaz
+  evidencia        String?   @db.Text
+  observaciones    String?   @db.Text
+
+  // Relaciones opcionales para trazabilidad
+  ncId          String?
+  noConformidad NoConformidad? @relation(fields: [ncId], references: [id])
+
+  sugerenciaId String?
+  sugerencia   Sugerencia? @relation(fields: [sugerenciaId], references: [id], onDelete: Cascade)
+
+  riesgoId         String?
+  oportunidadId    String?
+  auditoriaId      String?
+  documentoId      String?
+  capacitacionId   String?
+  proyectoMejoraId String?
+
+  verificaciones VerificacionEficacia[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([ncId])
   @@index([sugerenciaId])
   @@index([responsableId])
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// CENTRO DE AYUDA Y CAPACITACIÓN SGI
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model HelpCategory {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  title       String
+  description String?
+  iconName    String        @default("BookOpen")
+  order       Int           @default(0)
+  active      Boolean       @default(true)
+  articles    HelpArticle[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model HelpArticle {
+  id         String       @id @default(cuid())
+  slug       String       @unique
+  categoryId String
+  category   HelpCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String @db.Text
+  content     String @db.Text
+
+  objetivo        String? @db.Text
+  comoAcceder     String? @db.Text
+  buenasPracticas String? @db.Text
+
+  roles          Json @default("[]")
+  relatedModules Json @default("[]")
+
+  order       Int     @default(0)
+  isPublished Boolean @default(true)
+
+  viewsCount   Int @default(0)
+  helpfulCount Int @default(0)
+
+  tags HelpTag[]
+  faqs HelpFaq[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([slug])
+}
+
+model HelpTag {
+  id       String        @id @default(cuid())
+  name     String        @unique
+  articles HelpArticle[]
+}
+
+model HelpFaq {
+  id        String      @id @default(cuid())
+  articleId String
+  article   HelpArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  question  String
+  answer    String      @db.Text
+  order     Int         @default(0)
+  createdAt DateTime    @default(now())
+
+  @@index([articleId])
+}

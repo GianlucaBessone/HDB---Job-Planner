@@ -13,9 +13,11 @@ import ExpirationsTab from './components/ExpirationsTab';
 import HistoryTab from './components/HistoryTab';
 import LmsTab from './components/LmsTab';
 import CompetenciesTab from './components/CompetenciesTab';
+import NcTab from './components/NcTab';
+import CapaTab from './components/CapaTab';
 import ModuleHeader from '@/components/ModuleHeader';
 
-type TabId = 'dashboard' | 'library' | 'templates' | 'expirations' | 'history' | 'training' | 'competencies';
+type TabId = 'dashboard' | 'library' | 'templates' | 'expirations' | 'history' | 'training' | 'competencies' | 'nc' | 'capa';
 
 export default function CalidadPageWrapper() {
     return (
@@ -57,6 +59,8 @@ function CalidadPage() {
     const tabs: { id: TabId; label: string; roles: string[] }[] = [
         { id: 'dashboard', label: 'Dashboard QMS', roles: ['supervisor', 'admin', 'qa'] },
         { id: 'library', label: 'Biblioteca Documental', roles: ['operador', 'supervisor', 'admin', 'qa'] },
+        { id: 'nc', label: 'No Conformidades (NC)', roles: ['supervisor', 'admin', 'qa'] },
+        { id: 'capa', label: 'Sistema CAPA', roles: ['supervisor', 'admin', 'qa'] },
         { id: 'training', label: 'Capacitación LMS', roles: ['operador', 'supervisor', 'admin', 'qa'] },
         { id: 'competencies', label: 'Matriz de Competencias', roles: ['operador', 'supervisor', 'admin', 'qa'] },
         { id: 'templates', label: 'Plantillas de Checklist', roles: ['supervisor', 'admin', 'qa'] },
@@ -84,6 +88,7 @@ function CalidadPage() {
                 title="Gestión Operativa y Calidad"
                 description="Plataforma de Cumplimiento, Capacitación Obligatoria (LMS) y Competencias QMS"
                 icon={<FileCheck className="w-5 h-5" />}
+                helpSlug="calidad-documentacion"
                 tabs={allowedTabs}
                 activeTabId={activeTab}
                 onTabChange={(id) => setActiveTab(id as TabId)}
@@ -95,9 +100,19 @@ function CalidadPage() {
                         <DashboardTab user={currentUser} />
                     </div>
                 )}
-                {visitedTabs['library'] && (
+                { visitedTabs['library'] && (
                     <div className={activeTab === 'library' ? '' : 'hidden'}>
                         <LibraryTab user={currentUser} />
+                    </div>
+                )}
+                {visitedTabs['nc'] && (
+                    <div className={activeTab === 'nc' ? '' : 'hidden'}>
+                        <NcTab user={currentUser} />
+                    </div>
+                )}
+                {visitedTabs['capa'] && (
+                    <div className={activeTab === 'capa' ? '' : 'hidden'}>
+                        <CapaTab user={currentUser} />
                     </div>
                 )}
                 {visitedTabs['training'] && (

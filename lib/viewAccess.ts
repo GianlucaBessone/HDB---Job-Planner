@@ -70,6 +70,7 @@ export const DEFAULT_VIEWS: ViewConfig[] = [
     { key: '/capacitacion',         label: 'Formación Integral',       description: 'Capacitación y competencias',  roles: ['operador', 'supervisor', 'admin', 'qa'],  access: 'ambos', section: 'calidad', iconName: 'BookOpen',   color: 'bg-sky-600' },
     { key: '/gestion-sugerencias',  label: 'Gestión de Sugerencias',   description: 'Ideas y mejora continua',      roles: ['admin', 'qa', 'supervisor'],              access: 'ambos', section: 'calidad', iconName: 'Lightbulb',  color: 'bg-yellow-500' },
     { key: '/auditoria-ia',         label: 'Auditoría de IA',          description: 'Validación inteligente',       roles: ['admin', 'qa', 'supervisor'],              access: 'ambos', section: 'calidad', iconName: 'Sparkles',   color: 'bg-fuchsia-600' },
+    { key: '/centro-ayuda',         label: 'Centro de Ayuda',          description: 'Base de conocimiento SGI',     roles: ['operador', 'supervisor', 'admin', 'qa', 'vendedor'], access: 'ambos', section: 'calidad', iconName: 'LifeBuoy', color: 'bg-blue-500' },
 
     // ─ Administración ─
     { key: '/operators',      label: 'Gestión de Usuarios',  description: 'Operadores y permisos',      roles: ['supervisor', 'admin', 'qa'],                          access: 'ambos', section: 'administracion', iconName: 'Users',    color: 'bg-slate-700' },

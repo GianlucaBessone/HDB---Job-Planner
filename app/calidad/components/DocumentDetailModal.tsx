@@ -33,6 +33,7 @@ import { safeApiRequest } from "@/lib/offline";
 import { formatDateInline, formatDateTimeInline } from "@/lib/formatDate";
 import { showToast } from "@/components/Toast";
 import VersionComparisonModal from "./VersionComparisonModal";
+import { useModalScroll } from "@/lib/useModalScroll";
 
 // Module-level caches to speed up modal opens across the app session
 let cachedOperators: any[] | null = null;
@@ -50,6 +51,7 @@ export default function DocumentDetailModal({
   onClose: () => void;
   user?: any;
 }) {
+  useModalScroll(true);
   const [doc, setDoc] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<

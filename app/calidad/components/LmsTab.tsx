@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { safeApiRequest } from "@/lib/offline";
 import { formatDateInline } from "@/lib/formatDate";
+import { useModalScroll } from "@/lib/useModalScroll";
 import {
   BookOpen,
   Award,
@@ -64,6 +65,8 @@ export default function LmsTab({ user }: { user: any }) {
   const [externalCerts, setExternalCerts] = useState<any[]>([]);
   const [loadingCerts, setLoadingCerts] = useState(false);
   const [selectedCert, setSelectedCert] = useState<any>(null);
+
+  useModalScroll(isAiModalOpen || !!selectedCert);
   const [certFilter, setCertFilter] = useState<
     "all" | "pendiente" | "aprobado" | "rechazado"
   >("all");

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Search } from 'lucide-react';
+import HelpContextual from '@/components/HelpContextual';
 
 export interface ModuleTab {
     id: string;
@@ -30,6 +31,8 @@ interface ModuleHeaderProps {
     searchValue?: string;
     onSearchChange?: (val: string) => void;
     searchPlaceholder?: string;
+
+    helpSlug?: string;
 }
 
 export default function ModuleHeader({
@@ -42,7 +45,8 @@ export default function ModuleHeader({
     actions,
     searchValue,
     onSearchChange,
-    searchPlaceholder = 'Buscar...'
+    searchPlaceholder = 'Buscar...',
+    helpSlug
 }: ModuleHeaderProps) {
 
     const renderActionBtn = (action: ModuleAction) => {
@@ -91,7 +95,10 @@ export default function ModuleHeader({
                         </div>
                     )}
                     <div className="min-w-0">
-                        <h1 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight leading-none truncate">{title}</h1>
+                        <h1 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight leading-none truncate flex items-center gap-2">
+                            {title}
+                            {helpSlug && <HelpContextual slug={helpSlug} />}
+                        </h1>
                         {description && (
                             <p className="text-[10px] md:text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1.5 truncate">
                                 {description}
