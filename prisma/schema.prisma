@@ -1175,6 +1175,7 @@ model NoConformidad {
   fechaCierre     DateTime?
   resultadoFinal  String?   @db.Text
   observaciones   String?   @db.Text
+  embedding       Json?     // Vector de embedding de la NC para búsqueda semántica
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

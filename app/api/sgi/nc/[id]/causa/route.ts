@@ -18,8 +18,11 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             data: {
                 ncId: params.id,
                 metodologia: body.metodologia,
-                descripcion: body.descripcion,
-                descripcionAnalisis: body.descripcion || '',
+                descripcion: body.descripcion || '',
+                descripcionAnalisis: body.descripcionAnalisis || '',
+                causaInmediata: body.causaInmediata || '',
+                causaBasica: body.causaBasica || '',
+                causaRaiz: body.causaRaiz || '',
                 participantes: participantesNombres,
                 fechaAnalisis: body.fechaAnalisis ? new Date(body.fechaAnalisis) : new Date()
             }

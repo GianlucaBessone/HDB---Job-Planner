@@ -38,8 +38,34 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         
         const nc = await prisma.noConformidad.update({
             where: { id: params.id },
-            data: body
+            data: body,
+            include: {
+                analisisCausaRaiz: true
+            }
         });
+
+        // Si se cierra la NC, generar y guardar el embedding
+        if (body.estado === 'Cerrada' || nc.estado === 'Cerrada') {
+            const textToEmbed = `Código: ${nc.codigoNC || ''}
+Categoría: ${nc.categoria || ''}
+Área: ${nc.areaAfectada || ''}
+Proceso: ${nc.procesoAfectado || ''}
+Descripción: ${nc.descripcion || ''}
+Causa Raíz: ${nc.analisisCausaRaiz?.map(acr => acr.causaRaiz || acr.descripcion).join('; ') || ''}`;
+            
+            try {
+                // Importación dinámica para evitar problemas de dependencias en tiempo de carga inicial
+                const { getEmbedding } = require('@/lib/ai/embeddings');
+                const embedding = await getEmbedding(textToEmbed);
+                await prisma.noConformidad.update({
+                    where: { id: nc.id },
+                    data: { embedding }
+                });
+                console.log(`[Embedding] Vector generado con éxito para NC cerrada: ${nc.codigoNC}`);
+            } catch (err) {
+                console.error("[Embedding] Error al generar vector al cerrar la NC:", err);
+            }
+        }
 
         return NextResponse.json(nc);
     } catch (error) {

@@ -47,6 +47,7 @@ const ROUTE_TABLE: Record<string, RouteConfig> = {
     // RAG_SEARCH
     'TECH_ASSISTANT':       { provider: 'gemini', model: 'gemini-2.5-flash' },
     'SEMANTIC_SEARCH':      { provider: 'gemini', model: 'gemini-2.5-flash' },
+    'RCA_CHAT':             { provider: 'gemini', model: 'gemini-2.5-flash' },
 
     // TRAINING
     'TRAINING_GEN':         { provider: 'gemini', model: 'gemini-2.5-flash' },
