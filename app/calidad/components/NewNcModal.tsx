@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Save, AlertCircle } from 'lucide-react';
 import { useModalScroll } from '@/lib/useModalScroll';
+import OperatorMultiSelect from '@/components/OperatorMultiSelect';
 
 interface NewNcModalProps {
     isOpen: boolean;
@@ -25,7 +26,7 @@ export default function NewNcModal({ isOpen, onClose, onSuccess, user }: NewNcMo
         areaAfectada: '',
         criticidad: 'Media',
         impacto: '',
-        responsableTratamientoId: ''
+        responsablesTratamientoIds: [] as string[]
     });
 
     useEffect(() => {
@@ -194,11 +195,14 @@ export default function NewNcModal({ isOpen, onClose, onSuccess, user }: NewNcMo
                                     onChange={e => setFormData({...formData, procesoAfectado: e.target.value})}
                                 >
                                     <option value="" disabled>Seleccione un proceso</option>
+                                    <option value="Instalación Eléctrica">Instalación Eléctrica</option>
+                                    <option value="Mantenimiento Preventivo">Mantenimiento Preventivo</option>
+                                    <option value="Reparación / Correctivo">Reparación / Correctivo</option>
+                                    <option value="Proyectos de Ingeniería">Proyectos de Ingeniería</option>
                                     <option value="Gestión Documental">Gestión Documental</option>
-                                    <option value="Control de Calidad">Control de Calidad</option>
-                                    <option value="Fabricación / Montaje">Fabricación / Montaje</option>
-                                    <option value="Despacho">Despacho</option>
-                                    <option value="Compras">Compras</option>
+                                    <option value="Compras / Abastecimiento">Compras / Abastecimiento</option>
+                                    <option value="Ventas">Ventas</option>
+                                    <option value="Recursos Humanos">Recursos Humanos</option>
                                     <option value="Capacitación">Capacitación</option>
                                     <option value="Otro">Otro</option>
                                 </select>
@@ -212,14 +216,14 @@ export default function NewNcModal({ isOpen, onClose, onSuccess, user }: NewNcMo
                                     onChange={e => setFormData({...formData, areaAfectada: e.target.value})}
                                 >
                                     <option value="" disabled>Seleccione un área</option>
-                                    <option value="Operaciones / Producción">Operaciones / Producción</option>
+                                    <option value="Operaciones en Campo">Operaciones en Campo</option>
+                                    <option value="Taller Eléctrico">Taller Eléctrico</option>
+                                    <option value="Ingeniería y Diseño">Ingeniería y Diseño</option>
                                     <option value="Calidad (QA/QC)">Calidad (QA/QC)</option>
-                                    <option value="Mantenimiento">Mantenimiento</option>
                                     <option value="Almacén / Logística">Almacén / Logística</option>
-                                    <option value="Ingeniería">Ingeniería</option>
+                                    <option value="Ventas / Comercial">Ventas / Comercial</option>
                                     <option value="Recursos Humanos">Recursos Humanos</option>
                                     <option value="Administración / Finanzas">Administración / Finanzas</option>
-                                    <option value="Comercial">Comercial</option>
                                     <option value="Otro">Otro</option>
                                 </select>
                             </div>
@@ -237,19 +241,13 @@ export default function NewNcModal({ isOpen, onClose, onSuccess, user }: NewNcMo
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Responsable de la NC</label>
-                                <select
-                                    className="w-full h-10 px-3 bg-background border rounded-md"
-                                    value={formData.responsableTratamientoId}
-                                    onChange={e => setFormData({...formData, responsableTratamientoId: e.target.value})}
-                                >
-                                    <option value="">Sin asignar (Pendiente)</option>
-                                    {operators.filter(op => op.activo !== false).map(op => (
-                                        <option key={op.id} value={op.id}>
-                                            {op.nombreCompleto} {op.posicion ? `(${op.posicion})` : ''}
-                                        </option>
-                                    ))}
-                                </select>
+                                <label className="text-sm font-medium">Responsable(s) de la NC</label>
+                                <OperatorMultiSelect 
+                                    operators={operators}
+                                    selectedIds={formData.responsablesTratamientoIds}
+                                    onChange={(ids) => setFormData({...formData, responsablesTratamientoIds: ids})}
+                                    placeholder="Seleccionar responsables..."
+                                />
                             </div>
                         </div>
                     </form>

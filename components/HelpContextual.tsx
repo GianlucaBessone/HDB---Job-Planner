@@ -63,15 +63,15 @@ export default function HelpContextual({ slug, iconType = 'help' }: HelpContextu
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-6">
               {loading ? (
                 <div className="flex flex-col items-center justify-center h-40 gap-3">
                   <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
                   <p className="text-sm font-medium text-slate-500">Cargando ayuda...</p>
                 </div>
               ) : article ? (
-                <div className="space-y-6">
-                  <div>
+                <div className="flex flex-col gap-6 w-full max-w-full">
+                  <div className="w-full">
                     <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-500">
                       {article.category?.title}
                     </span>
@@ -84,13 +84,18 @@ export default function HelpContextual({ slug, iconType = 'help' }: HelpContextu
                   </div>
 
                   {article.comoAcceder && (
-                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800 break-words w-full max-w-full">
                       <p className="text-xs font-bold text-blue-600 mb-1">Cómo utilizarlo</p>
-                      <p className="text-sm text-slate-700 dark:text-slate-300">{article.comoAcceder}</p>
+                      <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-medium">{article.comoAcceder}</p>
                     </div>
                   )}
 
-                  <div className="prose prose-sm prose-slate dark:prose-invert prose-a:text-blue-500">
+                  <div className="prose prose-sm w-full max-w-full prose-slate dark:prose-invert prose-a:text-blue-500 
+                    break-words overflow-wrap-anywhere
+                    [&_p]:whitespace-pre-wrap [&_li]:whitespace-pre-wrap
+                    [&_pre]:overflow-x-auto [&_pre]:max-w-full
+                    [&_table]:block [&_table]:overflow-x-auto [&_table]:w-full"
+                  >
                     <ReactMarkdown>{article.content}</ReactMarkdown>
                   </div>
 

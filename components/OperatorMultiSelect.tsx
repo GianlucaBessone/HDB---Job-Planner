@@ -11,6 +11,7 @@ interface OperatorMultiSelectProps {
 export default function OperatorMultiSelect({ operators, selectedIds, onChange, placeholder = "Buscar participantes..." }: OperatorMultiSelectProps) {
     const [search, setSearch] = useState('');
     const [isOpen, setIsOpen] = useState(false);
+    const [focusedIndex, setFocusedIndex] = useState(-1);
     const wrapperRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -29,10 +30,15 @@ export default function OperatorMultiSelect({ operators, selectedIds, onChange, 
         op.nombreCompleto.toLowerCase().includes(search.toLowerCase())
     ).slice(0, 5);
 
+    useEffect(() => {
+        setFocusedIndex(-1);
+    }, [search]);
+
     const handleSelect = (id: string) => {
         onChange([...selectedIds, id]);
         setSearch('');
         setIsOpen(false);
+        setFocusedIndex(-1);
     };
 
     const handleRemove = (id: string) => {
@@ -41,6 +47,27 @@ export default function OperatorMultiSelect({ operators, selectedIds, onChange, 
 
     const getOperatorName = (id: string) => {
         return operators.find(op => op.id === id)?.nombreCompleto || id;
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Backspace' && search === '' && selectedIds.length > 0) {
+            handleRemove(selectedIds[selectedIds.length - 1]);
+        } else if (isOpen && filteredOperators.length > 0) {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                setFocusedIndex(prev => prev < filteredOperators.length - 1 ? prev + 1 : prev);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                setFocusedIndex(prev => prev > 0 ? prev - 1 : 0);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (focusedIndex >= 0) {
+                    handleSelect(filteredOperators[focusedIndex].id);
+                } else if (filteredOperators.length === 1) {
+                    handleSelect(filteredOperators[0].id);
+                }
+            }
+        }
     };
 
     return (
@@ -68,6 +95,7 @@ export default function OperatorMultiSelect({ operators, selectedIds, onChange, 
                         setIsOpen(true);
                     }}
                     onFocus={() => setIsOpen(true)}
+                    onKeyDown={handleKeyDown}
                 />
             </div>
 
@@ -75,10 +103,10 @@ export default function OperatorMultiSelect({ operators, selectedIds, onChange, 
                 <div className="absolute z-10 w-full mt-1 bg-card border rounded-md shadow-lg overflow-hidden">
                     {filteredOperators.length > 0 ? (
                         <ul className="max-h-48 overflow-y-auto py-1">
-                            {filteredOperators.map(op => (
+                            {filteredOperators.map((op, index) => (
                                 <li 
                                     key={op.id}
-                                    className="px-3 py-2 text-sm hover:bg-muted cursor-pointer"
+                                    className={`px-3 py-2 text-sm cursor-pointer ${focusedIndex === index ? 'bg-muted' : 'hover:bg-muted'}`}
                                     onClick={() => handleSelect(op.id)}
                                 >
                                     {op.nombreCompleto} {op.posicion ? <span className="text-muted-foreground text-xs">({op.posicion})</span> : ''}

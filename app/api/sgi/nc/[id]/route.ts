@@ -9,7 +9,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
             where: { id: params.id },
             include: {
                 responsableRegistro: { select: { id: true, nombreCompleto: true } },
-                responsableTratamiento: { select: { id: true, nombreCompleto: true } },
+                responsablesTratamiento: { select: { id: true, nombreCompleto: true } },
                 analisisCausaRaiz: true,
                 accionesMejora: true,
                 verificacionesEficacia: true,
@@ -36,11 +36,20 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     try {
         const body = await req.json();
         
+        let updateData: any = { ...body };
+        if (body.responsablesTratamientoIds !== undefined) {
+            updateData.responsablesTratamiento = {
+                set: body.responsablesTratamientoIds.map((id: string) => ({ id }))
+            };
+            delete updateData.responsablesTratamientoIds;
+        }
+
         const nc = await prisma.noConformidad.update({
             where: { id: params.id },
-            data: body,
+            data: updateData,
             include: {
                 analisisCausaRaiz: true
+
             }
         });
 

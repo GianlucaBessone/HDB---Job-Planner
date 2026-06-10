@@ -15,7 +15,7 @@ export async function GET(req: Request) {
             where,
             include: {
                 responsableRegistro: { select: { id: true, nombreCompleto: true } },
-                responsableTratamiento: { select: { id: true, nombreCompleto: true } },
+                responsablesTratamiento: { select: { id: true, nombreCompleto: true } },
                 analisisCausaRaiz: true,
                 accionesMejora: {
                     select: {
@@ -58,7 +58,9 @@ export async function POST(req: Request) {
                 procesoAfectado: body.procesoAfectado,
                 areaAfectada: body.areaAfectada,
                 responsableRegistroId: body.responsableRegistroId,
-                responsableTratamientoId: body.responsableTratamientoId,
+                responsablesTratamiento: body.responsablesTratamientoIds?.length > 0 ? {
+                    connect: body.responsablesTratamientoIds.map((id: string) => ({ id }))
+                } : undefined,
                 criticidad: body.criticidad || 'Media',
                 impacto: body.impacto,
                 estado: 'Abierta',

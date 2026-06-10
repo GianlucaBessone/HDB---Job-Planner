@@ -1165,8 +1165,8 @@ model NoConformidad {
 
   responsableRegistroId    String?
   responsableRegistro      Operator? @relation("NCResponsableRegistro", fields: [responsableRegistroId], references: [id])
-  responsableTratamientoId String?
-  responsableTratamiento   Operator? @relation("NCResponsableTratamiento", fields: [responsableTratamientoId], references: [id])
+  
+  responsablesTratamiento  Operator[] @relation("NCResponsableTratamiento")
 
   estado          String    @default("Abierta")
   criticidad      String    @default("Media")

@@ -414,6 +414,40 @@ Genera tu respuesta en formato JSON estructurado:
   }
 }
 `
+    },
+
+    // 10. ANÁLISIS DOCUMENTAL PARA NC (AI AUDITOR)
+    NC_DOC_ANALYSIS: {
+        key: "NC_DOC_ANALYSIS",
+        name: "Análisis Documental de No Conformidad",
+        description: "Compara el hallazgo de una NC con los documentos del SGI y registros de capacitación.",
+        version: 1,
+        systemInstruction: "Eres un Auditor Líder SGI experto. Evalúas No Conformidades de forma analítica, objetiva y estrictamente auditable. Devuelves exclusivamente un objeto JSON. Para los campos largos usa texto con formato Markdown (negritas, viñetas, subtítulos H3), escapando correctamente comillas y saltos de línea (\\n) para no romper el parseo JSON.",
+        template: `Tu tarea es analizar la siguiente No Conformidad y determinar si se ha violado algún documento vigente del sistema, y cruzar esa información con el estado de capacitación de los operadores involucrados.
+
+### No Conformidad
+- Código: {{codigoNC}}
+- Origen: {{origen}}
+- Área Afectada: {{areaAfectada}}
+- Proceso Afectado: {{procesoAfectado}}
+- Descripción del Hallazgo: {{descripcion}}
+
+### Documentos Vigentes del SGI (Contexto)
+{{docsInfo}}
+
+### Responsables Asignados y sus Capacitaciones
+{{operatorTrainingInfo}}
+
+### Instrucciones para el análisis:
+1. Analiza exhaustivamente el "Descripción del Hallazgo" comparándolo con los "Documentos Vigentes del SGI".
+2. Si identificas que uno o varios documentos probablemente fueron incumplidos, lístalos y explica por qué.
+3. Para cada operador responsable, indica si posee la capacitación aprobada para ese documento específico y en qué fecha la realizó. Si no la tiene, resalta categóricamente que es una desviación de competencia (ej. "El operador Juan no registra capacitación vigente en el PR-OPE-001").
+4. Genera un reporte detallado con formato Markdown internamente.
+
+Devuelve UNICAMENTE el siguiente objeto JSON válido:
+{
+  "reporteAuditoria": "Aquí va todo el reporte final estructurado y formateado con Markdown y subtítulos H3 (###)..."
+}`
     }
 };
 

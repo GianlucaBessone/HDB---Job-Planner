@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { X, Calendar, GitBranch, Target, Users, Clock, AlertTriangle, Edit, Trash2 } from 'lucide-react';
+import { X, Calendar, GitBranch, Target, Users, Clock, AlertTriangle, Edit, Trash2, Sparkles } from 'lucide-react';
 import { useModalScroll } from '@/lib/useModalScroll';
 import NewRootCauseModal from './NewRootCauseModal';
 import NewMeetingModal from './NewMeetingModal';
 import NewCapaModal from './NewCapaModal';
 import ConfirmModal from '@/components/ConfirmModal';
+import OperatorMultiSelect from '@/components/OperatorMultiSelect';
+import ReactMarkdown from 'react-markdown';
 
 interface NcDetailModalProps {
     ncId: string | null;
@@ -19,12 +21,16 @@ export default function NcDetailModal({ ncId, isOpen, onClose, onUpdate }: NcDet
     const [nc, setNc] = useState<any>(null);
     const [operators, setOperators] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
-    const [activeTab, setActiveTab] = useState<'detalles' | 'causa' | 'reuniones' | 'acciones'>('detalles');
+    const [activeTab, setActiveTab] = useState<'detalles' | 'causa' | 'reuniones' | 'acciones' | 'ia'>('detalles');
     const [isRootCauseModalOpen, setIsRootCauseModalOpen] = useState(false);
     const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
     const [isCapaModalOpen, setIsCapaModalOpen] = useState(false);
     const [editingMeeting, setEditingMeeting] = useState<any>(null);
     const [meetingToDelete, setMeetingToDelete] = useState<string | null>(null);
+
+    // AI Analysis states
+    const [iaLoading, setIaLoading] = useState(false);
+    const [iaResults, setIaResults] = useState<string | null>(null);
 
     useEffect(() => {
         fetch('/api/operators')
@@ -33,9 +39,9 @@ export default function NcDetailModal({ ncId, isOpen, onClose, onUpdate }: NcDet
             .catch(err => console.error("Error fetching operators:", err));
     }, []);
 
-    const fetchNcDetails = async () => {
+    const fetchNcDetails = async (silent: boolean = false) => {
         if (!ncId) return;
-        setLoading(true);
+        if (!silent) setLoading(true);
         try {
             const res = await fetch(`/api/sgi/nc/${ncId}`);
             if (res.ok) {
@@ -45,7 +51,7 @@ export default function NcDetailModal({ ncId, isOpen, onClose, onUpdate }: NcDet
         } catch (error) {
             console.error('Error fetching NC details:', error);
         } finally {
-            setLoading(false);
+            if (!silent) setLoading(false);
         }
     };
 
@@ -72,19 +78,49 @@ export default function NcDetailModal({ ncId, isOpen, onClose, onUpdate }: NcDet
         }
     };
 
-    const handleResponsableChange = async (newResponsableId: string) => {
+    const handleResponsableChange = async (newResponsableIds: string[]) => {
+        // Optimistic UI Update
+        if (nc) {
+            setNc({
+                ...nc,
+                responsablesTratamiento: operators.filter(op => newResponsableIds.includes(op.id))
+            });
+        }
+        
         try {
             const res = await fetch(`/api/sgi/nc/${ncId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ responsableTratamientoId: newResponsableId || null })
+                body: JSON.stringify({ responsablesTratamientoIds: newResponsableIds })
             });
             if (res.ok) {
-                fetchNcDetails();
+                fetchNcDetails(true);
                 onUpdate();
+            } else {
+                fetchNcDetails(true); // Revert on failure
             }
         } catch (error) {
             console.error('Error updating responsable:', error);
+            fetchNcDetails(true); // Revert on failure
+        }
+    };
+
+    const analyzeDocs = async () => {
+        if (!ncId) return;
+        setIaLoading(true);
+        setIaResults(null);
+        try {
+            const res = await fetch(`/api/sgi/nc/${ncId}/ia-docs`, { method: 'POST' });
+            const data = await res.json();
+            if (res.ok) {
+                setIaResults(data.result);
+            } else {
+                setIaResults(`**Error:** ${data.error}`);
+            }
+        } catch (error) {
+            setIaResults('**Error crítico:** No se pudo contactar con el asistente.');
+        } finally {
+            setIaLoading(false);
         }
     };
 
@@ -145,6 +181,12 @@ export default function NcDetailModal({ ncId, isOpen, onClose, onUpdate }: NcDet
                         className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'detalles' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                     >
                         <span className="flex items-center gap-2"><Clock className="w-4 h-4" /> Detalles Generales</span>
+                    </button>
+                    <button 
+                        onClick={() => setActiveTab('ia')}
+                        className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'ia' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                    >
+                        <span className="flex items-center gap-2"><Sparkles className="w-4 h-4" /> Análisis Documental IA</span>
                     </button>
                     <button 
                         onClick={() => setActiveTab('causa')}
@@ -209,25 +251,66 @@ export default function NcDetailModal({ ncId, isOpen, onClose, onUpdate }: NcDet
                                                     <span className="font-medium">{nc.impacto || 'No definido'}</span>
                                                     <span className="text-muted-foreground">Resp. Registro:</span>
                                                     <span className="font-medium">{nc.responsableRegistro?.nombreCompleto || 'Sistema'}</span>
-                                                    <span className="text-muted-foreground flex items-center">Resp. Tratamiento:</span>
-                                                    <div className="relative -ml-2">
-                                                        <select 
-                                                            className="font-medium bg-muted/20 hover:bg-muted/50 border border-transparent hover:border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary focus:bg-background cursor-pointer w-full text-sm py-1 px-2 appearance-none transition-colors"
-                                                            value={nc.responsableTratamientoId || ''}
-                                                            onChange={(e) => handleResponsableChange(e.target.value)}
-                                                        >
-                                                            <option value="">Sin asignar (Pendiente)</option>
-                                                            {operators.filter(op => op.activo !== false).map(op => (
-                                                                <option key={op.id} value={op.id}>{op.nombreCompleto}</option>
-                                                            ))}
-                                                        </select>
-                                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-muted-foreground">
-                                                            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                                                        </div>
+                                                    <span className="text-muted-foreground flex items-center mt-1">Resp. Tratamiento:</span>
+                                                    <div className="-ml-2 mt-1 min-w-[200px]">
+                                                        <OperatorMultiSelect 
+                                                            operators={operators}
+                                                            selectedIds={nc.responsablesTratamiento?.map((r: any) => r.id) || []}
+                                                            onChange={handleResponsableChange}
+                                                            placeholder="Seleccionar responsables..."
+                                                        />
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* ANALISIS DOCUMENTAL IA */}
+                            {activeTab === 'ia' && (
+                                <div className="space-y-4 animate-in fade-in">
+                                    <div className="bg-card p-5 rounded-lg border shadow-sm flex flex-col gap-4">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <h3 className="font-semibold text-lg flex items-center gap-2 text-primary">
+                                                    <Sparkles className="w-5 h-5" /> Auditoría Documental de IA
+                                                </h3>
+                                                <p className="text-sm text-muted-foreground mt-1">
+                                                    El asistente analizará la descripción de la No Conformidad contra la base de documentos del SGI vigentes para encontrar posibles incumplimientos, e inspeccionará los registros de capacitación de los responsables.
+                                                </p>
+                                            </div>
+                                            <button 
+                                                onClick={analyzeDocs}
+                                                disabled={iaLoading}
+                                                className="btn-primary flex items-center gap-2 whitespace-nowrap"
+                                            >
+                                                {iaLoading ? <span className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                                                {iaResults ? 'Re-analizar' : 'Iniciar Análisis'}
+                                            </button>
+                                        </div>
+                                        
+                                        {iaLoading && (
+                                            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground gap-3">
+                                                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                                                <p className="text-sm animate-pulse">Analizando matrices documentales y registros de capacitación...</p>
+                                            </div>
+                                        )}
+                                        
+                                        {!iaLoading && iaResults && (
+                                            <div className="mt-4 pt-4 border-t border-dashed">
+                                                <div className="prose prose-sm dark:prose-invert max-w-none 
+                                                    [&_h3]:text-base [&_h3]:font-bold [&_h3]:text-primary [&_h3]:mt-6 [&_h3]:mb-3
+                                                    [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1
+                                                    [&_strong]:text-foreground [&_strong]:font-semibold
+                                                    [&_p]:mb-4"
+                                                >
+                                                    <ReactMarkdown>
+                                                        {iaResults}
+                                                    </ReactMarkdown>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}

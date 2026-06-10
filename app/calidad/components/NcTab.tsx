@@ -215,7 +215,11 @@ export default function NcTab({ user }: { user: any }) {
                                                             {nc.criticidad}
                                                         </span>
                                                     </td>
-                                                    <td className="px-4 py-3">{nc.responsableTratamiento?.nombreCompleto || '-'}</td>
+                                                    <td className="px-4 py-3">
+                                                        {nc.responsablesTratamiento && nc.responsablesTratamiento.length > 0 
+                                                            ? nc.responsablesTratamiento.map((r: any) => r.nombreCompleto).join(', ') 
+                                                            : '-'}
+                                                    </td>
                                                 </tr>
                                             ))
                                         )}
