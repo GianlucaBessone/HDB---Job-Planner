@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { sendPushNotification } from '@/lib/onesignal';
 
 // ── GET — List tareas with filters ─────────────────────────────────
 export async function GET(req: NextRequest) {
@@ -95,6 +96,42 @@ export async function POST(req: NextRequest) {
             },
         });
 
+        // ── Enviar notificaciones a involucrados ──
+        const userIds = tarea.involucrados
+            .map((inv: any) => inv.operator.id)
+            .filter((id: string) => id !== creadorId); // No notificar al creador
+
+        if (userIds.length > 0) {
+            // Push Notification via OneSignal
+            await sendPushNotification({
+                userIds,
+                title: '📋 Nueva Tarea Asignada',
+                message: `${creadorNombre} te ha involucrado en la tarea: "${titulo}"`,
+                data: {
+                    type: 'NUEVA_TAREA',
+                    tareaId: tarea.id,
+                },
+            });
+
+            // Internal DB Notifications
+            const notifPromises = userIds.map((opId: string) =>
+                prisma.notification.create({
+                    data: {
+                        operatorId: opId,
+                        title: '📋 Nueva Tarea Asignada',
+                        message: `${creadorNombre} te ha involucrado en la tarea: "${titulo}"`,
+                        type: 'NUEVA_TAREA',
+                        relatedId: tarea.id,
+                        metadata: {
+                            tareaId: tarea.id,
+                            tareaTitulo: titulo,
+                        },
+                    },
+                })
+            );
+            await Promise.allSettled(notifPromises);
+        }
+
         return NextResponse.json(tarea);
     } catch (error) {
         console.error('[TAREAS_POST]', error);
@@ -116,6 +153,9 @@ export async function PUT(req: NextRequest) {
         if (data.fechaInicio) data.fechaInicio = new Date(data.fechaInicio);
         if (data.fechaVencimiento) data.fechaVencimiento = new Date(data.fechaVencimiento);
         if (data.fechaCompletada) data.fechaCompletada = new Date(data.fechaCompletada);
+        
+        // Handle empty strings for optional relations
+        if (data.projectId === '') data.projectId = null;
 
         // If completing, set the completion date automatically
         if (data.estado === 'completada' && !data.fechaCompletada) {

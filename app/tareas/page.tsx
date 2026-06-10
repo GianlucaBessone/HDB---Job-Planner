@@ -95,6 +95,7 @@ export default function TareasPage() {
     const [filterMisTareas, setFilterMisTareas] = useState(false);
 
     const [showModal, setShowModal] = useState(false);
+    const [isViewMode, setIsViewMode] = useState(false);
     const [editingTarea, setEditingTarea] = useState<Tarea | null>(null);
     const [isSaving, setIsSaving] = useState(false);
 
@@ -188,6 +189,7 @@ export default function TareasPage() {
     // ── Modal Handlers ─────────────────────────────────────────────
     const openNew = () => {
         setEditingTarea(null);
+        setIsViewMode(false);
         setForm({
             titulo: '',
             descripcion: '',
@@ -204,8 +206,9 @@ export default function TareasPage() {
         setShowModal(true);
     };
 
-    const openEdit = (t: Tarea) => {
+    const openEdit = (t: Tarea, forceEdit = false) => {
         setEditingTarea(t);
+        setIsViewMode(!forceEdit);
         setForm({
             titulo: t.titulo,
             descripcion: t.descripcion || '',
@@ -501,7 +504,7 @@ export default function TareasPage() {
                         <div className="flex items-center justify-between p-5 pb-4 border-b border-slate-100 dark:border-slate-700">
                             <h2 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
                                 <div className="p-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg"><ListTodo className="w-5 h-5 text-purple-600 dark:text-purple-400" /></div>
-                                {editingTarea ? 'Editar Tarea' : 'Nueva Tarea'}
+                                {editingTarea ? (isViewMode ? 'Detalle de Tarea' : 'Editar Tarea') : 'Nueva Tarea'}
                             </h2>
                             <button onClick={() => setShowModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400 dark:text-slate-500 transition-colors">
                                 <X className="w-5 h-5" />
@@ -516,20 +519,22 @@ export default function TareasPage() {
                                     type="text"
                                     value={form.titulo}
                                     onChange={e => setForm({ ...form, titulo: e.target.value })}
-                                    className="w-full h-12 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-sm font-semibold text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
+                                    disabled={isViewMode}
+                                    className="w-full h-12 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-sm font-semibold text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                     placeholder="¿Qué hay que hacer?"
-                                    autoFocus
+                                    autoFocus={!isViewMode}
                                 />
                             </div>
 
                             {/* Estado + Prioridad row */}
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Estado</label>
                                     <select
                                         value={form.estado}
                                         onChange={e => setForm({ ...form, estado: e.target.value })}
-                                        className="w-full h-12 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none"
+                                        disabled={isViewMode}
+                                        className="w-full h-12 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                     >
                                         {ESTADOS.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
                                     </select>
@@ -539,7 +544,8 @@ export default function TareasPage() {
                                     <select
                                         value={form.prioridad}
                                         onChange={e => setForm({ ...form, prioridad: e.target.value })}
-                                        className="w-full h-12 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none"
+                                        disabled={isViewMode}
+                                        className="w-full h-12 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                     >
                                         {PRIORIDADES.map(p => <option key={p.value} value={p.value}>{p.icon} {p.label}</option>)}
                                     </select>
@@ -552,20 +558,22 @@ export default function TareasPage() {
                                 <textarea
                                     value={form.descripcion}
                                     onChange={e => setForm({ ...form, descripcion: e.target.value })}
-                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 resize-none h-20"
+                                    disabled={isViewMode}
+                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 resize-none h-20 disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                     placeholder="Detalles de la tarea..."
                                 />
                             </div>
 
                             {/* Dates row */}
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Fecha Inicio</label>
                                     <input
                                         type="datetime-local"
                                         value={form.fechaInicio}
                                         onChange={e => setForm({ ...form, fechaInicio: e.target.value })}
-                                        className="w-full h-12 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none"
+                                        disabled={isViewMode}
+                                        className="w-full h-12 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                     />
                                 </div>
                                 <div className="space-y-1.5">
@@ -574,19 +582,21 @@ export default function TareasPage() {
                                         type="datetime-local"
                                         value={form.fechaVencimiento}
                                         onChange={e => setForm({ ...form, fechaVencimiento: e.target.value })}
-                                        className="w-full h-12 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none"
+                                        disabled={isViewMode}
+                                        className="w-full h-12 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                     />
                                 </div>
                             </div>
 
                             {/* Project + Category */}
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Proyecto (opcional)</label>
                                     <select
                                         value={form.projectId}
                                         onChange={e => setForm({ ...form, projectId: e.target.value })}
-                                        className="w-full h-12 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none"
+                                        disabled={isViewMode}
+                                        className="w-full h-12 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                     >
                                         <option value="">Sin proyecto</option>
                                         {projects.map((p: any) => (
@@ -600,7 +610,8 @@ export default function TareasPage() {
                                         type="text"
                                         value={form.categoria}
                                         onChange={e => setForm({ ...form, categoria: e.target.value })}
-                                        className="w-full h-12 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all"
+                                        disabled={isViewMode}
+                                        className="w-full h-12 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                         placeholder="ej: Mantenimiento"
                                     />
                                 </div>
@@ -612,19 +623,21 @@ export default function TareasPage() {
                                     <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                                         <UsersIcon className="w-3.5 h-3.5" /> Involucrados
                                     </label>
-                                    <button
-                                        onClick={() => setFormInvolucrados([...formInvolucrados, { operatorId: '', rol: 'responsable' }])}
-                                        className="text-[10px] font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 uppercase tracking-wider flex items-center gap-1 transition-colors"
-                                    >
-                                        <Plus className="w-3 h-3" /> Agregar
-                                    </button>
+                                    {!isViewMode && (
+                                        <button
+                                            onClick={() => setFormInvolucrados([...formInvolucrados, { operatorId: '', rol: 'responsable' }])}
+                                            className="text-[10px] font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 uppercase tracking-wider flex items-center gap-1 transition-colors"
+                                        >
+                                            <Plus className="w-3 h-3" /> Agregar
+                                        </button>
+                                    )}
                                 </div>
                                 {formInvolucrados.length === 0 && (
                                     <p className="text-xs text-slate-400 dark:text-slate-500 italic">Sin involucrados asignados</p>
                                 )}
                                 <div className="space-y-2">
                                     {formInvolucrados.map((inv, i) => (
-                                        <div key={i} className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/30 p-2 rounded-xl border border-slate-200 dark:border-slate-700">
+                                        <div key={i} className="flex flex-wrap sm:flex-nowrap items-center gap-2 bg-slate-50 dark:bg-slate-900/30 p-2 rounded-xl border border-slate-200 dark:border-slate-700">
                                             <select
                                                 value={inv.operatorId}
                                                 onChange={e => {
@@ -632,30 +645,36 @@ export default function TareasPage() {
                                                     next[i] = { ...next[i], operatorId: e.target.value };
                                                     setFormInvolucrados(next);
                                                 }}
-                                                className="flex-1 h-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none"
+                                                disabled={isViewMode}
+                                                className="w-full sm:flex-1 h-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent disabled:appearance-none"
                                             >
                                                 <option value="">Seleccionar...</option>
                                                 {operators.map((op: any) => (
                                                     <option key={op.id} value={op.id}>{op.nombreCompleto}</option>
                                                 ))}
                                             </select>
-                                            <select
-                                                value={inv.rol}
-                                                onChange={e => {
-                                                    const next = [...formInvolucrados];
-                                                    next[i] = { ...next[i], rol: e.target.value };
-                                                    setFormInvolucrados(next);
-                                                }}
-                                                className="w-32 h-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none"
-                                            >
-                                                {ROLES_INVOLUCRADO.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
-                                            </select>
-                                            <button
-                                                onClick={() => setFormInvolucrados(formInvolucrados.filter((_, idx) => idx !== i))}
-                                                className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors shrink-0"
-                                            >
-                                                <X className="w-4 h-4" />
-                                            </button>
+                                            <div className="flex flex-1 sm:flex-none items-center gap-2 w-full sm:w-auto">
+                                                <select
+                                                    value={inv.rol}
+                                                    onChange={e => {
+                                                        const next = [...formInvolucrados];
+                                                        next[i] = { ...next[i], rol: e.target.value };
+                                                        setFormInvolucrados(next);
+                                                    }}
+                                                    disabled={isViewMode}
+                                                    className="flex-1 sm:w-32 h-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent disabled:appearance-none"
+                                                >
+                                                    {ROLES_INVOLUCRADO.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                                                </select>
+                                                {!isViewMode && (
+                                                    <button
+                                                        onClick={() => setFormInvolucrados(formInvolucrados.filter((_, idx) => idx !== i))}
+                                                        className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors shrink-0"
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -667,12 +686,14 @@ export default function TareasPage() {
                                     <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                                         <BellRing className="w-3.5 h-3.5" /> Recordatorios
                                     </label>
-                                    <button
-                                        onClick={() => setFormRecordatorios([...formRecordatorios, { tipo: 'unico', fechaDisparo: '', mensaje: '' }])}
-                                        className="text-[10px] font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 uppercase tracking-wider flex items-center gap-1 transition-colors"
-                                    >
-                                        <BellPlus className="w-3 h-3" /> Agregar
-                                    </button>
+                                    {!isViewMode && (
+                                        <button
+                                            onClick={() => setFormRecordatorios([...formRecordatorios, { tipo: 'unico', fechaDisparo: '', mensaje: '' }])}
+                                            className="text-[10px] font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 uppercase tracking-wider flex items-center gap-1 transition-colors"
+                                        >
+                                            <BellPlus className="w-3 h-3" /> Agregar
+                                        </button>
+                                    )}
                                 </div>
 
                                 {/* Existing recordatorios for editing tarea */}
@@ -680,8 +701,8 @@ export default function TareasPage() {
                                     <div className="space-y-1.5">
                                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Recordatorios activos</p>
                                         {editingTarea.recordatorios.map(rec => (
-                                            <div key={rec.id} className="flex items-center justify-between bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-2.5">
-                                                <div className="flex items-center gap-2 text-xs">
+                                            <div key={rec.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-2.5">
+                                                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 text-xs">
                                                     {rec.disparado
                                                         ? <Check className="w-4 h-4 text-emerald-500" />
                                                         : <Bell className="w-4 h-4 text-purple-500 animate-pulse" />}
@@ -690,9 +711,11 @@ export default function TareasPage() {
                                                     <span className="text-slate-600 dark:text-slate-300">{format(new Date(rec.fechaDisparo), 'dd/MM/yyyy HH:mm', { locale: es })}</span>
                                                     {rec.disparado && <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded uppercase">Disparado</span>}
                                                 </div>
-                                                <button onClick={() => handleDeleteRecordatorio(rec.id)} className="p-1 text-slate-400 hover:text-rose-500 rounded transition-colors">
-                                                    <X className="w-3.5 h-3.5" />
-                                                </button>
+                                                {!isViewMode && (
+                                                    <button onClick={() => handleDeleteRecordatorio(rec.id)} className="p-1 text-slate-400 hover:text-rose-500 rounded transition-colors">
+                                                        <X className="w-3.5 h-3.5" />
+                                                    </button>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -701,7 +724,7 @@ export default function TareasPage() {
                                 {/* New recordatorios to create */}
                                 {formRecordatorios.map((rec, i) => (
                                     <div key={i} className="bg-slate-50 dark:bg-slate-900/30 p-3 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
                                             <select
                                                 value={rec.tipo}
                                                 onChange={e => {
@@ -709,26 +732,32 @@ export default function TareasPage() {
                                                     next[i] = { ...next[i], tipo: e.target.value };
                                                     setFormRecordatorios(next);
                                                 }}
-                                                className="flex-1 h-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none"
+                                                disabled={isViewMode}
+                                                className="w-full sm:flex-1 h-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent disabled:appearance-none"
                                             >
                                                 {TIPOS_RECORDATORIO.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                                             </select>
-                                            <input
-                                                type="datetime-local"
-                                                value={rec.fechaDisparo}
-                                                onChange={e => {
-                                                    const next = [...formRecordatorios];
-                                                    next[i] = { ...next[i], fechaDisparo: e.target.value };
-                                                    setFormRecordatorios(next);
-                                                }}
-                                                className="flex-1 h-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none appearance-none"
-                                            />
-                                            <button
-                                                onClick={() => setFormRecordatorios(formRecordatorios.filter((_, idx) => idx !== i))}
-                                                className="p-1.5 text-slate-400 hover:text-rose-500 rounded-lg transition-colors shrink-0"
-                                            >
-                                                <X className="w-4 h-4" />
-                                            </button>
+                                            <div className="flex flex-1 sm:flex-none items-center gap-2 w-full sm:w-auto">
+                                                <input
+                                                    type="datetime-local"
+                                                    value={rec.fechaDisparo}
+                                                    onChange={e => {
+                                                        const next = [...formRecordatorios];
+                                                        next[i] = { ...next[i], fechaDisparo: e.target.value };
+                                                        setFormRecordatorios(next);
+                                                    }}
+                                                    disabled={isViewMode}
+                                                    className="flex-1 h-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent disabled:appearance-none"
+                                                />
+                                                {!isViewMode && (
+                                                    <button
+                                                        onClick={() => setFormRecordatorios(formRecordatorios.filter((_, idx) => idx !== i))}
+                                                        className="p-1.5 text-slate-400 hover:text-rose-500 rounded-lg transition-colors shrink-0"
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                         <input
                                             type="text"
@@ -739,7 +768,8 @@ export default function TareasPage() {
                                                 next[i] = { ...next[i], mensaje: e.target.value };
                                                 setFormRecordatorios(next);
                                             }}
-                                            className="w-full h-9 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 text-xs text-slate-700 dark:text-slate-200 outline-none"
+                                            disabled={isViewMode}
+                                            className="w-full h-9 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 text-xs text-slate-700 dark:text-slate-200 outline-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                         />
                                     </div>
                                 ))}
@@ -755,7 +785,8 @@ export default function TareasPage() {
                                 <textarea
                                     value={form.notas}
                                     onChange={e => setForm({ ...form, notas: e.target.value })}
-                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 resize-none h-16"
+                                    disabled={isViewMode}
+                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 resize-none h-16 disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                     placeholder="Notas adicionales..."
                                 />
                             </div>
@@ -763,20 +794,39 @@ export default function TareasPage() {
 
                         {/* Modal Footer */}
                         <div className="p-5 pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
-                            <button
-                                onClick={() => setShowModal(false)}
-                                className="px-4 py-2.5 text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={handleSave}
-                                disabled={isSaving}
-                                className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 text-white text-sm font-bold rounded-xl hover:bg-purple-700 shadow-lg shadow-purple-600/20 transition-all disabled:opacity-50 active:scale-95"
-                            >
-                                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                                {isSaving ? 'Guardando...' : editingTarea ? 'Guardar Cambios' : 'Crear Tarea'}
-                            </button>
+                            {isViewMode ? (
+                                <>
+                                    <button
+                                        onClick={() => setShowModal(false)}
+                                        className="px-4 py-2.5 text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors"
+                                    >
+                                        Cerrar
+                                    </button>
+                                    <button
+                                        onClick={() => setIsViewMode(false)}
+                                        className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all active:scale-95"
+                                    >
+                                        <Edit3 className="w-4 h-4" /> Editar
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <button
+                                        onClick={() => setShowModal(false)}
+                                        className="px-4 py-2.5 text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        onClick={handleSave}
+                                        disabled={isSaving}
+                                        className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 text-white text-sm font-bold rounded-xl hover:bg-purple-700 shadow-lg shadow-purple-600/20 transition-all disabled:opacity-50 active:scale-95"
+                                    >
+                                        {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                        {isSaving ? 'Guardando...' : editingTarea ? 'Guardar Cambios' : 'Crear Tarea'}
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
