@@ -53,6 +53,7 @@ model Project {
   qrHistory               QrTokenHistory[]
   toolMovements           ToolMovement[]
   documentChecklists      DocumentChecklist[]
+  tareas                  Tarea[]
 
   @@index([qrToken])
 }
@@ -142,6 +143,7 @@ model Operator {
   ncTratadas                NoConformidad[]             @relation("NCResponsableTratamiento")
   analisisCausaRaiz         AnalisisCausaRaiz[]
   verificacionesEficacia    VerificacionEficacia[]
+  tareasInvolucradas        TareaInvolucrado[]
 }
 
 model FavoriteBlock {
@@ -1400,4 +1402,87 @@ model HelpFaq {
   createdAt DateTime    @default(now())
 
   @@index([articleId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TAREAS — Planificación y Recordatorios
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Tarea {
+  id               String              @id @default(cuid())
+  titulo           String
+  descripcion      String?             @db.Text
+  estado           String              @default("pendiente")
+  // pendiente | en_progreso | completada | cancelada
+  prioridad        String              @default("media")
+  // baja | media | alta | urgente
+  categoria        String?
+
+  // Fechas
+  fechaInicio      DateTime?
+  fechaVencimiento DateTime?
+  fechaCompletada  DateTime?
+
+  // Relación con proyecto (opcional)
+  projectId        String?
+  project          Project?            @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  // Creador
+  creadorId        String
+  creadorNombre    String
+
+  // Involucrados (many-to-many via tabla intermedia)
+  involucrados     TareaInvolucrado[]
+
+  // Recordatorios
+  recordatorios    TareaRecordatorio[]
+
+  // Notas/comentarios inline
+  notas            String?             @db.Text
+
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  @@index([estado])
+  @@index([projectId])
+  @@index([creadorId])
+  @@index([fechaVencimiento])
+}
+
+model TareaInvolucrado {
+  id         String   @id @default(cuid())
+  tareaId    String
+  tarea      Tarea    @relation(fields: [tareaId], references: [id], onDelete: Cascade)
+  operatorId String
+  operator   Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  rol        String   @default("responsable")
+  // responsable | colaborador | observador
+
+  @@unique([tareaId, operatorId])
+  @@index([tareaId])
+  @@index([operatorId])
+}
+
+model TareaRecordatorio {
+  id             String    @id @default(cuid())
+  tareaId        String
+  tarea          Tarea     @relation(fields: [tareaId], references: [id], onDelete: Cascade)
+
+  tipo           String    @default("unico")
+  // unico | diario | semanal
+  fechaDisparo   DateTime
+  mensaje        String?
+
+  // cron-job.org integration
+  cronJobId      Int?      // ID returned by cron-job.org API
+  cronJobActivo  Boolean   @default(true)
+
+  disparado      Boolean   @default(false)
+  fechaDisparado DateTime?
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([tareaId])
+  @@index([fechaDisparo])
 }

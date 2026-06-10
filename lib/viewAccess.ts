@@ -59,6 +59,7 @@ export const DEFAULT_VIEWS: ViewConfig[] = [
     { key: '/ordenes-servicio',   label: 'Órdenes de Servicio',      description: 'Gestión y firmas',            roles: ['supervisor', 'admin', 'qa'],             access: 'ambos', section: 'gestion', iconName: 'FileSignature',   color: 'bg-blue-600' },
     { key: '/aprobaciones',       label: 'Aprobaciones',             description: 'Validar fichadas de riesgo',  roles: ['supervisor', 'admin', 'qa'],             access: 'ambos', section: 'gestion', iconName: 'ShieldCheck',     color: 'bg-teal-600' },
     { key: '/monitoreo-fichadas', label: 'Monitoreo de Fichadas',    description: 'Control en tiempo real',      roles: ['supervisor', 'admin', 'qa'],             access: 'ambos', section: 'gestion', iconName: 'ShieldAlert',     color: 'bg-rose-600' },
+    { key: '/tareas',              label: 'Tareas',                   description: 'Planificación y recordatorios', roles: ['operador', 'supervisor', 'admin', 'qa'], access: 'ambos', section: 'gestion', iconName: 'ListTodo',        color: 'bg-purple-600' },
 
     // ─ Logística y Materiales ─
     { key: '/inventario',           label: 'Inventario de Materiales',  description: 'Stock y movimientos',                roles: ['admin', 'qa', 'vendedor'],                      access: 'ambos', section: 'logistica', iconName: 'PackageSearch', color: 'bg-amber-600' },

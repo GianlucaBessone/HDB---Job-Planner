@@ -3,7 +3,7 @@ import {
     LayoutDashboard, Calendar, LayoutGrid, FileSignature,
     PackageSearch, Package, Users, Landmark, ShieldCheck,
     ShieldAlert, History, Settings, Wrench, FileCheck,
-    BookOpen, Sparkles, Bell, Lightbulb, LifeBuoy,
+    BookOpen, Sparkles, Bell, Lightbulb, LifeBuoy, ListTodo,
     type LucideIcon
 } from 'lucide-react';
 
@@ -32,6 +32,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
     Bell,
     Lightbulb,
     LifeBuoy,
+    ListTodo,
 };
 
 export function getIcon(name: string): LucideIcon {
