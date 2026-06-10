@@ -11,6 +11,8 @@ export async function GET(req: NextRequest) {
         const projectId = url.searchParams.get('projectId');
         const involucradoId = url.searchParams.get('involucradoId');
         const creadorId = url.searchParams.get('creadorId');
+        const userId = url.searchParams.get('userId');
+        const role = url.searchParams.get('role');
 
         const where: any = {};
         if (estado) where.estado = estado;
@@ -19,6 +21,17 @@ export async function GET(req: NextRequest) {
         if (creadorId) where.creadorId = creadorId;
         if (involucradoId) {
             where.involucrados = { some: { operatorId: involucradoId } };
+        }
+
+        // Restricción de visualización: solo ver tareas propias o en las que se es involucrado
+        if (role !== 'admin' && userId) {
+            where.OR = [
+                { creadorId: userId },
+                { involucrados: { some: { operatorId: userId } } }
+            ];
+        } else if (role !== 'admin' && !userId) {
+            // Si no hay usuario y no es admin, no devolvemos tareas
+            return NextResponse.json([]);
         }
 
         const tareas = await prisma.tarea.findMany({
@@ -105,7 +118,7 @@ export async function POST(req: NextRequest) {
             // Push Notification via OneSignal
             await sendPushNotification({
                 userIds,
-                title: '📋 Nueva Tarea Asignada',
+                title: 'Nueva Tarea Asignada',
                 message: `${creadorNombre} te ha involucrado en la tarea: "${titulo}"`,
                 data: {
                     type: 'NUEVA_TAREA',
@@ -118,7 +131,7 @@ export async function POST(req: NextRequest) {
                 prisma.notification.create({
                     data: {
                         operatorId: opId,
-                        title: '📋 Nueva Tarea Asignada',
+                        title: 'Nueva Tarea Asignada',
                         message: `${creadorNombre} te ha involucrado en la tarea: "${titulo}"`,
                         type: 'NUEVA_TAREA',
                         relatedId: tarea.id,
@@ -143,10 +156,19 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
     try {
         const body = await req.json();
-        const { id, involucrados, ...data } = body;
+        const { id, involucrados, actorId, actorName, ...data } = body;
 
         if (!id) {
             return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
+        }
+
+        const oldTarea = await prisma.tarea.findUnique({
+            where: { id },
+            include: { involucrados: true }
+        });
+
+        if (!oldTarea) {
+            return NextResponse.json({ error: 'Tarea no encontrada' }, { status: 404 });
         }
 
         // Parse dates if provided
@@ -186,6 +208,68 @@ export async function PUT(req: NextRequest) {
             },
         });
 
+        // ── Notifications Logic ──
+        const actingUserId = actorId || 'unknown';
+        const actingUserName = actorName || 'Sistema';
+
+        const keysChanged = Object.keys(data);
+        const isPureStatusChange = keysChanged.length === 1 && keysChanged[0] === 'estado';
+
+        if (isPureStatusChange && oldTarea.estado !== data.estado) {
+            const statusLabels: Record<string, string> = { pendiente: 'Pendiente', en_progreso: 'En Progreso', completada: 'Completada', cancelada: 'Cancelada' };
+            const label = statusLabels[data.estado as string] || data.estado;
+            
+            const targetIds = tarea.involucrados.map(i => i.operatorId).filter(id => id !== actingUserId);
+            if (tarea.creadorId && tarea.creadorId !== actingUserId && !targetIds.includes(tarea.creadorId)) {
+                targetIds.push(tarea.creadorId);
+            }
+
+            if (targetIds.length > 0) {
+                const msg = `${actingUserName} ha cambiado el estado de "${tarea.titulo}" a ${label}.`;
+                try { await sendPushNotification({ userIds: targetIds, title: 'Cambio de Estado', message: msg, data: { url: `/tareas?id=${tarea.id}` } }); } catch (e) { console.error('[ONESIGNAL]', e); }
+                await Promise.allSettled(targetIds.map(opId => prisma.notification.create({
+                    data: { operatorId: opId, title: 'Cambio de Estado', message: msg, type: 'TAREA_ACTUALIZADA', relatedId: tarea.id }
+                })));
+            }
+        } else if (keysChanged.length > 0) {
+            // General Update
+            const targetIds = tarea.involucrados.map(i => i.operatorId).filter(id => id !== actingUserId);
+            if (tarea.creadorId && tarea.creadorId !== actingUserId && !targetIds.includes(tarea.creadorId)) {
+                targetIds.push(tarea.creadorId);
+            }
+
+            if (targetIds.length > 0) {
+                const msg = `${actingUserName} ha actualizado la tarea "${tarea.titulo}".`;
+                try { await sendPushNotification({ userIds: targetIds, title: 'Tarea Actualizada', message: msg, data: { url: `/tareas?id=${tarea.id}` } }); } catch (e) { console.error('[ONESIGNAL]', e); }
+                await Promise.allSettled(targetIds.map(opId => prisma.notification.create({
+                    data: { operatorId: opId, title: 'Tarea Actualizada', message: msg, type: 'TAREA_ACTUALIZADA', relatedId: tarea.id }
+                })));
+            }
+        }
+
+        if (involucrados) {
+            const oldIds = oldTarea.involucrados.map(i => i.operatorId);
+            const newIds = involucrados.map((i: any) => i.operatorId);
+            
+            const removedIds = oldIds.filter(id => !newIds.includes(id) && id !== actingUserId);
+            const addedIds = newIds.filter(id => !oldIds.includes(id) && id !== actingUserId);
+
+            if (removedIds.length > 0) {
+                const msg = `${actingUserName} te ha removido de la tarea "${oldTarea.titulo}".`;
+                try { await sendPushNotification({ userIds: removedIds, title: 'Removido de Tarea', message: msg }); } catch (e) { console.error('[ONESIGNAL]', e); }
+                await Promise.allSettled(removedIds.map(opId => prisma.notification.create({
+                    data: { operatorId: opId, title: 'Removido de Tarea', message: msg, type: 'TAREA_REMOVIDA', relatedId: tarea.id }
+                })));
+            }
+            if (addedIds.length > 0) {
+                const msg = `${actingUserName} te ha asignado a la tarea "${tarea.titulo}".`;
+                try { await sendPushNotification({ userIds: addedIds, title: 'Nueva Asignación', message: msg, data: { url: `/tareas?id=${tarea.id}` } }); } catch (e) { console.error('[ONESIGNAL]', e); }
+                await Promise.allSettled(addedIds.map(opId => prisma.notification.create({
+                    data: { operatorId: opId, title: 'Nueva Asignación', message: msg, type: 'NUEVA_TAREA', relatedId: tarea.id }
+                })));
+            }
+        }
+
         return NextResponse.json(tarea);
     } catch (error) {
         console.error('[TAREAS_PUT]', error);
@@ -198,9 +282,20 @@ export async function DELETE(req: NextRequest) {
     try {
         const url = new URL(req.url);
         const id = url.searchParams.get('id');
+        const actorId = url.searchParams.get('actorId');
+        const actorName = url.searchParams.get('actorName');
 
         if (!id) {
             return NextResponse.json({ error: 'ID requerido' }, { status: 400 });
+        }
+
+        const oldTarea = await prisma.tarea.findUnique({
+            where: { id },
+            include: { involucrados: true }
+        });
+
+        if (!oldTarea) {
+            return NextResponse.json({ error: 'Tarea no encontrada' }, { status: 404 });
         }
 
         // First, delete any cron-job.org jobs for this task's reminders
@@ -225,6 +320,20 @@ export async function DELETE(req: NextRequest) {
         }
 
         await prisma.tarea.delete({ where: { id } });
+
+        // ── Notifications Logic ──
+        const actingUserId = actorId || 'unknown';
+        const actingUserName = actorName || 'Sistema';
+
+        const targetIds = oldTarea.involucrados.map(i => i.operatorId).filter(id => id !== actingUserId);
+        
+        if (targetIds.length > 0) {
+            const msg = `${actingUserName} ha eliminado la tarea "${oldTarea.titulo}".`;
+            try { await sendPushNotification({ userIds: targetIds, title: 'Tarea Eliminada', message: msg }); } catch (e) { console.error('[ONESIGNAL]', e); }
+            await Promise.allSettled(targetIds.map(opId => prisma.notification.create({
+                data: { operatorId: opId, title: 'Tarea Eliminada', message: msg, type: 'TAREA_REMOVIDA', relatedId: oldTarea.id }
+            })));
+        }
 
         return NextResponse.json({ success: true });
     } catch (error) {

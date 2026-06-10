@@ -254,7 +254,7 @@ export default function HomePage() {
             </label>
           </div>
           <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
-            Arrastrá las tarjetas a la sección de Favoritos para agregarlas.
+            Arrastrá las tarjetas o tocá la estrella para agregarlas a Favoritos.
           </p>
         </div>
       )}
@@ -287,6 +287,8 @@ export default function HomePage() {
                   view={v}
                   editMode={editMode}
                   onDragStart={handleDragStart}
+                  isFavorite={favorites.includes(v.key)}
+                  onToggleFavorite={favorites.includes(v.key) ? removeFavorite : addFavorite}
                 />
               ))}
             </div>
@@ -324,7 +326,7 @@ export default function HomePage() {
                 >
                   {favoriteViews.length === 0 ? (
                     <p className="text-sm text-slate-400 dark:text-slate-500 font-medium text-center">
-                      Arrastrá tarjetas aquí para agregarlas a favoritos
+                      Arrastrá tarjetas aquí o tocá la estrella para agregarlas a favoritos
                     </p>
                   ) : (
                     <div className={`${gridClass} w-full`}>
@@ -340,9 +342,9 @@ export default function HomePage() {
                           />
                           <button
                             onClick={() => removeFavorite(v.key)}
-                            className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white rounded-full p-1 shadow-lg opacity-0 group-hover/fav:opacity-100 transition-all duration-200 hover:scale-110 z-10"
+                            className="absolute -top-2 -right-2 w-7 h-7 min-h-0 flex items-center justify-center bg-rose-500 text-white rounded-full shadow-lg sm:opacity-0 sm:group-hover/fav:opacity-100 transition-all duration-200 hover:scale-110 z-10"
                           >
-                            <Trash2 className="w-3 h-3" />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       ))}
@@ -381,6 +383,8 @@ export default function HomePage() {
                 view={v}
                 editMode={editMode}
                 onDragStart={handleDragStart}
+                isFavorite={favorites.includes(v.key)}
+                onToggleFavorite={favorites.includes(v.key) ? removeFavorite : addFavorite}
               />
             ))}
           </div>
@@ -398,10 +402,14 @@ function ActionCard({
   view,
   editMode,
   onDragStart,
+  isFavorite = false,
+  onToggleFavorite,
 }: {
   view: ViewConfig;
   editMode: boolean;
-  onDragStart: (e: React.DragEvent, key: string) => void;
+  onDragStart?: (e: React.DragEvent, key: string) => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: (key: string) => void;
 }) {
   let containerClass =
     "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:-translate-y-[1px] hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 flex flex-row items-center h-[72px] p-3 rounded-xl gap-3 outline-primary focus-visible:ring-2 focus-visible:ring-primary/20 overflow-hidden group";
@@ -419,8 +427,8 @@ function ActionCard({
 
   const card = (
     <div className={containerClass}>
-      {editMode && (
-        <GripVertical className="w-4 h-4 text-slate-300 dark:text-slate-600 shrink-0" />
+      {editMode && onDragStart && (
+        <GripVertical className="w-4 h-4 text-slate-300 dark:text-slate-600 shrink-0 hidden sm:block" />
       )}
       <div className={iconWrapperClass}>
         {renderIcon(view.iconName, "w-5 h-5")}
@@ -429,14 +437,30 @@ function ActionCard({
         <h4 className={titleClass}>{view.label}</h4>
         <p className={descClass}>{view.description}</p>
       </div>
+      {editMode && onToggleFavorite && (
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onToggleFavorite(view.key);
+          }}
+          className={`shrink-0 w-8 h-8 min-h-0 flex items-center justify-center rounded-full transition-colors ${
+            isFavorite
+              ? "text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-500/10"
+              : "text-slate-300 dark:text-slate-600 hover:text-amber-400 hover:bg-slate-50 dark:hover:bg-slate-700"
+          }`}
+        >
+          <Star className={`w-4 h-4 ${isFavorite ? "fill-amber-500" : ""}`} />
+        </button>
+      )}
     </div>
   );
 
   if (editMode) {
     return (
       <div
-        draggable
-        onDragStart={(e) => onDragStart(e, view.key)}
+        draggable={!!onDragStart}
+        onDragStart={(e) => onDragStart && onDragStart(e, view.key)}
         className="relative block focus:outline-none"
       >
         {card}

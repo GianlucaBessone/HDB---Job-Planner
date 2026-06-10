@@ -144,6 +144,7 @@ model Operator {
   analisisCausaRaiz         AnalisisCausaRaiz[]
   verificacionesEficacia    VerificacionEficacia[]
   tareasInvolucradas        TareaInvolucrado[]
+  tareasComentarios         TareaComentario[]
 }
 
 model FavoriteBlock {
@@ -1439,6 +1440,7 @@ model Tarea {
 
   // Notas/comentarios inline
   notas            String?             @db.Text
+  comentarios      TareaComentario[]
 
   createdAt        DateTime            @default(now())
   updatedAt        DateTime            @updatedAt
@@ -1485,4 +1487,17 @@ model TareaRecordatorio {
 
   @@index([tareaId])
   @@index([fechaDisparo])
+}
+
+model TareaComentario {
+  id         String   @id @default(cuid())
+  tareaId    String
+  tarea      Tarea    @relation(fields: [tareaId], references: [id], onDelete: Cascade)
+  operatorId String
+  operator   Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  mensaje    String   @db.Text
+  createdAt  DateTime @default(now())
+
+  @@index([tareaId])
+  @@index([operatorId])
 }
