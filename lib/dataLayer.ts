@@ -465,6 +465,7 @@ export const dataLayer = {
     // Clients
     async getClients() {
         return await prisma.hdbClient.findMany({
+            select: { id: true, nombre: true, email: true, telefono: true, direccion: true, activo: true },
             orderBy: { nombre: 'asc' }
         });
     },

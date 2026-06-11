@@ -18,11 +18,16 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
         safeApiRequest('/api/operators')
             .then(res => res.json())
             .then(data => {
-                setOperators(data);
-                // check cache for last user
-                const lastUser = localStorage.getItem('lastActiveUserId');
-                if (lastUser && data.find((o: any) => o.id === lastUser)) {
-                    setSelectedOperatorId(lastUser);
+                if (Array.isArray(data)) {
+                    setOperators(data);
+                    // check cache for last user
+                    const lastUser = localStorage.getItem('lastActiveUserId');
+                    if (lastUser && data.find((o: any) => o.id === lastUser)) {
+                        setSelectedOperatorId(lastUser);
+                    }
+                } else {
+                    console.error('Expected array of operators, got:', data);
+                    setOperators([]);
                 }
                 setIsLoading(false);
             })
@@ -66,8 +71,8 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
         }
     };
 
-    const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    const filteredOperators = operators.filter(o => normalize(o.nombreCompleto).includes(normalize(searchTerm)));
+    const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const filteredOperators = operators.filter(o => normalize(o?.nombreCompleto).includes(normalize(searchTerm)));
 
     // ── Custom inline dropdown state ──────────────────────────────────────────
     const [dropdownOpen, setDropdownOpen] = useState(false);

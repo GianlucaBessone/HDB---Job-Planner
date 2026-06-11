@@ -50,7 +50,13 @@ export async function GET(req: NextRequest) {
             ],
         });
 
-        return NextResponse.json(tareas);
+        const tareasMapped = tareas.map(t => ({
+            ...t,
+            creadoEn: t.createdAt,
+            actualizadoEn: t.updatedAt
+        }));
+
+        return NextResponse.json(tareasMapped);
     } catch (error) {
         console.error('[TAREAS_GET]', error);
         return NextResponse.json({ error: 'Error al obtener tareas' }, { status: 500 });
@@ -115,8 +121,8 @@ export async function POST(req: NextRequest) {
             .filter((id: string) => id !== creadorId); // No notificar al creador
 
         if (userIds.length > 0) {
-            // Push Notification via OneSignal
-            await sendPushNotification({
+            // Push Notification via OneSignal (Fire and Forget)
+            sendPushNotification({
                 userIds,
                 title: 'Nueva Tarea Asignada',
                 message: `${creadorNombre} te ha involucrado en la tarea: "${titulo}"`,
@@ -124,7 +130,7 @@ export async function POST(req: NextRequest) {
                     type: 'NUEVA_TAREA',
                     tareaId: tarea.id,
                 },
-            });
+            }).catch(e => console.error('[ONESIGNAL_ERROR]', e));
 
             // Internal DB Notifications
             const notifPromises = userIds.map((opId: string) =>
@@ -145,7 +151,13 @@ export async function POST(req: NextRequest) {
             await Promise.allSettled(notifPromises);
         }
 
-        return NextResponse.json(tarea);
+        const tareaMapped = {
+            ...tarea,
+            creadoEn: tarea.createdAt,
+            actualizadoEn: tarea.updatedAt
+        };
+
+        return NextResponse.json(tareaMapped);
     } catch (error) {
         console.error('[TAREAS_POST]', error);
         return NextResponse.json({ error: 'Error al crear tarea' }, { status: 500 });
@@ -184,16 +196,29 @@ export async function PUT(req: NextRequest) {
             data.fechaCompletada = new Date();
         }
 
-        // Update involucrados if provided (delete-recreate strategy)
+        // Update involucrados if provided (Diff strategy)
         if (involucrados) {
-            await prisma.tareaInvolucrado.deleteMany({ where: { tareaId: id } });
-            await prisma.tareaInvolucrado.createMany({
-                data: involucrados.map((inv: any) => ({
-                    tareaId: id,
-                    operatorId: inv.operatorId,
-                    rol: inv.rol || 'responsable',
-                })),
-            });
+            const existing = await prisma.tareaInvolucrado.findMany({ where: { tareaId: id } });
+            const existingIds = existing.map(e => e.operatorId);
+            const newIds = involucrados.map((i: any) => i.operatorId);
+            
+            const toDelete = existingIds.filter(id => !newIds.includes(id));
+            const toCreate = involucrados.filter((i: any) => !existingIds.includes(i.operatorId));
+            
+            if (toDelete.length > 0) {
+                await prisma.tareaInvolucrado.deleteMany({
+                    where: { tareaId: id, operatorId: { in: toDelete } }
+                });
+            }
+            if (toCreate.length > 0) {
+                await prisma.tareaInvolucrado.createMany({
+                    data: toCreate.map((inv: any) => ({
+                        tareaId: id,
+                        operatorId: inv.operatorId,
+                        rol: inv.rol || 'responsable',
+                    }))
+                });
+            }
         }
 
         const tarea = await prisma.tarea.update({
@@ -226,7 +251,7 @@ export async function PUT(req: NextRequest) {
 
             if (targetIds.length > 0) {
                 const msg = `${actingUserName} ha cambiado el estado de "${tarea.titulo}" a ${label}.`;
-                try { await sendPushNotification({ userIds: targetIds, title: 'Cambio de Estado', message: msg, data: { url: `/tareas?id=${tarea.id}` } }); } catch (e) { console.error('[ONESIGNAL]', e); }
+                try { sendPushNotification({ userIds: targetIds, title: 'Cambio de Estado', message: msg, data: { url: `/tareas?id=${tarea.id}` } }).catch(e => console.error(e)); } catch (e) { console.error('[ONESIGNAL]', e); }
                 await Promise.allSettled(targetIds.map(opId => prisma.notification.create({
                     data: { operatorId: opId, title: 'Cambio de Estado', message: msg, type: 'TAREA_ACTUALIZADA', relatedId: tarea.id }
                 })));
@@ -240,7 +265,7 @@ export async function PUT(req: NextRequest) {
 
             if (targetIds.length > 0) {
                 const msg = `${actingUserName} ha actualizado la tarea "${tarea.titulo}".`;
-                try { await sendPushNotification({ userIds: targetIds, title: 'Tarea Actualizada', message: msg, data: { url: `/tareas?id=${tarea.id}` } }); } catch (e) { console.error('[ONESIGNAL]', e); }
+                try { sendPushNotification({ userIds: targetIds, title: 'Tarea Actualizada', message: msg, data: { url: `/tareas?id=${tarea.id}` } }).catch(e => console.error(e)); } catch (e) { console.error('[ONESIGNAL]', e); }
                 await Promise.allSettled(targetIds.map(opId => prisma.notification.create({
                     data: { operatorId: opId, title: 'Tarea Actualizada', message: msg, type: 'TAREA_ACTUALIZADA', relatedId: tarea.id }
                 })));
@@ -256,21 +281,27 @@ export async function PUT(req: NextRequest) {
 
             if (removedIds.length > 0) {
                 const msg = `${actingUserName} te ha removido de la tarea "${oldTarea.titulo}".`;
-                try { await sendPushNotification({ userIds: removedIds, title: 'Removido de Tarea', message: msg }); } catch (e) { console.error('[ONESIGNAL]', e); }
+                try { sendPushNotification({ userIds: removedIds, title: 'Removido de Tarea', message: msg }).catch(e => console.error(e)); } catch (e) { console.error('[ONESIGNAL]', e); }
                 await Promise.allSettled(removedIds.map(opId => prisma.notification.create({
                     data: { operatorId: opId, title: 'Removido de Tarea', message: msg, type: 'TAREA_REMOVIDA', relatedId: tarea.id }
                 })));
             }
             if (addedIds.length > 0) {
                 const msg = `${actingUserName} te ha asignado a la tarea "${tarea.titulo}".`;
-                try { await sendPushNotification({ userIds: addedIds, title: 'Nueva Asignación', message: msg, data: { url: `/tareas?id=${tarea.id}` } }); } catch (e) { console.error('[ONESIGNAL]', e); }
+                try { sendPushNotification({ userIds: addedIds, title: 'Nueva Asignación', message: msg, data: { url: `/tareas?id=${tarea.id}` } }).catch(e => console.error(e)); } catch (e) { console.error('[ONESIGNAL]', e); }
                 await Promise.allSettled(addedIds.map(opId => prisma.notification.create({
                     data: { operatorId: opId, title: 'Nueva Asignación', message: msg, type: 'NUEVA_TAREA', relatedId: tarea.id }
                 })));
             }
         }
 
-        return NextResponse.json(tarea);
+        const tareaMapped = {
+            ...tarea,
+            creadoEn: tarea.createdAt,
+            actualizadoEn: tarea.updatedAt
+        };
+
+        return NextResponse.json(tareaMapped);
     } catch (error) {
         console.error('[TAREAS_PUT]', error);
         return NextResponse.json({ error: 'Error al actualizar tarea' }, { status: 500 });
@@ -329,7 +360,7 @@ export async function DELETE(req: NextRequest) {
         
         if (targetIds.length > 0) {
             const msg = `${actingUserName} ha eliminado la tarea "${oldTarea.titulo}".`;
-            try { await sendPushNotification({ userIds: targetIds, title: 'Tarea Eliminada', message: msg }); } catch (e) { console.error('[ONESIGNAL]', e); }
+            try { sendPushNotification({ userIds: targetIds, title: 'Tarea Eliminada', message: msg }).catch(e => console.error(e)); } catch (e) { console.error('[ONESIGNAL]', e); }
             await Promise.allSettled(targetIds.map(opId => prisma.notification.create({
                 data: { operatorId: opId, title: 'Tarea Eliminada', message: msg, type: 'TAREA_REMOVIDA', relatedId: oldTarea.id }
             })));

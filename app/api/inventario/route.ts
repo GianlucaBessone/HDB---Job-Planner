@@ -6,6 +6,12 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
     try {
         const materiales = await prisma.materialMaestro.findMany({
+            select: {
+                codigo: true,
+                nombre: true,
+                precioVenta: true,
+                costo: true,
+            },
             orderBy: { nombre: 'asc' }
         });
         return NextResponse.json(materiales);

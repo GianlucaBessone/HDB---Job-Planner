@@ -39,48 +39,59 @@ export async function POST(req: Request) {
         let procesados = 0;
         const errores = [];
 
+        const parsePrice = (val: any) => {
+            if (val === undefined || val === null || val === '') return null;
+            const parsed = parseFloat(val.toString().replace(',', '.')); // in case they use comma
+            return isNaN(parsed) ? null : parsed;
+        };
+
+        const validRows = [];
         for (const row of data) {
             const codigo = row['Codigo']?.toString().trim();
             const material = row['Material']?.toString().trim();
             
-            if (!codigo) {
-                // Ignore rows without code
-                continue;
-            }
+            if (!codigo) continue;
             if (!material) {
                 errores.push({ fila: row, motivo: 'Material está vacío' });
                 continue;
             }
+            
+            validRows.push({
+                row,
+                codigo,
+                material,
+                precioVenta: parsePrice(row['Precio Venta']),
+                costo: parsePrice(row['Costo'])
+            });
+        }
 
-            const parsePrice = (val: any) => {
-                if (val === undefined || val === null || val === '') return null;
-                const parsed = parseFloat(val.toString().replace(',', '.')); // in case they use comma
-                return isNaN(parsed) ? null : parsed;
-            };
-
-            const precioVenta = parsePrice(row['Precio Venta']);
-            const costo = parsePrice(row['Costo']);
-
-            try {
-                await prisma.materialMaestro.upsert({
-                    where: { codigo },
-                    update: {
-                        nombre: material,
-                        precioVenta: precioVenta,
-                        costo: costo
-                    },
-                    create: {
-                        codigo,
-                        nombre: material,
-                        unidad: 'unidad',
-                        precioVenta: precioVenta,
-                        costo: costo
-                    }
-                });
-                procesados++;
-            } catch (err: any) {
-                errores.push({ fila: row, motivo: err.message || 'Error al guardar en base de datos' });
-            }
+        // Process in chunks of 50 to avoid connection pool exhaustion
+        const chunkSize = 50;
+        for (let i = 0; i < validRows.length; i += chunkSize) {
+            const chunk = validRows.slice(i, i + chunkSize);
+            const promises = chunk.map(async (item) => {
+                try {
+                    await prisma.materialMaestro.upsert({
+                        where: { codigo: item.codigo },
+                        update: {
+                            nombre: item.material,
+                            precioVenta: item.precioVenta,
+                            costo: item.costo
+                        },
+                        create: {
+                            codigo: item.codigo,
+                            nombre: item.material,
+                            unidad: 'unidad',
+                            precioVenta: item.precioVenta,
+                            costo: item.costo
+                        }
+                    });
+                    procesados++;
+                } catch (err: any) {
+                    errores.push({ fila: item.row, motivo: err.message || 'Error al guardar en base de datos' });
+                }
+            });
+            await Promise.all(promises);
         }
 
         return NextResponse.json({
