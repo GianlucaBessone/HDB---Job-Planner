@@ -98,10 +98,10 @@
 /* ════════════════════════════════════════════════════════════════════════════ */
 @layer components {
 
-  /* ── 0. FORM CONTROLS (DESKTOP DEFAULT 36px) ────────────────────────── */
+  /* ── 0. FORM CONTROLS (DESKTOP DEFAULT 42px) ────────────────────────── */
   :where(input[type="text"], input[type="email"], input[type="number"], input[type="tel"], input[type="password"], input[type="search"],
-  input[type="date"], input[type="time"], select) {
-    @apply h-9 px-3 text-[13px] rounded-lg;
+  input[type="date"], input[type="time"], input[type="datetime-local"], select, textarea) {
+    @apply min-h-[42px] px-3 py-2 text-sm rounded-lg;
   }
 
   /* ── 0.5. DATA TABLES (DESKTOP DENSITY 36px) ────────────────────────── */
@@ -469,9 +469,10 @@
   input[type="text"], input[type="email"], input[type="number"], input[type="tel"], input[type="password"], input[type="search"],
   input[type="date"],
   input[type="time"],
-  select {
-    height: 44px !important;
-    @apply text-sm rounded-xl px-3;
+  input[type="datetime-local"],
+  select, textarea {
+    min-height: 44px !important;
+    @apply text-sm rounded-xl px-3 py-2.5;
   }
 
   /* ── Native date/time picker icons are shown — we hide the decorative icon in the component itself on mobile ── */
@@ -510,9 +511,10 @@
 @media (max-width: 390px) {
   input[type="date"],
   input[type="time"],
+  input[type="datetime-local"],
   select {
-    height: 44px !important;
-    @apply text-xs px-2;
+    min-height: 44px !important;
+    @apply text-xs px-2 py-2;
   }
 }
 
