@@ -1,9 +1,14 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireSGIRole } from '@/lib/sgiAuth';
+import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+    const auth = requireSGIRole(req, ['supervisor', 'admin', 'qa']);
+    if (auth.error) return auth.error;
+
     try {
         const nc = await prisma.noConformidad.findUnique({
             where: { id: params.id },
@@ -32,10 +37,34 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     }
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+    const auth = requireSGIRole(req, ['supervisor', 'admin', 'qa']);
+    if (auth.error) return auth.error;
+
     try {
         const body = await req.json();
         
+        // H-002 State transition validation
+        const currentNc = await prisma.noConformidad.findUnique({
+            where: { id: params.id },
+            select: { estado: true }
+        });
+        
+        if (!currentNc) return NextResponse.json({ error: 'NC no encontrada' }, { status: 404 });
+
+        if (body.estado && body.estado !== currentNc.estado) {
+            const validStates = ['Abierta', 'En análisis', 'Acción definida', 'En ejecución', 'Pendiente de validación', 'Cerrada'];
+            const currentIndex = validStates.indexOf(currentNc.estado);
+            const newIndex = validStates.indexOf(body.estado);
+
+            if (newIndex === -1) {
+                return NextResponse.json({ error: 'Estado inválido' }, { status: 400 });
+            }
+            if (newIndex > currentIndex + 1) {
+                return NextResponse.json({ error: 'Transición de estado inválida' }, { status: 400 });
+            }
+        }
+
         let updateData: any = { ...body };
         if (body.responsablesTratamientoIds !== undefined) {
             updateData.responsablesTratamiento = {
@@ -49,8 +78,16 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
             data: updateData,
             include: {
                 analisisCausaRaiz: true
-
             }
+        });
+
+        await logAudit({
+            userId: auth.user.id,
+            action: 'UPDATE',
+            entity: 'NC',
+            entityId: nc.id,
+            oldValue: currentNc,
+            newValue: nc
         });
 
         // Si se cierra la NC, generar y guardar el embedding
@@ -83,11 +120,26 @@ Causa Raíz: ${nc.analisisCausaRaiz?.map(acr => acr.causaRaiz || acr.descripcion
     }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+    const auth = requireSGIRole(req, ['supervisor', 'admin', 'qa']);
+    if (auth.error) return auth.error;
+
     try {
+        const nc = await prisma.noConformidad.findUnique({ where: { id: params.id } });
+        
         await prisma.noConformidad.delete({
             where: { id: params.id }
         });
+
+        if (nc) {
+            await logAudit({
+                userId: auth.user.id,
+                action: 'DELETE',
+                entity: 'NC',
+                entityId: nc.id,
+                oldValue: nc
+            });
+        }
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Error deleting No Conformidad:', error);

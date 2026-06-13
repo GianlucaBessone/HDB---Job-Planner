@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { X, Calendar, GitBranch, Target, Users, Clock, AlertTriangle, Edit, Trash2, Sparkles } from 'lucide-react';
+import { X, Calendar, GitBranch, Target, Users, Clock, AlertTriangle, Edit, Trash2, Sparkles, CheckCircle2 } from 'lucide-react';
 import { useModalScroll } from '@/lib/useModalScroll';
 import NewRootCauseModal from './NewRootCauseModal';
 import NewMeetingModal from './NewMeetingModal';
 import NewCapaModal from './NewCapaModal';
+import { VerificacionEficaciaModal } from './VerificacionEficaciaModal';
 import ConfirmModal from '@/components/ConfirmModal';
 import OperatorMultiSelect from '@/components/OperatorMultiSelect';
 import ReactMarkdown from 'react-markdown';
@@ -21,11 +22,18 @@ export default function NcDetailModal({ ncId, isOpen, onClose, onUpdate }: NcDet
     const [nc, setNc] = useState<any>(null);
     const [operators, setOperators] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
-    const [activeTab, setActiveTab] = useState<'detalles' | 'causa' | 'reuniones' | 'acciones' | 'ia'>('detalles');
+    const [activeTab, setActiveTab] = useState<'detalles' | 'causa' | 'reuniones' | 'acciones' | 'ia' | 'verificaciones'>('detalles');
     const [isRootCauseModalOpen, setIsRootCauseModalOpen] = useState(false);
     const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
     const [isCapaModalOpen, setIsCapaModalOpen] = useState(false);
+    const [isVerificacionModalOpen, setIsVerificacionModalOpen] = useState(false);
     const [editingMeeting, setEditingMeeting] = useState<any>(null);
+    const [currentUser, setCurrentUser] = useState<any>(null);
+
+    useEffect(() => {
+        const stored = localStorage.getItem('currentUser');
+        if (stored) setCurrentUser(JSON.parse(stored));
+    }, []);
     const [meetingToDelete, setMeetingToDelete] = useState<string | null>(null);
 
     // AI Analysis states
@@ -205,6 +213,12 @@ export default function NcDetailModal({ ncId, isOpen, onClose, onUpdate }: NcDet
                         className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'acciones' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                     >
                         <span className="flex items-center gap-2"><Target className="w-4 h-4" /> Acciones CAPA ({nc?.accionesMejora?.length || 0})</span>
+                    </button>
+                    <button 
+                        onClick={() => setActiveTab('verificaciones')}
+                        className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'verificaciones' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                    >
+                        <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> Verificación</span>
                     </button>
                 </div>
 
@@ -434,6 +448,45 @@ export default function NcDetailModal({ ncId, isOpen, onClose, onUpdate }: NcDet
                                     )}
                                 </div>
                             )}
+
+                            {/* VERIFICACIONES */}
+                            {activeTab === 'verificaciones' && (
+                                <div className="space-y-4 animate-in fade-in">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="font-semibold text-lg">Verificación de Eficacia</h3>
+                                        <button className="btn-secondary text-sm" onClick={() => setIsVerificacionModalOpen(true)}>
+                                            + Registrar Verificación
+                                        </button>
+                                    </div>
+                                    {nc.verificacionesEficacia?.length > 0 ? (
+                                        <div className="space-y-3">
+                                            {nc.verificacionesEficacia.map((v: any) => (
+                                                <div key={v.id} className="bg-card p-4 rounded-lg border">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <span className={`text-xs font-semibold px-2 py-1 rounded ${v.eficaz ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                                            {v.eficaz ? 'Eficaz' : 'Ineficaz'}
+                                                        </span>
+                                                        <span className="text-xs text-muted-foreground">{new Date(v.fechaVerificacion).toLocaleDateString()}</span>
+                                                    </div>
+                                                    <p className="text-sm mt-2 font-medium">Resultado:</p>
+                                                    <p className="text-sm text-muted-foreground">{v.resultado}</p>
+                                                    {v.observaciones && (
+                                                        <div className="mt-2 text-xs">
+                                                            <span className="font-medium">Obs: </span>
+                                                            <span className="text-muted-foreground">{v.observaciones}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center p-8 border border-dashed rounded-lg bg-card">
+                                            <CheckCircle2 className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-50" />
+                                            <p className="text-muted-foreground text-sm">Aún no se ha verificado la eficacia de las acciones para esta NC.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </>
                     )}
                 </div>
@@ -460,6 +513,13 @@ export default function NcDetailModal({ ncId, isOpen, onClose, onUpdate }: NcDet
                         onSuccess={() => { setIsCapaModalOpen(false); fetchNcDetails(); onUpdate(); }}
                         user={null}
                         initialNcId={ncId}
+                    />
+                    <VerificacionEficaciaModal
+                        isOpen={isVerificacionModalOpen}
+                        onClose={() => setIsVerificacionModalOpen(false)}
+                        ncId={ncId}
+                        onSuccess={() => { setIsVerificacionModalOpen(false); fetchNcDetails(); onUpdate(); }}
+                        currentUserId={currentUser?.id}
                     />
                     <ConfirmModal
                         isOpen={!!meetingToDelete}

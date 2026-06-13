@@ -1,9 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireSGIRole } from '@/lib/sgiAuth';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+    const auth = requireSGIRole(req, ['supervisor', 'admin', 'qa']);
+    if (auth.error) return auth.error;
+
     try {
         const body = await req.json();
         

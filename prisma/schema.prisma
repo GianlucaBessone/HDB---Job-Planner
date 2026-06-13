@@ -1343,7 +1343,14 @@ model AccionMejora {
   sugerencia   Sugerencia? @relation(fields: [sugerenciaId], references: [id], onDelete: Cascade)
 
   riesgoId         String?
+  riesgo           Riesgo? @relation(fields: [riesgoId], references: [id])
+
   oportunidadId    String?
+  oportunidad      Oportunidad? @relation(fields: [oportunidadId], references: [id])
+
+  objetivoId       String?
+  objetivo         ObjetivoCalidad? @relation(fields: [objetivoId], references: [id])
+
   auditoriaId      String?
   documentoId      String?
   capacitacionId   String?
@@ -1357,6 +1364,70 @@ model AccionMejora {
   @@index([ncId])
   @@index([sugerenciaId])
   @@index([responsableId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RIESGOS, OBJETIVOS Y OPORTUNIDADES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Riesgo {
+  id                String   @id @default(cuid())
+  codigo            String?  @unique
+  titulo            String
+  descripcion       String   @db.Text
+  categoria         String
+  probabilidad      String   @default("Media") // Baja, Media, Alta
+  impacto           String   @default("Medio") // Bajo, Medio, Alto, Crítico
+  nivelRiesgo       String   @default("Medio") // Calculado
+  estado            String   @default("Identificado") // Identificado, En Tratamiento, Mitigado, Aceptado, Cerrado
+  procesoAfectado   String?
+  responsableId     String?
+  fechaIdentificacion DateTime @default(now())
+  fechaRevision     DateTime?
+
+  accionesMejora    AccionMejora[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model ObjetivoCalidad {
+  id                String   @id @default(cuid())
+  codigo            String?  @unique
+  titulo            String
+  descripcion       String   @db.Text
+  indicador         String
+  meta              String
+  unidad            String?
+  frecuenciaMedicion String?
+  responsableId     String?
+  estado            String   @default("Activo") // Activo, Cumplido, No Cumplido, En Revisión
+  periodo           String?
+  fechaInicio       DateTime?
+  fechaFin          DateTime?
+  resultadoActual   String?
+
+  accionesMejora    AccionMejora[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Oportunidad {
+  id                String   @id @default(cuid())
+  codigo            String?  @unique
+  titulo            String
+  descripcion       String   @db.Text
+  tipoOportunidad   String
+  beneficioEsperado String?  @db.Text
+  estado            String   @default("Identificada") // Identificada, En Evaluación, Aprobada, Implementada, Descartada
+  responsableId     String?
+  fechaIdentificacion DateTime @default(now())
+
+  accionesMejora    AccionMejora[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

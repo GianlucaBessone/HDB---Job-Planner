@@ -1,9 +1,14 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireSGIRole } from '@/lib/sgiAuth';
+import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
+    const auth = requireSGIRole(req, ['supervisor', 'admin', 'qa']);
+    if (auth.error) return auth.error;
+
     try {
         const { searchParams } = new URL(req.url);
         const estado = searchParams.get('estado');
@@ -36,15 +41,34 @@ export async function GET(req: Request) {
     }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+    const auth = requireSGIRole(req, ['supervisor', 'admin', 'qa']);
+    if (auth.error) return auth.error;
+
     try {
         const body = await req.json();
         
-        // Generate a simple code if not provided
+        // Validation H-003
+        if (!body.descripcion || !body.origen || !body.tipoNC || !body.categoria || !body.procesoAfectado || !body.areaAfectada) {
+            return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 });
+        }
+
+        // Generate robust code H-001
         let codigoNC = body.codigoNC;
         if (!codigoNC) {
-            const count = await prisma.noConformidad.count();
-            codigoNC = `NC-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
+            const year = new Date().getFullYear();
+            const pattern = `NC-${year}-`;
+            const last = await prisma.noConformidad.findFirst({
+                where: { codigoNC: { startsWith: pattern } },
+                orderBy: { codigoNC: 'desc' },
+                select: { codigoNC: true },
+            });
+            let lastNumber = 0;
+            if (last?.codigoNC) {
+                const parts = last.codigoNC.split('-');
+                lastNumber = parseInt(parts[parts.length - 1], 10) || 0;
+            }
+            codigoNC = `NC-${year}-${String(lastNumber + 1).padStart(4, '0')}`;
         }
 
         const nc = await prisma.noConformidad.create({
@@ -65,6 +89,14 @@ export async function POST(req: Request) {
                 impacto: body.impacto,
                 estado: 'Abierta',
             }
+        });
+
+        await logAudit({
+            userId: auth.user.id,
+            action: 'CREATE',
+            entity: 'NC',
+            entityId: nc.id,
+            newValue: nc
         });
 
         return NextResponse.json(nc, { status: 201 });

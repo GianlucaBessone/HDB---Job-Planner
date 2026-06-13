@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendPushNotification } from '@/lib/onesignal';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Webhook called by cron-job.org when a reminder fires.
  * Sends push notifications to all involucrados of the tarea.

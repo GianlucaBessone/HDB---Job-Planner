@@ -16,8 +16,11 @@ import CompetenciesTab from './components/CompetenciesTab';
 import NcTab from './components/NcTab';
 import CapaTab from './components/CapaTab';
 import ModuleHeader from '@/components/ModuleHeader';
+import { RiesgosTab } from './components/RiesgosTab';
+import { ObjetivosTab } from './components/ObjetivosTab';
+import { OportunidadesTab } from './components/OportunidadesTab';
 
-type TabId = 'dashboard' | 'library' | 'templates' | 'expirations' | 'history' | 'training' | 'competencies' | 'nc' | 'capa';
+type TabId = 'dashboard' | 'library' | 'templates' | 'expirations' | 'history' | 'training' | 'competencies' | 'nc' | 'capa' | 'riesgos' | 'objetivos' | 'oportunidades';
 
 export default function CalidadPageWrapper() {
     return (
@@ -61,6 +64,9 @@ function CalidadPage() {
         { id: 'library', label: 'Biblioteca Documental', roles: ['operador', 'supervisor', 'admin', 'qa'] },
         { id: 'nc', label: 'No Conformidades (NC)', roles: ['supervisor', 'admin', 'qa'] },
         { id: 'capa', label: 'Sistema CAPA', roles: ['supervisor', 'admin', 'qa'] },
+        { id: 'riesgos', label: 'Matriz de Riesgos', roles: ['supervisor', 'admin', 'qa'] },
+        { id: 'objetivos', label: 'Objetivos de Calidad', roles: ['supervisor', 'admin', 'qa'] },
+        { id: 'oportunidades', label: 'Oportunidades', roles: ['supervisor', 'admin', 'qa'] },
         { id: 'training', label: 'Capacitación LMS', roles: ['operador', 'supervisor', 'admin', 'qa'] },
         { id: 'competencies', label: 'Matriz de Competencias', roles: ['operador', 'supervisor', 'admin', 'qa'] },
         { id: 'templates', label: 'Plantillas de Checklist', roles: ['supervisor', 'admin', 'qa'] },
@@ -113,6 +119,21 @@ function CalidadPage() {
                 {visitedTabs['capa'] && (
                     <div className={activeTab === 'capa' ? '' : 'hidden'}>
                         <CapaTab user={currentUser} />
+                    </div>
+                )}
+                {visitedTabs['riesgos'] && (
+                    <div className={activeTab === 'riesgos' ? '' : 'hidden'}>
+                        <RiesgosTab currentUser={currentUser} />
+                    </div>
+                )}
+                {visitedTabs['objetivos'] && (
+                    <div className={activeTab === 'objetivos' ? '' : 'hidden'}>
+                        <ObjetivosTab currentUser={currentUser} />
+                    </div>
+                )}
+                {visitedTabs['oportunidades'] && (
+                    <div className={activeTab === 'oportunidades' ? '' : 'hidden'}>
+                        <OportunidadesTab currentUser={currentUser} />
                     </div>
                 )}
                 {visitedTabs['training'] && (

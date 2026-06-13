@@ -1,9 +1,14 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireSGIRole } from '@/lib/sgiAuth';
+import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
+    const auth = requireSGIRole(req, ['supervisor', 'admin', 'qa']);
+    if (auth.error) return auth.error;
+
     try {
         const { searchParams } = new URL(req.url);
         const estado = searchParams.get('estado');
@@ -30,14 +35,34 @@ export async function GET(req: Request) {
     }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+    const auth = requireSGIRole(req, ['supervisor', 'admin', 'qa']);
+    if (auth.error) return auth.error;
+
     try {
         const body = await req.json();
         
+        // Validation H-003
+        if (!body.descripcion || !body.tipoAccion || !body.origen) {
+            return NextResponse.json({ error: 'Faltan campos obligatorios' }, { status: 400 });
+        }
+
+        // Generate robust code H-001
         let codigoAccion = body.codigoAccion;
         if (!codigoAccion) {
-            const count = await prisma.accionMejora.count();
-            codigoAccion = `CAPA-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
+            const year = new Date().getFullYear();
+            const pattern = `CAPA-${year}-`;
+            const last = await prisma.accionMejora.findFirst({
+                where: { codigoAccion: { startsWith: pattern } },
+                orderBy: { codigoAccion: 'desc' },
+                select: { codigoAccion: true },
+            });
+            let lastNumber = 0;
+            if (last?.codigoAccion) {
+                const parts = last.codigoAccion.split('-');
+                lastNumber = parseInt(parts[parts.length - 1], 10) || 0;
+            }
+            codigoAccion = `CAPA-${year}-${String(lastNumber + 1).padStart(4, '0')}`;
         }
 
         const accion = await prisma.accionMejora.create({
@@ -60,6 +85,14 @@ export async function POST(req: Request) {
                 auditoriaId: body.auditoriaId,
                 documentoId: body.documentoId,
             }
+        });
+
+        await logAudit({
+            userId: auth.user.id,
+            action: 'CREATE',
+            entity: 'CAPA',
+            entityId: accion.id,
+            newValue: accion
         });
 
         return NextResponse.json(accion, { status: 201 });

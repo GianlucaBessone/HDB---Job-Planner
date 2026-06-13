@@ -107,6 +107,12 @@ const ENTITY_LABELS: Record<string, string> = {
     CHECKLIST: 'Checklist',
     SETTING: 'Configuración',
     USER: 'Usuario',
+    NC: 'No Conformidad',
+    CAPA: 'Acción CAPA',
+    RIESGO: 'Riesgo',
+    OBJETIVO: 'Objetivo de Calidad',
+    OPORTUNIDAD: 'Oportunidad',
+    VERIFICACION_EFICACIA: 'Verificación de Eficacia',
 };
 
 const ACTION_LABELS: Record<string, string> = {
@@ -230,6 +236,11 @@ export default function AuditPage() {
                         <option value="OPERATOR">Operadores</option>
                         <option value="CHECKLIST">Checklist</option>
                         <option value="SETTING">Configuraciones</option>
+                        <option value="NC">No Conformidades</option>
+                        <option value="CAPA">Acciones CAPA</option>
+                        <option value="RIESGO">Riesgos</option>
+                        <option value="OBJETIVO">Objetivos</option>
+                        <option value="OPORTUNIDAD">Oportunidades</option>
                     </select>
 
                     <select 

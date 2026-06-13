@@ -1,9 +1,14 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireSGIRole } from '@/lib/sgiAuth';
+import { logAudit } from '@/lib/audit';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+    const auth = requireSGIRole(req, ['supervisor', 'admin', 'qa']);
+    if (auth.error) return auth.error;
+
     try {
         const accion = await prisma.accionMejora.findUnique({
             where: { id: params.id },
@@ -24,7 +29,10 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     }
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+    const auth = requireSGIRole(req, ['supervisor', 'admin', 'qa']);
+    if (auth.error) return auth.error;
+
     try {
         const body = await req.json();
         
@@ -34,9 +42,20 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         if (dataToUpdate.fechaCompromiso) dataToUpdate.fechaCompromiso = new Date(dataToUpdate.fechaCompromiso);
         if (dataToUpdate.fechaCierre) dataToUpdate.fechaCierre = new Date(dataToUpdate.fechaCierre);
 
+        const currentAction = await prisma.accionMejora.findUnique({ where: { id: params.id } });
+
         const accion = await prisma.accionMejora.update({
             where: { id: params.id },
             data: dataToUpdate
+        });
+
+        await logAudit({
+            userId: auth.user.id,
+            action: 'UPDATE',
+            entity: 'CAPA',
+            entityId: accion.id,
+            oldValue: currentAction,
+            newValue: accion
         });
 
         return NextResponse.json(accion);
@@ -46,11 +65,26 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+    const auth = requireSGIRole(req, ['supervisor', 'admin', 'qa']);
+    if (auth.error) return auth.error;
+
     try {
+        const accion = await prisma.accionMejora.findUnique({ where: { id: params.id } });
+
         await prisma.accionMejora.delete({
             where: { id: params.id }
         });
+
+        if (accion) {
+            await logAudit({
+                userId: auth.user.id,
+                action: 'DELETE',
+                entity: 'CAPA',
+                entityId: accion.id,
+                oldValue: accion
+            });
+        }
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Error deleting Accion CAPA:', error);
