@@ -71,16 +71,19 @@ model QrTokenHistory {
 }
 
 model ProjectLog {
-  id          String   @id @default(cuid())
-  projectId   String
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  fecha       String // YYYY-MM-DD
-  responsable String
-  observacion String
-  categoria   String   @default("Nota") // Reporte | Nota | Bloqueante | Consulta
-  createdAt   DateTime @default(now())
+  id             String    @id @default(cuid())
+  projectId      String
+  project        Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  fecha          String // YYYY-MM-DD
+  responsable    String
+  responsableId  String?
+  responsableRel Operator? @relation("ProjectLogResponsable", fields: [responsableId], references: [id], onDelete: SetNull)
+  observacion    String
+  categoria      String    @default("Nota") // Reporte | Nota | Bloqueante | Consulta
+  createdAt      DateTime  @default(now())
 
   @@index([projectId])
+  @@index([fecha])
 }
 
 model ChecklistItem {
@@ -101,17 +104,21 @@ model ChecklistItem {
 }
 
 model ClientDelay {
-  id              String   @id @default(cuid())
+  id              String    @id @default(cuid())
   projectId       String
-  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project         Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
   fecha           String // YYYY-MM-DD
   hora            String // HH:mm
   operador        String // Operador interno que registra
+  operadorId      String?
+  operadorRel     Operator? @relation("ClientDelayOperador", fields: [operadorId], references: [id], onDelete: SetNull)
   area            String // Control Documentario, Calidad, Compras, IT
   responsableArea String? // Nombre del responsable del área (opcional)
   motivo          String // Motivo de la demora
   duracion        Float // Tiempo demorado en horas
-  createdAt       DateTime @default(now())
+  createdAt       DateTime  @default(now())
+
+  @@index([projectId])
 }
 
 model Operator {
@@ -145,6 +152,13 @@ model Operator {
   verificacionesEficacia    VerificacionEficacia[]
   tareasInvolucradas        TareaInvolucrado[]
   tareasComentarios         TareaComentario[]
+
+  // Nuevas relaciones (Auditoria DB)
+  clientDelays             ClientDelay[]     @relation("ClientDelayOperador")
+  projectLogs              ProjectLog[]      @relation("ProjectLogResponsable")
+  timeEntriesApproved      TimeEntry[]       @relation("TimeEntryApprover")
+  documentVersionsAuthored DocumentVersion[] @relation("DocVersionAutor")
+  documentVersionsApproved DocumentVersion[] @relation("DocVersionAprobador")
 }
 
 model FavoriteBlock {
@@ -206,6 +220,7 @@ model TimeEntry {
   score                   Int       @default(0)
   riskLevel               String    @default("OK")
   approvedById            String?
+  approvedBy              Operator? @relation("TimeEntryApprover", fields: [approvedById], references: [id], onDelete: SetNull)
   approvedAt              DateTime?
 
   createdAt DateTime @default(now())
@@ -346,15 +361,16 @@ model OrdenServicio {
 }
 
 model OrdenServicioMaterial {
-  id                 String        @id @default(cuid())
+  id                 String            @id @default(cuid())
   ordenServicioId    String
-  ordenServicio      OrdenServicio @relation(fields: [ordenServicioId], references: [id], onDelete: Cascade)
+  ordenServicio      OrdenServicio     @relation(fields: [ordenServicioId], references: [id], onDelete: Cascade)
   material           String
   codigo             String?
   cantidad           Float
   unidadMedida       String
   precioUnitario     Float?
-  materialProyectoId String?       @map("material_proyecto_id")
+  materialProyectoId String?           @map("material_proyecto_id")
+  materialProyecto   MaterialProyecto? @relation(fields: [materialProyectoId], references: [id], onDelete: SetNull)
 
   @@index([ordenServicioId])
   @@index([codigo])
@@ -381,6 +397,8 @@ model OrdenServicioFirma {
   dni             String
   firmaImagen     String        @db.Text
   fechaFirma      DateTime      @default(now())
+
+  @@index([ordenServicioId])
 }
 
 model EncuestaServicio {
@@ -401,21 +419,22 @@ model EncuestaServicio {
 }
 
 model MaterialProyecto {
-  id                 String               @id @default(cuid())
-  proyectoId         String
-  proyecto           Project              @relation(fields: [proyectoId], references: [id], onDelete: Cascade)
-  nombre             String
-  codigo             String?
-  unidad             String               @default("unidad")
-  cantidadSolicitada Float                @default(0)
-  cantidadDisponible Float                @default(0)
-  cantidadEntregada  Float                @default(0)
-  estado             String               @default("material_cargado")
+  id                        String                  @id @default(cuid())
+  proyectoId                String
+  proyecto                  Project                 @relation(fields: [proyectoId], references: [id], onDelete: Cascade)
+  nombre                    String
+  codigo                    String?
+  unidad                    String                  @default("unidad")
+  cantidadSolicitada        Float                   @default(0)
+  cantidadDisponible        Float                   @default(0)
+  cantidadEntregada         Float                   @default(0)
+  estado                    String                  @default("material_cargado")
   // material_cargado | material_entregado | uso_confirmado | pendiente_devolucion | cerrado_ok | cerrado_con_reserva
-  createdAt          DateTime             @default(now())
-  precioVenta        Float?
-  usos               MaterialUso[]
-  devoluciones       MaterialDevolucion[]
+  createdAt                 DateTime                @default(now())
+  precioVenta               Float?
+  usos                      MaterialUso[]
+  devoluciones              MaterialDevolucion[]
+  ordenesServicioMateriales OrdenServicioMaterial[]
 
   @@index([proyectoId])
   @@index([codigo])
@@ -528,6 +547,7 @@ model Tool {
 
   verificaciones       ToolVerification[]
   cartMovementsAsCarro ToolMovement[]
+  cartMovementItems    ToolMovementItem[] @relation("ToolMovementItemRef")
 
   @@index([tipo])
   @@index([carroId])
@@ -569,6 +589,7 @@ model ToolMovementItem {
   movement   ToolMovement @relation(fields: [movementId], references: [id], onDelete: Cascade)
 
   toolId       String? // referencia a Tool registrada (null si es adicional efímera)
+  tool         Tool?   @relation("ToolMovementItemRef", fields: [toolId], references: [id], onDelete: SetNull)
   nombre       String // snapshot del nombre
   cantidad     Int     @default(1)
   isAdditional Boolean @default(false)
@@ -671,8 +692,10 @@ model DocumentVersion {
 
   // Autoría y aprobación
   autorId         String?
+  autor           Operator? @relation("DocVersionAutor", fields: [autorId], references: [id], onDelete: SetNull)
   autorNombre     String?
   aprobadorId     String?
+  aprobador       Operator? @relation("DocVersionAprobador", fields: [aprobadorId], references: [id], onDelete: SetNull)
   aprobadorNombre String?
   fechaAprobacion DateTime?
 
@@ -1166,10 +1189,10 @@ model NoConformidad {
   procesoAfectado  String?
   areaAfectada     String?
 
-  responsableRegistroId    String?
-  responsableRegistro      Operator? @relation("NCResponsableRegistro", fields: [responsableRegistroId], references: [id])
-  
-  responsablesTratamiento  Operator[] @relation("NCResponsableTratamiento")
+  responsableRegistroId String?
+  responsableRegistro   Operator? @relation("NCResponsableRegistro", fields: [responsableRegistroId], references: [id])
+
+  responsablesTratamiento Operator[] @relation("NCResponsableTratamiento")
 
   estado          String    @default("Abierta")
   criticidad      String    @default("Media")
@@ -1178,7 +1201,7 @@ model NoConformidad {
   fechaCierre     DateTime?
   resultadoFinal  String?   @db.Text
   observaciones   String?   @db.Text
-  embedding       Json?     // Vector de embedding de la NC para búsqueda semántica
+  embedding       Json? // Vector de embedding de la NC para búsqueda semántica
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1202,8 +1225,8 @@ model AnalisisCausaRaiz {
   causaBasica         String?       @db.Text
   causaRaiz           String?       @db.Text
 
-  participantes       Json?         @default("[]")
-  fechaAnalisis       DateTime?     @default(now())
+  participantes Json?     @default("[]")
+  fechaAnalisis DateTime? @default(now())
 
   responsableId String?
   responsable   Operator? @relation(fields: [responsableId], references: [id])
@@ -1410,14 +1433,14 @@ model HelpFaq {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 model Tarea {
-  id               String              @id @default(cuid())
-  titulo           String
-  descripcion      String?             @db.Text
-  estado           String              @default("pendiente")
+  id          String  @id @default(cuid())
+  titulo      String
+  descripcion String? @db.Text
+  estado      String  @default("pendiente")
   // pendiente | en_progreso | completada | cancelada
-  prioridad        String              @default("media")
+  prioridad   String  @default("media")
   // baja | media | alta | urgente
-  categoria        String?
+  categoria   String?
 
   // Fechas
   fechaInicio      DateTime?
@@ -1425,25 +1448,25 @@ model Tarea {
   fechaCompletada  DateTime?
 
   // Relación con proyecto (opcional)
-  projectId        String?
-  project          Project?            @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
 
   // Creador
-  creadorId        String
-  creadorNombre    String
+  creadorId     String
+  creadorNombre String
 
   // Involucrados (many-to-many via tabla intermedia)
-  involucrados     TareaInvolucrado[]
+  involucrados TareaInvolucrado[]
 
   // Recordatorios
-  recordatorios    TareaRecordatorio[]
+  recordatorios TareaRecordatorio[]
 
   // Notas/comentarios inline
-  notas            String?             @db.Text
-  comentarios      TareaComentario[]
+  notas       String?           @db.Text
+  comentarios TareaComentario[]
 
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([estado])
   @@index([projectId])
@@ -1466,24 +1489,24 @@ model TareaInvolucrado {
 }
 
 model TareaRecordatorio {
-  id             String    @id @default(cuid())
-  tareaId        String
-  tarea          Tarea     @relation(fields: [tareaId], references: [id], onDelete: Cascade)
+  id      String @id @default(cuid())
+  tareaId String
+  tarea   Tarea  @relation(fields: [tareaId], references: [id], onDelete: Cascade)
 
-  tipo           String    @default("unico")
+  tipo         String   @default("unico")
   // unico | diario | semanal
-  fechaDisparo   DateTime
-  mensaje        String?
+  fechaDisparo DateTime
+  mensaje      String?
 
   // cron-job.org integration
-  cronJobId      Int?      // ID returned by cron-job.org API
-  cronJobActivo  Boolean   @default(true)
+  cronJobId     Int? // ID returned by cron-job.org API
+  cronJobActivo Boolean @default(true)
 
   disparado      Boolean   @default(false)
   fechaDisparado DateTime?
 
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([tareaId])
   @@index([fechaDisparo])
