@@ -70,10 +70,9 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
     const [activeStep, setActiveStep] = useState('general');
 
     const [formData, setFormData] = useState({
-        codigoDocumental: '',
         titulo: '',
-        tipoDocumento: 'Procedimiento',
-        area: 'Operaciones',
+        tipoDocumento: 'PR',
+        area: 'OPE',
         nivelCriticidad: 'medio',
         requiereConfirmacionLectura: true,
         requiereCapacitacion: false,
@@ -82,6 +81,30 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
         aprobadorId: '',
         tags: [] as string[]
     });
+
+    const [previewCode, setPreviewCode] = useState<string>('Calculando...');
+    const [previewError, setPreviewError] = useState<string>('');
+
+    useEffect(() => {
+        if (formData.tipoDocumento && formData.area) {
+            setPreviewCode('Calculando...');
+            setPreviewError('');
+            safeApiRequest(`/api/documentos/next-code?tipo=${formData.tipoDocumento}&area=${formData.area}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        setPreviewError(data.error);
+                        setPreviewCode('');
+                    } else if (data.nextCode) {
+                        setPreviewCode(data.nextCode);
+                    }
+                })
+                .catch(err => {
+                    setPreviewError('Error al calcular identificador');
+                    setPreviewCode('');
+                });
+        }
+    }, [formData.tipoDocumento, formData.area]);
 
     // Digital Structured Content
     const [digitalData, setDigitalData] = useState({
@@ -442,24 +465,31 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Código Documental</label>
-                                        <input
-                                            required type="text" placeholder="Ej. PR-TEC-001"
-                                            value={formData.codigoDocumental} onChange={e => setFormData({ ...formData, codigoDocumental: e.target.value })}
-                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-indigo-500 outline-none"
-                                        />
+                                        <div className="w-full bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] flex items-center justify-between">
+                                            {previewCode ? (
+                                                <span className="text-sm font-bold text-slate-800 dark:text-slate-100 font-mono">{previewCode}</span>
+                                            ) : (
+                                                <span className="text-xs font-bold text-red-500">{previewError}</span>
+                                            )}
+                                            {previewCode === 'Calculando...' && <Loader2 className="w-4 h-4 animate-spin text-slate-400" />}
+                                        </div>
                                     </div>
                                     <div>
                                         <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Tipo de Documento</label>
                                         <select
                                             value={formData.tipoDocumento} onChange={e => setFormData({ ...formData, tipoDocumento: e.target.value })}
-                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-indigo-500 outline-none"
+                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
                                         >
-                                            <option>Procedimiento</option>
-                                            <option>Instructivo</option>
-                                            <option>Manual técnico</option>
-                                            <option>Formulario</option>
-                                            <option>Política</option>
-                                            <option>Norma de seguridad</option>
+                                            <option value="POL">POL - Política</option>
+                                            <option value="MAN">MAN - Manual</option>
+                                            <option value="PR">PR - Procedimiento</option>
+                                            <option value="INS">INS - Instructivo</option>
+                                            <option value="FOR">FOR - Formulario</option>
+                                            <option value="REG">REG - Registro</option>
+                                            <option value="ESP">ESP - Especificación</option>
+                                            <option value="NOR">NOR - Norma Interna</option>
+                                            <option value="PLN">PLN - Plan</option>
+                                            <option value="EXT">EXT - Documento Externo</option>
                                         </select>
                                     </div>
                                 </div>
@@ -469,7 +499,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                     <input
                                         required type="text" placeholder="Ej. Procedimiento Operativo para Pruebas Hidrostáticas..."
                                         value={formData.titulo} onChange={e => setFormData({ ...formData, titulo: e.target.value })}
-                                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-indigo-500 outline-none"
+                                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
                                     />
                                 </div>
 
@@ -478,22 +508,33 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                         <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Área / Sector</label>
                                         <select
                                             value={formData.area} onChange={e => setFormData({ ...formData, area: e.target.value })}
-                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-indigo-500 outline-none"
+                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
                                         >
-                                            <option>Operaciones</option>
-                                            <option>Ventas</option>
-                                            <option>Administración</option>
-                                            <option>Gerencia</option>
-                                            <option>Calidad</option>
-                                            <option>Seguridad e Higiene</option>
-                                            <option>Mantenimiento</option>
+                                            <option value="DIR">DIR - Dirección</option>
+                                            <option value="CAL">CAL - Calidad</option>
+                                            <option value="ADM">ADM - Administración</option>
+                                            <option value="FIN">FIN - Finanzas</option>
+                                            <option value="COM">COM - Compras</option>
+                                            <option value="RRH">RRH - Recursos Humanos</option>
+                                            <option value="CAP">CAP - Capacitación</option>
+                                            <option value="OPE">OPE - Operaciones</option>
+                                            <option value="PRO">PRO - Producción</option>
+                                            <option value="MNT">MNT - Mantenimiento</option>
+                                            <option value="LOG">LOG - Logística</option>
+                                            <option value="SER">SER - Servicios</option>
+                                            <option value="SIS">SIS - Sistemas</option>
+                                            <option value="BI">BI - Business Intelligence</option>
+                                            <option value="SEG">SEG - Seguridad Informática</option>
+                                            <option value="SYS">SYS - Seguridad y Salud</option>
+                                            <option value="MAA">MAA - Medio Ambiente</option>
+                                            <option value="RIE">RIE - Gestión de Riesgos</option>
                                         </select>
                                     </div>
                                     <div>
                                         <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Criticidad</label>
                                         <select
                                             value={formData.nivelCriticidad} onChange={e => setFormData({ ...formData, nivelCriticidad: e.target.value })}
-                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-indigo-500 outline-none"
+                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
                                         >
                                             <option value="bajo">Bajo</option>
                                             <option value="medio">Medio</option>
@@ -508,7 +549,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                         <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Revisado Por (Supervisor/QA)</label>
                                         <select
                                             value={formData.revisadorId} onChange={e => setFormData({ ...formData, revisadorId: e.target.value })}
-                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-indigo-500 outline-none"
+                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
                                         >
                                             <option value="">(Sin asignar)</option>
                                             {operators
@@ -522,7 +563,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                         <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Aprobado Por (QA/Gerente)</label>
                                         <select
                                             value={formData.aprobadorId} onChange={e => setFormData({ ...formData, aprobadorId: e.target.value })}
-                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-indigo-500 outline-none"
+                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
                                         >
                                             <option value="">(Sin asignar)</option>
                                             {operators
@@ -601,7 +642,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                             placeholder="Detalles sobre el alcance, manual de fabricante..."
                                             value={digitalData.desarrollo}
                                             onChange={e => setDigitalData({ ...digitalData, desarrollo: e.target.value })}
-                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-medium focus:border-indigo-500 outline-none h-24 resize-none"
+                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 outline-none h-28 resize-none"
                                         />
                                     </div>
                                 )}
@@ -610,7 +651,8 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                     <button
                                         type="button"
                                         onClick={() => setActiveStep(isDigital ? 'content_1' : 'signature')}
-                                        className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/10"
+                                        disabled={!!previewError || previewCode === 'Calculando...'}
+                                        className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/10 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         <span>Siguiente</span>
                                         <ChevronRight className="w-4 h-4" />
@@ -920,7 +962,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                     <input
                                         type="url" placeholder="https://www.youtube.com/watch?v=..."
                                         value={digitalData.videoUrl} onChange={e => setDigitalData({ ...digitalData, videoUrl: e.target.value })}
-                                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-indigo-500 outline-none"
+                                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
                                     />
                                 </div>
 
@@ -973,7 +1015,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                         <button type="button" onClick={onClose} className="px-5 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
                                             Cancelar
                                         </button>
-                                        <button disabled={loading} type="submit" className="px-6 py-2.5 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors flex items-center gap-2 shadow-lg shadow-indigo-600/10">
+                                        <button disabled={loading || !!previewError || previewCode === 'Calculando...'} type="submit" className="px-6 py-2.5 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors flex items-center gap-2 shadow-lg shadow-indigo-600/10">
                                             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                                             Crear e ir al detalle
                                         </button>
@@ -1016,10 +1058,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                             <h4 className="font-bold text-slate-400 uppercase text-[9px] mb-1">Título del Procedimiento</h4>
                                             <div className="bg-white dark:bg-slate-950 p-3 border border-slate-200 dark:border-slate-850 rounded-xl font-bold text-slate-805 dark:text-slate-200 leading-snug">{aiResult.titulo}</div>
                                         </div>
-                                        <div>
-                                            <h4 className="font-bold text-slate-400 uppercase text-[9px] mb-1">Código Sugerido</h4>
-                                            <div className="bg-white dark:bg-slate-950 p-2 border border-slate-200 dark:border-slate-850 rounded-xl font-mono text-indigo-600 dark:text-indigo-400 font-bold">{aiResult.codigoDocumental}</div>
-                                        </div>
+
                                         <div>
                                             <h4 className="font-bold text-slate-400 uppercase text-[9px] mb-1">Objetivo del Procedimiento</h4>
                                             <div className="bg-white dark:bg-slate-950 p-3 border border-slate-200 dark:border-slate-850 rounded-xl text-slate-600 dark:text-slate-350 max-h-[120px] overflow-y-auto whitespace-pre-wrap">{aiResult.objetivo}</div>
@@ -1040,8 +1079,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                         onClick={() => {
                                             setFormData(prev => ({
                                                 ...prev,
-                                                titulo: aiResult.titulo,
-                                                codigoDocumental: aiResult.codigoDocumental || prev.codigoDocumental
+                                                titulo: aiResult.titulo
                                             }));
                                             setDigitalData(prev => ({
                                                 ...prev,
@@ -1087,7 +1125,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                                 placeholder="Ej. Prueba hidráulica de mangueras"
                                                 value={aiParams.proceso}
                                                 onChange={e => setAiParams({...aiParams, proceso: e.target.value})}
-                                                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs font-bold focus:border-indigo-500 outline-none" 
+                                                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 h-[46px] text-xs font-bold focus:border-indigo-500 outline-none" 
                                             />
                                         </div>
                                         <div>
@@ -1098,7 +1136,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                                 placeholder="Ej. Surtidores de combustible HDB"
                                                 value={aiParams.alcance}
                                                 onChange={e => setAiParams({...aiParams, alcance: e.target.value})}
-                                                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs font-bold focus:border-indigo-500 outline-none" 
+                                                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 h-[46px] text-xs font-bold focus:border-indigo-500 outline-none" 
                                             />
                                         </div>
                                         <div>
@@ -1109,7 +1147,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                                 placeholder="Ej. Técnicos de Operaciones Especiales"
                                                 value={aiParams.sector}
                                                 onChange={e => setAiParams({...aiParams, sector: e.target.value})}
-                                                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs font-bold focus:border-indigo-500 outline-none" 
+                                                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 h-[46px] text-xs font-bold focus:border-indigo-500 outline-none" 
                                             />
                                         </div>
                                         <div>
@@ -1118,7 +1156,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                                 placeholder="Ej. Indicar uso obligatorio de calzado aislante y despresurización previa de tuberías..."
                                                 value={aiParams.detallesAdicionales}
                                                 onChange={e => setAiParams({...aiParams, detallesAdicionales: e.target.value})}
-                                                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs font-bold focus:border-indigo-500 outline-none h-24 resize-none"
+                                                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-xs font-bold focus:border-indigo-500 outline-none h-28 resize-none"
                                             />
                                         </div>
                                     </div>

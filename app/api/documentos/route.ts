@@ -87,7 +87,7 @@ export async function POST(req: Request) {
     try {
         const data = await req.json();
         const {
-            codigoDocumental, titulo, tipoDocumento, area,
+            titulo, tipoDocumento, area,
             responsableId, responsableNombre, aprobadorId, aprobadorNombre,
             revisadorId, revisadorNombre, descripcion,
             requiereConfirmacionLectura, requiereCapacitacion, nivelCriticidad,
@@ -96,19 +96,60 @@ export async function POST(req: Request) {
             userId, userName, creatorSignature
         } = data;
 
-        if (!codigoDocumental?.trim() || !titulo?.trim()) {
-            return NextResponse.json({ error: 'Código y título son obligatorios' }, { status: 400 });
+        if (!titulo?.trim()) {
+            return NextResponse.json({ error: 'El título es obligatorio' }, { status: 400 });
         }
         if (!tipoDocumento?.trim() || !area?.trim()) {
             return NextResponse.json({ error: 'Tipo de documento y área son obligatorios' }, { status: 400 });
         }
 
-        // Check unique code
-        const existing = await prisma.controlledDocument.findUnique({
-            where: { codigoDocumental: codigoDocumental.trim().toUpperCase() }
+        const prefix = `${tipoDocumento.toUpperCase()}-${area.toUpperCase()}-`;
+        
+        const getNextCode = async () => {
+            const docs = await prisma.controlledDocument.findMany({
+                where: { codigoDocumental: { startsWith: prefix } },
+                select: { codigoDocumental: true }
+            });
+            let maxNumber = 0;
+            for (const doc of docs) {
+                const parts = doc.codigoDocumental.split('-');
+                if (parts.length >= 3) {
+                    const numPart = parts[parts.length - 1];
+                    const num = parseInt(numPart, 10);
+                    if (!isNaN(num) && num > maxNumber) {
+                        maxNumber = num;
+                    }
+                }
+            }
+            return maxNumber + 1;
+        };
+
+        let nextNumber = await getNextCode();
+        if (nextNumber > 999) {
+            return NextResponse.json({ error: 'No es posible generar un nuevo identificador. Se alcanzó el máximo permitido para la serie documental.' }, { status: 400 });
+        }
+        
+        let generatedCode = `${prefix}${nextNumber.toString().padStart(3, '0')}`;
+        
+        // Verificar por si hubo race condition simple
+        let existing = await prisma.controlledDocument.findUnique({
+            where: { codigoDocumental: generatedCode }
         });
+        
         if (existing) {
-            return NextResponse.json({ error: 'Ya existe un documento con ese código documental' }, { status: 409 });
+            nextNumber = await getNextCode();
+            if (nextNumber > 999) {
+                return NextResponse.json({ error: 'No es posible generar un nuevo identificador. Se alcanzó el máximo permitido para la serie documental.' }, { status: 400 });
+            }
+            generatedCode = `${prefix}${nextNumber.toString().padStart(3, '0')}`;
+            
+            existing = await prisma.controlledDocument.findUnique({
+                where: { codigoDocumental: generatedCode }
+            });
+            
+            if (existing) {
+                return NextResponse.json({ error: 'Hubo un conflicto al generar el código documental, por favor intente nuevamente.' }, { status: 409 });
+            }
         }
 
         // Fetch user's position for signature block
@@ -156,7 +197,7 @@ export async function POST(req: Request) {
 
         const doc = await prisma.controlledDocument.create({
             data: {
-                codigoDocumental: codigoDocumental.trim().toUpperCase(),
+                codigoDocumental: generatedCode,
                 titulo: titulo.trim(),
                 tipoDocumento,
                 area,
