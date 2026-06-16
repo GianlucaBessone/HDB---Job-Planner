@@ -58,9 +58,16 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         const materialesProyecto = await prisma.materialProyecto.findMany({
             where: { proyectoId: id },
             include: {
-                usos: true
+                usos: true,
+                devoluciones: true
             }
         });
+
+        const hasPendingReturns = materialesProyecto.some(m => 
+            m.devoluciones && m.devoluciones.some(d => 
+                d.estado === 'pendiente' || d.estado === 'delegacion_pendiente'
+            )
+        );
 
         const materialMap = new Map<string, { id: string, name: string, codigo: string | null, unidad: string, cantidad: number, precioUnitario: number }>();
 
@@ -93,6 +100,19 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
                     ...m,
                     costo
                 };
+            })
+            .sort((a, b) => {
+                if (a.codigo && b.codigo) {
+                    const numA = parseInt(a.codigo, 10);
+                    const numB = parseInt(b.codigo, 10);
+                    if (!isNaN(numA) && !isNaN(numB)) {
+                        return numA - numB;
+                    }
+                    return a.codigo.localeCompare(b.codigo, undefined, { numeric: true });
+                }
+                if (a.codigo) return -1;
+                if (b.codigo) return 1;
+                return a.name.localeCompare(b.name);
             });
 
         const totalCost = totalHoursCost + totalMaterialsCost;
@@ -111,7 +131,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
                 totalHoursCost,
                 totalMaterialsCost,
                 totalCost
-            }
+            },
+            hasPendingReturns
         });
     } catch (e) {
         console.error('Error fetching project cost:', e);

@@ -1194,41 +1194,55 @@ function MaterialesTable({
   const [statusFilter, setStatusFilter] = useState("todos");
 
   const filteredMateriales = useMemo(() => {
-    return materiales.filter((mat) => {
-      const query = searchQuery.trim().toLowerCase();
-      const matchesSearch =
-        !query ||
-        (mat.codigo && mat.codigo.toLowerCase().includes(query)) ||
-        (mat.nombre && mat.nombre.toLowerCase().includes(query));
+    return materiales
+      .filter((mat) => {
+        const query = searchQuery.trim().toLowerCase();
+        const matchesSearch =
+          !query ||
+          (mat.codigo && mat.codigo.toLowerCase().includes(query)) ||
+          (mat.nombre && mat.nombre.toLowerCase().includes(query));
 
-      if (!matchesSearch) return false;
+        if (!matchesSearch) return false;
 
-      const pendingReturns = (mat.devoluciones || []).filter(
-        (d) => d.estado === "pendiente" || d.estado === "delegacion_pendiente",
-      );
-      const hasPending = pendingReturns.length > 0;
-      const matEstado = hasPending ? "pendiente_devolucion" : mat.estado;
+        const pendingReturns = (mat.devoluciones || []).filter(
+          (d) => d.estado === "pendiente" || d.estado === "delegacion_pendiente",
+        );
+        const hasPending = pendingReturns.length > 0;
+        const matEstado = hasPending ? "pendiente_devolucion" : mat.estado;
 
-      const isDevuelto = ["cerrado_ok", "cerrado_con_reserva"].includes(
-        matEstado,
-      );
+        const isDevuelto = ["cerrado_ok", "cerrado_con_reserva"].includes(
+          matEstado,
+        );
 
-      if (activeTab === "devueltos" && !isDevuelto) return false;
-      if (activeTab === "general" && isDevuelto) return false;
+        if (activeTab === "devueltos" && !isDevuelto) return false;
+        if (activeTab === "general" && isDevuelto) return false;
 
-      if (statusFilter === "todos") return true;
-      if (statusFilter === "pendiente_devolucion")
-        return matEstado === "pendiente_devolucion";
-      if (statusFilter === "cerrado") return isDevuelto;
-      if (statusFilter === "activo")
-        return ![
-          "pendiente_devolucion",
-          "cerrado_ok",
-          "cerrado_con_reserva",
-        ].includes(matEstado);
+        if (statusFilter === "todos") return true;
+        if (statusFilter === "pendiente_devolucion")
+          return matEstado === "pendiente_devolucion";
+        if (statusFilter === "cerrado") return isDevuelto;
+        if (statusFilter === "activo")
+          return ![
+            "pendiente_devolucion",
+            "cerrado_ok",
+            "cerrado_con_reserva",
+          ].includes(matEstado);
 
-      return matEstado === statusFilter;
-    });
+        return matEstado === statusFilter;
+      })
+      .sort((a, b) => {
+        if (a.codigo && b.codigo) {
+          const numA = parseInt(a.codigo, 10);
+          const numB = parseInt(b.codigo, 10);
+          if (!isNaN(numA) && !isNaN(numB)) {
+            return numA - numB;
+          }
+          return a.codigo.localeCompare(b.codigo, undefined, { numeric: true });
+        }
+        if (a.codigo) return -1;
+        if (b.codigo) return 1;
+        return a.nombre.localeCompare(b.nombre);
+      });
   }, [materiales, searchQuery, statusFilter, activeTab]);
 
   const faltantes = materiales

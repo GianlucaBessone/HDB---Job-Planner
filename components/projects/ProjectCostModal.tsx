@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Clock, Package, Activity, DollarSign, Building2, Calculator } from 'lucide-react';
+import { X, Clock, Package, Activity, DollarSign, Building2, Calculator, AlertTriangle } from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
 
 interface CostData {
@@ -31,6 +31,7 @@ interface CostData {
         totalMaterialsCost: number;
         totalCost: number;
     };
+    hasPendingReturns?: boolean;
 }
 
 export default function ProjectCostModal({
@@ -203,9 +204,15 @@ export default function ProjectCostModal({
                             {/* Materiales */}
                             <section className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                                 <div className="px-6 py-4 border-b border-slate-50 dark:border-slate-700 flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 flex-wrap">
                                         <Package className="w-4 h-4 text-amber-500" />
                                         <h2 className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase tracking-wide">Materiales Utilizados</h2>
+                                        {data?.hasPendingReturns && (
+                                            <span className="flex items-center gap-1.5 px-2.5 py-1 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-black animate-pulse border border-rose-100 dark:border-rose-900/50">
+                                                <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
+                                                <span>Devoluciones Pendientes</span>
+                                            </span>
+                                        )}
                                     </div>
                                     <button 
                                         onClick={handleSyncPrices}
