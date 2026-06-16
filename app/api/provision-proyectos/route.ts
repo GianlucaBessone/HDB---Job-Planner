@@ -28,10 +28,10 @@ export async function GET(request: Request) {
             await prisma.$transaction(async (tx) => {
                 for (const mat of stuckMaterials) {
                     const totalUsado = mat.usos.reduce((acc, u) => acc + u.cantidadUtilizada, 0);
-                    const totalDevuelto = mat.devoluciones.filter(d => d.estado !== 'pendiente').reduce((acc, d) => acc + d.cantidadADevolver, 0);
+                    const totalDevuelto = mat.devoluciones.filter(d => d.estado !== 'pendiente' && d.estado !== 'delegacion_pendiente' && d.estado !== 'delegacion_rechazada').reduce((acc, d) => acc + d.cantidadADevolver, 0);
                     const aDevolver = Math.max(0, mat.cantidadEntregada - totalUsado - totalDevuelto);
                     
-                    const hasPending = mat.devoluciones.some(d => d.estado === 'pendiente');
+                    const hasPending = mat.devoluciones.some(d => d.estado === 'pendiente' || d.estado === 'delegacion_pendiente');
                     const esCerrado = mat.cantidadEntregada > 0 && aDevolver <= 0;
 
                     if (esCerrado) {
@@ -71,9 +71,9 @@ export async function GET(request: Request) {
             await prisma.$transaction(async (tx) => {
                 for (const mat of wronglyPending) {
                     const totalUsado = mat.usos.reduce((acc, u) => acc + u.cantidadUtilizada, 0);
-                    const totalDevuelto = mat.devoluciones.filter(d => d.estado !== 'pendiente').reduce((acc, d) => acc + d.cantidadADevolver, 0);
+                    const totalDevuelto = mat.devoluciones.filter(d => d.estado !== 'pendiente' && d.estado !== 'delegacion_pendiente' && d.estado !== 'delegacion_rechazada').reduce((acc, d) => acc + d.cantidadADevolver, 0);
                     const aDevolver = Math.max(0, mat.cantidadEntregada - totalUsado - totalDevuelto);
-                    const hasPending = mat.devoluciones.some(d => d.estado === 'pendiente');
+                    const hasPending = mat.devoluciones.some(d => d.estado === 'pendiente' || d.estado === 'delegacion_pendiente');
 
                     if (!hasPending) {
                         if (aDevolver <= 0) {
@@ -108,7 +108,13 @@ export async function GET(request: Request) {
                         {
                             estado: 'finalizado',
                             materialesProyecto: {
-                                some: { estado: 'pendiente_devolucion' }
+                                some: {
+                                    devoluciones: {
+                                        some: {
+                                            estado: { in: ['pendiente', 'delegacion_pendiente'] }
+                                        }
+                                    }
+                                }
                             }
                         }
                     ],

@@ -50,6 +50,8 @@ type MaterialDevolucion = {
   comentario: string | null;
   confirmadoPor: string | null;
   fechaConfirm: string | null;
+  delegadoANombre?: string | null;
+  delegadoPorNombre?: string | null;
 };
 type Material = {
   id: string;
@@ -434,7 +436,7 @@ function DevolucionModal({
   onDone: () => void;
 }) {
   const pendingReturns = (material.devoluciones || []).filter(
-    (d) => d.estado === "pendiente",
+    (d) => d.estado === "pendiente" || d.estado === "delegacion_pendiente",
   );
   const confirmedReturns = (material.devoluciones || []).filter(
     (d) => d.estado !== "pendiente",
@@ -542,6 +544,11 @@ function DevolucionModal({
                         )}
                       </span>
                     </div>
+                    {d.estado === "delegacion_pendiente" && (
+                      <p className="text-[10px] font-bold text-indigo-500 mt-1 uppercase tracking-wider bg-indigo-50 rounded px-1.5 py-0.5 inline-block">
+                        Delegado por {d.delegadoPorNombre} a {d.delegadoANombre}
+                      </p>
+                    )}
                     {d.comentario && (
                       <p className="text-[11px] text-slate-500 mt-1 italic">
                         "{d.comentario}"
@@ -1151,8 +1158,10 @@ function MaterialesTable({
   };
 
   const materiales = proyecto.materialesProyecto;
-  const hayPendientes = materiales.some(
-    (m) => m.estado === "pendiente_devolucion",
+  const hayPendientes = materiales.some((m) =>
+    (m.devoluciones || []).some(
+      (d) => d.estado === "pendiente" || d.estado === "delegacion_pendiente",
+    ),
   );
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -1169,7 +1178,7 @@ function MaterialesTable({
       if (!matchesSearch) return false;
 
       const pendingReturns = (mat.devoluciones || []).filter(
-        (d) => d.estado === "pendiente",
+        (d) => d.estado === "pendiente" || d.estado === "delegacion_pendiente",
       );
       const hasPending = pendingReturns.length > 0;
       const matEstado = hasPending ? "pendiente_devolucion" : mat.estado;
@@ -1398,7 +1407,7 @@ function MaterialesTable({
                           0,
                         );
                         const pendingReturns = (mat.devoluciones || []).filter(
-                          (d) => d.estado === "pendiente",
+                          (d) => d.estado === "pendiente" || d.estado === "delegacion_pendiente",
                         );
                         const hasPending = pendingReturns.length > 0;
                         const totalPending = pendingReturns.reduce(
@@ -1709,22 +1718,24 @@ export default function ProvisionMaterialesPage() {
       .replace(/[\u0300-\u036f]/g, "");
 
   const ESTADOS_CERRADOS = ["cerrado_ok", "cerrado_con_reserva"];
+  const hasPendingReturns = (p: Proyecto) =>
+    p.materialesProyecto.some((m) =>
+      (m.devoluciones || []).some(
+        (d) => d.estado === "pendiente" || d.estado === "delegacion_pendiente",
+      ),
+    );
+
   const isCerrado = (p: Proyecto) =>
     p.materialesProyecto.length > 0 &&
+    !hasPendingReturns(p) &&
     p.materialesProyecto.every((m) => ESTADOS_CERRADOS.includes(m.estado));
 
   const filteredProyectos = proyectos.filter((p) => {
     // Status filter
     if (filter === "activos") {
-      const hasPendiente = p.materialesProyecto.some(
-        (m) => m.estado === "pendiente_devolucion",
-      );
-      if (hasPendiente || isCerrado(p)) return false;
+      if (hasPendingReturns(p) || isCerrado(p)) return false;
     }
-    if (
-      filter === "pendiente_devolucion" &&
-      !p.materialesProyecto.some((m) => m.estado === "pendiente_devolucion")
-    )
+    if (filter === "pendiente_devolucion" && !hasPendingReturns(p))
       return false;
     if (filter === "cerrado" && !isCerrado(p)) return false;
 
@@ -1781,15 +1792,9 @@ export default function ProvisionMaterialesPage() {
 
   const stats = {
     total: proyectos.length,
-    activos: proyectos.filter(
-      (p) =>
-        !p.materialesProyecto.some(
-          (m) => m.estado === "pendiente_devolucion",
-        ) && !isCerrado(p),
-    ).length,
-    pendientes: proyectos.filter((p) =>
-      p.materialesProyecto.some((m) => m.estado === "pendiente_devolucion"),
-    ).length,
+    activos: proyectos.filter((p) => !hasPendingReturns(p) && !isCerrado(p))
+      .length,
+    pendientes: proyectos.filter((p) => hasPendingReturns(p)).length,
     cerrados: proyectos.filter((p) => isCerrado(p)).length,
   };
 

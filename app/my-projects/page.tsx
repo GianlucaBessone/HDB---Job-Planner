@@ -143,7 +143,7 @@ export default function MyProjectsPage() {
 
             // Apply Tabs
             const totalUsado = m.usos.reduce((acc: number, u: any) => acc + u.cantidadUtilizada, 0);
-            const totalDevuelto = (m.devoluciones || []).filter((d: any) => d.estado !== 'pendiente' && d.estado !== 'delegacion_pendiente').reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
+            const totalDevuelto = (m.devoluciones || []).filter((d: any) => d.estado !== 'pendiente' && d.estado !== 'delegacion_pendiente' && d.estado !== 'delegacion_rechazada').reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
             const pendingDevolucion = (m.devoluciones || []).filter((d: any) => d.estado === 'pendiente' || d.estado === 'delegacion_pendiente').reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
             const balance = m.cantidadEntregada - totalUsado - totalDevuelto - pendingDevolucion;
 
