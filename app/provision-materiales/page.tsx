@@ -1440,6 +1440,10 @@ function MaterialesTable({
                           (a, d) => a + d.cantidadADevolver,
                           0,
                         );
+                        const totalDevueltoConfirmado = (mat.devoluciones || []).filter(
+                          (d) => d.estado === "cerrado_ok" || d.estado === "cerrado_con_reserva"
+                        ).reduce((a, d) => a + d.cantidadADevolver, 0);
+                        const expectedReturn = Math.max(0, mat.cantidadEntregada - totalUsado - totalDevueltoConfirmado);
 
                         const closed = [
                           "cerrado_ok",
@@ -1498,9 +1502,10 @@ function MaterialesTable({
                               />
                             </td>
                             <td
-                              className={`text-center py-3 font-bold ${hasPending ? "text-amber-600" : "text-slate-400"}`}
+                              className={`text-center py-3 font-bold ${expectedReturn > 0 ? "text-amber-600" : "text-slate-400"}`}
+                              title={hasPending ? `Pendiente de confirmación: ${totalPending}` : ""}
                             >
-                              {totalPending > 0 ? totalPending : "0"}
+                              {expectedReturn}
                             </td>
                             <td className="text-center py-3">
                               <EstadoBadge

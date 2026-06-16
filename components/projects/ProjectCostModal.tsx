@@ -61,11 +61,11 @@ export default function ProjectCostModal({
         fetchCost();
     }, [projectId]);
 
-    const handleUpdatePrice = async (codigo: string, newPrice: number) => {
+    const handleUpdatePrice = async (codigo: string | null, id: string, name: string, newPrice: number) => {
         try {
             const res = await safeApiRequest(`/api/projects/${projectId}/cost/materials`, {
                 method: 'PATCH',
-                body: JSON.stringify({ codigo, precioUnitario: newPrice })
+                body: JSON.stringify({ codigo, id, nombre: name, precioUnitario: newPrice })
             });
             if (res.ok) {
                 await fetchCost();
@@ -243,15 +243,11 @@ export default function ProjectCostModal({
                                                         <span className="font-black text-slate-600 dark:text-slate-300">{m.cantidad} {m.unidad}</span>
                                                     </td>
                                                     <td className="px-6 py-3 text-right">
-                                                        {m.codigo ? (
-                                                            <EditablePriceCell 
-                                                                value={m.precioUnitario} 
-                                                                onSave={(val) => handleUpdatePrice(m.codigo as string, val)} 
-                                                                formatCurrency={formatCurrency}
-                                                            />
-                                                        ) : (
-                                                            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">{formatCurrency(m.precioUnitario)}</span>
-                                                        )}
+                                                        <EditablePriceCell 
+                                                            value={m.precioUnitario} 
+                                                            onSave={(val) => handleUpdatePrice(m.codigo, m.id, m.name, val)} 
+                                                            formatCurrency={formatCurrency}
+                                                        />
                                                     </td>
                                                     <td className="px-6 py-3 text-right">
                                                         <span className="font-bold text-amber-600 dark:text-amber-500">{formatCurrency(m.costo)}</span>
