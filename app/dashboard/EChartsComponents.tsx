@@ -20,13 +20,15 @@ export function TrendChart({
     color = '#2563eb', 
     height = 224, 
     valuePrefix = '', 
-    valueSuffix = '' 
+    valueSuffix = '',
+    onEvents
 }: { 
     data: { label: string; value: number }[], 
     color?: string, 
     height?: number | string,
     valuePrefix?: string,
-    valueSuffix?: string 
+    valueSuffix?: string,
+    onEvents?: any
 }) {
     const option = useMemo(() => ({
         tooltip: {
@@ -82,6 +84,7 @@ export function TrendChart({
             option={option} 
             style={{ height, width: '100%' }} 
             opts={{ renderer: 'svg' }} 
+            onEvents={onEvents}
         />
     );
 }
@@ -186,13 +189,15 @@ export function DonutChart({
     height = 200,
     colors = ['#1e293b', '#334155', '#475569', '#64748b', '#94a3b8'],
     centerText = '',
-    centerSubtext = ''
+    centerSubtext = '',
+    onEvents
 }: { 
     data: { name: string; value: number }[], 
     height?: number | string,
     colors?: string[],
     centerText?: string | number,
-    centerSubtext?: string
+    centerSubtext?: string,
+    onEvents?: any
 }) {
     const option = useMemo(() => ({
         tooltip: {
@@ -230,6 +235,7 @@ export function DonutChart({
             option={option} 
             style={{ height, width: '100%' }} 
             opts={{ renderer: 'svg' }} 
+            onEvents={onEvents}
         />
     );
 }

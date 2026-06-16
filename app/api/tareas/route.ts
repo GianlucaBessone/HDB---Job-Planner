@@ -185,8 +185,13 @@ export async function PUT(req: NextRequest) {
 
         // Parse dates if provided
         if (data.fechaInicio) data.fechaInicio = new Date(data.fechaInicio);
+        else if (data.fechaInicio === '') data.fechaInicio = null;
+        
         if (data.fechaVencimiento) data.fechaVencimiento = new Date(data.fechaVencimiento);
+        else if (data.fechaVencimiento === '') data.fechaVencimiento = null;
+        
         if (data.fechaCompletada) data.fechaCompletada = new Date(data.fechaCompletada);
+        else if (data.fechaCompletada === '') data.fechaCompletada = null;
         
         // Handle empty strings for optional relations
         if (data.projectId === '') data.projectId = null;

@@ -1595,3 +1595,79 @@ model TareaComentario {
   @@index([tareaId])
   @@index([operatorId])
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ADMINISTRACIÓN Y GASTOS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Proveedor {
+  id              String   @id @default(cuid())
+  razonSocial     String
+  nombreFantasia  String?
+  cuit            String   @unique
+  condicionIva    String?
+  domicilio       String?  @db.Text
+  activo          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  facturas        FacturaConsumo[]
+}
+
+model CodigoGasto {
+  id          String   @id @default(cuid())
+  codigo      String   @unique
+  descripcion String
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  facturas    FacturaConsumo[]
+}
+
+model FacturaConsumo {
+  id                    String   @id @default(cuid())
+  fechaEmision          DateTime
+  fechaVencimiento      DateTime?
+  proveedorId           String
+  proveedor             Proveedor @relation(fields: [proveedorId], references: [id], onDelete: Restrict)
+  codigoGastoId         String?
+  codigoGasto           CodigoGasto? @relation(fields: [codigoGastoId], references: [id], onDelete: SetNull)
+  descripcion           String?  @db.Text
+  tipoComprobante       String?
+  letraComprobante      String?
+  puntoVenta            String?
+  numeroComprobante     String?
+  
+  // Importes
+  netoGeneral           Float    @default(0) // subtotal o neto sin iva especifico
+  neto21                Float    @default(0)
+  neto10_5              Float    @default(0)
+  neto27                Float    @default(0)
+  iva21                 Float    @default(0)
+  iva10_5               Float    @default(0)
+  iva27                 Float    @default(0)
+  noGravados            Float    @default(0)
+  percepcionesIva       Float    @default(0)
+  percepcionesIibb      Float    @default(0)
+  impuestosInternos     Float    @default(0)
+  otrosImpuestos        Float    @default(0)
+  total                 Float    @default(0)
+  moneda                String   @default("ARS")
+
+  cae                   String?
+  fechaVencimientoCae   DateTime?
+
+  // Datos IA
+  esFactura             Boolean  @default(true)
+  statusIaConfianza     Float?
+  iaRawData             Json?    // Guarda el JSON original que devolvió Gemini
+  
+  // Archivo
+  archivoUrl            String?  @db.Text
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([proveedorId])
+  @@index([codigoGastoId])
+  @@index([fechaEmision])
+}

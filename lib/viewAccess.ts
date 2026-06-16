@@ -74,6 +74,7 @@ export const DEFAULT_VIEWS: ViewConfig[] = [
     { key: '/centro-ayuda',         label: 'Centro de Ayuda',          description: 'Base de conocimiento SGI',     roles: ['operador', 'supervisor', 'admin', 'qa', 'vendedor'], access: 'ambos', section: 'calidad', iconName: 'LifeBuoy', color: 'bg-blue-500' },
 
     // ─ Administración ─
+    { key: '/administracion/gastos', label: 'Gastos y Facturas', description: 'Registro y escaneo', roles: ['admin', 'supervisor', 'qa'], access: 'ambos', section: 'administracion', iconName: 'Receipt', color: 'bg-green-600' },
     { key: '/operators',      label: 'Gestión de Usuarios',  description: 'Operadores y permisos',      roles: ['supervisor', 'admin', 'qa'],                          access: 'ambos', section: 'administracion', iconName: 'Users',    color: 'bg-slate-700' },
     { key: '/clients',        label: 'Gestión de Clientes',  description: 'Base de datos de clientes',  roles: ['supervisor', 'admin', 'qa', 'vendedor'],              access: 'ambos', section: 'administracion', iconName: 'Landmark', color: 'bg-indigo-500' },
     { key: '/auditoria',      label: 'Auditoría',            description: 'Trazabilidad total',         roles: ['admin', 'qa', 'supervisor'],                          access: 'ambos', section: 'administracion', iconName: 'History',  color: 'bg-slate-900' },
