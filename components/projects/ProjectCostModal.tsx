@@ -43,6 +43,7 @@ export default function ProjectCostModal({
 }) {
     const [data, setData] = useState<CostData | null>(null);
     const [loading, setLoading] = useState(true);
+    const [conIva, setConIva] = useState(false);
 
     const fetchCost = async () => {
         setLoading(true);
@@ -137,6 +138,19 @@ export default function ProjectCostModal({
                     ) : data ? (
                         <div className="space-y-6">
                             
+                            {/* IVA Switch Toggle */}
+                            <div className="flex justify-end items-center gap-3 bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/80 px-5 py-3.5 rounded-3xl shadow-sm">
+                                <span className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">Mostrar Costos con IVA (21%)</span>
+                                <button
+                                    onClick={() => setConIva(!conIva)}
+                                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${conIva ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-700'}`}
+                                >
+                                    <span
+                                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${conIva ? 'translate-x-5' : 'translate-x-0'}`}
+                                    />
+                                </button>
+                            </div>
+
                             {/* Resumen Total */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5 rounded-3xl shadow-sm">
@@ -144,24 +158,36 @@ export default function ProjectCostModal({
                                         <Clock className="w-4 h-4" />
                                         <h4 className="text-xs font-black uppercase tracking-widest">Mano de Obra</h4>
                                     </div>
-                                    <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{formatCurrency(data.summary.totalHoursCost)}</p>
-                                    <p className="text-xs font-bold text-slate-400 mt-1">{data.summary.totalHours} horas x {formatCurrency(data.summary.valorManoObra)}/h</p>
+                                    <p className="text-2xl font-black text-slate-800 dark:text-slate-100">
+                                        {formatCurrency(conIva ? data.summary.totalHoursCost * 1.21 : data.summary.totalHoursCost)}
+                                    </p>
+                                    <p className="text-xs font-bold text-slate-400 mt-1">
+                                        {data.summary.totalHours} horas x {formatCurrency(data.summary.valorManoObra)}/h {conIva && '(IVA incluido)'}
+                                    </p>
                                 </div>
                                 <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5 rounded-3xl shadow-sm">
                                     <div className="flex items-center gap-2 text-amber-500 mb-2">
                                         <Package className="w-4 h-4" />
                                         <h4 className="text-xs font-black uppercase tracking-widest">Materiales</h4>
                                     </div>
-                                    <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{formatCurrency(data.summary.totalMaterialsCost)}</p>
-                                    <p className="text-xs font-bold text-slate-400 mt-1">{data.materials.length} materiales utilizados</p>
+                                    <p className="text-2xl font-black text-slate-800 dark:text-slate-100">
+                                        {formatCurrency(conIva ? data.summary.totalMaterialsCost * 1.21 : data.summary.totalMaterialsCost)}
+                                    </p>
+                                    <p className="text-xs font-bold text-slate-400 mt-1">
+                                        {data.materials.length} materiales utilizados {conIva && '(IVA incluido)'}
+                                    </p>
                                 </div>
                                 <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 p-5 rounded-3xl shadow-sm">
                                     <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 mb-2">
                                         <Calculator className="w-4 h-4" />
                                         <h4 className="text-xs font-black uppercase tracking-widest">Costo Total</h4>
                                     </div>
-                                    <p className="text-3xl font-black text-emerald-700 dark:text-emerald-400">{formatCurrency(data.summary.totalCost)}</p>
-                                    <p className="text-xs font-bold text-emerald-600/70 dark:text-emerald-500 mt-1">Costo final del proyecto</p>
+                                    <p className="text-3xl font-black text-emerald-700 dark:text-emerald-400">
+                                        {formatCurrency(conIva ? data.summary.totalCost * 1.21 : data.summary.totalCost)}
+                                    </p>
+                                    <p className="text-xs font-bold text-emerald-600/70 dark:text-emerald-500 mt-1">
+                                        {conIva ? 'Costo final del proyecto (IVA incluido)' : 'Costo final del proyecto'}
+                                    </p>
                                 </div>
                             </div>
 
