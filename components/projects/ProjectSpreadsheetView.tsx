@@ -3,15 +3,17 @@
 import { useState, useRef, useEffect } from 'react';
 import { Project, ProjectStatus, ALL_STATUSES, STATUS_CONFIG, getProgressColor } from '@/lib/projectTypes';
 import { safeApiRequest } from '@/lib/offline';
-import { Loader2, Check } from 'lucide-react';
+import { Loader2, Check, DollarSign } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 
 export default function ProjectSpreadsheetView({
     projects,
-    onRefresh
+    onRefresh,
+    onViewCost
 }: {
     projects: Project[];
     onRefresh: (silent?: boolean) => Promise<void>;
+    onViewCost?: (p: Project) => void;
 }) {
     const [savingId, setSavingId] = useState<string | null>(null);
     const [savedId, setSavedId] = useState<string | null>(null);
@@ -130,10 +132,21 @@ export default function ProjectSpreadsheetView({
                                         </div>
                                     </td>
                                     <td className="px-4 py-2 text-center align-middle">
-                                        <div className="w-5 h-5 inline-flex items-center justify-center relative">
-                                            {isSaving && <Loader2 className="w-4 h-4 text-primary animate-spin absolute" />}
-                                            {isSaved && <Check className="w-4 h-4 text-emerald-500 animate-in zoom-in duration-300 absolute" />}
-                                            {!isSaving && !isSaved && <span className="w-1.5 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700" title="Sin cambios guardando" />}
+                                        <div className="flex items-center justify-center gap-2">
+                                            {p.estado === 'finalizado' && !p.generarOS && onViewCost && (
+                                                <button
+                                                    onClick={() => onViewCost(p)}
+                                                    className="btn-icon-inline p-1.5 rounded-lg text-amber-500 hover:bg-amber-50 transition-all"
+                                                    title="Ver Costo"
+                                                >
+                                                    <DollarSign className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                            <div className="w-5 h-5 inline-flex items-center justify-center relative">
+                                                {isSaving && <Loader2 className="w-4 h-4 text-primary animate-spin absolute" />}
+                                                {isSaved && <Check className="w-4 h-4 text-emerald-500 animate-in zoom-in duration-300 absolute" />}
+                                                {!isSaving && !isSaved && <span className="w-1.5 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700" title="Sin cambios guardando" />}
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>

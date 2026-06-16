@@ -343,6 +343,38 @@ export const dataLayer = {
                     }
                 }
             }
+
+            // Create automatic material returns if finalized
+            if (project.estado === 'finalizado' && oldProject?.estado !== 'finalizado') {
+                const materiales = await prisma.materialProyecto.findMany({
+                    where: { proyectoId: id, estado: { notIn: ['cerrado_ok', 'cerrado_con_reserva'] } },
+                    include: { usos: true }
+                });
+                for (const mat of materiales) {
+                    const cantidadUsada = mat.usos.reduce((acc: number, u: any) => acc + u.cantidadUtilizada, 0);
+                    const sobrante = mat.cantidadEntregada - cantidadUsada;
+                    
+                    if (sobrante > 0) {
+                        await prisma.materialDevolucion.create({
+                            data: {
+                                materialId: mat.id,
+                                cantidadADevolver: sobrante,
+                                estado: 'pendiente'
+                            }
+                        });
+                        await prisma.materialProyecto.update({
+                            where: { id: mat.id },
+                            data: { estado: 'pendiente_devolucion' }
+                        });
+                    } else if (mat.estado !== 'cerrado_ok' && mat.estado !== 'cerrado_con_reserva') {
+                        // All used, close it
+                        await prisma.materialProyecto.update({
+                            where: { id: mat.id },
+                            data: { estado: 'cerrado_ok' }
+                        });
+                    }
+                }
+            }
         }
 
         return project;
@@ -390,7 +422,7 @@ export const dataLayer = {
 
         return operator;
     },
-    async updateOperator(id: string, data: { nombreCompleto?: string; activo?: boolean; enVacaciones?: boolean; etiquetas?: string[]; pin?: string; role?: string; posicion?: string }) {
+    async updateOperator(id: string, data: { nombreCompleto?: string; activo?: boolean; enVacaciones?: boolean; etiquetas?: string[]; pin?: string; role?: string; posicion?: string; primaryDeviceId?: string | null }) {
         const updateData: any = { ...data };
         if (data.etiquetas) updateData.etiquetas = data.etiquetas as any;
         
@@ -426,6 +458,21 @@ export const dataLayer = {
             oldValue: oldOperator
         });
 
+        return res;
+    },
+    async resetAllDevices() {
+        const res = await prisma.operator.updateMany({
+            data: { primaryDeviceId: null }
+        });
+        
+        await logAudit({
+            action: 'UPDATE',
+            entity: 'OPERATOR',
+            entityId: 'ALL',
+            newValue: { primaryDeviceId: null },
+            metadata: { message: 'Reset all devices' }
+        });
+        
         return res;
     },
 

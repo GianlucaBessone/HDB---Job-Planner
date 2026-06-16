@@ -15,7 +15,9 @@ import {
     Edit3,
     XCircle,
     LayoutGrid,
-    List
+    List,
+    SmartphoneNfc,
+    RefreshCcw
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { safeApiRequest } from '@/lib/offline';
@@ -166,6 +168,25 @@ export default function OperatorsPage() {
         setOperatorToDelete(null);
     };
 
+    const resetAllDevices = async () => {
+        if (!confirm('¿Estás seguro de que deseas resetear los dispositivos autorizados de TODOS los operadores? Tendrán que volver a validar su sesión al intentar fichar.')) return;
+        
+        await safeApiRequest('/api/operators/reset-devices', { method: 'POST' });
+        loadData(true);
+        alert('Se han reseteado los dispositivos de todos los operadores.');
+    };
+
+    const resetDevice = async (id: string) => {
+        if (!confirm('¿Estás seguro de que deseas resetear el dispositivo autorizado de este operador?')) return;
+        
+        await safeApiRequest(`/api/operators?id=${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ primaryDeviceId: null })
+        });
+        loadData(true);
+        alert('El dispositivo del operador ha sido reseteado. Podrá validar uno nuevo la próxima vez que intente fichar.');
+    };
+
     const normalize = (str: string) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
     const filteredOperators = operators.filter(op =>
@@ -182,13 +203,24 @@ export default function OperatorsPage() {
                     </h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium hidden md:block">Controla el equipo técnico disponible</p>
                 </div>
-                <button
-                    onClick={openCreate}
-                    className="flex items-center gap-2 bg-primary text-white px-4 py-2.5 md:px-6 md:py-3 rounded-xl md:rounded-2xl font-bold hover:bg-primary/90 shadow-lg shadow-primary/20 active:scale-95 transition-all w-full md:w-auto justify-center text-sm"
-                >
-                    <UserPlus className="w-4 h-4" />
-                    Nuevo Operador
-                </button>
+                <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+                    {currentUser?.role !== 'operador' && currentUser?.role !== 'vendedor' && (
+                        <button
+                            onClick={resetAllDevices}
+                            className="flex items-center gap-2 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 px-4 py-2.5 md:px-6 md:py-3 rounded-xl md:rounded-2xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition-all w-full md:w-auto justify-center text-sm"
+                        >
+                            <RefreshCcw className="w-4 h-4" />
+                            <span className="hidden md:inline">Resetear Dispositivos</span>
+                        </button>
+                    )}
+                    <button
+                        onClick={openCreate}
+                        className="flex items-center gap-2 bg-primary text-white px-4 py-2.5 md:px-6 md:py-3 rounded-xl md:rounded-2xl font-bold hover:bg-primary/90 shadow-lg shadow-primary/20 active:scale-95 transition-all w-full md:w-auto justify-center text-sm"
+                    >
+                        <UserPlus className="w-4 h-4" />
+                        Nuevo Operador
+                    </button>
+                </div>
             </div>
 
             <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row gap-4">
@@ -292,6 +324,27 @@ export default function OperatorsPage() {
                                         required
                                     />
                                 </div>
+
+                                {editingOperator && currentUser?.role !== 'operador' && currentUser?.role !== 'vendedor' && (
+                                    <div className="flex items-center justify-between bg-amber-50 dark:bg-amber-900/10 p-4 rounded-2xl border border-amber-100 dark:border-amber-900/30">
+                                        <div>
+                                            <h4 className="font-bold text-amber-900 dark:text-amber-500 text-sm flex items-center gap-2">
+                                                <SmartphoneNfc className="w-4 h-4" />
+                                                Dispositivo Autorizado
+                                            </h4>
+                                            <p className="text-[10px] text-amber-700/70 dark:text-amber-500/70 mt-0.5 max-w-[250px]">
+                                                Resetea el teléfono vinculado para que el operador pueda ingresar desde un nuevo dispositivo.
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => resetDevice(editingOperator.id)}
+                                            className="bg-white dark:bg-slate-800 text-amber-600 dark:text-amber-500 px-4 py-2 rounded-xl text-xs font-bold shadow-sm border border-amber-200 dark:border-amber-900/50 hover:bg-amber-50 active:scale-95 transition-all"
+                                        >
+                                            Resetear
+                                        </button>
+                                    </div>
+                                )}
 
                                 <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
                                     <div>

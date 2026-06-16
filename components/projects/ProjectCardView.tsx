@@ -15,6 +15,7 @@ import {
     ChevronRight,
     Timer,
     AlertTriangle,
+    DollarSign,
 } from 'lucide-react';
 import { Project, STATUS_CONFIG, getProgressColor } from '@/lib/projectTypes';
 
@@ -23,11 +24,13 @@ export function ProjectCard({
     onEdit,
     onDetails,
     handleDeleteClick,
+    onViewCost,
 }: {
     project: Project;
     onEdit: (p: Project) => void;
     onDetails: (p: Project) => void;
     handleDeleteClick: (id: string) => void;
+    onViewCost?: (p: Project) => void;
 }) {
     const { horasConsumidas, horasEstimadas, estado } = project;
     const progress = (horasEstimadas || 0) > 0 ? Math.min(100, Math.round((horasConsumidas / horasEstimadas) * 100)) : 0;
@@ -176,6 +179,15 @@ export function ProjectCard({
                             <ClipboardList className="w-3 h-3" /> OS
                         </Link>
                     )}
+                    {project.estado === 'finalizado' && !project.generarOS && onViewCost && (
+                        <button
+                            onClick={() => onViewCost(project)}
+                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 hover:bg-amber-100 transition-all whitespace-nowrap"
+                            title="Ver Costo de Proyecto"
+                        >
+                            <DollarSign className="w-3 h-3" /> Ver Costo
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
@@ -187,21 +199,24 @@ export default function ProjectCardView({
     onEdit,
     onDetails,
     handleDeleteClick,
+    onViewCost,
 }: {
     projects: Project[];
     onEdit: (p: Project) => void;
     onDetails: (p: Project) => void;
     handleDeleteClick: (id: string) => void;
+    onViewCost?: (p: Project) => void;
 }) {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {projects.map(p => (
                 <ProjectCard 
                     key={p.id} 
-                    project={p} 
+                    project={p}
                     onEdit={onEdit} 
                     onDetails={onDetails} 
                     handleDeleteClick={handleDeleteClick} 
+                    onViewCost={onViewCost}
                 />
             ))}
         </div>

@@ -71,6 +71,7 @@ import ProjectSpreadsheetView from '@/components/projects/ProjectSpreadsheetView
 import ProjectGanttView from '@/components/projects/ProjectGanttView';
 import ProjectCalendarView from '@/components/projects/ProjectCalendarView';
 import ModuleHeader from '@/components/ModuleHeader';
+import ProjectCostModal from '@/components/projects/ProjectCostModal';
 
 // ── Content Component ──────────────────────────────────────────────────────────
 function ProjectsContent() {
@@ -92,6 +93,14 @@ function ProjectsContent() {
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
     const [currentUser, setCurrentUser] = useState<any>(null);
+
+    const [selectedProjectForCost, setSelectedProjectForCost] = useState<Project | null>(null);
+    const [isCostModalOpen, setIsCostModalOpen] = useState(false);
+
+    const openCostModal = (project: Project) => {
+        setSelectedProjectForCost(project);
+        setIsCostModalOpen(true);
+    };
 
     useEffect(() => {
         const user = localStorage.getItem('currentUser');
@@ -511,9 +520,9 @@ function ProjectsContent() {
                         <p className="text-sm text-slate-400 dark:text-slate-500 mt-2 font-medium">Aún no se han registrado proyectos en este estado.</p>
                     </div>
                 ) : viewType === 'card' ? (
-                    <ProjectCardView projects={filteredProjects} onEdit={openEdit} onDetails={openDetails} handleDeleteClick={handleDeleteClick} />
+                    <ProjectCardView projects={filteredProjects} onEdit={openEdit} onDetails={openDetails} handleDeleteClick={handleDeleteClick} onViewCost={openCostModal} />
                 ) : viewType === 'spreadsheet' ? (
-                    <ProjectSpreadsheetView projects={filteredProjects} onRefresh={loadData} />
+                    <ProjectSpreadsheetView projects={filteredProjects} onRefresh={loadData} onViewCost={openCostModal} />
                 ) : viewType === 'gantt' ? (
                     <ProjectGanttView projects={filteredProjects} onRefresh={loadData} onDetails={openDetails} />
                 ) : viewType === 'calendar' ? (
@@ -536,6 +545,12 @@ function ProjectsContent() {
                     onDeleteLog={handleDeleteLog}
                     onUpdateChecklist={handleUpdateChecklist}
                     onClose={() => setIsDetailsOpen(false)}
+                />
+            )}
+            {isCostModalOpen && selectedProjectForCost && (
+                <ProjectCostModal
+                    projectId={selectedProjectForCost.id}
+                    onClose={() => setIsCostModalOpen(false)}
                 />
             )}
             {isModalOpen && (

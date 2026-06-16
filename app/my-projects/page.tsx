@@ -119,6 +119,7 @@ export default function MyProjectsPage() {
 
     // Delegation State
     const [isDelegationModalOpen, setIsDelegationModalOpen] = useState(false);
+    const [isDelegarTodoModalOpen, setIsDelegarTodoModalOpen] = useState(false);
     const [delegationQuantity, setDelegationQuantity] = useState('');
     const [delegationTargetId, setDelegationTargetId] = useState('');
     const [delegationNote, setDelegationNote] = useState('');
@@ -157,7 +158,7 @@ export default function MyProjectsPage() {
     }, [projectMaterials, activeMaterialTab, materialSearch]);
 
     // Lock body scroll when any modal is open
-    const anyModalOpen = isJustifyModalOpen || isFinalizeModalOpen || isMaterialModalOpen || isDelegationModalOpen;
+    const anyModalOpen = isJustifyModalOpen || isFinalizeModalOpen || isMaterialModalOpen || isDelegationModalOpen || isDelegarTodoModalOpen;
     useModalScroll(anyModalOpen);
 
     useEffect(() => {
@@ -473,6 +474,84 @@ export default function MyProjectsPage() {
             }
         } catch (error) {
             showToast('Error de conexión', 'error');
+        } finally {
+            setIsSubmittingMaterial(false);
+        }
+    };
+
+    const submitBatchDelegation = async () => {
+        if (!selectedProject) return;
+
+        // Find all materials with balance > 0
+        const itemsToDelegate = filteredProjectMaterials.map(m => {
+            const totalUsado = m.usos.reduce((acc: number, u: any) => acc + u.cantidadUtilizada, 0);
+            const totalDevuelto = (m.devoluciones || []).filter((d: any) => d.estado !== 'pendiente' && d.estado !== 'delegacion_pendiente').reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
+            const pendingDevolucion = (m.devoluciones || []).filter((d: any) => d.estado === 'pendiente' || d.estado === 'delegacion_pendiente').reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
+            const balance = m.cantidadEntregada - totalUsado - totalDevuelto - pendingDevolucion;
+            return {
+                materialId: m.id,
+                cantidadADevolver: balance,
+                materialNombre: m.nombre,
+                unidad: m.unidad,
+                balance
+            };
+        }).filter(item => item.balance > 0);
+
+        if (itemsToDelegate.length === 0) {
+            showToast('No hay materiales disponibles para delegar', 'error');
+            return;
+        }
+
+        if (!delegationTargetId) {
+            showToast('Debe seleccionar a quién delegar', 'error');
+            return;
+        }
+
+        const targetUser = operatorsList.find(op => op.id === delegationTargetId);
+        if (!targetUser) return;
+
+        let firmaData = null;
+        if (signatureCanvasRef.current && hasSignature) {
+            firmaData = signatureCanvasRef.current.toDataURL('image/png');
+        }
+
+        if (!firmaData) {
+            showToast('Debe firmar para autorizar la delegación masiva', 'error');
+            return;
+        }
+
+        setIsSubmittingMaterial(true);
+        try {
+            const res = await safeApiRequest('/api/materiales-proyecto/devolucion/batch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    delegations: itemsToDelegate,
+                    estado: 'delegacion_pendiente',
+                    comentario: delegationNote,
+                    delegadoAId: targetUser.id,
+                    delegadoANombre: targetUser.nombreCompleto,
+                    delegadoPorId: user?.id,
+                    delegadoPorNombre: user?.nombreCompleto,
+                    firmaDelegacion: firmaData,
+                    projectId: selectedProject.id,
+                    projectName: selectedProject.nombre
+                })
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw err;
+            }
+
+            showToast('Todos los materiales delegados exitosamente', 'success');
+            setIsDelegarTodoModalOpen(false);
+            setDelegationNote('');
+            setDelegationTargetId('');
+            loadMaterials(selectedProject.id);
+        } catch (err: any) {
+            console.error('Error in batch delegation submit:', err);
+            showToast(err.error || 'Error al delegar materiales', 'error');
         } finally {
             setIsSubmittingMaterial(false);
         }
@@ -923,6 +1002,30 @@ export default function MyProjectsPage() {
                                             Devueltos
                                         </button>
                                     </div>
+                                    {activeMaterialTab === 'general' && (
+                                        <button
+                                            onClick={() => {
+                                                const hasBalance = filteredProjectMaterials.some(m => {
+                                                    const totalUsado = m.usos.reduce((acc: number, u: any) => acc + u.cantidadUtilizada, 0);
+                                                    const totalDevuelto = (m.devoluciones || []).filter((d: any) => d.estado !== 'pendiente' && d.estado !== 'delegacion_pendiente').reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
+                                                    const pendingDevolucion = (m.devoluciones || []).filter((d: any) => d.estado === 'pendiente' || d.estado === 'delegacion_pendiente').reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
+                                                    return (m.cantidadEntregada - totalUsado - totalDevuelto - pendingDevolucion) > 0;
+                                                });
+                                                if (!hasBalance) {
+                                                    showToast('No tienes materiales para delegar', 'error');
+                                                    return;
+                                                }
+                                                setDelegationTargetId('');
+                                                setDelegationNote('');
+                                                setHasSignature(false);
+                                                setIsDelegarTodoModalOpen(true);
+                                            }}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 border border-indigo-200 dark:border-indigo-800 text-xs font-bold text-indigo-600 dark:text-indigo-400 rounded-lg transition-colors"
+                                        >
+                                            <Share2 className="w-3.5 h-3.5" />
+                                            Delegar Todo
+                                        </button>
+                                    )}
                                 </div>
 
                                 {/* Search Bar */}
@@ -1437,6 +1540,134 @@ export default function MyProjectsPage() {
                             >
                                 {isSubmittingMaterial ? <Loader2 className="w-4 h-4 animate-spin" /> : <Share2 className="w-4 h-4" />}
                                 Solicitar Delegación
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delegar Todo Modal */}
+            {isDelegarTodoModalOpen && selectedProject && (
+                <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl p-6 md:p-7 space-y-6 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 rounded-2xl bg-indigo-50 text-indigo-600">
+                                <Share2 className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">Delegar Todos los Materiales</h3>
+                                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{selectedProject.nombre}</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Delegar a *</label>
+                                <select
+                                    value={delegationTargetId}
+                                    onChange={(e) => setDelegationTargetId(e.target.value)}
+                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-bold outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-slate-700"
+                                >
+                                    <option value="" disabled>Seleccione un operador</option>
+                                    {operatorsList.filter(op => op.id !== user?.id).map(op => (
+                                        <option key={op.id} value={op.id}>{op.nombreCompleto} ({op.role})</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nota / Observación</label>
+                                <textarea
+                                    value={delegationNote}
+                                    onChange={(e) => setDelegationNote(e.target.value)}
+                                    rows={2}
+                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all resize-none"
+                                    placeholder="Motivo de la delegación (Opcional)..."
+                                />
+                            </div>
+                            
+                            <div className="bg-amber-50 p-3 rounded-xl border border-amber-200 flex items-start gap-2 mt-2">
+                                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                                <p className="text-[10px] font-bold text-amber-800 leading-tight">Se delegarán todos los materiales con balance mayor a cero. Los materiales seguirán pendientes de devolución.</p>
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Firma del Responsable *</label>
+                                    {hasSignature && (
+                                        <button 
+                                            type="button" 
+                                            onClick={() => {
+                                                const ctx = signatureCanvasRef.current?.getContext('2d');
+                                                if (ctx && signatureCanvasRef.current) {
+                                                    ctx.clearRect(0, 0, signatureCanvasRef.current.width, signatureCanvasRef.current.height);
+                                                    setHasSignature(false);
+                                                }
+                                            }}
+                                            className="text-[10px] font-bold text-red-500 hover:underline"
+                                        >
+                                            Limpiar
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-2xl overflow-hidden shadow-inner touch-none relative">
+                                    <canvas
+                                        ref={signatureCanvasRef}
+                                        width={400}
+                                        height={150}
+                                        className="w-full h-[150px] cursor-crosshair touch-none"
+                                        onPointerDown={(e) => {
+                                            const canvas = signatureCanvasRef.current;
+                                            if (!canvas) return;
+                                            const rect = canvas.getBoundingClientRect();
+                                            const scaleX = canvas.width / rect.width;
+                                            const scaleY = canvas.height / rect.height;
+                                            const ctx = canvas.getContext('2d');
+                                            if (!ctx) return;
+                                            ctx.beginPath();
+                                            ctx.moveTo((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY);
+                                            setIsDrawing(true);
+                                        }}
+                                        onPointerMove={(e) => {
+                                            if (!isDrawing) return;
+                                            const canvas = signatureCanvasRef.current;
+                                            if (!canvas) return;
+                                            const rect = canvas.getBoundingClientRect();
+                                            const scaleX = canvas.width / rect.width;
+                                            const scaleY = canvas.height / rect.height;
+                                            const ctx = canvas.getContext('2d');
+                                            if (!ctx) return;
+                                            ctx.lineTo((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY);
+                                            ctx.stroke();
+                                            setHasSignature(true);
+                                        }}
+                                        onPointerUp={() => setIsDrawing(false)}
+                                        onPointerCancel={() => setIsDrawing(false)}
+                                        onPointerOut={() => setIsDrawing(false)}
+                                    />
+                                    {!hasSignature && (
+                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                            <span className="text-sm font-black text-slate-300 dark:text-slate-700 uppercase tracking-widest rotate-[-5deg]">Firmar Aquí</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setIsDelegarTodoModalOpen(false)}
+                                className="flex-[1] py-3.5 rounded-2xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-all active:scale-95 text-sm"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={submitBatchDelegation}
+                                disabled={!delegationTargetId || !hasSignature || isSubmittingMaterial}
+                                className="flex-[2] py-3.5 rounded-2xl font-black text-white bg-indigo-600 hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50"
+                            >
+                                {isSubmittingMaterial ? <Loader2 className="w-4 h-4 animate-spin" /> : <Share2 className="w-4 h-4" />}
+                                Delegar Todo
                             </button>
                         </div>
                     </div>
