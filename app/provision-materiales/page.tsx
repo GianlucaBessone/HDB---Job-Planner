@@ -1152,6 +1152,32 @@ function MaterialesTable({
     onRefresh();
   };
 
+  const handleUpdateUso = async (id: string, currentUsado: number, newUsado: number) => {
+    if (newUsado === currentUsado) return;
+    const diff = newUsado - currentUsado;
+    
+    // Prevent setting used amount greater than what was delivered
+    const mat = proyecto.materialesProyecto.find((m) => m.id === id);
+    if (mat && newUsado > mat.cantidadEntregada) {
+      showToast(
+        `Error: No puedes marcar como utilizado (${newUsado}) más de lo que se ha entregado (${mat.cantidadEntregada}).`,
+        "error",
+      );
+      return;
+    }
+
+    await fetch(`/api/materiales-proyecto/uso`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        materialId: id,
+        cantidadUtilizada: diff,
+        operadorNombre: user?.nombreCompleto || user?.nombre || "Ajuste de Almacén",
+      }),
+    });
+    onRefresh();
+  };
+
   const handleDelete = async (id: string) => {
     await fetch(`/api/materiales-proyecto/${id}`, { method: "DELETE" });
     onRefresh();
@@ -1464,8 +1490,12 @@ function MaterialesTable({
                                 }
                               />
                             </td>
-                            <td className="text-center py-3 font-bold text-violet-600">
-                              {totalUsado}
+                            <td className="text-center py-3">
+                              <QtyCell
+                                value={totalUsado}
+                                disabled={!isVendedor || closed}
+                                onSave={(v) => handleUpdateUso(mat.id, totalUsado, v)}
+                              />
                             </td>
                             <td
                               className={`text-center py-3 font-bold ${hasPending ? "text-amber-600" : "text-slate-400"}`}

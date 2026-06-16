@@ -125,6 +125,7 @@ export default function MyProjectsPage() {
     const [delegationNote, setDelegationNote] = useState('');
     const [operatorsList, setOperatorsList] = useState<{id: string, nombreCompleto: string, role: string}[]>([]);
     const [pendingDelegations, setPendingDelegations] = useState<any[]>([]);
+    const [isLoadingDelegations, setIsLoadingDelegations] = useState(false);
 
     // Signature Canvas State
     const signatureCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -601,6 +602,35 @@ export default function MyProjectsPage() {
         }
     };
 
+    const acceptAllDelegations = async () => {
+        if (!pendingDelegations.length) return;
+        setIsLoadingDelegations(true);
+        try {
+            let errorCount = 0;
+            for (const delegation of pendingDelegations) {
+                const res = await safeApiRequest('/api/materiales-proyecto/devolucion', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: delegation.id,
+                        estado: 'pendiente'
+                    })
+                });
+                if (!res.ok) errorCount++;
+            }
+            if (errorCount > 0) {
+                showToast(`Hubo un error al aceptar ${errorCount} delegaciones`, 'error');
+            } else {
+                showToast('Todas las delegaciones aceptadas', 'success');
+            }
+            loadPendingDelegations(user?.id!);
+        } catch (error) {
+            showToast('Error de conexión al aceptar delegaciones', 'error');
+        } finally {
+            setIsLoadingDelegations(false);
+        }
+    };
+
     const submitLog = async () => {
         if (!newLog.trim() || !selectedProject || !user) return;
         setIsSubmittingLog(true);
@@ -786,10 +816,19 @@ export default function MyProjectsPage() {
 
                     {pendingDelegations.length > 0 && (
                         <div className="bg-blue-50 border border-blue-200 rounded-3xl p-5 space-y-4 shadow-sm">
-                            <h3 className="flex items-center gap-2 text-sm font-black text-blue-800 uppercase tracking-wide">
-                                <Package className="w-5 h-5 text-blue-600" />
-                                Delegaciones Pendientes
-                            </h3>
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <h3 className="flex items-center gap-2 text-sm font-black text-blue-800 uppercase tracking-wide">
+                                    <Package className="w-5 h-5 text-blue-600" />
+                                    Delegaciones Pendientes
+                                </h3>
+                                <button
+                                    onClick={acceptAllDelegations}
+                                    disabled={isLoadingDelegations}
+                                    className="bg-blue-600 text-white font-black text-[10px] uppercase tracking-widest px-4 py-2 rounded-xl hover:bg-blue-700 active:scale-95 transition-all shadow-md shadow-blue-200 disabled:opacity-50"
+                                >
+                                    {isLoadingDelegations ? 'Procesando...' : 'Aceptar Todas'}
+                                </button>
+                            </div>
                             <div className="grid gap-3">
                                 {pendingDelegations.map(del => (
                                     <div key={del.id} className="bg-white border border-blue-100 rounded-2xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">

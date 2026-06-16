@@ -8,12 +8,23 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { id, materialId, cantidadADevolver, estado, comentario, confirmadoPor, delegadoAId, delegadoANombre, firmaDelegacion, delegadoPorId, delegadoPorNombre } = body;
 
-    if (!materialId || cantidadADevolver === undefined || !estado) {
+    let existingRecord = null;
+    if (id) {
+        existingRecord = await prisma.materialDevolucion.findUnique({ where: { id } });
+        if (!existingRecord) {
+            return NextResponse.json({ error: 'Registro no encontrado' }, { status: 404 });
+        }
+    }
+
+    const finalMaterialId = materialId || existingRecord?.materialId;
+    const finalCantidad = cantidadADevolver !== undefined ? parseFloat(cantidadADevolver) : existingRecord?.cantidadADevolver;
+
+    if (!finalMaterialId || finalCantidad === undefined || !estado) {
         return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 });
     }
 
     // Confirmation logic
-    if (estado !== 'pendiente' && !confirmadoPor) {
+    if (estado !== 'pendiente' && estado !== 'delegacion_pendiente' && estado !== 'delegacion_rechazada' && !confirmadoPor) {
         return NextResponse.json({ error: 'confirmadoPor es requerido para confirmar la devolución' }, { status: 400 });
     }
 
@@ -22,17 +33,17 @@ export async function POST(req: Request) {
     }
 
     const data: any = {
-        materialId,
-        cantidadADevolver: parseFloat(cantidadADevolver),
+        materialId: finalMaterialId,
+        cantidadADevolver: finalCantidad,
         estado,
-        comentario: comentario || null,
-        confirmadoPor: confirmadoPor || null,
-        fechaConfirm: (estado !== 'pendiente' && estado !== 'delegacion_pendiente') ? new Date() : null,
-        delegadoAId: delegadoAId || null,
-        delegadoANombre: delegadoANombre || null,
-        firmaDelegacion: firmaDelegacion || null,
-        delegadoPorId: delegadoPorId || null,
-        delegadoPorNombre: delegadoPorNombre || null,
+        ...(comentario !== undefined ? { comentario: comentario || null } : {}),
+        ...(confirmadoPor !== undefined ? { confirmadoPor: confirmadoPor || null } : {}),
+        fechaConfirm: (estado !== 'pendiente' && estado !== 'delegacion_pendiente' && estado !== 'delegacion_rechazada') ? new Date() : null,
+        ...(delegadoAId !== undefined ? { delegadoAId: delegadoAId || null } : {}),
+        ...(delegadoANombre !== undefined ? { delegadoANombre: delegadoANombre || null } : {}),
+        ...(firmaDelegacion !== undefined ? { firmaDelegacion: firmaDelegacion || null } : {}),
+        ...(delegadoPorId !== undefined ? { delegadoPorId: delegadoPorId || null } : {}),
+        ...(delegadoPorNombre !== undefined ? { delegadoPorNombre: delegadoPorNombre || null } : {}),
     };
 
     let devolucion;
@@ -52,20 +63,20 @@ export async function POST(req: Request) {
     // Update material state based on remaining pending returns
     const pendingCount = await prisma.materialDevolucion.count({
         where: {
-            materialId,
+            materialId: finalMaterialId,
             estado: { in: ['pendiente', 'delegacion_pendiente', 'delegacion_rechazada'] }
         }
     });
 
     if (pendingCount > 0) {
         await prisma.materialProyecto.update({
-            where: { id: materialId },
+            where: { id: finalMaterialId },
             data: { estado: 'pendiente_devolucion' }
         });
-    } else if (estado !== 'pendiente') {
+    } else if (estado !== 'pendiente' && estado !== 'delegacion_pendiente' && estado !== 'delegacion_rechazada') {
         // All returns confirmed. Check if the material is fully returned/accounted for.
         const matDb = await prisma.materialProyecto.findUnique({
-            where: { id: materialId },
+            where: { id: finalMaterialId },
             include: { usos: true, devoluciones: true }
         });
         if (matDb) {
@@ -74,7 +85,7 @@ export async function POST(req: Request) {
             const aDevolver = Math.max(0, matDb.cantidadEntregada - totalUsado - totalDevuelto);
             if (aDevolver <= 0) {
                 await prisma.materialProyecto.update({
-                    where: { id: materialId },
+                    where: { id: finalMaterialId },
                     data: { estado }
                 });
             } else {
@@ -88,7 +99,7 @@ export async function POST(req: Request) {
 
     // Notify if needed
     const material = await prisma.materialProyecto.findUnique({
-        where: { id: materialId },
+        where: { id: finalMaterialId },
         include: { proyecto: { select: { nombre: true } } },
     });
 
@@ -103,14 +114,14 @@ export async function POST(req: Request) {
 
         if (estado === 'pendiente') {
             title = `Solicitud de devolución – ${material.proyecto.nombre}`;
-            message = `El operador solicita devolver ${cantidadADevolver} ${material.unidad} de "${material.nombre}".${comentario ? ` Nota: ${comentario}` : ''}`;
+            message = `El operador solicita devolver ${finalCantidad} ${material.unidad} de "${material.nombre}".${comentario ? ` Nota: ${comentario}` : ''}`;
         } else if (estado === 'delegacion_pendiente') {
             title = `Delegación de devolución – ${material.proyecto.nombre}`;
-            message = `${delegadoPorNombre} delegó la devolución de ${cantidadADevolver} ${material.unidad} de "${material.nombre}" a ${delegadoANombre}.`;
+            message = `${delegadoPorNombre} delegó la devolución de ${finalCantidad} ${material.unidad} de "${material.nombre}" a ${delegadoANombre}.`;
         } else {
             const estadoLabel = estado === 'cerrado_ok' ? 'sin reserva' : 'con reserva';
             title = `Devolución confirmada – ${material.proyecto.nombre}`;
-            message = `La devolución de "${material.nombre}" (${cantidadADevolver} ${material.unidad}) fue confirmada por ${confirmadoPor} (${estadoLabel}).${comentario ? ` Observación: ${comentario}` : ''}`;
+            message = `La devolución de "${material.nombre}" (${finalCantidad} ${material.unidad}) fue confirmada por ${confirmadoPor} (${estadoLabel}).${comentario ? ` Observación: ${comentario}` : ''}`;
         }
 
         await prisma.notification.createMany({
@@ -129,7 +140,7 @@ export async function POST(req: Request) {
                 data: {
                     operatorId: delegadoAId,
                     title: `Te han delegado materiales`,
-                    message: `${delegadoPorNombre} te ha delegado ${cantidadADevolver} ${material.unidad} de "${material.nombre}" en la obra ${material.proyecto.nombre}.`,
+                    message: `${delegadoPorNombre} te ha delegado ${finalCantidad} ${material.unidad} de "${material.nombre}" en la obra ${material.proyecto.nombre}.`,
                     type: 'DELEGACION_MATERIAL',
                     relatedId: material.proyectoId,
                 }
@@ -141,7 +152,7 @@ export async function POST(req: Request) {
                     projectId: material.proyectoId,
                     fecha: new Date().toISOString().split('T')[0],
                     responsable: delegadoPorNombre || 'Sistema',
-                    observacion: `Delegación de devolución de material:\nMaterial: ${material.nombre}\nCantidad: ${cantidadADevolver} ${material.unidad}\nDelegado a: ${delegadoANombre}`,
+                    observacion: `Delegación de devolución de material:\nMaterial: ${material.nombre}\nCantidad: ${finalCantidad} ${material.unidad}\nDelegado a: ${delegadoANombre}`,
                     categoria: 'Nota'
                 }
             });
