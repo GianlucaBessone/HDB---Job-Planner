@@ -55,7 +55,7 @@ export default function GastosPlanilla() {
       'Descripción Gasto': item.codigoGasto?.descripcion || '',
       'CUIT': item.proveedor?.cuit || '',
       'Proveedor': item.proveedor?.razonSocial || '',
-      'Tipo Comprobante': item.tipoComprobante || '',
+      'Tipo Comprobante': `${item.tipoComprobante || ''}${item.letraComprobante ? ' ' + item.letraComprobante : ''}`.trim(),
       'Punto Venta': item.puntoVenta || '',
       'Nro Factura': item.numeroComprobante || '',
       'Valor Neto': item.netoGeneral,
@@ -177,7 +177,7 @@ export default function GastosPlanilla() {
                     {item.proveedor?.razonSocial || '-'}
                   </td>
                   <td className="px-4 py-3 text-slate-900 dark:text-slate-200">
-                    {item.tipoComprobante || '-'}
+                    {`${item.tipoComprobante || '-'}${item.letraComprobante ? ' ' + item.letraComprobante : ''}`.trim()}
                   </td>
                   <td className="px-4 py-3 text-slate-900 dark:text-slate-200">
                     {item.puntoVenta || '-'}

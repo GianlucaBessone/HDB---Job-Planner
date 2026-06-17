@@ -75,6 +75,21 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const data = facturaSchema.parse(body);
 
+    if (data.proveedorId && data.numeroComprobante) {
+      const exists = await prisma.facturaConsumo.findFirst({
+        where: {
+          proveedorId: data.proveedorId,
+          tipoComprobante: data.tipoComprobante,
+          letraComprobante: data.letraComprobante,
+          puntoVenta: data.puntoVenta,
+          numeroComprobante: data.numeroComprobante,
+        }
+      });
+      if (exists) {
+        return NextResponse.json({ error: 'Esta factura (mismo Proveedor, Tipo y Número) ya ha sido cargada anteriormente.' }, { status: 400 });
+      }
+    }
+
     const factura = await prisma.facturaConsumo.create({
       data: {
         ...data,

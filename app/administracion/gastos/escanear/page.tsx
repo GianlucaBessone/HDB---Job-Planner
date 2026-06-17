@@ -19,6 +19,8 @@ export default function EscanearFactura() {
   const [scannerFolderHandle, setScannerFolderHandle] = useState<any>(null);
   const [initialFiles, setInitialFiles] = useState<string[]>([]);
   const [isWaitingScanner, setIsWaitingScanner] = useState(false);
+  const [fileQueue, setFileQueue] = useState<any[]>([]);
+  const [queueIndex, setQueueIndex] = useState(0);
 
   // Form State
   const [selectedCodigo, setSelectedCodigo] = useState('');
@@ -51,6 +53,15 @@ export default function EscanearFactura() {
       .catch(console.error);
   }, []);
 
+  useEffect(() => {
+    if (notification && notification.type === 'success') {
+      const timer = setTimeout(() => {
+        setNotification(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
+
   const connectScannerFolder = async () => {
     try {
       if (!('showDirectoryPicker' in window)) {
@@ -62,11 +73,16 @@ export default function EscanearFactura() {
       
       const fileNames = [];
       for await (const entry of handle.values()) {
-        if (entry.kind === 'file') fileNames.push(entry.name);
+        if (entry.kind === 'file') {
+          const cleanName = entry.name.toLowerCase().replace(/[\n\r\s]+/g, '');
+          if (cleanName.endsWith('.png') || cleanName.endsWith('.jpg') || cleanName.endsWith('.jpeg') || cleanName.endsWith('.pdf') || cleanName.endsWith('.webp')) {
+            fileNames.push(entry.name);
+          }
+        }
       }
       setInitialFiles(fileNames);
       setIsWaitingScanner(true);
-      setNotification({ type: 'success', message: 'Escáner vinculado. Pásalo por la factura y haz clic en "Confirmar Escaneo".' });
+      setNotification({ type: 'success', message: 'Escáner vinculado (Línea base guardada). Escanea tus facturas offline, vuelve a conectarlo y haz clic en "Procesar Escaneos Nuevos".' });
     } catch (err: any) {
       if (err.name !== 'AbortError') {
         console.error(err);
@@ -75,39 +91,62 @@ export default function EscanearFactura() {
     }
   };
 
-  const confirmScan = async () => {
+  const processNewScans = async () => {
     if (!scannerFolderHandle) return;
     try {
-      const currentFiles = [];
-      let newFileHandle = null;
+      const newFiles = [];
       for await (const entry of scannerFolderHandle.values()) {
         if (entry.kind === 'file') {
-          currentFiles.push(entry.name);
-          if (!initialFiles.includes(entry.name)) {
-            newFileHandle = entry;
-            break;
+          const cleanName = entry.name.toLowerCase().replace(/[\n\r\s]+/g, '');
+          if (cleanName.endsWith('.png') || cleanName.endsWith('.jpg') || cleanName.endsWith('.jpeg') || cleanName.endsWith('.pdf') || cleanName.endsWith('.webp')) {
+            if (!initialFiles.includes(entry.name)) {
+              newFiles.push(entry);
+            }
           }
         }
       }
       
-      if (!newFileHandle) {
-        setNotification({ type: 'warning', message: 'No se detectó el nuevo escaneo. ¿Seguro que se guardó ahí?' });
-        setInitialFiles(currentFiles);
+      if (newFiles.length === 0) {
+        setNotification({ type: 'warning', message: 'No se encontraron nuevos archivos desde la última vinculación.' });
         return;
       }
       
-      const file = await newFileHandle.getFile();
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setCapturedImage(event.target?.result as string);
-        setIsWaitingScanner(false);
-        setScannerFolderHandle(null);
-      };
-      reader.readAsDataURL(file);
-
+      setFileQueue(newFiles);
+      setQueueIndex(0);
+      setIsWaitingScanner(false);
+      processFileHandle(newFiles[0]);
     } catch (err: any) {
       console.error(err);
-      setNotification({ type: 'error', message: 'Error al leer el archivo nuevo: ' + err.message });
+      setNotification({ type: 'error', message: 'Error al leer la carpeta: ' + err.message });
+    }
+  };
+
+  const processFileHandle = async (fileHandle: any) => {
+    try {
+      const file = await fileHandle.getFile();
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        setCapturedImage(dataUrl);
+        processImageFromDataUrl(dataUrl, file.name, file.type);
+      };
+      reader.readAsDataURL(file);
+    } catch (err: any) {
+      setNotification({ type: 'error', message: 'Error al leer el archivo: ' + err.message });
+    }
+  };
+  
+  const skipNext = () => {
+    if (queueIndex < fileQueue.length - 1) {
+      const nextIdx = queueIndex + 1;
+      setQueueIndex(nextIdx);
+      setCapturedImage(null);
+      setOcrData(null);
+      processFileHandle(fileQueue[nextIdx]);
+    } else {
+      setNotification({ type: 'success', message: 'Lote finalizado.' });
+      setFileQueue([]);
+      setTimeout(() => router.push('/administracion/gastos'), 1500);
     }
   };
 
@@ -122,15 +161,16 @@ export default function EscanearFactura() {
     }
   };
 
-  const processImage = async () => {
-    if (!capturedImage) return;
+  const processImageFromDataUrl = async (dataUrl: string, fileName: string = 'factura.jpg', mimeType: string = 'image/jpeg') => {
+    if (!dataUrl) return;
     setProcessing(true);
     
     try {
       // Convert DataURL to File
-      const res = await fetch(capturedImage);
+      const res = await fetch(dataUrl);
       const blob = await res.blob();
-      const file = new File([blob], 'factura.jpg', { type: 'image/jpeg' });
+      const finalMimeType = mimeType || (fileName.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg');
+      const file = new File([blob], fileName, { type: finalMimeType });
 
       const formData = new FormData();
       formData.append('file', file);
@@ -154,10 +194,21 @@ export default function EscanearFactura() {
         razonSocial: data.data.proveedor?.razon_social || '',
         cuit: data.data.proveedor?.cuit || ''
       });
+      let combinedTipo = 'Factura A';
+      if (data.data.tipo_comprobante?.toLowerCase().includes('ticket')) {
+        combinedTipo = 'Ticket';
+      } else if (data.data.tipo_comprobante?.toLowerCase().includes('nota') || data.data.tipo_comprobante?.toLowerCase().includes('credito')) {
+        combinedTipo = 'Nota de Crédito';
+      } else if (data.data.letra_comprobante) {
+        combinedTipo = `Factura ${data.data.letra_comprobante.toUpperCase()}`;
+      } else if (data.data.tipo_comprobante) {
+        combinedTipo = data.data.tipo_comprobante;
+      }
+
       setComprobante({
         fechaEmision: data.data.fecha_emision || new Date().toISOString().split('T')[0],
-        tipoComprobante: data.data.tipo_comprobante || '',
-        letraComprobante: data.data.letra_comprobante || '',
+        tipoComprobante: combinedTipo,
+        letraComprobante: '',
         puntoVenta: data.data.punto_venta || '',
         numeroComprobante: data.data.numero_comprobante || ''
       });
@@ -183,12 +234,18 @@ export default function EscanearFactura() {
   };
 
   const retake = () => {
-    setCapturedImage(null);
-    setOcrData(null);
-    setIsWaitingScanner(false);
-    setScannerFolderHandle(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-    if (cameraInputRef.current) cameraInputRef.current.value = '';
+    if (fileQueue.length > 0) {
+      // If we are in batch mode, retake just means try OCR again on the same image
+      setOcrData(null);
+      if (capturedImage) processImageFromDataUrl(capturedImage);
+    } else {
+      setCapturedImage(null);
+      setOcrData(null);
+      setIsWaitingScanner(false);
+      setScannerFolderHandle(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      if (cameraInputRef.current) cameraInputRef.current.value = '';
+    }
   };
 
   const saveFactura = async () => {
@@ -234,8 +291,8 @@ export default function EscanearFactura() {
           fechaEmision: comprobante.fechaEmision,
           proveedorId: proveedorId,
           codigoGastoId: selectedCodigo || null,
-          tipoComprobante: comprobante.tipoComprobante,
-          letraComprobante: comprobante.letraComprobante,
+          tipoComprobante: comprobante.tipoComprobante.replace(/ [ABC]$/, ''),
+          letraComprobante: comprobante.tipoComprobante.match(/ ([ABC])$/) ? comprobante.tipoComprobante.slice(-1) : '',
           puntoVenta: comprobante.puntoVenta,
           numeroComprobante: comprobante.numeroComprobante,
           netoGeneral: totales.netoGeneral,
@@ -257,7 +314,11 @@ export default function EscanearFactura() {
 
       if (factRes.ok) {
         setNotification({ type: 'success', message: 'Factura guardada con éxito' });
-        setTimeout(() => router.push('/administracion/gastos'), 1500);
+        if (fileQueue.length > 0) {
+          skipNext();
+        } else {
+          setTimeout(() => router.push('/administracion/gastos'), 1500);
+        }
       } else {
         const err = await factRes.json();
         setNotification({ type: 'error', message: 'Error al guardar: ' + (err.error || JSON.stringify(err)) });
@@ -275,7 +336,7 @@ export default function EscanearFactura() {
       <div className="px-6 pt-6">
         <button 
           onClick={() => router.push('/administracion/gastos')}
-          className="mb-4 flex items-center text-sm font-medium text-slate-400 hover:text-white transition-colors bg-slate-800/50 hover:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700/50 w-fit"
+          className="mb-4 flex items-center text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors bg-white dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50 w-fit shadow-sm"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Volver a Gastos
@@ -341,11 +402,11 @@ export default function EscanearFactura() {
 
                 {!isMobile && isWaitingScanner && (
                   <button 
-                    onClick={confirmScan}
+                    onClick={processNewScans}
                     className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/30 rounded-xl font-bold transition-all flex items-center justify-center gap-3 animate-pulse"
                   >
                     <Check className="w-5 h-5" />
-                    Confirmar Escaneo
+                    Procesar Escaneos Nuevos
                   </button>
                 )}
 
@@ -369,14 +430,14 @@ export default function EscanearFactura() {
 
         {/* Captured Image Preview & Processing */}
         {capturedImage && !ocrData && (
-          <div className="relative w-full h-full flex flex-col items-center justify-center p-6 bg-slate-900">
-            <img src={capturedImage} alt="Captured" className="max-h-[60vh] rounded-xl shadow-2xl object-contain mb-8 border-2 border-slate-700" />
+          <div className="relative w-full h-full flex flex-col items-center justify-center p-6 bg-slate-100 dark:bg-slate-900">
+            <img src={capturedImage} alt="Captured" className="max-h-[60vh] rounded-xl shadow-2xl object-contain mb-8 border border-slate-300 dark:border-slate-700" />
             
             {processing ? (
               <div className="flex flex-col items-center">
-                <Loader2 className="w-10 h-10 animate-spin text-blue-500 mb-4" />
-                <p className="text-lg font-medium text-blue-400">Analizando documento con IA...</p>
-                <p className="text-sm text-slate-400 mt-2">Extrayendo importes, CUIT y conceptos</p>
+                <Loader2 className="w-10 h-10 animate-spin text-blue-600 dark:text-blue-500 mb-4" />
+                <p className="text-lg font-medium text-blue-700 dark:text-blue-400">Analizando documento con IA...</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Extrayendo importes, CUIT y conceptos</p>
               </div>
             ) : (
               <div className="flex space-x-4">
@@ -388,7 +449,7 @@ export default function EscanearFactura() {
                   Reintentar
                 </button>
                 <button 
-                  onClick={processImage}
+                  onClick={() => capturedImage && processImageFromDataUrl(capturedImage)}
                   className="px-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-medium transition-colors shadow-lg shadow-blue-900/50"
                 >
                   <Check className="w-5 h-5 inline mr-2" />
@@ -405,7 +466,10 @@ export default function EscanearFactura() {
             <div className="max-w-3xl mx-auto space-y-6">
               
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold">Validar Datos Extraídos</h2>
+                <h2 className="text-2xl font-bold">
+                  Validar Datos Extraídos
+                  {fileQueue.length > 0 && <span className="text-blue-600 dark:text-blue-400 ml-2 text-lg">(Factura {queueIndex + 1} de {fileQueue.length})</span>}
+                </h2>
                 <div className={`px-3 py-1 rounded-full text-sm font-semibold ${ocrData.confianza_extraccion > 0.8 ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
                   Confianza IA: {Math.round(ocrData.confianza_extraccion * 100)}%
                 </div>
@@ -440,15 +504,21 @@ export default function EscanearFactura() {
                           <input type="date" value={comprobante.fechaEmision} onChange={e => setComprobante({...comprobante, fechaEmision: e.target.value})} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1" />
                         </div>
                         <div>
-                          <label className="block text-xs text-slate-500">Tipo (Ej: Factura)</label>
-                          <input type="text" value={comprobante.tipoComprobante} onChange={e => setComprobante({...comprobante, tipoComprobante: e.target.value})} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1" />
+                          <label className="block text-xs text-slate-500">Tipo de Comprobante</label>
+                          <select
+                            value={comprobante.tipoComprobante}
+                            onChange={(e) => setComprobante({ ...comprobante, tipoComprobante: e.target.value })}
+                            className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1"
+                          >
+                            <option value="Factura A">Factura A</option>
+                            <option value="Factura B">Factura B</option>
+                            <option value="Factura C">Factura C</option>
+                            <option value="Ticket">Ticket</option>
+                            <option value="Nota de Crédito">Nota de Crédito</option>
+                          </select>
                         </div>
                       </div>
-                      <div className="grid grid-cols-3 gap-3">
-                        <div>
-                          <label className="block text-xs text-slate-500">Letra</label>
-                          <input type="text" value={comprobante.letraComprobante} onChange={e => setComprobante({...comprobante, letraComprobante: e.target.value})} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1" />
-                        </div>
+                      <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="block text-xs text-slate-500">Pto. Vta.</label>
                           <input type="text" value={comprobante.puntoVenta} onChange={e => setComprobante({...comprobante, puntoVenta: e.target.value})} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
@@ -535,20 +605,31 @@ export default function EscanearFactura() {
               </div>
 
               <div className="flex justify-end space-x-4 pt-6 border-t border-slate-200 dark:border-slate-700">
-                <button 
-                  onClick={retake}
-                  disabled={saving}
-                  className="px-6 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl font-medium transition-colors"
-                >
-                  Cancelar
-                </button>
+                {fileQueue.length > 0 ? (
+                  <button 
+                    onClick={skipNext}
+                    disabled={saving}
+                    className="px-6 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl font-medium transition-colors"
+                  >
+                    Omitir
+                  </button>
+                ) : (
+                  <button 
+                    onClick={retake}
+                    disabled={saving}
+                    className="px-6 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl font-medium transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                )}
+                
                 <button 
                   onClick={saveFactura}
                   disabled={saving || !selectedCodigo}
                   className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl font-medium transition-colors flex items-center shadow-sm"
                 >
                   {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-                  {saving ? 'Guardando...' : 'Confirmar y Guardar'}
+                  {saving ? 'Guardando...' : (fileQueue.length > 0 ? (queueIndex < fileQueue.length - 1 ? 'Guardar y Siguiente' : 'Guardar y Finalizar Lote') : 'Confirmar y Guardar')}
                 </button>
               </div>
               {!selectedCodigo && (
