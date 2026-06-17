@@ -18,6 +18,7 @@ REGLAS OBLIGATORIAS:
 7. Si existen varios importes posibles, seleccionar únicamente el valor fiscal correspondiente.
 8. Si el documento no es una factura, es_factura debe ser false.
 9. CUIDADO CON LOS TRIBUTOS: En facturas argentinas, a veces dice "Impuestos Internos: 14,04" y debajo "Total Otros Tributos: 14,04". NO extraigas ambos porque se duplicarán al sumarlos. Prioriza colocar el importe final en "otros_impuestos" y deja "impuestos_internos" en null si es el mismo importe o si está totalizado. Lo mismo aplica a "no_gravado". Evita la duplicación matemática.
+10. DESGLOSE DE NETOS GRAVADOS: Es crucial extraer el importe "Neto gravado" (o importe base) correspondiente a cada alícuota de IVA de forma individual. Si la factura muestra "IVA 21% (Neto gravado $ 6544.80)", debes colocar 6544.80 en "neto_21", y no sumarlo todo en "subtotal". Haz lo mismo para neto_10_5 y neto_27 si existen.
 `;
 
 const RESPONSE_SCHEMA = {
@@ -46,6 +47,9 @@ const RESPONSE_SCHEMA = {
       nullable: true,
       properties: {
         subtotal: { type: Type.NUMBER, nullable: true },
+        neto_21: { type: Type.NUMBER, nullable: true },
+        neto_10_5: { type: Type.NUMBER, nullable: true },
+        neto_27: { type: Type.NUMBER, nullable: true },
         iva_21: { type: Type.NUMBER, nullable: true },
         iva_10_5: { type: Type.NUMBER, nullable: true },
         iva_27: { type: Type.NUMBER, nullable: true },

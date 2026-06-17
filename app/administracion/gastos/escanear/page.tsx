@@ -2,21 +2,23 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Camera, X, Check, Loader2, Save, Upload, ArrowLeft } from 'lucide-react';
+import { Camera, X, Check, Loader2, Save, Upload, ArrowLeft, Usb } from 'lucide-react';
 import ModuleHeader from '@/components/ModuleHeader';
 import SearchableSelect from '@/components/SearchableSelect';
 
 export default function EscanearFactura() {
   const router = useRouter();
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  const [stream, setStream] = useState<MediaStream | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [ocrData, setOcrData] = useState<any>(null);
   const [codigosGasto, setCodigosGasto] = useState<any[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
+  const [scannerFolderHandle, setScannerFolderHandle] = useState<any>(null);
+  const [initialFiles, setInitialFiles] = useState<string[]>([]);
+  const [isWaitingScanner, setIsWaitingScanner] = useState(false);
 
   // Form State
   const [selectedCodigo, setSelectedCodigo] = useState('');
@@ -40,50 +42,72 @@ export default function EscanearFactura() {
   });
 
   useEffect(() => {
+    setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
+
     // Fetch Codigos de Gasto
     fetch('/api/administracion/codigos-gasto')
       .then(res => res.json())
       .then(data => setCodigosGasto(data || []))
       .catch(console.error);
-
-    startCamera();
-    return () => stopCamera();
   }, []);
 
-  const startCamera = async () => {
+  const connectScannerFolder = async () => {
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' }
-      });
-      setStream(mediaStream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
+      if (!('showDirectoryPicker' in window)) {
+        setNotification({ type: 'warning', message: 'Tu navegador no soporta esta función. Usa Chrome o Edge.' });
+        return;
       }
+      const handle = await (window as any).showDirectoryPicker({ mode: 'read' });
+      setScannerFolderHandle(handle);
+      
+      const fileNames = [];
+      for await (const entry of handle.values()) {
+        if (entry.kind === 'file') fileNames.push(entry.name);
+      }
+      setInitialFiles(fileNames);
+      setIsWaitingScanner(true);
+      setNotification({ type: 'success', message: 'Escáner vinculado. Pásalo por la factura y haz clic en "Confirmar Escaneo".' });
     } catch (err: any) {
-      console.error('Error accessing camera', err);
-      setNotification({ type: 'error', message: 'No se pudo acceder a la cámara. Revisa los permisos.' });
-    }
-  };
-
-  const stopCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-    }
-  };
-
-  const capturePhoto = () => {
-    if (videoRef.current && canvasRef.current) {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-        setCapturedImage(dataUrl);
-        stopCamera();
+      if (err.name !== 'AbortError') {
+        console.error(err);
+        setNotification({ type: 'error', message: 'Error al vincular: ' + err.message });
       }
+    }
+  };
+
+  const confirmScan = async () => {
+    if (!scannerFolderHandle) return;
+    try {
+      const currentFiles = [];
+      let newFileHandle = null;
+      for await (const entry of scannerFolderHandle.values()) {
+        if (entry.kind === 'file') {
+          currentFiles.push(entry.name);
+          if (!initialFiles.includes(entry.name)) {
+            newFileHandle = entry;
+            break;
+          }
+        }
+      }
+      
+      if (!newFileHandle) {
+        setNotification({ type: 'warning', message: 'No se detectó el nuevo escaneo. ¿Seguro que se guardó ahí?' });
+        setInitialFiles(currentFiles);
+        return;
+      }
+      
+      const file = await newFileHandle.getFile();
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setCapturedImage(event.target?.result as string);
+        setIsWaitingScanner(false);
+        setScannerFolderHandle(null);
+      };
+      reader.readAsDataURL(file);
+
+    } catch (err: any) {
+      console.error(err);
+      setNotification({ type: 'error', message: 'Error al leer el archivo nuevo: ' + err.message });
     }
   };
 
@@ -93,7 +117,6 @@ export default function EscanearFactura() {
       const reader = new FileReader();
       reader.onload = (event) => {
         setCapturedImage(event.target?.result as string);
-        stopCamera();
       };
       reader.readAsDataURL(file);
     }
@@ -162,7 +185,10 @@ export default function EscanearFactura() {
   const retake = () => {
     setCapturedImage(null);
     setOcrData(null);
-    startCamera();
+    setIsWaitingScanner(false);
+    setScannerFolderHandle(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (cameraInputRef.current) cameraInputRef.current.value = '';
   };
 
   const saveFactura = async () => {
@@ -276,42 +302,68 @@ export default function EscanearFactura() {
       
       <div className="flex-1 relative flex flex-col items-center justify-center overflow-hidden">
         
-        {/* Camera View */}
+        {/* Native Camera & Upload View */}
         {!capturedImage && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black">
-            <video 
-              ref={videoRef} 
-              autoPlay 
-              playsInline 
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-            {/* Smart Frame Overlay */}
-            <div className="absolute inset-0 pointer-events-none border-[40px] md:border-[80px] border-black/50 flex items-center justify-center">
-              <div className="w-full h-full max-w-2xl border-2 border-dashed border-blue-400 rounded-xl relative">
-                <div className="absolute top-2 left-2 w-8 h-8 border-t-4 border-l-4 border-blue-500 rounded-tl-lg"></div>
-                <div className="absolute top-2 right-2 w-8 h-8 border-t-4 border-r-4 border-blue-500 rounded-tr-lg"></div>
-                <div className="absolute bottom-2 left-2 w-8 h-8 border-b-4 border-l-4 border-blue-500 rounded-bl-lg"></div>
-                <div className="absolute bottom-2 right-2 w-8 h-8 border-b-4 border-r-4 border-blue-500 rounded-br-lg"></div>
-              </div>
-            </div>
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-slate-100 dark:bg-slate-800">
             
-            <button 
-              onClick={capturePhoto}
-              className="absolute bottom-8 w-20 h-20 bg-white rounded-full border-4 border-slate-300 shadow-xl flex items-center justify-center hover:scale-105 transition-transform z-10"
-            >
-              <div className="w-16 h-16 bg-white rounded-full border-2 border-slate-400 flex items-center justify-center">
-                <Camera className="w-8 h-8 text-slate-800" />
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 max-w-md w-full shadow-2xl border border-slate-200 dark:border-slate-700 text-center flex flex-col items-center">
+              
+              <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-6">
+                <Camera className="w-10 h-10 text-blue-600 dark:text-blue-400" />
               </div>
-            </button>
+              
+              <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">Capturar Documento</h3>
+              <p className="text-slate-500 mb-8">Usa la cámara de tu dispositivo o selecciona un archivo de tu galería para procesar la factura.</p>
+              
+              <div className="w-full space-y-4">
+                {isMobile && (
+                  <>
+                    <button 
+                      onClick={() => cameraInputRef.current?.click()}
+                      className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center gap-3"
+                    >
+                      <Camera className="w-5 h-5" />
+                      Tomar Foto (Cámara)
+                    </button>
+                    <input type="file" accept="image/*" capture="environment" className="hidden" ref={cameraInputRef} onChange={handleFileUpload} />
+                  </>
+                )}
 
-            {/* Upload Button */}
-            <button 
-              onClick={() => fileInputRef.current?.click()}
-              className="absolute bottom-8 right-8 w-14 h-14 bg-slate-800/80 rounded-full border border-slate-600 shadow-xl flex flex-col items-center justify-center hover:bg-slate-700 transition-colors z-10"
-            >
-              <Upload className="w-6 h-6 text-slate-200" />
-            </button>
-            <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
+                {!isMobile && !isWaitingScanner && (
+                  <button 
+                    onClick={connectScannerFolder}
+                    className="w-full py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold shadow-lg shadow-slate-800/30 transition-all flex items-center justify-center gap-3"
+                  >
+                    <Usb className="w-5 h-5" />
+                    Vincular Escáner USB
+                  </button>
+                )}
+
+                {!isMobile && isWaitingScanner && (
+                  <button 
+                    onClick={confirmScan}
+                    className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/30 rounded-xl font-bold transition-all flex items-center justify-center gap-3 animate-pulse"
+                  >
+                    <Check className="w-5 h-5" />
+                    Confirmar Escaneo
+                  </button>
+                )}
+
+                {!isWaitingScanner && (
+                  <>
+                    <button 
+                      onClick={() => fileInputRef.current?.click()}
+                      className={`w-full py-4 ${isMobile ? 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border-2 border-slate-200 dark:border-slate-700' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/30'} rounded-xl font-bold transition-all flex items-center justify-center gap-3`}
+                    >
+                      <Upload className="w-5 h-5" />
+                      Subir Archivo de Factura
+                    </button>
+                    <input type="file" accept="image/*,.pdf" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
+                  </>
+                )}
+              </div>
+
+            </div>
           </div>
         )}
 
@@ -510,9 +562,6 @@ export default function EscanearFactura() {
         )}
 
       </div>
-      
-      {/* Hidden canvas for image capture */}
-      <canvas ref={canvasRef} className="hidden" />
     </div>
   );
 }

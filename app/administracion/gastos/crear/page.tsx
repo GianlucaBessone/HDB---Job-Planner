@@ -21,7 +21,6 @@ export default function CrearFacturaManual() {
   const [comprobante, setComprobante] = useState({ 
     fechaEmision: new Date().toISOString().split('T')[0], 
     tipoComprobante: 'Factura A', 
-    letraComprobante: 'A', 
     puntoVenta: '0001', 
     numeroComprobante: '' 
   });
@@ -137,8 +136,8 @@ export default function CrearFacturaManual() {
         fechaEmision: new Date(comprobante.fechaEmision).toISOString(),
         proveedorId: proveedorId,
         codigoGastoId: selectedCodigo || null,
-        tipoComprobante: comprobante.tipoComprobante,
-        letraComprobante: comprobante.letraComprobante,
+        tipoComprobante: comprobante.tipoComprobante.replace(/ [ABC]$/, ''),
+        letraComprobante: comprobante.tipoComprobante.match(/ ([ABC])$/) ? comprobante.tipoComprobante.slice(-1) : '',
         puntoVenta: comprobante.puntoVenta,
         numeroComprobante: comprobante.numeroComprobante,
         netoGeneral: totales.netoGeneral || 0,
@@ -265,27 +264,21 @@ export default function CrearFacturaManual() {
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tipo</label>
-                    <input 
-                      type="text" 
+                    <select 
                       className="bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-purple-500 focus:border-purple-500 block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white" 
-                      placeholder="Factura, Ticket..."
                       value={comprobante.tipoComprobante}
                       onChange={(e) => setComprobante(c => ({ ...c, tipoComprobante: e.target.value }))}
-                    />
+                    >
+                      <option value="Factura A">Factura A</option>
+                      <option value="Factura B">Factura B</option>
+                      <option value="Factura C">Factura C</option>
+                      <option value="Nota de Crédito">Nota de Crédito</option>
+                      <option value="Ticket">Ticket</option>
+                    </select>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Letra</label>
-                    <input 
-                      type="text" 
-                      className="bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-purple-500 focus:border-purple-500 block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white uppercase text-center" 
-                      maxLength={1}
-                      value={comprobante.letraComprobante}
-                      onChange={(e) => setComprobante(c => ({ ...c, letraComprobante: e.target.value }))}
-                    />
-                  </div>
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Punto Vta</label>
                     <input 

@@ -13,7 +13,6 @@ type GastoRow = {
   proveedorRazonSocial: string;
   codigoGasto: string;
   tipoComprobante: string;
-  letraComprobante: string;
   puntoVenta: string;
   numeroComprobante: string;
   netoGeneral: number;
@@ -33,7 +32,7 @@ type GastoRow = {
 
 const HEADERS = [
   'FechaEmision', 'ProveedorCUIT', 'ProveedorRazonSocial', 'CodigoGasto',
-  'TipoComprobante', 'Letra', 'PuntoVenta', 'Numero',
+  'TipoComprobante', 'PuntoVenta', 'Numero',
   'NetoGeneral', 'Neto21', 'Neto10.5', 'Neto27',
   'IVA21', 'IVA10.5', 'IVA27', 'NoGravados',
   'PercepcionesIVA', 'PercepcionesIIBB', 'ImpuestosInternos', 'OtrosImpuestos', 'Total'
@@ -84,8 +83,7 @@ export default function ImportarGastos() {
           proveedorCuit: String(row.ProveedorCUIT || ''),
           proveedorRazonSocial: String(row.ProveedorRazonSocial || ''),
           codigoGasto: String(row.CodigoGasto || ''),
-          tipoComprobante: String(row.TipoComprobante || 'Factura'),
-          letraComprobante: String(row.Letra || 'A'),
+          tipoComprobante: row.Letra ? `${row.TipoComprobante || 'Factura'} ${row.Letra}` : String(row.TipoComprobante || 'Factura A'),
           puntoVenta: String(row.PuntoVenta || '0001'),
           numeroComprobante: String(row.Numero || ''),
           netoGeneral: Number(row.NetoGeneral) || 0,
@@ -136,7 +134,7 @@ export default function ImportarGastos() {
       if (row.id === id) {
         const updated = { ...row, [field]: value };
         // Recalculate total if any financial field changes manually
-        if (field !== 'id' && field !== 'fechaEmision' && field !== 'proveedorCuit' && field !== 'proveedorRazonSocial' && field !== 'codigoGasto' && field !== 'tipoComprobante' && field !== 'letraComprobante' && field !== 'puntoVenta' && field !== 'numeroComprobante' && field !== 'total') {
+        if (field !== 'id' && field !== 'fechaEmision' && field !== 'proveedorCuit' && field !== 'proveedorRazonSocial' && field !== 'codigoGasto' && field !== 'tipoComprobante' && field !== 'puntoVenta' && field !== 'numeroComprobante' && field !== 'total') {
           updated.total = 
             Number(updated.netoGeneral) + Number(updated.neto21) + Number(updated.neto10_5) + Number(updated.neto27) +
             Number(updated.iva21) + Number(updated.iva10_5) + Number(updated.iva27) +
@@ -175,11 +173,17 @@ export default function ImportarGastos() {
       return;
     }
 
+    const payload = validRows.map(r => ({
+      ...r,
+      tipoComprobante: r.tipoComprobante.replace(/ [ABC]$/, ''),
+      letraComprobante: r.tipoComprobante.match(/ ([ABC])$/) ? r.tipoComprobante.slice(-1) : ''
+    }));
+
     try {
       const res = await fetch('/api/administracion/gastos/batch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(validRows)
+        body: JSON.stringify(payload)
       });
 
       if (!res.ok) {
@@ -278,8 +282,7 @@ export default function ImportarGastos() {
                       <th className={`${thClass} text-center w-[100px]`}>CUIT</th>
                       <th className={`${thClass} text-left w-[220px]`}>Razón Social</th>
                       <th className={`${thClass} text-center w-[80px]`}>Cod. Gasto</th>
-                      <th className={`${thClass} text-center w-[90px]`}>Tipo</th>
-                      <th className={`${thClass} text-center w-[50px]`}>Letra</th>
+                      <th className={`${thClass} text-center w-[110px]`}>Tipo</th>
                       <th className={`${thClass} text-center w-[90px]`}>Punto Venta</th>
                       <th className={`${thClass} text-center w-[80px]`}>Número</th>
                       <th className={`${thClass} text-center w-[80px]`}>Neto Gral</th>
@@ -314,10 +317,17 @@ export default function ImportarGastos() {
                           <input type="text" value={row.codigoGasto} onChange={(e) => updateRow(row.id, 'codigoGasto', e.target.value)} className={`${inputClass} text-center uppercase font-mono`} placeholder="Cod" />
                         </td>
                         <td className="p-0.5 align-top">
-                          <input type="text" value={row.tipoComprobante} onChange={(e) => updateRow(row.id, 'tipoComprobante', e.target.value)} className={`${inputClass} text-center`} placeholder="Tipo" />
-                        </td>
-                        <td className="p-0.5 align-top">
-                          <input type="text" value={row.letraComprobante} onChange={(e) => updateRow(row.id, 'letraComprobante', e.target.value)} className={`${inputClass} text-center font-bold`} placeholder="L" />
+                          <select 
+                            value={row.tipoComprobante} 
+                            onChange={(e) => updateRow(row.id, 'tipoComprobante', e.target.value)} 
+                            className={`${inputClass} text-center cursor-pointer`}
+                          >
+                            <option value="Factura A">Factura A</option>
+                            <option value="Factura B">Factura B</option>
+                            <option value="Factura C">Factura C</option>
+                            <option value="Nota de Crédito">Nota de Crédito</option>
+                            <option value="Ticket">Ticket</option>
+                          </select>
                         </td>
                         <td className="p-0.5 align-top">
                           <input type="text" value={row.puntoVenta} onChange={(e) => updateRow(row.id, 'puntoVenta', e.target.value)} className={`${inputClass} text-center font-mono`} placeholder="PV" />
