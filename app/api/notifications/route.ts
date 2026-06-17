@@ -39,7 +39,13 @@ export async function GET(req: Request) {
             take: 50 // Limit to recent 50
         });
 
-        return NextResponse.json(notifications);
+        return NextResponse.json(notifications, {
+            headers: {
+                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0',
+            }
+        });
     } catch (error) {
         console.error('Error fetching notifications:', error);
         return NextResponse.json({ error: 'Error del servidor' }, { status: 500 });

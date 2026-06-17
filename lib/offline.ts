@@ -115,6 +115,14 @@ export async function safeApiRequest(
   // ----------- ONLINE PATH -----------
   if (typeof navigator !== 'undefined' && navigator.onLine) {
     try {
+      // Force no-cache for GET requests to prevent stale data reappearing
+      if (method === 'GET') {
+        options.cache = 'no-store';
+        // Append a timestamp to completely bypass browser/Next.js caching
+        const separator = endpoint.includes('?') ? '&' : '?';
+        endpoint = `${endpoint}${separator}_t=${Date.now()}`;
+      }
+
       const response = await fetch(endpoint, options);
 
       // Cache GET responses on success
@@ -123,7 +131,9 @@ export async function safeApiRequest(
           const clone = response.clone();
           const data = await clone.json();
           const db = await getDB();
-          await db.put('cachedData', { url: endpoint, data, timestamp: Date.now() });
+          // Remove the _t query param for cache key
+          const cacheKey = endpoint.split('_t=')[0].replace(/[?&]$/, '');
+          await db.put('cachedData', { url: cacheKey, data, timestamp: Date.now() });
         } catch { /* silently fail cache write */ }
       }
 
@@ -131,7 +141,9 @@ export async function safeApiRequest(
     } catch (error) {
       console.warn(`[SafeAPI] Fetch failed for ${endpoint}. Checking if it's a network error:`, error);
       // If fetch explicitly fails (network error), fallback to offline
-      return handleOfflineRequest(endpoint, method, options);
+      // Clean endpoint for offline queue/cache key
+      const cleanEndpoint = endpoint.split('_t=')[0].replace(/[?&]$/, '');
+      return handleOfflineRequest(cleanEndpoint, method, options);
     }
   }
 

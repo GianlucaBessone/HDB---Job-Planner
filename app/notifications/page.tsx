@@ -62,6 +62,7 @@ function NotificationsContent() {
             if (res.ok) {
                 setNotifications(prev => prev.filter(n => !idsToClear.includes(n.id)));
                 showToast('Notificaciones de la pestaña eliminadas', 'success');
+                window.dispatchEvent(new Event('notifications-updated'));
             }
         } catch (error) {
             showToast('Error al limpiar notificaciones', 'error');
@@ -136,6 +137,7 @@ function NotificationsContent() {
             if (res.ok) {
                 setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: !currentReadStatus } : n));
                 showToast(!currentReadStatus ? 'Marcada como leída' : 'Marcada como no leída', 'success');
+                window.dispatchEvent(new Event('notifications-updated'));
             }
         } catch (error) {
             showToast('Error al actualizar notificación', 'error');
@@ -150,6 +152,7 @@ function NotificationsContent() {
             if (res.ok) {
                 setNotifications(prev => prev.filter(n => n.id !== id));
                 showToast('Notificación eliminada', 'success');
+                window.dispatchEvent(new Event('notifications-updated'));
             }
         } catch (error) {
             showToast('Error al eliminar notificación', 'error');

@@ -52,11 +52,15 @@ export default function NotificationsDropdown({ user }: { user: any }) {
         const interval = setInterval(() => fetchNotifications(true), 10000); // Poll every 10 seconds
 
         const handleFocus = () => fetchNotifications(true);
+        const handleForceUpdate = () => fetchNotifications(false);
+        
         window.addEventListener('focus', handleFocus);
+        window.addEventListener('notifications-updated', handleForceUpdate);
 
         return () => {
             clearInterval(interval);
             window.removeEventListener('focus', handleFocus);
+            window.removeEventListener('notifications-updated', handleForceUpdate);
         };
     }, [user?.id, user?.role]);
 
