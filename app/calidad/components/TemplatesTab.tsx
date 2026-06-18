@@ -332,9 +332,10 @@ export default function TemplatesTab({ user }: { user: any }) {
         proceedWithSave(signatureModal.bumpVersion, signatureData, signatureModal.reason);
     };
 
+    const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
     const filteredTemplates = templates.filter(t => 
-        t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (t.code && t.code.toLowerCase().includes(searchQuery.toLowerCase()))
+        normalize(t.name).includes(normalize(searchQuery)) ||
+        normalize(t.code).includes(normalize(searchQuery))
     );
 
     return (

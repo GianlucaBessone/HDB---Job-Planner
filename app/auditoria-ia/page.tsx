@@ -125,13 +125,14 @@ export default function AiAuditPage() {
 
     // Filtered logs based on search term (name, role, or error message)
     const filteredLogs = logs.filter(log => {
-        const term = searchTerm.toLowerCase();
+        const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const term = normalize(searchTerm);
         if (!term) return true;
         return (
-            (log.userName || '').toLowerCase().includes(term) ||
-            (log.userRole || '').toLowerCase().includes(term) ||
-            (log.action || '').toLowerCase().includes(term) ||
-            (log.errorMessage || '').toLowerCase().includes(term)
+            normalize(log.userName || '').includes(term) ||
+            normalize(log.userRole || '').includes(term) ||
+            normalize(log.action || '').includes(term) ||
+            normalize(log.errorMessage || '').includes(term)
         );
     });
 

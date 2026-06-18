@@ -135,10 +135,11 @@ export default function MyProjectsPage() {
     const filteredProjectMaterials = useMemo(() => {
         return projectMaterials.filter(m => {
             // Apply Search
-            const searchLower = materialSearch.toLowerCase();
+            const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+            const searchLower = normalize(materialSearch);
             const matchesSearch = !materialSearch || 
-                                m.nombre.toLowerCase().includes(searchLower) || 
-                                (m.codigo && m.codigo.toLowerCase().includes(searchLower));
+                                normalize(m.nombre).includes(searchLower) || 
+                                (m.codigo && normalize(m.codigo).includes(searchLower));
             
             if (!matchesSearch) return false;
 
@@ -752,7 +753,7 @@ export default function MyProjectsPage() {
         const term = normalize(searchTerm);
         return normalize(p.nombre).includes(term) ||
                normalize(p.client?.nombre || '').includes(term) ||
-               (p.codigoProyecto || '').toLowerCase().includes(searchTerm.toLowerCase());
+               normalize(p.codigoProyecto || '').includes(term);
     });
 
     const getProjectProgress = (p: Project) => {

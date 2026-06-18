@@ -247,10 +247,12 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
         }
     };
 
-    const filteredProjects = projects.filter(p => 
-        p.nombre.toLowerCase().includes(projectSearch.toLowerCase()) ||
-        (p.codigoProyecto && p.codigoProyecto.toLowerCase().includes(projectSearch.toLowerCase()))
-    );
+    const filteredProjects = projects.filter(p => {
+        const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const term = normalize(projectSearch);
+        return normalize(p.nombre).includes(term) ||
+        (p.codigoProyecto && normalize(p.codigoProyecto).includes(term))
+    });
 
     const selectedProjectName = projects.find(p => p.id === selectedProjectId)?.nombre || 'Seleccionar Proyecto...';
 

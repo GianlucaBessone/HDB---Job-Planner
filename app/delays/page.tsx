@@ -214,12 +214,13 @@ export default function DelaysPage() {
 
     const filteredDelays = useMemo(() => {
         return delays.filter(d => {
-            const search = searchTerm.toLowerCase();
+            const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+            const search = normalize(searchTerm);
             const matchesSearch = !searchTerm ||
-                d.project.nombre.toLowerCase().includes(search) ||
-                d.motivo.toLowerCase().includes(search) ||
-                d.area.toLowerCase().includes(search) ||
-                d.operador.toLowerCase().includes(search);
+                normalize(d.project.nombre).includes(search) ||
+                normalize(d.motivo).includes(search) ||
+                normalize(d.area).includes(search) ||
+                normalize(d.operador).includes(search);
             const matchesDateFrom = !filterDateFrom || d.fecha >= filterDateFrom;
             const matchesDateTo = !filterDateTo || d.fecha <= filterDateTo;
             const matchesClient = !filterClientId || d.project.clientId === filterClientId;

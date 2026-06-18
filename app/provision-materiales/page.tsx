@@ -1196,11 +1196,12 @@ function MaterialesTable({
   const filteredMateriales = useMemo(() => {
     return materiales
       .filter((mat) => {
-        const query = searchQuery.trim().toLowerCase();
+        const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const query = normalize(searchQuery);
         const matchesSearch =
           !query ||
-          (mat.codigo && mat.codigo.toLowerCase().includes(query)) ||
-          (mat.nombre && mat.nombre.toLowerCase().includes(query));
+          normalize(mat.codigo).includes(query) ||
+          normalize(mat.nombre).includes(query);
 
         if (!matchesSearch) return false;
 

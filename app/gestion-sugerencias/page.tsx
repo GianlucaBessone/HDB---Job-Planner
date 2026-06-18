@@ -182,8 +182,10 @@ export default function GestionSugerenciasPage() {
 
     const filtered = useMemo(() => {
         return sugerencias.filter(sug => {
-            const matchesSearch = sug.titulo.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                                  sug.id.toLowerCase().includes(searchTerm.toLowerCase());
+            const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+            const term = normalize(searchTerm);
+            const matchesSearch = normalize(sug.titulo).includes(term) || 
+                                  normalize(sug.id).includes(term);
             const matchesStatus = statusFilter === 'Todos' || sug.estado === statusFilter;
             return matchesSearch && matchesStatus;
         });

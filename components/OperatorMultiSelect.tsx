@@ -24,10 +24,11 @@ export default function OperatorMultiSelect({ operators, selectedIds, onChange, 
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [wrapperRef]);
 
+    const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
     const filteredOperators = operators.filter(op => 
         op.activo !== false && 
         !selectedIds.includes(op.id) &&
-        op.nombreCompleto.toLowerCase().includes(search.toLowerCase())
+        normalize(op.nombreCompleto).includes(normalize(search))
     ).slice(0, 5);
 
     useEffect(() => {

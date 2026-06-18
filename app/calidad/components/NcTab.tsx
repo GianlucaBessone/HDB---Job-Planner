@@ -44,9 +44,10 @@ export default function NcTab({ user }: { user: any }) {
         { id: 'Cerrada', title: 'Cerrada' }
     ];
 
+    const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
     const filteredNcs = ncs.filter(nc => 
-        (nc.codigoNC?.toLowerCase() || '').includes(search.toLowerCase()) || 
-        (nc.descripcion?.toLowerCase() || '').includes(search.toLowerCase())
+        normalize(nc.codigoNC).includes(normalize(search)) || 
+        normalize(nc.descripcion).includes(normalize(search))
     );
 
     return (

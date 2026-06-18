@@ -166,11 +166,12 @@ export default function InventarioPage() {
     const [searchMode, setSearchMode] = useState<'codigo' | 'nombre'>('codigo');
 
     const filtered = useMemo(() => {
-        const term = searchTerm.toLowerCase().trim();
+        const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const term = normalize(searchTerm).trim();
         if (!term) return materiales.slice(0, 100);
 
         if (searchMode === 'nombre') {
-            return materiales.filter(m => m.nombre.toLowerCase().includes(term)).slice(0, 100);
+            return materiales.filter(m => normalize(m.nombre).includes(term)).slice(0, 100);
         } else {
             const termNoZeros = term.replace(/^0+/, '');
             

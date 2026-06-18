@@ -44,11 +44,12 @@ export default function HelpDashboardClient({ categories, popularArticles }: Hel
   );
 
   // Filter articles based on query
+  const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
   const filteredArticles = searchQuery.trim().length >= 2
     ? allArticles.filter(art => 
-        art.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        art.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (art.categoryTitle && art.categoryTitle.toLowerCase().includes(searchQuery.toLowerCase()))
+        normalize(art.title).includes(normalize(searchQuery)) ||
+        normalize(art.description).includes(normalize(searchQuery)) ||
+        (art.categoryTitle && normalize(art.categoryTitle).includes(normalize(searchQuery)))
       )
     : [];
 

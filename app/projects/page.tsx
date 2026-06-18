@@ -337,7 +337,7 @@ function ProjectsContent() {
             if (searchTerm) {
                 const term = normalize(searchTerm);
                 const matchName = normalize(p.nombre).includes(term);
-                const matchCode = (p.codigoProyecto || '').toLowerCase().includes(searchTerm.toLowerCase());
+                const matchCode = normalize(p.codigoProyecto || '').includes(term);
                 const matchClient = normalize(p.cliente || p.client?.nombre || '').includes(term);
                 const matchResponsable = normalize(p.responsable || p.responsableUser?.nombreCompleto || '').includes(term);
                 

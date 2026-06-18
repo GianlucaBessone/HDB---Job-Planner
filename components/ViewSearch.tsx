@@ -23,12 +23,13 @@ export default function ViewSearch({ views, role }: ViewSearchProps) {
     const filtered = views.filter(v => {
         if (!v.roles.includes(role)) return false;
         if (!query.trim()) return true;
-        const q = query.toLowerCase();
+        const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        const q = normalize(query);
         return (
-            v.label.toLowerCase().includes(q) ||
-            v.description.toLowerCase().includes(q) ||
-            v.key.toLowerCase().includes(q) ||
-            (DEFAULT_SECTIONS.find(s => s.key === v.section)?.label || '').toLowerCase().includes(q)
+            normalize(v.label).includes(q) ||
+            normalize(v.description).includes(q) ||
+            normalize(v.key).includes(q) ||
+            normalize(DEFAULT_SECTIONS.find(s => s.key === v.section)?.label || '').includes(q)
         );
     });
 

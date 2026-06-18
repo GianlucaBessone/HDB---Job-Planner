@@ -52,9 +52,10 @@ export default function CapaTab({ user }: { user: any }) {
         { id: 'Cerrada', title: 'Cerrada' }
     ];
 
+    const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
     const filtered = acciones.filter(a => 
-        (a.codigoAccion?.toLowerCase() || '').includes(search.toLowerCase()) || 
-        (a.descripcion?.toLowerCase() || '').includes(search.toLowerCase())
+        normalize(a.codigoAccion).includes(normalize(search)) || 
+        normalize(a.descripcion).includes(normalize(search))
     );
 
     return (

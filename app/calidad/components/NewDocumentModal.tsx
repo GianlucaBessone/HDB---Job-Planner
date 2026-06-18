@@ -341,9 +341,10 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
     };
 
     // Filter documents for reference helper search
+    const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
     const filteredDocs = refSearch.trim() === '' ? [] : allDocs.filter(d => 
-        d.codigoDocumental.toLowerCase().includes(refSearch.toLowerCase()) ||
-        d.titulo.toLowerCase().includes(refSearch.toLowerCase())
+        normalize(d.codigoDocumental).includes(normalize(refSearch)) ||
+        normalize(d.titulo).includes(normalize(refSearch))
     );
 
     return (

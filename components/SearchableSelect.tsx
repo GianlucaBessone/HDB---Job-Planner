@@ -49,8 +49,10 @@ export default function SearchableSelect({
 
     const selectedOption = options.find(opt => opt.id === value);
 
+    const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
     const filteredOptions = options.filter(opt =>
-        opt.label.toLowerCase().includes(searchTerm.toLowerCase())
+        normalize(opt.label).includes(normalize(searchTerm))
     );
 
     // ── Close on outside click ────────────────────────────────────────────────

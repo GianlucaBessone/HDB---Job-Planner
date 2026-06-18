@@ -1101,10 +1101,12 @@ export default function IdeasSugerenciasReclamosPage() {
                         <>
                             {(() => {
                                 const filtered = sugerencias.filter(sug => {
+                                    const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+                                    const term = normalize(searchTerm);
                                     const matchesSearch = 
-                                        sug.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                        sug.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                        sug.id.toLowerCase().includes(searchTerm.toLowerCase());
+                                        normalize(sug.titulo).includes(term) ||
+                                        normalize(sug.descripcion).includes(term) ||
+                                        normalize(sug.id).includes(term);
                                     
                                     const matchesStatus = 
                                         statusFilter === 'Todos' || 

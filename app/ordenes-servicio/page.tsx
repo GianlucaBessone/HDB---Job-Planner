@@ -706,8 +706,8 @@ function OrdenesServicioContent() {
         const matchSearch = !searchTerm ||
             normalize(os.project.nombre).includes(term) ||
             normalize(os.project.client?.nombre || os.project.cliente || '').includes(term) ||
-            ((os as any).codigoOS || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-            ((os as any).project.codigoProyecto || '').toLowerCase().includes(searchTerm.toLowerCase());
+            normalize((os as any).codigoOS || '').includes(term) ||
+            normalize((os as any).project.codigoProyecto || '').includes(term);
         const matchEstado = filterEstado === 'all' || os.estado === filterEstado;
         const isHistory = os.estado === 'pagada' || os.estado === 'cancelada';
         const tabMatch = activeTab === 'historial' ? isHistory : !isHistory;

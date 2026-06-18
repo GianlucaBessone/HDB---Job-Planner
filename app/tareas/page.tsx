@@ -209,12 +209,13 @@ export default function TareasPage() {
     const filteredTareas = useMemo(() => {
         return tareas.filter(t => {
             if (search) {
-                const q = search.toLowerCase();
-                const match = t.titulo.toLowerCase().includes(q) ||
-                    t.descripcion?.toLowerCase().includes(q) ||
-                    t.creadorNombre.toLowerCase().includes(q) ||
-                    t.project?.nombre?.toLowerCase().includes(q) ||
-                    t.involucrados.some(inv => inv.operator.nombreCompleto.toLowerCase().includes(q));
+                const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+                const q = normalize(search);
+                const match = normalize(t.titulo).includes(q) ||
+                    (t.descripcion && normalize(t.descripcion).includes(q)) ||
+                    normalize(t.creadorNombre).includes(q) ||
+                    (t.project?.nombre && normalize(t.project.nombre).includes(q)) ||
+                    t.involucrados.some(inv => normalize(inv.operator.nombreCompleto).includes(q));
                 if (!match) return false;
             }
             if (filterPrioridad && t.prioridad !== filterPrioridad) return false;

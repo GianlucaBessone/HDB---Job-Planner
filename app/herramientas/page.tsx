@@ -351,13 +351,14 @@ function HerramientasTab({ user }: { user: any }) {
     };
 
     const filteredTools = useMemo(() => {
+        const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
         let result = tools;
         if (searchQuery) {
-            const q = searchQuery.toLowerCase();
+            const q = normalize(searchQuery);
             result = result.filter(t =>
-                t.nombre.toLowerCase().includes(q) ||
-                t.id.toLowerCase().includes(q) ||
-                (t.marca && t.marca.toLowerCase().includes(q))
+                normalize(t.nombre).includes(q) ||
+                normalize(t.id).includes(q) ||
+                (t.marca && normalize(t.marca).includes(q))
             );
         }
         if (filterTipo) result = result.filter(t => t.tipo === filterTipo);
