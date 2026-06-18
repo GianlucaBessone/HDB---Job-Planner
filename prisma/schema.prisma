@@ -347,6 +347,7 @@ model OrdenServicio {
   cobroTotalFinal          Float?
   cobroObservaciones       String?   @db.Text
   cobroCondicionPago       String?
+  cobroOtrosConceptos      Json?     // [{ nombre: string, precio: number }]
   cobroFechaGeneracion     DateTime?
 
   // QMS Integration

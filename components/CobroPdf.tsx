@@ -70,7 +70,13 @@ export function CobroPdf({ os, logoUrl }: CobroPdfProps) {
     const subtotalMo = subtotalMoNormal + subtotalMoExtras;
 
     const subtotalMat = os.materiales.reduce((acc: number, m: any) => acc + (m.cantidad * (m.precioUnitario || 0)), 0);
-    const subtotalBruto = subtotalMo + subtotalMat;
+    
+    let subtotalOtros = 0;
+    if (Array.isArray(os.cobroOtrosConceptos)) {
+        subtotalOtros = os.cobroOtrosConceptos.reduce((acc: number, oc: any) => acc + (oc.precio || 0), 0);
+    }
+    
+    const subtotalBruto = subtotalMo + subtotalMat + subtotalOtros;
     
     const descuentoPorcentaje = os.cobroDescuentoPorcentaje || 0;
     const montoDescuento = subtotalBruto * (descuentoPorcentaje / 100);
@@ -152,6 +158,23 @@ export function CobroPdf({ os, logoUrl }: CobroPdfProps) {
                                 <Text style={[S.tdCell, { flex: 1, textAlign: 'right' }]}>{m.cantidad}</Text>
                                 <Text style={[S.tdCell, { flex: 2, textAlign: 'right' }]}>{formatARS(m.precioUnitario)}</Text>
                                 <Text style={[S.tdCell, S.tdBold, { flex: 2, textAlign: 'right' }]}>{formatARS(m.cantidad * (m.precioUnitario || 0))}</Text>
+                            </View>
+                        ))}
+                    </View>
+                )}
+
+                {/* ── Gastos Operativos ── */}
+                {Array.isArray(os.cobroOtrosConceptos) && os.cobroOtrosConceptos.length > 0 && (
+                    <View style={S.section}>
+                        <Text style={S.sectionTitle}>Gastos Operativos</Text>
+                        <View style={S.tableHeader}>
+                            <Text style={[S.thCell, { flex: 5 }]}>Concepto</Text>
+                            <Text style={[S.thCell, { flex: 2, textAlign: 'right' }]}>Subtotal</Text>
+                        </View>
+                        {os.cobroOtrosConceptos.map((concepto: any, i: number) => (
+                            <View key={i} style={S.tableRow}>
+                                <Text style={[S.tdCell, { flex: 5 }]}>{concepto.nombre}</Text>
+                                <Text style={[S.tdCell, S.tdBold, { flex: 2, textAlign: 'right' }]}>{formatARS(concepto.precio)}</Text>
                             </View>
                         ))}
                     </View>

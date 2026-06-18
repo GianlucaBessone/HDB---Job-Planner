@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, FileText, Download, Calculator, Percent, Save, Loader2, FileSpreadsheet } from 'lucide-react';
+import { X, FileText, Download, Calculator, Percent, Save, Loader2, FileSpreadsheet, Plus, Trash2 } from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
 import * as XLSX from 'xlsx';
@@ -23,6 +23,9 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
     const [ivaAplicado, setIvaAplicado] = useState<boolean>(os.cobroAplicarIva ?? true);
     const [observaciones, setObservaciones] = useState(os.cobroObservaciones || '');
     const [condicionPago, setCondicionPago] = useState(os.cobroCondicionPago || '');
+    const [otrosConceptos, setOtrosConceptos] = useState<{ id: string, nombre: string, precio: number | string }[]>(
+        Array.isArray(os.cobroOtrosConceptos) ? os.cobroOtrosConceptos.map((c: any) => ({ ...c, id: Math.random().toString() })) : []
+    );
     const [loading, setLoading] = useState(false);
 
     const formatARS = (num: number) => num.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -85,7 +88,8 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
     const parsedValorMo = safeNum(valorMo);
     const subtotalMo = (horasNormales + (horasExtras * 2)) * parsedValorMo;
     const subtotalMat = materiales.reduce((acc, m) => acc + (m.cantidad * safeNum(m.precioUnitario)), 0);
-    const subtotalBruto = subtotalMo + subtotalMat;
+    const subtotalOtros = otrosConceptos.reduce((acc, oc) => acc + safeNum(oc.precio), 0);
+    const subtotalBruto = subtotalMo + subtotalMat + subtotalOtros;
     
     const parsedDescuento = safeNum(descuentoPorcentaje);
     const montoDescuento = descuentoAplicado ? (subtotalBruto * (parsedDescuento / 100)) : 0;
@@ -139,7 +143,24 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
 
         aoa.push(
             ['Subtotal Materiales', '', '', '', currencyCell(subtotalMat)],
-            [],
+            []
+        );
+
+        if (otrosConceptos.length > 0) {
+            aoa.push(['GASTOS OPERATIVOS']);
+            aoa.push(['Concepto', '', '', '', 'Subtotal']);
+            otrosConceptos.forEach(oc => {
+                aoa.push([
+                    oc.nombre || 'Concepto sin nombre', '', '', '', currencyCell(safeNum(oc.precio))
+                ]);
+            });
+            aoa.push(
+                ['Subtotal Gastos Operativos', '', '', '', currencyCell(subtotalOtros)],
+                []
+            );
+        }
+
+        aoa.push(
             ['RESUMEN DE TOTALES'],
             ['Subtotal Bruto', '', '', '', currencyCell(subtotalBruto)],
             [`Descuento (${descuentoAplicado ? parsedDescuento : 0}%)`, '', '', '', currencyCell(-montoDescuento)],
@@ -169,6 +190,7 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
             return showToast('Faltan cargar precios a los materiales', 'error');
         }
         if (materiales.some(m => safeNum(m.precioUnitario) < 0)) return showToast('Precios de materiales inválidos', 'error');
+        if (otrosConceptos.some(oc => !oc.nombre.trim() || oc.precio === '' || safeNum(oc.precio) < 0)) return showToast('Conceptos adicionales incompletos o con precio inválido', 'error');
         if (parsedValorMo < 0) return showToast('Valor MO inválido', 'error');
 
         setLoading(true);
@@ -180,6 +202,7 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
                 totalFinal,
                 observaciones,
                 condicionPago,
+                otrosConceptos: otrosConceptos.map(oc => ({ nombre: oc.nombre, precio: safeNum(oc.precio) })),
                 materiales: materiales.map(m => ({ id: m.id, precioUnitario: safeNum(m.precioUnitario) }))
             };
 
@@ -287,6 +310,70 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
                                     </div>
                                 </div>
                             )}
+
+                            {/* Gastos Operativos Section */}
+                            <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+                                <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                                    <h4 className="font-black text-sm text-slate-800 dark:text-slate-100 uppercase tracking-widest">
+                                        Gastos Operativos
+                                    </h4>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setOtrosConceptos(prev => [...prev, { id: Math.random().toString(), nombre: '', precio: '' }])}
+                                        className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 rounded-lg flex items-center gap-1.5 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
+                                    >
+                                        <Plus className="w-3.5 h-3.5" /> Agregar Concepto
+                                    </button>
+                                </div>
+                                
+                                {otrosConceptos.length > 0 ? (
+                                    <div className="space-y-4">
+                                        {otrosConceptos.map((concepto, index) => (
+                                            <div key={concepto.id} className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-start sm:items-center text-sm border-b border-slate-50 pb-4 last:border-0 last:pb-0">
+                                                <div className="flex-1 w-full">
+                                                    <input
+                                                        type="text"
+                                                        value={concepto.nombre}
+                                                        onChange={e => setOtrosConceptos(prev => prev.map(c => c.id === concepto.id ? { ...c, nombre: e.target.value } : c))}
+                                                        className="w-full border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500 transition-colors"
+                                                        placeholder="Ej: Viáticos, Combustible, etc..."
+                                                    />
+                                                </div>
+                                                <div className="flex items-center gap-3 w-full sm:w-auto shrink-0 justify-between sm:justify-end">
+                                                    <div className="relative w-28">
+                                                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold">$</span>
+                                                        <input 
+                                                            type="number" min="0" step="1"
+                                                            value={concepto.precio}
+                                                            onChange={e => setOtrosConceptos(prev => prev.map(c => c.id === concepto.id ? { ...c, precio: e.target.value } : c))}
+                                                            className="w-full border border-slate-200 dark:border-slate-700 rounded-lg pl-6 pr-2 py-1.5 font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500 transition-colors"
+                                                            placeholder="0.00"
+                                                        />
+                                                    </div>
+                                                    <button 
+                                                        type="button"
+                                                        onClick={() => setOtrosConceptos(prev => prev.filter(c => c.id !== concepto.id))}
+                                                        className="p-1.5 text-red-400 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-4 text-slate-400 text-xs font-bold">
+                                        No hay conceptos adicionales
+                                    </div>
+                                )}
+                                
+                                {otrosConceptos.length > 0 && (
+                                    <div className="bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 rounded-xl p-3 flex justify-between items-center px-4 mt-2">
+                                        <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Subtotal Otros Gastos</span>
+                                        <span className="font-black text-slate-700 dark:text-slate-200 text-lg">${formatARS(subtotalOtros)}</span>
+                                    </div>
+                                )}
+                            </div>
 
                             {/* Additional Options */}
                             <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">

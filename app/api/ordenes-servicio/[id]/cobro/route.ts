@@ -13,6 +13,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
             totalFinal,
             observaciones,
             condicionPago,
+            otrosConceptos, // [{ nombre: string, precio: number }]
             materiales // Array de { id: string, precioUnitario: number }
         } = body;
 
@@ -27,6 +28,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
                 cobroTotalFinal: totalFinal,
                 cobroObservaciones: observaciones,
                 cobroCondicionPago: condicionPago,
+                cobroOtrosConceptos: otrosConceptos || [],
                 cobroFechaGeneracion: new Date(),
                 estado: 'cobrada'
             }
