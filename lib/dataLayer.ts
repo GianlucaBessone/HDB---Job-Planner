@@ -7,7 +7,28 @@ export { prisma };
 
 export const dataLayer = {
     // Projects
+    async autoUpdateProjectStatuses() {
+        const today = new Date().toISOString().split('T')[0];
+        try {
+            await prisma.project.updateMany({
+                where: {
+                    estado: { notIn: ['finalizado', 'atrasado', 'cancelado'] },
+                    fechaFin: {
+                        not: null,
+                        not: '',
+                        lt: today
+                    }
+                },
+                data: {
+                    estado: 'atrasado'
+                }
+            });
+        } catch (error) {
+            console.error('Error auto-updating project statuses:', error);
+        }
+    },
     async getProjectById(id: string) {
+        await this.autoUpdateProjectStatuses();
         return await prisma.project.findUnique({
             where: { id },
             include: {
@@ -24,6 +45,7 @@ export const dataLayer = {
         });
     },
     async getProjects() {
+        await this.autoUpdateProjectStatuses();
         return await prisma.project.findMany({
             include: {
                 client: true,

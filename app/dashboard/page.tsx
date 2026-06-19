@@ -1,98 +1,52 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-    LayoutDashboard,
-    Briefcase,
-    Users,
-    Clock,
-    BarChart3,
-    PieChart,
-    TrendingUp,
-    AlertTriangle,
-    CheckCircle2,
-    Calendar,
-    ArrowUpRight,
-    User2,
-    Building2,
-    Info,
-    TrendingDown,
-    Activity,
-    Target,
-    Timer,
-    SlidersHorizontal,
-    Star,
-    MessageSquare,
-    Smile,
-    TrendingUp as TrendUp,
-    Award
-} from 'lucide-react';
+import { LayoutDashboard, Target, TrendingDown, TrendingUp, Activity, Briefcase, Users, PieChart, BarChart3, AlertTriangle, Building2, Download, Calendar, Info, Clock, Timer, SlidersHorizontal, Star, MessageSquare, Smile, Award, TrendingUp as TrendUp, CheckCircle2, ArrowUpRight, User2, ClipboardList } from 'lucide-react';
+import useSWR from 'swr';
 import SearchableSelect from '@/components/SearchableSelect';
 import CodeBadge from '@/components/CodeBadge';
 import { safeApiRequest } from '@/lib/offline';
 import OperadoresTab from './OperadoresTab';
-import { TrendChart, BasicBarChart, DonutChart, DivergentBarChart, TargetBarChart, MultiTrendChart } from './EChartsComponents';
+import { TrendChart, BasicBarChart, TargetBarChart, MultiTrendChart, DivergentBarChart, DonutChart } from './EChartsComponents';
+import { useDashboardAggregation } from './useDashboardAggregation';
+import { useOrdenesServicioAggregation } from './useOrdenesServicioAggregation';
+import OrdenesServicioTab from './OrdenesServicioTab';
 
-interface DashboardData {
-    kpis: {
-        totalProjects: number;
-        activeProjects: number;
-        activeOperatorsCount: number;
-        overallEfficiency: number;
-        avgIPT: number;
-        totalSavings: number;
-        variation: number;
-    };
-    statusDistribution: {
-        por_hacer: number;
-        planificado: number;
-        activo: number;
-        en_riesgo: number;
-        atrasado: number;
-        finalizado: number;
-    };
-    topClients: { name: string; count: number }[];
-    topOperators: { name: string; count: number }[];
-    criticalProjects: { nombre: string; percentage: number; estado: string; codigoProyecto?: string }[];
-    performance: {
-        projects: {
-            id: string;
-            nombre: string;
-            ipt: number;
-            savings: number;
-            variation: number;
-            classification: string;
-            codigoProyecto?: string;
-        }[];
-        classification: {
-            eficiente: number;
-            exacto: number;
-            desvio: number;
-        };
-        trend: { label: string; ipt: number }[];
-    };
-    delays: {
-        totalHours: number;
-        impactPercent: number;
-        totalEvents: number;
-        topAreas: { name: string; hours: number }[];
-        reasons: { name: string; value: number }[];
-        trend: { label: string; hours: number }[];
-    };
-}
+const fetcher = (url: string) => safeApiRequest(url).then(res => res.json());
 
 export default function DashboardPage() {
-    const [data, setData] = useState<DashboardData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [clients, setClients] = useState<{ id: string; nombre: string }[]>([]);
-    const [activeTab, setActiveTab] = useState<'proyectos' | 'servicios' | 'operadores'>('proyectos');
+    const [activeTab, setActiveTab] = useState<'proyectos' | 'servicios' | 'operadores' | 'ordenes'>('proyectos');
 
     // Filter States
-    const [filterFrom, setFilterFrom] = useState('');
-    const [filterTo, setFilterTo] = useState('');
-    const [filterClientId, setFilterClientId] = useState('');
+    const [filterFrom, setFilterFrom] = useState<string>('');
+    const [filterTo, setFilterTo] = useState<string>('');
+    const [filterClientId, setFilterClientId] = useState<string>('');
     const [filterStatus, setFilterStatus] = useState('active');
+    
+    // New Advanced Cross-Filters
+    const [filterProjectId, setFilterProjectId] = useState<string>('');
+    const [filterClassification, setFilterClassification] = useState<string>('');
+    const [filterOperator, setFilterOperator] = useState<string>('');
+    const [filterArea, setFilterArea] = useState<string>('');
+
+    const filters = useMemo(() => ({
+        filterStatus, filterClientId, filterFrom, filterTo,
+        filterProjectId, filterClassification, filterOperator, filterArea
+    }), [filterStatus, filterClientId, filterFrom, filterTo, filterProjectId, filterClassification, filterOperator, filterArea]);
+
+    const { data: clients = [] } = useSWR<{ id: string; nombre: string; }[]>('/api/clients', fetcher);
+    
+    // Fetch RAW data once, then aggregate instantly
+    const { data: rawData, isLoading: rawLoading } = useSWR('/api/dashboard/raw', fetcher, { refreshInterval: 60000 });
+    const data = useDashboardAggregation(rawData, filters);
+    const ordenesData = useOrdenesServicioAggregation(rawData, filters);
+
+    useEffect(() => {
+        if (rawData) setIsLoading(false);
+    }, [rawData]);
+
     const router = useRouter();
 
     useEffect(() => {
@@ -105,37 +59,55 @@ export default function DashboardPage() {
         }
     }, [router]);
 
-    useEffect(() => {
-        safeApiRequest('/api/clients')
-            .then(res => res.json())
-            .then(setClients)
-            .catch(console.error);
-    }, []);
-
-    useEffect(() => {
-        loadDashboardData();
-    }, [filterFrom, filterTo, filterClientId, filterStatus]);
-
-    const loadDashboardData = () => {
-        setIsLoading(true);
-        const params = new URLSearchParams();
-        if (filterFrom) params.append('from', filterFrom);
-        if (filterTo) params.append('to', filterTo);
-        if (filterClientId) params.append('clientId', filterClientId);
-        if (filterStatus) params.append('status', filterStatus);
-
-        safeApiRequest(`/api/dashboard?${params.toString()}`)
-            .then(res => res.json())
-            .then(setData)
-            .catch(console.error)
-            .finally(() => setIsLoading(false));
+    const handleChartClick = (type: string, name: string) => {
+        if (type === 'status') {
+            let mappedStatus = name.toLowerCase().replace(' ', '_');
+            if (mappedStatus === 'atrasados') mappedStatus = 'atrasado';
+            if (mappedStatus === 'activos') mappedStatus = 'activo';
+            if (mappedStatus === 'finalizados') mappedStatus = 'finalizado';
+            setFilterStatus(mappedStatus === filterStatus ? 'all' : mappedStatus);
+        } else if (type === 'client') {
+            const clientMatch = clients.find(c => c.nombre === name);
+            if (clientMatch) {
+                setFilterClientId(clientMatch.id === filterClientId ? '' : clientMatch.id);
+            }
+        } else if (type === 'classification') {
+            let mapped = name.toLowerCase();
+            if (mapped === 'eficientes') mapped = 'eficiente';
+            if (mapped === 'exactos') mapped = 'exacto';
+            if (mapped === 'con desvío' || mapped === 'con desvio') mapped = 'desvio';
+            setFilterClassification(mapped === filterClassification ? '' : mapped);
+        } else if (type === 'project') {
+            let pId = name;
+            const match = rawData?.projects.find((p:any) => p.nombre === name || p.codigoProyecto === name || (p.codigoProyecto && name.includes(p.codigoProyecto)));
+            if (match) pId = match.id;
+            setFilterProjectId(pId === filterProjectId ? '' : pId);
+        } else if (type === 'operator') {
+            setFilterOperator(name === filterOperator ? '' : name);
+        } else if (type === 'area') {
+            setFilterArea(name === filterArea ? '' : name);
+        } else if (type === 'trend_month') {
+            const from = `${name}-01`;
+            const to = `${name}-31`;
+            if (filterFrom === from && filterTo === to) {
+                setFilterFrom('');
+                setFilterTo('');
+            } else {
+                setFilterFrom(from);
+                setFilterTo(to);
+            }
+        }
     };
 
     const clearFilters = () => {
+        setFilterStatus('active');
+        setFilterClientId('');
         setFilterFrom('');
         setFilterTo('');
-        setFilterClientId('');
-        setFilterStatus('active');
+        setFilterProjectId('');
+        setFilterClassification('');
+        setFilterOperator('');
+        setFilterArea('');
     };
 
     if (isLoading && !data) {
@@ -148,9 +120,10 @@ export default function DashboardPage() {
 
     if (!data || !data.kpis) return <div className="p-8 text-center text-rose-500 font-bold">Error loading dashboard data. Please verify database connection.</div>;
 
+    const hasActiveCrossFilters = filterClientId !== '' || filterFrom !== '' || filterTo !== '' || filterProjectId !== '' || filterClassification !== '' || filterOperator !== '' || filterArea !== '' || (filterStatus !== 'all' && filterStatus !== 'active');
+
     return (
         <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
-            {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div className="space-y-1">
                     <h2 className="text-2xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
@@ -161,7 +134,6 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {/* Tab navigation */}
             <div className="flex gap-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-1.5 shadow-sm w-fit">
                 <button
                     onClick={() => setActiveTab('proyectos')}
@@ -174,6 +146,19 @@ export default function DashboardPage() {
                     <span className="flex items-center gap-2">
                         <Briefcase className="w-4 h-4" />
                         Proyectos
+                    </span>
+                </button>
+                <button
+                    onClick={() => setActiveTab('ordenes')}
+                    className={`px-5 py-2.5 rounded-xl text-sm font-black transition-all ${
+                        activeTab === 'ordenes'
+                            ? 'bg-amber-500 text-white shadow-md shadow-amber-200'
+                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80'
+                    }`}
+                >
+                    <span className="flex items-center gap-2">
+                        <ClipboardList className="w-4 h-4" />
+                        Órdenes de Trabajo
                     </span>
                 </button>
                 <button
@@ -206,16 +191,15 @@ export default function DashboardPage() {
 
             {activeTab === 'servicios' && <ServiciosTab clients={clients} />}
             {activeTab === 'operadores' && <OperadoresTab />}
-            {activeTab === 'proyectos' && <>
+            {['proyectos', 'ordenes'].includes(activeTab) && <>
 
-            {/* Advanced Filters (Requirement 2) */}
             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-[2rem] p-3 md:p-4 shadow-sm space-y-2">
                 <div className="flex items-center justify-between mb-2">
                     <h3 className="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 text-sm">
                         <SlidersHorizontal className="w-4 h-4 text-primary" />
                         Filtros de Análisis
                     </h3>
-                    {(filterFrom || filterTo || filterClientId || filterStatus !== 'active') && (
+                    {hasActiveCrossFilters && (
                         <button onClick={clearFilters} className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">
                             Limpiar Filtros
                         </button>
@@ -257,7 +241,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="space-y-1.5">
                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1">
-                            <Activity className="w-3 h-3" /> Estado <MetricTooltip def="Filtra proyectos por su estado de finalización." purpose="Permite comparar el rendimiento histórico con el operativo actual." calc="N/A" />
+                            <Activity className="w-3 h-3" /> Estado
                         </label>
                         <select
                             className="w-full h-11 md:h-9 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none cursor-pointer"
@@ -272,18 +256,25 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {/* KPI Cards Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 auto-rows-fr relative z-20">
+            {activeTab === 'ordenes' && ordenesData && (
+                <div className="mt-8">
+                    <OrdenesServicioTab data={ordenesData} />
+                </div>
+            )}
+
+            {activeTab === 'proyectos' && (
+                <>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 auto-rows-fr relative z-20">
                 <KpiCard
-                    title="Eficiencia de Tiempo (IPT)"
+                    title="Eficiencia de Tiempo (TPI)"
                     value={data.kpis.avgIPT}
                     icon={<Target className="w-6 h-6" />}
                     color="bg-primary"
                     trend="Promedio Global"
                     tooltip={{
-                        def: "El IPT compara las horas planificadas con las horas reales.",
-                        purpose: "Sirve para evaluar la calidad de la estimación y la eficiencia operativa.",
-                        calc: "Sumatoria(Horas Estimadas) / Sumatoria(Horas Consumidas). > 1 es eficiente."
+                        def: "El TPI (Time Performance Index) compara las horas planificadas con las horas reales. Un TPI > 1 indica que el proyecto fue más eficiente de lo estimado; un TPI < 1 indica que consumió más tiempo del planificado.",
+                        purpose: "Sirve para evaluar la calidad de la estimación y la eficiencia operativa de cada proyecto.",
+                        calc: "Sumatoria(Horas Estimadas) / Sumatoria(Horas Consumidas). > 1 es eficiente, = 1 es exacto, < 1 es desvío."
                     }}
                 />
                 <KpiCard
@@ -293,9 +284,9 @@ export default function DashboardPage() {
                     color={data.kpis.totalSavings >= 0 ? "bg-emerald-500" : "bg-rose-500"}
                     trend="Balance vs Estimado"
                     tooltip={{
-                        def: "Total de horas presupuestadas que no fueron consumidas.",
-                        purpose: "Mide el impacto directo en la rentabilidad y capacidad disponible.",
-                        calc: "Horas Estimadas - Horas Consumidas."
+                        def: "Diferencia total entre las horas estimadas y las horas consumidas en todos los proyectos. Positivo = se usaron menos horas de las planificadas.",
+                        purpose: "Cuantificar el ahorro o exceso operativo global en horas.",
+                        calc: "Sumatoria(Horas Estimadas) - Sumatoria(Horas Consumidas). Coherente con el TPI ponderado."
                     }}
                 />
                 <KpiCard
@@ -305,9 +296,9 @@ export default function DashboardPage() {
                     color="bg-indigo-500"
                     trend="Desvío promedio"
                     tooltip={{
-                        def: "Magnitud porcentual de la diferencia entre plan y realidad.",
-                        purpose: "Identifica la precisión de la planificación comercial.",
-                        calc: "((Consumido - Estimado) / Estimado) * 100."
+                        def: "Porcentaje de desvío entre las horas consumidas y las estimadas. Positivo = se consumió más de lo planificado.",
+                        purpose: "Medir qué tan lejos están las ejecuciones respecto de las estimaciones.",
+                        calc: "((Horas Consumidas - Horas Estimadas) / Horas Estimadas) × 100."
                     }}
                 />
                 <KpiCard
@@ -316,22 +307,25 @@ export default function DashboardPage() {
                     icon={<AlertTriangle className="w-6 h-6" />}
                     color="bg-amber-500"
                     trend="Requieren atención"
+                    tooltip={{
+                        def: "Cantidad de proyectos en estado 'En Riesgo' o 'Atrasado'.",
+                        purpose: "Visibilizar rápidamente cuántos proyectos necesitan intervención inmediata.",
+                        calc: "Proyectos En Riesgo + Proyectos Atrasados."
+                    }}
                 />
             </div>
 
-            {/* Performance Visualizations Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* IPT Comparison Chart */}
                 <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative group overflow-hidden">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
                             <BarChart3 className="w-5 h-5 text-primary" />
-                            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">IPT por Proyecto</h3>
+                            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">TPI por Proyecto</h3>
                         </div>
                         <MetricTooltip
                             def="Muestra la eficiencia individual de cada proyecto."
                             purpose="Permite identificar qué proyectos están performando por encima o debajo de la media."
-                            calc="La línea roja indica el punto neutro (IPT = 1.0)."
+                            calc="La línea roja indica el punto neutro (TPI = 1.0)."
                         />
                     </div>
                     {data.performance.projects.length === 0 ? (
@@ -339,8 +333,10 @@ export default function DashboardPage() {
                     ) : (
                         <div className="mt-4">
                             <BasicBarChart 
-                                data={data.performance.projects.map(p => ({ name: p.nombre, value: p.ipt, code: p.codigoProyecto, isHighlight: p.ipt >= 1 }))} 
-                                height={224} 
+                                data={data.performance.projects.map((p: any) => ({ name: p.nombre, value: Number(p.ipt.toFixed(2)), code: p.codigoProyecto, isHighlight: p.ipt >= 1 }))} 
+                                height={224}
+                                targetRange={[0.95, 1.05]}
+                                onEvents={{ click: (e: any) => handleChartClick('project', e.name) }}
                             />
                         </div>
                     )}
@@ -353,25 +349,26 @@ export default function DashboardPage() {
                             <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Tendencia de Performance</h3>
                         </div>
                         <MetricTooltip
-                            def="Evolución del IPT promedio en el tiempo."
+                            def="Evolución del TPI promedio en el tiempo."
                             purpose="Detectar si la eficiencia operativa está mejorando o deteriorándose mes a mes."
-                            calc="Promedio de IPT de todos los proyectos por mes (últimos 6 meses)."
+                            calc="Promedio de TPI de todos los proyectos por mes (últimos 6 meses)."
                         />
                     </div>
                     {data.performance.trend.length === 0 ? (
                         <div className="h-56 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Sin datos históricos</div>
                     ) : (
                         <TrendChart 
-                            data={data.performance.trend.map(t => ({ label: t.label, value: t.ipt }))} 
+                            data={data.performance.trend.map((t: any) => ({ label: t.label, value: t.ipt }))} 
                             color="#3b82f6" 
                             height={224} 
+                            targetRange={[0.95, 1.05]}
+                            onEvents={{ click: (e: any) => handleChartClick('trend_month', e.name) }}
                         />
                     )}
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 overflow-visible">
-                {/* Classification Donut */}
                 <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col items-center overflow-visible">
                     <div className="flex items-center justify-between w-full mb-6">
                         <div className="flex items-center gap-3">
@@ -381,10 +378,9 @@ export default function DashboardPage() {
                         <MetricTooltip
                             def="Segmentación de proyectos por su nivel de eficiencia."
                             purpose="Evaluar rápidamente el balance de la operación."
-                            calc="Eficiente (IPT > 1.05), Exacto (0.95-1.05), Desvío (< 0.95)."
+                            calc="Eficiente (TPI > 1.05), Exacto (0.95-1.05), Desvío (< 0.95)."
                         />
                     </div>
-
                     <div className="w-full h-48 mb-4 mt-2">
                         <DonutChart 
                             data={[
@@ -396,17 +392,11 @@ export default function DashboardPage() {
                             centerText={data.performance.classification.eficiente}
                             centerSubtext="Eficientes"
                             height={192}
+                            onEvents={{ click: (e: any) => handleChartClick('classification', e.name) }}
                         />
-                    </div>
-
-                    <div className="w-full space-y-2 mt-auto">
-                        <LegendItem label="Eficientes" count={data.performance.classification.eficiente} color="bg-emerald-500" />
-                        <LegendItem label="Exactos" count={data.performance.classification.exacto} color="bg-primary" />
-                        <LegendItem label="Con Desvío" count={data.performance.classification.desvio} color="bg-rose-500" />
                     </div>
                 </div>
 
-                {/* Savings Deviation (Bar Divergent) */}
                 <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
@@ -414,110 +404,110 @@ export default function DashboardPage() {
                             <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Balance de Horas por Proyecto</h3>
                         </div>
                         <MetricTooltip
-                            def="Muestra el desvío absoluto en horas."
-                            purpose="Determinar el impacto financiero (ahorro de costos vs sobrecostos)."
-                            calc="Horas Estimadas - Horas Consumidas. Positivo = Ahorro, Negativo = Desvío."
+                            def="Diferencia neta entre las horas estimadas y las consumidas."
+                            purpose="Visualizar rápidamente los ahorros y los excesos operativos más significativos."
+                            calc="Ahorro (Horas Estimadas - Horas Consumidas). Verde = Ahorro, Rojo = Exceso."
                         />
                     </div>
                     <div className="mt-4">
                         <DivergentBarChart 
-                            data={data.performance.projects.slice(0, 6).map(p => ({ name: p.nombre, value: p.savings }))} 
+                            data={data.performance.projects.slice(0, 6).map((p: any) => ({ name: p.nombre, value: p.savings }))} 
                             height={280} 
+                            onEvents={{ click: (e: any) => handleChartClick('project', e.name) }}
                         />
                     </div>
                 </div>
             </div>
 
-            {/* Operational Foundations Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 <div className="lg:col-span-8 flex flex-col gap-6">
-                    {/* Status Distribution */}
                     <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
                         <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3 mb-5">
                             <Activity className="w-5 h-5 text-primary" />
                             Estado Operativo
                         </h3>
                         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-                            <StatusPill label="Por Hacer" count={data.statusDistribution.por_hacer} color="blue" />
-                            <StatusPill label="Planificado" count={data.statusDistribution.planificado} color="violet" />
-                            <StatusPill label="Activos" count={data.statusDistribution.activo} color="primary" />
-                            <StatusPill label="En Riesgo" count={data.statusDistribution.en_riesgo} color="amber" />
-                            <StatusPill label="Atrasados" count={data.statusDistribution.atrasado} color="rose" />
-                            <StatusPill label="Finalizados" count={data.statusDistribution.finalizado} color="slate" />
+                            <StatusPill label="Por Hacer" count={data.statusDistribution.por_hacer} color="blue" onClick={() => handleChartClick('status', 'Por Hacer')} isActive={filterStatus === 'por_hacer'} />
+                            <StatusPill label="Planificado" count={data.statusDistribution.planificado} color="violet" onClick={() => handleChartClick('status', 'Planificado')} isActive={filterStatus === 'planificado'} />
+                            <StatusPill label="Activos" count={data.statusDistribution.activo} color="primary" onClick={() => handleChartClick('status', 'Activos')} isActive={filterStatus === 'activo'} />
+                            <StatusPill label="En Riesgo" count={data.statusDistribution.en_riesgo} color="amber" onClick={() => handleChartClick('status', 'En Riesgo')} isActive={filterStatus === 'en_riesgo'} />
+                            <StatusPill label="Atrasados" count={data.statusDistribution.atrasado} color="rose" onClick={() => handleChartClick('status', 'Atrasados')} isActive={filterStatus === 'atrasado'} />
+                            <StatusPill label="Finalizados" count={data.statusDistribution.finalizado} color="slate" onClick={() => handleChartClick('status', 'Finalizados')} isActive={filterStatus === 'finalizado'} />
                         </div>
                     </div>
 
-                    {/* Alert List */}
-                    <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col">
+                            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3 mb-4">
+                                <Building2 className="w-5 h-5 text-slate-400 dark:text-slate-500" />
+                                Top Clientes
+                            </h3>
+                            <div className="space-y-2.5 flex-1">
+                                    {data.topClients.map((client: any, idx: number) => {
+                                        const isActive = client.id === filterClientId;
+                                        return (
+                                            <div key={idx} onClick={() => handleChartClick('client', client.name)} className={`flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer group ${isActive ? 'bg-primary/5 border-primary/30 ring-2 ring-primary/20' : 'bg-slate-50/50 border-transparent hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm hover:border-slate-100'}`}>
+                                                <span className={`font-bold text-sm truncate transition-colors ${isActive ? 'text-primary' : 'text-slate-600 dark:text-slate-300 group-hover:text-primary'}`}>{client.name}</span>
+                                                <span className="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-800 text-primary text-[10px] font-black rounded-xl shadow-sm shrink-0">{client.count} Proj</span>
+                                            </div>
+                                        );
+                                    })}
+                            </div>
+                        </div>
+
+                        <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col">
+                            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3 mb-4">
+                                <Users className="w-5 h-5 text-slate-400 dark:text-slate-500" />
+                                Mayor Actividad
+                            </h3>
+                                <div className="space-y-2.5 flex-1">
+                                    {data.topOperators.map((op: any, idx: number) => {
+                                        const isActive = filterOperator === op.name;
+                                        return (
+                                            <div key={idx} onClick={() => handleChartClick('operator', op.name)} className={`flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer group ${isActive ? 'bg-indigo-50/80 border-indigo-300 ring-2 ring-indigo-200' : 'bg-indigo-50/30 border-transparent hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm hover:border-indigo-100'}`}>
+                                                <span className={`font-bold text-sm truncate transition-colors ${isActive ? 'text-indigo-700' : 'text-slate-600 dark:text-slate-300 group-hover:text-indigo-600'}`}>{op.name}</span>
+                                                <span className="px-3 py-1 bg-white dark:bg-slate-800 border border-indigo-100 text-indigo-600 text-[10px] font-black rounded-xl shadow-sm shrink-0">{op.count} Asig</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="lg:col-span-4 flex flex-col gap-6">
+                    <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex-1 flex flex-col">
                         <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3 mb-5">
                             <AlertTriangle className="w-5 h-5 text-rose-500" />
                             Alertas de Consumo
                         </h3>
                         {data.criticalProjects.length === 0 ? (
-                            <div className="py-8 text-center text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-widest">Sin proyectos críticos activos</div>
+                            <div className="py-8 text-center text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-widest flex-1 flex items-center justify-center">Sin proyectos críticos activos</div>
                         ) : (
-                            <div className="space-y-4">
-                                {data.criticalProjects.map((project, idx) => (
-                                    <div key={idx} className="space-y-1.5">
-                                        <div className="flex justify-between items-center px-1">
-                                            <div className="flex items-center gap-2 flex-wrap max-w-[70%]">
-                                                <span className="font-bold text-slate-700 dark:text-slate-200 text-sm truncate">{project.nombre}</span>
-                                                {project.codigoProyecto && <CodeBadge code={project.codigoProyecto} variant="project" size="sm" showCopy={false} />}
+                            <div className="space-y-4 flex-1">
+                                {data.criticalProjects.map((p: any, idx: number) => {
+                                    const isActive = filterProjectId === p.id;
+                                    return (
+                                        <div 
+                                            key={idx} 
+                                            onClick={() => handleChartClick('project', p.nombre)}
+                                            className={`p-3 rounded-2xl border transition-all cursor-pointer group ${isActive ? 'bg-rose-50 border-rose-300 ring-2 ring-rose-200' : 'bg-slate-50 dark:bg-slate-900/50 hover:bg-white dark:hover:bg-slate-800 border-transparent hover:border-rose-100 hover:shadow-sm'}`}
+                                        >
+                                            <div className="flex justify-between items-center mb-2">
+                                                <div className={`font-bold text-sm truncate transition-colors ${isActive ? 'text-rose-700' : 'text-slate-700 dark:text-slate-200 group-hover:text-rose-600'}`}>
+                                                    {p.codigoProyecto && <span className="text-[10px] text-slate-400 font-bold mr-2">{p.codigoProyecto}</span>}
+                                                    {p.nombre}
+                                                </div>
+                                                <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg border ${p.percentage >= 100 ? 'bg-rose-100 text-rose-600 border-rose-200' : 'bg-amber-100 text-amber-600 border-amber-200'}`}>
+                                                    {Math.round(p.percentage)}%
+                                                </span>
                                             </div>
-                                            <span className={`text-xs font-black px-2 py-1 rounded-lg ${project.percentage > 100 ? 'bg-rose-50 text-rose-500' : 'bg-amber-50 text-amber-600'}`}>
-                                                {Math.round(project.percentage)}%
-                                            </span>
+                                            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+                                                <div className={`h-1.5 rounded-full ${p.percentage >= 100 ? 'bg-rose-500' : 'bg-amber-500'}`} style={{ width: `${Math.min(p.percentage, 100)}%` }}></div>
+                                            </div>
                                         </div>
-                                        <div className="h-3 bg-slate-100 dark:bg-slate-800/50 rounded-full overflow-hidden border border-slate-50">
-                                            <div
-                                                className={`h-full rounded-full transition-all duration-1000 ${project.percentage > 100 ? 'bg-rose-500' : project.percentage > 80 ? 'bg-amber-500' : 'bg-primary'}`}
-                                                style={{ width: `${Math.min(project.percentage, 100)}%` }}
-                                            />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                <div className="lg:col-span-4 flex flex-col gap-6">
-                    {/* Top Clients */}
-                    <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3 mb-4">
-                            <Building2 className="w-5 h-5 text-slate-400 dark:text-slate-500" />
-                            Top Clientes
-                        </h3>
-                        {data.topClients.length === 0 ? (
-                            <div className="py-6 text-center text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-widest">Sin datos</div>
-                        ) : (
-                            <div className="space-y-2.5">
-                                {data.topClients.map((client, idx) => (
-                                    <div key={idx} className="flex items-center justify-between p-3 rounded-2xl bg-slate-50/50 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm border border-transparent hover:border-slate-100 transition-all group">
-                                        <span className="font-bold text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors text-sm truncate">{client.name}</span>
-                                        <span className="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-800 text-primary text-[10px] font-black rounded-xl shadow-sm shrink-0">{client.count} Proj</span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Top Operators */}
-                    <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3 mb-4">
-                            <Users className="w-5 h-5 text-slate-400 dark:text-slate-500" />
-                            Mayor Actividad
-                        </h3>
-                        {data.topOperators.length === 0 ? (
-                            <div className="py-6 text-center text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-widest">Sin datos</div>
-                        ) : (
-                            <div className="space-y-2.5">
-                                {data.topOperators.map((op, idx) => (
-                                    <div key={idx} className="flex items-center justify-between p-3 rounded-2xl bg-indigo-50/30 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm border border-transparent hover:border-indigo-100 transition-all group">
-                                        <span className="font-bold text-slate-600 dark:text-slate-300 group-hover:text-indigo-600 transition-colors text-sm truncate">{op.name}</span>
-                                        <span className="px-3 py-1 bg-white dark:bg-slate-800 border border-indigo-100 text-indigo-600 text-[10px] font-black rounded-xl shadow-sm shrink-0">{op.count} Asig</span>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
@@ -629,7 +619,9 @@ export default function DashboardPage() {
                     </div>
                 </div>
             </div>
-            </> /* end proyectos tab */
+            </>
+            )}
+            </>
             }
         </div>
     );
@@ -1148,8 +1140,8 @@ function KpiCard({ title, value, icon, color, trend, tooltip }: { title: string;
             <div className="flex flex-col items-end justify-between shrink-0 h-full py-0.5">
                 {tooltip ? <MetricTooltip {...tooltip} /> : <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1.5 py-0.5 bg-slate-50 dark:bg-slate-900/50 rounded-md">KPI</div>}
                 <div className="flex items-center gap-1.5 mt-auto">
-                    <div className={`w-1.5 h-1.5 rounded-full ${color.replace('bg-', 'bg-').replace('500', '400')} animate-pulse`} />
-                    <p className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase max-w-[60px] lg:max-w-[80px] truncate" title={trend}>{trend}</p>
+                    <div className={`w-1.5 h-1.5 rounded-full ${color} animate-pulse`} />
+                    <p className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase max-w-[130px] lg:max-w-[180px] truncate" title={trend}>{trend}</p>
                 </div>
             </div>
         </div>
@@ -1194,18 +1186,21 @@ function LegendItem({ label, count, color }: { label: string; count: number; col
     );
 }
 
-function StatusPill({ label, count, color }: { label: string; count: number; color: string }) {
+function StatusPill({ label, count, color, onClick, isActive }: { label: string; count: number; color: string; onClick?: () => void; isActive?: boolean }) {
     const colors: Record<string, string> = {
-        primary: 'bg-primary/10 text-primary border-primary/20',
-        amber: 'bg-amber-50 text-amber-600 border-amber-100',
-        rose: 'bg-rose-50 text-rose-500 border-rose-100',
-        slate: 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700',
-        blue: 'bg-blue-50 text-blue-600 border-blue-100',
-        violet: 'bg-violet-50 text-violet-600 border-violet-100'
+        primary: 'bg-primary/10 text-primary border-primary/20 hover:bg-primary/20',
+        amber: 'bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-100',
+        rose: 'bg-rose-50 text-rose-500 border-rose-100 hover:bg-rose-100',
+        slate: 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800',
+        blue: 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100',
+        violet: 'bg-violet-50 text-violet-600 border-violet-100 hover:bg-violet-100'
     };
 
     return (
-        <div className={`p-4 rounded-2xl border ${colors[color]} flex flex-col items-center justify-center gap-1 hover:scale-105 transition-transform cursor-default`}>
+        <div 
+            onClick={onClick}
+            className={`p-4 rounded-2xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer relative ${colors[color]} ${isActive ? 'ring-2 ring-offset-2 ring-current z-10 shadow-md' : 'opacity-80 hover:opacity-100 hover:shadow-md hover:-translate-y-0.5 hover:z-20'}`}
+        >
             <span className="text-2xl font-black leading-none">{count}</span>
             <span className="text-[10px] font-bold uppercase tracking-widest text-center">{label}</span>
         </div>

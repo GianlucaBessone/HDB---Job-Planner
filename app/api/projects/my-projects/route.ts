@@ -5,6 +5,9 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
     try {
+        const { dataLayer } = require('@/lib/dataLayer');
+        await dataLayer.autoUpdateProjectStatuses();
+
         const { searchParams } = new URL(req.url);
         const all = searchParams.get('all') === 'true';
         const responsableId = searchParams.get('responsableId');

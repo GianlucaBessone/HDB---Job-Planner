@@ -22,6 +22,7 @@ import {
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { safeApiRequest } from '@/lib/offline';
 import SearchableSelect from '@/components/SearchableSelect';
+import { showToast } from '@/components/Toast';
 
 // PREDEFINED_TAGS is now loaded dynamically from the backend config
 
@@ -47,6 +48,9 @@ export default function OperatorsPage() {
 
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [operatorToDelete, setOperatorToDelete] = useState<string | null>(null);
+    const [isResetAllConfirmOpen, setIsResetAllConfirmOpen] = useState(false);
+    const [isResetDeviceConfirmOpen, setIsResetDeviceConfirmOpen] = useState(false);
+    const [operatorToReset, setOperatorToReset] = useState<string | null>(null);
 
     useEffect(() => {
         const stored = localStorage.getItem('currentUser');
@@ -166,25 +170,36 @@ export default function OperatorsPage() {
         await safeApiRequest(`/api/operators?id=${id}`, { method: 'DELETE' });
         setIsConfirmOpen(false);
         setOperatorToDelete(null);
+        showToast('Operador eliminado', 'success');
     };
 
-    const resetAllDevices = async () => {
-        if (!confirm('¿Estás seguro de que deseas resetear los dispositivos autorizados de TODOS los operadores? Tendrán que volver a validar su sesión al intentar fichar.')) return;
-        
+    const handleResetAllClick = () => {
+        setIsResetAllConfirmOpen(true);
+    };
+
+    const confirmResetAllDevices = async () => {
         await safeApiRequest('/api/operators/reset-devices', { method: 'POST' });
         loadData(true);
-        alert('Se han reseteado los dispositivos de todos los operadores.');
+        setIsResetAllConfirmOpen(false);
+        showToast('Se han reseteado los dispositivos de todos los operadores.', 'success');
     };
 
-    const resetDevice = async (id: string) => {
-        if (!confirm('¿Estás seguro de que deseas resetear el dispositivo autorizado de este operador?')) return;
-        
+    const handleResetDeviceClick = (id: string) => {
+        setOperatorToReset(id);
+        setIsResetDeviceConfirmOpen(true);
+    };
+
+    const confirmResetDevice = async () => {
+        if (!operatorToReset) return;
+        const id = operatorToReset;
         await safeApiRequest(`/api/operators?id=${id}`, {
             method: 'PATCH',
             body: JSON.stringify({ primaryDeviceId: null })
         });
         loadData(true);
-        alert('El dispositivo del operador ha sido reseteado. Podrá validar uno nuevo la próxima vez que intente fichar.');
+        setIsResetDeviceConfirmOpen(false);
+        setOperatorToReset(null);
+        showToast('El dispositivo del operador ha sido reseteado.', 'success');
     };
 
     const normalize = (str: string) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -206,7 +221,7 @@ export default function OperatorsPage() {
                 <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
                     {currentUser?.role !== 'operador' && currentUser?.role !== 'vendedor' && (
                         <button
-                            onClick={resetAllDevices}
+                            onClick={handleResetAllClick}
                             className="flex items-center gap-2 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 px-4 py-2.5 md:px-6 md:py-3 rounded-xl md:rounded-2xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition-all w-full md:w-auto justify-center text-sm"
                         >
                             <RefreshCcw className="w-4 h-4" />
@@ -338,7 +353,7 @@ export default function OperatorsPage() {
                                         </div>
                                         <button
                                             type="button"
-                                            onClick={() => resetDevice(editingOperator.id)}
+                                            onClick={() => handleResetDeviceClick(editingOperator.id)}
                                             className="bg-white dark:bg-slate-800 text-amber-600 dark:text-amber-500 px-4 py-2 rounded-xl text-xs font-bold shadow-sm border border-amber-200 dark:border-amber-900/50 hover:bg-amber-50 active:scale-95 transition-all"
                                         >
                                             Resetear
@@ -559,6 +574,26 @@ export default function OperatorsPage() {
                 message="¿Estás seguro de que deseas eliminar este operador? Esta acción no se puede deshacer."
                 onConfirm={confirmDelete}
                 onCancel={() => setIsConfirmOpen(false)}
+            />
+
+            <ConfirmDialog
+                isOpen={isResetAllConfirmOpen}
+                title="Resetear Todos los Dispositivos"
+                message="¿Estás seguro de que deseas resetear los dispositivos autorizados de TODOS los operadores? Tendrán que volver a validar su sesión al intentar fichar."
+                onConfirm={confirmResetAllDevices}
+                onCancel={() => setIsResetAllConfirmOpen(false)}
+                confirmLabel="Resetear"
+                variant="warning"
+            />
+
+            <ConfirmDialog
+                isOpen={isResetDeviceConfirmOpen}
+                title="Resetear Dispositivo"
+                message="¿Estás seguro de que deseas resetear el dispositivo autorizado de este operador? Podrá validar uno nuevo la próxima vez que intente fichar."
+                onConfirm={confirmResetDevice}
+                onCancel={() => setIsResetDeviceConfirmOpen(false)}
+                confirmLabel="Resetear"
+                variant="warning"
             />
         </div>
     );

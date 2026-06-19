@@ -127,7 +127,7 @@ export function CobroPdf({ os, logoUrl }: CobroPdfProps) {
                     {horasNormales > 0 && (
                         <View style={S.tableRow}>
                             <Text style={[S.tdCell, { flex: 4 }]}>Mano de Obra Especializada (Horas Normales)</Text>
-                            <Text style={[S.tdCell, { flex: 1, textAlign: 'right' }]}>{horasNormales}h</Text>
+                            <Text style={[S.tdCell, { flex: 1, textAlign: 'right' }]}>{horasNormales + 'h'}</Text>
                             <Text style={[S.tdCell, { flex: 2, textAlign: 'right' }]}>{formatARS(os.cobroValorManoObra)}</Text>
                             <Text style={[S.tdCell, S.tdBold, { flex: 2, textAlign: 'right' }]}>{formatARS(subtotalMoNormal)}</Text>
                         </View>
@@ -135,7 +135,7 @@ export function CobroPdf({ os, logoUrl }: CobroPdfProps) {
                     {horasExtras > 0 && (
                         <View style={S.tableRow}>
                             <Text style={[S.tdCell, { flex: 4 }]}>Mano de Obra Especializada (Horas Extras - Cobro Doble)</Text>
-                            <Text style={[S.tdCell, { flex: 1, textAlign: 'right' }]}>{horasExtras}h</Text>
+                            <Text style={[S.tdCell, { flex: 1, textAlign: 'right' }]}>{horasExtras + 'h'}</Text>
                             <Text style={[S.tdCell, { flex: 2, textAlign: 'right' }]}>{formatARS((os.cobroValorManoObra || 0) * 2)}</Text>
                             <Text style={[S.tdCell, S.tdBold, { flex: 2, textAlign: 'right' }]}>{formatARS(subtotalMoExtras)}</Text>
                         </View>
@@ -154,8 +154,8 @@ export function CobroPdf({ os, logoUrl }: CobroPdfProps) {
                         </View>
                         {os.materiales.map((m: any) => (
                             <View key={m.id} style={S.tableRow}>
-                                <Text style={[S.tdCell, { flex: 4 }]}>{m.material}</Text>
-                                <Text style={[S.tdCell, { flex: 1, textAlign: 'right' }]}>{m.cantidad}</Text>
+                                <Text style={[S.tdCell, { flex: 4 }]}>{m.material || 'Material sin nombre'}</Text>
+                                <Text style={[S.tdCell, { flex: 1, textAlign: 'right' }]}>{String(m.cantidad)}</Text>
                                 <Text style={[S.tdCell, { flex: 2, textAlign: 'right' }]}>{formatARS(m.precioUnitario)}</Text>
                                 <Text style={[S.tdCell, S.tdBold, { flex: 2, textAlign: 'right' }]}>{formatARS(m.cantidad * (m.precioUnitario || 0))}</Text>
                             </View>
@@ -173,7 +173,7 @@ export function CobroPdf({ os, logoUrl }: CobroPdfProps) {
                         </View>
                         {os.cobroOtrosConceptos.map((concepto: any, i: number) => (
                             <View key={i} style={S.tableRow}>
-                                <Text style={[S.tdCell, { flex: 5 }]}>{concepto.nombre}</Text>
+                                <Text style={[S.tdCell, { flex: 5 }]}>{concepto.nombre || 'Concepto adicional'}</Text>
                                 <Text style={[S.tdCell, S.tdBold, { flex: 2, textAlign: 'right' }]}>{formatARS(concepto.precio)}</Text>
                             </View>
                         ))}
@@ -185,7 +185,7 @@ export function CobroPdf({ os, logoUrl }: CobroPdfProps) {
                     <View style={S.section}>
                         <Text style={S.sectionTitle}>Comentario de OS</Text>
                         <View style={S.box}>
-                            <Text style={S.boxText}>{os.comentario}</Text>
+                            <Text style={S.boxText}>{String(os.comentario)}</Text>
                         </View>
                     </View>
                 )}
@@ -194,7 +194,7 @@ export function CobroPdf({ os, logoUrl }: CobroPdfProps) {
                     <View style={S.section}>
                         <Text style={S.sectionTitle}>Observaciones de Cobro</Text>
                         <View style={S.box}>
-                            <Text style={S.boxText}>{os.cobroObservaciones}</Text>
+                            <Text style={S.boxText}>{String(os.cobroObservaciones)}</Text>
                         </View>
                     </View>
                 )}
@@ -208,14 +208,14 @@ export function CobroPdf({ os, logoUrl }: CobroPdfProps) {
                         </View>
                         {descuentoPorcentaje > 0 && (
                             <View style={S.totalsRow}>
-                                <Text style={[S.totalsLabel, S.descText]}>Descuento ({descuentoPorcentaje}%)</Text>
-                                <Text style={[S.totalsVal, S.descText]}>-{formatARS(montoDescuento)}</Text>
+                                <Text style={[S.totalsLabel, S.descText]}>{`Descuento (${descuentoPorcentaje}%)`}</Text>
+                                <Text style={[S.totalsVal, S.descText]}>{'-' + formatARS(montoDescuento)}</Text>
                             </View>
                         )}
                         {os.cobroAplicarIva && (
                             <View style={S.totalsRow}>
                                 <Text style={[S.totalsLabel, S.ivaText]}>IVA (21%)</Text>
-                                <Text style={[S.totalsVal, S.ivaText]}>+{formatARS(montoIva)}</Text>
+                                <Text style={[S.totalsVal, S.ivaText]}>{'+' + formatARS(montoIva)}</Text>
                             </View>
                         )}
                         <View style={S.totalsRowFinal}>

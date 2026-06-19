@@ -21,6 +21,7 @@ export function TrendChart({
     height = 224, 
     valuePrefix = '', 
     valueSuffix = '',
+    targetRange,
     onEvents
 }: { 
     data: { label: string; value: number }[], 
@@ -28,6 +29,7 @@ export function TrendChart({
     height?: number | string,
     valuePrefix?: string,
     valueSuffix?: string,
+    targetRange?: [number, number],
     onEvents?: any
 }) {
     const option = useMemo(() => ({
@@ -75,9 +77,31 @@ export function TrendChart({
                         { offset: 1, color: `${color}00` }  // 0% opacity
                     ]
                 }
-            }
+            },
+            ...(targetRange ? {
+                markLine: {
+                    data: [
+                        { yAxis: targetRange[0], name: 'Min' },
+                        { yAxis: targetRange[1], name: 'Max' }
+                    ],
+                    label: { show: true, position: 'end', color: '#10b981', fontSize: 9, formatter: '{c}' },
+                    lineStyle: { color: '#10b981', type: 'dashed', width: 2 },
+                    symbol: 'none',
+                    silent: true
+                },
+                markArea: {
+                    itemStyle: { color: 'rgba(16, 185, 129, 0.05)' },
+                    data: [
+                        [
+                            { yAxis: targetRange[0] },
+                            { yAxis: targetRange[1] }
+                        ]
+                    ],
+                    silent: true
+                }
+            } : {})
         }]
-    }), [data, color, valuePrefix, valueSuffix]);
+    }), [data, color, valuePrefix, valueSuffix, targetRange]);
 
     return (
         <ReactECharts 
@@ -98,14 +122,18 @@ export function BasicBarChart({
     isHorizontal = false,
     valuePrefix = '',
     valueSuffix = '',
-    colors = ['#3b82f6', '#94a3b8'] // [Good/Active, Bad/Inactive]
+    targetRange,
+    colors = ['#3b82f6', '#94a3b8'], // [Good/Active, Bad/Inactive]
+    onEvents
 }: { 
     data: { name: string; value: number; isHighlight?: boolean; code?: string }[], 
     height?: number | string,
     isHorizontal?: boolean,
     valuePrefix?: string,
     valueSuffix?: string,
-    colors?: string[]
+    targetRange?: [number, number],
+    colors?: string[],
+    onEvents?: any
 }) {
     const option = useMemo(() => {
         const categories = data.map(d => d.name);
@@ -124,7 +152,8 @@ export function BasicBarChart({
                 textStyle: { color: '#f8fafc', fontSize: 12 },
                 formatter: (params: any) => {
                     const val = params[0];
-                    return `<div style="font-weight:bold;margin-bottom:4px;color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px">${val.data.name}</div>
+                    const label = val.data?.name || val.name || '';
+                    return `<div style="font-weight:bold;margin-bottom:4px;color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px">${label}</div>
                             <div style="font-size:14px;font-weight:bold;color:${val.color}">${valuePrefix}${val.value}${valueSuffix}</div>`;
                 }
             },
@@ -167,16 +196,39 @@ export function BasicBarChart({
                 data: values,
                 type: 'bar',
                 barMaxWidth: 32,
-                itemStyle: { borderRadius: isHorizontal ? [0, 4, 4, 0] : [4, 4, 0, 0] }
+                itemStyle: { borderRadius: isHorizontal ? [0, 4, 4, 0] : [4, 4, 0, 0] },
+                ...(targetRange ? {
+                    markLine: {
+                        data: [
+                            { [isHorizontal ? 'xAxis' : 'yAxis']: targetRange[0], name: 'Min' },
+                            { [isHorizontal ? 'xAxis' : 'yAxis']: targetRange[1], name: 'Max' }
+                        ],
+                        label: { show: true, position: 'end', color: '#10b981', fontSize: 9, formatter: '{c}' },
+                        lineStyle: { color: '#10b981', type: 'dashed', width: 2 },
+                        symbol: 'none',
+                        silent: true
+                    },
+                    markArea: {
+                        itemStyle: { color: 'rgba(16, 185, 129, 0.05)' },
+                        data: [
+                            [
+                                { [isHorizontal ? 'xAxis' : 'yAxis']: targetRange[0] },
+                                { [isHorizontal ? 'xAxis' : 'yAxis']: targetRange[1] }
+                            ]
+                        ],
+                        silent: true
+                    }
+                } : {})
             }]
         };
-    }, [data, isHorizontal, colors, valuePrefix, valueSuffix]);
+    }, [data, isHorizontal, colors, valuePrefix, valueSuffix, targetRange]);
 
     return (
         <ReactECharts 
             option={option} 
             style={{ height, width: '100%' }} 
             opts={{ renderer: 'svg' }} 
+            onEvents={onEvents}
         />
     );
 }
@@ -245,10 +297,12 @@ export function DonutChart({
 // ----------------------------------------------------
 export function DivergentBarChart({ 
     data, 
-    height = 224 
+    height = 224,
+    onEvents
 }: { 
     data: { name: string; value: number }[], 
-    height?: number | string 
+    height?: number | string,
+    onEvents?: any
 }) {
     const option = useMemo(() => {
         const maxAbs = Math.max(...data.map(d => Math.abs(d.value)), 1);
@@ -306,6 +360,7 @@ export function DivergentBarChart({
             option={option} 
             style={{ height, width: '100%' }} 
             opts={{ renderer: 'svg' }} 
+            onEvents={onEvents}
         />
     );
 }
@@ -316,11 +371,13 @@ export function DivergentBarChart({
 export function TargetBarChart({
     data,
     target,
-    height = 200
+    height = 200,
+    onEvents
 }: {
     data: { name: string; value: number }[],
     target: number,
-    height?: number | string
+    height?: number | string,
+    onEvents?: any
 }) {
     const option = useMemo(() => {
         return {
@@ -382,6 +439,7 @@ export function TargetBarChart({
             option={option} 
             style={{ height, width: '100%' }} 
             opts={{ renderer: 'svg' }} 
+            onEvents={onEvents}
         />
     );
 }
@@ -393,12 +451,14 @@ export function MultiTrendChart({
     data, 
     target = 8,
     height = 224,
-    colors = ['#3b82f6', '#10b981', '#f59e0b'] // Attention, Quality, Time
+    colors = ['#3b82f6', '#10b981', '#f59e0b'], // Attention, Quality, Time
+    onEvents
 }: { 
     data: { label: string; atencion: number; calidad: number; tiempo: number }[], 
     target?: number,
     height?: number | string,
-    colors?: string[]
+    colors?: string[],
+    onEvents?: any
 }) {
     const option = useMemo(() => ({
         tooltip: {
@@ -490,6 +550,7 @@ export function MultiTrendChart({
             option={option} 
             style={{ height, width: '100%' }} 
             opts={{ renderer: 'svg' }} 
+            onEvents={onEvents}
         />
     );
 }

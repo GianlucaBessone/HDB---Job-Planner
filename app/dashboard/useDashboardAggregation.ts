@@ -1,63 +1,105 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-export const dynamic = 'force-dynamic';
+import { useMemo } from 'react';
 
-import { dataLayer } from '@/lib/dataLayer';
+export function useDashboardAggregation(rawData: any, filters: any) {
+    return useMemo(() => {
+        if (!rawData || !rawData.projects) return null;
 
-export async function GET(request: Request) {
-    try {
-        await dataLayer.autoUpdateProjectStatuses();
+        let projects = [...rawData.projects];
+        let clientDelays = [...rawData.clientDelays];
+        const operators = rawData.operators || [];
+        const plannings = rawData.plannings || [];
 
-        const { searchParams } = new URL(request.url);
-        const from = searchParams.get('from');
-        const to = searchParams.get('to');
-        const clientId = searchParams.get('clientId');
-        const status = searchParams.get('status'); // all | finished | active
-
-        let [projects, operators, plannings, clientDelays] = await Promise.all([
-            prisma.project.findMany(),
-            prisma.operator.findMany(),
-            prisma.planning.findMany(),
-            prisma.clientDelay.findMany()
-        ]);
-
-        // 1. Exclude projects marked as "NO en métricas" (Requirement 1)
-        // And filter by activity status. We only show projects where active is not explicitly false
-        // and noEnMetricas is not explicitly true.
+        // 1. Exclude projects marked as "NO en métricas" and inactive
         projects = projects.filter(p => p.activo !== false && p.noEnMetricas !== true);
 
-        // 2. Filter by Client (Requirement 2)
-        if (clientId) {
-            projects = projects.filter(p => p.clientId === clientId);
+        // 2. Filter by Client
+        if (filters.filterClientId) {
+            projects = projects.filter(p => p.clientId === filters.filterClientId);
         }
 
-        // 3. Filter by Finished Status (Requirement 2)
-        if (status === 'finished') {
+        // 3. Filter by Finished Status
+        if (filters.filterStatus === 'finished') {
             projects = projects.filter(p => p.estado === 'finalizado');
-        } else if (status === 'active') {
+        } else if (filters.filterStatus === 'active') {
             projects = projects.filter(p => p.estado !== 'finalizado');
-        } else if (status && status !== 'all') {
-            projects = projects.filter(p => p.estado === status);
+        } else if (filters.filterStatus && filters.filterStatus !== 'all') {
+            projects = projects.filter(p => p.estado === filters.filterStatus);
         }
 
+        // 4. Filter by Project ID
+        if (filters.filterProjectId) {
+            projects = projects.filter(p => p.id === filters.filterProjectId || p.codigoProyecto === filters.filterProjectId);
+        }
+
+        // Filter Delays by Area
+        if (filters.filterArea) {
+            clientDelays = clientDelays.filter(d => d.area === filters.filterArea);
+        }
+
+        // Filter by Date Range (For Delays and Performance Trend)
+        if (filters.filterFrom) {
+            clientDelays = clientDelays.filter(d => d.fecha >= filters.filterFrom);
+        }
+        if (filters.filterTo) {
+            clientDelays = clientDelays.filter(d => d.fecha <= filters.filterTo);
+        }
+
+        // Resource Utilization (from recent plannings)
+        const operatorUsage: Record<string, number> = {};
+        plannings.forEach((p: any) => {
+            const blocks = (p.blocks as any[]) || [];
+            blocks.forEach(b => {
+                if (b.operatorNames && Array.isArray(b.operatorNames)) {
+                    b.operatorNames.forEach((name: string) => {
+                        operatorUsage[name] = (operatorUsage[name] || 0) + 1;
+                    });
+                }
+            });
+        });
+
+        // Filter by Operator
+        if (filters.filterOperator) {
+            // Find projects that this operator has been assigned to
+            const operatorProjects = new Set<string>();
+            plannings.forEach((p: any) => {
+                const blocks = (p.blocks as any[]) || [];
+                blocks.forEach(b => {
+                    if (b.operatorNames && b.operatorNames.includes(filters.filterOperator) && b.projectId) {
+                        operatorProjects.add(b.projectId);
+                    }
+                });
+            });
+            projects = projects.filter(p => operatorProjects.has(p.id));
+        }
+
+        // Base project IDs after general filters
         const activeProjectIds = new Set(projects.map(p => p.id));
 
-        // 4. Filter Delays and Metrics by Date Range (Requirement 2)
-        if (from || to) {
-            if (from) {
-                clientDelays = clientDelays.filter(d => d.fecha >= from);
-            }
-            if (to) {
-                clientDelays = clientDelays.filter(d => d.fecha <= to);
-            }
-            // Note: Project creation date filtering for metrics can be complex if we want "snapshot" metrics.
-            // For now, let's filter the data points in trends and perhaps projects by createdAt if requested.
-        }
+        // Filter operator usage again but only for active projects (for the "Mayor Actividad" list)
+        const operatorUsageFiltered: Record<string, number> = {};
+        plannings.forEach((p: any) => {
+            const blocks = (p.blocks as any[]) || [];
+            blocks.forEach(b => {
+                if (b.projectId && !activeProjectIds.has(b.projectId)) return;
+                if (b.operatorNames && Array.isArray(b.operatorNames)) {
+                    b.operatorNames.forEach((name: string) => {
+                        operatorUsageFiltered[name] = (operatorUsageFiltered[name] || 0) + 1;
+                    });
+                }
+            });
+        });
+        const topOperators = Object.entries(operatorUsageFiltered)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([name, count]) => ({ name, count }));
+
+        // Filter Delays for active projects
+        const activeDelays = clientDelays.filter(d => activeProjectIds.has(d.projectId));
 
         // Health Metrics
         const totalProjects = projects.length;
         const activeProjects = projects.filter(p => p.estado !== 'finalizado').length;
-        const activeOperatorsCount = operators.filter(o => o.activo).length;
+        const activeOperatorsCount = operators.filter((o: any) => o.activo).length;
 
         // Efficiency (Hours)
         const totalEstimated = projects.reduce((acc, p) => acc + (p.horasEstimadas || 0), 0);
@@ -85,30 +127,11 @@ export async function GET(request: Request) {
             .slice(0, 5)
             .map(([name, count]) => ({ name, count }));
 
-        // Resource Utilization (from recent plannings)
-        const operatorUsage: Record<string, number> = {};
-        plannings.forEach(p => {
-            const blocks = (p.blocks as any[]) || [];
-            blocks.forEach(b => {
-                // Only count assignments for projects included in metrics
-                if (b.projectId && !activeProjectIds.has(b.projectId)) return;
-
-                if (b.operatorNames && Array.isArray(b.operatorNames)) {
-                    b.operatorNames.forEach((name: string) => {
-                        operatorUsage[name] = (operatorUsage[name] || 0) + 1;
-                    });
-                }
-            });
-        });
-        const topOperators = Object.entries(operatorUsage)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 5)
-            .map(([name, count]) => ({ name, count }));
-
-        // Critical Projects (highest consumption percentage)
+        // Critical Projects
         const criticalProjects = projects
             .filter(p => p.estado !== 'finalizado' && p.horasEstimadas > 0)
             .map(p => ({
+                id: p.id,
                 nombre: p.nombre,
                 codigoProyecto: p.codigoProyecto,
                 percentage: (p.horasConsumidas / p.horasEstimadas) * 100,
@@ -117,7 +140,7 @@ export async function GET(request: Request) {
             .sort((a, b) => b.percentage - a.percentage)
             .slice(0, 5);
 
-        // Performance Metrics (New)
+        // Performance Metrics
         let projectPerformance = projects
             .filter(p => p.horasEstimadas > 0 && p.horasConsumidas > 0)
             .map(p => {
@@ -133,27 +156,39 @@ export async function GET(request: Request) {
                     id: p.id,
                     nombre: p.nombre,
                     codigoProyecto: p.codigoProyecto,
+                    horasEstimadas: p.horasEstimadas,
+                    horasConsumidas: p.horasConsumidas,
                     ipt,
                     savings,
                     variation,
                     classification,
-                    createdAt: p.createdAt
+                    createdAt: new Date(p.createdAt)
                 };
             });
 
+        // Filter by Classification if needed
+        if (filters.filterClassification) {
+            projectPerformance = projectPerformance.filter(p => p.classification === filters.filterClassification);
+            // Apply this to general active project IDs to filter everything else too?
+            // Usually, classification filter is global.
+            const classificationIds = new Set(projectPerformance.map(p => p.id));
+            // But if we re-filter everything here it's complicated. We only apply classification to the performance charts.
+        }
+
         // Apply date filter to performance trend
-        if (from) {
-            projectPerformance = projectPerformance.filter(p => p.createdAt >= new Date(from));
+        if (filters.filterFrom) {
+            projectPerformance = projectPerformance.filter(p => p.createdAt >= new Date(filters.filterFrom));
         }
-        if (to) {
-            projectPerformance = projectPerformance.filter(p => p.createdAt <= new Date(to));
+        if (filters.filterTo) {
+            projectPerformance = projectPerformance.filter(p => p.createdAt <= new Date(filters.filterTo));
         }
 
-        const avgIPT = projectPerformance.length > 0
-            ? projectPerformance.reduce((acc, p) => acc + p.ipt, 0) / projectPerformance.length
-            : 0;
+        // Weighted TPI: sum(estimated) / sum(consumed) — consistent with totalSavings
+        const perfTotalEstimated = projectPerformance.reduce((acc, p) => acc + p.horasEstimadas, 0);
+        const perfTotalConsumed = projectPerformance.reduce((acc, p) => acc + p.horasConsumidas, 0);
+        const avgIPT = perfTotalConsumed > 0 ? perfTotalEstimated / perfTotalConsumed : 0;
 
-        const totalSavings = projectPerformance.reduce((acc, p) => acc + p.savings, 0);
+        const totalSavings = perfTotalEstimated - perfTotalConsumed;
 
         const performanceClassification = {
             eficiente: projectPerformance.filter(p => p.classification === 'eficiente').length,
@@ -161,24 +196,22 @@ export async function GET(request: Request) {
             desvio: projectPerformance.filter(p => p.classification === 'desvio').length,
         };
 
-        // Trend Analysis (by month)
-        const trendMap: Record<string, { totalIPT: number; count: number }> = {};
+        const trendMap: Record<string, { totalEst: number; totalCons: number }> = {};
         projectPerformance.forEach(p => {
-            const month = p.createdAt.toISOString().slice(0, 7); // YYYY-MM
-            if (!trendMap[month]) trendMap[month] = { totalIPT: 0, count: 0 };
-            trendMap[month].totalIPT += p.ipt;
-            trendMap[month].count += 1;
+            const month = p.createdAt.toISOString().slice(0, 7);
+            if (!trendMap[month]) trendMap[month] = { totalEst: 0, totalCons: 0 };
+            trendMap[month].totalEst += p.horasEstimadas;
+            trendMap[month].totalCons += p.horasConsumidas;
         });
 
         let performanceTrend = Object.entries(trendMap)
             .sort((a, b) => a[0].localeCompare(b[0]))
             .map(([month, data]) => ({
                 label: month,
-                ipt: Number((data.totalIPT / data.count).toFixed(2))
+                ipt: Number((data.totalCons > 0 ? data.totalEst / data.totalCons : 0).toFixed(2))
             }))
-            .slice(-6); // last 6 months
+            .slice(-6);
 
-        // Pad with a starting point if only 1 point exists to make the line visible
         if (performanceTrend.length === 1) {
             const first = performanceTrend[0];
             const [year, month] = first.label.split('-').map(Number);
@@ -188,7 +221,6 @@ export async function GET(request: Request) {
         }
 
         // Client Delay Metrics
-        const activeDelays = clientDelays.filter(d => activeProjectIds.has(d.projectId));
         const totalDelayHours = activeDelays.reduce((acc, d) => acc + d.duracion, 0);
         const delayImpactPercent = (totalConsumed + totalDelayHours) > 0
             ? (totalDelayHours / (totalConsumed + totalDelayHours)) * 100
@@ -221,7 +253,6 @@ export async function GET(request: Request) {
             .map(([label, hours]) => ({ label, hours }))
             .slice(-6);
 
-        // Pad with a starting point if only 1 point exists to make the line visible
         if (delayTrend.length === 1) {
             const first = delayTrend[0];
             const [year, month] = first.label.split('-').map(Number);
@@ -230,7 +261,7 @@ export async function GET(request: Request) {
             delayTrend = [{ label: prevMonthLabel, hours: 0 }, first];
         }
 
-        return NextResponse.json({
+        return {
             kpis: {
                 totalProjects,
                 activeProjects,
@@ -245,21 +276,19 @@ export async function GET(request: Request) {
             topOperators,
             criticalProjects,
             performance: {
-                projects: projectPerformance.slice(0, 10), // Limit for charts
+                projects: projectPerformance.slice(0, 10),
                 classification: performanceClassification,
                 trend: performanceTrend
             },
             delays: {
-                totalHours: Number(totalDelayHours.toFixed(1)),
-                impactPercent: Number(delayImpactPercent.toFixed(1)),
+                totalHours: totalDelayHours,
                 totalEvents: activeDelays.length,
+                impactPercent: Math.round(delayImpactPercent),
                 topAreas,
                 reasons: delayReasons,
                 trend: delayTrend
             }
-        });
-    } catch (error) {
-        console.error('Dashboard API Error:', error);
-        return NextResponse.json({ error: 'Failed to fetch dashboard data', details: String(error) }, { status: 500 });
-    }
+        };
+
+    }, [rawData, filters]);
 }

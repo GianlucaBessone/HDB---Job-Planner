@@ -349,6 +349,7 @@ model OrdenServicio {
   cobroCondicionPago       String?
   cobroOtrosConceptos      Json?     // [{ nombre: string, precio: number }]
   cobroFechaGeneracion     DateTime?
+  cobroFechaPago           DateTime? // Fecha de pago real o estimada
 
   // QMS Integration
   documentosRequeridos OrdenServicioDocumento[]

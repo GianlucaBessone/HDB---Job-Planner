@@ -52,12 +52,17 @@ export async function createOrdenServicio(data: {
         return acc + (op.isExtra ? Math.ceil(h) * 2 : Math.ceil(h));
     }, 0);
 
+    // Update project total hours and automatically set state to 'finalizado'
+    const updateData: any = { estado: 'finalizado' };
+    
     if (totalOSHours > 0) {
-        await prisma.project.update({
-            where: { id: projectId },
-            data: { horasConsumidas: { increment: totalOSHours } }
-        });
+        updateData.horasConsumidas = { increment: totalOSHours };
     }
+
+    await prisma.project.update({
+        where: { id: projectId },
+        data: updateData
+    });
 
     return os;
 }
