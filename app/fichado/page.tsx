@@ -255,6 +255,12 @@ export default function PunchInPage() {
                     setForceConfirmed(false);
                     return;
                 }
+                // Jornada was already closed (e.g. auto-close) — refresh UI to remove stale button
+                if (res.status === 404 && action === 'OUT') {
+                    showToast("Esta jornada ya fue cerrada automáticamente.", "info");
+                    await loadData(currentUser.id);
+                    return;
+                }
                 throw new Error(err.message || err.error || "Error al registrar");
             }
 

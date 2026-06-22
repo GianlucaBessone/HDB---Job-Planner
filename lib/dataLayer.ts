@@ -14,7 +14,6 @@ export const dataLayer = {
                 where: {
                     estado: { notIn: ['finalizado', 'atrasado', 'cancelado'] },
                     fechaFin: {
-                        not: null,
                         not: '',
                         lt: today
                     }

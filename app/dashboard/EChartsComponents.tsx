@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import ReactECharts from 'echarts-for-react';
 
 const COMMON_TEXT_COLOR = '#64748b'; // slate-500
-const COMMON_GRID = { left: '3%', right: '4%', bottom: '3%', containLabel: true };
+export const COMMON_GRID = { left: '3%', right: '4%', bottom: '3%', containLabel: true };
 
 interface BaseChartProps {
     data: any;

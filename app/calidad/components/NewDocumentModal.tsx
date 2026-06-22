@@ -71,8 +71,8 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
 
     const [formData, setFormData] = useState({
         titulo: '',
-        tipoDocumento: 'PR',
-        area: 'OPE',
+        tipoDocumento: 'PG',
+        area: 'GLB',
         nivelCriticidad: 'medio',
         requiereConfirmacionLectura: true,
         requiereCapacitacion: false,
@@ -481,16 +481,10 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                             value={formData.tipoDocumento} onChange={e => setFormData({ ...formData, tipoDocumento: e.target.value })}
                                             className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
                                         >
-                                            <option value="POL">POL - Política</option>
-                                            <option value="MAN">MAN - Manual</option>
-                                            <option value="PR">PR - Procedimiento</option>
-                                            <option value="INS">INS - Instructivo</option>
-                                            <option value="FOR">FOR - Formulario</option>
-                                            <option value="REG">REG - Registro</option>
-                                            <option value="ESP">ESP - Especificación</option>
-                                            <option value="NOR">NOR - Norma Interna</option>
-                                            <option value="PLN">PLN - Plan</option>
-                                            <option value="EXT">EXT - Documento Externo</option>
+                                            <option value="MQ">MQ - Manual de Calidad</option>
+                                            <option value="PG">PG - Procedimientos Generales</option>
+                                            <option value="FR">FR - Formularios y Registros (Evidencia)</option>
+                                            <option value="IT">IT - Instructivos Técnicos</option>
                                         </select>
                                     </div>
                                 </div>
@@ -511,24 +505,12 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                             value={formData.area} onChange={e => setFormData({ ...formData, area: e.target.value })}
                                             className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
                                         >
-                                            <option value="DIR">DIR - Dirección</option>
-                                            <option value="CAL">CAL - Calidad</option>
+                                            <option value="GLB">GLB - Globales</option>
+                                            <option value="MNG">MNG - Gerencia</option>
+                                            <option value="OPR">OPR - Operaciones</option>
                                             <option value="ADM">ADM - Administración</option>
-                                            <option value="FIN">FIN - Finanzas</option>
-                                            <option value="COM">COM - Compras</option>
-                                            <option value="RRH">RRH - Recursos Humanos</option>
-                                            <option value="CAP">CAP - Capacitación</option>
-                                            <option value="OPE">OPE - Operaciones</option>
-                                            <option value="PRO">PRO - Producción</option>
-                                            <option value="MNT">MNT - Mantenimiento</option>
-                                            <option value="LOG">LOG - Logística</option>
-                                            <option value="SER">SER - Servicios</option>
-                                            <option value="SIS">SIS - Sistemas</option>
-                                            <option value="BI">BI - Business Intelligence</option>
-                                            <option value="SEG">SEG - Seguridad Informática</option>
-                                            <option value="SYS">SYS - Seguridad y Salud</option>
-                                            <option value="MAA">MAA - Medio Ambiente</option>
-                                            <option value="RIE">RIE - Gestión de Riesgos</option>
+                                            <option value="QAC">QAC - Aseguramiento y Control de Calidad</option>
+                                            <option value="HRM">HRM - Gestión de Recursos Humanos</option>
                                         </select>
                                     </div>
                                     <div>

@@ -13,6 +13,7 @@ const PUBLIC_DYNAMIC_ROUTES = [
   /^\/api\/ordenes-servicio\/[^\/]+\/pdf$/, // PDF generation
   /^\/api\/encuesta-servicio$/, // POST
   /^\/api\/encuesta-servicio\/[^\/]+$/, // GET
+  /^\/api\/centro-ayuda\/articulo\/[^\/]+$/, // GET ayuda contextual
 ];
 
 export async function middleware(request: NextRequest) {

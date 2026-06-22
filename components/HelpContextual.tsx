@@ -14,29 +14,37 @@ export default function HelpContextual({ slug, iconType = 'help' }: HelpContextu
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [article, setArticle] = useState<any>(null);
+  const [fetchError, setFetchError] = useState(false);
 
   useEffect(() => {
-    if (isOpen && !article && !loading) {
+    if (isOpen && !article && !loading && !fetchError) {
       setLoading(true);
+      setFetchError(false);
       fetch(`/api/centro-ayuda/articulo/${slug}`)
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
         .then(data => {
-          if (!data.error) setArticle(data);
+          if (!data.error) {
+            setArticle(data);
+          } else {
+            setFetchError(true);
+          }
           setLoading(false);
         })
-        .catch(() => setLoading(false));
+        .catch(() => {
+          setFetchError(true);
+          setLoading(false);
+        });
     }
-  }, [isOpen, slug]);
+  }, [isOpen, slug, article, loading, fetchError]);
 
   const Icon = iconType === 'help' ? HelpCircle : Info;
 
   return (
     <>
-      <button 
-        onClick={() => setIsOpen(true)}
-        className="inline-flex items-center justify-center p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-blue-500 transition-colors"
-        title="Obtener ayuda"
-      >
+      <button onClick={() => setIsOpen(true)} className="inline-flex items-center justify-center p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-blue-500 transition-colors" title="Obtener ayuda">
         <Icon className="w-5 h-5" />
       </button>
 
@@ -49,56 +57,64 @@ export default function HelpContextual({ slug, iconType = 'help' }: HelpContextu
           />
           
           {/* Slide-over Panel */}
-          <div className="fixed inset-y-0 right-0 max-w-md w-full bg-white dark:bg-slate-900 shadow-2xl z-50 flex flex-col transform transition-transform duration-300 ease-in-out">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
+          <div
+            className="fixed inset-y-0 right-0 z-50 flex flex-col min-h-0 bg-white dark:bg-slate-900 shadow-2xl transition-transform duration-300 ease-in-out w-full max-w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl"
+            
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
               <h2 className="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                <BookOpen className="w-4.5 h-4.5 text-blue-500" />
+                <BookOpen className="w-4.5 h-4.5 text-blue-500 shrink-0" />
                 Ayuda Contextual
               </h2>
               <button 
                 onClick={() => setIsOpen(false)}
-                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors text-slate-400"
+                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors text-slate-400 shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto overflow-x-hidden p-6">
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 break-words" style={{ overflowX: 'auto' }}>
               {loading ? (
                 <div className="flex flex-col items-center justify-center h-40 gap-3">
                   <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
                   <p className="text-sm font-medium text-slate-500">Cargando ayuda...</p>
                 </div>
               ) : article ? (
-                <div className="flex flex-col gap-6 w-full max-w-full">
-                  <div className="w-full">
-                    <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-500">
-                      {article.category?.title}
-                    </span>
-                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mt-1">
-                      {article.title}
-                    </h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5 font-normal">
-                      {article.description}
-                    </p>
-                  </div>
+                <div style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+                  {/* Category & Title */}
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-500">
+                    {article.category?.title}
+                  </span>
+                  <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mt-2 mb-3 leading-snug">
+                    {article.title}
+                  </h3>
+                  <p className="text-lg text-slate-500 dark:text-slate-400 mt-2 mb-4 leading-relaxed">
+                    {article.description}
+                  </p>
 
+                  {/* How to access */}
                   {article.comoAcceder && (
-                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800 break-words w-full max-w-full">
-                      <p className="text-xs font-bold text-blue-600 mb-1">Cómo utilizarlo</p>
-                      <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-medium">{article.comoAcceder}</p>
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800 mt-6">
+                      <p className="text-xs font-bold text-blue-600 dark:text-blue-400 mb-1">Cómo utilizarlo</p>
+                      <p className="text-base text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
+                        {article.comoAcceder}
+                      </p>
                     </div>
                   )}
 
-                  <div className="prose prose-sm w-full max-w-full prose-slate dark:prose-invert prose-a:text-blue-500 
-                    break-words overflow-wrap-anywhere
-                    [&_p]:whitespace-pre-wrap [&_li]:whitespace-pre-wrap
+                  {/* Markdown content */}
+                  <div className="mt-6 prose prose-xl max-w-prose prose-slate dark:prose-invert prose-a:text-blue-500 break-words
                     [&_pre]:overflow-x-auto [&_pre]:max-w-full
-                    [&_table]:block [&_table]:overflow-x-auto [&_table]:w-full"
+                    [&_table]:block [&_table]:overflow-x-auto [&_table]:max-w-full
+                    [&_img]:max-w-full [&_img]:h-auto"
                   >
                     <ReactMarkdown>{article.content}</ReactMarkdown>
                   </div>
 
+                  {/* Link to full article */}
                   <Link 
                     href={`/centro-ayuda/articulo/${article.slug}`}
                     className="flex items-center justify-center gap-2 w-full py-3 mt-8 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
