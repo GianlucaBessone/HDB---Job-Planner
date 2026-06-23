@@ -107,7 +107,8 @@ export default function RootLayout({
     const isPublicPage = pathname ? (
         pathname.includes('/report') || 
         pathname.startsWith('/os/') || 
-        pathname.startsWith('/ideas-sugerencias-reclamos')
+        pathname.startsWith('/ideas-sugerencias-reclamos') ||
+        pathname.startsWith('/public/')
     ) : false;
 
     const role = currentUser?.role?.toLowerCase() || 'operador';

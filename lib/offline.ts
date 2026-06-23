@@ -35,7 +35,7 @@ async function getDB(): Promise<IDBPDatabase<OfflineDB>> {
   }
 
   if (!dbPromise) {
-    dbPromise = openDB<OfflineDB>('offlineDB', 1, {
+    dbPromise = openDB<OfflineDB>('offlineDB', 2, {
       upgrade(db) {
         console.log('[OfflineDB] Upgrading/Creating stores...');
         if (!db.objectStoreNames.contains('pendingActions')) {

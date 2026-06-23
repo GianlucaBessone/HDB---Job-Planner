@@ -34,6 +34,8 @@ import { formatDateInline, formatDateTimeInline } from "@/lib/formatDate";
 import { showToast } from "@/components/Toast";
 import VersionComparisonModal from "./VersionComparisonModal";
 import { useModalScroll } from "@/lib/useModalScroll";
+import { QRCodeSVG } from "qrcode.react";
+import { renderToString } from "react-dom/server";
 
 // Module-level caches to speed up modal opens across the app session
 let cachedOperators: any[] | null = null;
@@ -203,7 +205,7 @@ export default function DocumentDetailModal({
     return null;
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     if (!doc) return;
 
     let digitalData = null;
@@ -213,13 +215,38 @@ export default function DocumentDetailModal({
       }
     } catch (e) {}
 
+    // Llamada a la API para generar el token de impresión
+    let printToken = "";
+    try {
+      const payload = {
+        operatorId: user?.id || "system",
+        operatorNombre: user?.nombreCompleto || user?.nombre || "System",
+        versionId: doc.versions?.[0]?.id || ""
+      };
+      
+      const res = await fetch(`/api/documentos/${doc.id}/print`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        printToken = data.token;
+      } else {
+        console.error("Error al generar registro de impresión");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+
     const printWindow = window.open("", "_blank");
     if (!printWindow) {
       alert("Por favor, permita las ventanas emergentes para exportar el PDF.");
       return;
-    }
-
-    const dateStr = formatDateInline(new Date());
+    }    const dateStr = formatDateInline(new Date());
+    const verificationUrl = typeof window !== "undefined" ? `${window.location.origin}/public/doc-print/${printToken}` : "";
+    const qrSvgString = printToken ? renderToString(<QRCodeSVG value={verificationUrl} size={100} />) : "";
 
     printWindow.document.write(`
             <html>
@@ -342,12 +369,35 @@ export default function DocumentDetailModal({
                             }
                             @page {
                                 size: A4;
-                                margin: 20mm;
+                                margin: 15mm;
                             }
+                        }
+                        .watermark {
+                            position: fixed;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%) rotate(-45deg);
+                            font-size: 65px;
+                            font-weight: 900;
+                            color: rgba(148, 163, 184, 0.15); /* light slate-400 with opacity */
+                            z-index: -100;
+                            pointer-events: none;
+                            text-align: center;
+                            width: 100%;
+                            line-height: 1.1;
+                            user-select: none;
+                        }
+                        .qr-section {
+                            margin-top: 20px;
+                            text-align: center;
+                        }
+                        .qr-section svg {
+                            display: inline-block;
                         }
                     </style>
                 </head>
                 <body>
+                    <div class="watermark">COPIA NO CONTROLADA<br>HDB-SGI</div>
                     <table class="header-table">
                         <tr>
                             <td rowspan="2" class="logo-cell">HDB</td>
@@ -364,7 +414,6 @@ export default function DocumentDetailModal({
                         </tr>
                         <tr>
                             <td class="meta-cell">
-                                <strong>CRITICIDAD:</strong> ${doc.nivelCriticidad.toUpperCase()}<br>
                                 <strong>FECHA EMISIÓN:</strong> ${formatDateInline(doc.createdAt)}<br>
                                 <strong>ESTADO:</strong> ${doc.estado.toUpperCase()}
                             </td>
@@ -463,6 +512,14 @@ export default function DocumentDetailModal({
                     <div style="margin-top:60px; font-size:9px; color:#94a3b8; text-align:center; border-top:1px solid #e2e8f0; padding-top:10px;">
                         Documento oficial controlado de HDB. Copia no controlada si se imprime. Impreso el ${dateStr}.
                     </div>
+
+                    ${printToken ? `
+                    <div class="qr-section">
+                        <div>${qrSvgString}</div>
+                        <div style="font-size: 10px; font-weight: bold; color: #475569; margin-top: 5px;">ESCANEAR PARA VERIFICAR VIGENCIA</div>
+                        <div style="font-size: 9px; color: #64748b;">${printToken}</div>
+                    </div>
+                    ` : ''}
 
                     <script>
                         window.onload = function() {
@@ -1472,12 +1529,20 @@ export default function DocumentDetailModal({
                 </h2>
               </div>
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors text-slate-500"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleExportPDF}
+                className="px-4 py-2 text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 rounded-xl transition-colors flex items-center gap-2"
+              >
+                <Download className="w-4 h-4" /> Imprimir
+              </button>
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors text-slate-500"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {/* Tabs */}
@@ -2015,12 +2080,6 @@ export default function DocumentDetailModal({
                                 ✏️ Editar
                               </button>
                             )}
-                            <button
-                              onClick={handleExportPDF}
-                              className="px-3 py-1.5 text-xs font-bold text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors flex items-center gap-1"
-                            >
-                              <Download className="w-3.5 h-3.5" /> Exportar PDF
-                            </button>
                           </div>
                         </div>
 

@@ -159,6 +159,7 @@ model Operator {
   timeEntriesApproved      TimeEntry[]       @relation("TimeEntryApprover")
   documentVersionsAuthored DocumentVersion[] @relation("DocVersionAutor")
   documentVersionsApproved DocumentVersion[] @relation("DocVersionAprobador")
+  documentPrints           DocumentPrint[]
 }
 
 model FavoriteBlock {
@@ -666,6 +667,7 @@ model ControlledDocument {
   readConfirmations  DocumentReadConfirmation[]
   alerts             DocumentAlert[]
   documentChecklists DocumentChecklist[]
+  prints             DocumentPrint[]
 
   // OS Integrations
   applicabilityRules    DocumentApplicabilityRule[]
@@ -717,6 +719,7 @@ model DocumentVersion {
   OrdenServicioDocumento OrdenServicioDocumento[]
   OSChecklist            OSChecklist[]
   trainings              TechnicianTraining[]
+  prints                 DocumentPrint[]
 
   @@unique([documentId, versionMayor, versionMenor])
   @@index([documentId])
@@ -798,6 +801,24 @@ model DocumentApplicabilityRule {
   updatedAt DateTime @updatedAt
 
   @@index([documentId])
+}
+
+model DocumentPrint {
+  id             String             @id @default(cuid())
+  documentId     String
+  document       ControlledDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  versionId      String
+  version        DocumentVersion    @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  operatorId     String
+  operator       Operator           @relation(fields: [operatorId], references: [id], onDelete: Restrict)
+  operatorNombre String
+  fechaImpresion DateTime           @default(now())
+  token          String             @unique // Encrypted/Hashed ID for the QR code
+
+  createdAt      DateTime           @default(now())
+  
+  @@index([documentId])
+  @@index([token])
 }
 
 model OrdenServicioDocumento {

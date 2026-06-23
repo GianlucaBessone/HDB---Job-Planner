@@ -8,6 +8,7 @@ import {
 import { safeApiRequest } from '@/lib/offline';
 import TechAssistantChat from '@/components/TechAssistantChat';
 import { useModalScroll } from '@/lib/useModalScroll';
+import { showToast } from '@/components/Toast';
 
 export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose: () => void, onSuccess: (newDocId: string) => void, user: any }) {
     useModalScroll(true);
@@ -173,9 +174,12 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        
         return {
-            x: clientX - rect.left,
-            y: clientY - rect.top
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY
         };
     };
 
@@ -296,7 +300,12 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
         const signatureData = canvas.toDataURL('image/png');
         
         if (!hasSigned) {
-            alert('Debe firmar el documento para crearlo (Firma Digital del Creador)');
+            showToast('Debe firmar el documento para crearlo (Firma Digital del Creador)', 'error');
+            return;
+        }
+
+        if (!formData.revisadorId || !formData.aprobadorId) {
+            showToast('Debe seleccionar un Revisador y un Aprobador para crear el documento.', 'error');
             return;
         }
 
@@ -330,11 +339,11 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                 onSuccess(data.id);
             } else {
                 const err = await res.json();
-                alert(err.error || 'Error al crear documento');
+                showToast(err.error || 'Error al crear documento', 'error');
             }
         } catch (e) {
             console.error(e);
-            alert('Error de red');
+            showToast('Error de red', 'error');
         } finally {
             setLoading(false);
         }
@@ -498,7 +507,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 gap-4">
                                     <div>
                                         <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Área / Sector</label>
                                         <select
@@ -513,24 +522,13 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                             <option value="HRM">HRM - Gestión de Recursos Humanos</option>
                                         </select>
                                     </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Criticidad</label>
-                                        <select
-                                            value={formData.nivelCriticidad} onChange={e => setFormData({ ...formData, nivelCriticidad: e.target.value })}
-                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
-                                        >
-                                            <option value="bajo">Bajo</option>
-                                            <option value="medio">Medio</option>
-                                            <option value="alto">Alto</option>
-                                            <option value="critico">Crítico</option>
-                                        </select>
-                                    </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Revisado Por (Supervisor/QA)</label>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Revisado Por (Supervisor/QA) <span className="text-rose-500">*</span></label>
                                         <select
+                                            required
                                             value={formData.revisadorId} onChange={e => setFormData({ ...formData, revisadorId: e.target.value })}
                                             className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
                                         >
@@ -543,8 +541,9 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Aprobado Por (QA/Gerente)</label>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Aprobado Por (QA/Gerente) <span className="text-rose-500">*</span></label>
                                         <select
+                                            required
                                             value={formData.aprobadorId} onChange={e => setFormData({ ...formData, aprobadorId: e.target.value })}
                                             className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
                                         >
