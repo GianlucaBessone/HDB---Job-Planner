@@ -208,6 +208,13 @@ export default function DocumentDetailModal({
   const handleExportPDF = async () => {
     if (!doc) return;
 
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      alert("Por favor, permita las ventanas emergentes para exportar el PDF.");
+      return;
+    }
+    printWindow.document.body.innerHTML = "<h2 style='font-family:sans-serif;color:#64748b;text-align:center;margin-top:20vh;'>Generando documento...</h2>";
+
     let digitalData = null;
     try {
       if (doc.descripcion && doc.descripcion.trim().startsWith("{")) {
@@ -240,14 +247,11 @@ export default function DocumentDetailModal({
       console.error(err);
     }
 
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) {
-      alert("Por favor, permita las ventanas emergentes para exportar el PDF.");
-      return;
-    }    const dateStr = formatDateInline(new Date());
+    const dateStr = formatDateInline(new Date());
     const verificationUrl = typeof window !== "undefined" ? `${window.location.origin}/public/doc-print/${printToken}` : "";
     const qrSvgString = printToken ? renderToString(<QRCodeSVG value={verificationUrl} size={100} />) : "";
 
+    printWindow.document.open();
     printWindow.document.write(`
             <html>
                 <head>
