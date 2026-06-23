@@ -208,12 +208,7 @@ export default function DocumentDetailModal({
   const handleExportPDF = async () => {
     if (!doc) return;
 
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) {
-      alert("Por favor, permita las ventanas emergentes para exportar el PDF.");
-      return;
-    }
-    printWindow.document.body.innerHTML = "<h2 style='font-family:sans-serif;color:#64748b;text-align:center;margin-top:20vh;'>Generando documento...</h2>";
+    showToast("Preparando documento para impresión...", "info");
 
     let digitalData = null;
     try {
@@ -251,8 +246,23 @@ export default function DocumentDetailModal({
     const verificationUrl = typeof window !== "undefined" ? `${window.location.origin}/public/doc-print/${printToken}` : "";
     const qrSvgString = printToken ? renderToString(<QRCodeSVG value={verificationUrl} size={100} />) : "";
 
-    printWindow.document.open();
-    printWindow.document.write(`
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+    document.body.appendChild(iframe);
+
+    const printDoc = iframe.contentWindow?.document;
+    if (!printDoc) {
+      showToast("No se pudo inicializar la impresión en este navegador.", "error");
+      return;
+    }
+
+    printDoc.open();
+    printDoc.write(`
             <html>
                 <head>
                     <title>${doc.codigoDocumental} - ${doc.titulo}</title>
@@ -525,15 +535,29 @@ export default function DocumentDetailModal({
                     </div>
                     ` : ''}
 
-                    <script>
-                        window.onload = function() {
-                            setTimeout(function() { window.print(); }, 500);
-                        }
-                    </script>
                 </body>
             </html>
         `);
-    printWindow.document.close();
+    printDoc.close();
+
+    setTimeout(() => {
+      if (iframe.contentWindow) {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+      }
+    }, 1000);
+
+    if (iframe.contentWindow) {
+      iframe.contentWindow.addEventListener('afterprint', () => {
+        setTimeout(() => {
+          if (document.body.contains(iframe)) document.body.removeChild(iframe);
+        }, 1000);
+      });
+    }
+
+    setTimeout(() => {
+      if (document.body.contains(iframe)) document.body.removeChild(iframe);
+    }, 60000);
   };
 
   useEffect(() => {
