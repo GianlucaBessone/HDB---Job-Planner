@@ -21,14 +21,30 @@ import {
     Edit3,
     FileSignature,
     Clock,
+    MinusCircle,
+    AlertTriangle,
+    AlertOctagon,
+    Package,
+    ArrowDownToLine,
     QrCode,
-    Share2
+    MessageSquare,
+    Briefcase,
+    ChevronRight,
+    LayoutDashboard,
+    LayoutGrid,
+    List,
+    CheckCircle2,
+    FileSignature,
+    Edit3,
+    ShieldCheck
 } from 'lucide-react';
 import Link from 'next/link';
 import { useModalScroll } from '@/lib/useModalScroll';
 import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
 import { formatDateTime } from '@/lib/formatDate';
+import SignatureButton from '@/components/SignatureButton';
+import SignatureDetailModal from '@/app/calidad/components/SignatureDetailModal';
 import CodeBadge from '@/components/CodeBadge';
 
 interface ChecklistItem {
@@ -127,8 +143,8 @@ export default function MyProjectsPage() {
     const [pendingDelegations, setPendingDelegations] = useState<any[]>([]);
     const [isLoadingDelegations, setIsLoadingDelegations] = useState(false);
 
-    // Signature Canvas State
-    const signatureCanvasRef = useRef<HTMLCanvasElement>(null);
+    // Signature State
+    const [pendingDelegationSignature, setPendingDelegationSignature] = useState<string | null>(null);
     const [isDrawing, setIsDrawing] = useState(false);
     const [hasSignature, setHasSignature] = useState(false);
 
@@ -435,15 +451,12 @@ export default function MyProjectsPage() {
         const targetUser = operatorsList.find(op => op.id === delegationTargetId);
         if (!targetUser) return;
 
-        let firmaData = null;
-        if (signatureCanvasRef.current && hasSignature) {
-            firmaData = signatureCanvasRef.current.toDataURL('image/png');
-        }
-
-        if (!firmaData) {
+        if (!pendingDelegationSignature) {
             showToast('Debe firmar para autorizar la delegación', 'error');
             return;
         }
+
+
 
         setIsSubmittingMaterial(true);
         try {
@@ -459,7 +472,7 @@ export default function MyProjectsPage() {
                     delegadoANombre: targetUser.nombreCompleto,
                     delegadoPorId: user?.id,
                     delegadoPorNombre: user?.nombreCompleto,
-                    firmaDelegacion: firmaData
+                    firmaDelegacion: pendingDelegationSignature
                 })
             });
 
@@ -469,6 +482,7 @@ export default function MyProjectsPage() {
                 setDelegationQuantity('');
                 setDelegationNote('');
                 setDelegationTargetId('');
+                setPendingDelegationSignature(null);
                 loadMaterials(selectedProject?.id!);
             } else {
                 const err = await res.json();
@@ -512,15 +526,12 @@ export default function MyProjectsPage() {
         const targetUser = operatorsList.find(op => op.id === delegationTargetId);
         if (!targetUser) return;
 
-        let firmaData = null;
-        if (signatureCanvasRef.current && hasSignature) {
-            firmaData = signatureCanvasRef.current.toDataURL('image/png');
-        }
-
-        if (!firmaData) {
+        if (!pendingDelegationSignature) {
             showToast('Debe firmar para autorizar la delegación masiva', 'error');
             return;
         }
+
+
 
         setIsSubmittingMaterial(true);
         try {
@@ -535,7 +546,7 @@ export default function MyProjectsPage() {
                     delegadoANombre: targetUser.nombreCompleto,
                     delegadoPorId: user?.id,
                     delegadoPorNombre: user?.nombreCompleto,
-                    firmaDelegacion: firmaData,
+                    firmaDelegacion: pendingDelegationSignature,
                     projectId: selectedProject.id,
                     projectName: selectedProject.nombre
                 })
@@ -550,6 +561,7 @@ export default function MyProjectsPage() {
             setIsDelegarTodoModalOpen(false);
             setDelegationNote('');
             setDelegationTargetId('');
+            setPendingDelegationSignature(null);
             loadMaterials(selectedProject.id);
         } catch (err: any) {
             console.error('Error in batch delegation submit:', err);
@@ -1057,7 +1069,7 @@ export default function MyProjectsPage() {
                                                 }
                                                 setDelegationTargetId('');
                                                 setDelegationNote('');
-                                                setHasSignature(false);
+                                                setPendingDelegationSignature(null);
                                                 setIsDelegarTodoModalOpen(true);
                                             }}
                                             className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 border border-indigo-200 dark:border-indigo-800 text-xs font-bold text-indigo-600 dark:text-indigo-400 rounded-lg transition-colors"
@@ -1161,7 +1173,7 @@ export default function MyProjectsPage() {
                                                                     onClick={() => {
                                                                         setSelectedMaterial(m);
                                                                         setDelegationQuantity('');
-                                                                        setHasSignature(false);
+                                                                        setPendingDelegationSignature(null);
                                                                         setIsDelegationModalOpen(true);
                                                                     }}
                                                                     className="flex-1 flex items-center justify-center py-1.5 rounded-lg hover:bg-slate-50 transition-all active:scale-95"
@@ -1506,60 +1518,30 @@ export default function MyProjectsPage() {
                             <div className="space-y-1.5">
                                 <div className="flex items-center justify-between">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Firma del Responsable *</label>
-                                    {hasSignature && (
+                                    {pendingDelegationSignature && (
                                         <button 
                                             type="button" 
-                                            onClick={() => {
-                                                const ctx = signatureCanvasRef.current?.getContext('2d');
-                                                if (ctx && signatureCanvasRef.current) {
-                                                    ctx.clearRect(0, 0, signatureCanvasRef.current.width, signatureCanvasRef.current.height);
-                                                    setHasSignature(false);
-                                                }
-                                            }}
+                                            onClick={() => setPendingDelegationSignature(null)}
                                             className="text-[10px] font-bold text-red-500 hover:underline"
                                         >
-                                            Limpiar
+                                            Borrar Firma
                                         </button>
                                     )}
                                 </div>
-                                <div className="border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-2xl overflow-hidden shadow-inner touch-none relative">
-                                    <canvas
-                                        ref={signatureCanvasRef}
-                                        width={400}
-                                        height={150}
-                                        className="w-full h-[150px] cursor-crosshair touch-none"
-                                        onPointerDown={(e) => {
-                                            const canvas = signatureCanvasRef.current;
-                                            if (!canvas) return;
-                                            const rect = canvas.getBoundingClientRect();
-                                            const scaleX = canvas.width / rect.width;
-                                            const scaleY = canvas.height / rect.height;
-                                            const ctx = canvas.getContext('2d');
-                                            if (!ctx) return;
-                                            ctx.beginPath();
-                                            ctx.moveTo((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY);
-                                            setIsDrawing(true);
-                                        }}
-                                        onPointerMove={(e) => {
-                                            if (!isDrawing) return;
-                                            const canvas = signatureCanvasRef.current;
-                                            if (!canvas) return;
-                                            const rect = canvas.getBoundingClientRect();
-                                            const scaleX = canvas.width / rect.width;
-                                            const scaleY = canvas.height / rect.height;
-                                            const ctx = canvas.getContext('2d');
-                                            if (!ctx) return;
-                                            ctx.lineTo((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY);
-                                            ctx.stroke();
-                                            setHasSignature(true);
-                                        }}
-                                        onPointerUp={() => setIsDrawing(false)}
-                                        onPointerCancel={() => setIsDrawing(false)}
-                                        onPointerOut={() => setIsDrawing(false)}
-                                    />
-                                    {!hasSignature && (
-                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                            <span className="text-sm font-black text-slate-300 dark:text-slate-700 uppercase tracking-widest rotate-[-5deg]">Firmar Aquí</span>
+                                <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl overflow-hidden touch-none relative p-4 flex flex-col items-center justify-center min-h-[150px] border border-slate-200 dark:border-slate-700">
+                                    {!pendingDelegationSignature ? (
+                                        <SignatureButton 
+                                            documentId={selectedProject?.id || 'DELEGACION'}
+                                            documentVersion="MATERIAL"
+                                            onSignComplete={(sig) => setPendingDelegationSignature(sig.FirmaID)}
+                                        />
+                                    ) : (
+                                        <div className="flex flex-col items-center gap-2">
+                                            <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-bold text-sm">
+                                                <ShieldCheck className="w-5 h-5 text-emerald-500" />
+                                                Firmado Electrónicamente
+                                            </div>
+                                            <span className="text-[10px] text-slate-500 font-mono">{pendingDelegationSignature}</span>
                                         </div>
                                     )}
                                 </div>
@@ -1575,7 +1557,7 @@ export default function MyProjectsPage() {
                             </button>
                             <button
                                 onClick={submitDelegation}
-                                disabled={!delegationTargetId || !delegationQuantity || isSubmittingMaterial}
+                                disabled={!delegationTargetId || !delegationQuantity || isSubmittingMaterial || !pendingDelegationSignature}
                                 className="flex-[2] py-3.5 rounded-2xl font-black text-white bg-indigo-600 hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50"
                             >
                                 {isSubmittingMaterial ? <Loader2 className="w-4 h-4 animate-spin" /> : <Share2 className="w-4 h-4" />}
@@ -1634,60 +1616,30 @@ export default function MyProjectsPage() {
                             <div className="space-y-1.5">
                                 <div className="flex items-center justify-between">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Firma del Responsable *</label>
-                                    {hasSignature && (
+                                    {pendingDelegationSignature && (
                                         <button 
                                             type="button" 
-                                            onClick={() => {
-                                                const ctx = signatureCanvasRef.current?.getContext('2d');
-                                                if (ctx && signatureCanvasRef.current) {
-                                                    ctx.clearRect(0, 0, signatureCanvasRef.current.width, signatureCanvasRef.current.height);
-                                                    setHasSignature(false);
-                                                }
-                                            }}
+                                            onClick={() => setPendingDelegationSignature(null)}
                                             className="text-[10px] font-bold text-red-500 hover:underline"
                                         >
-                                            Limpiar
+                                            Borrar Firma
                                         </button>
                                     )}
                                 </div>
-                                <div className="border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-2xl overflow-hidden shadow-inner touch-none relative">
-                                    <canvas
-                                        ref={signatureCanvasRef}
-                                        width={400}
-                                        height={150}
-                                        className="w-full h-[150px] cursor-crosshair touch-none"
-                                        onPointerDown={(e) => {
-                                            const canvas = signatureCanvasRef.current;
-                                            if (!canvas) return;
-                                            const rect = canvas.getBoundingClientRect();
-                                            const scaleX = canvas.width / rect.width;
-                                            const scaleY = canvas.height / rect.height;
-                                            const ctx = canvas.getContext('2d');
-                                            if (!ctx) return;
-                                            ctx.beginPath();
-                                            ctx.moveTo((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY);
-                                            setIsDrawing(true);
-                                        }}
-                                        onPointerMove={(e) => {
-                                            if (!isDrawing) return;
-                                            const canvas = signatureCanvasRef.current;
-                                            if (!canvas) return;
-                                            const rect = canvas.getBoundingClientRect();
-                                            const scaleX = canvas.width / rect.width;
-                                            const scaleY = canvas.height / rect.height;
-                                            const ctx = canvas.getContext('2d');
-                                            if (!ctx) return;
-                                            ctx.lineTo((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY);
-                                            ctx.stroke();
-                                            setHasSignature(true);
-                                        }}
-                                        onPointerUp={() => setIsDrawing(false)}
-                                        onPointerCancel={() => setIsDrawing(false)}
-                                        onPointerOut={() => setIsDrawing(false)}
-                                    />
-                                    {!hasSignature && (
-                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                            <span className="text-sm font-black text-slate-300 dark:text-slate-700 uppercase tracking-widest rotate-[-5deg]">Firmar Aquí</span>
+                                <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl overflow-hidden touch-none relative p-4 flex flex-col items-center justify-center min-h-[150px] border border-slate-200 dark:border-slate-700">
+                                    {!pendingDelegationSignature ? (
+                                        <SignatureButton 
+                                            documentId={selectedProject?.id || 'DELEGACION-TODO'}
+                                            documentVersion="MATERIAL"
+                                            onSignComplete={(sig) => setPendingDelegationSignature(sig.FirmaID)}
+                                        />
+                                    ) : (
+                                        <div className="flex flex-col items-center gap-2">
+                                            <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-bold text-sm">
+                                                <ShieldCheck className="w-5 h-5 text-emerald-500" />
+                                                Firmado Electrónicamente
+                                            </div>
+                                            <span className="text-[10px] text-slate-500 font-mono">{pendingDelegationSignature}</span>
                                         </div>
                                     )}
                                 </div>
@@ -1703,7 +1655,7 @@ export default function MyProjectsPage() {
                             </button>
                             <button
                                 onClick={submitBatchDelegation}
-                                disabled={!delegationTargetId || !hasSignature || isSubmittingMaterial}
+                                disabled={!delegationTargetId || !pendingDelegationSignature || isSubmittingMaterial}
                                 className="flex-[2] py-3.5 rounded-2xl font-black text-white bg-indigo-600 hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50"
                             >
                                 {isSubmittingMaterial ? <Loader2 className="w-4 h-4 animate-spin" /> : <Share2 className="w-4 h-4" />}

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Search, Filter, Fingerprint, RefreshCcw, Eye, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
 import SignatureDetailModal from '@/components/SignatureDetailModal';
+import HelpContextual from '@/components/HelpContextual';
 import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
 
@@ -114,6 +115,7 @@ export default function VerificacionFirmasPage() {
                     <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
                         <Fingerprint className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
                         Verificación de Firmas
+                        <HelpContextual slug="verificacion-firmas" />
                     </h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium hidden md:block">
                         Trazabilidad, integridad y auditabilidad (ISO 9001)

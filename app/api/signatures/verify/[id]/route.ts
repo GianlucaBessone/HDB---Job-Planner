@@ -5,8 +5,16 @@ import { logAudit } from '@/lib/audit';
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
     try {
-        const body = await req.json();
-        const { verifiedBy } = body; // User ID who requested verification
+        let verifiedBy = null;
+        try {
+            const bodyText = await req.text();
+            if (bodyText) {
+                const body = JSON.parse(bodyText);
+                verifiedBy = body.verifiedBy;
+            }
+        } catch (e) {
+            // ignore
+        }
 
         const signatureId = params.id;
         
@@ -57,8 +65,16 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             metadata: { result: newStatus }
         });
 
+        // Fetch document code for display purposes
+        const doc = await prisma.controlledDocument.findUnique({
+            where: { id: signature.DocumentID },
+            select: { codigoDocumental: true }
+        });
+        const documentCode = doc?.codigoDocumental || signature.DocumentID;
+
         return NextResponse.json({
             ...updatedSignature,
+            DocumentCode: documentCode,
             RecalculatedHash: recalculatedHash, // Provide recalculated hash for UI comparison
             ValidationResult: newStatus
         });

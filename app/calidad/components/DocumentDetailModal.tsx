@@ -6,6 +6,7 @@ import {
   FileText,
   CheckCircle2,
   ShieldAlert,
+  ShieldCheck,
   Plus,
   Trash2,
   Save,
@@ -33,6 +34,8 @@ import { safeApiRequest } from "@/lib/offline";
 import { formatDateInline, formatDateTimeInline } from "@/lib/formatDate";
 import { showToast } from "@/components/Toast";
 import VersionComparisonModal from "./VersionComparisonModal";
+import SignatureButton from "@/components/SignatureButton";
+import SignatureDetailModal from "@/components/SignatureDetailModal";
 import { useModalScroll } from "@/lib/useModalScroll";
 import { QRCodeSVG } from "qrcode.react";
 import { renderToString } from "react-dom/server";
@@ -127,6 +130,12 @@ export default function DocumentDetailModal({
   const versionCanvasRef = useRef<HTMLCanvasElement>(null);
   const [isVersionDrawing, setIsVersionDrawing] = useState(false);
   const [hasVersionSigned, setHasVersionSigned] = useState(false);
+  
+  // Digital Signature state
+  const [pendingCreatorSignature, setPendingCreatorSignature] = useState<any>(null);
+  const [pendingWorkflowSignature, setPendingWorkflowSignature] = useState<any>(null);
+  const [viewSignatureId, setViewSignatureId] = useState<string | null>(null);
+
   const [isOnline, setIsOnline] = useState(
     typeof navigator !== "undefined" ? navigator.onLine : true,
   );
@@ -505,19 +514,19 @@ export default function DocumentDetailModal({
                     <div class="signature-section">
                         <div class="signature-block">
                             <div class="signature-title">Editado Por</div>
-                            ${doc.workflowState?.creatorSignature ? `<img class="signature-img" src="${doc.workflowState.creatorSignature}" />` : '<div style="height:50px;"></div>'}
+                            ${!doc.workflowState?.creatorSignature ? '<div style="height:50px;"></div>' : doc.workflowState.creatorSignature.startsWith("SIGN-") ? `<div style="height:50px; display:flex; flex-direction:column; justify-content:center; align-items:center;"><span style="color:#10b981; font-weight:900; font-size:10px;">✓ FIRMADO ELECTRÓNICAMENTE</span><span style="font-size:7px; color:#64748b;">ID: ${doc.workflowState.creatorSignature}</span></div>` : `<img class="signature-img" src="${doc.workflowState.creatorSignature}" />`}
                             <div style="font-weight:700;">${doc.workflowState?.editorName || doc.createdByName || "N/A"}</div>
                             <div style="color:#64748b;">${doc.workflowState?.editorPosition || doc.workflowState?.creatorPosition || ""}</div>
                         </div>
                         <div class="signature-block">
                             <div class="signature-title">Revisado Por</div>
-                            ${doc.workflowState?.revisadorSignature ? `<img class="signature-img" src="${doc.workflowState.revisadorSignature}" />` : '<div style="height:50px;"></div>'}
+                            ${!doc.workflowState?.revisadorSignature ? '<div style="height:50px;"></div>' : doc.workflowState.revisadorSignature.startsWith("SIGN-") ? `<div style="height:50px; display:flex; flex-direction:column; justify-content:center; align-items:center;"><span style="color:#10b981; font-weight:900; font-size:10px;">✓ FIRMADO ELECTRÓNICAMENTE</span><span style="font-size:7px; color:#64748b;">ID: ${doc.workflowState.revisadorSignature}</span></div>` : `<img class="signature-img" src="${doc.workflowState.revisadorSignature}" />`}
                             <div style="font-weight:700;">${doc.revisadorNombre || "N/A"}</div>
                             <div style="color:#64748b;">${doc.workflowState?.revisadorPosition || ""}</div>
                         </div>
                         <div class="signature-block">
                             <div class="signature-title">Aprobado Por</div>
-                            ${doc.workflowState?.aprobadorSignature ? `<img class="signature-img" src="${doc.workflowState.aprobadorSignature}" />` : '<div style="height:50px;"></div>'}
+                            ${!doc.workflowState?.aprobadorSignature ? '<div style="height:50px;"></div>' : doc.workflowState.aprobadorSignature.startsWith("SIGN-") ? `<div style="height:50px; display:flex; flex-direction:column; justify-content:center; align-items:center;"><span style="color:#10b981; font-weight:900; font-size:10px;">✓ FIRMADO ELECTRÓNICAMENTE</span><span style="font-size:7px; color:#64748b;">ID: ${doc.workflowState.aprobadorSignature}</span></div>` : `<img class="signature-img" src="${doc.workflowState.aprobadorSignature}" />`}
                             <div style="font-weight:700;">${doc.aprobadorNombre || "N/A"}</div>
                             <div style="color:#64748b;">${doc.workflowState?.aprobadorPosition || ""}</div>
                         </div>
@@ -594,8 +603,7 @@ export default function DocumentDetailModal({
     const uName =
       user?.nombreCompleto || user?.nombre || "Usuario Administrador";
     try {
-      const canvas = versionCanvasRef.current;
-      const sigData = canvas ? canvas.toDataURL("image/png") : null;
+      const sigData = pendingCreatorSignature ? pendingCreatorSignature.SignatureID : null;
 
       // Step 1: Apply the document update. If versionAction !== 'none', we force it into 'en_revision'
       let updateBody: any = {
@@ -723,7 +731,15 @@ export default function DocumentDetailModal({
             );
           }
         } else {
-          showToast("Cambios guardados sin incremento de versión", "success");
+          const res = await safeApiRequest(`/api/documentos/${documentId}`, {
+            method: "PUT",
+            body: JSON.stringify(updateBody),
+          });
+          if (res.ok) {
+            showToast("Cambios guardados sin incremento de versión", "success");
+          } else {
+            showToast("Error al guardar los cambios del documento", "error");
+          }
         }
       }
 
@@ -857,16 +873,11 @@ export default function DocumentDetailModal({
 
     let signatureData = null;
     if (agreement === "ACUERDO") {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      signatureData = canvas.toDataURL("image/png");
-      const isBlank =
-        !isDrawing &&
-        canvas.toDataURL() === document.createElement("canvas").toDataURL();
-      if (isBlank) {
-        alert("Debe firmar el documento para manifestar su acuerdo");
+      if (!pendingWorkflowSignature) {
+        showToast("Debe firmar electrónicamente el documento para manifestar su acuerdo", "error");
         return;
       }
+      signatureData = pendingWorkflowSignature.SignatureID;
     } else {
       if (!comments.trim()) {
         alert(
@@ -1464,34 +1475,11 @@ export default function DocumentDetailModal({
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
                       Firma Digital del Creador (Modificador)
                     </label>
-                    <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-900/50">
-                      <canvas
-                        ref={versionCanvasRef}
-                        width={800}
-                        height={300}
-                        onMouseDown={startVersionDrawing}
-                        onMouseMove={drawVersion}
-                        onMouseUp={stopVersionDrawing}
-                        onMouseLeave={stopVersionDrawing}
-                        onTouchStart={startVersionDrawing}
-                        onTouchMove={drawVersion}
-                        onTouchEnd={stopVersionDrawing}
-                        className="w-full bg-transparent dark:invert cursor-crosshair touch-none h-[150px]"
-                      />
-                      <div className="px-4 py-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900">
-                        <span className="text-[10px] font-bold text-slate-400">
-                          Escriba su firma arriba
-                        </span>
-                        <button
-                          type="button"
-                          onClick={clearVersionCanvas}
-                          disabled={!hasVersionSigned}
-                          className={`text-xs font-bold transition-colors px-2 py-1 rounded ${hasVersionSigned ? "text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" : "text-slate-300 dark:text-slate-700 cursor-not-allowed"}`}
-                        >
-                          Limpiar
-                        </button>
-                      </div>
-                    </div>
+                    <SignatureButton 
+                      documentId={documentId} 
+                      documentVersion={versionAction === 'mayor' ? `v${doc.versionMayor + 1}.0` : versionAction === 'menor' ? `v${doc.versionMayor}.${doc.versionMenor + 1}` : `v${doc.versionMayor}.${doc.versionMenor}`}
+                      onSignComplete={(sig) => setPendingCreatorSignature(sig)}
+                    />
                   </div>
                 </>
               )}
@@ -1513,7 +1501,7 @@ export default function DocumentDetailModal({
                 onClick={executeVersionedSave}
                 disabled={
                   executingSave ||
-                  (versionAction !== "none" && !hasVersionSigned) ||
+                  (versionAction !== "none" && !pendingCreatorSignature) ||
                   (versionAction === "none" && !versionJustification.trim())
                 }
                 className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition-all flex items-center gap-2 disabled:opacity-50"
@@ -2551,13 +2539,23 @@ export default function DocumentDetailModal({
                         </div>
                         <div className="mt-3">
                           {doc.workflowState.creatorSignature ? (
-                            <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-1 bg-slate-50 dark:bg-slate-900 inline-block">
-                              <img
-                                src={doc.workflowState.creatorSignature}
-                                alt="Firma Creador"
-                                className="max-h-12 w-auto object-contain dark:invert"
-                              />
-                            </div>
+                            doc.workflowState.creatorSignature.startsWith("SIGN-") ? (
+                              <button 
+                                type="button" 
+                                onClick={() => setViewSignatureId(doc.workflowState.creatorSignature)} 
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 dark:text-indigo-300 rounded-lg text-[10px] font-bold transition-colors mt-1 mb-1"
+                              >
+                                <ShieldCheck className="w-4 h-4" /> Ver Firma Digital
+                              </button>
+                            ) : (
+                              <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-1 bg-slate-50 dark:bg-slate-900 inline-block">
+                                <img
+                                  src={doc.workflowState.creatorSignature}
+                                  alt="Firma Creador"
+                                  className="max-h-12 w-auto object-contain dark:invert"
+                                />
+                              </div>
+                            )
                           ) : (
                             <span className="text-xs text-slate-400 italic">
                               No firmado
@@ -2614,13 +2612,23 @@ export default function DocumentDetailModal({
                           </div>
                           <div className="mt-3">
                             {doc.workflowState.revisadorSignature ? (
-                              <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-1 bg-slate-50 dark:bg-slate-900 inline-block">
-                                <img
-                                  src={doc.workflowState.revisadorSignature}
-                                  alt="Firma Revisador"
-                                  className="max-h-12 w-auto object-contain dark:invert"
-                                />
-                              </div>
+                              doc.workflowState.revisadorSignature.startsWith("SIGN-") ? (
+                                <button 
+                                  type="button" 
+                                  onClick={() => setViewSignatureId(doc.workflowState.revisadorSignature)} 
+                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 dark:text-indigo-300 rounded-lg text-[10px] font-bold transition-colors mt-1 mb-1"
+                                >
+                                  <ShieldCheck className="w-4 h-4" /> Ver Firma Digital
+                                </button>
+                              ) : (
+                                <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-1 bg-slate-50 dark:bg-slate-900 inline-block">
+                                  <img
+                                    src={doc.workflowState.revisadorSignature}
+                                    alt="Firma Revisador"
+                                    className="max-h-12 w-auto object-contain dark:invert"
+                                  />
+                                </div>
+                              )
                             ) : doc.workflowState.revisadorComment ? (
                               <div className="bg-red-50 dark:bg-red-950/30 p-2 rounded text-xs text-red-700 dark:text-red-300 italic border border-red-100 dark:border-red-900/30">
                                 Observación:{" "}
@@ -2683,13 +2691,23 @@ export default function DocumentDetailModal({
                           </div>
                           <div className="mt-3">
                             {doc.workflowState.aprobadorSignature ? (
-                              <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-1 bg-slate-50 dark:bg-slate-900 inline-block">
-                                <img
-                                  src={doc.workflowState.aprobadorSignature}
-                                  alt="Firma Aprobador"
-                                  className="max-h-12 w-auto object-contain dark:invert"
-                                />
-                              </div>
+                              doc.workflowState.aprobadorSignature.startsWith("SIGN-") ? (
+                                <button 
+                                  type="button" 
+                                  onClick={() => setViewSignatureId(doc.workflowState.aprobadorSignature)} 
+                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 dark:text-indigo-300 rounded-lg text-[10px] font-bold transition-colors mt-1 mb-1"
+                                >
+                                  <ShieldCheck className="w-4 h-4" /> Ver Firma Digital
+                                </button>
+                              ) : (
+                                <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-1 bg-slate-50 dark:bg-slate-900 inline-block">
+                                  <img
+                                    src={doc.workflowState.aprobadorSignature}
+                                    alt="Firma Aprobador"
+                                    className="max-h-12 w-auto object-contain dark:invert"
+                                  />
+                                </div>
+                              )
                             ) : doc.workflowState.aprobadorComment ? (
                               <div className="bg-red-50 dark:bg-red-950/30 p-2 rounded text-xs text-red-700 dark:text-red-300 italic border border-red-100 dark:border-red-900/30">
                                 Observación:{" "}
@@ -2840,39 +2858,19 @@ export default function DocumentDetailModal({
                                   Firma Digital de Conformidad{" "}
                                   <span className="text-red-500">*</span>
                                 </label>
-                                <div className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden bg-white dark:bg-slate-950">
-                                  <canvas
-                                    ref={canvasRef}
-                                    width={800}
-                                    height={300}
-                                    onMouseDown={startDrawing}
-                                    onMouseMove={draw}
-                                    onMouseUp={stopDrawing}
-                                    onMouseLeave={stopDrawing}
-                                    onTouchStart={startDrawing}
-                                    onTouchMove={draw}
-                                    onTouchEnd={stopDrawing}
-                                    className="w-full bg-transparent dark:invert cursor-crosshair touch-none h-[150px]"
+                                <div className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden bg-white dark:bg-slate-950 p-4">
+                                  <SignatureButton 
+                                    documentId={documentId} 
+                                    documentVersion={`v${doc.versionMayor}.${doc.versionMenor}`}
+                                    onSignComplete={(sig) => setPendingWorkflowSignature(sig)}
                                   />
-                                  <div className="px-4 py-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900">
-                                    <span className="text-[10px] font-bold text-slate-400">
-                                      Dibuje su firma arriba
-                                    </span>
-                                    <button
-                                      type="button"
-                                      onClick={clearCanvas}
-                                      className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-950/20"
-                                    >
-                                      Limpiar
-                                    </button>
-                                  </div>
                                 </div>
                                 <div className="flex justify-end">
                                   <button
                                     type="button"
-                                    disabled={submittingWorkflow}
+                                    disabled={submittingWorkflow || !pendingWorkflowSignature}
                                     onClick={handleWorkflowSubmit}
-                                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-colors flex items-center gap-2"
+                                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-colors flex items-center gap-2 disabled:opacity-50"
                                   >
                                     Firmar y Aprobar
                                   </button>
@@ -3850,6 +3848,14 @@ export default function DocumentDetailModal({
           />
         )}
       </div>
+
+      {viewSignatureId && (
+        <SignatureDetailModal
+          isOpen={true}
+          signatureId={viewSignatureId}
+          onClose={() => setViewSignatureId(null)}
+        />
+      )}
     </>
   );
 }

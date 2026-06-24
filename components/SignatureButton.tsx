@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { PenTool, CheckCircle2, Loader2, AlertTriangle } from 'lucide-react';
+import { PenTool, CheckCircle2, Loader2, AlertTriangle, Fingerprint } from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
 
@@ -22,7 +22,24 @@ export default function SignatureButton({ documentId, documentVersion, onSignCom
         const storedUser = localStorage.getItem('currentUser');
         if (storedUser) {
             try {
-                setCurrentUser(JSON.parse(storedUser));
+                const parsedUser = JSON.parse(storedUser);
+                setCurrentUser(parsedUser);
+                
+                if (!parsedUser.dni) {
+                    fetch('/api/operators')
+                        .then(r => r.json())
+                        .then(ops => {
+                            if (Array.isArray(ops)) {
+                                const me = ops.find((o: any) => o.id === parsedUser.id);
+                                if (me && me.dni) {
+                                    const updatedUser = { ...parsedUser, dni: me.dni };
+                                    setCurrentUser(updatedUser);
+                                    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                                }
+                            }
+                        })
+                        .catch(() => {});
+                }
             } catch (e) { }
         }
         
@@ -111,17 +128,18 @@ export default function SignatureButton({ documentId, documentVersion, onSignCom
         <button
             onClick={handleSign}
             disabled={isSigning}
-            className={`flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-600/20 transition-all hover:scale-105 active:scale-95 disabled:opacity-70 disabled:hover:scale-100 ${className}`}
+            className={`group relative flex items-center justify-center gap-3 px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-indigo-800 hover:from-indigo-500 hover:to-indigo-700 text-white rounded-2xl font-bold shadow-xl shadow-indigo-600/20 transition-all hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:hover:translate-y-0 border border-indigo-500/30 overflow-hidden ${className}`}
         >
+            <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
             {isSigning ? (
                 <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Registrando Firma...
+                    <Loader2 className="w-5 h-5 animate-spin relative z-10" />
+                    <span className="tracking-wide relative z-10">Validando Identidad...</span>
                 </>
             ) : (
                 <>
-                    <PenTool className="w-5 h-5" />
-                    Firmar Documento
+                    <Fingerprint className="w-6 h-6 text-indigo-200 group-hover:scale-110 transition-transform relative z-10" />
+                    <span className="tracking-wide text-[15px] relative z-10">Firmar con Identidad Digital</span>
                 </>
             )}
         </button>

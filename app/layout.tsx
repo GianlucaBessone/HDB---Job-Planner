@@ -68,7 +68,25 @@ export default function RootLayout({
         const stored = localStorage.getItem('currentUser');
         if (stored) {
             try {
-                setCurrentUser(JSON.parse(stored));
+                const parsedUser = JSON.parse(stored);
+                setCurrentUser(parsedUser);
+                
+                // Silently refresh DNI if missing
+                if (!parsedUser.dni) {
+                    fetch('/api/operators')
+                        .then(r => r.json())
+                        .then(ops => {
+                            if (Array.isArray(ops)) {
+                                const me = ops.find((o: any) => o.id === parsedUser.id);
+                                if (me && me.dni) {
+                                    const updatedUser = { ...parsedUser, dni: me.dni };
+                                    setCurrentUser(updatedUser);
+                                    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                                }
+                            }
+                        })
+                        .catch(() => {});
+                }
             } catch (e) {
                 localStorage.removeItem('currentUser');
             }
