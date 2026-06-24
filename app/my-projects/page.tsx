@@ -21,22 +21,15 @@ import {
     Edit3,
     FileSignature,
     Clock,
-    MinusCircle,
-    AlertTriangle,
-    AlertOctagon,
-    Package,
     ArrowDownToLine,
     QrCode,
-    MessageSquare,
     Briefcase,
     ChevronRight,
     LayoutDashboard,
     LayoutGrid,
     List,
-    CheckCircle2,
-    FileSignature,
-    Edit3,
-    ShieldCheck
+    ShieldCheck,
+    Share2
 } from 'lucide-react';
 import Link from 'next/link';
 import { useModalScroll } from '@/lib/useModalScroll';
@@ -44,7 +37,7 @@ import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
 import { formatDateTime } from '@/lib/formatDate';
 import SignatureButton from '@/components/SignatureButton';
-import SignatureDetailModal from '@/app/calidad/components/SignatureDetailModal';
+import SignatureDetailModal from '@/components/SignatureDetailModal';
 import CodeBadge from '@/components/CodeBadge';
 
 interface ChecklistItem {

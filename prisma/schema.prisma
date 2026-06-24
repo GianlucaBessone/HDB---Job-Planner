@@ -754,6 +754,9 @@ model DocumentReadConfirmation {
   confirmadoAt     DateTime @default(now())
   versionAlMomento String // "1.0" snapshot de la versión que leyó
 
+  signatureId String?
+  signature   DocumentSignatureAudit? @relation(fields: [signatureId], references: [SignatureID])
+
   @@unique([documentId, operatorId])
   @@index([documentId])
   @@index([operatorId])
@@ -1023,6 +1026,8 @@ model TechnicianTraining {
   evaluadorId     String?
   evaluadorNombre String?
   observaciones   String?             @db.Text
+  signatureId     String?
+  signature       DocumentSignatureAudit? @relation(fields: [signatureId], references: [SignatureID])
   createdAt       DateTime            @default(now())
   updatedAt       DateTime            @updatedAt
 
@@ -1714,6 +1719,9 @@ model DocumentSignatureAudit {
   VerificationStatus String   @default("VALIDA")
   VerifiedAtUTC      DateTime @default(now())
   VerifiedBy         String?
+
+  documentReadConfirmations DocumentReadConfirmation[]
+  technicianTrainings       TechnicianTraining[]
 
   @@index([DocumentID])
   @@index([UserID])

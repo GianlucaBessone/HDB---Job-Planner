@@ -56,7 +56,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
     try {
         const data = await req.json();
-        const { id, respuestas, tiempoInvertido } = data;
+        const { id, respuestas, tiempoInvertido, signatureId } = data;
 
         if (!id) {
             return NextResponse.json({ error: 'Faltan campos requeridos para la evaluación.' }, { status: 400 });
@@ -97,6 +97,7 @@ export async function POST(req: Request) {
                 puntaje: score,
                 tiempoInvertido: tiempoInvertido ? Number(tiempoInvertido) : null,
                 fechaFin: new Date(),
+                signatureId: signatureId || null,
                 observaciones: approved 
                     ? (totalQuestions > 0 
                         ? `Aprobado automáticamente con puntaje de ${Math.round(score)}%` 

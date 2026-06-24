@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(req: Request, { params }: { params: { id: string } }) {
     try {
-        const { operatorId, operatorNombre } = await req.json();
+        const { operatorId, operatorNombre, signatureId } = await req.json();
 
         if (!operatorId || !operatorNombre) {
             return NextResponse.json({ error: 'operatorId y operatorNombre son requeridos' }, { status: 400 });
@@ -37,12 +37,14 @@ export async function POST(req: Request, { params }: { params: { id: string } })
                 confirmadoAt: new Date(),
                 versionAlMomento: versionActual,
                 operatorNombre,
+                signatureId: signatureId || null,
             },
             create: {
                 documentId: params.id,
                 operatorId,
                 operatorNombre,
                 versionAlMomento: versionActual,
+                signatureId: signatureId || null,
             }
         });
 

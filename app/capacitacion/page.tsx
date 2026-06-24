@@ -27,6 +27,7 @@ import {
 import { safeApiRequest } from "@/lib/offline";
 import { showToast } from "@/components/Toast";
 import ModuleHeader from "@/components/ModuleHeader";
+import SignatureButton from "@/components/SignatureButton";
 
 export default function CapacitacionPage() {
   const [user, setUser] = useState<any>(null);
@@ -166,7 +167,7 @@ export default function CapacitacionPage() {
     return m ? `https://www.youtube.com/embed/${m[1]}` : null;
   };
 
-  const handleSubmitQuiz = async () => {
+  const handleSubmitQuiz = async (signatureId: string) => {
     if (!selectedTraining) return;
     setSubmitting(true);
     try {
@@ -176,6 +177,7 @@ export default function CapacitacionPage() {
           id: selectedTraining.id,
           respuestas: quizAnswers,
           tiempoInvertido: seconds,
+          signatureId
         }),
       });
       if (res.ok) {
@@ -199,13 +201,13 @@ export default function CapacitacionPage() {
     }
   };
 
-  const handleMarkAsRead = async () => {
+  const handleMarkAsRead = async (signatureId: string) => {
     if (!selectedTraining) return;
     setSubmitting(true);
     try {
       const res = await safeApiRequest("/api/qms/capacitaciones", {
         method: "POST",
-        body: JSON.stringify({ id: selectedTraining.id, respuestas: {} }),
+        body: JSON.stringify({ id: selectedTraining.id, respuestas: {}, signatureId }),
       });
       if (res.ok) {
         showToast("Capacitación marcada como leída y completada", "success");
@@ -497,20 +499,22 @@ export default function CapacitacionPage() {
               >
                 Volver
               </button>
-              <button
-                onClick={handleSubmitQuiz}
-                disabled={
-                  submitting || Object.keys(quizAnswers).length < quiz.length
-                }
-                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition-colors flex items-center gap-2 disabled:opacity-50"
-              >
-                {submitting ? (
+              {submitting ? (
+                <button
+                  disabled
+                  className="px-6 py-2.5 bg-emerald-600/50 text-white rounded-xl text-sm font-bold flex items-center gap-2"
+                >
                   <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Award className="w-4 h-4" />
-                )}
-                {submitting ? "Evaluando..." : "Enviar Evaluación"}
-              </button>
+                  Evaluando...
+                </button>
+              ) : (
+                <SignatureButton
+                  documentId={docDetail.id}
+                  documentVersion={docDetail.versions?.[0] ? `${docDetail.versions[0].versionMayor}.${docDetail.versions[0].versionMenor}` : '1.0'}
+                  onSignComplete={(signature) => handleSubmitQuiz(signature.SignatureID)}
+                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition-colors flex items-center gap-2 shadow-lg shadow-emerald-600/20"
+                />
+              )}
             </div>
           </div>
         ) : (
@@ -643,21 +647,21 @@ export default function CapacitacionPage() {
                     <Award className="w-5 h-5" /> Comenzar Evaluación (
                     {quiz.length} preguntas)
                   </button>
-                ) : (
+                ) : submitting ? (
                   <button
-                    onClick={handleMarkAsRead}
-                    disabled={submitting}
-                    className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-bold transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 disabled:opacity-50"
+                    disabled
+                    className="w-full py-3.5 bg-emerald-600/50 text-white rounded-2xl text-sm font-bold flex items-center justify-center gap-2"
                   >
-                    {submitting ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <CheckCircle2 className="w-5 h-5" />
-                    )}
-                    {submitting
-                      ? "Procesando..."
-                      : "Marcar como Leída y Completar"}
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Procesando...
                   </button>
+                ) : (
+                  <SignatureButton
+                    documentId={docDetail.id}
+                    documentVersion={docDetail.versions?.[0] ? `${docDetail.versions[0].versionMayor}.${docDetail.versions[0].versionMenor}` : '1.0'}
+                    onSignComplete={(signature) => handleMarkAsRead(signature.SignatureID)}
+                    className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-bold transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20"
+                  />
                 )}
               </div>
             )}
