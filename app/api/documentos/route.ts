@@ -227,6 +227,23 @@ export async function POST(req: Request) {
         });
 
         // Create initial version v1.0
+        const documentSnapshot = {
+            titulo: titulo.trim(),
+            codigoDocumental: generatedCode,
+            tipoDocumento,
+            area,
+            estado: estadoInicial,
+            descripcion: descripcion || null,
+            nivelCriticidad: nivelCriticidad || 'media',
+            tags: tags || [],
+            requiereConfirmacionLectura: requiereConfirmacionLectura || false,
+            requiereCapacitacion: requiereCapacitacion || false,
+            validezMeses: validezMeses ? parseInt(validezMeses) : null,
+            observaciones: observaciones || null,
+            fechaEmision: new Date(),
+            proximaRevision: proximaRevision ? new Date(proximaRevision) : null,
+        };
+
         await prisma.documentVersion.create({
             data: {
                 documentId: doc.id,
@@ -237,6 +254,7 @@ export async function POST(req: Request) {
                 autorId: userId || null,
                 autorNombre: userName || null,
                 motivoCambio: 'Creación inicial del documento',
+                documentSnapshot: documentSnapshot,
             }
         });
 
