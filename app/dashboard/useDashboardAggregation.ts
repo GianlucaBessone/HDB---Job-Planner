@@ -9,8 +9,13 @@ export function useDashboardAggregation(rawData: any, filters: any) {
         const operators = rawData.operators || [];
         const plannings = rawData.plannings || [];
 
-        // 1. Exclude projects marked as "NO en métricas" and inactive
-        projects = projects.filter(p => p.activo !== false && p.noEnMetricas !== true);
+        // 1. Exclude inactive projects
+        projects = projects.filter(p => p.activo !== false);
+        
+        // 1b. Exclude projects marked as "NO en métricas" UNLESS we are specifically looking at "Proyectos Fijos"
+        if (filters.filterStatus !== 'fijo') {
+            projects = projects.filter(p => p.noEnMetricas !== true);
+        }
 
         // 2. Filter by Client
         if (filters.filterClientId) {
@@ -22,6 +27,8 @@ export function useDashboardAggregation(rawData: any, filters: any) {
             projects = projects.filter(p => p.estado === 'finalizado');
         } else if (filters.filterStatus === 'active') {
             projects = projects.filter(p => p.estado !== 'finalizado');
+        } else if (filters.filterStatus === 'fijo') {
+            projects = projects.filter(p => p.proyectoFijo === true);
         } else if (filters.filterStatus && filters.filterStatus !== 'all') {
             projects = projects.filter(p => p.estado === filters.filterStatus);
         }
@@ -278,7 +285,8 @@ export function useDashboardAggregation(rawData: any, filters: any) {
             performance: {
                 projects: projectPerformance.slice(0, 10),
                 classification: performanceClassification,
-                trend: performanceTrend
+                trend: performanceTrend,
+                hoursConsumption: projects.map(p => ({ nombre: p.nombre, codigoProyecto: p.codigoProyecto, horasConsumidas: p.horasConsumidas, horasEstimadas: p.horasEstimadas })).sort((a, b) => b.horasConsumidas - a.horasConsumidas)
             },
             delays: {
                 totalHours: totalDelayHours,

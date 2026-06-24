@@ -250,6 +250,7 @@ export default function DashboardPage() {
                         >
                             <option value="active">Proyectos No Finalizados</option>
                             <option value="finished">Proyectos Finalizados</option>
+                            <option value="fijo">Proyectos Fijos</option>
                             <option value="all">Ver Todos</option>
                         </select>
                     </div>
@@ -264,6 +265,54 @@ export default function DashboardPage() {
 
             {activeTab === 'proyectos' && (
                 <>
+                {filterStatus === 'fijo' ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+                        <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative group overflow-hidden">
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center gap-3">
+                                    <BarChart3 className="w-5 h-5 text-primary" />
+                                    <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Consumo de Horas por Proyecto</h3>
+                                </div>
+                            </div>
+                            {data.performance.hoursConsumption?.length === 0 ? (
+                                <div className="h-56 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Sin datos de proyectos</div>
+                            ) : (
+                                <div className="mt-4">
+                                    <BasicBarChart 
+                                        data={data.performance.hoursConsumption?.slice(0, 15).map((p: any) => ({ name: p.nombre, value: p.horasConsumidas, code: p.codigoProyecto, isHighlight: true })) || []} 
+                                        height={400}
+                                        isHorizontal={true}
+                                        valueSuffix="h"
+                                        onEvents={{ click: (e: any) => handleChartClick('project', e.name) }}
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group">
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center gap-3">
+                                    <TrendingUp className="w-5 h-5 text-indigo-500" />
+                                    <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Líneas de Consumo de Horas</h3>
+                                </div>
+                            </div>
+                            {data.performance.hoursConsumption?.length === 0 ? (
+                                <div className="h-56 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Sin datos de proyectos</div>
+                            ) : (
+                                <div className="mt-4">
+                                    <TrendChart 
+                                        data={data.performance.hoursConsumption?.slice(0, 15).map((p: any) => ({ label: p.codigoProyecto || p.nombre, value: p.horasConsumidas })) || []} 
+                                        color="#6366f1" 
+                                        height={400} 
+                                        valueSuffix="h"
+                                        onEvents={{ click: (e: any) => handleChartClick('project', e.name) }}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                ) : (
+                    <>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 auto-rows-fr relative z-20">
                 <KpiCard
                     title="Eficiencia de Tiempo (TPI)"
@@ -619,6 +668,8 @@ export default function DashboardPage() {
                     </div>
                 </div>
             </div>
+            </>
+            )}
             </>
             )}
             </>

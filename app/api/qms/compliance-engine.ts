@@ -11,8 +11,8 @@ export async function triggerAutomaticTraining(documentId: string) {
             where: { id: documentId }
         });
 
-        if (!doc || doc.estado !== 'vigente' || !doc.requiereCapacitacion) {
-            return { count: 0, message: 'Documento no requiere capacitación o no está vigente.' };
+        if (!doc || doc.estado !== 'vigente' || (!doc.requiereCapacitacion && !doc.requiereConfirmacionLectura)) {
+            return { count: 0, message: 'Documento no requiere capacitación ni lectura, o no está vigente.' };
         }
 
         // Obtener todos los operadores activos
@@ -92,10 +92,13 @@ export async function triggerAutomaticTraining(documentId: string) {
                         }
                     ];
 
-                    let questionnaireToUse = defaultQuiz;
-                    const workflow = doc.workflowState as any;
-                    if (workflow && typeof workflow === 'object' && Array.isArray(workflow.cuestionario) && workflow.cuestionario.length > 0) {
-                        questionnaireToUse = workflow.cuestionario;
+                    let questionnaireToUse: any = [];
+                    if (doc.requiereCapacitacion) {
+                        questionnaireToUse = defaultQuiz;
+                        const workflow = doc.workflowState as any;
+                        if (workflow && typeof workflow === 'object' && Array.isArray(workflow.cuestionario) && workflow.cuestionario.length > 0) {
+                            questionnaireToUse = workflow.cuestionario;
+                        }
                     }
 
                     // Crear capacitación obligatoria para esta versión específica (preservando el historial anterior)
@@ -104,12 +107,14 @@ export async function triggerAutomaticTraining(documentId: string) {
                             operatorId: op.id,
                             documentId: doc.id,
                             versionId: versionId,
-                            titulo: `Capacitación Obligatoria (v${doc.versionMayor}.${doc.versionMenor}): ${doc.titulo}`,
+                            titulo: doc.requiereCapacitacion 
+                                ? `Capacitación Obligatoria (v${doc.versionMayor}.${doc.versionMenor}): ${doc.titulo}`
+                                : `Lectura Obligatoria (v${doc.versionMayor}.${doc.versionMenor}): ${doc.titulo}`,
                             estado: 'pendiente',
                             tipoContenido: 'pdf',
                             urlContenido: `/api/documentos/${doc.id}/download`,
-                            cuestionario: questionnaireToUse as any,
-                            puntajeMinimo: 70.0
+                            cuestionario: questionnaireToUse,
+                            puntajeMinimo: doc.requiereCapacitacion ? 70.0 : 0
                         }
                     });
 
@@ -118,11 +123,11 @@ export async function triggerAutomaticTraining(documentId: string) {
                         data: {
                             operatorId: op.id,
                             title: approvedTraining 
-                                ? 'Nueva Versión: Re-capacitación Obligatoria' 
-                                : 'Capacitación Obligatoria Asignada',
+                                ? 'Nueva Versión de Documento' 
+                                : (doc.requiereCapacitacion ? 'Capacitación Obligatoria Asignada' : 'Lectura Obligatoria Asignada'),
                             message: approvedTraining
-                                ? `Se ha publicado una nueva versión (${doc.versionMayor}.${doc.versionMenor}) del documento "${doc.titulo}". Tu capacitación anterior ha quedado registrada en tu historial y debes completar esta nueva evaluación.`
-                                : `Se ha publicado una nueva versión crítica del documento "${doc.titulo}". Debes completar la capacitación obligatoria para poder operar.`,
+                                ? `Se ha publicado una nueva versión (${doc.versionMayor}.${doc.versionMenor}) del documento "${doc.titulo}". Tu revisión anterior ha quedado registrada en tu historial y debes completar esta nueva revisión.`
+                                : `Se ha publicado una nueva versión crítica del documento "${doc.titulo}". Debes completar su ${doc.requiereCapacitacion ? 'capacitación' : 'lectura'} obligatoria para poder operar.`,
                             type: 'QMS_TRAINING',
                             relatedId: doc.id
                         }
@@ -164,8 +169,8 @@ export async function triggerAutomaticTraining(documentId: string) {
         if (notifiedUserIds.length > 0) {
             await sendPushNotification({
                 userIds: notifiedUserIds,
-                title: "Nueva Capacitación Obligatoria",
-                message: `Se ha publicado la versión aprobada de "${doc.titulo}". Entra al portal LMS para completar la capacitación requerida.`,
+                title: "Nuevas Revisiones Obligatorias",
+                message: `Se ha publicado la versión aprobada de "${doc.titulo}". Entra al portal LMS para completar la revisión requerida.`,
                 data: { route: '/capacitacion' }
             }).catch(e => console.error("Error sending push notification to operators:", e));
         }
@@ -191,11 +196,14 @@ export async function syncOperatorTrainings(operatorId: string) {
             return { count: 0, message: 'Operador no encontrado o inactivo.' };
         }
 
-        // Get all active and vigente controlled documents requiring training
+        // Get all active and vigente controlled documents requiring training OR reading
         const documents = await prisma.controlledDocument.findMany({
             where: {
                 estado: 'vigente',
-                requiereCapacitacion: true
+                OR: [
+                    { requiereCapacitacion: true },
+                    { requiereConfirmacionLectura: true }
+                ]
             }
         });
 
@@ -247,22 +255,27 @@ export async function syncOperatorTrainings(operatorId: string) {
                         }
                     ];
 
-                    let questionnaireToUse = defaultQuiz;
-                    const workflow = doc.workflowState as any;
-                    if (workflow && typeof workflow === 'object' && Array.isArray(workflow.cuestionario) && workflow.cuestionario.length > 0) {
-                        questionnaireToUse = workflow.cuestionario;
+                    let questionnaireToUse: any = [];
+                    if (doc.requiereCapacitacion) {
+                        questionnaireToUse = defaultQuiz;
+                        const workflow = doc.workflowState as any;
+                        if (workflow && typeof workflow === 'object' && Array.isArray(workflow.cuestionario) && workflow.cuestionario.length > 0) {
+                            questionnaireToUse = workflow.cuestionario;
+                        }
                     }
 
                     await prisma.technicianTraining.create({
                         data: {
                             operatorId: op.id,
                             documentId: doc.id,
-                            titulo: `Capacitación Obligatoria: ${doc.titulo}`,
+                            titulo: doc.requiereCapacitacion 
+                                ? `Capacitación Obligatoria: ${doc.titulo}`
+                                : `Lectura Obligatoria: ${doc.titulo}`,
                             estado: 'pendiente',
                             tipoContenido: 'pdf',
                             urlContenido: `/api/documentos/${doc.id}/download`,
-                            cuestionario: questionnaireToUse as any,
-                            puntajeMinimo: 70.0
+                            cuestionario: questionnaireToUse,
+                            puntajeMinimo: doc.requiereCapacitacion ? 70.0 : 0
                         }
                     });
 
@@ -270,8 +283,8 @@ export async function syncOperatorTrainings(operatorId: string) {
                     await prisma.notification.create({
                         data: {
                             operatorId: op.id,
-                            title: 'Capacitación Obligatoria Asignada',
-                            message: `Se ha publicado una nueva versión crítica del documento "${doc.titulo}". Debes completar la capacitación obligatoria para poder operar.`,
+                            title: doc.requiereCapacitacion ? 'Capacitación Obligatoria Asignada' : 'Lectura Obligatoria Asignada',
+                            message: `Se ha publicado una nueva versión crítica del documento "${doc.titulo}". Debes completar la ${doc.requiereCapacitacion ? 'capacitación' : 'lectura'} obligatoria para poder operar.`,
                             type: 'QMS_TRAINING',
                             relatedId: doc.id
                         }
@@ -309,8 +322,8 @@ export async function syncOperatorTrainings(operatorId: string) {
         if (assignedCount > 0 && op.id) {
             await sendPushNotification({
                 userIds: [op.id],
-                title: "Nuevas Capacitaciones Asignadas",
-                message: `Se te han asignado ${assignedCount} capacitaciones obligatorias nuevas. Revisa tu portal LMS.`,
+                title: "Nuevas Revisiones Asignadas",
+                message: `Se te han asignado ${assignedCount} revisiones/capacitaciones obligatorias nuevas. Revisa tu portal LMS.`,
                 data: { route: '/capacitacion' }
             }).catch(e => console.error("Error sending push notification to operator:", e));
         }

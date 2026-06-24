@@ -73,9 +73,10 @@ export default function RootLayout({
                 
                 // Silently refresh DNI if missing
                 if (!parsedUser.dni) {
-                    fetch('/api/operators')
-                        .then(r => r.json())
-                        .then(ops => {
+                    const fetchDni = async () => {
+                        try {
+                            const res = await fetch('/api/operators');
+                            const ops = await res.json();
                             if (Array.isArray(ops)) {
                                 const me = ops.find((o: any) => o.id === parsedUser.id);
                                 if (me && me.dni) {
@@ -84,8 +85,11 @@ export default function RootLayout({
                                     localStorage.setItem('currentUser', JSON.stringify(updatedUser));
                                 }
                             }
-                        })
-                        .catch(() => {});
+                        } catch (err) {
+                            console.error(err);
+                        }
+                    };
+                    fetchDni();
                 }
             } catch (e) {
                 localStorage.removeItem('currentUser');
