@@ -421,7 +421,7 @@ export const dataLayer = {
             orderBy: { nombreCompleto: 'asc' }
         });
     },
-    async createOperator(data: { nombreCompleto: string; activo?: boolean; enVacaciones?: boolean; etiquetas: string[]; pin?: string; role?: string; posicion?: string }) {
+    async createOperator(data: { nombreCompleto: string; activo?: boolean; enVacaciones?: boolean; etiquetas: string[]; pin?: string; role?: string; dni?: string; posicion?: string }) {
         const operator = await prisma.operator.create({
             data: { ...data, etiquetas: data.etiquetas as any }
         });
@@ -443,7 +443,7 @@ export const dataLayer = {
 
         return operator;
     },
-    async updateOperator(id: string, data: { nombreCompleto?: string; activo?: boolean; enVacaciones?: boolean; etiquetas?: string[]; pin?: string; role?: string; posicion?: string; primaryDeviceId?: string | null }) {
+    async updateOperator(id: string, data: { nombreCompleto?: string; activo?: boolean; enVacaciones?: boolean; etiquetas?: string[]; pin?: string; role?: string; dni?: string; posicion?: string; primaryDeviceId?: string | null }) {
         const updateData: any = { ...data };
         if (data.etiquetas) updateData.etiquetas = data.etiquetas as any;
         

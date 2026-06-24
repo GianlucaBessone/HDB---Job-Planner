@@ -33,7 +33,7 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
 import { QRCodeCanvas } from 'qrcode.react';
-import { ViewConfig, DEFAULT_VIEWS, getViewConfig } from '@/lib/viewAccess';
+import { ViewConfig, DEFAULT_VIEWS, getViewConfig, DEFAULT_SECTIONS } from '@/lib/viewAccess';
 
 export default function ConfigPage() {
     const router = useRouter();
@@ -1061,6 +1061,13 @@ function ViewsSection() {
         }));
     };
 
+    const setSectionValue = (viewKey: string, section: string) => {
+        setViews(prev => prev.map(v => {
+            if (v.key !== viewKey) return v;
+            return { ...v, section };
+        }));
+    };
+
     const handleSave = async () => {
         setSaving(true);
         try {
@@ -1171,6 +1178,22 @@ function ViewsSection() {
                                         </button>
                                     ))}
                                 </div>
+                            </div>
+
+                            {/* Section assignment */}
+                            <div className="shrink-0 w-full md:w-48">
+                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 block px-0.5">
+                                    Grupo / Sección
+                                </label>
+                                <select
+                                    value={view.section}
+                                    onChange={(e) => setSectionValue(view.key, e.target.value)}
+                                    className="w-full bg-slate-100 dark:bg-slate-800/50 border-none outline-none focus:ring-2 focus:ring-primary/20 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-200"
+                                >
+                                    {DEFAULT_SECTIONS.map(sec => (
+                                        <option key={sec.key} value={sec.key}>{sec.label}</option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
                     </div>

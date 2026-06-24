@@ -38,6 +38,7 @@ export default function OperatorsPage() {
         activo: true,
         enVacaciones: false,
         role: 'operador',
+        dni: '',
         posicion: '',
         pin: '1234',
         etiquetas: [] as string[]
@@ -95,7 +96,7 @@ export default function OperatorsPage() {
 
     const openCreate = () => {
         setEditingOperator(null);
-        setFormData({ nombreCompleto: '', activo: true, enVacaciones: false, etiquetas: [], role: 'operador', posicion: '', pin: '1234' });
+        setFormData({ nombreCompleto: '', activo: true, enVacaciones: false, etiquetas: [], role: 'operador', dni: '', posicion: '', pin: '1234' });
         setIsModalOpen(true);
     };
 
@@ -107,6 +108,7 @@ export default function OperatorsPage() {
             enVacaciones: op.enVacaciones || false,
             etiquetas: op.etiquetas || [],
             role: op.role || 'operador',
+            dni: op.dni || '',
             posicion: op.posicion || '',
             pin: op.pin || '1234'
         });
@@ -310,6 +312,17 @@ export default function OperatorsPage() {
                                             onChange={(val) => setFormData({ ...formData, role: val })}
                                             disabled={currentUser?.role === 'operador' || currentUser?.role === 'vendedor'}
                                             className="!space-y-0"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">DNI (Firma Electrónica)</label>
+                                        <input
+                                            type="text"
+                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-4 px-5 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium disabled:opacity-50"
+                                            value={formData.dni}
+                                            onChange={e => setFormData({ ...formData, dni: e.target.value })}
+                                            placeholder="Ej: 12345678"
+                                            disabled={currentUser?.role === 'operador' || currentUser?.role === 'vendedor'}
                                         />
                                     </div>
                                     <div className="space-y-2">

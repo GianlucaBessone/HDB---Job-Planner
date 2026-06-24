@@ -41,6 +41,7 @@ export const DEFAULT_SECTIONS: SectionConfig[] = [
     { key: 'logistica',      label: 'Logística y Materiales',    iconName: 'Package',         order: 3 },
     { key: 'calidad',        label: 'Calidad y Mejora Continua', iconName: 'FileCheck',       order: 4 },
     { key: 'administracion', label: 'Administración',            iconName: 'Settings',        order: 5 },
+    { key: 'trazabilidad',   label: 'Auditoría y Trazabilidad',  iconName: 'Fingerprint',     order: 6 },
 ];
 
 // ── Default Views ──────────────────────────────────────────────────
@@ -58,7 +59,7 @@ export const DEFAULT_VIEWS: ViewConfig[] = [
     { key: '/projects',           label: 'Gestión de Proyectos',     description: 'Proyectos activos',           roles: ['supervisor', 'admin', 'qa'],             access: 'ambos', section: 'gestion', iconName: 'LayoutGrid',      color: 'bg-indigo-500' },
     { key: '/ordenes-servicio',   label: 'Órdenes de Servicio',      description: 'Gestión y firmas',            roles: ['supervisor', 'admin', 'qa'],             access: 'ambos', section: 'gestion', iconName: 'FileSignature',   color: 'bg-blue-600' },
     { key: '/aprobaciones',       label: 'Aprobaciones',             description: 'Validar fichadas de riesgo',  roles: ['supervisor', 'admin', 'qa'],             access: 'ambos', section: 'gestion', iconName: 'ShieldCheck',     color: 'bg-teal-600' },
-    { key: '/monitoreo-fichadas', label: 'Monitoreo de Fichadas',    description: 'Control en tiempo real',      roles: ['supervisor', 'admin', 'qa'],             access: 'ambos', section: 'gestion', iconName: 'ShieldAlert',     color: 'bg-rose-600' },
+    { key: '/monitoreo-fichadas', label: 'Monitoreo de Fichadas',    description: 'Control en tiempo real',      roles: ['supervisor', 'admin', 'qa'],             access: 'ambos', section: 'trazabilidad', iconName: 'ShieldAlert',     color: 'bg-rose-600' },
     { key: '/tareas',              label: 'Tareas',                   description: 'Planificación y recordatorios', roles: ['operador', 'supervisor', 'admin', 'qa'], access: 'ambos', section: 'gestion', iconName: 'ListTodo',        color: 'bg-purple-600' },
 
     // ─ Logística y Materiales ─
@@ -70,14 +71,15 @@ export const DEFAULT_VIEWS: ViewConfig[] = [
     { key: '/calidad',              label: 'Calidad y Documentación',  description: 'Gestión documental ISO',       roles: ['admin', 'qa', 'supervisor'],              access: 'ambos', section: 'calidad', iconName: 'FileCheck',  color: 'bg-emerald-600' },
     { key: '/capacitacion',         label: 'Formación Integral',       description: 'Capacitación y competencias',  roles: ['operador', 'supervisor', 'admin', 'qa'],  access: 'ambos', section: 'calidad', iconName: 'BookOpen',   color: 'bg-sky-600' },
     { key: '/gestion-sugerencias',  label: 'Gestión de Sugerencias',   description: 'Ideas y mejora continua',      roles: ['admin', 'qa', 'supervisor'],              access: 'ambos', section: 'calidad', iconName: 'Lightbulb',  color: 'bg-yellow-500' },
-    { key: '/auditoria-ia',         label: 'Auditoría de IA',          description: 'Validación inteligente',       roles: ['admin', 'qa', 'supervisor'],              access: 'ambos', section: 'calidad', iconName: 'Sparkles',   color: 'bg-fuchsia-600' },
+    { key: '/auditoria-ia',         label: 'Auditoría de IA',          description: 'Validación inteligente',       roles: ['admin', 'qa', 'supervisor'],              access: 'ambos', section: 'trazabilidad', iconName: 'Sparkles',   color: 'bg-fuchsia-600' },
     { key: '/centro-ayuda',         label: 'Centro de Ayuda',          description: 'Base de conocimiento SGI',     roles: ['operador', 'supervisor', 'admin', 'qa', 'vendedor'], access: 'ambos', section: 'calidad', iconName: 'LifeBuoy', color: 'bg-blue-500' },
 
     // ─ Administración ─
     { key: '/administracion/gastos', label: 'Gastos y Facturas', description: 'Registro y escaneo', roles: ['admin', 'supervisor', 'qa'], access: 'ambos', section: 'administracion', iconName: 'Receipt', color: 'bg-green-600' },
     { key: '/operators',      label: 'Gestión de Usuarios',  description: 'Operadores y permisos',      roles: ['supervisor', 'admin', 'qa'],                          access: 'ambos', section: 'administracion', iconName: 'Users',    color: 'bg-slate-700' },
     { key: '/clients',        label: 'Gestión de Clientes',  description: 'Base de datos de clientes',  roles: ['supervisor', 'admin', 'qa', 'vendedor'],              access: 'ambos', section: 'administracion', iconName: 'Landmark', color: 'bg-indigo-500' },
-    { key: '/auditoria',      label: 'Auditoría',            description: 'Trazabilidad total',         roles: ['admin', 'qa', 'supervisor'],                          access: 'ambos', section: 'administracion', iconName: 'History',  color: 'bg-slate-900' },
+    { key: '/auditoria',      label: 'Auditoría',            description: 'Trazabilidad total',         roles: ['admin', 'qa', 'supervisor'],                          access: 'ambos', section: 'trazabilidad', iconName: 'History',  color: 'bg-slate-900' },
+    { key: '/verificacion-firmas', label: 'Verificación de Firmas', description: 'Integridad ISO 9001', roles: ['admin', 'qa', 'supervisor'],                          access: 'ambos', section: 'trazabilidad', iconName: 'FileBadge',  color: 'bg-blue-600' },
     { key: '/configuracion',  label: 'Configuración',        description: 'Ajustes de sistema',         roles: ['admin', 'qa', 'supervisor'],                          access: 'ambos', section: 'administracion', iconName: 'Settings', color: 'bg-slate-400' },
     { key: '/notifications',  label: 'Notificaciones',       description: 'Novedades y alertas',        roles: ['operador', 'supervisor', 'admin', 'qa', 'vendedor'],  access: 'ambos', section: 'administracion', iconName: 'Bell',     color: 'bg-rose-500' },
 ];

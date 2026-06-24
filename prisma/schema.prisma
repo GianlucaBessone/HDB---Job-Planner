@@ -129,6 +129,7 @@ model Operator {
   etiquetas                 Json // Now using native Json type
   pin                       String                      @default("1234")
   role                      String                      @default("operador") // operador | supervisor | admin | vendedor | qa
+  dni                       String?
   posicion                  String? // e.g. "Director", "QA Manager", "Gerente"
   responsibleProjects       Project[]                   @relation("ProjectResponsable")
   createdAt                 DateTime                    @default(now())
@@ -1693,4 +1694,28 @@ model FacturaConsumo {
   @@index([proveedorId])
   @@index([codigoGastoId])
   @@index([fechaEmision])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FIRMAS ELECTRÓNICAS (ISO 9001)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model DocumentSignatureAudit {
+  SignatureID        String   @id
+  DocumentID         String
+  DocumentVersion    String
+  UserID             String
+  UserName           String
+  DNI                String
+  DeviceID           String
+  IPAddress          String
+  SignedAtUTC        DateTime @default(now())
+  HashSignature      String
+  VerificationStatus String   @default("VALIDA")
+  VerifiedAtUTC      DateTime @default(now())
+  VerifiedBy         String?
+
+  @@index([DocumentID])
+  @@index([UserID])
+  @@index([VerificationStatus])
 }
