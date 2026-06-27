@@ -73,7 +73,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
         await logAudit({
             userId: auth.user.id,
-            action: 'SYNC',
+            action: 'UPDATE',
             entity: 'KPI_MEDICION',
             entityId: medicion.id,
             newValue: medicion,

@@ -18,7 +18,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
         await logAudit({
             userId: auth.user.id,
-            action: 'EXECUTE',
+            action: 'UPDATE',
             entity: 'DATASET',
             entityId: params.id,
             metadata: {

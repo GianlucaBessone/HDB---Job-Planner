@@ -18,7 +18,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
                 kpis: {
                     include: {
                         responsableCarga: { select: { id: true, nombreCompleto: true } },
-                        graficoIndicador: true,
+
                         historico: {
                             orderBy: { fechaMedicion: 'desc' },
                             take: 20,
@@ -76,7 +76,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 kpis: {
                     include: {
                         responsableCarga: { select: { id: true, nombreCompleto: true } },
-                        graficoIndicador: true,
+
                     },
                     orderBy: { codigoKpi: 'asc' },
                 },

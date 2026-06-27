@@ -13,8 +13,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         const grafico = await prisma.graficoConfig.findUnique({
             where: { id: params.id },
             include: {
-                okrsAsociados: { select: { id: true, codigoOkr: true, nombre: true } },
-                kpisAsociados: { select: { id: true, codigoKpi: true, nombre: true, valorObjetivo: true, ultimoValor: true } },
+                dataset: { select: { id: true, nombre: true } }
             },
         });
 

@@ -302,7 +302,7 @@ export async function ejecutarDataset(
     // 1. Obtener SQL
     let sql: string;
     if (dataset.modoConsulta === 'Visual' && dataset.definicionVisual) {
-        sql = construirSQLDesdeVisual(dataset.definicionVisual as DefinicionVisual);
+        sql = construirSQLDesdeVisual(dataset.definicionVisual as unknown as DefinicionVisual);
     } else if (dataset.consultaSQL) {
         sql = dataset.consultaSQL;
     } else {
@@ -310,7 +310,7 @@ export async function ejecutarDataset(
     }
 
     // 2. Resolver variables
-    const variables = (dataset.variables as VariableDefinicion[]) || [];
+    const variables = (dataset.variables as unknown as VariableDefinicion[]) || [];
     sql = resolverVariablesSistema(sql, variables);
 
     // 3. Validar SQL

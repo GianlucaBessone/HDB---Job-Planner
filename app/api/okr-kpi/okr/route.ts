@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
                 kpis: {
                     include: {
                         responsableCarga: { select: { id: true, nombreCompleto: true } },
-                        graficoIndicador: true,
+
                         _count: { select: { historico: true, planesAccion: true } },
                     },
                     orderBy: { codigoKpi: 'asc' },

@@ -20,8 +20,7 @@ export async function GET(req: NextRequest) {
         const graficos = await prisma.graficoConfig.findMany({
             where,
             include: {
-                dataset: { select: { id: true, nombre: true } },
-                _count: { select: { okrsAsociados: true, kpisAsociados: true } },
+                dataset: { select: { id: true, nombre: true } }
             },
             orderBy: { codigoGrafico: 'asc' },
         });
