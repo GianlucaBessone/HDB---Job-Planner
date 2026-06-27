@@ -61,6 +61,7 @@ export const DEFAULT_VIEWS: ViewConfig[] = [
     { key: '/aprobaciones',       label: 'Aprobaciones',             description: 'Validar fichadas de riesgo',  roles: ['supervisor', 'admin', 'qa'],             access: 'ambos', section: 'gestion', iconName: 'ShieldCheck',     color: 'bg-teal-600' },
     { key: '/monitoreo-fichadas', label: 'Monitoreo de Fichadas',    description: 'Control en tiempo real',      roles: ['supervisor', 'admin', 'qa'],             access: 'ambos', section: 'trazabilidad', iconName: 'ShieldAlert',     color: 'bg-rose-600' },
     { key: '/tareas',              label: 'Tareas',                   description: 'Planificación y recordatorios', roles: ['operador', 'supervisor', 'admin', 'qa'], access: 'ambos', section: 'gestion', iconName: 'ListTodo',        color: 'bg-purple-600' },
+    { key: '/okr-kpi',             label: 'OKR y KPI',                description: 'Objetivos e indicadores estratégicos', roles: ['admin', 'qa', 'supervisor'],     access: 'ambos', section: 'gestion', iconName: 'Target',          color: 'bg-emerald-600' },
 
     // ─ Logística y Materiales ─
     { key: '/inventario',           label: 'Inventario de Materiales',  description: 'Stock y movimientos',                roles: ['admin', 'qa', 'vendedor'],                      access: 'ambos', section: 'logistica', iconName: 'PackageSearch', color: 'bg-amber-600' },
@@ -75,6 +76,8 @@ export const DEFAULT_VIEWS: ViewConfig[] = [
     { key: '/centro-ayuda',         label: 'Centro de Ayuda',          description: 'Base de conocimiento SGI',     roles: ['operador', 'supervisor', 'admin', 'qa', 'vendedor'], access: 'ambos', section: 'calidad', iconName: 'LifeBuoy', color: 'bg-blue-500' },
 
     // ─ Administración ─
+    { key: '/datasets',       label: 'Motor de Datasets',    description: 'Gestión de Datasets',        roles: ['admin', 'qa', 'supervisor'],                                        access: 'ambos', section: 'administracion', iconName: 'Database', color: 'bg-indigo-600' },
+    { key: '/diccionario-datos', label: 'Diccionario de Datos', description: 'Metadatos de la base de datos', roles: ['admin', 'qa', 'supervisor'],                                        access: 'ambos', section: 'administracion', iconName: 'Table',    color: 'bg-slate-600' },
     { key: '/administracion/gastos', label: 'Gastos y Facturas', description: 'Registro y escaneo', roles: ['admin', 'supervisor', 'qa'], access: 'ambos', section: 'administracion', iconName: 'Receipt', color: 'bg-green-600' },
     { key: '/operators',      label: 'Gestión de Usuarios',  description: 'Operadores y permisos',      roles: ['supervisor', 'admin', 'qa'],                          access: 'ambos', section: 'administracion', iconName: 'Users',    color: 'bg-slate-700' },
     { key: '/clients',        label: 'Gestión de Clientes',  description: 'Base de datos de clientes',  roles: ['supervisor', 'admin', 'qa', 'vendedor'],              access: 'ambos', section: 'administracion', iconName: 'Landmark', color: 'bg-indigo-500' },

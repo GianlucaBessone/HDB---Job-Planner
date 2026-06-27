@@ -80,3 +80,77 @@ export async function generateToolIds(count: number): Promise<string[]> {
     }
     return ids;
 }
+
+// ── OKR / KPI / Gráfico Code Generators ───────────────────────────────
+
+/**
+ * Generates a sequential code like OKR-001, KPI-001, GRF-001.
+ * Global sequence (no year reset). Padding = 3 digits.
+ */
+async function generateSimpleCode(
+    prefix: 'OKR' | 'KPI' | 'GRF' | 'DS',
+): Promise<string> {
+    let lastNumber = 0;
+
+    if (prefix === 'OKR') {
+        const last = await prisma.okr.findFirst({
+            where: { codigoOkr: { startsWith: `${prefix}-` } },
+            orderBy: { codigoOkr: 'desc' },
+            select: { codigoOkr: true },
+        });
+        if (last?.codigoOkr) {
+            const parts = last.codigoOkr.split('-');
+            lastNumber = parseInt(parts[parts.length - 1], 10) || 0;
+        }
+    } else if (prefix === 'KPI') {
+        const last = await prisma.kpi.findFirst({
+            where: { codigoKpi: { startsWith: `${prefix}-` } },
+            orderBy: { codigoKpi: 'desc' },
+            select: { codigoKpi: true },
+        });
+        if (last?.codigoKpi) {
+            const parts = last.codigoKpi.split('-');
+            lastNumber = parseInt(parts[parts.length - 1], 10) || 0;
+        }
+    } else if (prefix === 'GRF') {
+        const last = await prisma.graficoConfig.findFirst({
+            where: { codigoGrafico: { startsWith: `${prefix}-` } },
+            orderBy: { codigoGrafico: 'desc' },
+            select: { codigoGrafico: true },
+        });
+        if (last?.codigoGrafico) {
+            const parts = last.codigoGrafico.split('-');
+            lastNumber = parseInt(parts[parts.length - 1], 10) || 0;
+        }
+    } else if (prefix === 'DS') {
+        const last = await prisma.dataset.findFirst({
+            where: { codigoDataset: { startsWith: `${prefix}-` } },
+            orderBy: { codigoDataset: 'desc' },
+            select: { codigoDataset: true },
+        });
+        if (last?.codigoDataset) {
+            const parts = last.codigoDataset.split('-');
+            lastNumber = parseInt(parts[parts.length - 1], 10) || 0;
+        }
+    }
+
+    const nextNumber = String(lastNumber + 1).padStart(3, '0');
+    return `${prefix}-${nextNumber}`;
+}
+
+export async function generateCodigoOkr(): Promise<string> {
+    return generateSimpleCode('OKR');
+}
+
+export async function generateCodigoKpi(): Promise<string> {
+    return generateSimpleCode('KPI');
+}
+
+export async function generateCodigoGrafico(): Promise<string> {
+    return generateSimpleCode('GRF');
+}
+
+export async function generateCodigoDataset(): Promise<string> {
+    return generateSimpleCode('DS');
+}
+

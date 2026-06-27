@@ -4,6 +4,7 @@ import {
     PackageSearch, Package, Users, Landmark, ShieldCheck,
     ShieldAlert, History, Settings, Wrench, FileCheck,
     BookOpen, Sparkles, Bell, Lightbulb, LifeBuoy, ListTodo,
+    Target, Gauge, Receipt, FileBadge,
     type LucideIcon
 } from 'lucide-react';
 
@@ -33,6 +34,10 @@ const ICON_MAP: Record<string, LucideIcon> = {
     Lightbulb,
     LifeBuoy,
     ListTodo,
+    Target,
+    Gauge,
+    Receipt,
+    FileBadge,
 };
 
 export function getIcon(name: string): LucideIcon {

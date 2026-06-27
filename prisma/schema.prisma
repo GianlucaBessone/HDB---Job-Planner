@@ -161,6 +161,12 @@ model Operator {
   documentVersionsAuthored DocumentVersion[] @relation("DocVersionAutor")
   documentVersionsApproved DocumentVersion[] @relation("DocVersionAprobador")
   documentPrints           DocumentPrint[]
+
+  // OKR / KPI
+  okrsResponsable    Okr[]           @relation("OkrResponsable")
+  kpisResponsable    Kpi[]           @relation("KpiResponsableCarga")
+  planesAccionKpi    PlanAccionKpi[] @relation("PlanAccionKpiResponsable")
+  datasetsResponsable Dataset[]      @relation("DatasetResponsable")
 }
 
 model FavoriteBlock {
@@ -349,7 +355,7 @@ model OrdenServicio {
   cobroTotalFinal          Float?
   cobroObservaciones       String?   @db.Text
   cobroCondicionPago       String?
-  cobroOtrosConceptos      Json?     // [{ nombre: string, precio: number }]
+  cobroOtrosConceptos      Json? // [{ nombre: string, precio: number }]
   cobroFechaGeneracion     DateTime?
   cobroFechaPago           DateTime? // Fecha de pago real o estimada
 
@@ -819,8 +825,8 @@ model DocumentPrint {
   fechaImpresion DateTime           @default(now())
   token          String             @unique // Encrypted/Hashed ID for the QR code
 
-  createdAt      DateTime           @default(now())
-  
+  createdAt DateTime @default(now())
+
   @@index([documentId])
   @@index([token])
 }
@@ -1005,31 +1011,31 @@ model TechnicianCompetency {
 }
 
 model TechnicianTraining {
-  id              String              @id @default(cuid())
+  id              String                  @id @default(cuid())
   operatorId      String
-  operator        Operator            @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  operator        Operator                @relation(fields: [operatorId], references: [id], onDelete: Cascade)
   documentId      String?
-  document        ControlledDocument? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  document        ControlledDocument?     @relation(fields: [documentId], references: [id], onDelete: SetNull)
   versionId       String?
-  version         DocumentVersion?    @relation(fields: [versionId], references: [id], onDelete: SetNull)
+  version         DocumentVersion?        @relation(fields: [versionId], references: [id], onDelete: SetNull)
   titulo          String // Título de la capacitación
-  estado          String              @default("pendiente") // pendiente | en_progreso | aprobado | reprobado
-  tipoContenido   String              @default("video") // video | pdf | cuestionario | mixto
-  urlContenido    String?             @db.Text // URL externa, video embed o path
+  estado          String                  @default("pendiente") // pendiente | en_progreso | aprobado | reprobado
+  tipoContenido   String                  @default("video") // video | pdf | cuestionario | mixto
+  urlContenido    String?                 @db.Text // URL externa, video embed o path
   cuestionario    Json? // Array de preguntas, opciones, y correcta
   respuestas      Json? // Array de respuestas del usuario
   puntaje         Float?
-  puntajeMinimo   Float               @default(70.0)
+  puntajeMinimo   Float                   @default(70.0)
   tiempoInvertido Int? // En segundos
   fechaInicio     DateTime?
   fechaFin        DateTime?
   evaluadorId     String?
   evaluadorNombre String?
-  observaciones   String?             @db.Text
+  observaciones   String?                 @db.Text
   signatureId     String?
   signature       DocumentSignatureAudit? @relation(fields: [signatureId], references: [SignatureID])
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
 
   @@index([operatorId])
   @@index([documentId])
@@ -1371,14 +1377,14 @@ model AccionMejora {
   sugerenciaId String?
   sugerencia   Sugerencia? @relation(fields: [sugerenciaId], references: [id], onDelete: Cascade)
 
-  riesgoId         String?
-  riesgo           Riesgo? @relation(fields: [riesgoId], references: [id])
+  riesgoId String?
+  riesgo   Riesgo? @relation(fields: [riesgoId], references: [id])
 
-  oportunidadId    String?
-  oportunidad      Oportunidad? @relation(fields: [oportunidadId], references: [id])
+  oportunidadId String?
+  oportunidad   Oportunidad? @relation(fields: [oportunidadId], references: [id])
 
-  objetivoId       String?
-  objetivo         ObjetivoCalidad? @relation(fields: [objetivoId], references: [id])
+  objetivoId String?
+  objetivo   ObjetivoCalidad? @relation(fields: [objetivoId], references: [id])
 
   auditoriaId      String?
   documentoId      String?
@@ -1400,63 +1406,63 @@ model AccionMejora {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 model Riesgo {
-  id                String   @id @default(cuid())
-  codigo            String?  @unique
-  titulo            String
-  descripcion       String   @db.Text
-  categoria         String
-  probabilidad      String   @default("Media") // Baja, Media, Alta
-  impacto           String   @default("Medio") // Bajo, Medio, Alto, Crítico
-  nivelRiesgo       String   @default("Medio") // Calculado
-  estado            String   @default("Identificado") // Identificado, En Tratamiento, Mitigado, Aceptado, Cerrado
-  procesoAfectado   String?
-  responsableId     String?
-  fechaIdentificacion DateTime @default(now())
-  fechaRevision     DateTime?
+  id                  String    @id @default(cuid())
+  codigo              String?   @unique
+  titulo              String
+  descripcion         String    @db.Text
+  categoria           String
+  probabilidad        String    @default("Media") // Baja, Media, Alta
+  impacto             String    @default("Medio") // Bajo, Medio, Alto, Crítico
+  nivelRiesgo         String    @default("Medio") // Calculado
+  estado              String    @default("Identificado") // Identificado, En Tratamiento, Mitigado, Aceptado, Cerrado
+  procesoAfectado     String?
+  responsableId       String?
+  fechaIdentificacion DateTime  @default(now())
+  fechaRevision       DateTime?
 
-  accionesMejora    AccionMejora[]
+  accionesMejora AccionMejora[]
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ObjetivoCalidad {
-  id                String   @id @default(cuid())
-  codigo            String?  @unique
-  titulo            String
-  descripcion       String   @db.Text
-  indicador         String
-  meta              String
-  unidad            String?
+  id                 String    @id @default(cuid())
+  codigo             String?   @unique
+  titulo             String
+  descripcion        String    @db.Text
+  indicador          String
+  meta               String
+  unidad             String?
   frecuenciaMedicion String?
-  responsableId     String?
-  estado            String   @default("Activo") // Activo, Cumplido, No Cumplido, En Revisión
-  periodo           String?
-  fechaInicio       DateTime?
-  fechaFin          DateTime?
-  resultadoActual   String?
+  responsableId      String?
+  estado             String    @default("Activo") // Activo, Cumplido, No Cumplido, En Revisión
+  periodo            String?
+  fechaInicio        DateTime?
+  fechaFin           DateTime?
+  resultadoActual    String?
 
-  accionesMejora    AccionMejora[]
+  accionesMejora AccionMejora[]
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Oportunidad {
-  id                String   @id @default(cuid())
-  codigo            String?  @unique
-  titulo            String
-  descripcion       String   @db.Text
-  tipoOportunidad   String
-  beneficioEsperado String?  @db.Text
-  estado            String   @default("Identificada") // Identificada, En Evaluación, Aprobada, Implementada, Descartada
-  responsableId     String?
+  id                  String   @id @default(cuid())
+  codigo              String?  @unique
+  titulo              String
+  descripcion         String   @db.Text
+  tipoOportunidad     String
+  beneficioEsperado   String?  @db.Text
+  estado              String   @default("Identificada") // Identificada, En Evaluación, Aprobada, Implementada, Descartada
+  responsableId       String?
   fechaIdentificacion DateTime @default(now())
 
-  accionesMejora    AccionMejora[]
+  accionesMejora AccionMejora[]
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1630,71 +1636,71 @@ model TareaComentario {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 model Proveedor {
-  id              String   @id @default(cuid())
-  razonSocial     String
-  nombreFantasia  String?
-  cuit            String   @unique
-  condicionIva    String?
-  domicilio       String?  @db.Text
-  activo          Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  facturas        FacturaConsumo[]
+  id             String           @id @default(cuid())
+  razonSocial    String
+  nombreFantasia String?
+  cuit           String           @unique
+  condicionIva   String?
+  domicilio      String?          @db.Text
+  activo         Boolean          @default(true)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  facturas       FacturaConsumo[]
 }
 
 model CodigoGasto {
-  id          String   @id @default(cuid())
-  codigo      String   @unique
+  id          String           @id @default(cuid())
+  codigo      String           @unique
   descripcion String
-  activo      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  activo      Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
   facturas    FacturaConsumo[]
 }
 
 model FacturaConsumo {
-  id                    String   @id @default(cuid())
-  fechaEmision          DateTime
-  fechaVencimiento      DateTime?
-  proveedorId           String
-  proveedor             Proveedor @relation(fields: [proveedorId], references: [id], onDelete: Restrict)
-  codigoGastoId         String?
-  codigoGasto           CodigoGasto? @relation(fields: [codigoGastoId], references: [id], onDelete: SetNull)
-  descripcion           String?  @db.Text
-  tipoComprobante       String?
-  letraComprobante      String?
-  puntoVenta            String?
-  numeroComprobante     String?
-  
-  // Importes
-  netoGeneral           Float    @default(0) // subtotal o neto sin iva especifico
-  neto21                Float    @default(0)
-  neto10_5              Float    @default(0)
-  neto27                Float    @default(0)
-  iva21                 Float    @default(0)
-  iva10_5               Float    @default(0)
-  iva27                 Float    @default(0)
-  noGravados            Float    @default(0)
-  percepcionesIva       Float    @default(0)
-  percepcionesIibb      Float    @default(0)
-  impuestosInternos     Float    @default(0)
-  otrosImpuestos        Float    @default(0)
-  total                 Float    @default(0)
-  moneda                String   @default("ARS")
+  id                String       @id @default(cuid())
+  fechaEmision      DateTime
+  fechaVencimiento  DateTime?
+  proveedorId       String
+  proveedor         Proveedor    @relation(fields: [proveedorId], references: [id], onDelete: Restrict)
+  codigoGastoId     String?
+  codigoGasto       CodigoGasto? @relation(fields: [codigoGastoId], references: [id], onDelete: SetNull)
+  descripcion       String?      @db.Text
+  tipoComprobante   String?
+  letraComprobante  String?
+  puntoVenta        String?
+  numeroComprobante String?
 
-  cae                   String?
-  fechaVencimientoCae   DateTime?
+  // Importes
+  netoGeneral       Float  @default(0) // subtotal o neto sin iva especifico
+  neto21            Float  @default(0)
+  neto10_5          Float  @default(0)
+  neto27            Float  @default(0)
+  iva21             Float  @default(0)
+  iva10_5           Float  @default(0)
+  iva27             Float  @default(0)
+  noGravados        Float  @default(0)
+  percepcionesIva   Float  @default(0)
+  percepcionesIibb  Float  @default(0)
+  impuestosInternos Float  @default(0)
+  otrosImpuestos    Float  @default(0)
+  total             Float  @default(0)
+  moneda            String @default("ARS")
+
+  cae                 String?
+  fechaVencimientoCae DateTime?
 
   // Datos IA
-  esFactura             Boolean  @default(true)
-  statusIaConfianza     Float?
-  iaRawData             Json?    // Guarda el JSON original que devolvió Gemini
-  
-  // Archivo
-  archivoUrl            String?  @db.Text
+  esFactura         Boolean @default(true)
+  statusIaConfianza Float?
+  iaRawData         Json? // Guarda el JSON original que devolvió Gemini
 
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  // Archivo
+  archivoUrl String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([proveedorId])
   @@index([codigoGastoId])
@@ -1726,4 +1732,247 @@ model DocumentSignatureAudit {
   @@index([DocumentID])
   @@index([UserID])
   @@index([VerificationStatus])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GESTIÓN DE OKR Y KPI (ISO 9001:2015 – Medición, Seguimiento y Mejora)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Okr {
+  id                 String    @id @default(uuid())
+  codigoOkr          String    @unique // OKR-001
+  nombre             String
+  descripcion        String?   @db.Text
+  areaResponsable    String?
+  responsableId      String?
+  responsable        Operator? @relation("OkrResponsable", fields: [responsableId], references: [id])
+  fechaInicio        DateTime?
+  fechaFin           DateTime?
+  frecuenciaRevision String? // Mensual, Trimestral, Semestral, Anual
+  metaGlobal         String?   @db.Text
+  estado             String    @default("Activo") // Activo | Cerrado | Cancelado
+  observaciones      String?   @db.Text
+
+  // Cumplimiento calculado
+  porcentajeAvance   Float  @default(0)
+  estadoCumplimiento String @default("Sin datos") // Verde | Amarillo | Rojo | Sin datos
+
+  // Trazabilidad ISO 9001
+  fechaCreacion         DateTime @default(now())
+  usuarioCreacionId     String?
+  fechaModificacion     DateTime @updatedAt
+  usuarioModificacionId String?
+
+  kpis Kpi[]
+
+  @@index([estado])
+  @@index([responsableId])
+}
+
+model Kpi {
+  id                   String    @id @default(uuid())
+  codigoKpi            String    @unique // KPI-001
+  okrId                String
+  okr                  Okr       @relation(fields: [okrId], references: [id], onDelete: Restrict)
+  nombre               String
+  descripcion          String?   @db.Text
+  formulaCalculo       String?   @db.Text
+  unidadMedida         String?
+  valorObjetivo        Float
+  valorMinimoAceptable Float?
+  valorMaximoEsperado  Float?
+  frecuenciaMedicion   String? // Diario | Semanal | Mensual | Trimestral | Semestral | Anual
+  responsableCargaId   String?
+  responsableCarga     Operator? @relation("KpiResponsableCarga", fields: [responsableCargaId], references: [id])
+  fuenteDatos          String?
+  estado               String    @default("Activo") // Activo | Inactivo
+
+  // Tipo de registro y fuente de datos
+  tipoRegistro       String   @default("Manual") // Manual | Dataset
+  datasetId          String?
+  dataset            Dataset? @relation("KpiDataset", fields: [datasetId], references: [id], onDelete: SetNull)
+  campoValor         String?  // Columna del resultado del Dataset a usar como valor
+  funcionAgregacion   String?  // SUM | AVG | COUNT | MIN | MAX | LAST | null
+
+  // Cumplimiento calculado (snapshot del último registro)
+  ultimoValor        Float?
+  estadoCumplimiento String? // Cumple | En Riesgo | No Cumple
+
+  // Trazabilidad ISO 9001
+  fechaCreacion         DateTime @default(now())
+  usuarioCreacionId     String?
+  fechaModificacion     DateTime @updatedAt
+  usuarioModificacionId String?
+
+  historico    KpiHistorico[]
+  planesAccion PlanAccionKpi[]
+
+  @@index([okrId])
+  @@index([estado])
+  @@index([responsableCargaId])
+  @@index([datasetId])
+}
+
+model KpiHistorico {
+  id                    String   @id @default(uuid())
+  kpiId                 String
+  kpi                   Kpi      @relation(fields: [kpiId], references: [id], onDelete: Restrict)
+  fechaMedicion         DateTime
+  valorObtenido         Float
+  comentario            String?  @db.Text
+  usuarioRegistroId     String?
+  usuarioRegistroNombre String?
+
+  createdAt DateTime @default(now())
+
+  @@index([kpiId])
+  @@index([fechaMedicion])
+}
+
+model GraficoConfig {
+  id            String  @id @default(uuid())
+  codigoGrafico String  @unique // GRF-001
+  nombre        String
+  descripcion   String? @db.Text
+  tipoGrafico   String // Linea | Barra | Gauge | Indicador | Torta
+  vistaOrigen   String? // Identificador de la fuente de datos (legacy)
+  configuracion Json? // Configuración personalizada del gráfico (colores, ejes, etc.)
+  estado        String  @default("Activo") // Activo | Inactivo
+
+  // Fuente de datos desde Dataset
+  datasetId     String?
+  dataset       Dataset? @relation("GraficoDataset", fields: [datasetId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([datasetId])
+}
+
+model PlanAccionKpi {
+  id               String    @id @default(uuid())
+  kpiId            String
+  kpi              Kpi       @relation(fields: [kpiId], references: [id], onDelete: Restrict)
+  descripcion      String    @db.Text
+  causa            String?   @db.Text
+  accionCorrectiva String?   @db.Text
+  responsableId    String?
+  responsable      Operator? @relation("PlanAccionKpiResponsable", fields: [responsableId], references: [id])
+  fechaCompromiso  DateTime?
+  fechaCierre      DateTime?
+  estado           String    @default("Pendiente") // Pendiente | En Curso | Cerrado
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([kpiId])
+  @@index([estado])
+  @@index([responsableId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MOTOR DE DATASETS Y DICCIONARIO DE DATOS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model DiccionarioTabla {
+  id                  String   @id @default(uuid())
+  nombreTabla         String   @unique
+  descripcion         String?  @db.Text
+  cantidadRegistros   Int      @default(0)
+  ultimaActualizacion DateTime?
+  oculta              Boolean  @default(false)
+
+  campos DiccionarioCampo[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DiccionarioCampo {
+  id              String           @id @default(uuid())
+  tablaId         String
+  tabla           DiccionarioTabla @relation(fields: [tablaId], references: [id], onDelete: Cascade)
+  nombreCampo     String
+  tipoDato        String
+  longitud        Int?
+  permiteNulos    Boolean          @default(true)
+  esClavePrimaria Boolean          @default(false)
+  esClaveForanea  Boolean          @default(false)
+  referenciaTabla String?
+  referenciaCampo String?
+  descripcion     String?          @db.Text
+  ejemploValor    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tablaId, nombreCampo])
+  @@index([tablaId])
+}
+
+model Dataset {
+  id            String    @id @default(uuid())
+  codigoDataset String    @unique // DS-001
+  nombre        String
+  descripcion   String?   @db.Text
+  responsableId String?
+  responsable   Operator? @relation("DatasetResponsable", fields: [responsableId], references: [id])
+  estado        String    @default("Activo") // Activo | Inactivo | Error
+  habilitado    Boolean   @default(true)
+
+  // Definición de la consulta
+  modoConsulta     String  @default("SQL") // SQL | Visual
+  consultaSQL      String? @db.Text
+  definicionVisual Json?
+
+  // Variables dinámicas
+  variables Json? @default("[]")
+
+  // Ejecución programada
+  tipoEjecucion    String    @default("Manual") // Manual | Programada
+  cronExpresion    String?
+  frecuencia       String?   // Cada hora | Diario | Semanal | Mensual | Personalizada
+  horaEjecucion    String?
+  zonaHoraria      String?   @default("America/Argentina/Buenos_Aires")
+  proximaEjecucion DateTime?
+  ultimaEjecucion  DateTime?
+  timeoutSegundos  Int       @default(30)
+  limiteRegistros  Int       @default(10000)
+
+  // Resultado cacheado
+  ultimoResultado Json?
+  ultimoSchema    Json?
+
+  // Trazabilidad
+  fechaCreacion     DateTime @default(now())
+  fechaModificacion DateTime @updatedAt
+  usuarioCreacionId String?
+
+  historico       DatasetEjecucion[]
+  kpisAsociados   Kpi[]            @relation("KpiDataset")
+  graficosAsociados GraficoConfig[] @relation("GraficoDataset")
+
+  @@index([estado])
+  @@index([responsableId])
+  @@index([tipoEjecucion])
+}
+
+model DatasetEjecucion {
+  id                String   @id @default(uuid())
+  datasetId         String
+  dataset           Dataset  @relation(fields: [datasetId], references: [id], onDelete: Cascade)
+  fechaEjecucion    DateTime @default(now())
+  duracionMs        Int      @default(0)
+  cantidadRegistros Int      @default(0)
+  estado            String   @default("Exitosa") // Exitosa | Error | Timeout | Cancelada
+  mensajeError      String?  @db.Text
+  consultaEjecutada String?  @db.Text
+  usuarioId         String?
+  tipo              String   @default("Manual") // Manual | Programada
+
+  createdAt DateTime @default(now())
+
+  @@index([datasetId])
+  @@index([fechaEjecucion])
+  @@index([estado])
 }
