@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireSGIRole } from '@/lib/sgiAuth';
-import { testearSQL } from '@/lib/datasetEngine';
+import { testearSQL, construirSQLDesdeVisual, DefinicionVisual } from '@/lib/datasetEngine';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,13 +10,19 @@ export async function POST(req: NextRequest) {
 
     try {
         const body = await req.json();
-        const { sql } = body;
+        const { sql, modoConsulta, definicionVisual } = body;
 
-        if (!sql) {
-            return NextResponse.json({ error: 'Falta la consulta SQL' }, { status: 400 });
+        let queryToExecute = sql;
+
+        if (modoConsulta === 'Visual' && definicionVisual) {
+            queryToExecute = construirSQLDesdeVisual(definicionVisual as unknown as DefinicionVisual);
         }
 
-        const resultado = await testearSQL(sql, { limite: 10 });
+        if (!queryToExecute) {
+            return NextResponse.json({ error: 'Falta la consulta SQL o definición visual válida' }, { status: 400 });
+        }
+
+        const resultado = await testearSQL(queryToExecute, { limite: 10 });
         
         return NextResponse.json(resultado);
     } catch (error: any) {

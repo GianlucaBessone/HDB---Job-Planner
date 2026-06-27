@@ -13,6 +13,7 @@ export default function DiccionarioCliente({ user }: { user: any }) {
     const [selectedTabla, setSelectedTabla] = useState<any | null>(null);
     const [loadingDetalle, setLoadingDetalle] = useState(false);
     const [editingCampo, setEditingCampo] = useState<any | null>(null);
+    const [syncProgress, setSyncProgress] = useState<{ actual: number; total: number; tablaActual: string } | null>(null);
 
     const fetchTablas = useCallback(async () => {
         setLoading(true);
@@ -29,21 +30,60 @@ export default function DiccionarioCliente({ user }: { user: any }) {
 
     const handleSync = async () => {
         setSyncing(true);
+        setSyncProgress({ actual: 0, total: 0, tablaActual: 'Iniciando...' });
         try {
-            const res = await fetch('/api/diccionario-datos', {
+            // Fase 1: Obtener lista de tablas
+            const resStart = await fetch('/api/diccionario-datos', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'sincronizar' }),
+                body: JSON.stringify({ action: 'sync-start' }),
             });
-            const data = await res.json();
-            if (res.ok) {
-                showToast(data.message, 'success');
+            const dataStart = await resStart.json();
+            
+            if (!dataStart.tables) {
+                throw new Error(dataStart.error || 'Error al iniciar sincronización');
+            }
+            
+            const tablasASincronizar: string[] = dataStart.tables;
+            const totalTablas = tablasASincronizar.length;
+            let actual = 0;
+            
+            // Fase 2: Sincronizar tabla por tabla
+            for (const tabla of tablasASincronizar) {
+                actual++;
+                setSyncProgress({ actual, total: totalTablas, tablaActual: tabla });
+                
+                await fetch('/api/diccionario-datos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'sync-table', tabla }),
+                });
+            }
+            
+            // Fase 3: Finalizar y limpiar
+            setSyncProgress({ actual: totalTablas, total: totalTablas, tablaActual: 'Limpiando datos huérfanos...' });
+            const resFinish = await fetch('/api/diccionario-datos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'sync-finish', validTables: tablasASincronizar }),
+            });
+            
+            const dataFinish = await resFinish.json();
+            if (dataFinish.success) {
+                showToast('Sincronización completada con éxito', 'success');
                 fetchTablas();
             } else {
-                showToast(`Error: ${data.error}`, 'error');
+                throw new Error(dataFinish.error || 'Error en la limpieza');
             }
-        } catch (err) { console.error(err); }
-        finally { setSyncing(false); }
+
+        } catch (err: any) { 
+            console.error(err); 
+            showToast(err.message || 'Error de conexión durante la sincronización', 'error');
+        }
+        finally { 
+            setSyncing(false); 
+            setSyncProgress(null);
+        }
     };
 
     const handleSelectTabla = async (tablaId: string) => {
@@ -113,14 +153,27 @@ export default function DiccionarioCliente({ user }: { user: any }) {
                     </h1>
                     <p className="text-sm text-slate-500 mt-1">Metadatos e introspección de la base de datos para la generación de Datasets.</p>
                 </div>
-                <button 
-                    onClick={handleSync} 
-                    disabled={syncing}
-                    className="flex items-center gap-2 h-10 px-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-sm transition-all disabled:opacity-50"
-                >
-                    <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
-                    {syncing ? 'Sincronizando...' : 'Sincronizar Esquema'}
-                </button>
+                <div className="flex flex-col items-end gap-2">
+                    <button 
+                        onClick={handleSync} 
+                        disabled={syncing}
+                        className="flex items-center gap-2 h-10 px-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-sm transition-all disabled:opacity-50"
+                    >
+                        <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
+                        {syncing ? 'Sincronizando...' : 'Sincronizar Esquema'}
+                    </button>
+                    {syncing && syncProgress && syncProgress.total > 0 && (
+                        <div className="w-full max-w-xs flex flex-col items-end gap-1">
+                            <span className="text-xs text-slate-500 truncate max-w-[200px]">Analizando {syncProgress.tablaActual}</span>
+                            <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                                <div 
+                                    className="h-full bg-indigo-600 transition-all duration-300"
+                                    style={{ width: `${(syncProgress.actual / syncProgress.total) * 100}%` }}
+                                />
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

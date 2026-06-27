@@ -151,7 +151,7 @@ export function construirSQLDesdeVisual(definicion: DefinicionVisual): string {
 
     // FROM
     const tablaPrincipal = definicion.tablas[0];
-    partes.push(`FROM "${tablaPrincipal.nombreTabla}"${tablaPrincipal.alias ? ` AS "${tablaPrincipal.alias}"` : ''}`);
+    partes.push(`FROM "${tablaPrincipal.nombreTabla}"`);
 
     // JOINs
     if (definicion.relaciones && definicion.relaciones.length > 0) {
@@ -195,13 +195,25 @@ export function construirSQLDesdeVisual(definicion: DefinicionVisual): string {
     }
 
     // GROUP BY
-    if (definicion.agrupaciones && definicion.agrupaciones.length > 0) {
-        const grupos = definicion.agrupaciones.map(g => {
-            return g.campo.includes('.')
-                ? g.campo.split('.').map(p => `"${p}"`).join('.')
-                : `"${g.campo}"`;
+    const tieneAgregacion = definicion.campos.some(c => c.funcion && c.funcion !== 'DISTINCT');
+    let gruposManuales = (definicion.agrupaciones || []).map(g => g.campo);
+
+    if (tieneAgregacion) {
+        // Auto-group by all non-aggregated fields if any aggregation exists
+        const camposNoAgregados = definicion.campos
+            .filter(c => !c.funcion || c.funcion === 'DISTINCT')
+            .map(c => c.tabla ? `"${c.tabla}"."${c.nombreCampo}"` : `"${c.nombreCampo}"`);
+        
+        if (camposNoAgregados.length > 0) {
+            partes.push(`GROUP BY ${camposNoAgregados.join(', ')}`);
+        }
+    } else if (gruposManuales.length > 0) {
+        const gruposFormateados = gruposManuales.map(campo => {
+            return campo.includes('.')
+                ? campo.split('.').map(p => `"${p}"`).join('.')
+                : `"${campo}"`;
         });
-        partes.push(`GROUP BY ${grupos.join(', ')}`);
+        partes.push(`GROUP BY ${gruposFormateados.join(', ')}`);
     }
 
     // ORDER BY

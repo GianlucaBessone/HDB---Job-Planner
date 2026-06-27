@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireSGIRole } from '@/lib/sgiAuth';
-import { sincronizarDiccionario } from '@/lib/diccionarioDatos';
+import { getTablesToSync, syncTable, cleanupSync } from '@/lib/diccionarioDatos';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,13 +42,25 @@ export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
 
-        if (body.action === 'sincronizar') {
-            const resultado = await sincronizarDiccionario();
-            return NextResponse.json({
-                success: true,
-                message: `Sincronización completada: ${resultado.tablasCreadas} tablas creadas, ${resultado.tablasActualizadas} actualizadas, ${resultado.camposActualizados} campos procesados.`,
-                ...resultado,
-            });
+        if (body.action === 'sync-start') {
+            const tables = await getTablesToSync();
+            return NextResponse.json({ tables });
+        }
+
+        if (body.action === 'sync-table') {
+            const { tabla } = body;
+            if (!tabla) return NextResponse.json({ error: 'Tabla no especificada' }, { status: 400 });
+            
+            const result = await syncTable(tabla);
+            return NextResponse.json({ success: true, ...result });
+        }
+
+        if (body.action === 'sync-finish') {
+            const { validTables } = body;
+            if (!Array.isArray(validTables)) return NextResponse.json({ error: 'Faltan tablas válidas' }, { status: 400 });
+            
+            const result = await cleanupSync(validTables);
+            return NextResponse.json({ success: true, ...result });
         }
 
         return NextResponse.json({ error: 'Acción no válida' }, { status: 400 });

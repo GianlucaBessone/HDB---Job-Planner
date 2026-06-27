@@ -121,6 +121,7 @@ function GraficoFormModal({ grafico, datasets, onClose, onSave }: { grafico: any
         tipoGrafico: grafico?.tipoGrafico || 'Linea',
         datasetId: grafico?.datasetId || '',
         estado: grafico?.estado || 'Activo',
+        configuracion: grafico?.configuracion || { ejeX: '', series: [] },
     });
     const [saving, setSaving] = useState(false);
 
@@ -166,6 +167,18 @@ function GraficoFormModal({ grafico, datasets, onClose, onSave }: { grafico: any
                             ))}
                         </select>
                     </div>
+                    {form.datasetId && (
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Eje X (Categoría)</label>
+                                <input value={form.configuracion.ejeX} onChange={e => setForm(p => ({ ...p, configuracion: { ...p.configuracion, ejeX: e.target.value } }))} placeholder="Ej: mes" className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none" />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Serie(s) Eje Y</label>
+                                <input value={form.configuracion.series.join(', ')} onChange={e => setForm(p => ({ ...p, configuracion: { ...p.configuracion, series: e.target.value.split(',').map(s => s.trim()).filter(Boolean) } }))} placeholder="Ej: ventas, gastos" className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none" />
+                            </div>
+                        </div>
+                    )}
                     {grafico && (
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Estado</label>

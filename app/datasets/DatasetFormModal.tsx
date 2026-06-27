@@ -8,6 +8,7 @@ import Prism from 'prismjs';
 import 'prismjs/components/prism-sql';
 import 'prismjs/themes/prism-tomorrow.css'; // Dark theme for code
 import { showToast } from '@/components/Toast';
+import VisualBuilder from './VisualBuilder';
 
 export default function DatasetFormModal({ dataset, operators, onClose, onSave }: any) {
     const [form, setForm] = useState({
@@ -23,6 +24,7 @@ export default function DatasetFormModal({ dataset, operators, onClose, onSave }
         horaEjecucion: dataset?.horaEjecucion || '',
         timeoutSegundos: dataset?.timeoutSegundos || 30,
         limiteRegistros: dataset?.limiteRegistros || 10000,
+        definicionVisual: dataset?.definicionVisual || { tablas: [], relaciones: [], campos: [], filtros: [], agrupaciones: [], ordenamiento: [] },
     });
     
     const [saving, setSaving] = useState(false);
@@ -86,9 +88,12 @@ export default function DatasetFormModal({ dataset, operators, onClose, onSave }
         setSaving(false);
     };
 
-    const handleTestSQL = async () => {
-        if (!form.consultaSQL.trim()) {
-            showToast('La consulta SQL está vacía', 'error');
+    const handleTestSQL = async (silent = false) => {
+        if (form.modoConsulta === 'SQL' && !form.consultaSQL.trim()) {
+            if (!silent) showToast('La consulta SQL está vacía', 'error');
+            return;
+        }
+        if (form.modoConsulta === 'Visual' && form.definicionVisual.campos?.length === 0) {
             return;
         }
         
@@ -100,16 +105,20 @@ export default function DatasetFormModal({ dataset, operators, onClose, onSave }
             const res = await fetch('/api/datasets/test', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ sql: form.consultaSQL }),
+                body: JSON.stringify({ 
+                    sql: form.consultaSQL, 
+                    modoConsulta: form.modoConsulta, 
+                    definicionVisual: form.definicionVisual 
+                }),
             });
             const data = await res.json();
             
             if (res.ok) {
                 setPreviewData(data.datos || []);
-                showToast(`Prueba exitosa: ${data.cantidadRegistros} registros en ${data.duracionMs}ms.`, 'success');
+                if (!silent) showToast(`Prueba exitosa: ${data.cantidadRegistros} registros en ${data.duracionMs}ms.`, 'success');
             } else {
                 setPreviewError(data.error);
-                showToast('Error en la prueba de SQL', 'error');
+                if (!silent) showToast('Error en la prueba de SQL', 'error');
             }
         } catch (err: any) {
             setPreviewError(err.message || 'Error desconocido');
@@ -117,6 +126,18 @@ export default function DatasetFormModal({ dataset, operators, onClose, onSave }
             setPreviewLoading(false);
         }
     };
+
+    // Live preview effect for Visual Mode
+    useEffect(() => {
+        if (form.modoConsulta !== 'Visual') return;
+        if (!form.definicionVisual.campos || form.definicionVisual.campos.length === 0) return;
+        
+        const timeoutId = setTimeout(() => {
+            handleTestSQL(true);
+        }, 800);
+        
+        return () => clearTimeout(timeoutId);
+    }, [form.definicionVisual, form.modoConsulta]);
 
     const getPreviewColumns = () => {
         if (!previewData || previewData.length === 0) return [];
@@ -205,22 +226,42 @@ export default function DatasetFormModal({ dataset, operators, onClose, onSave }
                 {/* Center: Editor & Results */}
                 <main className="flex-1 flex flex-col bg-slate-50 dark:bg-[#1e1e1e] relative min-w-0">
                     <div className="flex-1 flex flex-col p-4 overflow-hidden relative">
-                        {/* Editor Header */}
-                        <div className="flex items-center justify-between mb-2">
-                            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                                <CodeIcon /> Consulta SQL
-                            </h3>
+                        {/* Editor Header with Mode Toggle */}
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex bg-slate-200 dark:bg-slate-800 p-1 rounded-lg">
+                                <button
+                                    onClick={() => setForm(p => ({ ...p, modoConsulta: 'Visual' }))}
+                                    className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${form.modoConsulta === 'Visual' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                                >
+                                    Modo Visual
+                                </button>
+                                <button
+                                    onClick={() => setForm(p => ({ ...p, modoConsulta: 'SQL' }))}
+                                    className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${form.modoConsulta === 'SQL' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                                >
+                                    SQL Crudo
+                                </button>
+                            </div>
                             <button 
                                 onClick={handleTestSQL}
-                                disabled={previewLoading || !form.consultaSQL.trim()}
-                                className="h-7 px-3 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+                                disabled={previewLoading || (form.modoConsulta === 'SQL' ? !form.consultaSQL.trim() : form.definicionVisual.campos?.length === 0)}
+                                className="h-8 px-4 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-lg text-xs font-bold flex items-center gap-2 transition-colors shadow-sm"
                             >
-                                <Play className="w-3 h-3" /> {previewLoading ? 'Ejecutando...' : 'Probar Consulta'}
+                                <Play className="w-3.5 h-3.5" /> {previewLoading ? 'Ejecutando...' : 'Probar Consulta'}
                             </button>
                         </div>
                         
-                        {/* IDE Editor Container */}
-                        <div className="flex-1 border border-slate-300 dark:border-slate-700 rounded-lg overflow-hidden flex flex-col bg-[#1e1e1e] shadow-inner relative">
+                        {/* Builder / IDE Container */}
+                        {form.modoConsulta === 'Visual' ? (
+                            <div className="flex-1 bg-white dark:bg-[#1e1e1e] border border-slate-300 dark:border-slate-700 rounded-lg overflow-hidden flex flex-col shadow-inner">
+                                <VisualBuilder 
+                                    definicion={form.definicionVisual} 
+                                    onChange={(v) => setForm(p => ({ ...p, definicionVisual: v }))} 
+                                    tablas={tablas} 
+                                />
+                            </div>
+                        ) : (
+                            <div className="flex-1 border border-slate-300 dark:border-slate-700 rounded-lg overflow-hidden flex flex-col bg-[#1e1e1e] shadow-inner relative">
                             <div className="flex-1 overflow-auto custom-scrollbar relative">
                                 <Editor
                                     value={form.consultaSQL}
@@ -238,6 +279,7 @@ export default function DatasetFormModal({ dataset, operators, onClose, onSave }
                                 />
                             </div>
                         </div>
+                        )}
                     </div>
 
                     {/* Results Panel */}

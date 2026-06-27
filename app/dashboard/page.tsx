@@ -9,6 +9,7 @@ import CodeBadge from '@/components/CodeBadge';
 import { safeApiRequest } from '@/lib/offline';
 import OperadoresTab from './OperadoresTab';
 import { TrendChart, BasicBarChart, TargetBarChart, MultiTrendChart, DivergentBarChart, DonutChart } from './EChartsComponents';
+import DynamicChart from '@/app/okr-kpi/components/DynamicChart';
 import { useDashboardAggregation } from './useDashboardAggregation';
 import { useOrdenesServicioAggregation } from './useOrdenesServicioAggregation';
 import OrdenesServicioTab from './OrdenesServicioTab';
@@ -40,6 +41,16 @@ export default function DashboardPage() {
     
     // Fetch RAW data once, then aggregate instantly
     const { data: rawData, isLoading: rawLoading } = useSWR('/api/dashboard/raw', fetcher, { refreshInterval: 60000 });
+    const { data: graficosList = [] } = useSWR<any[]>('/api/okr-kpi/graficos', fetcher);
+    
+    const dashGraficos = useMemo(() => {
+        return {
+            tpi: graficosList.find(g => g.codigoGrafico === 'GRF-DASH-001'),
+            clasificacion: graficosList.find(g => g.codigoGrafico === 'GRF-DASH-002'),
+            ahorro: graficosList.find(g => g.codigoGrafico === 'GRF-DASH-003'),
+        };
+    }, [graficosList]);
+
     const data = useDashboardAggregation(rawData, filters);
     const ordenesData = useOrdenesServicioAggregation(rawData, filters);
 
@@ -377,17 +388,16 @@ export default function DashboardPage() {
                             calc="La línea roja indica el punto neutro (TPI = 1.0)."
                         />
                     </div>
-                    {data.performance.projects.length === 0 ? (
-                        <div className="h-56 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Sin datos de proyectos</div>
-                    ) : (
+                    {dashGraficos.tpi ? (
                         <div className="mt-4">
-                            <BasicBarChart 
-                                data={data.performance.projects.map((p: any) => ({ name: p.nombre, value: Number(p.ipt.toFixed(2)), code: p.codigoProyecto, isHighlight: p.ipt >= 1 }))} 
+                            <DynamicChart 
+                                grafico={dashGraficos.tpi} 
                                 height={224}
-                                targetRange={[0.95, 1.05]}
                                 onEvents={{ click: (e: any) => handleChartClick('project', e.name) }}
                             />
                         </div>
+                    ) : (
+                        <div className="h-56 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Cargando...</div>
                     )}
                 </div>
 
@@ -431,18 +441,15 @@ export default function DashboardPage() {
                         />
                     </div>
                     <div className="w-full h-48 mb-4 mt-2">
-                        <DonutChart 
-                            data={[
-                                { name: 'Eficientes', value: data.performance.classification.eficiente },
-                                { name: 'Exactos', value: data.performance.classification.exacto },
-                                { name: 'Con Desvío', value: data.performance.classification.desvio }
-                            ]}
-                            colors={['#10b981', '#3b82f6', '#f43f5e']}
-                            centerText={data.performance.classification.eficiente}
-                            centerSubtext="Eficientes"
-                            height={192}
-                            onEvents={{ click: (e: any) => handleChartClick('classification', e.name) }}
-                        />
+                        {dashGraficos.clasificacion ? (
+                            <DynamicChart 
+                                grafico={dashGraficos.clasificacion} 
+                                height={192}
+                                onEvents={{ click: (e: any) => handleChartClick('classification', e.name) }}
+                            />
+                        ) : (
+                            <div className="h-full flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Cargando...</div>
+                        )}
                     </div>
                 </div>
 
@@ -459,11 +466,15 @@ export default function DashboardPage() {
                         />
                     </div>
                     <div className="mt-4">
-                        <DivergentBarChart 
-                            data={data.performance.projects.slice(0, 6).map((p: any) => ({ name: p.nombre, value: p.savings }))} 
-                            height={280} 
-                            onEvents={{ click: (e: any) => handleChartClick('project', e.name) }}
-                        />
+                        {dashGraficos.ahorro ? (
+                            <DynamicChart 
+                                grafico={dashGraficos.ahorro} 
+                                height={280} 
+                                onEvents={{ click: (e: any) => handleChartClick('project', e.name) }}
+                            />
+                        ) : (
+                            <div className="h-[280px] flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Cargando...</div>
+                        )}
                     </div>
                 </div>
             </div>
