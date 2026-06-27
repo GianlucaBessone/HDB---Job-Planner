@@ -243,7 +243,7 @@ export default function DatasetFormModal({ dataset, operators, onClose, onSave }
                                 </button>
                             </div>
                             <button 
-                                onClick={handleTestSQL}
+                                onClick={() => handleTestSQL(false)}
                                 disabled={previewLoading || (form.modoConsulta === 'SQL' ? !form.consultaSQL.trim() : form.definicionVisual.campos?.length === 0)}
                                 className="h-8 px-4 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-lg text-xs font-bold flex items-center gap-2 transition-colors shadow-sm"
                             >
