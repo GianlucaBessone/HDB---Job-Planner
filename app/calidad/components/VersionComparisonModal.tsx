@@ -135,7 +135,7 @@ export default function VersionComparisonModal({ currentDoc, selectedVersion, on
                                     v{currentDoc.versionMayor}.{currentDoc.versionMenor} (Actual)
                                 </span>
                                 <span className="text-slate-400 font-medium">vs</span>
-                                <span className="font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/50 px-2 py-0.5 rounded">
+                                <span className="font-bold text-slate-500 dark:text-slate-400 bg-muted text-muted-foreground/50 px-2 py-0.5 rounded">
                                     v{selectedVersion.versionLabel} (Seleccionada)
                                 </span>
                             </div>
@@ -147,7 +147,7 @@ export default function VersionComparisonModal({ currentDoc, selectedVersion, on
                 </div>
 
                 {/* Body */}
-                <div className="flex-1 overflow-y-auto p-0 bg-slate-50 dark:bg-slate-900 relative">
+                <div className="flex-1 overflow-y-auto p-0 bg-background text-foreground relative">
                     {loading ? (
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
                             <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4" />
@@ -186,7 +186,7 @@ export default function VersionComparisonModal({ currentDoc, selectedVersion, on
                             </div>
 
                             {/* Justificación y Metadata */}
-                            <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700 grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Datos de la Versión Seleccionada (v{selectedVersion.versionLabel})</h4>
                                     <div className="space-y-2">
@@ -206,7 +206,7 @@ export default function VersionComparisonModal({ currentDoc, selectedVersion, on
                                 </div>
                                 <div className="border-t md:border-t-0 md:border-l border-slate-200 dark:border-slate-700 pt-4 md:pt-0 md:pl-6 flex flex-col">
                                     <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2 shrink-0">Justificación del Cambio</h4>
-                                    <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800 flex-1 overflow-y-auto">
+                                    <div className="bg-background text-foreground/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800 flex-1 overflow-y-auto">
                                         <p className="text-sm text-slate-700 dark:text-slate-300 italic">
                                             "{currentDoc.versions?.find((v:any) => v.versionMayor === currentDoc.versionMayor && v.versionMenor === currentDoc.versionMenor)?.motivoCambio || selectedVersion.motivoCambio || 'Sin justificación registrada.'}"
                                         </p>
@@ -223,14 +223,14 @@ export default function VersionComparisonModal({ currentDoc, selectedVersion, on
 
                                     {/* Atributos Generales */}
                                     {Object.entries(diffData.general).some(([_, v]: any) => v.status === 'modified') && (
-                                    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                                        <div className="bg-slate-50 dark:bg-slate-900/50 px-4 py-2 border-b border-slate-200 dark:border-slate-700">
+                                    <div className="bg-card text-card-foreground rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                                        <div className="bg-background text-foreground/50 px-4 py-2 border-b border-slate-200 dark:border-slate-700">
                                             <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Atributos Generales</span>
                                         </div>
                                         <div className="divide-y divide-slate-100 dark:divide-slate-800 font-mono text-xs sm:text-sm">
                                             {Object.entries(diffData.general).filter(([_, v]: any) => v.status === 'modified').map(([key, data]: any) => (
                                                 <div key={key} className="flex flex-col">
-                                                    <div className="px-3 py-1 bg-slate-100 dark:bg-slate-800/80 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{key}</div>
+                                                    <div className="px-3 py-1 bg-muted text-muted-foreground/80 text-[10px] font-bold text-slate-500 uppercase tracking-wider">{key}</div>
                                                     <div className="bg-red-50 dark:bg-red-950/20 text-red-800 dark:text-red-300 p-3 flex gap-4">
                                                         <span className="font-bold select-none opacity-50">-</span>
                                                         <div className="flex-1">{String(data.old)}</div>
@@ -247,8 +247,8 @@ export default function VersionComparisonModal({ currentDoc, selectedVersion, on
 
                                     {/* Objetivo */}
                                     {diffData.contenido.objetivo.status === 'modified' && (
-                                    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                                        <div className="bg-slate-50 dark:bg-slate-900/50 px-4 py-2 border-b border-slate-200 dark:border-slate-700">
+                                    <div className="bg-card text-card-foreground rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                                        <div className="bg-background text-foreground/50 px-4 py-2 border-b border-slate-200 dark:border-slate-700">
                                             <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Objetivo del Documento</span>
                                         </div>
                                         <div className="divide-y divide-slate-100 dark:divide-slate-800 font-mono text-xs sm:text-sm">
@@ -266,8 +266,8 @@ export default function VersionComparisonModal({ currentDoc, selectedVersion, on
 
                                     {/* Desarrollo */}
                                     {diffData.contenido.desarrollo.status === 'modified' && (
-                                    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                                        <div className="bg-slate-50 dark:bg-slate-900/50 px-4 py-2 border-b border-slate-200 dark:border-slate-700">
+                                    <div className="bg-card text-card-foreground rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                                        <div className="bg-background text-foreground/50 px-4 py-2 border-b border-slate-200 dark:border-slate-700">
                                             <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Contenido del Documento / Desarrollo</span>
                                         </div>
                                         <div className="divide-y divide-slate-100 dark:divide-slate-800 font-mono text-xs sm:text-sm">
@@ -285,8 +285,8 @@ export default function VersionComparisonModal({ currentDoc, selectedVersion, on
 
                                     {/* Referencias */}
                                     {diffData.referencias.filter((r:any) => r.status !== 'unchanged').length > 0 && (
-                                    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                                        <div className="bg-slate-50 dark:bg-slate-900/50 px-4 py-2 border-b border-slate-200 dark:border-slate-700">
+                                    <div className="bg-card text-card-foreground rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                                        <div className="bg-background text-foreground/50 px-4 py-2 border-b border-slate-200 dark:border-slate-700">
                                             <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Etiquetas / Referencias</span>
                                         </div>
                                         <div className="font-mono text-xs sm:text-sm">
@@ -294,7 +294,7 @@ export default function VersionComparisonModal({ currentDoc, selectedVersion, on
                                                 <div key={idx} className={`p-3 flex gap-4 ${
                                                     ref.status === 'added' ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-300' :
                                                     ref.status === 'deleted' ? 'bg-red-50 dark:bg-red-950/20 text-red-800 dark:text-red-300' :
-                                                    'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                                                    'bg-card text-card-foreground text-slate-600 dark:text-slate-400'
                                                 }`}>
                                                     <span className="font-bold select-none opacity-50">
                                                         {ref.status === 'added' ? '+' : ref.status === 'deleted' ? '-' : ' '}
@@ -308,8 +308,8 @@ export default function VersionComparisonModal({ currentDoc, selectedVersion, on
 
                                     {/* LMS */}
                                     {diffData.lms.status === 'modified' && (
-                                    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                                        <div className="bg-slate-50 dark:bg-slate-900/50 px-4 py-2 border-b border-slate-200 dark:border-slate-700">
+                                    <div className="bg-card text-card-foreground rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                                        <div className="bg-background text-foreground/50 px-4 py-2 border-b border-slate-200 dark:border-slate-700">
                                             <span className="text-xs font-bold text-slate-600 dark:text-slate-400">LMS & Capacitación</span>
                                         </div>
                                         <div className="divide-y divide-slate-100 dark:divide-slate-800 font-mono text-xs sm:text-sm">

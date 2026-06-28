@@ -46,13 +46,13 @@ export default function ProjectSpreadsheetView({
     };
 
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="bg-card text-card-foreground rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="overflow-x-auto custom-scrollbar">
                 <table className="w-full text-left border-collapse min-w-[1000px]">
                     <thead>
-                        <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700">
-                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest sticky left-0 bg-slate-50 dark:bg-slate-900/90 backdrop-blur z-10 w-24">Código</th>
-                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest sticky left-24 bg-slate-50 dark:bg-slate-900/90 backdrop-blur z-10 shadow-[2px_0_5px_rgba(0,0,0,0.05)] w-48">Nombre</th>
+                        <tr className="bg-background text-foreground/50 border-b border-slate-100 dark:border-slate-700">
+                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest sticky left-0 bg-background text-foreground/90 backdrop-blur z-10 w-24">Código</th>
+                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest sticky left-24 bg-background text-foreground/90 backdrop-blur z-10 shadow-[2px_0_5px_rgba(0,0,0,0.05)] w-48">Nombre</th>
                             <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest w-40">Cliente</th>
                             <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest w-40">Responsable</th>
                             <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest w-32">Estado</th>
@@ -92,7 +92,7 @@ export default function ProjectSpreadsheetView({
                                         <select 
                                             value={p.estado} 
                                             onChange={(e) => handleUpdate(p, 'estado', e.target.value)}
-                                            className={`text-[11px] font-bold rounded-lg px-2 py-1 outline-none border border-transparent cursor-pointer bg-slate-100 dark:bg-slate-800 transition-all shadow-sm ${STATUS_CONFIG[p.estado]?.color}`}
+                                            className={`text-[11px] font-bold rounded-lg px-2 py-1 outline-none border border-transparent cursor-pointer bg-muted text-muted-foreground transition-all shadow-sm ${STATUS_CONFIG[p.estado]?.color}`}
                                         >
                                             {ALL_STATUSES.map(s => (
                                                 <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>

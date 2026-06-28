@@ -33,10 +33,10 @@ export function MaterialFormModal({
 
     return (
         <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-[2rem] shadow-2xl p-6 border border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-200">
+            <div className="bg-card text-card-foreground w-full max-w-md rounded-[2rem] shadow-2xl p-6 border border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-200">
                 <div className="flex justify-between items-center mb-6">
                     <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">{currentCode ? 'Editar Material' : 'Nuevo Material'}</h3>
-                    <button onClick={onClose} aria-label="Cerrar modal" className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-full hover:text-slate-600 hover:bg-slate-200 transition-colors">
+                    <button onClick={onClose} aria-label="Cerrar modal" className="p-2 bg-muted text-muted-foreground text-slate-400 rounded-full hover:text-slate-600 hover:bg-slate-200 transition-colors">
                         <X className="w-5 h-5"/>
                     </button>
                 </div>

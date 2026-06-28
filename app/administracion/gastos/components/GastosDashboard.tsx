@@ -38,7 +38,7 @@ function MultiSelectDropdown({
         <div className="relative min-w-[160px] flex-1" ref={containerRef}>
             <button 
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center justify-between w-full h-11 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors outline-none focus:ring-4 focus:ring-blue-500/10"
+                className="flex items-center justify-between w-full h-11 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors outline-none focus:ring-4 focus:ring-blue-500/10"
             >
                 <div className="flex items-center gap-2 truncate">
                     {icon}
@@ -48,7 +48,7 @@ function MultiSelectDropdown({
             </button>
             
             {isOpen && (
-                <div className="absolute z-[60] mt-1 w-full min-w-[200px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl max-h-60 overflow-y-auto p-1 animate-in fade-in zoom-in-95 duration-200">
+                <div className="absolute z-[60] mt-1 w-full min-w-[200px] bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl max-h-60 overflow-y-auto p-1 animate-in fade-in zoom-in-95 duration-200">
                     {options.length === 0 ? (
                         <div className="p-3 text-xs text-slate-400 text-center font-bold">No hay opciones</div>
                     ) : (
@@ -106,7 +106,7 @@ function MetricTooltip({ def, purpose, calc }: { def: string; purpose: string; c
 
 function KpiCard({ title, value, icon, color, trend, tooltip, active }: { title: string; value: string | number; icon: React.ReactNode; color: string; trend: string; tooltip?: { def: string; purpose: string; calc: string }, active?: boolean }) {
     return (
-        <div className={`bg-white dark:bg-slate-800 p-2.5 md:p-3 rounded-xl border ${active ? 'border-blue-500 ring-1 ring-blue-500 shadow-md' : 'border-slate-200 dark:border-slate-700 shadow-sm'} hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between h-[64px] md:h-[72px] gap-2`}>
+        <div className={`bg-card text-card-foreground p-2.5 md:p-3 rounded-xl border ${active ? 'border-blue-500 ring-1 ring-blue-500 shadow-md' : 'border-slate-200 dark:border-slate-700 shadow-sm'} hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between h-[64px] md:h-[72px] gap-2`}>
             <div className="flex items-center gap-2.5 min-w-0">
                 <div className={`w-8 h-8 md:w-9 md:h-9 rounded-lg flex items-center justify-center shrink-0 ${color} text-white shadow-sm`}>
                     <div className="[&>svg]:w-4 [&>svg]:h-4 md:[&>svg]:w-5 md:[&>svg]:h-5">
@@ -120,7 +120,7 @@ function KpiCard({ title, value, icon, color, trend, tooltip, active }: { title:
             </div>
             
             <div className="flex flex-col items-end justify-between shrink-0 h-full py-0.5">
-                {tooltip ? <MetricTooltip {...tooltip} /> : <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1.5 py-0.5 bg-slate-50 dark:bg-slate-900/50 rounded-md">KPI</div>}
+                {tooltip ? <MetricTooltip {...tooltip} /> : <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1.5 py-0.5 bg-background text-foreground/50 rounded-md">KPI</div>}
                 <div className="flex items-center gap-1.5 mt-auto">
                     <div className={`w-1.5 h-1.5 rounded-full ${color.replace('bg-', 'bg-').replace('500', '400')} animate-pulse`} />
                     <p className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase max-w-[60px] lg:max-w-[80px] truncate" title={trend}>{trend}</p>
@@ -286,7 +286,7 @@ export default function GastosDashboard() {
     <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 p-2 md:p-4 pb-12 overflow-y-auto h-full">
       
       {/* Top Filters Header */}
-      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-[2rem] p-3 md:p-4 shadow-sm space-y-3">
+      <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-[2rem] p-3 md:p-4 shadow-sm space-y-3">
           <div className="flex items-center justify-between">
               <h3 className="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 text-sm">
                   <Filter className="w-4 h-4 text-blue-500" />
@@ -308,7 +308,7 @@ export default function GastosDashboard() {
                           type="date" 
                           value={dateFrom}
                           onChange={(e) => setDateFrom(e.target.value)}
-                          className="w-full h-11 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
+                          className="w-full h-11 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
                       />
                   </div>
                   <div className="space-y-1.5 min-w-[140px]">
@@ -317,7 +317,7 @@ export default function GastosDashboard() {
                           type="date" 
                           value={dateTo}
                           onChange={(e) => setDateTo(e.target.value)}
-                          className="w-full h-11 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
+                          className="w-full h-11 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
                       />
                   </div>
               </div>
@@ -354,7 +354,7 @@ export default function GastosDashboard() {
                           <button 
                               key={q}
                               onClick={() => toggleArrayItem(selectedQuarters, q, setSelectedQuarters)}
-                              className={`px-4 h-11 text-sm font-bold rounded-xl transition-all ${selectedQuarters.includes(q) ? 'bg-indigo-500 text-white shadow-sm ring-2 ring-indigo-500/20' : 'bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                              className={`px-4 h-11 text-sm font-bold rounded-xl transition-all ${selectedQuarters.includes(q) ? 'bg-indigo-500 text-white shadow-sm ring-2 ring-indigo-500/20' : 'bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                           >
                               {q}
                           </button>
@@ -435,7 +435,7 @@ export default function GastosDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 overflow-visible">
         {/* Trend Line Chart (NEW) */}
-        <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group lg:col-span-2">
+        <div className="bg-card text-card-foreground p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group lg:col-span-2">
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                     <BarChart3 className="w-5 h-5 text-blue-500" />
@@ -466,7 +466,7 @@ export default function GastosDashboard() {
         </div>
 
         {/* Classification Donut */}
-        <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col items-center overflow-visible lg:col-span-1">
+        <div className="bg-card text-card-foreground p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col items-center overflow-visible lg:col-span-1">
             <div className="flex items-center justify-between w-full mb-6">
                 <div className="flex items-center gap-3">
                     <PieChart className="w-5 h-5 text-indigo-500" />
@@ -496,7 +496,7 @@ export default function GastosDashboard() {
         </div>
 
         {/* Breakdown List */}
-        <div className="lg:col-span-3 bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
+        <div className="lg:col-span-3 bg-card text-card-foreground p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                     <Activity className="w-5 h-5 text-emerald-500" />
@@ -516,7 +516,7 @@ export default function GastosDashboard() {
                                         ${cat.value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </span>
                                 </div>
-                                <div className="h-2.5 bg-slate-100 dark:bg-slate-800/80 rounded-full overflow-hidden border border-slate-50 dark:border-slate-700">
+                                <div className="h-2.5 bg-muted text-muted-foreground/80 rounded-full overflow-hidden border border-slate-50 dark:border-slate-700">
                                     <div
                                         className="h-full rounded-full transition-all duration-1000 bg-emerald-500"
                                         style={{ width: `${Math.min((cat.value / totalGasto) * 100, 100)}%` }}

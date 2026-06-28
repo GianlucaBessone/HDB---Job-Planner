@@ -123,20 +123,20 @@ export default function VerificacionFirmasPage() {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col lg:flex-row gap-4 relative z-20">
+            <div className="bg-card text-card-foreground p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col lg:flex-row gap-4 relative z-20">
                 <div className="relative flex-1 group">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors" />
                     <input
                         type="text"
                         placeholder="Buscar por Doc, Usuario, DNI o ID..."
-                        className="w-full h-[42px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-bold text-slate-700 dark:text-slate-200 text-sm"
+                        className="w-full h-[42px] bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-bold text-slate-700 dark:text-slate-200 text-sm"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                     />
                 </div>
                 
                 <div className="flex items-center gap-3">
-                    <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1.5 rounded-2xl shrink-0 overflow-x-auto custom-scrollbar">
+                    <div className="flex bg-muted text-muted-foreground/50 p-1.5 rounded-2xl shrink-0 overflow-x-auto custom-scrollbar">
                         <button
                             onClick={() => setStatusFilter('ALL')}
                             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${statusFilter === 'ALL' ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'}`}
@@ -159,7 +159,7 @@ export default function VerificacionFirmasPage() {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden relative z-10">
+            <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden relative z-10">
                 <div className="overflow-x-auto custom-scrollbar">
                     <table className="w-full text-left border-collapse">
                         <thead>
@@ -176,9 +176,9 @@ export default function VerificacionFirmasPage() {
                             {isLoading ? (
                                 Array(5).fill(0).map((_, i) => (
                                     <tr key={i} className="animate-pulse">
-                                        <td className="px-6 py-4"><div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-24 mb-2"></div><div className="h-3 bg-slate-100 dark:bg-slate-800 rounded w-32"></div></td>
+                                        <td className="px-6 py-4"><div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-24 mb-2"></div><div className="h-3 bg-muted text-muted-foreground rounded w-32"></div></td>
                                         <td className="px-6 py-4"><div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-20"></div></td>
-                                        <td className="px-6 py-4"><div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-32 mb-2"></div><div className="h-3 bg-slate-100 dark:bg-slate-800 rounded w-20"></div></td>
+                                        <td className="px-6 py-4"><div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-32 mb-2"></div><div className="h-3 bg-muted text-muted-foreground rounded w-20"></div></td>
                                         <td className="px-6 py-4"><div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-24"></div></td>
                                         <td className="px-6 py-4"><div className="h-6 bg-slate-200 dark:bg-slate-700 rounded-full w-24"></div></td>
                                         <td className="px-6 py-4 text-right"><div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-24 inline-block"></div></td>
@@ -188,7 +188,7 @@ export default function VerificacionFirmasPage() {
                                 filteredSignatures.map((sig) => (
                                     <tr key={sig.SignatureID} className="group hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors">
                                         <td className="px-6 py-4">
-                                            <div className="font-mono text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 inline-block px-2 py-0.5 rounded-md mb-1 border border-slate-200 dark:border-slate-700">
+                                            <div className="font-mono text-xs font-bold text-slate-700 dark:text-slate-300 bg-muted text-muted-foreground inline-block px-2 py-0.5 rounded-md mb-1 border border-slate-200 dark:border-slate-700">
                                                 {sig.SignatureID.split('-')[1]}-{sig.SignatureID.split('-')[2]}...
                                             </div>
                                             <div className="text-xs text-slate-500 font-medium">
@@ -198,7 +198,7 @@ export default function VerificacionFirmasPage() {
                                         <td className="px-6 py-4">
                                             <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                                                 {sig.DocumentID}
-                                                <span className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded text-[9px] font-black uppercase tracking-wider">
+                                                <span className="px-1.5 py-0.5 bg-muted text-muted-foreground text-slate-500 dark:text-slate-400 rounded text-[9px] font-black uppercase tracking-wider">
                                                     v{sig.DocumentVersion}
                                                 </span>
                                             </div>
@@ -225,7 +225,7 @@ export default function VerificacionFirmasPage() {
                                                 <button
                                                     onClick={() => verifyIntegrity(sig.SignatureID)}
                                                     disabled={isVerifying === sig.SignatureID}
-                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs rounded-xl hover:border-blue-300 hover:text-blue-600 dark:hover:border-blue-700 dark:hover:text-blue-400 transition-all disabled:opacity-50"
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs rounded-xl hover:border-blue-300 hover:text-blue-600 dark:hover:border-blue-700 dark:hover:text-blue-400 transition-all disabled:opacity-50"
                                                 >
                                                     <RefreshCcw className={`w-3.5 h-3.5 ${isVerifying === sig.SignatureID ? 'animate-spin' : ''}`} />
                                                     {isVerifying === sig.SignatureID ? 'Verificando...' : 'Verificar'}

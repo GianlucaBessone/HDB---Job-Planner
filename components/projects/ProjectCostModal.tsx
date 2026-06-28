@@ -99,7 +99,7 @@ export default function ProjectCostModal({
 
     return (
         <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-800 w-full max-w-4xl rounded-t-3xl md:rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="bg-card text-card-foreground w-full max-w-4xl rounded-t-3xl md:rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] overflow-hidden flex flex-col">
                 
                 {/* Header */}
                 <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
@@ -139,7 +139,7 @@ export default function ProjectCostModal({
                         <div className="space-y-6">
                             
                             {/* IVA Switch Toggle */}
-                            <div className="flex justify-end items-center gap-3 bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/80 px-5 py-3.5 rounded-3xl shadow-sm">
+                            <div className="flex justify-end items-center gap-3 bg-card text-card-foreground border border-slate-200/60 dark:border-slate-700/80 px-5 py-3.5 rounded-3xl shadow-sm">
                                 <span className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">Mostrar Costos con IVA (21%)</span>
                                 <button
                                     onClick={() => setConIva(!conIva)}
@@ -153,7 +153,7 @@ export default function ProjectCostModal({
 
                             {/* Resumen Total */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5 rounded-3xl shadow-sm">
+                                <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 p-5 rounded-3xl shadow-sm">
                                     <div className="flex items-center gap-2 text-indigo-500 mb-2">
                                         <Clock className="w-4 h-4" />
                                         <h4 className="text-xs font-black uppercase tracking-widest">Mano de Obra</h4>
@@ -165,7 +165,7 @@ export default function ProjectCostModal({
                                         {data.summary.totalHours} horas x {formatCurrency(data.summary.valorManoObra)}/h {conIva && '(IVA incluido)'}
                                     </p>
                                 </div>
-                                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5 rounded-3xl shadow-sm">
+                                <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 p-5 rounded-3xl shadow-sm">
                                     <div className="flex items-center gap-2 text-amber-500 mb-2">
                                         <Package className="w-4 h-4" />
                                         <h4 className="text-xs font-black uppercase tracking-widest">Materiales</h4>
@@ -192,7 +192,7 @@ export default function ProjectCostModal({
                             </div>
 
                             {/* Horas del Proyecto */}
-                            <section className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                            <section className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                                 <div className="px-6 py-4 border-b border-slate-50 dark:border-slate-700 flex items-center gap-2">
                                     <Clock className="w-4 h-4 text-indigo-500" />
                                     <h2 className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase tracking-wide">Desglose de Mano de Obra</h2>
@@ -200,7 +200,7 @@ export default function ProjectCostModal({
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
+                                            <tr className="bg-background text-foreground/50 border-b border-slate-100 dark:border-slate-800">
                                                 <th className="px-6 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Operador</th>
                                                 <th className="px-6 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Horas</th>
                                                 <th className="px-6 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Costo</th>
@@ -230,7 +230,7 @@ export default function ProjectCostModal({
                             </section>
 
                             {/* Materiales */}
-                            <section className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                            <section className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                                 <div className="px-6 py-4 border-b border-slate-50 dark:border-slate-700 flex items-center justify-between">
                                     <div className="flex items-center gap-2 flex-wrap">
                                         <Package className="w-4 h-4 text-amber-500" />
@@ -253,7 +253,7 @@ export default function ProjectCostModal({
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
+                                            <tr className="bg-background text-foreground/50 border-b border-slate-100 dark:border-slate-800">
                                                 <th className="px-6 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Código</th>
                                                 <th className="px-6 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Material</th>
                                                 <th className="px-6 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Cant.</th>
@@ -301,10 +301,10 @@ export default function ProjectCostModal({
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800 shrink-0">
+                <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-card text-card-foreground shrink-0">
                     <button
                         onClick={onClose}
-                        className="w-full py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2"
+                        className="w-full py-4 bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2"
                     >
                         Cerrar
                     </button>

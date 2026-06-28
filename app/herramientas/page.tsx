@@ -146,7 +146,7 @@ function HerramientasPage() {
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex gap-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-1.5 shadow-sm overflow-x-auto">
+            <div className="flex gap-1 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl p-1.5 shadow-sm overflow-x-auto">
                 {allowedTabs.map(tab => (
                     <button
                         key={tab.id}
@@ -374,11 +374,11 @@ function HerramientasTab({ user }: { user: any }) {
                     <input
                         type="text" placeholder="Buscar por nombre, ID o marca..."
                         value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                        className="w-full pl-10 pr-4 py-3 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                     />
                 </div>
                 <select value={filterTipo} onChange={e => setFilterTipo(e.target.value)}
-                    className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm font-bold outline-none focus:border-primary">
+                    className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm font-bold outline-none focus:border-primary">
                     <option value="">Todos los tipos</option>
                     {TIPOS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                 </select>
@@ -390,7 +390,7 @@ function HerramientasTab({ user }: { user: any }) {
 
             {/* Creation / Edit Form */}
             {showForm && (
-                <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 animate-in slide-in-from-top-4 duration-300">
+                <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 animate-in slide-in-from-top-4 duration-300">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">
                             {editingTool ? `Editar: ${editingTool.id}` : 'Nueva Herramienta'}
@@ -405,7 +405,7 @@ function HerramientasTab({ user }: { user: any }) {
                         <div className="lg:col-span-2">
                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Nombre *</label>
                             <input type="text" value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })}
-                                placeholder="Ej: Amoladora 9 pulgadas" className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-sm font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
+                                placeholder="Ej: Amoladora 9 pulgadas" className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-sm font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
                         </div>
 
                         {/* Marca */}
@@ -426,7 +426,7 @@ function HerramientasTab({ user }: { user: any }) {
                         <div>
                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Tipo *</label>
                             <select value={form.tipo} onChange={e => setForm({ ...form, tipo: e.target.value })}
-                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-sm font-bold outline-none focus:border-primary">
+                                className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-sm font-bold outline-none focus:border-primary">
                                 {TIPOS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                             </select>
                         </div>
@@ -435,7 +435,7 @@ function HerramientasTab({ user }: { user: any }) {
                         <div>
                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Subtipo</label>
                             <select value={form.subtipo} onChange={e => setForm({ ...form, subtipo: e.target.value })}
-                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-sm font-bold outline-none focus:border-primary">
+                                className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-sm font-bold outline-none focus:border-primary">
                                 <option value="">Sin subtipo</option>
                                 {SUBTIPOS.map(s => <option key={s} value={s}>{s.charAt(0) + s.slice(1).toLowerCase()}</option>)}
                             </select>
@@ -445,7 +445,7 @@ function HerramientasTab({ user }: { user: any }) {
                         <div>
                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Rubro</label>
                             <select value={form.rubro} onChange={e => setForm({ ...form, rubro: e.target.value })}
-                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-sm font-bold outline-none focus:border-primary">
+                                className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-sm font-bold outline-none focus:border-primary">
                                 <option value="">Sin rubro</option>
                                 {RUBROS.map(r => <option key={r} value={r}>{r.charAt(0) + r.slice(1).toLowerCase()}</option>)}
                             </select>
@@ -456,11 +456,11 @@ function HerramientasTab({ user }: { user: any }) {
                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Descripción (Opcional)</label>
                             <textarea value={form.descripcion} onChange={e => setForm({ ...form, descripcion: e.target.value })}
                                 rows={2} placeholder="Descripción larga opcional..."
-                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-sm font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none" />
+                                className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-sm font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none" />
                         </div>
 
                         {/* Control */}
-                        <div className="lg:col-span-3 bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
+                        <div className="lg:col-span-3 bg-background text-foreground/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
                             <div className="flex items-center justify-between mb-3">
                                 <label className="text-sm font-black text-slate-700 dark:text-slate-200 flex items-center gap-2">
                                     <ShieldCheck className="w-4 h-4 text-primary" /> Control de Verificación
@@ -477,7 +477,7 @@ function HerramientasTab({ user }: { user: any }) {
                                 <div className="animate-in slide-in-from-top-2 duration-200">
                                     <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Periodo de Vencimiento</label>
                                     <select value={form.periodoControl} onChange={e => setForm({ ...form, periodoControl: parseInt(e.target.value) })}
-                                        className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-4 text-sm font-bold outline-none focus:border-primary">
+                                        className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-4 text-sm font-bold outline-none focus:border-primary">
                                         {PERIODOS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
                                     </select>
                                 </div>
@@ -498,7 +498,7 @@ function HerramientasTab({ user }: { user: any }) {
                                             onBlur={() => {
                                                 if (!form.cantidad || form.cantidad < 1) setForm({ ...form, cantidad: 1 });
                                             }}
-                                            className="w-24 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-sm font-bold text-center outline-none focus:border-primary" />
+                                            className="w-24 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-sm font-bold text-center outline-none focus:border-primary" />
                                         {form.cantidad > 1 && (
                                             <p className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
                                                 <AlertCircle className="w-4 h-4" />
@@ -589,14 +589,14 @@ function HerramientasTab({ user }: { user: any }) {
                     <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
                 </div>
             ) : filteredTools.length === 0 ? (
-                <div className="bg-white dark:bg-slate-800 rounded-3xl p-12 text-center border border-slate-200 dark:border-slate-700">
+                <div className="bg-card text-card-foreground rounded-3xl p-12 text-center border border-slate-200 dark:border-slate-700">
                     <Wrench className="w-10 h-10 text-slate-300 mx-auto mb-3" />
                     <p className="text-sm font-bold text-slate-500">No hay herramientas registradas.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                     {filteredTools.map(tool => (
-                        <div key={tool.id} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col gap-3 hover:shadow-md transition-shadow">
+                        <div key={tool.id} className="bg-card text-card-foreground rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col gap-3 hover:shadow-md transition-shadow">
                             <div className="flex justify-between items-start">
                                 <div className="flex-1 min-w-0">
                                     <h5 className="font-black text-slate-800 dark:text-slate-100 text-base truncate">{tool.nombre}</h5>
@@ -638,7 +638,7 @@ function HerramientasTab({ user }: { user: any }) {
             {/* QR Modal */}
             {qrTool && (
                 <div className="fixed inset-0 z-[110] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setQrTool(null)}>
-                    <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-2xl max-w-sm w-full animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+                    <div className="bg-card text-card-foreground p-8 rounded-3xl shadow-2xl max-w-sm w-full animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
                         <div className="text-center mb-6">
                             <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100">{qrTool.nombre}</h3>
                             <p className="text-sm font-bold text-slate-500 mt-1">ID: {qrTool.id}</p>
@@ -792,7 +792,7 @@ function CarrosTab({ user }: { user: any }) {
                     {isLoading ? (
                         <div className="flex justify-center py-8"><div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" /></div>
                     ) : carros.length === 0 ? (
-                        <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 text-center border border-slate-200 dark:border-slate-700">
+                        <div className="bg-card text-card-foreground rounded-2xl p-8 text-center border border-slate-200 dark:border-slate-700">
                             <Package className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                             <p className="text-xs font-bold text-slate-400">No hay carros. Cree uno en la pestaña Herramientas con tipo "Carro".</p>
                         </div>
@@ -802,7 +802,7 @@ function CarrosTab({ user }: { user: any }) {
                             const hasActiveMovement = (carro as any).cartMovementsAsCarro?.length > 0;
                             return (
                                 <button key={carro.id} onClick={() => setSelectedCarro(carro)}
-                                    className={`w-full text-left bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border transition-all ${
+                                    className={`w-full text-left bg-card text-card-foreground rounded-2xl p-4 shadow-sm border transition-all ${
                                         isSelected
                                             ? 'border-primary ring-2 ring-primary/20'
                                             : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
@@ -831,14 +831,14 @@ function CarrosTab({ user }: { user: any }) {
                 {/* Cart Detail */}
                 <div className="lg:col-span-2">
                     {!selectedCarro ? (
-                        <div className="bg-white dark:bg-slate-800 rounded-3xl p-12 text-center border border-slate-200 dark:border-slate-700">
+                        <div className="bg-card text-card-foreground rounded-3xl p-12 text-center border border-slate-200 dark:border-slate-700">
                             <Settings2 className="w-10 h-10 text-slate-300 mx-auto mb-3" />
                             <p className="text-sm font-bold text-slate-400">Seleccioná un carro para ver su configuración</p>
                         </div>
                     ) : (
                         <div className="space-y-4 animate-in fade-in duration-300">
                             {/* Cart Header */}
-                            <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+                            <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
                                 <div className="flex items-center justify-between mb-4">
                                     <div>
                                         <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">{selectedCarro.nombre}</h3>
@@ -892,7 +892,7 @@ function CarrosTab({ user }: { user: any }) {
                                 <div className="space-y-2">
                                     {selectedCarro.herramientas && selectedCarro.herramientas.length > 0 ? (
                                         selectedCarro.herramientas.map((h: any) => (
-                                            <div key={h.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-700">
+                                            <div key={h.id} className="flex items-center justify-between p-3 rounded-xl bg-background text-foreground/30 border border-slate-100 dark:border-slate-700">
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-sm font-black text-slate-800 dark:text-slate-100 truncate">{h.nombre}</p>
                                                     <div className="flex items-center gap-2 mt-0.5">
@@ -927,7 +927,7 @@ function CarrosTab({ user }: { user: any }) {
             {/* Modal de opciones de impresión QR */}
             {showPrintQROptions && (
                 <div className="fixed inset-0 z-[120] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowPrintQROptions(false)}>
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-2xl max-w-sm w-full animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+                    <div className="bg-card text-card-foreground p-6 rounded-3xl shadow-2xl max-w-sm w-full animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
                         <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">Imprimir QRs</h3>
                         <p className="text-sm font-medium text-slate-500 mb-6">¿Qué herramientas deseas imprimir de este carro?</p>
                         <div className="space-y-3">
@@ -1112,7 +1112,7 @@ function RetirosTab({ user }: { user: any }) {
             {mode === 'IDLE' && (
                 <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
                     {/* Scanner */}
-                    <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
+                    <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
                         <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center mx-auto mb-4">
                             <ScanLine className="w-8 h-8" />
                         </div>
@@ -1127,7 +1127,7 @@ function RetirosTab({ user }: { user: any }) {
                             <div className="flex gap-2">
                                 <input type="text" placeholder="ID del Carro" value={manualId}
                                     onChange={e => setManualId(e.target.value)}
-                                    className="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
+                                    className="flex-1 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
                                 <button type="button" onClick={handleManualLookup} disabled={isLoading || !manualId}
                                     className="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-4 rounded-xl flex items-center justify-center disabled:opacity-50">
                                     <Search className="w-4 h-4" />
@@ -1143,7 +1143,7 @@ function RetirosTab({ user }: { user: any }) {
                                 <Wrench className="w-4 h-4 text-primary" /> Mis Carros en Uso
                             </h3>
                             {activeMovements.map(mov => (
-                                <div key={mov.id} className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col gap-4">
+                                <div key={mov.id} className="bg-card text-card-foreground rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col gap-4">
                                     <div>
                                         <h4 className="font-black text-slate-800 dark:text-slate-100 text-lg">{mov.cart?.nombre || mov.carro?.nombre}</h4>
                                         <p className="text-xs font-bold text-slate-500">Obra: {mov.project.nombre}</p>
@@ -1338,7 +1338,7 @@ function VerificacionTab({ user }: { user: any }) {
     return (
         <div className="max-w-lg mx-auto space-y-6">
             {/* Scan Controls */}
-            <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
+            <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
                 <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4">
                     <ShieldCheck className="w-8 h-8" />
                 </div>
@@ -1353,7 +1353,7 @@ function VerificacionTab({ user }: { user: any }) {
                     <div className="flex gap-2">
                         <input type="text" placeholder="ID de herramienta" value={manualId}
                             onChange={e => setManualId(e.target.value)}
-                            className="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold outline-none focus:border-primary" />
+                            className="flex-1 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold outline-none focus:border-primary" />
                         <button onClick={() => { if (manualId.trim()) loadTool(manualId.trim()); }} disabled={!manualId}
                             className="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-4 rounded-xl disabled:opacity-50">
                             <Search className="w-4 h-4" />
@@ -1381,7 +1381,7 @@ function VerificacionTab({ user }: { user: any }) {
 
             {/* Tool Detail */}
             {tool && (
-                <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 duration-300 space-y-4">
+                <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 duration-300 space-y-4">
                     <div className="flex justify-between items-start">
                         <div>
                             <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">{tool.nombre}</h3>
@@ -1396,14 +1396,14 @@ function VerificacionTab({ user }: { user: any }) {
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 text-xs">
-                        <div className="bg-slate-50 dark:bg-slate-900/30 p-3 rounded-xl"><span className="block text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Tipo</span><span className="font-bold text-slate-700 dark:text-slate-200">{tool.tipo}</span></div>
-                        {tool.marca && <div className="bg-slate-50 dark:bg-slate-900/30 p-3 rounded-xl"><span className="block text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Marca</span><span className="font-bold text-slate-700 dark:text-slate-200">{tool.marca}</span></div>}
-                        {tool.subtipo && <div className="bg-slate-50 dark:bg-slate-900/30 p-3 rounded-xl"><span className="block text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Subtipo</span><span className="font-bold text-slate-700 dark:text-slate-200">{tool.subtipo}</span></div>}
-                        {tool.rubro && <div className="bg-slate-50 dark:bg-slate-900/30 p-3 rounded-xl"><span className="block text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Rubro</span><span className="font-bold text-slate-700 dark:text-slate-200">{tool.rubro}</span></div>}
+                        <div className="bg-background text-foreground/30 p-3 rounded-xl"><span className="block text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Tipo</span><span className="font-bold text-slate-700 dark:text-slate-200">{tool.tipo}</span></div>
+                        {tool.marca && <div className="bg-background text-foreground/30 p-3 rounded-xl"><span className="block text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Marca</span><span className="font-bold text-slate-700 dark:text-slate-200">{tool.marca}</span></div>}
+                        {tool.subtipo && <div className="bg-background text-foreground/30 p-3 rounded-xl"><span className="block text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Subtipo</span><span className="font-bold text-slate-700 dark:text-slate-200">{tool.subtipo}</span></div>}
+                        {tool.rubro && <div className="bg-background text-foreground/30 p-3 rounded-xl"><span className="block text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Rubro</span><span className="font-bold text-slate-700 dark:text-slate-200">{tool.rubro}</span></div>}
                     </div>
 
                     {tool.controlActivo && (
-                        <div className="space-y-2 bg-slate-50 dark:bg-slate-900/30 p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
+                        <div className="space-y-2 bg-background text-foreground/30 p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
                             <h4 className="text-xs font-black uppercase tracking-widest text-slate-500 flex items-center gap-2"><ShieldCheck className="w-3.5 h-3.5" /> Control</h4>
                             {tool.estadoControl && (
                                 <div className={`inline-block text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg ${ESTADO_CONTROL_STYLES[tool.estadoControl]?.cls}`}>
@@ -1482,7 +1482,7 @@ function VerificacionTab({ user }: { user: any }) {
                                                                     </div>
                                                                 )}
                                                             </div>
-                                                            <div className="text-xs font-medium text-slate-500 dark:text-slate-400 space-y-1.5 mt-2 bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-xl">
+                                                            <div className="text-xs font-medium text-slate-500 dark:text-slate-400 space-y-1.5 mt-2 bg-muted/50 text-muted-foreground p-2.5 rounded-xl">
                                                                 {h.estadoHerramienta && (
                                                                     <div className="flex justify-between">
                                                                         <span>Estado Actual:</span>
@@ -1515,7 +1515,7 @@ function VerificacionTab({ user }: { user: any }) {
                                                 </h4>
                                                 <div className="space-y-2">
                                                     {sinControl.map((h: any) => (
-                                                        <div key={h.id} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex justify-between items-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                                        <div key={h.id} className="p-3 rounded-xl bg-background text-foreground border border-slate-200 dark:border-slate-700 flex justify-between items-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                                                             <span className="text-sm font-black text-slate-700 dark:text-slate-300 truncate">{h.nombre}</span>
                                                             <span className="shrink-0 ml-2 text-[10px] font-black text-slate-400 font-mono">ID: {h.id}</span>
                                                         </div>
@@ -1572,15 +1572,15 @@ function HistorialTab({ user }: { user: any }) {
         <div className="space-y-6">
             {/* Stats */}
             <div className="grid grid-cols-3 gap-3">
-                <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
+                <div className="bg-card text-card-foreground rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
                     <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{totalMovements}</p>
                     <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-1">Movimientos</p>
                 </div>
-                <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
+                <div className="bg-card text-card-foreground rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
                     <p className="text-2xl font-black text-blue-600">{activeCount}</p>
                     <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-1">En Uso</p>
                 </div>
-                <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
+                <div className="bg-card text-card-foreground rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
                     <p className="text-2xl font-black text-red-500">{withMissing}</p>
                     <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-1">Con Faltantes</p>
                 </div>
@@ -1590,7 +1590,7 @@ function HistorialTab({ user }: { user: any }) {
             {isLoading ? (
                 <div className="flex justify-center py-16"><div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" /></div>
             ) : movements.length === 0 ? (
-                <div className="bg-white dark:bg-slate-800 rounded-2xl p-12 text-center border border-slate-200 dark:border-slate-700">
+                <div className="bg-card text-card-foreground rounded-2xl p-12 text-center border border-slate-200 dark:border-slate-700">
                     <Package className="w-10 h-10 text-slate-300 mx-auto mb-3" />
                     <p className="text-sm font-bold text-slate-500">No hay movimientos registrados.</p>
                 </div>
@@ -1601,7 +1601,7 @@ function HistorialTab({ user }: { user: any }) {
                         const isExpanded = expandedMovements.has(mov.id);
                         const hasMissing = mov.items?.some((i: any) => isActive ? (i.cantidadOut ?? 0) < i.cantidad : (i.cantidadIn ?? 0) < i.cantidad);
                         return (
-                            <div key={mov.id} className={`bg-white dark:bg-slate-800 rounded-2xl shadow-sm border transition-all ${hasMissing ? 'border-red-200 dark:border-red-800' : 'border-slate-200 dark:border-slate-700'}`}>
+                            <div key={mov.id} className={`bg-card text-card-foreground rounded-2xl shadow-sm border transition-all ${hasMissing ? 'border-red-200 dark:border-red-800' : 'border-slate-200 dark:border-slate-700'}`}>
                                 <button type="button" onClick={() => toggleExpand(mov.id)} className="w-full p-5 text-left">
                                     <div className="flex items-start justify-between gap-3">
                                         <div className="flex-1 min-w-0">
@@ -1630,7 +1630,7 @@ function HistorialTab({ user }: { user: any }) {
                                                 const missingIn = mov.estado === 'COMPLETADO' && (item.cantidadIn ?? 0) < item.cantidad;
                                                 const isMissing = missingOut || missingIn;
                                                 return (
-                                                    <div key={item.id} className={`p-3 rounded-xl text-xs flex items-start gap-3 ${isMissing ? 'bg-red-50 dark:bg-red-900/15 border border-red-200 dark:border-red-800' : 'bg-slate-50 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-700'}`}>
+                                                    <div key={item.id} className={`p-3 rounded-xl text-xs flex items-start gap-3 ${isMissing ? 'bg-red-50 dark:bg-red-900/15 border border-red-200 dark:border-red-800' : 'bg-background text-foreground/30 border border-slate-100 dark:border-slate-700'}`}>
                                                         {isMissing ? <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" /> : <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />}
                                                         <div className="flex-1 min-w-0">
                                                             <p className="font-black text-slate-800 dark:text-slate-100 break-words">{item.nombre}
@@ -1677,7 +1677,7 @@ function ScannerModal({ onScan, onClose }: { onScan: (text: string) => void, onC
 
     return (
         <div className="fixed inset-0 z-[200] bg-slate-900/90 backdrop-blur-md flex flex-col items-center justify-center p-6 animate-in fade-in duration-300">
-            <div className="w-full max-w-sm bg-white dark:bg-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl space-y-4">
+            <div className="w-full max-w-sm bg-card text-card-foreground rounded-[2.5rem] overflow-hidden shadow-2xl space-y-4">
                 <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2"><Camera className="w-5 h-5 text-primary" /> Escaneando QR</h3>
                     <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400"><X className="w-6 h-6" /></button>
@@ -1707,7 +1707,7 @@ function CheckoutCheckinView({
     const isCheckout = type === 'checkout';
     return (
         <div className="space-y-6 animate-in slide-in-from-right-8 duration-300">
-            <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+            <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
                 <div className="flex justify-between items-start mb-4">
                     <div>
                         <h2 className="text-xl font-black text-slate-800 dark:text-slate-100">{title}</h2>
@@ -1738,15 +1738,15 @@ function CheckoutCheckinView({
                                 </div>
                                 <div className="flex items-center justify-center gap-2">
                                     <button type="button" onClick={() => updateToolQty(item.id, value - 1, isCheckout)}
-                                        className="w-11 h-11 flex items-center justify-center bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 active:scale-90 transition-transform">
+                                        className="w-11 h-11 flex items-center justify-center bg-card text-card-foreground rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 active:scale-90 transition-transform">
                                         <Minus className="w-4 h-4" />
                                     </button>
                                     <input type="number" min={0} max={item.cantidad} value={value}
                                         onChange={e => updateToolQty(item.id, parseInt(e.target.value) || 0, isCheckout)}
-                                        className="w-16 h-11 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center text-base font-black text-slate-800 dark:text-slate-100 outline-none focus:border-primary" />
+                                        className="w-16 h-11 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-center text-base font-black text-slate-800 dark:text-slate-100 outline-none focus:border-primary" />
                                     <button type="button" disabled={value >= item.cantidad}
                                         onClick={() => updateToolQty(item.id, value + 1, isCheckout)}
-                                        className="w-11 h-11 flex items-center justify-center bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 disabled:opacity-30 active:scale-90 transition-transform">
+                                        className="w-11 h-11 flex items-center justify-center bg-card text-card-foreground rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 disabled:opacity-30 active:scale-90 transition-transform">
                                         <Plus className="w-4 h-4" />
                                     </button>
                                 </div>
@@ -1762,7 +1762,7 @@ function CheckoutCheckinView({
                 </div>
 
                 {isCheckout && handleAddNewTool && (
-                    <div className="flex gap-2 p-1 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                    <div className="flex gap-2 p-1 bg-background text-foreground/50 rounded-2xl border border-slate-100 dark:border-slate-800">
                         <input type="text" placeholder="Agregar adicional..." value={newToolName}
                             onChange={(e: any) => setNewToolName(e.target.value)}
                             className="flex-1 bg-transparent px-4 py-3 text-xs font-bold outline-none min-w-0" />

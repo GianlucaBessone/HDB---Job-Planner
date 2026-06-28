@@ -108,7 +108,7 @@ export default function HelpDashboardClient({ categories, popularArticles }: Hel
           <div className="grid grid-cols-1 gap-4">
             {filteredArticles.map((article) => (
               <Link href={`/centro-ayuda/articulo/${article.slug}`} key={article.id}>
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-md transition-all flex items-start gap-4 group">
+                <div className="bg-card text-card-foreground p-6 rounded-3xl border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-md transition-all flex items-start gap-4 group">
                   <div className="mt-1 w-12 h-12 bg-slate-50 dark:bg-slate-700 rounded-2xl flex items-center justify-center flex-shrink-0 text-slate-400 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 group-hover:text-blue-500 transition-all">
                     {renderIcon(article.categoryIcon, 'w-6 h-6')}
                   </div>
@@ -128,7 +128,7 @@ export default function HelpDashboardClient({ categories, popularArticles }: Hel
             ))}
 
             {filteredArticles.length === 0 && (
-              <div className="text-center py-16 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700">
+              <div className="text-center py-16 bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700">
                 <LifeBuoy className="w-12 h-12 text-slate-300 mx-auto mb-4" />
                 <p className="text-slate-800 dark:text-slate-200 font-bold text-lg">No se encontraron resultados</p>
                 <p className="text-slate-500 text-sm mt-1">
@@ -149,7 +149,7 @@ export default function HelpDashboardClient({ categories, popularArticles }: Hel
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {categories.map((cat) => (
                 <Link href={`/centro-ayuda/categoria/${cat.slug}`} key={cat.id}>
-                  <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-lg transition-all group h-full flex flex-col justify-between">
+                  <div className="bg-card text-card-foreground p-6 rounded-3xl border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-lg transition-all group h-full flex flex-col justify-between">
                     <div>
                       <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400 mb-4 group-hover:scale-110 transition-transform">
                         {renderIcon(cat.iconName, 'w-6 h-6')}
@@ -184,7 +184,7 @@ export default function HelpDashboardClient({ categories, popularArticles }: Hel
             <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">
               Artículos Populares
             </h3>
-            <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 overflow-hidden">
               {popularArticles.map((article, index) => (
                 <Link href={`/centro-ayuda/articulo/${article.slug}`} key={article.id}>
                   <div className={`p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors flex items-center gap-3 ${index !== popularArticles.length - 1 ? 'border-b border-slate-100 dark:border-slate-700' : ''}`}>

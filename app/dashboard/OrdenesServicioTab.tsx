@@ -6,7 +6,7 @@ import CodeBadge from '@/components/CodeBadge';
 
 export function KpiCard({ title, value, icon, trend, color, tooltip }: any) {
     return (
-        <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between relative group hover:shadow-md transition-shadow">
+        <div className="bg-card text-card-foreground p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between relative group hover:shadow-md transition-shadow">
             <div className="flex justify-between items-start mb-2 md:mb-4">
                 <div className={`p-2.5 md:p-3 rounded-2xl ${color} text-white shadow-lg`}>
                     {icon}
@@ -238,7 +238,7 @@ export default function OrdenesServicioTab({ data }: { data: any }) {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col">
+                <div className="bg-card text-card-foreground p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col">
                     <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3 mb-4">
                         <TrendingUp className="w-5 h-5 text-blue-500" />
                         Seguimiento de Ingresos
@@ -248,7 +248,7 @@ export default function OrdenesServicioTab({ data }: { data: any }) {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col">
+                <div className="bg-card text-card-foreground p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col">
                     <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3 mb-4">
                         <Activity className="w-5 h-5 text-emerald-500" />
                         Tiempo Promedio MO
@@ -260,7 +260,7 @@ export default function OrdenesServicioTab({ data }: { data: any }) {
             </div>
 
             <div className="grid grid-cols-1 gap-6">
-                <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col">
+                <div className="bg-card text-card-foreground p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col">
                     <div className="flex items-center gap-3 mb-4">
                         <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3">
                             <Clock className="w-5 h-5 text-indigo-500" />

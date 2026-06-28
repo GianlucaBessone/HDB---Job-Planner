@@ -794,14 +794,14 @@ export default function MyProjectsPage() {
                         </div>
 
                         {(user?.role === 'supervisor' || user?.role === 'admin' || user?.role === 'qa') && (
-                            <div className="flex items-center gap-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2.5 rounded-2xl shadow-sm self-start md:self-auto">
+                            <div className="flex items-center gap-3 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 px-4 py-2.5 rounded-2xl shadow-sm self-start md:self-auto">
                                 <span className={`text-[10px] font-black uppercase tracking-widest ${!viewAll ? 'text-primary' : 'text-slate-400 dark:text-slate-500'}`}>Mis Proyectos</span>
                                 <button
                                     onClick={() => setViewAll(!viewAll)}
                                     className={`btn-icon-inline relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${viewAll ? 'bg-primary' : 'bg-slate-200 dark:bg-slate-700'}`}
                                 >
                                     <span
-                                        className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-slate-800 transition-transform ${viewAll ? 'translate-x-6' : 'translate-x-1'}`}
+                                        className={`inline-block h-4 w-4 transform rounded-full bg-card text-card-foreground transition-transform ${viewAll ? 'translate-x-6' : 'translate-x-1'}`}
                                     />
                                 </button>
                                 <span className={`text-[10px] font-black uppercase tracking-widest ${viewAll ? 'text-primary' : 'text-slate-400 dark:text-slate-500'}`}>Ver Todos</span>
@@ -814,7 +814,7 @@ export default function MyProjectsPage() {
                         <input
                             type="text"
                             placeholder="Buscar en mis proyectos..."
-                            className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl py-3.5 pl-11 pr-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-sm"
+                            className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3.5 pl-11 pr-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-sm"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
@@ -864,7 +864,7 @@ export default function MyProjectsPage() {
 
                     {loading ? (
                         <div className="space-y-4">
-                            {[1, 2].map(i => <div key={i} className="h-[200px] bg-slate-100 dark:bg-slate-800/50 rounded-3xl animate-pulse" />)}
+                            {[1, 2].map(i => <div key={i} className="h-[200px] bg-muted text-muted-foreground/50 rounded-3xl animate-pulse" />)}
                         </div>
                     ) : (
                         <div className="grid gap-4">
@@ -873,7 +873,7 @@ export default function MyProjectsPage() {
                                 return (
                                     <div
                                         key={p.id}
-                                        className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all cursor-pointer group"
+                                        className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all cursor-pointer group"
                                         onClick={() => openProjectView(p)}
                                     >
                                         <div className="flex justify-between items-start mb-4">
@@ -896,7 +896,7 @@ export default function MyProjectsPage() {
                                                     )}
                                                 </div>
                                             </div>
-                                            <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${p.estado === 'activo' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-800'}`}>
+                                            <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${p.estado === 'activo' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-background text-foreground/50 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-800'}`}>
                                                 {p.estado}
                                             </div>
                                         </div>
@@ -906,7 +906,7 @@ export default function MyProjectsPage() {
                                                 <span className="font-bold text-slate-600 dark:text-slate-300">Avance Checklist</span>
                                                 <span className={`font-black ${progress === 100 ? 'text-emerald-600' : 'text-slate-500 dark:text-slate-400'}`}>{progress}%</span>
                                             </div>
-                                            <div className="h-2 w-full bg-slate-100 dark:bg-slate-800/50 rounded-full overflow-hidden">
+                                            <div className="h-2 w-full bg-muted text-muted-foreground/50 rounded-full overflow-hidden">
                                                 <div
                                                     className={`h-full transition-all duration-700 ${getProgressColor(progress)}`}
                                                     style={{ width: `${progress}%` }}
@@ -916,7 +916,7 @@ export default function MyProjectsPage() {
 
                                         <div className="mt-4 flex flex-wrap gap-1.5">
                                             {(p.tags as string[]).slice(0, 3).map(tag => (
-                                                <span key={tag} className="px-2 py-0.5 rounded-lg bg-slate-50 dark:bg-slate-900/50 text-[10px] font-bold text-slate-400 dark:text-slate-500 border border-slate-100 dark:border-slate-800 uppercase">
+                                                <span key={tag} className="px-2 py-0.5 rounded-lg bg-background text-foreground/50 text-[10px] font-bold text-slate-400 dark:text-slate-500 border border-slate-100 dark:border-slate-800 uppercase">
                                                     {tag}
                                                 </span>
                                             ))}
@@ -928,7 +928,7 @@ export default function MyProjectsPage() {
                                 );
                             })}
                             {filteredProjects.length === 0 && (
-                                <div className="py-20 text-center bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-dashed border-slate-200 dark:border-slate-700">
+                                <div className="py-20 text-center bg-background text-foreground/50 rounded-3xl border border-dashed border-slate-200 dark:border-slate-700">
                                     <Layout className="w-12 h-12 text-slate-300 mx-auto mb-3" />
                                     <p className="text-slate-500 dark:text-slate-400 font-medium">No tienes proyectos asignados como responsable</p>
                                 </div>
@@ -946,7 +946,7 @@ export default function MyProjectsPage() {
                         Volver a mis proyectos
                     </button>
 
-                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-6 shadow-sm space-y-6">
+                    <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-3xl p-6 shadow-sm space-y-6">
                         <div className="flex justify-between items-start border-b border-slate-50 pb-5">
                             <div className="space-y-1">
                                 <h1 className="text-2xl font-black text-slate-900 dark:text-slate-50 leading-tight flex items-center gap-2 flex-wrap">
@@ -981,13 +981,13 @@ export default function MyProjectsPage() {
                                                     onClick={() => handleToggleItem(item)}
                                                     className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all text-left ${item.completed
                                                         ? 'bg-emerald-50/50 border-emerald-100'
-                                                        : 'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                                        : 'bg-background text-foreground/50 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                                                         } ${item.pendingChange ? 'opacity-70 bg-amber-50 border-amber-200' : ''}`}
                                                 >
                                                     <div className="flex items-center gap-4">
                                                         <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all ${item.completed
                                                             ? 'bg-emerald-500 border-emerald-500'
-                                                            : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600'
+                                                            : 'bg-card text-card-foreground border-slate-300 dark:border-slate-600'
                                                             }`}>
                                                             {item.completed && <CheckCircle2 className="w-4 h-4 text-white" />}
                                                         </div>
@@ -1079,7 +1079,7 @@ export default function MyProjectsPage() {
                                     <input
                                         type="text"
                                         placeholder="Buscar material o código..."
-                                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl py-3 pl-11 pr-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-sm"
+                                        className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-800 rounded-2xl py-3 pl-11 pr-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-sm"
                                         value={materialSearch}
                                         onChange={e => setMaterialSearch(e.target.value)}
                                     />
@@ -1100,7 +1100,7 @@ export default function MyProjectsPage() {
                                             const balance = m.cantidadEntregada - totalUsado - totalDevuelto - pendingDevolucion;
 
                                             return (
-                                                <div key={m.id} className="bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 space-y-3">
+                                                <div key={m.id} className="bg-background text-foreground/50 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 space-y-3">
                                                     <div className="flex justify-between items-start">
                                                         <div>
                                                             <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">{m.nombre}</h4>
@@ -1143,12 +1143,12 @@ export default function MyProjectsPage() {
                                                                     setMaterialQuantity('');
                                                                     setIsMaterialModalOpen(true);
                                                                 }}
-                                                                className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
+                                                                className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
                                                             >
                                                                 <PlusCircle className="w-3.5 h-3.5 text-emerald-500" />
                                                                 INFORMAR USO
                                                             </button>
-                                                            <div className="flex-1 flex gap-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden p-0.5">
+                                                            <div className="flex-1 flex gap-1 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden p-0.5">
                                                                 <button 
                                                                     onClick={() => {
                                                                         setSelectedMaterial(m);
@@ -1210,7 +1210,7 @@ export default function MyProjectsPage() {
                                                             ? cat === 'Bloqueante'
                                                                 ? 'bg-red-600 text-white border-red-600 shadow-lg shadow-red-200'
                                                                 : 'bg-primary text-white border-primary shadow-md shadow-primary/20'
-                                                            : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                                            : 'bg-background text-foreground/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                                                     }`}
                                                 >
                                                     {cat === 'Bloqueante' && <AlertOctagon className="w-3 h-3 inline mr-1" />}
@@ -1229,7 +1229,7 @@ export default function MyProjectsPage() {
                                     <textarea
                                         rows={3}
                                         placeholder="Escribe un comentario o actualización..."
-                                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all resize-none"
+                                        className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all resize-none"
                                         value={newLog}
                                         onChange={e => setNewLog(e.target.value)}
                                     />
@@ -1265,7 +1265,7 @@ export default function MyProjectsPage() {
                                             };
                                             return (
                                                 <div key={log.id} className={`border p-4 rounded-2xl space-y-2 ${
-                                                    cat === 'Bloqueante' ? 'bg-red-50 border-red-100' : 'bg-slate-50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-800'
+                                                    cat === 'Bloqueante' ? 'bg-red-50 border-red-100' : 'bg-background text-foreground/50 border-slate-100 dark:border-slate-800'
                                                 }`}>
                                                     <div className="flex justify-between items-start">
                                                         <div className="flex items-center gap-2 flex-wrap">
@@ -1289,7 +1289,7 @@ export default function MyProjectsPage() {
                             {/* OS Section */}
                             {selectedProject.generarOS && (
                                 loadingOS ? (
-                                    <div className="w-full h-16 bg-slate-100 dark:bg-slate-800/50 rounded-2xl animate-pulse" />
+                                    <div className="w-full h-16 bg-muted text-muted-foreground/50 rounded-2xl animate-pulse" />
                                 ) : projectOS ? (
                                     /* OS ya existe */
                                     <div className="space-y-2">
@@ -1330,7 +1330,7 @@ export default function MyProjectsPage() {
                                             <Link
                                                 href={`/ordenes-servicio/generar?projectId=${selectedProject.id}&editId=${projectOS.id}`}
                                                 className={`flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black text-sm transition-all active:scale-[0.98] ${(projectOS.estado === 'firmada' || projectOS.estado === 'cobrada' || projectOS.estado === 'pagada')
-                                                        ? 'text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 border border-slate-200 dark:border-slate-700'
+                                                        ? 'text-slate-500 dark:text-slate-400 bg-muted text-muted-foreground/50 hover:bg-slate-200 border border-slate-200 dark:border-slate-700'
                                                         : 'text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100'
                                                     }`}
                                             >
@@ -1371,7 +1371,7 @@ export default function MyProjectsPage() {
             {/* Material Modal */}
             {isMaterialModalOpen && selectedMaterial && (
                 <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl p-6 md:p-7 space-y-6 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
+                    <div className="bg-card text-card-foreground w-full max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl p-6 md:p-7 space-y-6 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
                         <div className="flex items-center gap-4">
                             <div className={`p-3 rounded-2xl ${materialAction === 'uso' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
                                 {materialAction === 'uso' ? <PlusCircle className="w-6 h-6" /> : <MinusCircle className="w-6 h-6" />}
@@ -1406,7 +1406,7 @@ export default function MyProjectsPage() {
                                             type="number"
                                             autoFocus
                                             inputMode="decimal"
-                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
+                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
                                             placeholder="0.00"
                                             value={materialQuantity}
                                             onChange={e => setMaterialQuantity(e.target.value)}
@@ -1420,7 +1420,7 @@ export default function MyProjectsPage() {
                                     <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Observación (Opcional)</label>
                                     <textarea
                                         rows={2}
-                                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all resize-none"
+                                        className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all resize-none"
                                         placeholder="Ej: Material sobrante en buen estado..."
                                         value={materialNote}
                                         onChange={e => setMaterialNote(e.target.value)}
@@ -1432,7 +1432,7 @@ export default function MyProjectsPage() {
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setIsMaterialModalOpen(false)}
-                                className="flex-1 py-3.5 rounded-2xl font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 transition-all active:scale-95"
+                                className="flex-1 py-3.5 rounded-2xl font-bold text-slate-500 dark:text-slate-400 bg-muted text-muted-foreground/50 hover:bg-slate-200 transition-all active:scale-95"
                             >
                                 Cancelar
                             </button>
@@ -1454,7 +1454,7 @@ export default function MyProjectsPage() {
             {/* Delegation Modal */}
             {isDelegationModalOpen && selectedMaterial && (
                 <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl p-6 md:p-7 space-y-6 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
+                    <div className="bg-card text-card-foreground w-full max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl p-6 md:p-7 space-y-6 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
                         <div className="flex items-center gap-4">
                             <div className="p-3 rounded-2xl bg-indigo-50 text-indigo-600">
                                 <Share2 className="w-6 h-6" />
@@ -1471,7 +1471,7 @@ export default function MyProjectsPage() {
                                 <select
                                     value={delegationTargetId}
                                     onChange={(e) => setDelegationTargetId(e.target.value)}
-                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-bold outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-slate-700"
+                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-bold outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-slate-700"
                                 >
                                     <option value="" disabled>Seleccione un operador</option>
                                     {operatorsList.map(op => (
@@ -1489,7 +1489,7 @@ export default function MyProjectsPage() {
                                     value={delegationQuantity}
                                     onChange={(e) => setDelegationQuantity(e.target.value)}
                                     placeholder="Ej. 1"
-                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-lg font-bold outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all placeholder:text-slate-300"
+                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-lg font-bold outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all placeholder:text-slate-300"
                                 />
                             </div>
 
@@ -1499,7 +1499,7 @@ export default function MyProjectsPage() {
                                     value={delegationNote}
                                     onChange={(e) => setDelegationNote(e.target.value)}
                                     rows={2}
-                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all resize-none"
+                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all resize-none"
                                     placeholder="Opcional..."
                                 />
                             </div>
@@ -1521,7 +1521,7 @@ export default function MyProjectsPage() {
                                         </button>
                                     )}
                                 </div>
-                                <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl overflow-hidden touch-none relative p-4 flex flex-col items-center justify-center min-h-[150px] border border-slate-200 dark:border-slate-700">
+                                <div className="bg-background text-foreground rounded-2xl overflow-hidden touch-none relative p-4 flex flex-col items-center justify-center min-h-[150px] border border-slate-200 dark:border-slate-700">
                                     {!pendingDelegationSignature ? (
                                         <SignatureButton 
                                             documentId={selectedProject?.id || 'DELEGACION'}
@@ -1564,7 +1564,7 @@ export default function MyProjectsPage() {
             {/* Delegar Todo Modal */}
             {isDelegarTodoModalOpen && selectedProject && (
                 <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl p-6 md:p-7 space-y-6 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
+                    <div className="bg-card text-card-foreground w-full max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl p-6 md:p-7 space-y-6 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
                         <div className="flex items-center gap-4">
                             <div className="p-3 rounded-2xl bg-indigo-50 text-indigo-600">
                                 <Share2 className="w-6 h-6" />
@@ -1581,7 +1581,7 @@ export default function MyProjectsPage() {
                                 <select
                                     value={delegationTargetId}
                                     onChange={(e) => setDelegationTargetId(e.target.value)}
-                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-bold outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-slate-700"
+                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-bold outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-slate-700"
                                 >
                                     <option value="" disabled>Seleccione un operador</option>
                                     {operatorsList.filter(op => op.id !== user?.id).map(op => (
@@ -1596,7 +1596,7 @@ export default function MyProjectsPage() {
                                     value={delegationNote}
                                     onChange={(e) => setDelegationNote(e.target.value)}
                                     rows={2}
-                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all resize-none"
+                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all resize-none"
                                     placeholder="Motivo de la delegación (Opcional)..."
                                 />
                             </div>
@@ -1619,7 +1619,7 @@ export default function MyProjectsPage() {
                                         </button>
                                     )}
                                 </div>
-                                <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl overflow-hidden touch-none relative p-4 flex flex-col items-center justify-center min-h-[150px] border border-slate-200 dark:border-slate-700">
+                                <div className="bg-background text-foreground rounded-2xl overflow-hidden touch-none relative p-4 flex flex-col items-center justify-center min-h-[150px] border border-slate-200 dark:border-slate-700">
                                     {!pendingDelegationSignature ? (
                                         <SignatureButton 
                                             documentId={selectedProject?.id || 'DELEGACION-TODO'}
@@ -1662,7 +1662,7 @@ export default function MyProjectsPage() {
             {/* Justification Modal */}
             {isJustifyModalOpen && (
                 <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl p-6 md:p-7 space-y-6 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
+                    <div className="bg-card text-card-foreground w-full max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl p-6 md:p-7 space-y-6 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
                         <div className="flex items-center gap-4 text-amber-500">
                             <div className="p-3 bg-amber-50 rounded-2xl">
                                 <AlertTriangle className="w-6 h-6" />
@@ -1679,7 +1679,7 @@ export default function MyProjectsPage() {
                             <textarea
                                 rows={4}
                                 autoFocus
-                                className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all resize-none"
+                                className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all resize-none"
                                 placeholder="Explica por qué necesitas desmarcar o cambiar este ítem..."
                                 value={justification}
                                 onChange={e => setJustification(e.target.value)}
@@ -1689,7 +1689,7 @@ export default function MyProjectsPage() {
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setIsJustifyModalOpen(false)}
-                                className="flex-1 py-3.5 rounded-2xl font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 transition-all active:scale-95"
+                                className="flex-1 py-3.5 rounded-2xl font-bold text-slate-500 dark:text-slate-400 bg-muted text-muted-foreground/50 hover:bg-slate-200 transition-all active:scale-95"
                             >
                                 Cancelar
                             </button>
@@ -1709,7 +1709,7 @@ export default function MyProjectsPage() {
             {/* Finalize Warning Modal */}
             {isFinalizeModalOpen && (
                 <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-slate-800 w-full max-w-lg rounded-t-3xl md:rounded-3xl shadow-2xl p-6 md:p-7 space-y-6 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] flex flex-col overflow-hidden">
+                    <div className="bg-card text-card-foreground w-full max-w-lg rounded-t-3xl md:rounded-3xl shadow-2xl p-6 md:p-7 space-y-6 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] flex flex-col overflow-hidden">
                         <div className="flex items-center gap-4 text-red-500 shrink-0">
                             <div className="p-3 bg-red-50 rounded-2xl">
                                 <AlertTriangle className="w-7 h-7" />
@@ -1749,7 +1749,7 @@ export default function MyProjectsPage() {
                             </button>
                             <button
                                 onClick={() => setIsFinalizeModalOpen(false)}
-                                className="w-full py-4 rounded-2xl font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 transition-all active:scale-95"
+                                className="w-full py-4 rounded-2xl font-bold text-slate-500 dark:text-slate-400 bg-muted text-muted-foreground/50 hover:bg-slate-200 transition-all active:scale-95"
                             >
                                 Volver y completar checklist
                             </button>
@@ -1782,10 +1782,10 @@ function MyProjectsSkeleton({ viewAll }: { viewAll: boolean }) {
                 </div>
             </header>
 
-            <div className="w-full h-[52px] bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl animate-pulse" />
+            <div className="w-full h-[52px] bg-muted text-muted-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl animate-pulse" />
 
             <div className="space-y-4">
-                {[1, 2].map(i => <div key={i} className="h-[200px] bg-slate-100 dark:bg-slate-800/50 rounded-3xl animate-pulse" />)}
+                {[1, 2].map(i => <div key={i} className="h-[200px] bg-muted text-muted-foreground/50 rounded-3xl animate-pulse" />)}
             </div>
         </div>
     );

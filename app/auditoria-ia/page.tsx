@@ -141,7 +141,7 @@ export default function AiAuditPage() {
     };
 
     const getActionBadgeColor = (action: string) => {
-        return ACTION_COLORS[action] || 'bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800';
+        return ACTION_COLORS[action] || 'bg-background text-foreground text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800';
     };
 
     const formatCost = (cost: number) => {
@@ -167,7 +167,7 @@ export default function AiAuditPage() {
                 <div className="flex gap-2">
                     <button
                         onClick={fetchData}
-                        className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-750 transition-all text-slate-700 dark:text-slate-200"
+                        className="flex items-center gap-2 px-4 py-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-750 transition-all text-slate-700 dark:text-slate-200"
                     >
                         <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
                         Sincronizar
@@ -178,7 +178,7 @@ export default function AiAuditPage() {
             {/* Metrics Dashboard */}
             {stats && (
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 transition-all hover:scale-[1.02]">
+                    <div className="bg-card text-card-foreground p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 transition-all hover:scale-[1.02]">
                         <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
                             <TrendingUp className="w-5 h-5" />
                         </div>
@@ -193,7 +193,7 @@ export default function AiAuditPage() {
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 transition-all hover:scale-[1.02]">
+                    <div className="bg-card text-card-foreground p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 transition-all hover:scale-[1.02]">
                         <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                             <Coins className="w-5 h-5" />
                         </div>
@@ -208,7 +208,7 @@ export default function AiAuditPage() {
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 transition-all hover:scale-[1.02]">
+                    <div className="bg-card text-card-foreground p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 transition-all hover:scale-[1.02]">
                         <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center text-amber-600 dark:text-amber-400">
                             <DollarSign className="w-5 h-5" />
                         </div>
@@ -223,7 +223,7 @@ export default function AiAuditPage() {
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 transition-all hover:scale-[1.02]">
+                    <div className="bg-card text-card-foreground p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 transition-all hover:scale-[1.02]">
                         <div className="w-12 h-12 rounded-2xl bg-sky-50 dark:bg-sky-950/30 flex items-center justify-center text-sky-600 dark:text-sky-400">
                             <Clock className="w-5 h-5" />
                         </div>
@@ -241,7 +241,7 @@ export default function AiAuditPage() {
             )}
 
             {/* Navigation Tabs */}
-            <div className="flex gap-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-1.5 shadow-sm overflow-x-auto w-full max-w-2xl">
+            <div className="flex gap-1 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl p-1.5 shadow-sm overflow-x-auto w-full max-w-2xl">
                 <button
                     onClick={() => setViewMode('consumption')}
                     className={`flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all whitespace-nowrap ${
@@ -281,7 +281,7 @@ export default function AiAuditPage() {
             <div className="space-y-6">
                 {/* 1. CONSUMPTION VIEW */}
                 {viewMode === 'consumption' && (
-                    <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-800 overflow-hidden shadow-sm">
+                    <div className="bg-card text-card-foreground rounded-3xl border border-slate-100 dark:border-slate-800 overflow-hidden shadow-sm">
                         <div className="p-6 border-b border-slate-100 dark:border-slate-800">
                             <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
                                 <Users className="w-5 h-5 text-primary" />
@@ -353,7 +353,7 @@ export default function AiAuditPage() {
                 {viewMode === 'audit' && (
                     <div className="space-y-4">
                         {/* Filters Panel */}
-                        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col md:flex-row gap-3">
+                        <div className="bg-card text-card-foreground p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col md:flex-row gap-3">
                             <div className="relative flex-1">
                                 <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                                 <input
@@ -361,7 +361,7 @@ export default function AiAuditPage() {
                                     placeholder="Buscar por usuario, rol o error..."
                                     value={searchTerm}
                                     onChange={e => setSearchTerm(e.target.value)}
-                                    className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl pl-10 pr-4 py-2.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20"
+                                    className="w-full bg-background text-foreground border-none rounded-xl pl-10 pr-4 py-2.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20"
                                 />
                             </div>
 
@@ -369,7 +369,7 @@ export default function AiAuditPage() {
                                 <select
                                     value={filterAction}
                                     onChange={e => setFilterAction(e.target.value)}
-                                    className="bg-slate-50 dark:bg-slate-900 border-none rounded-xl px-4 py-2.5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 text-slate-600 dark:text-slate-200"
+                                    className="bg-background text-foreground border-none rounded-xl px-4 py-2.5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 text-slate-600 dark:text-slate-200"
                                 >
                                     <option value="">Todas las Actividades</option>
                                     {Object.entries(AI_ACTION_LABELS).map(([key, label]) => (
@@ -380,7 +380,7 @@ export default function AiAuditPage() {
                                 <select
                                     value={filterSuccess}
                                     onChange={e => setFilterSuccess(e.target.value)}
-                                    className="bg-slate-50 dark:bg-slate-900 border-none rounded-xl px-4 py-2.5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 text-slate-600 dark:text-slate-200"
+                                    className="bg-background text-foreground border-none rounded-xl px-4 py-2.5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 text-slate-600 dark:text-slate-200"
                                 >
                                     <option value="">Todos los Estados</option>
                                     <option value="true">Éxito</option>
@@ -392,12 +392,12 @@ export default function AiAuditPage() {
                         {/* Audit Log list */}
                         <div className="space-y-3">
                             {loading ? (
-                                <div className="p-16 text-center bg-white dark:bg-slate-800 rounded-3xl border border-slate-100">
+                                <div className="p-16 text-center bg-card text-card-foreground rounded-3xl border border-slate-100">
                                     <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4" />
                                     <p className="font-bold text-slate-450">Leyendo logs de auditoría de IA...</p>
                                 </div>
                             ) : filteredLogs.length === 0 ? (
-                                <div className="p-20 text-center bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-800">
+                                <div className="p-20 text-center bg-card text-card-foreground rounded-3xl border border-slate-100 dark:border-slate-800">
                                     <ShieldAlert className="w-14 h-14 text-slate-250 mx-auto mb-3 opacity-40" />
                                     <p className="font-bold text-slate-400 dark:text-slate-500">Ningún registro coincide con los filtros aplicados</p>
                                 </div>
@@ -407,7 +407,7 @@ export default function AiAuditPage() {
                                     return (
                                         <div
                                             key={log.id}
-                                            className={`bg-white dark:bg-slate-800 rounded-2xl border transition-all overflow-hidden ${
+                                            className={`bg-card text-card-foreground rounded-2xl border transition-all overflow-hidden ${
                                                 isExpanded
                                                     ? 'border-primary/40 shadow-lg shadow-primary/5'
                                                     : 'border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700'
@@ -470,11 +470,11 @@ export default function AiAuditPage() {
                                             {isExpanded && (
                                                 <div className="px-5 pb-5 pt-1.5 border-t border-slate-50 dark:border-slate-800/60 bg-slate-50/20 dark:bg-slate-900/10 space-y-4 animate-in slide-in-from-top-2">
                                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-                                                        <div className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-800/80">
+                                                        <div className="bg-card text-card-foreground p-3 rounded-xl border border-slate-100 dark:border-slate-800/80">
                                                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">ID Registro</p>
                                                             <p className="font-mono font-bold text-slate-700 dark:text-slate-300 mt-0.5 truncate">{log.id}</p>
                                                         </div>
-                                                        <div className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-800/80">
+                                                        <div className="bg-card text-card-foreground p-3 rounded-xl border border-slate-100 dark:border-slate-800/80">
                                                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Tokens Usados</p>
                                                             <p className="font-bold text-slate-700 dark:text-slate-300 mt-0.5">
                                                                 {log.totalTokens.toLocaleString()}
@@ -483,18 +483,18 @@ export default function AiAuditPage() {
                                                                 </span>
                                                             </p>
                                                         </div>
-                                                        <div className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-800/80">
+                                                        <div className="bg-card text-card-foreground p-3 rounded-xl border border-slate-100 dark:border-slate-800/80">
                                                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Costo Generado</p>
                                                             <p className="font-bold text-amber-600 dark:text-amber-400 mt-0.5">{formatCost(log.estimatedCost)} USD</p>
                                                         </div>
-                                                        <div className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-100 dark:border-slate-800/80">
+                                                        <div className="bg-card text-card-foreground p-3 rounded-xl border border-slate-100 dark:border-slate-800/80">
                                                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Latencia / Tiempo</p>
                                                             <p className="font-bold text-slate-700 dark:text-slate-300 mt-0.5">{(log.latencyMs / 1000).toFixed(2)} segundos</p>
                                                         </div>
                                                     </div>
 
                                                     {log.entity && (
-                                                        <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-800/80 text-xs">
+                                                        <div className="bg-card text-card-foreground p-4 rounded-xl border border-slate-100 dark:border-slate-800/80 text-xs">
                                                             <h5 className="font-black text-slate-400 dark:text-slate-500 text-[10px] uppercase tracking-widest mb-1.5">Entidad Vinculada</h5>
                                                             <div className="flex gap-4">
                                                                 <div>
@@ -503,7 +503,7 @@ export default function AiAuditPage() {
                                                                 </div>
                                                                 <div>
                                                                     <span className="text-slate-400 font-bold">ID:</span>{' '}
-                                                                    <code className="bg-slate-50 dark:bg-slate-900 px-1.5 py-0.5 rounded font-mono font-bold text-slate-600 dark:text-slate-300">{log.entityId}</code>
+                                                                    <code className="bg-background text-foreground px-1.5 py-0.5 rounded font-mono font-bold text-slate-600 dark:text-slate-300">{log.entityId}</code>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -533,7 +533,7 @@ export default function AiAuditPage() {
                 {/* 3. TECHNICAL CHATS AUDITING */}
                 {viewMode === 'chats' && (
                     <div className="space-y-4">
-                        <div className="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-slate-100 dark:border-slate-800">
+                        <div className="bg-card text-card-foreground p-5 rounded-3xl border border-slate-100 dark:border-slate-800">
                             <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
                                 <MessageSquare className="w-5 h-5 text-primary" />
                                 Auditoría de Transcripción de Chats
@@ -544,12 +544,12 @@ export default function AiAuditPage() {
                         </div>
 
                         {loading ? (
-                            <div className="p-16 text-center bg-white dark:bg-slate-800 rounded-3xl border border-slate-100">
+                            <div className="p-16 text-center bg-card text-card-foreground rounded-3xl border border-slate-100">
                                 <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4" />
                                 <p className="font-bold text-slate-450">Descargando hilos de conversación...</p>
                             </div>
                         ) : conversations.length === 0 ? (
-                            <div className="p-20 text-center bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-800">
+                            <div className="p-20 text-center bg-card text-card-foreground rounded-3xl border border-slate-100 dark:border-slate-800">
                                 <MessageSquare className="w-14 h-14 text-slate-200 mx-auto mb-3 opacity-30" />
                                 <p className="font-bold text-slate-400 dark:text-slate-500">No se han registrado chats de soporte técnico con IA.</p>
                             </div>
@@ -561,7 +561,7 @@ export default function AiAuditPage() {
                                     return (
                                         <div
                                             key={chat.id}
-                                            className={`bg-white dark:bg-slate-800 rounded-2xl border transition-all overflow-hidden ${
+                                            className={`bg-card text-card-foreground rounded-2xl border transition-all overflow-hidden ${
                                                 isExpanded
                                                     ? 'border-primary/45 shadow-lg'
                                                     : 'border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700'
@@ -644,7 +644,7 @@ export default function AiAuditPage() {
                                                                             <div className={`p-3.5 rounded-2xl text-xs font-semibold leading-relaxed shadow-sm ${
                                                                                 isUser
                                                                                     ? 'bg-primary text-white rounded-tr-none'
-                                                                                    : 'bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700/80 text-slate-700 dark:text-slate-100 rounded-tl-none'
+                                                                                    : 'bg-card text-card-foreground border border-slate-100 dark:border-slate-700/80 text-slate-700 dark:text-slate-100 rounded-tl-none'
                                                                             }`}>
                                                                                 <p className="whitespace-pre-wrap">{msg.content}</p>
                                                                             </div>

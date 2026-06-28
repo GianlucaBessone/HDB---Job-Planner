@@ -62,7 +62,7 @@ export default function LibraryTab({ user }: { user: any }) {
                     <input
                         type="text" placeholder="Buscar documento..."
                         value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:border-primary"
+                        className="w-full pl-10 pr-4 py-3 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:border-primary"
                     />
                 </div>
                 <button
@@ -78,7 +78,7 @@ export default function LibraryTab({ user }: { user: any }) {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {docs.map(doc => (
-                        <div key={doc.id} className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+                        <div key={doc.id} className="bg-card text-card-foreground rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
                             <div className="flex justify-between items-start mb-3">
                                 <span className="text-[10px] font-black font-mono bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300">
                                     {doc.codigoDocumental}

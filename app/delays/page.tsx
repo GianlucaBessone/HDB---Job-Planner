@@ -268,7 +268,7 @@ export default function DelaysPage() {
                         setFormData(prev => ({ ...prev, projectId: '', motivo: '', duracion: '' as any, area: '', responsableArea: '' }));
                         setIsModalOpen(true);
                     }}
-                    className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-4 py-2.5 md:px-6 md:py-3 rounded-xl md:rounded-2xl font-bold flex items-center gap-2 hover:bg-primary hover:text-primary-foreground hover:border-primary shadow-sm hover:shadow-primary/20 hover:shadow-lg active:scale-95 transition-all w-full md:w-auto justify-center text-sm"
+                    className="bg-muted text-muted-foreground text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-4 py-2.5 md:px-6 md:py-3 rounded-xl md:rounded-2xl font-bold flex items-center gap-2 hover:bg-primary hover:text-primary-foreground hover:border-primary shadow-sm hover:shadow-primary/20 hover:shadow-lg active:scale-95 transition-all w-full md:w-auto justify-center text-sm"
                 >
                     <Plus className="w-4 h-4" /> Registrar Demora
                 </button>
@@ -276,7 +276,7 @@ export default function DelaysPage() {
 
             {/* Info Box */}
             <div className="bg-amber-50 border border-amber-100 rounded-3xl p-4 md:p-5 flex items-center gap-4 text-amber-800">
-                <div className="p-2.5 bg-white dark:bg-slate-800 rounded-xl shadow-sm shrink-0">
+                <div className="p-2.5 bg-card text-card-foreground rounded-xl shadow-sm shrink-0">
                     <Info className="w-5 h-5 text-amber-500" />
                 </div>
                 <p className="text-sm font-medium leading-relaxed">
@@ -286,7 +286,7 @@ export default function DelaysPage() {
             </div>
 
             {/* Main Content Card */}
-            <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+            <div className="bg-card text-card-foreground rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                 {/* Toolbar */}
                 <div className="p-4 md:p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
@@ -298,11 +298,11 @@ export default function DelaysPage() {
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                         {/* View Toggle */}
-                        <div className="hidden md:flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl items-center gap-1">
+                        <div className="hidden md:flex bg-muted text-muted-foreground/50 p-1 rounded-xl items-center gap-1">
                             <button
                                 onClick={() => setViewMode('tabla')}
                                 title="Vista Tabla"
-                                className={`p-1.5 md:p-2 rounded-lg transition-all ${viewMode === 'tabla' ? 'bg-white dark:bg-slate-800 text-primary shadow-sm' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600'}`}
+                                className={`p-1.5 md:p-2 rounded-lg transition-all ${viewMode === 'tabla' ? 'bg-card text-card-foreground text-primary shadow-sm' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600'}`}
                             >
                                 <svg className="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
                                     <path d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1z" />
@@ -311,7 +311,7 @@ export default function DelaysPage() {
                             <button
                                 onClick={() => setViewMode('tarjetas')}
                                 title="Vista Tarjetas"
-                                className={`p-1.5 md:p-2 rounded-lg transition-all ${viewMode === 'tarjetas' ? 'bg-white dark:bg-slate-800 text-primary shadow-sm' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600'}`}
+                                className={`p-1.5 md:p-2 rounded-lg transition-all ${viewMode === 'tarjetas' ? 'bg-card text-card-foreground text-primary shadow-sm' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600'}`}
                             >
                                 <LayoutGrid className="w-4 h-4" />
                             </button>
@@ -333,7 +333,7 @@ export default function DelaysPage() {
                         <input
                             type="text"
                             placeholder="Buscar..."
-                            className="w-full h-[42px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-3 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-bold text-slate-700 dark:text-slate-200"
+                            className="w-full h-[42px] bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-3 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-bold text-slate-700 dark:text-slate-200"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
@@ -342,13 +342,13 @@ export default function DelaysPage() {
                     <div className="flex items-center gap-1.5 w-[calc(50%-4px)] md:w-auto">
                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap shrink-0">Desde</label>
                         <input type="date" value={filterDateFrom} onChange={e => setFilterDateFrom(e.target.value)}
-                            className="h-[42px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2 md:px-4 text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none flex-1 min-w-0" />
+                            className="h-[42px] bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-2 md:px-4 text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none flex-1 min-w-0" />
                     </div>
 
                     <div className="flex items-center gap-1.5 w-[calc(50%-4px)] md:w-auto">
                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap shrink-0">Hasta</label>
                         <input type="date" value={filterDateTo} onChange={e => setFilterDateTo(e.target.value)}
-                            className="h-[42px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2 md:px-4 text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none flex-1 min-w-0" />
+                            className="h-[42px] bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-2 md:px-4 text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none flex-1 min-w-0" />
                     </div>
 
                     <div className="w-[calc(50%-4px)] md:w-auto md:min-w-[160px]">
@@ -385,7 +385,7 @@ export default function DelaysPage() {
                 <div className="overflow-x-auto">
                     {isLoading ? (
                         <div className="p-8 space-y-3">
-                            {Array(4).fill(0).map((_, i) => <div key={i} className="h-14 bg-slate-100 dark:bg-slate-800/50 rounded-xl animate-pulse" />)}
+                            {Array(4).fill(0).map((_, i) => <div key={i} className="h-14 bg-muted text-muted-foreground/50 rounded-xl animate-pulse" />)}
                         </div>
                     ) : filteredDelays.length === 0 ? (
                         <div className="py-24 flex flex-col items-center justify-center text-slate-400 dark:text-slate-500">
@@ -397,7 +397,7 @@ export default function DelaysPage() {
                             {viewMode === 'tabla' && (
                                 <table className="w-full text-left border-collapse hidden md:table">
                                     <thead>
-                                        <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
+                                        <tr className="bg-background text-foreground/50 border-b border-slate-100 dark:border-slate-800">
                                             <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap">Fecha</th>
                                             <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Proyecto</th>
                                             <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Área</th>
@@ -436,7 +436,7 @@ export default function DelaysPage() {
                                                 </td>
                                             </tr>
                                         ))}
-                                        <tr className="bg-slate-50 dark:bg-slate-900/50 font-black border-t-2 border-slate-200 dark:border-slate-700">
+                                        <tr className="bg-background text-foreground/50 font-black border-t-2 border-slate-200 dark:border-slate-700">
                                             <td colSpan={6} className="p-4 text-right text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400 hidden md:table-cell">Total Horas en Rango:</td>
                                             <td className="p-4 text-center text-amber-600 text-base font-black">{totalHours.toFixed(1)}h</td>
                                             <td className="hidden md:table-cell"></td>
@@ -448,7 +448,7 @@ export default function DelaysPage() {
                             {/* Cards View (Mobile Fallback + Explicit Card View) */}
                             <div className={`p-4 md:p-6 grid gap-4 ${viewMode === 'tabla' ? 'grid-cols-1 md:hidden' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}>
                                 {filteredDelays.map(delay => (
-                                    <div key={delay.id} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-[2rem] shadow-sm p-4 md:p-5 flex flex-col gap-3 hover:shadow-md transition-all group animate-card-in">
+                                    <div key={delay.id} className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-[2rem] shadow-sm p-4 md:p-5 flex flex-col gap-3 hover:shadow-md transition-all group animate-card-in">
                                         <div className="flex items-start gap-3 justify-between">
                                             <div className="flex items-start gap-3 min-w-0">
                                                 <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
@@ -473,7 +473,7 @@ export default function DelaysPage() {
                                             </div>
                                         </div>
                                         <span className="text-[10px] font-black bg-amber-50 text-amber-700 px-2 py-1 rounded-lg uppercase tracking-widest w-fit">{delay.area}</span>
-                                        <div className="bg-slate-50 dark:bg-slate-900/50 px-3 py-2.5 rounded-xl">
+                                        <div className="bg-background text-foreground/50 px-3 py-2.5 rounded-xl">
                                             <p className="text-xs font-medium text-slate-600 dark:text-slate-300 italic line-clamp-2">"{delay.motivo}"</p>
                                         </div>
                                         <div className="flex items-center justify-between pt-2 border-t border-slate-50">
@@ -499,7 +499,7 @@ export default function DelaysPage() {
             {/* Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-white dark:bg-slate-800 w-full max-w-xl rounded-t-3xl md:rounded-[3rem] shadow-2xl border border-white/20 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] flex flex-col overflow-hidden">
+                    <div className="bg-card text-card-foreground w-full max-w-xl rounded-t-3xl md:rounded-[3rem] shadow-2xl border border-white/20 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] flex flex-col overflow-hidden">
                         {/* Header - Fixed */}
                         <div className="p-5 md:p-8 pb-4 flex items-center justify-between border-b border-slate-50 flex-shrink-0">
                             <div className="flex items-center gap-3 md:gap-4">
@@ -541,7 +541,7 @@ export default function DelaysPage() {
                                         </label>
                                         <input type="date" required value={formData.fecha}
                                             onChange={e => setFormData({ ...formData, fecha: e.target.value })}
-                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 dark:text-slate-200 h-[50px]"
+                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 dark:text-slate-200 h-[50px]"
                                         />
                                     </div>
 
@@ -551,7 +551,7 @@ export default function DelaysPage() {
                                         </label>
                                         <input type="time" required value={formData.hora}
                                             onChange={e => setFormData({ ...formData, hora: e.target.value })}
-                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 dark:text-slate-200 h-[50px]"
+                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 dark:text-slate-200 h-[50px]"
                                         />
                                     </div>
 
@@ -570,7 +570,7 @@ export default function DelaysPage() {
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">Detalle / Motivo Específico</label>
                                             <textarea required value={formData.motivo} onChange={e => setFormData({ ...formData, motivo: e.target.value })}
-                                                className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 dark:text-slate-200 min-h-[50px] max-h-[150px]"
+                                                className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 dark:text-slate-200 min-h-[50px] max-h-[150px]"
                                                 placeholder="Describe o amplía el motivo de la demora..."
                                             />
                                         </div>
@@ -580,7 +580,7 @@ export default function DelaysPage() {
                                             <User className="w-3 h-3" /> Quien registra
                                         </label>
                                         {currentUser?.role === 'operador' ? (
-                                            <div className="w-full bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 font-bold text-slate-500 dark:text-slate-400 h-[50px] flex items-center">
+                                            <div className="w-full bg-muted text-muted-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 font-bold text-slate-500 dark:text-slate-400 h-[50px] flex items-center">
                                                 {formData.operador}
                                             </div>
                                         ) : (
@@ -614,7 +614,7 @@ export default function DelaysPage() {
                                         <input type="text" value={formData.responsableArea}
                                             onChange={e => setFormData({ ...formData, responsableArea: e.target.value })}
                                             placeholder="Nombre del responsable si lo conoce..."
-                                            className="w-full h-[50px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 dark:text-slate-200 text-sm rounded-2xl"
+                                            className="w-full h-[50px] bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 dark:text-slate-200 text-sm rounded-2xl"
                                         />
                                     </div>
 
@@ -625,7 +625,7 @@ export default function DelaysPage() {
                                         <textarea required value={formData.motivo}
                                             onChange={e => setFormData({ ...formData, motivo: e.target.value })}
                                             placeholder="Describa el motivo de la demora externa..."
-                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-medium text-slate-700 dark:text-slate-200 resize-none h-24"
+                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-medium text-slate-700 dark:text-slate-200 resize-none h-24"
                                         />
                                     </div>
 
@@ -673,11 +673,11 @@ export default function DelaysPage() {
 
                             <div className="flex gap-3 md:gap-4 p-5 md:p-8 border-t border-slate-50 flex-shrink-0">
                                 <button type="button" onClick={() => setIsModalOpen(false)}
-                                    className="flex-1 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95">
+                                    className="flex-1 bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95">
                                     Cancelar
                                 </button>
                                 <button type="submit"
-                                    className="flex-[2] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-primary hover:text-primary-foreground hover:border-primary shadow-sm hover:shadow-primary/20 hover:shadow-xl transition-all active:scale-95">
+                                    className="flex-[2] bg-muted text-muted-foreground text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-primary hover:text-primary-foreground hover:border-primary shadow-sm hover:shadow-primary/20 hover:shadow-xl transition-all active:scale-95">
                                     {editingDelayId ? 'Guardar Cambios' : 'Registrar Evento'}
                                 </button>
                             </div>

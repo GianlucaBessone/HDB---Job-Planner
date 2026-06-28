@@ -76,7 +76,7 @@ export default function KpiTab({ user, isActive = true }: { user: any; isActive?
                     <p className="text-sm text-slate-400">Gestión de KPIs asociados a OKRs</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <select value={filterOkrId} onChange={e => setFilterOkrId(e.target.value)} className="h-9 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200">
+                    <select value={filterOkrId} onChange={e => setFilterOkrId(e.target.value)} className="h-9 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-700 dark:text-slate-200">
                         <option value="">Todos los OKRs</option>
                         {okrs.map((o: any) => <option key={o.id} value={o.id}>{o.codigoOkr} — {o.nombre}</option>)}
                     </select>
@@ -87,7 +87,7 @@ export default function KpiTab({ user, isActive = true }: { user: any; isActive?
             </div>
 
             {filteredKpis.length === 0 ? (
-                <div className="bg-white dark:bg-slate-800 border border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-12 text-center">
+                <div className="bg-card text-card-foreground border border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-12 text-center">
                     <Activity className="w-12 h-12 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
                     <h3 className="text-lg font-bold text-slate-600 dark:text-slate-300 mb-1">Sin KPIs</h3>
                     <p className="text-sm text-slate-400">Creá un KPI asociado a un OKR</p>
@@ -95,7 +95,7 @@ export default function KpiTab({ user, isActive = true }: { user: any; isActive?
             ) : (
                 <div className="space-y-3">
                     {filteredKpis.map((kpi: any) => (
-                        <div key={kpi.id} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md transition-all group">
+                        <div key={kpi.id} className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md transition-all group">
                             <div className="flex flex-col md:flex-row items-start md:items-center gap-3 p-4">
                                 <div className="shrink-0">
                                     <StatusIcon estado={kpi.estadoCumplimiento} />
@@ -213,7 +213,7 @@ function KpiFormModal({ kpi, okrs, operators, datasets, onClose, onSave }: any) 
 
     return (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[200] flex items-start justify-center pt-[5vh] overflow-y-auto">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200 mb-8">
+            <div className="bg-card text-card-foreground rounded-2xl shadow-2xl w-full max-w-2xl mx-4 border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200 mb-8">
                 <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
                     <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">{kpi ? 'Editar KPI' : 'Nuevo KPI'}</h2>
                     <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl"><X className="w-5 h-5 text-slate-400" /></button>
@@ -291,7 +291,7 @@ function KpiFormModal({ kpi, okrs, operators, datasets, onClose, onSave }: any) 
                         </div>
                     </div>
                     {form.tipoRegistro === 'Dataset' && (
-                        <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl space-y-4 border border-slate-200 dark:border-slate-700">
+                        <div className="bg-muted/50 text-muted-foreground p-4 rounded-xl space-y-4 border border-slate-200 dark:border-slate-700">
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Dataset Origen *</label>
                                 <select value={form.datasetId} onChange={e => setForm(p => ({ ...p, datasetId: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none">
@@ -354,7 +354,7 @@ function MedicionModal({ kpi, onClose, onSave }: { kpi: any; onClose: () => void
 
     return (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[200] flex items-center justify-center">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md mx-4 border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-card text-card-foreground rounded-2xl shadow-2xl w-full max-w-md mx-4 border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200">
                 <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
                     <div>
                         <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">Registrar Medición</h2>
@@ -363,7 +363,7 @@ function MedicionModal({ kpi, onClose, onSave }: { kpi: any; onClose: () => void
                     <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl"><X className="w-5 h-5 text-slate-400" /></button>
                 </div>
                 <form onSubmit={handleSubmit} className="p-5 space-y-4">
-                    <div className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-3 flex items-center justify-between text-sm">
+                    <div className="bg-background text-foreground/50 rounded-xl p-3 flex items-center justify-between text-sm">
                         <span className="text-slate-500 font-medium">Objetivo:</span>
                         <span className="font-bold text-emerald-600 dark:text-emerald-400">{kpi.valorObjetivo} {kpi.unidadMedida || ''}</span>
                     </div>

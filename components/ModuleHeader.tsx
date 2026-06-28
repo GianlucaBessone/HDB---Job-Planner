@@ -61,7 +61,7 @@ export default function ModuleHeader({
                 variantClass = "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-800 hover:bg-indigo-100";
                 break;
             case 'outline':
-                variantClass = "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700";
+                variantClass = "bg-card text-card-foreground text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700";
                 break;
             case 'danger':
                 variantClass = "bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-800 hover:bg-rose-100";
@@ -88,7 +88,7 @@ export default function ModuleHeader({
                 {/* Title & Description */}
                 <div className="flex items-center gap-3">
                     {icon && (
-                        <div className="p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm text-indigo-600 dark:text-indigo-400 shrink-0">
+                        <div className="p-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm text-indigo-600 dark:text-indigo-400 shrink-0">
                             <div className="[&>svg]:w-6 [&>svg]:h-6">
                                 {icon}
                             </div>
@@ -117,7 +117,7 @@ export default function ModuleHeader({
                                 value={searchValue}
                                 onChange={(e) => onSearchChange(e.target.value)}
                                 placeholder={searchPlaceholder}
-                                className="h-9 !pl-10 pr-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-[13px] font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none w-full md:w-[220px] lg:w-[280px] transition-all"
+                                className="h-9 !pl-10 pr-4 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-[13px] font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none w-full md:w-[220px] lg:w-[280px] transition-all"
                             />
                         </div>
                     )}

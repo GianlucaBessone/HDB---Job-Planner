@@ -174,7 +174,7 @@ export default function RootLayout({
     } else if (isPublicPage && !currentUser) {
         // Public view (No header/sidebar) — light by default, with compact toggle
         content = (
-            <div className="flex flex-col min-h-[100dvh] overflow-x-hidden bg-white dark:bg-slate-900">
+            <div className="flex flex-col min-h-[100dvh] overflow-x-hidden bg-background">
                 {/* Compact public header with theme toggle */}
                 <div className="fixed top-3 right-3 z-50">
                     <ThemeToggle />
@@ -187,7 +187,7 @@ export default function RootLayout({
     } else {
         content = (
             <div className="flex flex-col min-h-[100dvh] overflow-x-hidden">
-                <header className="sticky top-0 z-[60] w-full border-b bg-white/80 dark:bg-slate-800/80 backdrop-blur-md safe-area-top">
+                <header className="sticky top-0 z-[60] w-full border-b bg-background/80 backdrop-blur-md safe-area-top">
                     <div className="w-full px-4 md:px-6 h-14 md:h-16 flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <button
@@ -254,7 +254,7 @@ export default function RootLayout({
                     <SpeedInsights />
                 </main>
 
-                <footer className="hidden md:block border-t bg-white dark:bg-slate-800 py-6">
+                <footer className="hidden md:block border-t bg-card text-card-foreground py-6">
                     <div className="container mx-auto px-4 text-center text-sm text-slate-500 dark:text-slate-400">
                         © 2026 HDB SGI - Sistema de Gestión Integral
                     </div>
@@ -286,7 +286,7 @@ export default function RootLayout({
                 <title>HDB | SGI</title>
                 <meta name="description" content="Sistema de Gestión Integral" />
             </head>
-            <body className="font-sans min-h-[100dvh] bg-slate-50/50 dark:bg-slate-900 overscroll-none text-slate-900 dark:text-slate-100" style={{ fontFamily: '"Outfit", sans-serif' }}>
+            <body className="font-sans min-h-[100dvh] bg-background text-foreground overscroll-none text-slate-900 dark:text-slate-100" style={{ fontFamily: '"Outfit", sans-serif' }}>
                 <ColorThemeProvider>
                     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
                         {content}
@@ -364,7 +364,7 @@ function Sidebar({ isOpen, onClose, user, views, onLogout }: {
             )}
 
             {/* Sidebar */}
-            <aside className={`fixed top-0 left-0 bottom-0 w-[240px] bg-white dark:bg-slate-800 z-[110] shadow-2xl transition-transform duration-300 ease-out flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <aside className={`fixed top-0 left-0 bottom-0 w-[240px] bg-card text-card-foreground z-[110] shadow-2xl transition-transform duration-300 ease-out flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <div className="flex items-center gap-2 text-primary">
                         <ClipboardList className="w-6 h-6 shrink-0" />

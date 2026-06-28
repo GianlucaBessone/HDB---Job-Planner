@@ -58,7 +58,7 @@ export default function SignatureDetailModal({ isOpen, onClose, signature: initi
     if (loading || !signature) {
         return (
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-                <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-2xl flex flex-col items-center gap-4">
+                <div className="bg-card text-card-foreground p-8 rounded-3xl shadow-2xl flex flex-col items-center gap-4">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
                     <p className="text-sm font-medium text-slate-500">Cargando firma...</p>
                 </div>
@@ -86,8 +86,8 @@ export default function SignatureDetailModal({ isOpen, onClose, signature: initi
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in zoom-in-95 duration-300">
-                <div className="p-6 border-b flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+            <div className="bg-card text-card-foreground w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in zoom-in-95 duration-300">
+                <div className="p-6 border-b flex justify-between items-center bg-background text-foreground/50">
                     <h3 className="text-xl font-bold flex items-center gap-2">
                         Detalle de Firma Electrónica
                         <button onClick={() => setShowHelp(true)} className="ml-1 p-1.5 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-full transition-colors" title="¿Qué es esto?">
@@ -109,27 +109,27 @@ export default function SignatureDetailModal({ isOpen, onClose, signature: initi
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                        <div className="bg-background text-foreground/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
                             <span className="block text-[10px] font-black uppercase text-slate-400 mb-1">ID de Firma</span>
                             <span className="font-mono text-sm font-bold text-slate-700 dark:text-slate-200">{signature.SignatureID}</span>
                         </div>
-                        <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                        <div className="bg-background text-foreground/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
                             <span className="block text-[10px] font-black uppercase text-slate-400 mb-1">Fecha y Hora (UTC)</span>
                             <span className="font-medium text-sm text-slate-700 dark:text-slate-200">{new Date(signature.SignedAtUTC).toLocaleString()}</span>
                         </div>
-                        <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                        <div className="bg-background text-foreground/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
                             <span className="block text-[10px] font-black uppercase text-slate-400 mb-1">Documento / Versión</span>
                             <span className="font-medium text-sm text-slate-700 dark:text-slate-200">{signature.DocumentCode || signature.DocumentID} {signature.DocumentVersion}</span>
                         </div>
-                        <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                        <div className="bg-background text-foreground/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
                             <span className="block text-[10px] font-black uppercase text-slate-400 mb-1">Firmante</span>
                             <span className="font-medium text-sm text-slate-700 dark:text-slate-200">{signature.UserName} (DNI: {signature.DNI})</span>
                         </div>
-                        <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                        <div className="bg-background text-foreground/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
                             <span className="block text-[10px] font-black uppercase text-slate-400 mb-1">Dispositivo / IP</span>
                             <span className="font-medium text-sm text-slate-700 dark:text-slate-200">{signature.DeviceID} / {signature.IPAddress}</span>
                         </div>
-                        <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                        <div className="bg-background text-foreground/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
                             <span className="block text-[10px] font-black uppercase text-slate-400 mb-1">Última Verificación</span>
                             <span className="font-medium text-sm text-slate-700 dark:text-slate-200">{new Date(signature.VerifiedAtUTC).toLocaleString()}</span>
                         </div>
@@ -158,7 +158,7 @@ export default function SignatureDetailModal({ isOpen, onClose, signature: initi
                     </div>
                 </div>
 
-                <div className="p-6 border-t bg-slate-50 dark:bg-slate-900/50 flex justify-end">
+                <div className="p-6 border-t bg-background text-foreground/50 flex justify-end">
                     <button onClick={onClose} className="px-6 py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 font-bold rounded-xl transition-colors">
                         Cerrar Detalle
                     </button>
@@ -168,7 +168,7 @@ export default function SignatureDetailModal({ isOpen, onClose, signature: initi
             {/* Help Modal */}
             {showHelp && (
                 <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in zoom-in-95 duration-300">
+                    <div className="bg-card text-card-foreground w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in zoom-in-95 duration-300">
                         <div className="p-6 border-b flex justify-between items-center bg-indigo-50 dark:bg-indigo-900/30">
                             <h3 className="text-xl font-bold text-indigo-900 dark:text-indigo-100 flex items-center gap-2">
                                 <HelpCircle className="w-6 h-6" />
@@ -197,12 +197,12 @@ export default function SignatureDetailModal({ isOpen, onClose, signature: initi
                             <div>
                                 <strong className="text-slate-900 dark:text-white">¿Cómo asegura la inalterabilidad? (Ejemplo Práctico)</strong>
                                 <div className="mt-2 bg-indigo-50 dark:bg-slate-900 p-4 rounded-xl text-sm border border-indigo-100 dark:border-slate-700">
-                                    <p className="mb-2">Imagina que firmas la <strong>Versión 1.0</strong> de un documento el <strong>12 de Mayo</strong>. El sistema toma tu DNI, esa versión y esa fecha, y junto a la Llave Secreta genera el Hash <code className="bg-white dark:bg-slate-800 px-1 rounded font-bold text-indigo-600 dark:text-indigo-400">8f1b...</code>.</p>
-                                    <p>Si más adelante alguien malintencionado intenta entrar a la base de datos y edita el registro para decir que tú en realidad aprobaste la <strong>Versión 2.0</strong>, el sistema intentará recalcular el Hash con esos nuevos datos falsos. El nuevo cálculo dará <code className="bg-white dark:bg-slate-800 px-1 rounded font-bold text-rose-500">3x9p...</code>. Al no coincidir con <code className="bg-white dark:bg-slate-800 px-1 rounded font-bold text-indigo-600 dark:text-indigo-400">8f1b...</code>, el sistema invalida la firma y muestra la alerta de <strong>DATOS MODIFICADOS</strong>.</p>
+                                    <p className="mb-2">Imagina que firmas la <strong>Versión 1.0</strong> de un documento el <strong>12 de Mayo</strong>. El sistema toma tu DNI, esa versión y esa fecha, y junto a la Llave Secreta genera el Hash <code className="bg-card text-card-foreground px-1 rounded font-bold text-indigo-600 dark:text-indigo-400">8f1b...</code>.</p>
+                                    <p>Si más adelante alguien malintencionado intenta entrar a la base de datos y edita el registro para decir que tú en realidad aprobaste la <strong>Versión 2.0</strong>, el sistema intentará recalcular el Hash con esos nuevos datos falsos. El nuevo cálculo dará <code className="bg-card text-card-foreground px-1 rounded font-bold text-rose-500">3x9p...</code>. Al no coincidir con <code className="bg-card text-card-foreground px-1 rounded font-bold text-indigo-600 dark:text-indigo-400">8f1b...</code>, el sistema invalida la firma y muestra la alerta de <strong>DATOS MODIFICADOS</strong>.</p>
                                 </div>
                             </div>
                         </div>
-                        <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-t flex justify-end">
+                        <div className="p-4 bg-background text-foreground/50 border-t flex justify-end">
                             <button onClick={() => setShowHelp(false)} className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-colors">
                                 Entendido
                             </button>

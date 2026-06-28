@@ -41,8 +41,8 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900 p-6 text-center">
-      <div className="max-w-md w-full p-8 bg-white dark:bg-slate-800 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-700">
+    <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-background text-foreground p-6 text-center">
+      <div className="max-w-md w-full p-8 bg-card text-card-foreground rounded-3xl shadow-xl border border-slate-100 dark:border-slate-700">
         <h2 className="text-2xl font-black text-rose-600 dark:text-rose-400 mb-4 uppercase tracking-wide">
           Algo salió mal
         </h2>

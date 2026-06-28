@@ -77,7 +77,7 @@ function SignatureModal({ isOpen, onClose, onSave }: { isOpen: boolean, onClose:
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md flex flex-col p-6 animate-in zoom-in-95 duration-200">
+            <div className="bg-card text-card-foreground rounded-3xl shadow-2xl w-full max-w-md flex flex-col p-6 animate-in zoom-in-95 duration-200">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-base font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
                         <PenTool className="w-5 h-5 text-indigo-600" /> Firma de Conformidad
@@ -87,7 +87,7 @@ function SignatureModal({ isOpen, onClose, onSave }: { isOpen: boolean, onClose:
                     </button>
                 </div>
                 
-                <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-900 relative">
+                <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden bg-background text-foreground relative">
                     <canvas
                         ref={canvasRef}
                         width={400}
@@ -413,7 +413,7 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
     };
 
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="px-6 py-4 border-b border-slate-50 dark:border-slate-700 bg-indigo-50/50 dark:bg-indigo-900/10">
                 <div className="flex items-center gap-2">
                     <ShieldAlert className="w-5 h-5 text-indigo-600" />
@@ -500,8 +500,8 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                                 const isOutdated = activeTmpl && activeTmpl.version > chk.templateVersion;
 
                                 return (
-                                    <div key={chk.id} className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden shadow-sm bg-white dark:bg-slate-800/80">
-                                        <div className="bg-slate-50 dark:bg-slate-900/50 px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex flex-wrap justify-between items-center gap-2">
+                                    <div key={chk.id} className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden shadow-sm bg-card text-card-foreground/80">
+                                        <div className="bg-background text-foreground/50 px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex flex-wrap justify-between items-center gap-2">
                                             <div>
                                                 <div className="flex items-center gap-2">
                                                     <h5 className="font-black text-sm text-slate-700 dark:text-slate-200">{chk.templateName}</h5>
@@ -583,7 +583,7 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                                                                             value={localForm.observacion}
                                                                             onChange={e => setLocalForm(p => ({ ...p, observacion: e.target.value }))}
                                                                             placeholder="Ingrese el valor medido o descripción del estado..."
-                                                                            className="w-full text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 outline-none focus:ring-1 focus:ring-primary resize-none"
+                                                                            className="w-full text-xs font-bold bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 outline-none focus:ring-1 focus:ring-primary resize-none"
                                                                         />
                                                                     </div>
                                                                 )}
@@ -593,7 +593,7 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                                                                         <div>
                                                                             <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Captura Fotográfica</label>
                                                                             <div className="flex items-center gap-3">
-                                                                                <label className="flex items-center gap-1.5 px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-750 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors text-xs font-black text-slate-600 dark:text-slate-300">
+                                                                                <label className="flex items-center gap-1.5 px-4 py-2.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-750 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors text-xs font-black text-slate-600 dark:text-slate-300">
                                                                                     <Camera className="w-4 h-4 text-blue-500" />
                                                                                     {localForm.foto ? 'Cambiar Foto' : 'Tomar Foto'}
                                                                                     <input 
@@ -650,7 +650,7 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                                                                             <div className="flex items-center gap-3">
                                                                                 <button
                                                                                     onClick={() => setSigModalOpen(true)}
-                                                                                    className="flex items-center gap-1.5 px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-750 rounded-xl hover:bg-slate-50 transition-colors text-xs font-black text-slate-600 dark:text-slate-300"
+                                                                                    className="flex items-center gap-1.5 px-4 py-2.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-750 rounded-xl hover:bg-slate-50 transition-colors text-xs font-black text-slate-600 dark:text-slate-300"
                                                                                 >
                                                                                     <PenTool className="w-4 h-4 text-purple-500" />
                                                                                     {localForm.firma ? 'Cambiar Firma' : 'Dibujar Firma'}
@@ -810,7 +810,7 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                             </button>
                         </div>
 
-                        <div className="bg-slate-50 dark:bg-slate-900/40 rounded-2xl p-4 border border-slate-100 dark:border-slate-800 space-y-3">
+                        <div className="bg-background text-foreground/40 rounded-2xl p-4 border border-slate-100 dark:border-slate-800 space-y-3">
                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Observaciones Sugeridas / Reporte Final:</label>
                             {os.comentario ? (
                                 <p className="text-xs font-medium text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed bg-white dark:bg-slate-950 p-3 rounded-xl border border-slate-150 dark:border-slate-850">

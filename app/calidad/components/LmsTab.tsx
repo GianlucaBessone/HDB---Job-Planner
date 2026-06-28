@@ -441,7 +441,7 @@ export default function LmsTab({ user }: { user: any }) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Column 1 & 2: Material / Study or General Info */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
+            <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
               <div className="flex justify-between items-start gap-4">
                 <div className="space-y-1">
                   <span className="text-[10px] font-black uppercase tracking-widest bg-primary/10 text-primary dark:text-primary-light px-2.5 py-1 rounded-full">
@@ -460,7 +460,7 @@ export default function LmsTab({ user }: { user: any }) {
                   )}
                 </div>
                 {!isCompleted && quizStarted && (
-                  <div className="flex items-center gap-2 text-xs font-black text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 px-3 py-1.5 rounded-full border border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-2 text-xs font-black text-slate-500 dark:text-slate-400 bg-background text-foreground px-3 py-1.5 rounded-full border border-slate-100 dark:border-slate-800">
                     <Clock className="w-4 h-4 text-primary animate-pulse" />
                     <span>
                       {Math.floor(seconds / 60)}:
@@ -538,7 +538,7 @@ export default function LmsTab({ user }: { user: any }) {
                         .map((section, idx) => (
                           <div
                             key={idx}
-                            className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-800"
+                            className="bg-background text-foreground/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-800"
                           >
                             <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-2">
                               {section.title}
@@ -552,7 +552,7 @@ export default function LmsTab({ user }: { user: any }) {
                   );
                 } else if (pdfFile) {
                   return (
-                    <div className="relative w-full h-[600px] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm bg-slate-100 dark:bg-slate-900">
+                    <div className="relative w-full h-[600px] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm bg-secondary text-secondary-foreground">
                       <iframe
                         src={pdfFile.url}
                         className="absolute inset-0 w-full h-full border-0"
@@ -602,7 +602,7 @@ export default function LmsTab({ user }: { user: any }) {
           {/* Column 3: Quiz/Evaluation Form or Results */}
           <div className="space-y-6">
             {isCompleted ? (
-              <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
+              <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
                 <div className="space-y-2">
                   <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
                     Resultado de Evaluación
@@ -614,7 +614,7 @@ export default function LmsTab({ user }: { user: any }) {
                           ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400"
                           : isReproved
                             ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400"
-                            : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                            : "bg-muted text-muted-foreground text-slate-500 dark:text-slate-400"
                       }`}
                     >
                       {isApproved ? (
@@ -634,7 +634,7 @@ export default function LmsTab({ user }: { user: any }) {
                 </div>
 
                 {typeof activeCourse.puntaje === "number" && (
-                  <div className="flex flex-col items-center justify-center p-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800 text-center">
+                  <div className="flex flex-col items-center justify-center p-6 bg-background text-foreground/50 rounded-2xl border border-slate-100 dark:border-slate-800 text-center">
                     <div className="relative flex items-center justify-center">
                       <svg className="w-24 h-24 transform -rotate-90">
                         <circle
@@ -746,7 +746,7 @@ export default function LmsTab({ user }: { user: any }) {
                     ) : (
                       <button
                         disabled
-                        className="w-full flex items-center justify-center gap-2 py-3 bg-slate-50 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 text-xs font-black rounded-xl cursor-not-allowed border border-slate-100 dark:border-slate-700/50"
+                        className="w-full flex items-center justify-center gap-2 py-3 bg-muted/50 text-muted-foreground text-slate-400 dark:text-slate-500 text-xs font-black rounded-xl cursor-not-allowed border border-slate-100 dark:border-slate-700/50"
                       >
                         <FileText className="w-4 h-4" />
                         Sin Documento Adjunto
@@ -789,7 +789,7 @@ export default function LmsTab({ user }: { user: any }) {
                         return (
                           <div
                             key={qIndex}
-                            className="p-3 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-2.5"
+                            className="p-3 bg-background text-foreground/40 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-2.5"
                           >
                             <p className="text-xs font-bold text-slate-700 dark:text-slate-200">
                               {qIndex + 1}. {q.question}
@@ -838,7 +838,7 @@ export default function LmsTab({ user }: { user: any }) {
                 )}
               </div>
             ) : (
-              <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
+              <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
                 <div className="space-y-1">
                   <span
                     className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full ${
@@ -923,7 +923,7 @@ export default function LmsTab({ user }: { user: any }) {
                   </div>
                 ) : quiz.length > 0 ? (
                   !quizStarted ? (
-                    <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 text-center space-y-6">
+                    <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 text-center space-y-6">
                       <div className="mx-auto w-16 h-16 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center">
                         <Award className="w-8 h-8" />
                       </div>
@@ -1026,7 +1026,7 @@ export default function LmsTab({ user }: { user: any }) {
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Header Box */}
-      <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-primary/10 text-primary dark:text-primary-light rounded-2xl">
             <GraduationCap className="w-6 h-6" />
@@ -1096,7 +1096,7 @@ export default function LmsTab({ user }: { user: any }) {
             return (
               <div
                 key={t.id}
-                className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between space-y-6 hover:shadow-md transition-shadow"
+                className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between space-y-6 hover:shadow-md transition-shadow"
               >
                 <div className="space-y-3">
                   <div className="flex justify-between items-start">
@@ -1108,7 +1108,7 @@ export default function LmsTab({ user }: { user: any }) {
                             : isReproved
                               ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400"
                               : t.estado === "obsoleto"
-                                ? "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                                ? "bg-muted text-muted-foreground text-slate-500 dark:text-slate-400"
                                 : "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400"
                         }`}
                       >
@@ -1202,7 +1202,7 @@ export default function LmsTab({ user }: { user: any }) {
           })}
 
           {trainings.length === 0 && (
-            <div className="col-span-full bg-slate-50 dark:bg-slate-900 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center text-slate-500">
+            <div className="col-span-full bg-background text-foreground border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center text-slate-500">
               <GraduationCap className="w-12 h-12 mx-auto text-slate-400 mb-3 animate-bounce" />
               <h4 className="text-sm font-black text-slate-700 dark:text-slate-300">
                 Sin Capacitaciones
@@ -1228,7 +1228,7 @@ export default function LmsTab({ user }: { user: any }) {
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
                   certFilter === filterVal
                     ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 border-transparent"
-                    : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-50"
+                    : "bg-card text-card-foreground text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-50"
                 }`}
               >
                 {filterVal === "all" && "Todos"}
@@ -1245,7 +1245,7 @@ export default function LmsTab({ user }: { user: any }) {
               <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
             </div>
           ) : filteredCerts.length === 0 ? (
-            <div className="bg-slate-50 dark:bg-slate-900 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center text-slate-500">
+            <div className="bg-background text-foreground border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center text-slate-500">
               <Award className="w-12 h-12 mx-auto text-slate-400 mb-3" />
               <h4 className="text-sm font-black text-slate-700 dark:text-slate-300">
                 Sin Certificados
@@ -1259,7 +1259,7 @@ export default function LmsTab({ user }: { user: any }) {
               {filteredCerts.map((cert) => (
                 <div
                   key={cert.id}
-                  className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between space-y-6 hover:shadow-md transition-shadow"
+                  className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between space-y-6 hover:shadow-md transition-shadow"
                 >
                   <div className="space-y-3">
                     <div className="flex justify-between items-start">
@@ -1332,9 +1332,9 @@ export default function LmsTab({ user }: { user: any }) {
       {/* SUPERVISOR VALIDATION DETAIL MODAL */}
       {selectedCert && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] border border-slate-100 dark:border-slate-700">
+          <div className="bg-card text-card-foreground rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] border border-slate-100 dark:border-slate-700">
             {/* Header */}
-            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-background text-foreground/50">
               <div>
                 <h3 className="font-black text-slate-800 dark:text-slate-100 text-base">
                   Examinar y Validar Certificado
@@ -1372,7 +1372,7 @@ export default function LmsTab({ user }: { user: any }) {
                     className="w-full h-[50vh] rounded-xl border border-slate-200 dark:border-slate-700"
                   />
                 ) : (
-                  <div className="p-8 text-center bg-slate-100 dark:bg-slate-900 rounded-2xl text-slate-400 text-xs">
+                  <div className="p-8 text-center bg-secondary text-secondary-foreground rounded-2xl text-slate-400 text-xs">
                     No hay vista previa disponible o el formato no es
                     compatible.
                   </div>
@@ -1404,7 +1404,7 @@ export default function LmsTab({ user }: { user: any }) {
                       type="text"
                       value={certNombreCurso}
                       onChange={(e) => setCertNombreCurso(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                      className="w-full px-4 py-2.5 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
                       disabled={validatingCert}
                     />
                   </div>
@@ -1417,7 +1417,7 @@ export default function LmsTab({ user }: { user: any }) {
                       type="text"
                       value={certInstitucion}
                       onChange={(e) => setCertInstitucion(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                      className="w-full px-4 py-2.5 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
                       disabled={validatingCert}
                     />
                   </div>
@@ -1431,7 +1431,7 @@ export default function LmsTab({ user }: { user: any }) {
                         type="number"
                         value={certHoras}
                         onChange={(e) => setCertHoras(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                        className="w-full px-4 py-2.5 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
                         disabled={validatingCert}
                       />
                     </div>
@@ -1443,7 +1443,7 @@ export default function LmsTab({ user }: { user: any }) {
                         type="date"
                         value={certFechaEmision}
                         onChange={(e) => setCertFechaEmision(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                        className="w-full px-4 py-2.5 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
                         disabled={validatingCert}
                       />
                     </div>
@@ -1453,7 +1453,7 @@ export default function LmsTab({ user }: { user: any }) {
                     <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                       Descripción Original:
                     </span>
-                    <p className="text-xs text-slate-600 dark:text-slate-300 max-h-24 overflow-y-auto leading-relaxed bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <p className="text-xs text-slate-600 dark:text-slate-300 max-h-24 overflow-y-auto leading-relaxed bg-background text-foreground p-3 rounded-xl border border-slate-100 dark:border-slate-800">
                       {selectedCert.descripcion ||
                         "Sin descripción provista por el operador."}
                     </p>
@@ -1498,9 +1498,9 @@ export default function LmsTab({ user }: { user: any }) {
       {/* AI Training Quiz Builder Modal */}
       {isAiModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-xl flex flex-col my-8 animate-in zoom-in-95 duration-200">
+          <div className="bg-card text-card-foreground rounded-3xl shadow-2xl w-full max-w-xl flex flex-col my-8 animate-in zoom-in-95 duration-200">
             {/* Header */}
-            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50 rounded-t-3xl">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-background text-foreground/50 rounded-t-3xl">
               <div className="flex items-center gap-3">
                 <Sparkles className="w-6 h-6 text-indigo-500" />
                 <h3 className="font-black text-slate-800 dark:text-slate-100 text-lg">
@@ -1526,7 +1526,7 @@ export default function LmsTab({ user }: { user: any }) {
                   onChange={(e) =>
                     setAiData({ ...aiData, documentId: e.target.value })
                   }
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[44px] text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[44px] text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
                 >
                   <option value="">Seleccione un documento...</option>
                   {docs.map((doc) => (
@@ -1546,7 +1546,7 @@ export default function LmsTab({ user }: { user: any }) {
                   onChange={(e) =>
                     setAiData({ ...aiData, operatorId: e.target.value })
                   }
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[44px] text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[44px] text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
                 >
                   <option value="">Seleccione un técnico...</option>
                   {operators.map((op) => (
@@ -1570,7 +1570,7 @@ export default function LmsTab({ user }: { user: any }) {
                         cantidadPreguntas: Number(e.target.value),
                       })
                     }
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[44px] text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                    className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[44px] text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
                   >
                     <option value="3">3 Preguntas</option>
                     <option value="5">5 Preguntas</option>
@@ -1587,7 +1587,7 @@ export default function LmsTab({ user }: { user: any }) {
                     onChange={(e) =>
                       setAiData({ ...aiData, nivelDificultad: e.target.value })
                     }
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[44px] text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                    className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[44px] text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
                   >
                     <option value="facil">Fácil</option>
                     <option value="intermedio">Intermedio</option>
@@ -1598,7 +1598,7 @@ export default function LmsTab({ user }: { user: any }) {
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3 rounded-b-3xl">
+            <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-background text-foreground/50 flex justify-end gap-3 rounded-b-3xl">
               <button
                 type="button"
                 onClick={() => setIsAiModalOpen(false)}

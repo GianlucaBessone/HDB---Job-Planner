@@ -302,7 +302,7 @@ export default function PlanningPage() {
     };
 
     // Safety check for display date during hydration
-    if (!isHydrated || !fecha) return <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900/50">
+    if (!isHydrated || !fecha) return <div className="min-h-screen flex items-center justify-center bg-background text-foreground/50">
         <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
     </div>;
 
@@ -323,7 +323,7 @@ export default function PlanningPage() {
             </div>
 
             {/* Header / Date Selector — compact on mobile */}
-            <div className="bg-white dark:bg-slate-800 p-4 md:p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm shadow-slate-200/50 dark:shadow-none">
+            <div className="bg-card text-card-foreground p-4 md:p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm shadow-slate-200/50 dark:shadow-none">
                 <div className="mb-4">
                     <h2 className="text-lg md:text-2xl font-bold text-slate-900 dark:text-slate-50 capitalize italic">{displayDate}</h2>
                 </div>
@@ -333,13 +333,13 @@ export default function PlanningPage() {
                         <CalendarIcon className="hidden md:block absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500 group-focus-within:text-primary transition-colors" />
                         <input
                             type="date"
-                            className="h-[50px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl px-3 md:pl-10 md:pr-2 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all w-full appearance-none"
+                            className="h-[50px] bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl px-3 md:pl-10 md:pr-2 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all w-full appearance-none"
                             value={fecha}
                             onChange={e => setStoreFecha(e.target.value)}
                         />
                     </div>
                     <div className="h-8 w-[1px] bg-slate-200 dark:bg-slate-700 hidden md:block"></div>
-                    <input type="date" className="h-[50px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl px-3 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none flex-1 md:flex-none md:w-44 appearance-none" value={duplicateDate} onChange={e => setDuplicateDate(e.target.value)} />
+                    <input type="date" className="h-[50px] bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl px-3 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none flex-1 md:flex-none md:w-44 appearance-none" value={duplicateDate} onChange={e => setDuplicateDate(e.target.value)} />
                     <button onClick={handleDuplicate} className="btn-icon-inline p-2 text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/5 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors shrink-0 active:scale-90" title="Copiar de otra fecha">
                         <Files className="w-4 h-4" />
                     </button>
@@ -365,7 +365,7 @@ export default function PlanningPage() {
                             </h3>
                         </div>
                         <div className="flex gap-1.5 md:gap-2">
-                            <button onClick={() => addBlock('note')} className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 px-3 py-2 rounded-xl text-xs font-semibold hover:bg-slate-200 transition-all active:scale-95">
+                            <button onClick={() => addBlock('note')} className="flex items-center gap-1.5 bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 px-3 py-2 rounded-xl text-xs font-semibold hover:bg-slate-200 transition-all active:scale-95">
                                 <StickyNote className="w-3.5 h-3.5" /> Nota
                             </button>
                             <button onClick={() => addBlock('work')} className="flex items-center gap-1.5 bg-primary text-white px-3 py-2 rounded-xl text-xs font-semibold hover:bg-primary/90 shadow-lg shadow-primary/20 active:scale-95 transition-all">
@@ -387,7 +387,7 @@ export default function PlanningPage() {
                                 };
 
                                 return (
-                                    <div key={`block-${index}`} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm relative group hover:border-primary/30 transition-all duration-300 overflow-hidden">
+                                    <div key={`block-${index}`} className="bg-card text-card-foreground rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm relative group hover:border-primary/30 transition-all duration-300 overflow-hidden">
                                         {/* Top Controls & Collapse Trigger */}
                                         <div className="flex items-center px-4 md:px-6 py-3 border-b border-transparent group-hover:bg-slate-50/50 transition-colors">
                                             <div className="flex items-center gap-0.5 shrink-0">
@@ -414,13 +414,13 @@ export default function PlanningPage() {
                                             >
                                                 {isCollapsed ? (
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-tight truncate max-w-[150px] md:max-w-xs px-2 py-1 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
+                                                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-tight truncate max-w-[150px] md:max-w-xs px-2 py-1 bg-muted text-muted-foreground/50 rounded-lg">
                                                             {block.projectName || 'Sin Proyecto'}
                                                         </span>
                                                         <ChevronDown className="w-4 h-4 text-slate-400 dark:text-slate-500 animate-bounce-slow" />
                                                     </div>
                                                 ) : (
-                                                    <div className="w-12 h-1.5 bg-slate-100 dark:bg-slate-800/50 rounded-full group-hover:bg-slate-200 transition-colors"></div>
+                                                    <div className="w-12 h-1.5 bg-muted text-muted-foreground/50 rounded-full group-hover:bg-slate-200 transition-colors"></div>
                                                 )}
                                             </div>
 
@@ -447,7 +447,7 @@ export default function PlanningPage() {
                                                         <div className="space-y-1.5">
                                                             <label className="text-[10px] md:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-1">Tipo / Proyecto</label>
                                                             {block.isNoteOnly ? (
-                                                                <div className="w-full bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-3 text-sm text-slate-500 dark:text-slate-400 font-bold italic flex items-center gap-2">
+                                                                <div className="w-full bg-muted text-muted-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-3 text-sm text-slate-500 dark:text-slate-400 font-bold italic flex items-center gap-2">
                                                                     <StickyNote className="w-4 h-4" /> NOTA LIBRE
                                                                 </div>
                                                             ) : (
@@ -464,11 +464,11 @@ export default function PlanningPage() {
                                                             <div className="grid grid-cols-2 gap-3">
                                                                 <div className="space-y-1.5">
                                                                     <label className="text-[10px] md:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-1">Inicio</label>
-                                                                    <input type="time" className="w-full h-[50px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none" value={block.startTime || ''} onChange={e => updateBlock(index, 'startTime', e.target.value)} />
+                                                                    <input type="time" className="w-full h-[50px] bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none" value={block.startTime || ''} onChange={e => updateBlock(index, 'startTime', e.target.value)} />
                                                                 </div>
                                                                 <div className="space-y-1.5">
                                                                     <label className="text-[10px] md:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-1">Fin</label>
-                                                                    <input type="time" className="w-full h-[50px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none" value={block.endTime || ''} onChange={e => updateBlock(index, 'endTime', e.target.value)} />
+                                                                    <input type="time" className="w-full h-[50px] bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none" value={block.endTime || ''} onChange={e => updateBlock(index, 'endTime', e.target.value)} />
                                                                 </div>
                                                             </div>
                                                         )}
@@ -477,7 +477,7 @@ export default function PlanningPage() {
                                                             <label className="text-[10px] md:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-1">{block.isNoteOnly ? 'Contenido de la Nota' : 'Nota / Detalles'}</label>
                                                             <textarea
                                                                 placeholder={block.isNoteOnly ? "Escribe tu mensaje aquí..." : "Añade detalles relevantes..."}
-                                                                className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-3 text-sm text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-primary/20 resize-none h-16 md:h-24"
+                                                                className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-3 text-sm text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-primary/20 resize-none h-16 md:h-24"
                                                                 value={block.note || ''} onChange={e => updateBlock(index, 'note', e.target.value)}
                                                             />
                                                         </div>
@@ -487,7 +487,7 @@ export default function PlanningPage() {
                                                         <div className="space-y-2">
                                                             <div className="flex justify-between items-center px-1">
                                                                 <label className="text-[10px] md:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Operadores</label>
-                                                                <span className="text-[10px] bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full">{block.operatorIds.length} sel.</span>
+                                                                <span className="text-[10px] bg-muted text-muted-foreground/50 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full">{block.operatorIds.length} sel.</span>
                                                             </div>
                                                             <div className="bg-slate-50/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-2 md:p-4 max-h-[160px] md:max-h-[250px] overflow-y-auto space-y-0.5 custom-scrollbar overscroll-contain">
                                                                 {operators.map(op => {
@@ -505,7 +505,7 @@ export default function PlanningPage() {
                                                                     });
                                                                     const isDisabled = !isFirstBlock && isUsedElsewhere && !isSelected && (!block.startTime || hasConflict);
                                                                     return (
-                                                                        <label key={op.id} className={`flex items-center gap-2 p-2 md:p-3 rounded-xl transition-all text-sm ${isSelected ? 'bg-primary/20 text-primary-dark font-medium border border-primary/20' : isDisabled ? 'opacity-40 cursor-not-allowed bg-slate-50 dark:bg-slate-900/50 text-slate-400 dark:text-slate-500' : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-transparent cursor-pointer'}`}>
+                                                                        <label key={op.id} className={`flex items-center gap-2 p-2 md:p-3 rounded-xl transition-all text-sm ${isSelected ? 'bg-primary/20 text-primary-dark font-medium border border-primary/20' : isDisabled ? 'opacity-40 cursor-not-allowed bg-background text-foreground/50 text-slate-400 dark:text-slate-500' : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-transparent cursor-pointer'}`}>
                                                                             <input type="checkbox" className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-primary disabled:cursor-not-allowed shrink-0" checked={isSelected} disabled={isDisabled} onChange={e => {
                                                                                 const next = e.target.checked ? [...block.operatorIds, op.id] : block.operatorIds.filter((id: string) => id !== op.id);
                                                                                 updateBlock(index, 'operatorIds', next);
@@ -533,7 +533,7 @@ export default function PlanningPage() {
                 {/* Desktop Sidebar — hidden on mobile */}
                 <div className="hidden lg:block lg:col-span-4 sticky top-24 space-y-6">
                     {/* WhatsApp Preview */}
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xl space-y-4">
+                    <div className="bg-card text-card-foreground p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xl space-y-4">
                         <div className="flex items-center justify-between">
                             <h3 className="text-sm font-extrabold text-slate-800 dark:text-slate-100 italic flex items-center gap-2">PREVIEW <span className="text-primary not-italic bg-primary/10 px-2 py-0.5 rounded text-[10px] tracking-widest uppercase">WhatsApp</span></h3>
                         </div>
@@ -552,13 +552,13 @@ export default function PlanningPage() {
                     </div>
 
                     {/* Favorite Blocks */}
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+                    <div className="bg-card text-card-foreground p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
                         <h3 className="text-sm font-extrabold text-slate-800 dark:text-slate-100 flex items-center gap-2 uppercase tracking-tight">
                             <Star className="w-4 h-4 text-amber-500 fill-amber-500" /> Plantillas Favoritas
                         </h3>
                         <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
                             {favorites.map(fav => (
-                                <div key={fav.id} onClick={() => addFromFavorite(fav)} className="p-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl hover:border-primary/40 hover:bg-primary/5 cursor-pointer transition-all group flex justify-between items-center">
+                                <div key={fav.id} onClick={() => addFromFavorite(fav)} className="p-3 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl hover:border-primary/40 hover:bg-primary/5 cursor-pointer transition-all group flex justify-between items-center">
                                     <div className="flex items-center gap-3 overflow-hidden">
                                         <div className={`p-2 rounded-lg ${fav.isNoteOnly ? 'bg-amber-100 text-amber-600' : 'bg-primary/10 text-primary'}`}>
                                             {fav.isNoteOnly ? <StickyNote className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
@@ -605,7 +605,7 @@ export default function PlanningPage() {
             {/* ============================================ */}
             {showWhatsApp && (
                 <div className="lg:hidden fixed inset-0 z-[100] flex items-end justify-center bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setShowWhatsApp(false)}>
-                    <div className="bg-white dark:bg-slate-800 w-full max-h-[85vh] rounded-t-3xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-300" onClick={e => e.stopPropagation()}>
+                    <div className="bg-card text-card-foreground w-full max-h-[85vh] rounded-t-3xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-300" onClick={e => e.stopPropagation()}>
                         {/* Handle bar */}
                         <div className="flex justify-center pt-3 pb-1">
                             <div className="w-10 h-1 bg-slate-300 rounded-full"></div>
@@ -633,7 +633,7 @@ export default function PlanningPage() {
             {/* ============================================ */}
             {showFavorites && (
                 <div className="lg:hidden fixed inset-0 z-[100] flex bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setShowFavorites(false)}>
-                    <div className="bg-white dark:bg-slate-800 w-[85%] max-w-sm h-full shadow-2xl overflow-hidden animate-in slide-in-from-left duration-300" onClick={e => e.stopPropagation()}>
+                    <div className="bg-card text-card-foreground w-[85%] max-w-sm h-full shadow-2xl overflow-hidden animate-in slide-in-from-left duration-300" onClick={e => e.stopPropagation()}>
                         <div className="p-5 h-full flex flex-col">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-sm font-extrabold text-slate-800 dark:text-slate-100 flex items-center gap-2 uppercase tracking-tight">
@@ -643,7 +643,7 @@ export default function PlanningPage() {
                             </div>
                             <div className="flex-1 overflow-y-auto space-y-2 overscroll-contain">
                                 {favorites.map(fav => (
-                                    <div key={fav.id} onClick={() => addFromFavorite(fav)} className="p-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl hover:border-primary/40 hover:bg-primary/5 cursor-pointer transition-all group flex justify-between items-center active:scale-[0.98]">
+                                    <div key={fav.id} onClick={() => addFromFavorite(fav)} className="p-3 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl hover:border-primary/40 hover:bg-primary/5 cursor-pointer transition-all group flex justify-between items-center active:scale-[0.98]">
                                         <div className="flex items-center gap-3 overflow-hidden">
                                             <div className={`p-2 rounded-lg shrink-0 ${fav.isNoteOnly ? 'bg-amber-100 text-amber-600' : 'bg-primary/10 text-primary'}`}>
                                                 {fav.isNoteOnly ? <StickyNote className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
@@ -679,19 +679,19 @@ export default function PlanningPage() {
 
             {isPromptOpen && (
                 <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl w-[90%] max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+                    <div className="bg-card text-card-foreground rounded-3xl shadow-xl w-[90%] max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
                         <div className="p-5">
                             <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-3">Nombre del favorito:</h3>
                             <input 
                                 autoFocus
                                 type="text" 
-                                className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-primary/10 transition-all"
+                                className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-primary/10 transition-all"
                                 value={promptValue}
                                 onChange={e => setPromptValue(e.target.value)}
                                 onKeyDown={e => e.key === 'Enter' && confirmSaveFavorite()}
                             />
                         </div>
-                        <div className="flex bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 p-2 gap-2">
+                        <div className="flex bg-background text-foreground/50 border-t border-slate-100 dark:border-slate-800 p-2 gap-2">
                             <button onClick={() => setIsPromptOpen(false)} className="flex-1 px-4 py-2.5 rounded-xl font-bold text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition-colors">Cancelar</button>
                             <button onClick={confirmSaveFavorite} disabled={!promptValue.trim()} className="flex-1 px-4 py-2.5 rounded-xl font-bold text-sm bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-50">Aceptar</button>
                         </div>

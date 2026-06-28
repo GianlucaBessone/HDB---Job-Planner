@@ -165,7 +165,7 @@ const SignatureCanvas = forwardRef<SignatureRef, { fullscreen?: boolean }>((prop
         <div className="relative group flex-1 flex flex-col">
             <div
                 ref={containerRef}
-                className={`relative border-2 border-slate-200 dark:border-slate-600 overflow-hidden bg-white dark:bg-slate-800 transition-all focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/20 ${
+                className={`relative border-2 border-slate-200 dark:border-slate-600 overflow-hidden bg-card text-card-foreground transition-all focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/20 ${
                     fullscreen ? 'rounded-2xl flex-1' : 'rounded-2xl aspect-[3/2]'
                 }`}
             >
@@ -222,7 +222,7 @@ function RatingButton({ value, selected, onClick, min, max }: { value: number; s
                 w-full h-11 rounded-xl text-sm font-black transition-all duration-150 active:scale-90 border
                 ${selected
                     ? `${bg} ${textColor} border-transparent shadow-md scale-105`
-                    : 'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                    : 'bg-background text-foreground/50 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                 }
             `}
         >
@@ -366,7 +366,7 @@ function SurveyView({
             </div>
 
             {/* Q1 — Atención */}
-            <div className="space-y-3 bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
+            <div className="space-y-3 bg-background text-foreground/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
                 <div className="flex items-start gap-2">
                     <span className="bg-blue-100 text-blue-600 text-[10px] font-black rounded-lg px-2 py-1 uppercase tracking-widest shrink-0">1 de 4</span>
                     <p className="text-sm font-bold text-slate-700 dark:text-slate-200">¿Cómo calificás la atención recibida por el técnico?</p>
@@ -381,7 +381,7 @@ function SurveyView({
             </div>
 
             {/* Q2 — Calidad */}
-            <div className="space-y-3 bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
+            <div className="space-y-3 bg-background text-foreground/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
                 <div className="flex items-start gap-2">
                     <span className="bg-indigo-100 text-indigo-600 text-[10px] font-black rounded-lg px-2 py-1 uppercase tracking-widest shrink-0">2 de 4</span>
                     <p className="text-sm font-bold text-slate-700 dark:text-slate-200">¿Cómo calificás el resultado final del trabajo?</p>
@@ -396,7 +396,7 @@ function SurveyView({
             </div>
 
             {/* Q3 — Tiempo */}
-            <div className="space-y-3 bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
+            <div className="space-y-3 bg-background text-foreground/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
                 <div className="flex items-start gap-2">
                     <span className="bg-amber-100 text-amber-600 text-[10px] font-black rounded-lg px-2 py-1 uppercase tracking-widest shrink-0">3 de 4</span>
                     <p className="text-sm font-bold text-slate-700 dark:text-slate-200">¿Cómo evaluás el tiempo en que se realizó el servicio?</p>
@@ -411,7 +411,7 @@ function SurveyView({
             </div>
 
             {/* Q4 — NPS */}
-            <div className="space-y-3 bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
+            <div className="space-y-3 bg-background text-foreground/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
                 <div className="flex items-start gap-2">
                     <span className="bg-emerald-100 text-emerald-600 text-[10px] font-black rounded-lg px-2 py-1 uppercase tracking-widest shrink-0">4 de 4</span>
                     <p className="text-sm font-bold text-slate-700 dark:text-slate-200">¿Qué tan probable es que recomiendes nuestra empresa?</p>
@@ -436,7 +436,7 @@ function SurveyView({
                     onChange={e => setData(d => ({ ...d, comentario: e.target.value }))}
                     placeholder="Contanos tu experiencia..."
                     rows={3}
-                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all resize-none"
+                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all resize-none"
                 />
             </div>
 
@@ -451,7 +451,7 @@ function SurveyView({
                 <button
                     onClick={onSkip}
                     type="button"
-                    className="flex-1 py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 active:scale-95 transition-all"
+                    className="flex-1 py-4 bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 active:scale-95 transition-all"
                 >
                     Cancelar
                 </button>
@@ -491,7 +491,7 @@ function PostFirmaModal({
     if (showSurvey) {
         return (
             <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/60 backdrop-blur-sm">
-                <div className="bg-white dark:bg-slate-800 w-full max-w-lg rounded-t-3xl shadow-2xl p-6 sm:p-8 space-y-0 animate-in slide-in-from-bottom-4 duration-300 max-h-[95dvh] overflow-y-auto overscroll-contain">
+                <div className="bg-card text-card-foreground w-full max-w-lg rounded-t-3xl shadow-2xl p-6 sm:p-8 space-y-0 animate-in slide-in-from-bottom-4 duration-300 max-h-[95dvh] overflow-y-auto overscroll-contain">
                     <SurveyView
                         osId={osId}
                         onDone={onClose}
@@ -504,7 +504,7 @@ function PostFirmaModal({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-            <div className="bg-white dark:bg-slate-800 w-full max-w-sm rounded-3xl shadow-2xl p-7 animate-in zoom-in-95 duration-300 space-y-5">
+            <div className="bg-card text-card-foreground w-full max-w-sm rounded-3xl shadow-2xl p-7 animate-in zoom-in-95 duration-300 space-y-5">
                 {/* Icon */}
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-primary/20">
                     <Smile className="w-9 h-9 text-white" />
@@ -532,7 +532,7 @@ function PostFirmaModal({
                     </button>
                     <button
                         onClick={onClose}
-                        className="w-full py-3.5 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 active:scale-95 transition-all"
+                        className="w-full py-3.5 bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 active:scale-95 transition-all"
                     >
                         Ahora no
                     </button>
@@ -834,7 +834,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center">
+            <div className="min-h-screen bg-background text-foreground/50 flex items-center justify-center">
                 <div className="text-center space-y-4">
                     <Loader2 className="w-10 h-10 text-blue-600 animate-spin mx-auto" />
                     <p className="text-slate-500 dark:text-slate-400 font-medium">Cargando orden de servicio...</p>
@@ -845,8 +845,8 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
 
     if (error || !os) {
         return (
-            <div className="min-h-screen bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center p-4">
-                <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-lg border border-red-100 text-center space-y-4 max-w-sm w-full">
+            <div className="min-h-screen bg-background text-foreground/50 flex items-center justify-center p-4">
+                <div className="bg-card text-card-foreground rounded-3xl p-8 shadow-lg border border-red-100 text-center space-y-4 max-w-sm w-full">
                     <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto">
                         <AlertCircle className="w-8 h-8 text-red-500" />
                     </div>
@@ -863,7 +863,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 dark:from-slate-900 dark:to-slate-800/50">
             {/* Header */}
-            <div className="bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-800 shadow-sm">
+            <div className="bg-card text-card-foreground border-b border-slate-100 dark:border-slate-800 shadow-sm">
                 <div className="max-w-2xl mx-auto px-4 py-5 flex items-center gap-3">
                     <div className="bg-primary p-2 rounded-xl shadow-lg shadow-primary/20">
                         <FileText className="w-5 h-5 text-white" />
@@ -911,7 +911,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
             <div className="max-w-2xl mx-auto px-4 py-6 space-y-5 pb-24">
 
                 {/* Project Info */}
-                <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-50">
                         <h2 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Proyecto</h2>
                     </div>
@@ -941,7 +941,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                 </div>
 
                 {/* Reporte */}
-                <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-50 flex items-center gap-2">
                         <FileText className="w-4 h-4 text-blue-500" />
                         <h2 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Reporte del Trabajo</h2>
@@ -952,7 +952,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                 </div>
 
                 {/* Operadores */}
-                <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-50 flex items-center gap-2">
                         <User className="w-4 h-4 text-indigo-500" />
                         <h2 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Operadores</h2>
@@ -982,7 +982,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
 
                 {/* Materiales */}
                 {os.materiales.length > 0 && (
-                    <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                    <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                         <div className="px-6 py-4 border-b border-slate-50 flex items-center gap-2">
                             <Package className="w-4 h-4 text-amber-500" />
                             <h2 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Materiales Utilizados</h2>
@@ -1015,7 +1015,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                 {/* Comentario Adicional / Observaciones */}
                 {isFirmada ? (
                     os.comentario && (
-                        <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                        <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                             <div className="px-6 py-4 border-b border-slate-50 flex items-center gap-2">
                                 <MessageSquare className="w-4 h-4 text-slate-400 dark:text-slate-500" />
                                 <h2 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Comentario Adicional</h2>
@@ -1026,7 +1026,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                         </div>
                     )
                 ) : (
-                    <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                    <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                         <div className="px-6 py-4 border-b border-slate-50 flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2">
                                 <MessageSquare className="w-4 h-4 text-slate-400 dark:text-slate-500" />
@@ -1074,7 +1074,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                             </div>
                             <div>
                                 <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-2">Firma</p>
-                                <div className="bg-white dark:bg-slate-800 rounded-2xl border border-emerald-100 p-3">
+                                <div className="bg-card text-card-foreground rounded-2xl border border-emerald-100 p-3">
                                     <img src={os.firma.firmaImagen} alt="Firma del cliente" className="max-h-32 mx-auto" />
                                 </div>
                             </div>
@@ -1089,7 +1089,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                                 <div className={`rounded-3xl border shadow-sm p-6 text-center space-y-4 ${
                                     hasBlocks 
                                         ? 'bg-slate-50 dark:bg-slate-850 border-slate-200 dark:border-slate-700' 
-                                        : 'bg-white dark:bg-slate-800 border-amber-200'
+                                        : 'bg-card text-card-foreground border-amber-200'
                                 }`}>
                                     <div className="w-14 h-14 bg-amber-50 dark:bg-amber-950/20 rounded-full flex items-center justify-center mx-auto">
                                         <PenLine className="w-7 h-7 text-amber-500" />
@@ -1138,7 +1138,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
             {/* Firma Modal (2-Step) */}
             {showFirmaModal && (
                 <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-sm transition-all focus:outline-none">
-                    <div className={`bg-white dark:bg-slate-800 shadow-2xl space-y-6 animate-in slide-in-from-bottom-4 duration-300 flex flex-col w-full overscroll-contain
+                    <div className={`bg-card text-card-foreground shadow-2xl space-y-6 animate-in slide-in-from-bottom-4 duration-300 flex flex-col w-full overscroll-contain
                         ${firmaStep === 2 
                             ? 'h-[90dvh] sm:h-[85vh] sm:max-w-2xl sm:rounded-3xl rounded-t-3xl p-4 sm:p-6' 
                             : 'max-h-[85dvh] max-w-lg sm:rounded-3xl rounded-t-3xl p-6 sm:p-8 overflow-y-auto'
@@ -1178,7 +1178,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                                                 setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
                                             }}
                                             placeholder="Ingresá tu nombre completo"
-                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3.5 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all dark:focus:bg-slate-800"
+                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3.5 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all dark:focus:bg-slate-800"
                                         />
                                     </div>
                                     <div className="space-y-1.5 focus-within:z-10 relative">
@@ -1195,7 +1195,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                                                 setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
                                             }}
                                             placeholder="Ej: 12345678"
-                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3.5 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all dark:focus:bg-slate-800"
+                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3.5 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all dark:focus:bg-slate-800"
                                         />
                                     </div>
                                 </div>
@@ -1211,7 +1211,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                                     <button
                                         onClick={() => setShowFirmaModal(false)}
                                         type="button"
-                                        className="flex-1 py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 active:scale-95 transition-all"
+                                        className="flex-1 py-4 bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 active:scale-95 transition-all"
                                     >
                                         Cancelar
                                     </button>
@@ -1244,7 +1244,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                                     <button
                                         onClick={() => { setFirmaError(''); setFirmaStep(1); }}
                                         type="button"
-                                        className="flex-1 py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 active:scale-95 transition-all"
+                                        className="flex-1 py-4 bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 active:scale-95 transition-all"
                                     >
                                         Volver Atrás
                                     </button>

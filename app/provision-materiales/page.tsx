@@ -84,7 +84,7 @@ const ESTADO_CONFIG: Record<
   material_cargado: {
     label: "Disponible",
     color:
-      "bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700",
+      "bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700",
     icon: Package,
   },
   material_entregado: {
@@ -124,7 +124,7 @@ function EstadoBadge({
   const cfg = ESTADO_CONFIG[hasPending ? "pendiente_devolucion" : estado] || {
     label: estado,
     color:
-      "bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700",
+      "bg-muted text-muted-foreground/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700",
     icon: Package,
   };
   const Icon = cfg.icon;
@@ -190,7 +190,7 @@ function QtyCell({
         </button>
         <button
           onClick={() => setEditing(false)}
-          className="p-1 bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 rounded-md"
+          className="p-1 bg-muted text-muted-foreground/50 text-slate-500 dark:text-slate-400 rounded-md"
         >
           <X className="w-3 h-3" />
         </button>
@@ -304,7 +304,7 @@ function AddMaterialForm({
     "border border-slate-200 dark:border-slate-700 rounded-xl px-1.5 py-2 text-sm font-bold outline-none focus:border-primary text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 flex flex-wrap md:flex-nowrap items-center gap-2 relative">
+    <div className="bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 flex flex-wrap md:flex-nowrap items-center gap-2 relative">
       {!manualPrice && (
         <input
           ref={codeInputRef}
@@ -327,7 +327,7 @@ function AddMaterialForm({
       <select
         value={form.unidad}
         onChange={(e) => setForm((p) => ({ ...p, unidad: e.target.value }))}
-        className="w-24 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2 text-sm font-bold outline-none focus:border-primary bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 cursor-pointer"
+        className="w-24 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2 text-sm font-bold outline-none focus:border-primary bg-card text-card-foreground text-slate-700 dark:text-slate-200 cursor-pointer"
       >
         {UNIDADES.map((u) => (
           <option key={u} value={u}>
@@ -395,7 +395,7 @@ function AddMaterialForm({
             ? "Usar código de material"
             : "Cargar sin código / Precio manual"
         }
-        className={`p-2 rounded-xl transition-all border ${manualPrice ? "bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/20" : "bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700 hover:text-emerald-600"}`}
+        className={`p-2 rounded-xl transition-all border ${manualPrice ? "bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/20" : "bg-muted text-muted-foreground text-slate-400 border-slate-200 dark:border-slate-700 hover:text-emerald-600"}`}
       >
         <Calculator className="w-4 h-4" />
       </button>
@@ -403,7 +403,7 @@ function AddMaterialForm({
       <div className="flex gap-1 ml-auto shrink-0 border-l border-slate-200 dark:border-slate-700 pl-2">
         <button
           onClick={() => setOpen(false)}
-          className="p-2 bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded-xl hover:bg-slate-200 hover:text-slate-600 border border-slate-200 dark:border-slate-700 transition-colors shadow-sm"
+          className="p-2 bg-card text-card-foreground text-slate-400 dark:text-slate-500 rounded-xl hover:bg-slate-200 hover:text-slate-600 border border-slate-200 dark:border-slate-700 transition-colors shadow-sm"
         >
           <X className="w-4 h-4" />
         </button>
@@ -494,7 +494,7 @@ function DevolucionModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-lg w-full p-6 space-y-5 flex flex-col max-h-[90vh]">
+      <div className="bg-card text-card-foreground rounded-3xl shadow-2xl max-w-lg w-full p-6 space-y-5 flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between shrink-0">
           <div>
             <h2 className="text-lg font-black text-slate-800 dark:text-slate-100 leading-tight">
@@ -531,7 +531,7 @@ function DevolucionModal({
                     className={`w-full text-left p-3 rounded-2xl border transition-all ${
                       selectedId === d.id
                         ? "bg-amber-50 border-amber-200 ring-2 ring-amber-200/50"
-                        : "bg-slate-50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-800 hover:border-slate-200"
+                        : "bg-background text-foreground/50 border-slate-100 dark:border-slate-800 hover:border-slate-200"
                     }`}
                   >
                     <div className="flex justify-between items-center">
@@ -562,7 +562,7 @@ function DevolucionModal({
 
           {/* Confirmation Form */}
           {selectedReturn && (
-            <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-5 space-y-4 border border-slate-100 dark:border-slate-800 animate-in slide-in-from-top-2 duration-200">
+            <div className="bg-background text-foreground/50 rounded-2xl p-5 space-y-4 border border-slate-100 dark:border-slate-800 animate-in slide-in-from-top-2 duration-200">
               <p className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                 Confirmar {selectedReturn.cantidadADevolver} {material.unidad}
               </p>
@@ -577,7 +577,7 @@ function DevolucionModal({
                         ? opt === "cerrado_ok"
                           ? "bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/20"
                           : "bg-rose-500 text-white border-rose-500 shadow-lg shadow-rose-500/20"
-                        : "bg-white dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300"
+                        : "bg-card text-card-foreground text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300"
                     }`}
                   >
                     {opt === "cerrado_ok"
@@ -602,7 +602,7 @@ function DevolucionModal({
                       ? "Describir el motivo de la observación..."
                       : "Notas adicionales..."
                   }
-                  className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs outline-none focus:border-primary transition-all resize-none"
+                  className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs outline-none focus:border-primary transition-all resize-none"
                 />
               </div>
 
@@ -641,7 +641,7 @@ function DevolucionModal({
                 {confirmedReturns.map((d) => (
                   <div
                     key={d.id}
-                    className="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-800 flex justify-between items-center"
+                    className="p-3 rounded-2xl bg-card text-card-foreground border border-slate-100 dark:border-slate-800 flex justify-between items-center"
                   >
                     <div>
                       <div className="flex items-center gap-2">
@@ -704,7 +704,7 @@ function EditMaterialModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-sm w-full p-6 space-y-5">
+      <div className="bg-card text-card-foreground rounded-3xl shadow-2xl max-w-sm w-full p-6 space-y-5">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-black text-slate-800 dark:text-slate-100">
             Editar Material
@@ -751,7 +751,7 @@ function EditMaterialModal({
               onChange={(e) =>
                 setForm((p) => ({ ...p, unidad: e.target.value }))
               }
-              className="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold outline-none focus:border-primary mt-1 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200"
+              className="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold outline-none focus:border-primary mt-1 bg-card text-card-foreground text-slate-700 dark:text-slate-200"
             >
               {!UNIDADES.includes(form.unidad) && form.unidad && (
                 <option value={form.unidad}>{form.unidad}</option>
@@ -797,7 +797,7 @@ function DeleteMaterialModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-sm w-full p-6 space-y-5">
+      <div className="bg-card text-card-foreground rounded-3xl shadow-2xl max-w-sm w-full p-6 space-y-5">
         <div className="flex flex-col items-center text-center space-y-3">
           <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center mb-2">
             <AlertTriangle className="w-6 h-6 text-rose-500" />
@@ -817,7 +817,7 @@ function DeleteMaterialModal({
           <button
             onClick={onClose}
             disabled={deleting}
-            className="flex-1 py-3 bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 text-slate-600 dark:text-slate-300 rounded-2xl font-black text-sm transition-colors"
+            className="flex-1 py-3 bg-muted text-muted-foreground/50 hover:bg-slate-200 text-slate-600 dark:text-slate-300 rounded-2xl font-black text-sm transition-colors"
           >
             Cancelar
           </button>
@@ -837,7 +837,7 @@ function DeleteMaterialModal({
 function SuccessNotificationModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="bg-white dark:bg-slate-800 w-full max-w-sm rounded-[2.5rem] shadow-2xl overflow-hidden p-8 flex flex-col items-center text-center animate-in zoom-in-95 duration-300">
+      <div className="bg-card text-card-foreground w-full max-w-sm rounded-[2.5rem] shadow-2xl overflow-hidden p-8 flex flex-col items-center text-center animate-in zoom-in-95 duration-300">
         <div className="w-20 h-20 bg-emerald-100 rounded-3xl flex items-center justify-center mb-6 shadow-lg shadow-emerald-100/50">
           <ShieldCheck className="w-10 h-10 text-emerald-600" />
         </div>
@@ -925,7 +925,7 @@ function ImportModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
-      <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-2xl max-w-md w-full p-8 space-y-6 animate-in zoom-in-95 duration-300">
+      <div className="bg-card text-card-foreground rounded-[2.5rem] shadow-2xl max-w-md w-full p-8 space-y-6 animate-in zoom-in-95 duration-300">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-xl">
@@ -951,7 +951,7 @@ function ImportModal({
               onChange={handleFileChange}
               className="absolute inset-0 opacity-0 cursor-pointer"
             />
-            <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+            <div className="w-12 h-12 bg-card text-card-foreground rounded-2xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
               <Upload className="w-6 h-6 text-slate-400 dark:text-slate-500" />
             </div>
             <div className="text-center">
@@ -964,7 +964,7 @@ function ImportModal({
             </div>
           </div>
 
-          <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl space-y-3">
+          <div className="bg-background text-foreground/50 p-4 rounded-2xl space-y-3">
             <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
               Modo de importación
             </p>
@@ -973,7 +973,7 @@ function ImportModal({
                 <button
                   key={m}
                   onClick={() => setMode(m)}
-                  className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest border transition-all ${mode === m ? "bg-white dark:bg-slate-800 text-primary border-primary shadow-sm" : "bg-transparent text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"}`}
+                  className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest border transition-all ${mode === m ? "bg-card text-card-foreground text-primary border-primary shadow-sm" : "bg-transparent text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"}`}
                 >
                   {m}
                 </button>
@@ -990,7 +990,7 @@ function ImportModal({
         <div className="flex gap-3 pt-2">
           <button
             onClick={onClose}
-            className="flex-1 py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all"
+            className="flex-1 py-4 bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all"
           >
             Cancelar
           </button>
@@ -1020,7 +1020,7 @@ function ImportResultModal({
 }) {
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
-      <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-2xl max-w-lg w-full p-8 flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-300">
+      <div className="bg-card text-card-foreground rounded-[2.5rem] shadow-2xl max-w-lg w-full p-8 flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-300">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">
             Resumen de Importación
@@ -1037,7 +1037,7 @@ function ImportResultModal({
           {results.map((res, i) => (
             <div
               key={i}
-              className={`p-4 rounded-2xl border flex items-center justify-between ${res.ignored ? "bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-700 opacity-60" : res.success ? "bg-emerald-50 border-emerald-100" : "bg-rose-50 border-rose-100"}`}
+              className={`p-4 rounded-2xl border flex items-center justify-between ${res.ignored ? "bg-background text-foreground/50 border-slate-200 dark:border-slate-700 opacity-60" : res.success ? "bg-emerald-50 border-emerald-100" : "bg-rose-50 border-rose-100"}`}
             >
               <div className="flex items-center gap-3">
                 <div
@@ -1310,7 +1310,7 @@ function MaterialesTable({
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
+    <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
       {/* Header */}
       <div
         onClick={() => setExpanded((p) => !p)}
@@ -1351,7 +1351,7 @@ function MaterialesTable({
             onClick={handleNotificarFaltantes}
             disabled={!hasFaltantes || notificando}
             title={hasFaltantes ? "Notificar Faltantes" : "No hay faltantes"}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${hasFaltantes ? "bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100 shadow-sm" : "bg-slate-50 dark:bg-slate-900/50 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 opacity-70"} ${notificando ? "opacity-50" : ""}`}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${hasFaltantes ? "bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100 shadow-sm" : "bg-background text-foreground/50 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 opacity-70"} ${notificando ? "opacity-50" : ""}`}
           >
             {notificando ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -1401,7 +1401,7 @@ function MaterialesTable({
                     placeholder="Buscar por código o nombre..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-slate-800 dark:text-slate-100 placeholder:text-slate-400"
+                    className="w-full pl-9 pr-4 py-2 text-sm bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-slate-800 dark:text-slate-100 placeholder:text-slate-400"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -1411,7 +1411,7 @@ function MaterialesTable({
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="px-3 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-slate-800 dark:text-slate-100"
+                    className="px-3 py-2 text-sm bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-slate-800 dark:text-slate-100"
                   >
                     <option value="todos">Todos los estados</option>
                     <option value="material_cargado">Disponible</option>
@@ -1634,7 +1634,7 @@ function MaterialesTable({
             <button
               onClick={handleExportarExcel}
               disabled={!hasFaltantes}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all border ${hasFaltantes ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 shadow-sm" : "bg-slate-50 dark:bg-slate-900/50 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 opacity-70 cursor-not-allowed"}`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all border ${hasFaltantes ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 shadow-sm" : "bg-background text-foreground/50 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 opacity-70 cursor-not-allowed"}`}
               title={
                 hasFaltantes
                   ? "Exportar faltantes a Excel"
@@ -1740,7 +1740,7 @@ export default function ProvisionMaterialesPage() {
 
   if (user && !isAuthorized) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-800 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm animate-in zoom-in-95 duration-300">
+      <div className="flex flex-col items-center justify-center py-20 bg-card text-card-foreground rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm animate-in zoom-in-95 duration-300">
         <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mb-4">
           <AlertTriangle className="w-8 h-8 text-rose-500" />
         </div>
@@ -1869,7 +1869,7 @@ export default function ProvisionMaterialesPage() {
           <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
             <button
               onClick={handleDownloadTemplate}
-              className="hidden sm:flex items-center justify-center gap-2 px-4 py-3 sm:py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-2xl text-[10px] md:text-xs font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all shadow-sm"
+              className="hidden sm:flex items-center justify-center gap-2 px-4 py-3 sm:py-2.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-2xl text-[10px] md:text-xs font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all shadow-sm"
             >
               <Download className="w-4 h-4" /> Plantilla
             </button>
@@ -1915,7 +1915,7 @@ export default function ProvisionMaterialesPage() {
           <button
             key={k.label}
             onClick={() => setFilter(k.filterKey)}
-            className={`bg-white dark:bg-slate-800 rounded-2xl border p-2 sm:p-4 shadow-sm text-center flex flex-col justify-center transition-all hover:scale-[1.02] active:scale-95 cursor-pointer ${filter === k.filterKey ? "border-primary ring-2 ring-primary/10" : "border-slate-200 dark:border-slate-700"}`}
+            className={`bg-card text-card-foreground rounded-2xl border p-2 sm:p-4 shadow-sm text-center flex flex-col justify-center transition-all hover:scale-[1.02] active:scale-95 cursor-pointer ${filter === k.filterKey ? "border-primary ring-2 ring-primary/10" : "border-slate-200 dark:border-slate-700"}`}
           >
             <div
               className={`text-xl md:text-2xl font-black ${k.color.split(" ")[1]}`}
@@ -1938,7 +1938,7 @@ export default function ProvisionMaterialesPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar por proyecto, código, cliente o material..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-medium text-slate-700 dark:text-slate-200 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
+            className="w-full pl-10 pr-4 py-2.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-medium text-slate-700 dark:text-slate-200 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
           />
           {searchQuery && (
             <button
@@ -1949,7 +1949,7 @@ export default function ProvisionMaterialesPage() {
             </button>
           )}
         </div>
-        <div className="flex gap-2 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-2xl w-fit shrink-0">
+        <div className="flex gap-2 bg-muted text-muted-foreground/50 p-1 rounded-2xl w-fit shrink-0">
           {(
             [
               { key: "todos", label: "Todos" },
@@ -1961,7 +1961,7 @@ export default function ProvisionMaterialesPage() {
             <button
               key={t.key}
               onClick={() => setFilter(t.key)}
-              className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${filter === t.key ? "bg-white dark:bg-slate-800 text-primary shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"}`}
+              className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${filter === t.key ? "bg-card text-card-foreground text-primary shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"}`}
             >
               {t.label}
             </button>
@@ -1975,7 +1975,7 @@ export default function ProvisionMaterialesPage() {
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       ) : filteredProyectos.length === 0 ? (
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-16 text-center shadow-sm">
+        <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-3xl p-16 text-center shadow-sm">
           <Package className="w-12 h-12 mx-auto mb-3 text-slate-300" />
           <p className="text-base font-black text-slate-500 dark:text-slate-400">
             Sin proyectos en este estado

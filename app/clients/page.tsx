@@ -149,7 +149,7 @@ export default function ClientsPage() {
                         <input
                             type="text"
                             placeholder="Buscar clientes..."
-                            className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium shadow-sm"
+                            className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium shadow-sm"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
@@ -173,7 +173,7 @@ export default function ClientsPage() {
                     ))}
                 </div>
             ) : filteredClients.length === 0 ? (
-                <div className="py-24 flex flex-col items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-400 dark:text-slate-500">
+                <div className="py-24 flex flex-col items-center justify-center bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-400 dark:text-slate-500">
                     <AlertCircle className="w-12 h-12 mb-4 opacity-20" />
                     <p className="font-semibold text-slate-600 dark:text-slate-300">No se encontraron clientes</p>
                 </div>
@@ -220,10 +220,10 @@ function ClientCard({ client, onEdit, onDelete, onToggleStatus }: {
     onToggleStatus: (id: string, current: boolean) => void;
 }) {
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 p-5 flex flex-col gap-4 group">
+        <div className="bg-card text-card-foreground rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 p-5 flex flex-col gap-4 group">
             <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                    <div className={`p-2.5 rounded-xl ${client.activo ? 'bg-primary/10 text-primary' : 'bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500'}`}>
+                    <div className={`p-2.5 rounded-xl ${client.activo ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground/50 text-slate-400 dark:text-slate-500'}`}>
                         <UserCircle2 className="w-6 h-6" />
                     </div>
                     <div>
@@ -301,7 +301,7 @@ function ClientModal({ formData, setFormData, editingClient, onSubmit, onClose }
 
     return (
         <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-800 w-full max-w-lg rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
+            <div className="bg-card text-card-foreground w-full max-w-lg rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
                 <div className="p-5 md:p-7 space-y-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
                     <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
                         <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">
@@ -318,7 +318,7 @@ function ClientModal({ formData, setFormData, editingClient, onSubmit, onClose }
                             <input
                                 required
                                 type="text"
-                                className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                 placeholder="Ej: Arcor S.A."
                                 value={formData.nombre}
                                 onChange={e => setField('nombre', e.target.value)}
@@ -331,7 +331,7 @@ function ClientModal({ formData, setFormData, editingClient, onSubmit, onClose }
                                 <input
                                     type="email"
                                     inputMode="email"
-                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                     placeholder="contacto@empresa.com"
                                     value={formData.email}
                                     onChange={e => setField('email', e.target.value)}
@@ -342,7 +342,7 @@ function ClientModal({ formData, setFormData, editingClient, onSubmit, onClose }
                                 <input
                                     type="tel"
                                     inputMode="tel"
-                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                     placeholder="+54 9 11 ..."
                                     value={formData.telefono}
                                     onChange={e => setField('telefono', e.target.value)}
@@ -354,7 +354,7 @@ function ClientModal({ formData, setFormData, editingClient, onSubmit, onClose }
                             <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Dirección</label>
                             <input
                                 type="text"
-                                className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                 placeholder="Calle, Altura, Ciudad"
                                 value={formData.direccion}
                                 onChange={e => setField('direccion', e.target.value)}
@@ -365,7 +365,7 @@ function ClientModal({ formData, setFormData, editingClient, onSubmit, onClose }
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="flex-1 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 py-3.5 rounded-2xl font-bold hover:bg-slate-200 transition-all active:scale-95"
+                                className="flex-1 bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 py-3.5 rounded-2xl font-bold hover:bg-slate-200 transition-all active:scale-95"
                             >
                                 Cancelar
                             </button>

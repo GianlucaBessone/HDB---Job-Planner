@@ -460,7 +460,7 @@ export default function CapacitacionPage() {
             {quiz.map((q: any, qIdx: number) => (
               <div
                 key={qIdx}
-                className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3"
+                className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3"
               >
                 <div className="flex items-start gap-3">
                   <span className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 text-xs font-black flex items-center justify-center flex-shrink-0">
@@ -480,7 +480,7 @@ export default function CapacitacionPage() {
                       className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all border ${
                         quizAnswers[qIdx] === oIdx
                           ? "bg-indigo-50 dark:bg-indigo-900/30 border-indigo-300 dark:border-indigo-600 text-indigo-700 dark:text-indigo-300 ring-2 ring-indigo-500/20"
-                          : "bg-slate-50 dark:bg-slate-900/30 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                          : "bg-background text-foreground/30 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                       }`}
                     >
                       <span className="font-bold mr-2">
@@ -545,7 +545,7 @@ export default function CapacitacionPage() {
             )}
 
             {youtubeUrl && !isOnline && (
-              <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl p-6 text-center border border-slate-200 dark:border-slate-700">
+              <div className="bg-muted text-muted-foreground rounded-2xl p-6 text-center border border-slate-200 dark:border-slate-700">
                 <Play className="w-8 h-8 text-slate-400 mx-auto mb-2" />
                 <p className="text-xs font-bold text-slate-500">
                   Video no disponible sin conexión a internet
@@ -569,7 +569,7 @@ export default function CapacitacionPage() {
                   .map((s, i) => (
                     <div
                       key={i}
-                      className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700"
+                      className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700"
                     >
                       <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-2">
                         {s.title}
@@ -580,7 +580,7 @@ export default function CapacitacionPage() {
                     </div>
                   ))}
                 {digitalData.definiciones?.length > 0 && (
-                  <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                  <div className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
                     <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-3">
                       Definiciones
                     </p>
@@ -601,7 +601,7 @@ export default function CapacitacionPage() {
 
             {/* Plain description fallback */}
             {!digitalData && docDetail?.descripcion && (
-              <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+              <div className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
                   Descripción
                 </p>
@@ -618,7 +618,7 @@ export default function CapacitacionPage() {
               <a
                 href={`/api/documentos/${docDetail.id}/download`}
                 download
-                className="flex items-center gap-3 bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                className="flex items-center gap-3 bg-card text-card-foreground p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
               >
                 <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 flex items-center justify-center">
                   <FileText className="w-5 h-5 text-indigo-600" />
@@ -745,7 +745,7 @@ export default function CapacitacionPage() {
 
           {/* Trainings list */}
           {trainings.length === 0 ? (
-            <div className="text-center py-16 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700">
+            <div className="text-center py-16 bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700">
               <BookOpen className="w-12 h-12 text-slate-300 mx-auto mb-3" />
               <p className="text-sm font-bold text-slate-400">
                 No tiene capacitaciones obligatorias asignadas actualmente.
@@ -773,7 +773,7 @@ export default function CapacitacionPage() {
                     <button
                       key={t.id}
                       onClick={() => openTraining(t)}
-                      className="w-full text-left bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-700 transition-all flex items-center gap-4 group"
+                      className="w-full text-left bg-card text-card-foreground p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-700 transition-all flex items-center gap-4 group"
                     >
                       <div
                         className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${
@@ -842,7 +842,7 @@ export default function CapacitacionPage() {
       {activeTab === "external" && (
         <div className="space-y-6">
           {/* Welcome Card to External Certificates */}
-          <div className="bg-slate-50 dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="bg-background text-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex gap-3">
               <Award className="w-8 h-8 text-indigo-500 flex-shrink-0" />
               <div>
@@ -865,7 +865,7 @@ export default function CapacitacionPage() {
           </div>
 
           {certificates.length === 0 ? (
-            <div className="text-center py-16 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700">
+            <div className="text-center py-16 bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700">
               <UploadCloud className="w-12 h-12 text-slate-300 mx-auto mb-3" />
               <p className="text-sm font-bold text-slate-400">
                 No ha subido certificados externos todavía.
@@ -879,7 +879,7 @@ export default function CapacitacionPage() {
               {certificates.map((cert) => (
                 <div
                   key={cert.id}
-                  className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4"
+                  className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4"
                 >
                   <div className="space-y-2">
                     <div className="flex items-start justify-between">
@@ -971,7 +971,7 @@ export default function CapacitacionPage() {
       {/* PREVIEW CERTIFICATE MODAL */}
       {previewCert && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
+          <div className="bg-card text-card-foreground rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
               <div>
                 <h2 className="text-sm font-black text-slate-800 dark:text-slate-100">
@@ -1006,7 +1006,7 @@ export default function CapacitacionPage() {
                   className="w-full h-96 rounded-xl border border-slate-200 dark:border-slate-700"
                 />
               ) : (
-                <div className="p-8 text-center bg-slate-50 dark:bg-slate-900 rounded-2xl text-slate-400 text-xs">
+                <div className="p-8 text-center bg-background text-foreground rounded-2xl text-slate-400 text-xs">
                   Vista previa no soportada para este formato de archivo.
                 </div>
               )}
@@ -1020,7 +1020,7 @@ export default function CapacitacionPage() {
                   {previewCert.estado !== "aprobado" && !isEditingCert && (
                     <button
                       onClick={() => setIsEditingCert(true)}
-                      className="text-[10px] font-bold px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
+                      className="text-[10px] font-bold px-2 py-1 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
                     >
                       Editar Datos
                     </button>
@@ -1218,7 +1218,7 @@ export default function CapacitacionPage() {
       {/* UPLOAD EXTERNAL CERTIFICATE MODAL */}
       {isUploadModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl border border-slate-100 dark:border-slate-700">
+          <div className="bg-card text-card-foreground rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl border border-slate-100 dark:border-slate-700">
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
               <h2 className="text-base font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
@@ -1252,7 +1252,7 @@ export default function CapacitacionPage() {
                     disabled={analyzingCert}
                   />
                   <div className="flex flex-col items-center justify-center space-y-2">
-                    <div className="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-background text-foreground/50 flex items-center justify-center">
                       <UploadCloud className="w-5 h-5 text-slate-400" />
                     </div>
                     {certFileName ? (
@@ -1292,7 +1292,7 @@ export default function CapacitacionPage() {
                     placeholder="Ej. Curso de Seguridad Eléctrica en Alta Tensión"
                     value={manualNombreCurso}
                     onChange={(e) => setManualNombreCurso(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    className="w-full px-4 py-2.5 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                     disabled={analyzingCert}
                   />
                 </div>
@@ -1308,7 +1308,7 @@ export default function CapacitacionPage() {
                     placeholder="Ej. UTN (Universidad Tecnológica Nacional)"
                     value={manualInstitucion}
                     onChange={(e) => setManualInstitucion(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    className="w-full px-4 py-2.5 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                     disabled={analyzingCert}
                   />
                 </div>
@@ -1320,7 +1320,7 @@ export default function CapacitacionPage() {
                     placeholder="Breve descripción del contenido o temario cubierto..."
                     value={manualDescripcion}
                     onChange={(e) => setManualDescripcion(e.target.value)}
-                    className="w-full h-20 px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none"
+                    className="w-full h-20 px-4 py-2.5 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none"
                     disabled={analyzingCert}
                   />
                 </div>

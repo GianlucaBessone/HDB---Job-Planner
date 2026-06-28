@@ -39,7 +39,7 @@ export function ProjectCard({
     const progressColor = getProgressColor(progress);
 
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 p-5 flex flex-col gap-4 group">
+        <div className="bg-card text-card-foreground rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 p-5 flex flex-col gap-4 group">
             <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                     <h4 className="font-black text-lg text-slate-800 dark:text-slate-100 leading-tight group-hover:text-primary transition-colors">
@@ -87,7 +87,7 @@ export function ProjectCard({
             <div className="flex flex-wrap gap-1.5">
                 {project.tags && project.tags.length > 0 ? (
                     project.tags.map((tag: any) => (
-                        <span key={tag} className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800/50 text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 uppercase tracking-tighter">
+                        <span key={tag} className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground/50 text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 uppercase tracking-tighter">
                             {tag}
                         </span>
                     ))
@@ -107,7 +107,7 @@ export function ProjectCard({
                         <span>{horasConsumidas}h / {horasEstimadas}h</span>
                     </div>
                 </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-800/50 h-2 rounded-full overflow-hidden">
+                <div className="w-full bg-muted text-muted-foreground/50 h-2 rounded-full overflow-hidden">
                     <div className={`h-full rounded-full transition-all duration-700 ${progressColor}`} style={{ width: `${progress}%` }} />
                 </div>
             </div>
@@ -119,7 +119,7 @@ export function ProjectCard({
                         {project.checklistItems?.filter((i: any) => i.completed && !i.excluded).length} / {project.checklistItems?.filter((i: any) => !i.excluded).length}
                     </span>
                 </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-800/50 h-1.5 rounded-full overflow-hidden">
+                <div className="w-full bg-muted text-muted-foreground/50 h-1.5 rounded-full overflow-hidden">
                     <div className="h-full bg-primary rounded-full transition-all duration-700"
                         style={{
                             width: `${(project.checklistItems?.filter((i: any) => !i.excluded).length || 0) > 0

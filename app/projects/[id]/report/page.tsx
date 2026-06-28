@@ -87,7 +87,7 @@ export default async function ProjectReportPage({ params, searchParams }: { para
     const StatusIcon = statusCfg.Icon;
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-900/50 py-8 print:p-0 print:bg-white text-slate-800 dark:text-slate-100 font-sans mx-auto max-w-[900px]">
+        <div className="min-h-screen bg-background text-foreground/50 py-8 print:p-0 print:bg-white text-slate-800 dark:text-slate-100 font-sans mx-auto max-w-[900px]">
             {/* Control Bar (hidden in print) */}
             <div className="flex justify-end mb-8 print:hidden px-4 md:px-0">
                 <ReportPrintButton
@@ -102,7 +102,7 @@ export default async function ProjectReportPage({ params, searchParams }: { para
                 />
             </div>
 
-            <div id="report-content" className="bg-white dark:bg-slate-800 p-10 md:p-14 md:rounded-[2.5rem] shadow-sm print:shadow-none print:p-0">
+            <div id="report-content" className="bg-card text-card-foreground p-10 md:p-14 md:rounded-[2.5rem] shadow-sm print:shadow-none print:p-0">
 
                 {/* ── Header ── */}
                 <div className="flex justify-between items-start border-b-2 border-slate-900 pb-8 mb-8">
@@ -136,17 +136,17 @@ export default async function ProjectReportPage({ params, searchParams }: { para
 
                 {/* ── KPI Cards ── */}
                 <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-10">
-                    <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-center items-center text-center">
+                    <div className="bg-background text-foreground/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-center items-center text-center">
                         <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Hs Estimadas</p>
                         <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{project.horasEstimadas}h</p>
                     </div>
-                    <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-center items-center text-center">
+                    <div className="bg-background text-foreground/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-center items-center text-center">
                         <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Hs Reales</p>
                         <p className={`text-2xl font-black ${totalRealHours > project.horasEstimadas ? 'text-rose-500' : 'text-emerald-500'}`}>
                             {totalRealHours.toFixed(1)}h
                         </p>
                     </div>
-                    <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-center items-center text-center">
+                    <div className="bg-background text-foreground/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-center items-center text-center">
                         <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Ahorro / Desvío</p>
                         <p className={`text-2xl font-black ${savedHours >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                             {savedHours > 0 ? '+' : ''}{savedHours.toFixed(1)}h
@@ -196,7 +196,7 @@ export default async function ProjectReportPage({ params, searchParams }: { para
                                             <span>{op.nombre}</span>
                                             <span>{op.horas.toFixed(1)}h</span>
                                         </div>
-                                        <div className="h-2 bg-slate-100 dark:bg-slate-800/50 rounded-full overflow-hidden">
+                                        <div className="h-2 bg-muted text-muted-foreground/50 rounded-full overflow-hidden">
                                             <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${pct}%` }} />
                                         </div>
                                     </div>
@@ -224,7 +224,7 @@ export default async function ProjectReportPage({ params, searchParams }: { para
                                             <span>{area}</span>
                                             <span className="text-amber-500">{horas}h</span>
                                         </div>
-                                        <div className="h-2 bg-slate-100 dark:bg-slate-800/50 rounded-full overflow-hidden">
+                                        <div className="h-2 bg-muted text-muted-foreground/50 rounded-full overflow-hidden">
                                             <div className="h-full bg-amber-400 rounded-full" style={{ width: `${pct}%` }} />
                                         </div>
                                     </div>
@@ -322,7 +322,7 @@ export default async function ProjectReportPage({ params, searchParams }: { para
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {project.checklistItems.filter(i => !i.excluded).map((item) => (
                                     <div key={item.id} className={`p-4 rounded-2xl border flex items-start gap-4 transition-all ${item.completed ? 'bg-emerald-50/40 border-emerald-100' : 'bg-slate-50/50 border-slate-100 dark:border-slate-800'}`}>
-                                        <div className={`mt-0.5 shrink-0 w-6 h-6 rounded-xl border-2 flex items-center justify-center ${item.completed ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'}`}>
+                                        <div className={`mt-0.5 shrink-0 w-6 h-6 rounded-xl border-2 flex items-center justify-center ${item.completed ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-200 dark:border-slate-700 bg-card text-card-foreground'}`}>
                                             {item.completed && <Activity className="w-3 h-3" />}
                                         </div>
                                         <div>
@@ -330,7 +330,7 @@ export default async function ProjectReportPage({ params, searchParams }: { para
                                                 {item.description}
                                             </p>
                                             <div className="flex items-center gap-2 mt-1.5 font-bold uppercase tracking-widest text-[9px]">
-                                                <span className="px-2 py-0.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500">
+                                                <span className="px-2 py-0.5 rounded-lg bg-card text-card-foreground border border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500">
                                                     {item.tag}
                                                 </span>
                                                 <span className={item.completed ? 'text-emerald-500' : 'text-slate-300'}>

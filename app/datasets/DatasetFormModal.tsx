@@ -179,7 +179,7 @@ export default function DatasetFormModal({ dataset, operators, onClose, onSave }
             <div className="flex-1 flex overflow-hidden">
                 {/* Left Sidebar: Schema Browser */}
                 <aside className="w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col shrink-0">
-                    <div className="p-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+                    <div className="p-3 border-b border-slate-200 dark:border-slate-800 bg-background text-foreground/50">
                         <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
                             <Table2 className="w-4 h-4" /> Esquema de Datos
                         </h3>
@@ -285,7 +285,7 @@ export default function DatasetFormModal({ dataset, operators, onClose, onSave }
                     {/* Results Panel */}
                     {(previewData !== null || previewError || previewLoading) && (
                         <div className="h-64 border-t border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col shrink-0 animate-in slide-in-from-bottom-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-20">
-                            <div className="flex items-center justify-between px-4 py-2 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+                            <div className="flex items-center justify-between px-4 py-2 border-b border-slate-200 dark:border-slate-800 bg-background text-foreground/50">
                                 <h3 className="text-xs font-bold text-slate-600 dark:text-slate-300">Resultados de Prueba</h3>
                                 <button onClick={() => { setPreviewData(null); setPreviewError(null); }} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded">
                                     <X className="w-4 h-4 text-slate-500" />
@@ -315,9 +315,9 @@ export default function DatasetFormModal({ dataset, operators, onClose, onSave }
                                     <table className="w-full text-left text-sm whitespace-nowrap">
                                         <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0 shadow-sm z-10">
                                             <tr>
-                                                <th className="px-4 py-2 font-bold text-slate-500 uppercase text-[10px] tracking-wider w-10 text-center border-b border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">#</th>
+                                                <th className="px-4 py-2 font-bold text-slate-500 uppercase text-[10px] tracking-wider w-10 text-center border-b border-slate-200 dark:border-slate-700 bg-muted text-muted-foreground">#</th>
                                                 {getPreviewColumns().map(col => (
-                                                    <th key={col} className="px-4 py-2 font-bold text-slate-500 uppercase text-[10px] tracking-wider border-b border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">{col}</th>
+                                                    <th key={col} className="px-4 py-2 font-bold text-slate-500 uppercase text-[10px] tracking-wider border-b border-slate-200 dark:border-slate-700 bg-muted text-muted-foreground">{col}</th>
                                                 ))}
                                             </tr>
                                         </thead>
@@ -396,13 +396,13 @@ export default function DatasetFormModal({ dataset, operators, onClose, onSave }
                     </div>
                     
                     {/* Schedule Section */}
-                    <div className="p-4 border-b border-slate-200 dark:border-slate-800 space-y-4 bg-slate-50 dark:bg-slate-900/30">
+                    <div className="p-4 border-b border-slate-200 dark:border-slate-800 space-y-4 bg-background text-foreground/30">
                         <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2">
                             <Clock className="w-3.5 h-3.5" /> Programación
                         </h3>
                         
                         <div>
-                            <select value={form.tipoEjecucion} onChange={e => setForm(p => ({ ...p, tipoEjecucion: e.target.value }))} className="w-full h-8 px-2 border border-slate-200 dark:border-slate-700 rounded text-xs bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none">
+                            <select value={form.tipoEjecucion} onChange={e => setForm(p => ({ ...p, tipoEjecucion: e.target.value }))} className="w-full h-8 px-2 border border-slate-200 dark:border-slate-700 rounded text-xs bg-card text-card-foreground text-slate-800 dark:text-slate-200 outline-none">
                                 <option value="Manual">Ejecución Manual</option>
                                 <option value="Programada">Ejecución Automática</option>
                             </select>
@@ -412,7 +412,7 @@ export default function DatasetFormModal({ dataset, operators, onClose, onSave }
                             <div className="grid grid-cols-2 gap-3 pt-2">
                                 <div>
                                     <label className="block text-[10px] font-bold text-slate-500 mb-1">Frecuencia</label>
-                                    <select value={form.frecuencia} onChange={e => setForm(p => ({ ...p, frecuencia: e.target.value }))} className="w-full h-8 px-2 border border-slate-200 dark:border-slate-700 rounded text-xs bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none">
+                                    <select value={form.frecuencia} onChange={e => setForm(p => ({ ...p, frecuencia: e.target.value }))} className="w-full h-8 px-2 border border-slate-200 dark:border-slate-700 rounded text-xs bg-card text-card-foreground text-slate-800 dark:text-slate-200 outline-none">
                                         <option value="Cada hora">Cada hora</option>
                                         <option value="Diario">Diario</option>
                                         <option value="Semanal">Semanal</option>
@@ -421,7 +421,7 @@ export default function DatasetFormModal({ dataset, operators, onClose, onSave }
                                 </div>
                                 <div>
                                     <label className="block text-[10px] font-bold text-slate-500 mb-1">Hora</label>
-                                    <input type="time" value={form.horaEjecucion} onChange={e => setForm(p => ({ ...p, horaEjecucion: e.target.value }))} className="w-full h-8 px-2 border border-slate-200 dark:border-slate-700 rounded text-xs bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 outline-none" />
+                                    <input type="time" value={form.horaEjecucion} onChange={e => setForm(p => ({ ...p, horaEjecucion: e.target.value }))} className="w-full h-8 px-2 border border-slate-200 dark:border-slate-700 rounded text-xs bg-card text-card-foreground text-slate-800 dark:text-slate-200 outline-none" />
                                 </div>
                             </div>
                         )}
@@ -439,10 +439,10 @@ export default function DatasetFormModal({ dataset, operators, onClose, onSave }
                             <div className="pt-4 mt-4 border-t border-slate-200 dark:border-slate-800">
                                 <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Variables del Sistema</h4>
                                 <div className="flex flex-wrap gap-2">
-                                    <button onClick={() => insertText("{{FECHA_ACTUAL}}")} className="px-2 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded text-[10px] font-mono text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 transition-colors">{"{{FECHA_ACTUAL}}"}</button>
-                                    <button onClick={() => insertText("{{INICIO_MES}}")} className="px-2 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded text-[10px] font-mono text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 transition-colors">{"{{INICIO_MES}}"}</button>
-                                    <button onClick={() => insertText("{{FIN_MES}}")} className="px-2 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded text-[10px] font-mono text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 transition-colors">{"{{FIN_MES}}"}</button>
-                                    <button onClick={() => insertText("{{AÑO_ACTUAL}}")} className="px-2 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded text-[10px] font-mono text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 transition-colors">{"{{AÑO_ACTUAL}}"}</button>
+                                    <button onClick={() => insertText("{{FECHA_ACTUAL}}")} className="px-2 py-1 bg-muted text-muted-foreground hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded text-[10px] font-mono text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 transition-colors">{"{{FECHA_ACTUAL}}"}</button>
+                                    <button onClick={() => insertText("{{INICIO_MES}}")} className="px-2 py-1 bg-muted text-muted-foreground hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded text-[10px] font-mono text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 transition-colors">{"{{INICIO_MES}}"}</button>
+                                    <button onClick={() => insertText("{{FIN_MES}}")} className="px-2 py-1 bg-muted text-muted-foreground hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded text-[10px] font-mono text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 transition-colors">{"{{FIN_MES}}"}</button>
+                                    <button onClick={() => insertText("{{AÑO_ACTUAL}}")} className="px-2 py-1 bg-muted text-muted-foreground hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded text-[10px] font-mono text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 transition-colors">{"{{AÑO_ACTUAL}}"}</button>
                                 </div>
                             </div>
                         </div>
@@ -461,7 +461,7 @@ function SnippetBtn({ label, sql, onClick }: { label: string, sql: string, onCli
         <button 
             type="button"
             onClick={() => onClick(sql + '\n')} 
-            className="w-full text-left px-3 py-2 bg-slate-50 dark:bg-slate-800/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 border border-slate-200 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-800 rounded-lg transition-all group"
+            className="w-full text-left px-3 py-2 bg-muted/50 text-muted-foreground hover:bg-indigo-50 dark:hover:bg-indigo-900/30 border border-slate-200 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-800 rounded-lg transition-all group"
         >
             <div className="text-xs font-bold text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">{label}</div>
         </button>

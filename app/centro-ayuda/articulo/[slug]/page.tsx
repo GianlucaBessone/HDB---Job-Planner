@@ -102,7 +102,7 @@ export default async function ArticuloPage({ params }: { params: { slug: string 
               </h2>
               <div className="space-y-4">
                 {article.faqs.map(faq => (
-                  <div key={faq.id} className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                  <div key={faq.id} className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
                     <h4 className="font-bold text-slate-800 dark:text-slate-100 mb-2">
                       {faq.question}
                     </h4>
@@ -119,7 +119,7 @@ export default async function ArticuloPage({ params }: { params: { slug: string 
 
         {/* Sidebar Info */}
         <div className="space-y-6 md:sticky md:top-6">
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700">
+          <div className="bg-card text-card-foreground p-6 rounded-3xl border border-slate-200 dark:border-slate-700">
             <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-4 border-b border-slate-100 dark:border-slate-700 pb-2">
               Detalles del Artículo
             </h3>
@@ -157,15 +157,15 @@ export default async function ArticuloPage({ params }: { params: { slug: string 
             </div>
           </div>
           
-          <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl border border-dashed border-slate-200 dark:border-slate-700 text-center">
+          <div className="bg-muted/50 text-muted-foreground p-6 rounded-3xl border border-dashed border-slate-200 dark:border-slate-700 text-center">
             <p className="text-sm font-bold text-slate-600 dark:text-slate-300 mb-3">
               ¿Te fue útil este artículo?
             </p>
             <div className="flex justify-center gap-2">
-              <button className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-600 transition-colors text-sm font-bold shadow-sm">
+              <button className="px-4 py-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-600 transition-colors text-sm font-bold shadow-sm">
                 👍 Sí
               </button>
-              <button className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 transition-colors text-sm font-bold shadow-sm">
+              <button className="px-4 py-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 transition-colors text-sm font-bold shadow-sm">
                 👎 No
               </button>
             </div>

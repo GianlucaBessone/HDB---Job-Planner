@@ -402,7 +402,7 @@ export default function IdeasSugerenciasReclamosPage() {
     if (activeTab === 'registrar' && submitStatus === 'success' && submissionResult) {
         return (
             <div className="w-full max-w-2xl mx-auto px-4 py-8 md:py-16">
-                <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 md:p-12 shadow-2xl text-center border border-slate-100 dark:border-slate-700 animate-in zoom-in-95 duration-500">
+                <div className="bg-card text-card-foreground rounded-3xl p-8 md:p-12 shadow-2xl text-center border border-slate-100 dark:border-slate-700 animate-in zoom-in-95 duration-500">
                     <div className="w-20 h-20 bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-8 animate-bounce">
                         <CheckCircle2 className="w-12 h-12" />
                     </div>
@@ -414,7 +414,7 @@ export default function IdeasSugerenciasReclamosPage() {
                         Hemos recibido tu presentación correctamente. Agradecemos tu participación para seguir mejorando nuestro entorno operativo.
                     </p>
 
-                    <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-6 mb-8 border border-slate-100 dark:border-slate-800 text-left space-y-4 max-w-md mx-auto">
+                    <div className="bg-background text-foreground rounded-2xl p-6 mb-8 border border-slate-100 dark:border-slate-800 text-left space-y-4 max-w-md mx-auto">
                         <div>
                             <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Código de Propuesta</span>
                             <span className="text-lg font-bold text-slate-800 dark:text-slate-100 font-mono select-all">
@@ -461,7 +461,7 @@ export default function IdeasSugerenciasReclamosPage() {
 
             {/* Tabs Navigation */}
             <div className="flex justify-center mb-8 border-b border-slate-200 dark:border-slate-800">
-                <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-900 rounded-2xl mb-2">
+                <div className="flex gap-2 p-1 bg-secondary text-secondary-foreground rounded-2xl mb-2">
                     <button
                         type="button"
                         onClick={() => {
@@ -470,7 +470,7 @@ export default function IdeasSugerenciasReclamosPage() {
                         }}
                         className={`px-6 py-3 font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all ${
                             activeTab === 'registrar'
-                                ? 'bg-white dark:bg-slate-800 text-primary shadow-sm'
+                                ? 'bg-card text-card-foreground text-primary shadow-sm'
                                 : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                         }`}
                     >
@@ -484,7 +484,7 @@ export default function IdeasSugerenciasReclamosPage() {
                         }}
                         className={`px-6 py-3 font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all ${
                             activeTab === 'pizarra'
-                                ? 'bg-white dark:bg-slate-800 text-primary shadow-sm'
+                                ? 'bg-card text-card-foreground text-primary shadow-sm'
                                 : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                         }`}
                     >
@@ -521,7 +521,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                     ? 'bg-primary border-primary text-white scale-110 shadow-lg shadow-primary/20' 
                                     : currentStep > 1 
                                         ? 'bg-emerald-500 border-emerald-500 text-white' 
-                                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500'
+                                        : 'bg-card text-card-foreground border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500'
                             }`}>
                                 {currentStep > 1 ? <Check className="w-4 h-4" /> : 1}
                             </div>
@@ -541,7 +541,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                     ? 'bg-primary border-primary text-white scale-110 shadow-lg shadow-primary/20' 
                                     : currentStep > 2 
                                         ? 'bg-emerald-500 border-emerald-500 text-white' 
-                                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500'
+                                        : 'bg-card text-card-foreground border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500'
                             }`}>
                                 {currentStep > 2 ? <Check className="w-4 h-4" /> : 2}
                             </div>
@@ -559,7 +559,7 @@ export default function IdeasSugerenciasReclamosPage() {
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all border ${
                                 currentStep === 3 
                                     ? 'bg-primary border-primary text-white scale-110 shadow-lg shadow-primary/20' 
-                                    : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500'
+                                    : 'bg-card text-card-foreground border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500'
                             }`}>
                                 3
                             </div>
@@ -570,7 +570,7 @@ export default function IdeasSugerenciasReclamosPage() {
                     </div>
 
                     {/* Form Box */}
-                    <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-800 rounded-3xl p-6 md:p-10 border border-slate-100 dark:border-slate-800 shadow-xl transition-all duration-300">
+                    <form onSubmit={handleSubmit} className="bg-card text-card-foreground rounded-3xl p-6 md:p-10 border border-slate-100 dark:border-slate-800 shadow-xl transition-all duration-300">
                         
                         {/* STEP 1: PRESENTACION / IDENTIFICACION */}
                         {currentStep === 1 && (
@@ -639,7 +639,7 @@ export default function IdeasSugerenciasReclamosPage() {
 
                                 {/* Identified Credentials inputs */}
                                 {presentacion === 'identificada' && (
-                                    <div className="p-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800/80 grid grid-cols-1 md:grid-cols-2 gap-6 animate-in slide-in-from-top-4 duration-300">
+                                    <div className="p-6 bg-background text-foreground/50 rounded-2xl border border-slate-100 dark:border-slate-800/80 grid grid-cols-1 md:grid-cols-2 gap-6 animate-in slide-in-from-top-4 duration-300">
                                         <div className="space-y-1">
                                             {isLoadingOperators ? (
                                                 <div className="flex items-center gap-2 py-3 text-sm text-slate-400">
@@ -753,7 +753,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                             value={titulo}
                                             onChange={(e) => setTitulo(e.target.value)}
                                             placeholder="Ej: Automatizar orden de herramientas en carro de taller"
-                                            className="w-full h-[44px] md:h-[50px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-3 px-4 text-sm font-bold outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10 text-slate-700 dark:text-slate-200"
+                                            className="w-full h-[44px] md:h-[50px] bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-3 px-4 text-sm font-bold outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10 text-slate-700 dark:text-slate-200"
                                             required
                                         />
                                         <div className="flex justify-between px-1 text-[10px] text-slate-400 dark:text-slate-500 font-semibold">
@@ -772,7 +772,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                             value={descripcion}
                                             onChange={(e) => setDescripcion(e.target.value)}
                                             placeholder="Describe la problemática actual y cómo el cambio propuesto solucionaría la situación..."
-                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-3 px-4 text-sm font-bold outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10 text-slate-700 dark:text-slate-200"
+                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-3 px-4 text-sm font-bold outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10 text-slate-700 dark:text-slate-200"
                                             required
                                         />
                                         <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 px-1">
@@ -788,7 +788,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                         <select
                                             value={areaInvolucrada}
                                             onChange={(e) => setAreaInvolucrada(e.target.value)}
-                                            className="w-full h-[44px] md:h-[50px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-2 px-4 text-sm font-bold outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10 text-slate-700 dark:text-slate-200"
+                                            className="w-full h-[44px] md:h-[50px] bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-2 px-4 text-sm font-bold outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10 text-slate-700 dark:text-slate-200"
                                             required
                                         >
                                             <option value="" disabled>Selecciona el área...</option>
@@ -806,7 +806,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                         <select
                                             value={frecuenciaProblema}
                                             onChange={(e) => setFrecuenciaProblema(e.target.value)}
-                                            className="w-full h-[44px] md:h-[50px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-2 px-4 text-sm font-bold outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10 text-slate-700 dark:text-slate-200"
+                                            className="w-full h-[44px] md:h-[50px] bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-2 px-4 text-sm font-bold outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10 text-slate-700 dark:text-slate-200"
                                         >
                                             <option value="">No aplica / Desconocido</option>
                                             {FRECUENCIA_OPCIONES.map(freq => (
@@ -886,7 +886,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                             value={propuestaSolucion}
                                             onChange={(e) => setPropuestaSolucion(e.target.value)}
                                             placeholder="Si tienes en mente un plan de acción para solucionarlo, detallalo aquí..."
-                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-3 px-4 text-sm font-bold outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10 text-slate-700 dark:text-slate-200"
+                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-3 px-4 text-sm font-bold outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10 text-slate-700 dark:text-slate-200"
                                         />
                                     </div>
 
@@ -906,7 +906,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                                         className={`px-4 py-2.5 rounded-full text-xs font-bold transition-all border ${
                                                             isSelected
                                                                 ? 'bg-primary text-white border-primary shadow-md shadow-primary/10'
-                                                                : 'bg-slate-55 border-slate-200 dark:border-slate-750 text-slate-600 dark:text-slate-300 hover:border-slate-350 hover:bg-slate-100 dark:bg-slate-800'
+                                                                : 'bg-slate-55 border-slate-200 dark:border-slate-750 text-slate-600 dark:text-slate-300 hover:border-slate-350 hover:bg-muted text-muted-foreground'
                                                         }`}
                                                     >
                                                         {option}
@@ -950,7 +950,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                                 {selectedFiles.map((file, idx) => (
                                                     <div 
                                                         key={`${file.name}-${idx}`}
-                                                        className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800/80 animate-in fade-in duration-300"
+                                                        className="flex items-center justify-between p-3 bg-background text-foreground rounded-xl border border-slate-100 dark:border-slate-800/80 animate-in fade-in duration-300"
                                                     >
                                                         <div className="flex items-center gap-2.5 min-w-0">
                                                             <FileText className="w-4 h-4 text-slate-400 shrink-0" />
@@ -1012,7 +1012,7 @@ export default function IdeasSugerenciasReclamosPage() {
                 <div className="space-y-6 animate-in fade-in duration-300">
                     {/* Stats Summary */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                        <div className="bg-card text-card-foreground p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
                             <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Total Propuestas</span>
                             <span className="text-2xl font-black text-slate-800 dark:text-slate-100">{sugerencias.length}</span>
                         </div>
@@ -1037,7 +1037,7 @@ export default function IdeasSugerenciasReclamosPage() {
                     </div>
 
                     {/* Filter & Search Bar */}
-                    <div className="bg-white dark:bg-slate-800 p-4 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-md flex flex-col md:flex-row gap-4">
+                    <div className="bg-card text-card-foreground p-4 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-md flex flex-col md:flex-row gap-4">
                         <div className="flex-1 relative">
                             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                             <input
@@ -1122,7 +1122,7 @@ export default function IdeasSugerenciasReclamosPage() {
 
                                 if (filtered.length === 0) {
                                     return (
-                                        <div className="text-center py-16 bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm animate-in fade-in duration-300">
+                                        <div className="text-center py-16 bg-card text-card-foreground rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm animate-in fade-in duration-300">
                                             <p className="text-slate-400 dark:text-slate-500 font-extrabold text-sm mb-2">No se encontraron propuestas</p>
                                             <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">Prueba cambiando los criterios de filtrado o registra una nueva propuesta.</p>
                                         </div>
@@ -1153,7 +1153,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                             return (
                                                 <div 
                                                     key={sug.id} 
-                                                    className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-100 dark:border-slate-800/80 shadow-md hover:shadow-lg transition-all duration-300 flex flex-col justify-between"
+                                                    className="bg-card text-card-foreground rounded-3xl p-6 border border-slate-100 dark:border-slate-800/80 shadow-md hover:shadow-lg transition-all duration-300 flex flex-col justify-between"
                                                 >
                                                     <div className="space-y-4">
                                                         {/* Top Metadata */}
@@ -1197,7 +1197,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                                                 {sug.propuesta_solucion && (
                                                                     <div>
                                                                         <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1">Propuesta de Solución</span>
-                                                                        <p className="text-xs text-slate-650 dark:text-slate-300 font-semibold bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                                                                        <p className="text-xs text-slate-650 dark:text-slate-300 font-semibold bg-background text-foreground/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
                                                                             {decodeEntities(sug.propuesta_solucion)}
                                                                         </p>
                                                                     </div>
@@ -1213,7 +1213,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                                                         <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Beneficios esperados</span>
                                                                         <div className="flex flex-wrap gap-1">
                                                                             {sug.beneficios.map((b: string) => (
-                                                                                <span key={b} className="text-[10px] font-bold bg-slate-100 dark:bg-slate-900 px-2.5 py-1 rounded-full text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                                                                                <span key={b} className="text-[10px] font-bold bg-secondary text-secondary-foreground px-2.5 py-1 rounded-full text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                                                                                     {decodeEntities(b)}
                                                                                 </span>
                                                                             ))}
@@ -1231,7 +1231,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                                                                     key={index}
                                                                                     href={file.url}
                                                                                     download={file.nombre}
-                                                                                    className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl text-xs text-slate-650 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-all font-bold group"
+                                                                                    className="flex items-center justify-between p-2.5 bg-background text-foreground border border-slate-100 dark:border-slate-800 rounded-xl text-xs text-slate-650 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-all font-bold group"
                                                                                 >
                                                                                     <div className="flex items-center gap-2 truncate">
                                                                                         <Paperclip className="w-3.5 h-3.5 text-slate-400 group-hover:text-primary shrink-0" />
@@ -1267,7 +1267,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                                                         <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-2">Comentarios Administrativos</span>
                                                                         <div className="space-y-2">
                                                                             {sug.comentarios.map((c: any, index: number) => (
-                                                                                <div key={index} className="bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
+                                                                                <div key={index} className="bg-background text-foreground/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
                                                                                     <div className="flex justify-between items-center text-[9px] text-slate-400 dark:text-slate-500 font-bold mb-1">
                                                                                         <span>{c.autor}</span>
                                                                                         <span>{new Date(c.fecha).toLocaleDateString()}</span>
@@ -1291,7 +1291,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                                                 <Calendar className="w-3.5 h-3.5" />
                                                                 <span>{new Date(sug.fecha_creacion).toLocaleDateString()}</span>
                                                             </div>
-                                                            <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-900 px-2 py-0.5 rounded-md border border-slate-100 dark:border-slate-800">
+                                                            <div className="flex items-center gap-1 bg-background text-foreground px-2 py-0.5 rounded-md border border-slate-100 dark:border-slate-800">
                                                                 <span>Área:</span>
                                                                 <span className="text-slate-600 dark:text-slate-400 font-extrabold">{decodeEntities(sug.area_involucrada)}</span>
                                                             </div>

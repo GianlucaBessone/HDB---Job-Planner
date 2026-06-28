@@ -58,7 +58,7 @@ export default function GraficosTab({ user, isActive = true }: { user: any; isAc
             </div>
 
             {graficos.length === 0 ? (
-                <div className="bg-white dark:bg-slate-800 border border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-12 text-center">
+                <div className="bg-card text-card-foreground border border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-12 text-center">
                     <BarChart3 className="w-12 h-12 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
                     <h3 className="text-lg font-bold text-slate-600 dark:text-slate-300 mb-1">Sin gráficos configurados</h3>
                     <p className="text-sm text-slate-400">Creá configuraciones de gráficos para visualizar datos</p>
@@ -68,7 +68,7 @@ export default function GraficosTab({ user, isActive = true }: { user: any; isAc
                     {graficos.map((g: any) => {
                         const Icon = TIPO_ICONS[g.tipoGrafico] || BarChart3;
                         return (
-                            <div key={g.id} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md transition-all p-4 group">
+                            <div key={g.id} className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md transition-all p-4 group">
                                 <div className="flex items-start justify-between mb-3">
                                     <div className="flex items-center gap-2">
                                         <div className="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center">
@@ -134,7 +134,7 @@ function GraficoFormModal({ grafico, datasets, onClose, onSave }: { grafico: any
 
     return (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[200] flex items-center justify-center">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md mx-4 border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-card text-card-foreground rounded-2xl shadow-2xl w-full max-w-md mx-4 border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200">
                 <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
                     <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">{grafico ? 'Editar Gráfico' : 'Nuevo Gráfico'}</h2>
                     <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl"><X className="w-5 h-5 text-slate-400" /></button>

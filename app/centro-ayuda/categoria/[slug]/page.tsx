@@ -46,7 +46,7 @@ export default async function CategoriaPage({ params }: { params: { slug: string
       <div className="grid grid-cols-1 gap-4">
         {category.articles.map((article) => (
           <Link href={`/centro-ayuda/articulo/${article.slug}`} key={article.id}>
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-md transition-all flex items-start gap-4 group">
+            <div className="bg-card text-card-foreground p-6 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-md transition-all flex items-start gap-4 group">
               <div className="mt-1 w-10 h-10 bg-slate-50 dark:bg-slate-700 rounded-xl flex items-center justify-center group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 transition-colors">
                 <FileText className="w-5 h-5 text-slate-400 group-hover:text-blue-500" />
               </div>
@@ -63,7 +63,7 @@ export default async function CategoriaPage({ params }: { params: { slug: string
         ))}
 
         {category.articles.length === 0 && (
-          <div className="text-center py-12 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-dashed border-slate-200 dark:border-slate-700">
+          <div className="text-center py-12 bg-muted/50 text-muted-foreground rounded-3xl border border-dashed border-slate-200 dark:border-slate-700">
             <LifeBuoy className="w-12 h-12 text-slate-300 mx-auto mb-4" />
             <p className="text-slate-500 font-medium">No hay artículos disponibles en esta categoría.</p>
           </div>

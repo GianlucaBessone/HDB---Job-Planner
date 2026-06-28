@@ -111,7 +111,7 @@ export default function DatasetsCliente({ user }: { user: any }) {
             {loading ? (
                 <div className="flex items-center justify-center py-20"><div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" /></div>
             ) : datasets.length === 0 ? (
-                <div className="bg-white dark:bg-slate-800 border border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-12 text-center">
+                <div className="bg-card text-card-foreground border border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-12 text-center">
                     <Database className="w-12 h-12 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
                     <h3 className="text-lg font-bold text-slate-600 dark:text-slate-300 mb-1">Sin Datasets</h3>
                     <p className="text-sm text-slate-400">Creá tu primer Dataset para extraer información.</p>
@@ -119,7 +119,7 @@ export default function DatasetsCliente({ user }: { user: any }) {
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {datasets.map(ds => (
-                        <div key={ds.id} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm hover:shadow-md transition-all p-5 flex flex-col group">
+                        <div key={ds.id} className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm hover:shadow-md transition-all p-5 flex flex-col group">
                             <div className="flex justify-between items-start mb-3">
                                 <div>
                                     <div className="flex items-center gap-2 mb-1">
@@ -144,7 +144,7 @@ export default function DatasetsCliente({ user }: { user: any }) {
                             </div>
                             <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-4 flex-1">{ds.descripcion || 'Sin descripción'}</p>
                             
-                            <div className="grid grid-cols-2 gap-2 text-xs text-slate-500 dark:text-slate-400 mb-4 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                            <div className="grid grid-cols-2 gap-2 text-xs text-slate-500 dark:text-slate-400 mb-4 bg-background text-foreground/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
                                 <div className="flex items-center gap-1.5"><TableIcon className="w-3.5 h-3.5 text-slate-400" /> {ds.modoConsulta === 'SQL' ? 'Query SQL' : 'Visual Builder'}</div>
                                 <div className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-slate-400" /> {ds.tipoEjecucion === 'Manual' ? 'Manual' : `Prog: ${ds.frecuencia}`}</div>
                                 <div className="flex items-center gap-1.5"><Activity className="w-3.5 h-3.5 text-slate-400" /> KPIs: {ds._count?.kpisAsociados || 0}</div>

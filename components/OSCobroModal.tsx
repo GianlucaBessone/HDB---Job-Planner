@@ -228,9 +228,9 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
 
     return (
         <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-800 w-full max-w-4xl rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[95vh] border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 duration-300">
+            <div className="bg-card text-card-foreground w-full max-w-4xl rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[95vh] border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 duration-300">
                 {/* Header */}
-                <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-800 shrink-0">
+                <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-card text-card-foreground shrink-0">
                     <div className="space-y-1">
                         <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
                             <Calculator className="w-5 h-5 text-indigo-600" />
@@ -240,7 +240,7 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
                             OS: <span className="text-slate-700 dark:text-slate-200 font-bold">{os.codigoOS || '#'+os.id.slice(-6)}</span> — {os.project.nombre}
                         </p>
                     </div>
-                    <button onClick={onClose} className="p-2 text-slate-400 dark:text-slate-500 hover:text-slate-600 bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"><X className="w-5 h-5" /></button>
+                    <button onClick={onClose} className="p-2 text-slate-400 dark:text-slate-500 hover:text-slate-600 bg-background text-foreground/50 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"><X className="w-5 h-5" /></button>
                 </div>
 
                 {/* Content */}
@@ -248,7 +248,7 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
                     <div className="grid grid-cols-1 md:grid-cols-[1fr_320px] gap-6 items-start">
                         <div className="space-y-6">
                             {/* Mano de Obra Section */}
-                            <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+                            <div className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
                                 <h4 className="font-black text-sm text-slate-800 dark:text-slate-100 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-3 flex flex-col gap-1">
                                     <div className="flex justify-between w-full">
                                         Mano de Obra
@@ -264,7 +264,7 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
                                     <input 
                                         type="number" min="0" step="10"
                                         value={valorMo} onChange={e => setValorMo(e.target.value)}
-                                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                        className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                                     />
                                 </div>
                                 <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-3 flex justify-between items-center px-4">
@@ -275,7 +275,7 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
 
                             {/* Materiales Section */}
                             {materiales.length > 0 && (
-                                <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+                                <div className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
                                     <h4 className="font-black text-sm text-slate-800 dark:text-slate-100 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-3">
                                         Materiales
                                     </h4>
@@ -287,7 +287,7 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
                                                     {m.codigo && <div className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tighter">{m.codigo}</div>}
                                                 </div>
                                                 <div className="flex items-center gap-3 w-full sm:w-auto shrink-0 justify-between sm:justify-end">
-                                                    <div className="text-center font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/50 rounded-lg py-1 px-3 min-w-[3rem]">{m.cantidad}</div>
+                                                    <div className="text-center font-bold text-slate-500 dark:text-slate-400 bg-muted text-muted-foreground/50 rounded-lg py-1 px-3 min-w-[3rem]">{m.cantidad}</div>
                                                     <div className="relative w-28">
                                                         <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold">$</span>
                                                         <input 
@@ -312,7 +312,7 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
                             )}
 
                             {/* Gastos Operativos Section */}
-                            <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+                            <div className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
                                 <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
                                     <h4 className="font-black text-sm text-slate-800 dark:text-slate-100 uppercase tracking-widest">
                                         Gastos Operativos
@@ -368,7 +368,7 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
                                 )}
                                 
                                 {otrosConceptos.length > 0 && (
-                                    <div className="bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 rounded-xl p-3 flex justify-between items-center px-4 mt-2">
+                                    <div className="bg-background text-foreground border border-slate-100 dark:border-slate-700 rounded-xl p-3 flex justify-between items-center px-4 mt-2">
                                         <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Subtotal Otros Gastos</span>
                                         <span className="font-black text-slate-700 dark:text-slate-200 text-lg">${formatARS(subtotalOtros)}</span>
                                     </div>
@@ -376,7 +376,7 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
                             </div>
 
                             {/* Additional Options */}
-                            <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+                            <div className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
                                 <h4 className="font-black text-sm text-slate-800 dark:text-slate-100 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-3">
                                     Información Adicional
                                 </h4>
@@ -385,7 +385,7 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
                                         <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Condición de Pago</label>
                                         <select 
                                             value={condicionPago} onChange={e => setCondicionPago(e.target.value)}
-                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-200 transition-all"
+                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-200 transition-all"
                                         >
                                             <option value="">Seleccionar...</option>
                                             <option value="Contado">Contado</option>
@@ -398,7 +398,7 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
                                         <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Observaciones Generales</label>
                                         <textarea 
                                             value={observaciones} onChange={e => setObservaciones(e.target.value)}
-                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 font-medium text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-200 transition-all min-h-[80px]"
+                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 font-medium text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-200 transition-all min-h-[80px]"
                                             placeholder="Detalles del acuerdo, cuentas, etc..."
                                         />
                                     </div>
@@ -430,7 +430,7 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
                                                 onClick={() => setDescuentoAplicado(!descuentoAplicado)}
                                                 className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none align-middle mr-2 ${descuentoAplicado ? 'bg-emerald-500' : 'bg-slate-600'}`}
                                             >
-                                                <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white dark:bg-slate-800 shadow ring-0 transition duration-200 ease-in-out ${descuentoAplicado ? 'translate-x-5' : 'translate-x-0'}`} />
+                                                <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-card text-card-foreground shadow ring-0 transition duration-200 ease-in-out ${descuentoAplicado ? 'translate-x-5' : 'translate-x-0'}`} />
                                             </button>
                                             <span className="text-xs font-bold text-slate-300 uppercase tracking-widest align-middle cursor-pointer" onClick={() => setDescuentoAplicado(!descuentoAplicado)}>Aplicar Descuento</span>
                                         </div>
@@ -460,7 +460,7 @@ export default function OSCobroModal({ os, onClose, onSaveSuccess }: { os: any, 
                                                     onClick={() => setIvaAplicado(!ivaAplicado)}
                                                     className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none align-middle mr-2 ${ivaAplicado ? 'bg-rose-500' : 'bg-slate-600'}`}
                                                 >
-                                                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white dark:bg-slate-800 shadow ring-0 transition duration-200 ease-in-out ${ivaAplicado ? 'translate-x-5' : 'translate-x-0'}`} />
+                                                    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-card text-card-foreground shadow ring-0 transition duration-200 ease-in-out ${ivaAplicado ? 'translate-x-5' : 'translate-x-0'}`} />
                                                 </button>
                                                 <span className="text-xs font-bold text-slate-300 uppercase tracking-widest align-middle cursor-pointer" onClick={() => setIvaAplicado(!ivaAplicado)}>Añadir IVA (21%)</span>
                                             </div>

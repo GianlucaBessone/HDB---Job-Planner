@@ -394,11 +394,11 @@ export default function OperadoresTab() {
                 {/* Main skeleton grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     {/* Left Column: Sidebar list skeleton */}
-                    <div className="lg:col-span-4 bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 space-y-4">
+                    <div className="lg:col-span-4 bg-card text-card-foreground rounded-3xl p-6 border border-slate-200 dark:border-slate-700 space-y-4">
                         <div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded-lg" />
                         <div className="space-y-3">
                             {[1, 2, 3, 4, 5].map((i) => (
-                                <div key={i} className="flex justify-between items-center p-3.5 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                <div key={i} className="flex justify-between items-center p-3.5 bg-background text-foreground/50 rounded-2xl border border-slate-100 dark:border-slate-800">
                                     <div className="flex items-center gap-3 w-full">
                                         <div className="w-6 h-6 bg-slate-200 dark:bg-slate-700 rounded-full shrink-0" />
                                         <div className="space-y-1.5 w-full">
@@ -415,7 +415,7 @@ export default function OperadoresTab() {
                     {/* Right Column: Details skeleton */}
                     <div className="lg:col-span-8 space-y-6">
                         {/* Header card skeleton */}
-                        <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+                        <div className="bg-card text-card-foreground rounded-3xl p-6 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                             <div className="flex items-center gap-4">
                                 <div className="w-16 h-16 bg-slate-200 dark:bg-slate-700 rounded-3xl shrink-0" />
                                 <div className="space-y-2">
@@ -429,7 +429,7 @@ export default function OperadoresTab() {
                         {/* Metrics grid skeleton */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                             {[1, 2, 3, 4].map((i) => (
-                                <div key={i} className="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-200 dark:border-slate-700 space-y-4">
+                                <div key={i} className="bg-card text-card-foreground rounded-3xl p-5 border border-slate-200 dark:border-slate-700 space-y-4">
                                     <div className="flex justify-between items-center">
                                         <div className="w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded-lg" />
                                         <div className="w-12 h-3 bg-slate-200 dark:bg-slate-700 rounded-lg" />
@@ -534,7 +534,7 @@ export default function OperadoresTab() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
                 {/* LEFT COLUMN: The Leaderboard */}
-                <div className="lg:col-span-4 bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
+                <div className="lg:col-span-4 bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
                     <h4 className="font-black text-slate-800 dark:text-slate-100 text-sm uppercase tracking-wider">Ranking de Técnicos</h4>
                     <div className="space-y-2.5 max-h-[700px] overflow-y-auto pr-1">
                         {scoreboard.map((op, index) => {
@@ -591,7 +591,7 @@ export default function OperadoresTab() {
                     {selectedOperator ? (
                         <>
                             {/* Operator Overview card */}
-                            <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                            <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                                 <div className="flex items-center gap-4">
                                     <div className="w-16 h-16 rounded-3xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-2xl font-black shrink-0">
                                         {selectedOperator.operatorName.charAt(0)}
@@ -609,7 +609,7 @@ export default function OperadoresTab() {
                                 </div>
 
                                 {/* Circular score indicator */}
-                                <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-900/40 p-4 rounded-3xl border border-slate-100 dark:border-slate-800/80">
+                                <div className="flex items-center gap-4 bg-background text-foreground/40 p-4 rounded-3xl border border-slate-100 dark:border-slate-800/80">
                                     <div className="relative w-16 h-16">
                                         <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
                                             <circle cx="18" cy="18" r="16" fill="none" stroke="#f1f5f9" strokeWidth="3" />
@@ -639,7 +639,7 @@ export default function OperadoresTab() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-6 gap-4">
 
                                 {/* CSAT Client Score */}
-                                <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between min-w-0">
+                                <div className="bg-card text-card-foreground rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between min-w-0">
                                     <div className="flex justify-between items-start gap-2 min-w-0">
                                         <div className="p-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl shrink-0">
                                             <Star className="w-5 h-5" fill="currentColor" />
@@ -660,7 +660,7 @@ export default function OperadoresTab() {
                                         <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5">
                                             {scoreConfig.enableCsat ? `${selectedOperator.metrics.csat} / 10` : '10 / 10'}
                                         </h4>
-                                        <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-900 rounded-full mt-2.5 overflow-hidden">
+                                        <div className="h-1.5 w-full bg-secondary text-secondary-foreground rounded-full mt-2.5 overflow-hidden">
                                             <div className="h-full bg-amber-500 rounded-full" style={{ width: scoreConfig.enableCsat ? `${selectedOperator.metrics.csat * 10}%` : '100%' }} />
                                         </div>
                                     </div>
@@ -671,7 +671,7 @@ export default function OperadoresTab() {
                                 </div>
 
                                 {/* Competency Score */}
-                                <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between min-w-0">
+                                <div className="bg-card text-card-foreground rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between min-w-0">
                                     <div className="flex justify-between items-start gap-2 min-w-0">
                                         <div className="p-2 bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 rounded-xl shrink-0">
                                             <GraduationCap className="w-5 h-5" />
@@ -692,7 +692,7 @@ export default function OperadoresTab() {
                                         <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5">
                                             {scoreConfig.enableCompetency ? `${selectedOperator.metrics.competencyScore || 0}%` : '100%'}
                                         </h4>
-                                        <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-900 rounded-full mt-2.5 overflow-hidden">
+                                        <div className="h-1.5 w-full bg-secondary text-secondary-foreground rounded-full mt-2.5 overflow-hidden">
                                             <div className="h-full bg-indigo-600 rounded-full"
                                                 style={{ width: scoreConfig.enableCompetency ? `${selectedOperator.metrics.competencyScore || 0}%` : '100%' }}
                                             />
@@ -705,7 +705,7 @@ export default function OperadoresTab() {
                                 </div>
 
                                 {/* Punch-in Compliance and worked hours */}
-                                <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between min-w-0">
+                                <div className="bg-card text-card-foreground rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between min-w-0">
                                     <div className="flex justify-between items-start gap-2 min-w-0">
                                         <div className="p-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl shrink-0">
                                             <Activity className="w-5 h-5" />
@@ -726,7 +726,7 @@ export default function OperadoresTab() {
                                         <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5">
                                             {scoreConfig.enableCompliance ? `${selectedOperator.metrics.timeCompliance}%` : '100%'}
                                         </h4>
-                                        <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-900 rounded-full mt-2.5 overflow-hidden">
+                                        <div className="h-1.5 w-full bg-secondary text-secondary-foreground rounded-full mt-2.5 overflow-hidden">
                                             <div className="h-full bg-emerald-500 rounded-full" style={{ width: scoreConfig.enableCompliance ? `${selectedOperator.metrics.timeCompliance}%` : '100%' }} />
                                         </div>
                                     </div>
@@ -747,7 +747,7 @@ export default function OperadoresTab() {
                                 </div>
 
                                 {/* Hours Workload & Recompense */}
-                                <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between min-w-0">
+                                <div className="bg-card text-card-foreground rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between min-w-0">
                                     <div className="flex justify-between items-start gap-2 min-w-0">
                                         <div className="p-2 bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded-xl shrink-0">
                                             <Clock className="w-5 h-5" />
@@ -768,7 +768,7 @@ export default function OperadoresTab() {
                                         <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5">
                                             {selectedOperator.metrics.totalWorkedHours || 0} hs
                                         </h4>
-                                        <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-900 rounded-full mt-2.5 overflow-hidden">
+                                        <div className="h-1.5 w-full bg-secondary text-secondary-foreground rounded-full mt-2.5 overflow-hidden">
                                             <div className="h-full bg-violet-500 rounded-full" style={{ width: `${Math.min(100, ((selectedOperator.metrics.totalWorkedHours || 0) / 180) * 100)}%` }} />
                                         </div>
                                     </div>
@@ -781,7 +781,7 @@ export default function OperadoresTab() {
                                 </div>
 
                                 {/* Safety Audits Card */}
-                                <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between min-w-0">
+                                <div className="bg-card text-card-foreground rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between min-w-0">
                                     <div className="flex justify-between items-start gap-2 min-w-0">
                                         <div className={`p-2 rounded-xl shrink-0 ${selectedOperator.metrics.safetyInfractionsCount > 0 && scoreConfig.enableSafetyPenalty ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}`}>
                                             {selectedOperator.metrics.safetyInfractionsCount > 0 && scoreConfig.enableSafetyPenalty ? <ShieldAlert className="w-5 h-5" /> : <Shield className="w-5 h-5" />}
@@ -802,7 +802,7 @@ export default function OperadoresTab() {
                                         <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5 truncate">
                                             {selectedOperator.metrics.safetyInfractionsCount > 0 && scoreConfig.enableSafetyPenalty ? `${selectedOperator.metrics.safetyInfractionsCount} Desvíos` : 'Sin desvíos'}
                                         </h4>
-                                        <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-900 rounded-full mt-2.5 overflow-hidden">
+                                        <div className="h-1.5 w-full bg-secondary text-secondary-foreground rounded-full mt-2.5 overflow-hidden">
                                             <div className={`h-full rounded-full ${selectedOperator.metrics.safetyInfractionsCount > 0 && scoreConfig.enableSafetyPenalty ? 'bg-rose-500' : 'bg-emerald-500'}`} style={{ width: `${Math.max(0, 100 - (scoreConfig.enableSafetyPenalty ? (selectedOperator.metrics.safetyPenalty || 0) : 0))}%` }} />
                                         </div>
                                     </div>
@@ -815,7 +815,7 @@ export default function OperadoresTab() {
                                 </div>
 
                                 {/* Rework (FTFR) Card */}
-                                <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between min-w-0">
+                                <div className="bg-card text-card-foreground rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between min-w-0">
                                     <div className="flex justify-between items-start gap-2 min-w-0">
                                         <div className={`p-2 rounded-xl shrink-0 ${selectedOperator.metrics.reworkCount > 0 && scoreConfig.enableReworkPenalty ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}`}>
                                             {selectedOperator.metrics.reworkCount > 0 && scoreConfig.enableReworkPenalty ? <AlertTriangle className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
@@ -836,7 +836,7 @@ export default function OperadoresTab() {
                                         <h4 className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-0.5">
                                             {selectedOperator.metrics.reworkCount || 0} OS
                                         </h4>
-                                        <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-900 rounded-full mt-2.5 overflow-hidden">
+                                        <div className="h-1.5 w-full bg-secondary text-secondary-foreground rounded-full mt-2.5 overflow-hidden">
                                             <div className={`h-full rounded-full ${selectedOperator.metrics.reworkCount > 0 && scoreConfig.enableReworkPenalty ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${Math.max(0, 100 - (scoreConfig.enableReworkPenalty ? (selectedOperator.metrics.reworkPenalty || 0) : 0))}%` }} />
                                         </div>
                                     </div>
@@ -911,7 +911,7 @@ export default function OperadoresTab() {
                             })()}
 
                             {/* Competencies Matrix Panel */}
-                            <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
+                            <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
                                 <div className="flex justify-between items-center flex-wrap gap-4 border-b border-slate-100 dark:border-slate-700 pb-4">
                                     <div>
                                         <h4 className="text-lg font-black text-slate-800 dark:text-slate-100">Matriz de Competencias (Habilidades)</h4>
@@ -935,7 +935,7 @@ export default function OperadoresTab() {
                                             const isPending = skill.status === 'pendiente';
 
                                             return (
-                                                <div key={skill.name} className="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-100 dark:border-slate-800 hover:shadow-sm transition-all">
+                                                <div key={skill.name} className="flex justify-between items-center p-4 bg-background text-foreground/40 rounded-2xl border border-slate-100 dark:border-slate-800 hover:shadow-sm transition-all">
                                                     <div className="space-y-1">
                                                         <div className="flex items-center gap-2">
                                                             <span className="font-black text-sm text-slate-800 dark:text-slate-100">{skill.name}</span>
@@ -1005,7 +1005,7 @@ export default function OperadoresTab() {
                             </div>
 
                             {/* External Certificates Management Panel */}
-                            <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
+                            <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
                                 <div className="border-b border-slate-100 dark:border-slate-700 pb-4">
                                     <h4 className="text-lg font-black text-slate-800 dark:text-slate-100">Certificados Externos Presentados</h4>
                                     <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase mt-0.5">
@@ -1027,7 +1027,7 @@ export default function OperadoresTab() {
                                         {certificates.map((cert) => {
                                             const aiData = cert.aiData || {};
                                             return (
-                                                <div key={cert.id} className="p-4 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-in fade-in duration-200">
+                                                <div key={cert.id} className="p-4 bg-background text-foreground/40 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-in fade-in duration-200">
                                                     <div className="space-y-1.5 flex-1">
                                                         <div className="flex items-center gap-2 flex-wrap">
                                                             <h5 className="font-black text-sm text-slate-800 dark:text-slate-100">{cert.nombreCurso}</h5>
@@ -1107,7 +1107,7 @@ export default function OperadoresTab() {
                                                                 });
                                                                 setIsEditingCert(false);
                                                             }}
-                                                            className="p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 rounded-xl transition-colors shadow-sm"
+                                                            className="p-2 bg-muted text-muted-foreground hover:bg-slate-200 text-slate-600 dark:text-slate-300 rounded-xl transition-colors shadow-sm"
                                                             title="Ver detalles y archivo"
                                                         >
                                                             <Eye className="w-4 h-4" />
@@ -1146,7 +1146,7 @@ export default function OperadoresTab() {
                             </div>
                         </>
                     ) : (
-                        <div className="h-64 flex flex-col justify-center items-center bg-slate-50 dark:bg-slate-900 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[2rem] text-slate-500">
+                        <div className="h-64 flex flex-col justify-center items-center bg-background text-foreground border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[2rem] text-slate-500">
                             <User className="w-12 h-12 text-slate-400 mb-3" />
                             <h4 className="text-sm font-black text-slate-700 dark:text-slate-300">Seleccione un Operador</h4>
                             <p className="text-xs font-medium text-slate-500 mt-1">Haga clic en un técnico del ranking para analizar su perfil de competencias.</p>
@@ -1159,7 +1159,7 @@ export default function OperadoresTab() {
             {/* Detailed Certificate preview modal */}
             {previewCert && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] flex justify-center items-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-slate-800 w-full max-w-5xl h-[85vh] rounded-[2.5rem] overflow-hidden flex flex-col border border-slate-105 dark:border-slate-700 shadow-2xl animate-in zoom-in-95 duration-200">
+                    <div className="bg-card text-card-foreground w-full max-w-5xl h-[85vh] rounded-[2.5rem] overflow-hidden flex flex-col border border-slate-105 dark:border-slate-700 shadow-2xl animate-in zoom-in-95 duration-200">
                         {/* Header */}
                         <div className="p-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/40">
                             <div>
@@ -1188,7 +1188,7 @@ export default function OperadoresTab() {
                         {/* Content */}
                         <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
                             {/* Left Column: Iframe/Image file viewer */}
-                            <div className="flex-1 bg-slate-100 dark:bg-slate-900 p-4 flex justify-center items-center overflow-auto min-h-[300px] md:min-h-0">
+                            <div className="flex-1 bg-secondary text-secondary-foreground p-4 flex justify-center items-center overflow-auto min-h-[300px] md:min-h-0">
                                 {previewCert.archivoUrl ? (
                                     previewCert.archivoUrl.startsWith('data:application/pdf') || previewCert.archivoUrl.endsWith('.pdf') ? (
                                         <iframe src={previewCert.archivoUrl} className="w-full h-full rounded-2xl border-0" />
@@ -1196,14 +1196,14 @@ export default function OperadoresTab() {
                                         <img src={previewCert.archivoUrl} alt="Certificado" className="max-w-full max-h-full rounded-2xl shadow-md object-contain" />
                                     )
                                 ) : (
-                                    <div className="p-8 text-center bg-slate-50 dark:bg-slate-900 rounded-2xl text-slate-400 text-xs">
+                                    <div className="p-8 text-center bg-background text-foreground rounded-2xl text-slate-400 text-xs">
                                         Vista previa no soportada para este formato de archivo.
                                     </div>
                                 )}
                             </div>
 
                             {/* Right Column: Metadata & AI details & Actions */}
-                            <div className="w-full md:w-[450px] border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 overflow-y-auto flex flex-col justify-between">
+                            <div className="w-full md:w-[450px] border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-700 bg-card text-card-foreground p-6 overflow-y-auto flex flex-col justify-between">
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between">
                                         <p className="text-[10px] font-black text-indigo-600 uppercase tracking-wider flex items-center gap-1">
@@ -1212,7 +1212,7 @@ export default function OperadoresTab() {
                                         {previewCert.estado !== 'aprobado' && !isEditingCert && isSupervisorOrAdmin && (
                                             <button 
                                                 onClick={() => setIsEditingCert(true)} 
-                                                className="text-[10px] font-bold px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
+                                                className="text-[10px] font-bold px-2 py-1 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
                                             >
                                                 Editar Datos
                                             </button>
@@ -1223,33 +1223,33 @@ export default function OperadoresTab() {
                                         <div className="space-y-3">
                                             <div className="space-y-1">
                                                 <label className="text-[10px] font-bold text-slate-500">Curso / Título</label>
-                                                <input type="text" value={editCertData.nombreCurso} onChange={(e) => setEditCertData({...editCertData, nombreCurso: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-750 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
+                                                <input type="text" value={editCertData.nombreCurso} onChange={(e) => setEditCertData({...editCertData, nombreCurso: e.target.value})} className="w-full px-3 py-2 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-750 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
                                             </div>
                                             <div className="space-y-1">
                                                 <label className="text-[10px] font-bold text-slate-500">Institución</label>
-                                                <input type="text" value={editCertData.institucion} onChange={(e) => setEditCertData({...editCertData, institucion: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-755 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
+                                                <input type="text" value={editCertData.institucion} onChange={(e) => setEditCertData({...editCertData, institucion: e.target.value})} className="w-full px-3 py-2 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-755 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
                                             </div>
                                             <div className="grid grid-cols-2 gap-3">
                                                 <div className="space-y-1">
                                                     <label className="text-[10px] font-bold text-slate-500">Horas</label>
-                                                    <input type="number" step="any" value={editCertData.horas} onChange={(e) => setEditCertData({...editCertData, horas: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-760 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
+                                                    <input type="number" step="any" value={editCertData.horas} onChange={(e) => setEditCertData({...editCertData, horas: e.target.value})} className="w-full px-3 py-2 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-760 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
                                                 </div>
                                                 <div className="space-y-1">
                                                     <label className="text-[10px] font-bold text-slate-500">Fecha Emisión</label>
-                                                    <input type="date" value={editCertData.fechaEmision} onChange={(e) => setEditCertData({...editCertData, fechaEmision: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-765 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
+                                                    <input type="date" value={editCertData.fechaEmision} onChange={(e) => setEditCertData({...editCertData, fechaEmision: e.target.value})} className="w-full px-3 py-2 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-765 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
                                                 </div>
                                             </div>
                                             <div className="space-y-1">
                                                 <label className="text-[10px] font-bold text-slate-500">Descripción / Resumen</label>
-                                                <textarea value={editCertData.descripcion} onChange={(e) => setEditCertData({...editCertData, descripcion: e.target.value})} className="w-full h-20 px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-770 dark:text-slate-250 focus:outline-none focus:border-indigo-500 resize-none" />
+                                                <textarea value={editCertData.descripcion} onChange={(e) => setEditCertData({...editCertData, descripcion: e.target.value})} className="w-full h-20 px-3 py-2 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-770 dark:text-slate-250 focus:outline-none focus:border-indigo-500 resize-none" />
                                             </div>
                                             <div className="space-y-1">
                                                 <label className="text-[10px] font-bold text-slate-500">Habilidades Relevantes (separadas por coma)</label>
-                                                <input type="text" value={editCertData.habilidadesRelevantes} onChange={(e) => setEditCertData({...editCertData, habilidadesRelevantes: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-775 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
+                                                <input type="text" value={editCertData.habilidadesRelevantes} onChange={(e) => setEditCertData({...editCertData, habilidadesRelevantes: e.target.value})} className="w-full px-3 py-2 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-775 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
                                             </div>
                                             <div className="space-y-1">
                                                 <label className="text-[10px] font-bold text-slate-500">Otras Habilidades (separadas por coma)</label>
-                                                <input type="text" value={editCertData.otrasHabilidades} onChange={(e) => setEditCertData({...editCertData, otrasHabilidades: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-780 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
+                                                <input type="text" value={editCertData.otrasHabilidades} onChange={(e) => setEditCertData({...editCertData, otrasHabilidades: e.target.value})} className="w-full px-3 py-2 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-780 dark:text-slate-250 focus:outline-none focus:border-indigo-500" />
                                             </div>
                                             <div className="flex gap-2 justify-end pt-2">
                                                 <button onClick={() => setIsEditingCert(false)} className="px-3 py-1.5 text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors">Cancelar</button>
@@ -1260,7 +1260,7 @@ export default function OperadoresTab() {
                                         </div>
                                     ) : (
                                         <div className="space-y-3 text-xs">
-                                            <div className="grid grid-cols-2 gap-3 bg-slate-50 dark:bg-slate-900/40 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800">
+                                            <div className="grid grid-cols-2 gap-3 bg-background text-foreground/40 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800">
                                                 <div>
                                                     <p className="text-[10px] text-slate-400 font-bold uppercase">Curso:</p>
                                                     <p className="font-bold text-slate-850 dark:text-slate-250">{previewCert.nombreCurso || 'N/A'}</p>
@@ -1287,7 +1287,7 @@ export default function OperadoresTab() {
                                             </div>
                                             
                                             {/* Description / Resumen view */}
-                                            <div className="bg-slate-50 dark:bg-slate-900/40 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800">
+                                            <div className="bg-background text-foreground/40 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800">
                                                 <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">Descripción / Resumen:</p>
                                                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed font-semibold">{previewCert.descripcion || 'Sin descripción'}</p>
                                             </div>
@@ -1365,7 +1365,7 @@ export default function OperadoresTab() {
             {/* SGC ISO9001 Audit Modal */}
             {showAuditModal && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] flex justify-center items-center p-4">
-                    <div className="bg-white dark:bg-slate-800 w-full max-w-3xl max-h-[85vh] rounded-[2.5rem] overflow-hidden flex flex-col border border-slate-100 dark:border-slate-700 shadow-2xl animate-in zoom-in-95 duration-200">
+                    <div className="bg-card text-card-foreground w-full max-w-3xl max-h-[85vh] rounded-[2.5rem] overflow-hidden flex flex-col border border-slate-100 dark:border-slate-700 shadow-2xl animate-in zoom-in-95 duration-200">
 
                         {/* Modal Header */}
                         <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/40">
@@ -1392,7 +1392,7 @@ export default function OperadoresTab() {
                         <div className="flex-1 overflow-y-auto p-6 space-y-6 text-slate-700 dark:text-slate-300">
 
                             {/* Summary/Introduction */}
-                            <div className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-2">
+                            <div className="bg-background text-foreground/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-2">
                                 <h5 className="text-xs font-black uppercase text-slate-800 dark:text-slate-250 tracking-wider">Objetivo del Procedimiento</h5>
                                 <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
                                     Este módulo calcula automáticamente el desempeño global de los técnicos y operadores de campo de HDB Servicios Eléctricos. El sistema consolida datos operativos, capacitaciones homologadas e inasistencias en base mensual para asegurar el cumplimiento del estándar de calidad ISO 9001 y la trazabilidad del personal.
@@ -1544,7 +1544,7 @@ export default function OperadoresTab() {
             {/* SCORE CONFIG MODAL */}
             {showConfigModal && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl border border-slate-100 dark:border-slate-700 flex flex-col max-h-[85vh]">
+                    <div className="bg-card text-card-foreground rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl border border-slate-100 dark:border-slate-700 flex flex-col max-h-[85vh]">
                         {/* Header */}
                         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
                             <div className="flex items-center gap-3">
@@ -1575,7 +1575,7 @@ export default function OperadoresTab() {
                                         <div key={item.key} className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all ${
                                             scoreConfig[item.key]
                                                 ? 'bg-white dark:bg-slate-900/50 border-slate-200 dark:border-slate-700'
-                                                : 'bg-slate-50 dark:bg-slate-900/80 border-slate-100 dark:border-slate-800 opacity-60'
+                                                : 'bg-background text-foreground/80 border-slate-100 dark:border-slate-800 opacity-60'
                                         }`}>
                                             <div className="flex items-center gap-3">
                                                 <span className="text-lg">{item.icon}</span>
@@ -1608,7 +1608,7 @@ export default function OperadoresTab() {
                                         <div key={item.key} className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all ${
                                             scoreConfig[item.key]
                                                 ? 'bg-white dark:bg-slate-900/50 border-slate-200 dark:border-slate-700'
-                                                : 'bg-slate-50 dark:bg-slate-900/80 border-slate-100 dark:border-slate-800 opacity-60'
+                                                : 'bg-background text-foreground/80 border-slate-100 dark:border-slate-800 opacity-60'
                                         }`}>
                                             <div className="flex items-center gap-3">
                                                 <span className="text-lg">{item.icon}</span>
@@ -1633,7 +1633,7 @@ export default function OperadoresTab() {
                             </div>
 
                             {/* Active summary */}
-                            <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
+                            <div className="bg-background text-foreground/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
                                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2">Resumen Activo</p>
                                 <div className="flex flex-wrap gap-1.5">
                                     {SCORE_CONFIG_ITEMS.map(item => (

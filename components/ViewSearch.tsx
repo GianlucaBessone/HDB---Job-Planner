@@ -106,7 +106,7 @@ export default function ViewSearch({ views, role }: ViewSearchProps) {
             />
 
             {/* Panel */}
-            <div className="relative w-full max-w-lg mx-4 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-top-4 duration-300">
+            <div className="relative w-full max-w-lg mx-4 bg-card text-card-foreground rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-top-4 duration-300">
                 {/* Search input */}
                 <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 dark:border-slate-700">
                     <Search className="w-5 h-5 text-slate-400 shrink-0" />

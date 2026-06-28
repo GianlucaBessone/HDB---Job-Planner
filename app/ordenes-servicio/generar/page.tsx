@@ -332,9 +332,9 @@ function GenerarOSContent() {
     if (loading) {
         return (
             <div className="max-w-2xl mx-auto p-6 space-y-6">
-                <div className="h-12 bg-slate-100 dark:bg-slate-800/50 rounded-2xl animate-pulse" />
-                <div className="h-40 bg-slate-100 dark:bg-slate-800/50 rounded-3xl animate-pulse" />
-                <div className="h-40 bg-slate-100 dark:bg-slate-800/50 rounded-3xl animate-pulse" />
+                <div className="h-12 bg-muted text-muted-foreground/50 rounded-2xl animate-pulse" />
+                <div className="h-40 bg-muted text-muted-foreground/50 rounded-3xl animate-pulse" />
+                <div className="h-40 bg-muted text-muted-foreground/50 rounded-3xl animate-pulse" />
             </div>
         );
     }
@@ -380,7 +380,7 @@ function GenerarOSContent() {
             )}
 
             {/* 3.1 — Horas del Proyecto */}
-            <section className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+            <section className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-50 flex items-center gap-2">
                     <Clock className="w-4 h-4 text-indigo-500" />
                     <h2 className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase tracking-wide">Horas del Proyecto</h2>
@@ -432,7 +432,7 @@ function GenerarOSContent() {
                                         disabled={isFirmada}
                                         value={op.operadorId}
                                         onChange={e => updateOperador(i, 'operadorId', e.target.value)}
-                                        className="w-full disabled:opacity-75 disabled:bg-slate-100 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                        className="w-full disabled:opacity-75 disabled:bg-slate-100 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                                     >
                                         <option value="">Seleccionar operador...</option>
                                         {operators.map(o => (
@@ -448,7 +448,7 @@ function GenerarOSContent() {
                                         className={`w-full h-10 px-2 rounded-xl text-[10px] font-black uppercase border transition-all ${
                                             op.isExtra 
                                             ? 'bg-amber-100 border-amber-300 text-amber-700 shadow-sm' 
-                                            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500'
+                                            : 'bg-card text-card-foreground border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500'
                                         }`}
                                     >
                                         {op.isExtra ? 'Extra' : 'Normal'}
@@ -465,7 +465,7 @@ function GenerarOSContent() {
                                             placeholder="0"
                                             value={op.horas}
                                             onChange={e => updateOperador(i, 'horas', e.target.value)}
-                                            className="w-full disabled:opacity-75 disabled:bg-slate-100 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all pr-7"
+                                            className="w-full disabled:opacity-75 disabled:bg-slate-100 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all pr-7"
                                         />
                                         <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 dark:text-slate-500">h</span>
                                     </div>
@@ -486,7 +486,7 @@ function GenerarOSContent() {
             </section>
 
             {/* 3.2 — Reporte del Trabajo */}
-            <section className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+            <section className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-50 flex items-center gap-2">
                     <FileText className="w-4 h-4 text-blue-500" />
                     <h2 className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase tracking-wide">Reporte del Trabajo</h2>
@@ -504,7 +504,7 @@ function GenerarOSContent() {
                         value={reporte}
                         onChange={e => setReporte(e.target.value)}
                         placeholder="Descripción detallada del trabajo realizado..."
-                        className={`w-full disabled:opacity-75 disabled:bg-slate-100 bg-slate-50 dark:bg-slate-900/50 border rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 transition-all resize-none ${errors.reporte
+                        className={`w-full disabled:opacity-75 disabled:bg-slate-100 bg-background text-foreground/50 border rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 transition-all resize-none ${errors.reporte
                             ? 'border-red-300 focus:ring-red-500/10 focus:border-red-400'
                             : 'border-slate-200 dark:border-slate-700 focus:ring-primary/10 focus:border-primary'
                             }`}
@@ -514,7 +514,7 @@ function GenerarOSContent() {
             </section>
 
             {/* 3.3 — Comentario Adicional */}
-            <section className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+            <section className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-50 flex items-center gap-2">
                     <MessageSquare className="w-4 h-4 text-slate-400 dark:text-slate-500" />
                     <h2 className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase tracking-wide">Comentario Adicional</h2>
@@ -527,13 +527,13 @@ function GenerarOSContent() {
                         value={comentario}
                         onChange={e => setComentario(e.target.value)}
                         placeholder="Cualquier nota adicional, detalle técnico extra o comentario para el cliente..."
-                        className="w-full disabled:opacity-75 disabled:bg-slate-100 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all resize-none"
+                        className="w-full disabled:opacity-75 disabled:bg-slate-100 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all resize-none"
                     />
                 </div>
             </section>
 
             {/* 3.4 — Materiales Utilizados */}
-            <section className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+            <section className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-50 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <Package className="w-4 h-4 text-amber-500" />
@@ -560,7 +560,7 @@ function GenerarOSContent() {
 
                     <div className="space-y-3">
                         {materiales.map((m, i) => (
-                            <div key={i} className={`bg-slate-50 dark:bg-slate-900/50 border ${m.materialProyectoId ? 'border-primary/20 bg-primary/5' : 'border-slate-200 dark:border-slate-700'} rounded-2xl p-4 sm:p-3 space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-4 transition-colors`}>
+                            <div key={i} className={`bg-background text-foreground/50 border ${m.materialProyectoId ? 'border-primary/20 bg-primary/5' : 'border-slate-200 dark:border-slate-700'} rounded-2xl p-4 sm:p-3 space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-4 transition-colors`}>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex gap-2 mb-2 sm:mb-0">
                                         <div className="w-24 shrink-0">
@@ -571,7 +571,7 @@ function GenerarOSContent() {
                                                 placeholder="Código"
                                                 value={m.codigo}
                                                 onChange={e => updateMaterial(i, 'codigo', e.target.value.toUpperCase())}
-                                                className={`w-full ${m.materialProyectoId ? 'bg-transparent text-primary/70 font-mono px-0' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 px-3 py-2.5 rounded-xl border'} text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase`}
+                                                className={`w-full ${m.materialProyectoId ? 'bg-transparent text-primary/70 font-mono px-0' : 'bg-card text-card-foreground border-slate-200 dark:border-slate-700 px-3 py-2.5 rounded-xl border'} text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase`}
                                             />
                                         </div>
                                         <div className="flex-1 min-w-0">
@@ -582,7 +582,7 @@ function GenerarOSContent() {
                                                 placeholder="Nombre del material"
                                                 value={m.material}
                                                 onChange={e => updateMaterial(i, 'material', e.target.value)}
-                                                className={`w-full ${m.materialProyectoId ? 'bg-transparent text-primary focus:ring-0 border-transparent px-0 text-base font-bold' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 px-3 py-2.5 rounded-xl border text-sm font-medium'} disabled:opacity-90 outline-none focus:ring-2 focus:ring-primary/20 transition-all`}
+                                                className={`w-full ${m.materialProyectoId ? 'bg-transparent text-primary focus:ring-0 border-transparent px-0 text-base font-bold' : 'bg-card text-card-foreground border-slate-200 dark:border-slate-700 px-3 py-2.5 rounded-xl border text-sm font-medium'} disabled:opacity-90 outline-none focus:ring-2 focus:ring-primary/20 transition-all`}
                                             />
                                         </div>
                                     </div>
@@ -606,7 +606,7 @@ function GenerarOSContent() {
                                                 placeholder="0.0"
                                                 value={m.cantidad}
                                                 onChange={e => updateMaterial(i, 'cantidad', e.target.value)}
-                                                className="w-full bg-white dark:bg-slate-800 disabled:opacity-75 disabled:bg-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm font-black text-slate-900 dark:text-slate-50 outline-none focus:ring-2 focus:border-primary focus:ring-primary/20 transition-all text-center"
+                                                className="w-full bg-card text-card-foreground disabled:opacity-75 disabled:bg-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm font-black text-slate-900 dark:text-slate-50 outline-none focus:ring-2 focus:border-primary focus:ring-primary/20 transition-all text-center"
                                             />
                                         </div>
                                     </div>
@@ -616,7 +616,7 @@ function GenerarOSContent() {
                                             disabled={isFirmada || !!m.materialProyectoId}
                                             value={m.unidadMedida}
                                             onChange={e => updateMaterial(i, 'unidadMedida', e.target.value)}
-                                            className={`w-full ${m.materialProyectoId ? 'bg-transparent border-transparent px-0 font-bold text-slate-500 dark:text-slate-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 px-2.5 py-2.5 rounded-xl border appearance-none font-medium text-sm'} disabled:opacity-90 outline-none focus:ring-2 focus:ring-primary/20 transition-all`}
+                                            className={`w-full ${m.materialProyectoId ? 'bg-transparent border-transparent px-0 font-bold text-slate-500 dark:text-slate-400' : 'bg-card text-card-foreground border-slate-200 dark:border-slate-700 px-2.5 py-2.5 rounded-xl border appearance-none font-medium text-sm'} disabled:opacity-90 outline-none focus:ring-2 focus:ring-primary/20 transition-all`}
                                         >
                                             {!UNIDADES.includes(m.unidadMedida) && m.unidadMedida && (
                                                 <option value={m.unidadMedida}>{m.unidadMedida}</option>
@@ -658,7 +658,7 @@ function GenerarOSContent() {
                 ) : (
                     <button
                         onClick={() => router.back()}
-                        className="w-full py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:bg-slate-200 rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2"
+                        className="w-full py-4 bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 hover:bg-slate-200 rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2"
                     >
                         Volver
                     </button>
@@ -672,7 +672,7 @@ export default function GenerarOSPage() {
     return (
         <Suspense fallback={
             <div className="max-w-2xl mx-auto p-6 space-y-6">
-                {[1, 2, 3].map(i => <div key={i} className="h-40 bg-slate-100 dark:bg-slate-800/50 rounded-3xl animate-pulse" />)}
+                {[1, 2, 3].map(i => <div key={i} className="h-40 bg-muted text-muted-foreground/50 rounded-3xl animate-pulse" />)}
             </div>
         }>
             <GenerarOSContent />

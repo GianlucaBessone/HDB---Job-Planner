@@ -46,15 +46,15 @@ export default function ExpirationsTab({ user }: { user: any }) {
             {isLoading ? (
                 <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" /></div>
             ) : docs.length === 0 ? (
-                <div className="bg-white dark:bg-slate-800 rounded-2xl p-12 text-center border border-slate-200 dark:border-slate-700">
+                <div className="bg-card text-card-foreground rounded-2xl p-12 text-center border border-slate-200 dark:border-slate-700">
                     <Clock className="w-10 h-10 text-emerald-400 mx-auto mb-3" />
                     <p className="text-sm font-bold text-slate-500">No hay documentos vencidos ni próximos a vencer.</p>
                 </div>
             ) : (
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div className="bg-card text-card-foreground rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 text-[10px] uppercase tracking-widest text-slate-500">
+                            <tr className="bg-background text-foreground/50 border-b border-slate-200 dark:border-slate-700 text-[10px] uppercase tracking-widest text-slate-500">
                                 <th className="p-4 font-black">Documento</th>
                                 <th className="p-4 font-black">Próx. Revisión</th>
                                 <th className="p-4 font-black">Estado</th>

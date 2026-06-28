@@ -162,10 +162,10 @@ function NotificationsContent() {
     const displayedNotifications = getDisplayedNotifications();
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-900/50 pb-20 pt-8 px-4 md:px-8 max-w-3xl mx-auto">
+        <div className="min-h-screen bg-background text-foreground/50 pb-20 pt-8 px-4 md:px-8 max-w-3xl mx-auto">
             <div className="flex items-center justify-between gap-3 mb-8">
                 <div className="flex items-center gap-2 min-w-0">
-                    <Link href="/" className="p-2 bg-white dark:bg-slate-800 rounded-full shadow-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition shrink-0">
+                    <Link href="/" className="p-2 bg-card text-card-foreground rounded-full shadow-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition shrink-0">
                         <ArrowRight className="w-5 h-5 text-slate-500 dark:text-slate-400 rotate-180" />
                     </Link>
                     <h1 className="text-lg sm:text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-1.5 truncate">
@@ -188,13 +188,13 @@ function NotificationsContent() {
             <div className="flex p-1 bg-slate-200/50 rounded-2xl mb-6">
                 <button
                     onClick={() => setActiveTab('unread')}
-                    className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all ${activeTab === 'unread' ? 'bg-white dark:bg-slate-800 shadow-sm text-primary' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                    className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all ${activeTab === 'unread' ? 'bg-card text-card-foreground shadow-sm text-primary' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
                 >
                     No leídas ({notifications.filter(n => !n.read).length})
                 </button>
                 <button
                     onClick={() => setActiveTab('read')}
-                    className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all ${activeTab === 'read' ? 'bg-white dark:bg-slate-800 shadow-sm text-primary' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                    className={`flex-1 py-3 text-sm font-bold rounded-xl transition-all ${activeTab === 'read' ? 'bg-card text-card-foreground shadow-sm text-primary' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
                 >
                     Leídas ({notifications.filter(n => n.read).length})
                 </button>
@@ -223,7 +223,7 @@ function NotificationsContent() {
                     <p className="mt-4 text-sm font-bold text-slate-400 dark:text-slate-500">Cargando notificaciones...</p>
                 </div>
             ) : displayedNotifications.length === 0 ? (
-                <div className="text-center py-16 bg-white dark:bg-slate-800 rounded-3xl border border-dashed border-slate-200 dark:border-slate-700">
+                <div className="text-center py-16 bg-card text-card-foreground rounded-3xl border border-dashed border-slate-200 dark:border-slate-700">
                     <Bell className="w-12 h-12 text-slate-200 mx-auto mb-4" />
                     <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">No tienes notificaciones {activeTab === 'unread' ? (unreadSubTab === 'prioritarias' ? 'prioritarias' : 'generales') : 'leídas'}.</p>
                 </div>
@@ -246,7 +246,7 @@ function NotificationsContent() {
                             key={notification.id}
                             id={`notif-${notification.id}`}
                             className={`p-5 rounded-3xl border transition-all ${
-                                notification.read ? 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-70' : 'bg-white dark:bg-slate-800 border-indigo-100 shadow-md shadow-indigo-100/50'
+                                notification.read ? 'bg-card text-card-foreground border-slate-200 dark:border-slate-700 opacity-70' : 'bg-card text-card-foreground border-indigo-100 shadow-md shadow-indigo-100/50'
                             } ${isHighlighted ? 'ring-2 ring-primary ring-offset-2 scale-[1.01] shadow-lg shadow-primary/10' : ''}`}
                         >
                             <div className="flex justify-between items-start mb-2">
@@ -258,7 +258,7 @@ function NotificationsContent() {
                                         </div>
                                     )}
                                 </div>
-                                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800/50 px-2 py-1 rounded-lg shrink-0">
+                                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 bg-muted text-muted-foreground/50 px-2 py-1 rounded-lg shrink-0">
                                     {formatDateTime(notification.createdAt).replace(' ', ' - ')}
                                 </span>
                             </div>
@@ -269,7 +269,7 @@ function NotificationsContent() {
                             <div className="flex justify-end gap-2 border-t border-slate-50 pt-3">
                                 <button
                                     onClick={() => handleToggleRead(notification.id, notification.read)}
-                                    className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors ${notification.read ? 'bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:bg-slate-200' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'}`}
+                                    className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors ${notification.read ? 'bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 hover:bg-slate-200' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'}`}
                                 >
                                     {notification.read ? (
                                         <><Circle className="w-3.5 h-3.5" /> Marcar no leída</>
@@ -293,7 +293,7 @@ function NotificationsContent() {
 
             {showClearModal && (
                 <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 max-w-sm w-full border border-slate-100 dark:border-slate-700 shadow-2xl space-y-4 animate-in zoom-in-95 duration-200">
+                    <div className="bg-card text-card-foreground rounded-3xl p-6 max-w-sm w-full border border-slate-100 dark:border-slate-700 shadow-2xl space-y-4 animate-in zoom-in-95 duration-200">
                         <div className="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center text-rose-600 mb-2">
                             <Trash2 className="w-6 h-6" />
                         </div>
@@ -331,8 +331,8 @@ export default function NotificationsPage() {
     return (
         <Suspense fallback={
             <div className="space-y-4">
-                <div className="h-12 bg-slate-100 dark:bg-slate-800/50 rounded-2xl animate-pulse" />
-                {[1, 2, 3].map(i => <div key={i} className="h-20 bg-slate-100 dark:bg-slate-800/50 rounded-2xl animate-pulse" />)}
+                <div className="h-12 bg-muted text-muted-foreground/50 rounded-2xl animate-pulse" />
+                {[1, 2, 3].map(i => <div key={i} className="h-20 bg-muted text-muted-foreground/50 rounded-2xl animate-pulse" />)}
             </div>
         }>
             <NotificationsContent />

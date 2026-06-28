@@ -79,7 +79,7 @@ function QRView() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center">
+            <div className="min-h-screen bg-background text-foreground/50 flex items-center justify-center">
                 <div className="text-center space-y-4">
                     <Loader2 className="w-10 h-10 text-emerald-600 animate-spin mx-auto" />
                     <p className="text-slate-500 dark:text-slate-400 font-medium">Cargando orden de servicio...</p>
@@ -90,8 +90,8 @@ function QRView() {
 
     if (error || !os) {
         return (
-            <div className="min-h-screen bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center p-4">
-                <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-lg border border-red-100 text-center space-y-4 max-w-sm w-full">
+            <div className="min-h-screen bg-background text-foreground/50 flex items-center justify-center p-4">
+                <div className="bg-card text-card-foreground rounded-3xl p-8 shadow-lg border border-red-100 text-center space-y-4 max-w-sm w-full">
                     <AlertCircle className="w-12 h-12 text-red-500 mx-auto" />
                     <p className="text-slate-600 dark:text-slate-300 font-medium">{error}</p>
                     <button onClick={() => router.back()} className="text-sm text-primary font-bold hover:underline">
@@ -169,7 +169,7 @@ function QRView() {
 
             {/* QR Card */}
             {!isFirmada && (
-                <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-50">
                         <div className="flex items-center gap-2">
                             <Smartphone className="w-4 h-4 text-emerald-600" />
@@ -200,14 +200,14 @@ function QRView() {
 
                         {/* Link + Copy */}
                         <div className="w-full flex gap-2">
-                            <div className="flex-1 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs font-medium text-slate-500 dark:text-slate-400 truncate">
+                            <div className="flex-1 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-xs font-medium text-slate-500 dark:text-slate-400 truncate">
                                 {publicUrl}
                             </div>
                             <button
                                 onClick={copyLink}
                                 className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-xs transition-all shrink-0 ${copied
                                     ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
-                                    : 'bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:bg-slate-200 border border-slate-200 dark:border-slate-700'
+                                    : 'bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 hover:bg-slate-200 border border-slate-200 dark:border-slate-700'
                                     }`}
                             >
                                 {copied ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -234,14 +234,14 @@ function QRView() {
             )}
 
             {/* OS Summary */}
-            <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+            <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-50">
                     <h3 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Resumen de la OS</h3>
                 </div>
                 <div className="px-6 py-4 space-y-4">
                     {/* Project info */}
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-slate-100 dark:bg-slate-800/50 rounded-lg flex items-center justify-center">
+                        <div className="w-8 h-8 bg-muted text-muted-foreground/50 rounded-lg flex items-center justify-center">
                             <Building2 className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                         </div>
                         <div>
@@ -302,7 +302,7 @@ function QRView() {
                     {/* Comentario Adicional */}
                     {os.comentario && (
                         <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 bg-slate-50 dark:bg-slate-900/50 rounded-lg flex items-center justify-center shrink-0 border border-slate-100 dark:border-slate-800">
+                            <div className="w-8 h-8 bg-background text-foreground/50 rounded-lg flex items-center justify-center shrink-0 border border-slate-100 dark:border-slate-800">
                                 <MessageSquare className="w-4 h-4 text-slate-400 dark:text-slate-500" />
                             </div>
                             <div className="flex-1">
@@ -317,7 +317,7 @@ function QRView() {
             <div className="pb-10 pt-2">
                 <button
                     onClick={() => router.push('/ordenes-servicio')}
-                    className="w-full py-3.5 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all"
+                    className="w-full py-3.5 bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all"
                 >
                     Ir al listado de Órdenes de Servicio
                 </button>
@@ -330,7 +330,7 @@ export default function QRPage() {
     return (
         <Suspense fallback={
             <div className="max-w-lg mx-auto space-y-4">
-                {[1, 2, 3].map(i => <div key={i} className="h-40 bg-slate-100 dark:bg-slate-800/50 rounded-3xl animate-pulse" />)}
+                {[1, 2, 3].map(i => <div key={i} className="h-40 bg-muted text-muted-foreground/50 rounded-3xl animate-pulse" />)}
             </div>
         }>
             <QRView />

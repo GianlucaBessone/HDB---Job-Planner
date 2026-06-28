@@ -176,7 +176,7 @@ export default function SearchableSelect({
                     }
                     mouseDownRef.current = false;
                 }}
-                className={`w-full min-h-[44px] md:h-[50px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-2 md:py-3 px-3 md:px-4 flex items-center justify-between cursor-pointer transition-all text-sm ${
+                className={`w-full min-h-[44px] md:h-[50px] bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-2 md:py-3 px-3 md:px-4 flex items-center justify-between cursor-pointer transition-all text-sm ${
                     isOpen ? 'ring-4 ring-primary/10 border-primary' : 'hover:border-slate-300 dark:hover:border-slate-600'
                 } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                 tabIndex={disabled ? -1 : 0}
@@ -200,7 +200,7 @@ export default function SearchableSelect({
 
             {/* ── Dropdown panel ── */}
             {isOpen && (
-                <div className="absolute z-[110] left-0 right-0 mt-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-[2rem] shadow-2xl animate-in zoom-in-95 duration-150 overflow-hidden min-w-full">
+                <div className="absolute z-[110] left-0 right-0 mt-1.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-[2rem] shadow-2xl animate-in zoom-in-95 duration-150 overflow-hidden min-w-full">
 
                     {/* Search bar */}
                     <div className="p-3 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
@@ -281,7 +281,7 @@ export default function SearchableSelect({
                                                 isSelected
                                                     ? 'bg-primary/20 text-primary'
                                                     : isHighlighted
-                                                        ? 'bg-slate-100 dark:bg-slate-800/50 text-slate-900 dark:text-slate-50'
+                                                        ? 'bg-muted text-muted-foreground/50 text-slate-900 dark:text-slate-50'
                                                         : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80'
                                             }`}
                                         >

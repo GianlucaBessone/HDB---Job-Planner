@@ -565,7 +565,7 @@ export default function TareasPage() {
                 {ESTADOS.filter(e => e.value !== 'cancelada').map(e => {
                     const count = tareas.filter(t => t.estado === e.value).length;
                     return (
-                        <div key={e.value} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-3 shadow-sm">
+                        <div key={e.value} className="bg-card text-card-foreground rounded-2xl border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-3 shadow-sm">
                             <div className={`w-3 h-3 rounded-full ${e.dot}`}></div>
                             <div>
                                 <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{count}</p>
@@ -635,7 +635,7 @@ export default function TareasPage() {
             {view === 'lista' && (
                 <div className="space-y-2">
                     {filteredTareas.length === 0 ? (
-                        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-12 text-center">
+                        <div className="bg-card text-card-foreground rounded-2xl border border-slate-200 dark:border-slate-700 p-12 text-center">
                             <ListTodo className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
                             <p className="text-sm font-bold text-slate-400 dark:text-slate-500">No hay tareas</p>
                             <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Crea una nueva tarea para comenzar</p>
@@ -665,7 +665,7 @@ export default function TareasPage() {
             {/* ──── Create/Edit Modal ──── */}
             {showModal && (
                 <div className="fixed inset-0 z-[200] flex items-start justify-center bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto p-4 pt-[5vh]" onClick={() => setShowModal(false)}>
-                    <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 duration-300 my-4" onClick={e => e.stopPropagation()}>
+                    <div className="bg-card text-card-foreground w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 duration-300 my-4" onClick={e => e.stopPropagation()}>
                         {/* Modal Header */}
                         <div className="flex items-center justify-between p-5 pb-4 border-b border-slate-100 dark:border-slate-700">
                             <h2 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
@@ -686,7 +686,7 @@ export default function TareasPage() {
                                     value={form.titulo}
                                     onChange={e => setForm({ ...form, titulo: e.target.value })}
                                     disabled={isViewMode}
-                                    className="w-full h-12 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-sm font-semibold text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
+                                    className="w-full h-12 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-sm font-semibold text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                     placeholder="¿Qué hay que hacer?"
                                     autoFocus={!isViewMode}
                                 />
@@ -700,7 +700,7 @@ export default function TareasPage() {
                                         value={form.estado}
                                         onChange={e => setForm({ ...form, estado: e.target.value })}
                                         disabled={isViewMode}
-                                        className="w-full h-12 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
+                                        className="w-full h-12 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                     >
                                         {ESTADOS.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
                                     </select>
@@ -711,7 +711,7 @@ export default function TareasPage() {
                                         value={form.prioridad}
                                         onChange={e => setForm({ ...form, prioridad: e.target.value })}
                                         disabled={isViewMode}
-                                        className="w-full h-12 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
+                                        className="w-full h-12 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                     >
                                         {PRIORIDADES.map(p => <option key={p.value} value={p.value}>{p.icon} {p.label}</option>)}
                                     </select>
@@ -725,7 +725,7 @@ export default function TareasPage() {
                                     value={form.descripcion}
                                     onChange={e => setForm({ ...form, descripcion: e.target.value })}
                                     disabled={isViewMode}
-                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 resize-none h-20 disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
+                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 resize-none h-20 disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                     placeholder="Detalles de la tarea..."
                                 />
                             </div>
@@ -739,7 +739,7 @@ export default function TareasPage() {
                                         value={form.fechaInicio}
                                         onChange={e => setForm({ ...form, fechaInicio: e.target.value })}
                                         disabled={isViewMode}
-                                        className="w-full h-12 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
+                                        className="w-full h-12 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                     />
                                 </div>
                                 <div className="space-y-1.5">
@@ -749,7 +749,7 @@ export default function TareasPage() {
                                         value={form.fechaVencimiento}
                                         onChange={e => setForm({ ...form, fechaVencimiento: e.target.value })}
                                         disabled={isViewMode}
-                                        className="w-full h-12 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
+                                        className="w-full h-12 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                     />
                                 </div>
                             </div>
@@ -762,7 +762,7 @@ export default function TareasPage() {
                                         value={form.projectId}
                                         onChange={e => setForm({ ...form, projectId: e.target.value })}
                                         disabled={isViewMode}
-                                        className="w-full h-12 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
+                                        className="w-full h-12 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                     >
                                         <option value="">Sin proyecto</option>
                                         {projects.map((p: any) => (
@@ -777,7 +777,7 @@ export default function TareasPage() {
                                         value={form.categoria}
                                         onChange={e => setForm({ ...form, categoria: e.target.value })}
                                         disabled={isViewMode}
-                                        className="w-full h-12 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
+                                        className="w-full h-12 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                         placeholder="ej: Mantenimiento"
                                     />
                                 </div>
@@ -803,7 +803,7 @@ export default function TareasPage() {
                                 )}
                                 <div className="space-y-2">
                                     {formInvolucrados.map((inv, i) => (
-                                        <div key={i} className="flex flex-wrap sm:flex-nowrap items-center gap-2 bg-slate-50 dark:bg-slate-900/30 p-2 rounded-xl border border-slate-200 dark:border-slate-700">
+                                        <div key={i} className="flex flex-wrap sm:flex-nowrap items-center gap-2 bg-background text-foreground/30 p-2 rounded-xl border border-slate-200 dark:border-slate-700">
                                             <select
                                                 value={inv.operatorId}
                                                 onChange={e => {
@@ -812,7 +812,7 @@ export default function TareasPage() {
                                                     setFormInvolucrados(next);
                                                 }}
                                                 disabled={isViewMode}
-                                                className="w-full sm:flex-1 h-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent disabled:appearance-none"
+                                                className="w-full sm:flex-1 h-10 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent disabled:appearance-none"
                                             >
                                                 <option value="">Seleccionar...</option>
                                                 {operators.map((op: any) => (
@@ -828,7 +828,7 @@ export default function TareasPage() {
                                                         setFormInvolucrados(next);
                                                     }}
                                                     disabled={isViewMode}
-                                                    className="flex-1 sm:w-32 h-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent disabled:appearance-none"
+                                                    className="flex-1 sm:w-32 h-10 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent disabled:appearance-none"
                                                 >
                                                     {ROLES_INVOLUCRADO.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                                                 </select>
@@ -889,7 +889,7 @@ export default function TareasPage() {
 
                                 {/* New recordatorios to create */}
                                 {formRecordatorios.map((rec, i) => (
-                                    <div key={i} className="bg-slate-50 dark:bg-slate-900/30 p-3 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
+                                    <div key={i} className="bg-background text-foreground/30 p-3 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
                                         <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
                                             <select
                                                 value={rec.tipo}
@@ -899,7 +899,7 @@ export default function TareasPage() {
                                                     setFormRecordatorios(next);
                                                 }}
                                                 disabled={isViewMode}
-                                                className="w-full sm:flex-1 h-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent disabled:appearance-none"
+                                                className="w-full sm:flex-1 h-10 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent disabled:appearance-none"
                                             >
                                                 {TIPOS_RECORDATORIO.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                                             </select>
@@ -913,7 +913,7 @@ export default function TareasPage() {
                                                         setFormRecordatorios(next);
                                                     }}
                                                     disabled={isViewMode}
-                                                    className="flex-1 h-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent disabled:appearance-none"
+                                                    className="flex-1 h-10 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent disabled:appearance-none"
                                                 />
                                                 {!isViewMode && (
                                                     <button
@@ -935,7 +935,7 @@ export default function TareasPage() {
                                                 setFormRecordatorios(next);
                                             }}
                                             disabled={isViewMode}
-                                            className="w-full h-9 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 text-xs text-slate-700 dark:text-slate-200 outline-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
+                                            className="w-full h-9 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg px-3 text-xs text-slate-700 dark:text-slate-200 outline-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                         />
                                     </div>
                                 ))}
@@ -952,7 +952,7 @@ export default function TareasPage() {
                                     value={form.notas}
                                     onChange={e => setForm({ ...form, notas: e.target.value })}
                                     disabled={isViewMode}
-                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 resize-none h-16 disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
+                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 resize-none h-16 disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                     placeholder="Notas adicionales..."
                                 />
                             </div>
@@ -965,7 +965,7 @@ export default function TareasPage() {
                                     </label>
                                     <div 
                                         id="chat-container"
-                                        className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 h-64 overflow-y-auto mb-4 flex flex-col gap-3 custom-scrollbar"
+                                        className="bg-muted/50 text-muted-foreground rounded-2xl p-4 h-64 overflow-y-auto mb-4 flex flex-col gap-3 custom-scrollbar"
                                     >
                                         {comentarios.length === 0 ? (
                                             <div className="m-auto text-sm text-slate-400 italic">No hay mensajes aún...</div>
@@ -1119,7 +1119,7 @@ function TareaCard({
         <div 
             draggable={draggable}
             onDragStart={onDragStart}
-            className={`bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 shadow-sm hover:shadow-md hover:border-purple-300 dark:hover:border-purple-700 transition-all duration-200 group ${draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`} 
+            className={`bg-card text-card-foreground rounded-2xl border border-slate-200 dark:border-slate-700 p-4 shadow-sm hover:shadow-md hover:border-purple-300 dark:hover:border-purple-700 transition-all duration-200 group ${draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`} 
             onClick={onEdit}
         >
             {/* Top: Priority + Actions */}
@@ -1229,7 +1229,7 @@ function TareaListRow({
     const activeReminders = tarea.recordatorios.filter(r => !r.disparado && r.cronJobActivo).length;
 
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-4 shadow-sm hover:shadow-md hover:border-purple-300 dark:hover:border-purple-700 transition-all group">
+        <div className="bg-card text-card-foreground rounded-2xl border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-4 shadow-sm hover:shadow-md hover:border-purple-300 dark:hover:border-purple-700 transition-all group">
             {/* Quick status toggle */}
             <div className="shrink-0" onClick={e => e.stopPropagation()}>
                 {tarea.estado === 'completada' ? (

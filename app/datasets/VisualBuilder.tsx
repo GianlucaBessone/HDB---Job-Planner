@@ -102,7 +102,7 @@ export default function VisualBuilder({ definicion, onChange, tablas }: { defini
         <div className="flex-1 p-6 overflow-auto custom-scrollbar flex flex-col gap-8 max-w-4xl mx-auto w-full">
             
             {/* 1. Selección de Tabla Principal */}
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <div className="bg-card text-card-foreground p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                 <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-4">
                     <Table2 className="w-5 h-5 text-indigo-500" />
                     1. Tabla Principal
@@ -110,7 +110,7 @@ export default function VisualBuilder({ definicion, onChange, tablas }: { defini
                 <select 
                     value={mainTable} 
                     onChange={e => setMainTable(e.target.value)}
-                    className="w-full max-w-md h-10 px-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium outline-none focus:border-indigo-500"
+                    className="w-full max-w-md h-10 px-3 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium outline-none focus:border-indigo-500"
                 >
                     <option value="">-- Seleccionar Tabla --</option>
                     {tablas.map(t => (
@@ -123,7 +123,7 @@ export default function VisualBuilder({ definicion, onChange, tablas }: { defini
             {mainTable && (
                 <>
                 {/* 1.5. Relaciones (JOINs) */}
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div className="bg-card text-card-foreground p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                             <Filter className="w-5 h-5 text-amber-500" />
@@ -135,20 +135,20 @@ export default function VisualBuilder({ definicion, onChange, tablas }: { defini
                     </div>
 
                     {(!def.relaciones || def.relaciones.length === 0) ? (
-                        <div className="py-4 text-center text-slate-400 text-sm bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+                        <div className="py-4 text-center text-slate-400 text-sm bg-background text-foreground/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
                             Consultando de una única tabla.
                         </div>
                     ) : (
                         <div className="space-y-3">
                             {def.relaciones.map((rel: any, idx: number) => (
-                                <div key={idx} className="flex flex-wrap items-center gap-2 bg-slate-50 dark:bg-slate-900/50 p-2 pl-4 rounded-xl border border-slate-200 dark:border-slate-700">
-                                    <select value={rel.tipoJoin || 'INNER JOIN'} onChange={e => updateRelacion(idx, 'tipoJoin', e.target.value)} className="h-8 px-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-xs outline-none font-bold text-indigo-600">
+                                <div key={idx} className="flex flex-wrap items-center gap-2 bg-background text-foreground/50 p-2 pl-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                                    <select value={rel.tipoJoin || 'INNER JOIN'} onChange={e => updateRelacion(idx, 'tipoJoin', e.target.value)} className="h-8 px-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded text-xs outline-none font-bold text-indigo-600">
                                         <option value="INNER JOIN">INNER JOIN</option>
                                         <option value="LEFT JOIN">LEFT JOIN</option>
                                         <option value="RIGHT JOIN">RIGHT JOIN</option>
                                     </select>
 
-                                    <select value={rel.tablaDestino || ''} onChange={e => updateRelacion(idx, 'tablaDestino', e.target.value)} className="h-8 px-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-xs outline-none font-bold">
+                                    <select value={rel.tablaDestino || ''} onChange={e => updateRelacion(idx, 'tablaDestino', e.target.value)} className="h-8 px-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded text-xs outline-none font-bold">
                                         <option value="">- Tabla Destino -</option>
                                         {tablas.filter(t => t.nombreTabla !== mainTable).map(t => (
                                             <option key={t.id} value={t.nombreTabla}>{t.nombreTabla}</option>
@@ -156,11 +156,11 @@ export default function VisualBuilder({ definicion, onChange, tablas }: { defini
                                     </select>
                                     <span className="text-xs font-black text-slate-400">ON</span>
                                     
-                                    <select value={rel.tablaOrigen || ''} onChange={e => updateRelacion(idx, 'tablaOrigen', e.target.value)} className="h-8 px-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-xs outline-none max-w-[120px]">
+                                    <select value={rel.tablaOrigen || ''} onChange={e => updateRelacion(idx, 'tablaOrigen', e.target.value)} className="h-8 px-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded text-xs outline-none max-w-[120px]">
                                         {def.tablas.map((t: any) => <option key={t.nombreTabla} value={t.nombreTabla}>{t.nombreTabla}</option>)}
                                     </select>
                                     <span className="text-xs text-slate-400">.</span>
-                                    <select value={rel.campoOrigen || ''} onChange={e => updateRelacion(idx, 'campoOrigen', e.target.value)} className="h-8 px-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-xs outline-none max-w-[120px]">
+                                    <select value={rel.campoOrigen || ''} onChange={e => updateRelacion(idx, 'campoOrigen', e.target.value)} className="h-8 px-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded text-xs outline-none max-w-[120px]">
                                         <option value="">- Campo -</option>
                                         {tablas.find(t => t.nombreTabla === rel.tablaOrigen)?.campos?.map((c: any) => (
                                             <option key={c.id} value={c.nombreCampo}>{c.nombreCampo}</option>
@@ -171,7 +171,7 @@ export default function VisualBuilder({ definicion, onChange, tablas }: { defini
 
                                     <span className="text-xs font-bold px-2">{rel.tablaDestino || '?'}</span>
                                     <span className="text-xs text-slate-400">.</span>
-                                    <select value={rel.campoDestino || ''} onChange={e => updateRelacion(idx, 'campoDestino', e.target.value)} className="h-8 px-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-xs outline-none max-w-[120px]">
+                                    <select value={rel.campoDestino || ''} onChange={e => updateRelacion(idx, 'campoDestino', e.target.value)} className="h-8 px-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded text-xs outline-none max-w-[120px]">
                                         <option value="">- Campo -</option>
                                         {tablas.find(t => t.nombreTabla === rel.tablaDestino)?.campos?.map((c: any) => (
                                             <option key={c.id} value={c.nombreCampo}>{c.nombreCampo}</option>
@@ -187,7 +187,7 @@ export default function VisualBuilder({ definicion, onChange, tablas }: { defini
                     )}
                 </div>
                 {/* 2. Selección de Campos */}
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div className="bg-card text-card-foreground p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                     <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-4">
                         <Type className="w-5 h-5 text-indigo-500" />
                         Columnas a Mostrar
@@ -223,7 +223,7 @@ export default function VisualBuilder({ definicion, onChange, tablas }: { defini
                                                     <select 
                                                         value={campoSeleccionado.funcion || ''}
                                                         onChange={(e) => updateCampoFuncion(tablaInfo.nombreTabla, c.nombreCampo, e.target.value)}
-                                                        className="h-6 w-full px-1 text-[10px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded outline-none text-slate-600 dark:text-slate-300"
+                                                        className="h-6 w-full px-1 text-[10px] bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded outline-none text-slate-600 dark:text-slate-300"
                                                     >
                                                         <option value="">(Sin función)</option>
                                                         <option value="COUNT">Contar (COUNT)</option>
@@ -244,7 +244,7 @@ export default function VisualBuilder({ definicion, onChange, tablas }: { defini
                 </div>
 
                 {/* 3. Filtros */}
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div className="bg-card text-card-foreground p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                             <Filter className="w-5 h-5 text-indigo-500" />
@@ -256,13 +256,13 @@ export default function VisualBuilder({ definicion, onChange, tablas }: { defini
                     </div>
                     
                     {(!def.filtros || def.filtros.length === 0) ? (
-                        <div className="py-6 text-center text-slate-400 text-sm italic bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+                        <div className="py-6 text-center text-slate-400 text-sm italic bg-background text-foreground/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
                             No hay filtros aplicados. Se traerán todos los registros.
                         </div>
                     ) : (
                         <div className="space-y-3">
                             {def.filtros.map((f: any, idx: number) => (
-                                <div key={idx} className="flex flex-wrap items-center gap-2 bg-slate-50 dark:bg-slate-900/50 p-2 pl-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                                <div key={idx} className="flex flex-wrap items-center gap-2 bg-background text-foreground/50 p-2 pl-4 rounded-xl border border-slate-200 dark:border-slate-700">
                                     {idx > 0 && (
                                         <select 
                                             value={f.conector || 'AND'} 
@@ -278,7 +278,7 @@ export default function VisualBuilder({ definicion, onChange, tablas }: { defini
                                     <select 
                                         value={f.campo || ''} 
                                         onChange={e => updateFiltro(idx, 'campo', e.target.value)}
-                                        className="h-8 px-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-xs outline-none"
+                                        className="h-8 px-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded text-xs outline-none"
                                     >
                                         <option value="">- Campo -</option>
                                         {tablasDisponibles.flatMap(t => t.campos?.map((c: any) => (
@@ -291,7 +291,7 @@ export default function VisualBuilder({ definicion, onChange, tablas }: { defini
                                     <select 
                                         value={f.operador || 'EQUAL'} 
                                         onChange={e => updateFiltro(idx, 'operador', e.target.value)}
-                                        className="h-8 px-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-xs outline-none"
+                                        className="h-8 px-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded text-xs outline-none"
                                     >
                                         <option value="EQUAL">Igual a (=)</option>
                                         <option value="NOT_EQUAL">Distinto a (!=)</option>
@@ -310,7 +310,7 @@ export default function VisualBuilder({ definicion, onChange, tablas }: { defini
                                             value={f.valor || ''} 
                                             onChange={e => updateFiltro(idx, 'valor', e.target.value)}
                                             placeholder="Valor..."
-                                            className="h-8 px-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-xs outline-none flex-1 min-w-[100px]"
+                                            className="h-8 px-3 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded text-xs outline-none flex-1 min-w-[100px]"
                                         />
                                     )}
 

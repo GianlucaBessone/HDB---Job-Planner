@@ -68,7 +68,7 @@ export default function OkrTab({ user, isActive = true, onNavigateToKpi }: { use
             </div>
 
             {okrs.length === 0 ? (
-                <div className="bg-white dark:bg-slate-800 border border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-12 text-center">
+                <div className="bg-card text-card-foreground border border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-12 text-center">
                     <Target className="w-12 h-12 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
                     <h3 className="text-lg font-bold text-slate-600 dark:text-slate-300 mb-1">Sin OKRs</h3>
                     <p className="text-sm text-slate-400">Creá tu primer Objetivo Estratégico</p>
@@ -76,7 +76,7 @@ export default function OkrTab({ user, isActive = true, onNavigateToKpi }: { use
             ) : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {okrs.map((okr: any) => (
-                        <div key={okr.id} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col overflow-hidden group">
+                        <div key={okr.id} className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col overflow-hidden group">
                             <div className="p-4 flex-1">
                                 <div className="flex items-center justify-between mb-2">
                                     <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-md uppercase tracking-wider">{okr.codigoOkr}</span>
@@ -166,7 +166,7 @@ function OkrFormModal({ okr, operators, onClose, onSave }: {
 
     return (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[200] flex items-start justify-center pt-[5vh] overflow-y-auto">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200 mb-8">
+            <div className="bg-card text-card-foreground rounded-2xl shadow-2xl w-full max-w-2xl mx-4 border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200 mb-8">
                 <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
                     <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">{okr ? 'Editar OKR' : 'Nuevo OKR'}</h2>
                     <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl"><X className="w-5 h-5 text-slate-400" /></button>

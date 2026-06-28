@@ -27,10 +27,10 @@ export function ImportMaterialModal({
 
     return (
         <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-[2rem] shadow-2xl p-6 border border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-200 space-y-6">
+            <div className="bg-card text-card-foreground w-full max-w-md rounded-[2rem] shadow-2xl p-6 border border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-200 space-y-6">
                 <div className="flex justify-between items-center">
                     <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-2"><Upload className="w-5 h-5"/> Importar Excel</h3>
-                    <button onClick={onClose} aria-label="Cerrar modal" className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-full"><X className="w-5 h-5"/></button>
+                    <button onClick={onClose} aria-label="Cerrar modal" className="p-2 bg-muted text-muted-foreground text-slate-400 rounded-full"><X className="w-5 h-5"/></button>
                 </div>
                 
                 <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">

@@ -222,7 +222,7 @@ export default function InventarioPage() {
                     <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">Gestiona la lista maestra de materiales y sus precios de venta.</p>
                 </div>
                 <div className="flex gap-2">
-                    <button onClick={() => setIsImportModalOpen(true)} className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl font-bold flex items-center gap-2 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-sm shadow-sm">
+                    <button onClick={() => setIsImportModalOpen(true)} className="px-4 py-2 bg-muted text-muted-foreground text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl font-bold flex items-center gap-2 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-sm shadow-sm">
                         <Upload className="w-4 h-4"/> Importar Excel
                     </button>
                     <button onClick={openCreateModal} className="px-4 py-2 bg-primary text-white rounded-xl font-bold flex items-center gap-2 hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 text-sm">
@@ -231,19 +231,19 @@ export default function InventarioPage() {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-[2rem] p-4 md:p-6 shadow-sm space-y-4">
+            <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-[2rem] p-4 md:p-6 shadow-sm space-y-4">
                 <div className="flex flex-col md:flex-row gap-3">
                     <div className="relative group flex-1 max-w-md">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
                         <input
                             type="text"
                             placeholder={searchMode === 'codigo' ? "Buscar por código (ej: 004 o 4)..." : "Buscar por nombre..."}
-                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm font-medium"
+                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm font-medium"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <div className="flex bg-slate-100 dark:bg-slate-900/50 p-1 rounded-xl w-fit border border-slate-200 dark:border-slate-700">
+                    <div className="flex bg-secondary text-secondary-foreground/50 p-1 rounded-xl w-fit border border-slate-200 dark:border-slate-700">
                         <button 
                             onClick={() => { setSearchMode('codigo'); setSearchTerm(''); }}
                             className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${searchMode === 'codigo' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}`}
@@ -264,7 +264,7 @@ export default function InventarioPage() {
                 ) : (
                     <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
                         <table className="w-full text-sm text-left">
-                            <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px] tracking-widest border-b border-slate-200 dark:border-slate-700">
+                            <thead className="bg-background text-foreground/50 text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px] tracking-widest border-b border-slate-200 dark:border-slate-700">
                                 <tr>
                                     <th className="px-4 py-3">Código</th>
                                     <th className="px-4 py-3">Material</th>
@@ -273,7 +273,7 @@ export default function InventarioPage() {
                                     <th className="px-4 py-3 text-center">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-800">
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-card text-card-foreground">
                                 {filtered.length === 0 ? (
                                     <tr><td colSpan={5} className="py-8 text-center text-slate-500 font-medium">No se encontraron materiales</td></tr>
                                 ) : filtered.map(m => (
@@ -301,28 +301,28 @@ export default function InventarioPage() {
             {/* Modal Crear/Editar */}
             {isEditModalOpen && (
                 <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-[2rem] shadow-2xl p-6 border border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-200">
+                    <div className="bg-card text-card-foreground w-full max-w-md rounded-[2rem] shadow-2xl p-6 border border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">{currentCode ? 'Editar Material' : 'Nuevo Material'}</h3>
-                            <button onClick={() => setIsEditModalOpen(false)} className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-full hover:text-slate-600 hover:bg-slate-200 transition-colors"><X className="w-5 h-5"/></button>
+                            <button onClick={() => setIsEditModalOpen(false)} className="p-2 bg-muted text-muted-foreground text-slate-400 rounded-full hover:text-slate-600 hover:bg-slate-200 transition-colors"><X className="w-5 h-5"/></button>
                         </div>
                         <form onSubmit={handleSave} className="space-y-4">
                             <div>
                                 <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Código</label>
-                                <input required disabled={!!currentCode} type="text" value={formData.codigo} onChange={e => setFormData({...formData, codigo: e.target.value.toUpperCase()})} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 font-mono text-sm outline-none focus:border-primary disabled:opacity-60" placeholder="Ej: MAT-001"/>
+                                <input required disabled={!!currentCode} type="text" value={formData.codigo} onChange={e => setFormData({...formData, codigo: e.target.value.toUpperCase()})} className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 font-mono text-sm outline-none focus:border-primary disabled:opacity-60" placeholder="Ej: MAT-001"/>
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Material (Nombre)</label>
-                                <input required type="text" value={formData.nombre} onChange={e => setFormData({...formData, nombre: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 font-medium text-sm outline-none focus:border-primary" placeholder="Ej: Cable unipolar 2.5mm..."/>
+                                <input required type="text" value={formData.nombre} onChange={e => setFormData({...formData, nombre: e.target.value})} className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 font-medium text-sm outline-none focus:border-primary" placeholder="Ej: Cable unipolar 2.5mm..."/>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Precio Venta</label>
-                                    <input type="number" step="any" min="0" value={formData.precioVenta} onChange={e => setFormData({...formData, precioVenta: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 font-bold text-emerald-600 text-sm outline-none focus:border-emerald-500" placeholder="Vacio = sin precio" />
+                                    <input type="number" step="any" min="0" value={formData.precioVenta} onChange={e => setFormData({...formData, precioVenta: e.target.value})} className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 font-bold text-emerald-600 text-sm outline-none focus:border-emerald-500" placeholder="Vacio = sin precio" />
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Costo</label>
-                                    <input type="number" step="any" min="0" value={formData.costo} onChange={e => setFormData({...formData, costo: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 font-bold text-slate-600 dark:text-slate-300 text-sm outline-none focus:border-primary" placeholder="Opcional" />
+                                    <input type="number" step="any" min="0" value={formData.costo} onChange={e => setFormData({...formData, costo: e.target.value})} className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 font-bold text-slate-600 dark:text-slate-300 text-sm outline-none focus:border-primary" placeholder="Opcional" />
                                 </div>
                             </div>
                             <button disabled={isSaving} type="submit" className="w-full mt-4 bg-primary text-white py-3 rounded-xl font-bold flex justify-center items-center gap-2 hover:bg-primary/90 transition-all">
@@ -336,10 +336,10 @@ export default function InventarioPage() {
             {/* Modal Importar */}
             {isImportModalOpen && (
                 <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-[2rem] shadow-2xl p-6 border border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-200 space-y-6">
+                    <div className="bg-card text-card-foreground w-full max-w-md rounded-[2rem] shadow-2xl p-6 border border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-200 space-y-6">
                         <div className="flex justify-between items-center">
                             <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-2"><Upload className="w-5 h-5"/> Importar Excel</h3>
-                            <button onClick={() => setIsImportModalOpen(false)} className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-full"><X className="w-5 h-5"/></button>
+                            <button onClick={() => setIsImportModalOpen(false)} className="p-2 bg-muted text-muted-foreground text-slate-400 rounded-full"><X className="w-5 h-5"/></button>
                         </div>
                         
                         <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
@@ -359,7 +359,7 @@ export default function InventarioPage() {
                                 <input type="file" ref={fileInputRef} accept=".xlsx,.xls" className="hidden" onChange={e => { if (e.target.files) setImportFile(e.target.files[0])}} />
                             </div>
 
-                            <button type="button" onClick={descargarPlantilla} className="w-full py-2.5 text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 font-bold rounded-xl flex items-center justify-center gap-2 text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                            <button type="button" onClick={descargarPlantilla} className="w-full py-2.5 text-slate-600 dark:text-slate-400 bg-muted text-muted-foreground font-bold rounded-xl flex items-center justify-center gap-2 text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                                 <Download className="w-4 h-4"/> Descargar Plantilla Vacía
                             </button>
 

@@ -37,7 +37,7 @@ const STATUS_CONFIG: any = {
     activo: { label: 'Activo', color: 'text-emerald-700', bg: 'bg-emerald-50' },
     en_riesgo: { label: 'En Riesgo', color: 'text-amber-700', bg: 'bg-amber-50' },
     atrasado: { label: 'Atrasado', color: 'text-red-700', bg: 'bg-red-50' },
-    finalizado: { label: 'Finalizado', color: 'text-slate-500 dark:text-slate-400', bg: 'bg-slate-100 dark:bg-slate-800/50' },
+    finalizado: { label: 'Finalizado', color: 'text-slate-500 dark:text-slate-400', bg: 'bg-muted text-muted-foreground/50' },
 };
 
 export default function ProjectFinalizeAuthModal({
@@ -161,7 +161,7 @@ export default function ProjectFinalizeAuthModal({
     if (isLoading || !project) {
         return (
             <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-                <div className="bg-white dark:bg-slate-800 p-12 rounded-[2.5rem] shadow-2xl flex flex-col items-center gap-4">
+                <div className="bg-card text-card-foreground p-12 rounded-[2.5rem] shadow-2xl flex flex-col items-center gap-4">
                     <Loader2 className="w-10 h-10 text-primary animate-spin" />
                     <p className="text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-xs">Cargando revisión...</p>
                 </div>
@@ -211,7 +211,7 @@ export default function ProjectFinalizeAuthModal({
 
     return (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-800 w-full max-w-5xl rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-300 max-h-[95vh] overflow-hidden flex flex-col">
+            <div className="bg-card text-card-foreground w-full max-w-5xl rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-300 max-h-[95vh] overflow-hidden flex flex-col">
                 {/* Header */}
                 <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0 bg-slate-50/50">
                     <div className="space-y-1">
@@ -219,7 +219,7 @@ export default function ProjectFinalizeAuthModal({
                             <div className="flex items-center gap-1.5 bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">
                                 <ShieldCheck className="w-3.5 h-3.5" /> Autorización de Cierre
                             </div>
-                            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${STATUS_CONFIG[project.estado]?.bg || 'bg-slate-100 dark:bg-slate-800/50'} ${STATUS_CONFIG[project.estado]?.color || 'text-slate-500 dark:text-slate-400'}`}>
+                            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${STATUS_CONFIG[project.estado]?.bg || 'bg-muted text-muted-foreground/50'} ${STATUS_CONFIG[project.estado]?.color || 'text-slate-500 dark:text-slate-400'}`}>
                                 {STATUS_CONFIG[project.estado]?.label || project.estado}
                             </span>
                         </div>
@@ -284,12 +284,12 @@ export default function ProjectFinalizeAuthModal({
 
                     {/* Latest Report from Service Order */}
                     {serviceOrders.length > 0 && (
-                        <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-[2.5rem] p-6 md:p-8 space-y-4">
+                        <div className="bg-background text-foreground/50 border border-slate-100 dark:border-slate-800 rounded-[2.5rem] p-6 md:p-8 space-y-4">
                             <h4 className="flex items-center gap-2 font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest text-xs">
                                 <FileSignature className="w-4 h-4 text-emerald-500" /> Reporte de la Última Orden de Servicio ({serviceOrders[0].codigoOS})
                             </h4>
                             <div className="space-y-4">
-                                <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                                <div className="bg-card text-card-foreground p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
                                     <p className="text-slate-700 dark:text-slate-200 text-sm leading-relaxed whitespace-pre-wrap font-medium italic">
                                         "{serviceOrders[0].reporte}"
                                     </p>
@@ -314,10 +314,10 @@ export default function ProjectFinalizeAuthModal({
                                 <h4 className="flex items-center gap-2 font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest text-xs">
                                     <Users className="w-4 h-4 text-primary" /> Personal Asignado
                                 </h4>
-                                <div className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
+                                <div className="bg-card text-card-foreground border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
+                                            <tr className="bg-background text-foreground/50 border-b border-slate-100 dark:border-slate-800">
                                                 <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Operador</th>
                                                 <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Horas Totales</th>
                                             </tr>
@@ -347,9 +347,9 @@ export default function ProjectFinalizeAuthModal({
                                     <h4 className="flex items-center gap-2 font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest text-xs">
                                         <Activity className="w-4 h-4 text-primary" /> Historial Reciente
                                     </h4>
-                                    <div className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
+                                    <div className="bg-card text-card-foreground border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
                                         <table className="w-full text-left text-xs">
-                                            <thead className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800 font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                                            <thead className="bg-background text-foreground/50 border-b border-slate-100 dark:border-slate-800 font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                                                 <tr>
                                                     <th className="px-4 py-3">Fecha</th>
                                                     <th className="px-4 py-3">Operador</th>
@@ -378,7 +378,7 @@ export default function ProjectFinalizeAuthModal({
                             </h4>
                             <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin">
                                 {checklist.length === 0 ? (
-                                    <div className="p-10 text-center bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
+                                    <div className="p-10 text-center bg-background text-foreground/50 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
                                         <CheckCircle2 className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                                         <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Sin tareas definidas</p>
                                     </div>
@@ -405,7 +405,7 @@ export default function ProjectFinalizeAuthModal({
                     <button
                         onClick={handleReject}
                         disabled={isActionLoading}
-                        className="flex-1 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-2xl font-bold hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all flex items-center justify-center gap-2 shadow-sm"
+                        className="flex-1 py-4 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-2xl font-bold hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all flex items-center justify-center gap-2 shadow-sm"
                     >
                         {isActionLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <XCircle className="w-5 h-5 text-rose-500" />}
                         RECHAZAR CIERRE

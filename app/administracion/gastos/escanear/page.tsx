@@ -332,11 +332,11 @@ export default function EscanearFactura() {
   };
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)] bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white relative">
+    <div className="flex flex-col min-h-[calc(100vh-4rem)] bg-background text-foreground text-slate-900 dark:text-white relative">
       <div className="px-6 pt-6">
         <button 
           onClick={() => router.push('/administracion/gastos')}
-          className="mb-4 flex items-center text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors bg-white dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50 w-fit shadow-sm"
+          className="mb-4 flex items-center text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors bg-card text-card-foreground/50 hover:bg-slate-100 dark:hover:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700/50 w-fit shadow-sm"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Volver a Gastos
@@ -365,7 +365,7 @@ export default function EscanearFactura() {
         
         {/* Native Camera & Upload View */}
         {!capturedImage && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-slate-100 dark:bg-slate-800">
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-muted text-muted-foreground">
             
             <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 max-w-md w-full shadow-2xl border border-slate-200 dark:border-slate-700 text-center flex flex-col items-center">
               
@@ -414,7 +414,7 @@ export default function EscanearFactura() {
                   <>
                     <button 
                       onClick={() => fileInputRef.current?.click()}
-                      className={`w-full py-4 ${isMobile ? 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border-2 border-slate-200 dark:border-slate-700' : 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-blue-600/30'} rounded-xl font-bold transition-all flex items-center justify-center gap-3`}
+                      className={`w-full py-4 ${isMobile ? 'bg-card text-card-foreground hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border-2 border-slate-200 dark:border-slate-700' : 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-blue-600/30'} rounded-xl font-bold transition-all flex items-center justify-center gap-3`}
                     >
                       <Upload className="w-5 h-5" />
                       Subir Archivo de Factura
@@ -430,7 +430,7 @@ export default function EscanearFactura() {
 
         {/* Captured Image Preview & Processing */}
         {capturedImage && !ocrData && (
-          <div className="relative w-full h-full flex flex-col items-center justify-center p-6 bg-slate-100 dark:bg-slate-900">
+          <div className="relative w-full h-full flex flex-col items-center justify-center p-6 bg-secondary text-secondary-foreground">
             <img src={capturedImage} alt="Captured" className="max-h-[60vh] rounded-xl shadow-2xl object-contain mb-8 border border-slate-300 dark:border-slate-700" />
             
             {processing ? (

@@ -140,7 +140,7 @@ export default function DynamicChart({ grafico, height = 300, onEvents }: Dynami
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center bg-slate-50 dark:bg-slate-900/50 rounded-xl" style={{ height }}>
+            <div className="flex items-center justify-center bg-background text-foreground/50 rounded-xl" style={{ height }}>
                 <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
             </div>
         );
@@ -157,7 +157,7 @@ export default function DynamicChart({ grafico, height = 300, onEvents }: Dynami
 
     if (!data || data.length === 0 || !option) {
         return (
-            <div className="flex items-center justify-center bg-slate-50 dark:bg-slate-900/50 rounded-xl text-slate-400 text-xs font-bold uppercase tracking-widest" style={{ height }}>
+            <div className="flex items-center justify-center bg-background text-foreground/50 rounded-xl text-slate-400 text-xs font-bold uppercase tracking-widest" style={{ height }}>
                 Sin Datos
             </div>
         );

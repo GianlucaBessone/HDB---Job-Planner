@@ -211,7 +211,7 @@ export default function ToolCartsSection() {
 
     return (
         <div className="space-y-6">
-            <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+            <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
                 <div className="flex items-center gap-3 mb-6">
                     <div className="p-3 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl">
                         <Wrench className="w-5 h-5" />
@@ -224,7 +224,7 @@ export default function ToolCartsSection() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Formulario */}
-                    <div className="space-y-4 bg-slate-50 dark:bg-slate-900/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-800">
+                    <div className="space-y-4 bg-background text-foreground/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-800">
                         <h4 className="font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between">
                             {isEditing ? 'Editar Carro' : 'Nuevo Carro'}
                             {isEditing && (
@@ -238,7 +238,7 @@ export default function ToolCartsSection() {
                             <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-1.5">Nombre / Identificador</label>
                             <input 
                                 type="text"
-                                className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-3 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/20"
+                                className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-3 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/20"
                                 placeholder="Ej: Mecánica A, Carro Soldadura 1"
                                 value={formData.nombre}
                                 onChange={e => setFormData({ ...formData, nombre: e.target.value })}
@@ -249,7 +249,7 @@ export default function ToolCartsSection() {
                             <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-1.5">Descripción (Opcional)</label>
                             <input 
                                 type="text"
-                                className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-3 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/20"
+                                className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-3 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/20"
                                 value={formData.descripcion}
                                 onChange={e => setFormData({ ...formData, descripcion: e.target.value })}
                             />
@@ -259,7 +259,7 @@ export default function ToolCartsSection() {
                             <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Herramientas del Carro</label>
                             <div className="space-y-2 mb-3">
                                 {formData.items.map((item, idx) => (
-                                    <div key={idx} className="flex items-center gap-2 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700">
+                                    <div key={idx} className="flex items-center gap-2 bg-card text-card-foreground p-2 rounded-xl border border-slate-200 dark:border-slate-700">
                                         <input 
                                             type="text"
                                             className="flex-1 bg-transparent text-sm font-bold outline-none min-w-0"
@@ -276,7 +276,7 @@ export default function ToolCartsSection() {
                                             <input 
                                                 type="number"
                                                 min={1}
-                                                className="w-14 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-sm font-bold text-center outline-none focus:ring-1 focus:ring-primary"
+                                                className="w-14 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-sm font-bold text-center outline-none focus:ring-1 focus:ring-primary"
                                                 value={item.cantidad}
                                                 onChange={e => {
                                                     const newItems = [...formData.items];
@@ -315,13 +315,13 @@ export default function ToolCartsSection() {
                         {isLoading ? (
                             <p className="text-sm text-slate-400 font-bold p-4 text-center">Cargando...</p>
                         ) : carts.length === 0 ? (
-                            <div className="text-center p-8 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                            <div className="text-center p-8 bg-background text-foreground/50 rounded-2xl border border-slate-100 dark:border-slate-800">
                                 <Wrench className="w-8 h-8 text-slate-300 mx-auto mb-3" />
                                 <p className="text-sm font-bold text-slate-500">No hay carros registrados.</p>
                             </div>
                         ) : (
                             carts.map(cart => (
-                                <div key={cart.id} className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col gap-3">
+                                <div key={cart.id} className="bg-card text-card-foreground p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col gap-3">
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <h5 className="font-black text-slate-800 dark:text-slate-100 text-lg flex items-center gap-2">
@@ -364,7 +364,7 @@ export default function ToolCartsSection() {
             {/* Modal para ver QR */}
             {qrCart && (
                 <div className="fixed inset-0 z-[110] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setQrCart(null)}>
-                    <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-2xl max-w-sm w-full animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+                    <div className="bg-card text-card-foreground p-8 rounded-3xl shadow-2xl max-w-sm w-full animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
                         <div className="text-center mb-6">
                             <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100">{qrCart.nombre}</h3>
                             <p className="text-sm font-bold text-slate-500 mt-1">Código QR de Escaneo</p>

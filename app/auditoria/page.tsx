@@ -207,7 +207,7 @@ export default function AuditPage() {
             case 'DELETE': return 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800';
             case 'APPROVE': return 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800';
             case 'REJECT': return 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800';
-            default: return 'bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 border-slate-100 dark:border-slate-800';
+            default: return 'bg-background text-foreground/50 text-slate-600 dark:text-slate-300 border-slate-100 dark:border-slate-800';
         }
     };
 
@@ -227,7 +227,7 @@ export default function AuditPage() {
                     <select 
                         value={filterEntity}
                         onChange={e => setFilterEntity(e.target.value)}
-                        className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20"
+                        className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20"
                     >
                         <option value="">Todas las Entidades</option>
                         <option value="TIME_ENTRY">Registro de Horas</option>
@@ -246,7 +246,7 @@ export default function AuditPage() {
                     <select 
                         value={filterAction}
                         onChange={e => setFilterAction(e.target.value)}
-                        className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20"
+                        className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20"
                     >
                         <option value="">Todas las Acciones</option>
                         <option value="CREATE">Creación</option>
@@ -268,12 +268,12 @@ export default function AuditPage() {
             {/* Audit Entries */}
             <div className="space-y-3">
                 {loading ? (
-                    <div className="p-12 text-center bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-800">
+                    <div className="p-12 text-center bg-card text-card-foreground rounded-3xl border border-slate-100 dark:border-slate-800">
                         <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
                         <p className="font-bold text-slate-400 dark:text-slate-500">Escaneando transacciones...</p>
                     </div>
                 ) : logs.length === 0 ? (
-                    <div className="p-20 text-center bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-800">
+                    <div className="p-20 text-center bg-card text-card-foreground rounded-3xl border border-slate-100 dark:border-slate-800">
                         <History className="w-16 h-16 text-slate-200 mx-auto mb-4 opacity-30" />
                         <p className="font-bold text-slate-400 dark:text-slate-500">Sin registros para los filtros aplicados</p>
                     </div>
@@ -303,7 +303,7 @@ function LogEntry({ log, isExpanded, onToggle, actionStyle }: any) {
     const summary = buildSummary(log);
 
     return (
-        <div className={`bg-white dark:bg-slate-800 rounded-2xl border transition-all duration-300 overflow-hidden ${isExpanded ? 'border-primary/40 shadow-lg shadow-primary/5' : 'border-slate-100 dark:border-slate-800 shadow-sm hover:border-slate-200 dark:hover:border-slate-700'}`}>
+        <div className={`bg-card text-card-foreground rounded-2xl border transition-all duration-300 overflow-hidden ${isExpanded ? 'border-primary/40 shadow-lg shadow-primary/5' : 'border-slate-100 dark:border-slate-800 shadow-sm hover:border-slate-200 dark:hover:border-slate-700'}`}>
             <div className="p-4 md:p-5 flex flex-col md:flex-row md:items-center justify-between gap-3 cursor-pointer" onClick={onToggle}>
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                     {/* Action Icon */}
@@ -401,7 +401,7 @@ function ExpandedDetails({ log }: { log: any }) {
             {log.entityId && (
                 <div className="flex items-center gap-2 text-[10px] text-slate-400 dark:text-slate-500">
                     <span className="font-bold uppercase tracking-widest">ID:</span>
-                    <code className="bg-slate-50 dark:bg-slate-900 px-2 py-0.5 rounded font-mono">{log.entityId}</code>
+                    <code className="bg-background text-foreground px-2 py-0.5 rounded font-mono">{log.entityId}</code>
                 </div>
             )}
 
@@ -463,7 +463,7 @@ function DiffTable({ oldValue, newValue }: { oldValue: any; newValue: any }) {
 
     return (
         <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-            <div className="bg-slate-50 dark:bg-slate-900/50 px-4 py-2 border-b border-slate-200 dark:border-slate-700">
+            <div className="bg-background text-foreground/50 px-4 py-2 border-b border-slate-200 dark:border-slate-700">
                 <h5 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                     {changedFields.length} campo{changedFields.length > 1 ? 's' : ''} modificado{changedFields.length > 1 ? 's' : ''}
                 </h5>
@@ -587,7 +587,7 @@ function MetaBadge({ icon, label, value }: { icon: any; label: string; value: st
 // ── Stat Card ────────────────────────────────────────────────────
 function StatCard({ icon, label, value }: any) {
     return (
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 transition-all hover:scale-[1.03]">
+        <div className="bg-card text-card-foreground p-5 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 transition-all hover:scale-[1.03]">
             <div className="w-10 h-10 rounded-2xl bg-primary/5 flex items-center justify-center text-primary">
                 {icon}
             </div>

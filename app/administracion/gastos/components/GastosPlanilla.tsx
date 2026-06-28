@@ -86,7 +86,7 @@ export default function GastosPlanilla() {
       {/* Custom Delete Confirmation Modal */}
       {deleteConfirm && (
         <div className="absolute inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-2xl max-w-sm w-full mx-4 border border-slate-200 dark:border-slate-700">
+          <div className="bg-card text-card-foreground p-6 rounded-xl shadow-2xl max-w-sm w-full mx-4 border border-slate-200 dark:border-slate-700">
             <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4">{deleteConfirm.title}</h3>
             <div className="flex justify-end space-x-3">
               <button onClick={() => setDeleteConfirm(null)} className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
@@ -129,7 +129,7 @@ export default function GastosPlanilla() {
 
       <div className="flex-1 overflow-auto">
         <table className="w-full text-left text-sm whitespace-nowrap">
-          <thead className="bg-slate-100 dark:bg-slate-800/50 sticky top-0 z-10">
+          <thead className="bg-muted text-muted-foreground/50 sticky top-0 z-10">
             <tr>
               <th className="px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Fecha</th>
               <th className="px-4 py-3 font-medium text-slate-500 dark:text-slate-400">Cod. Gasto</th>

@@ -133,8 +133,8 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center p-4">
-            <div className="w-full max-w-md bg-white dark:bg-slate-800 rounded-[2.5rem] p-8 shadow-2xl border border-slate-100 dark:border-slate-800">
+        <div className="min-h-screen bg-background text-foreground/50 flex items-center justify-center p-4">
+            <div className="w-full max-w-md bg-card text-card-foreground rounded-[2.5rem] p-8 shadow-2xl border border-slate-100 dark:border-slate-800">
                 <div className="flex flex-col items-center justify-center mb-10">
                     <div className="bg-indigo-500 p-3 rounded-2xl shadow-lg shadow-indigo-500/30 mb-4">
                         <ClipboardList className="w-8 h-8 text-white" />
@@ -156,7 +156,7 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
                                     ref={inputRef}
                                     type="text"
                                     placeholder={dropdownOpen ? 'Escribe para buscar...' : (selectedOp ? selectedOp.nombreCompleto : '— Seleccionar Identidad —')}
-                                    className={`w-full bg-slate-50 dark:bg-slate-900/50 border rounded-2xl py-4 pl-4 pr-10 outline-none font-bold transition-all text-base ${
+                                    className={`w-full bg-background text-foreground/50 border rounded-2xl py-4 pl-4 pr-10 outline-none font-bold transition-all text-base ${
                                         dropdownOpen 
                                             ? 'border-indigo-500 ring-4 ring-indigo-500/10 text-slate-800 dark:text-slate-100' 
                                             : (selectedOp ? 'text-slate-700 dark:text-slate-200 cursor-pointer' : 'text-slate-400 dark:text-slate-500 cursor-pointer')
@@ -190,7 +190,7 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
 
                             {/* Dropdown panel */}
                             {dropdownOpen && (
-                                <div className="absolute z-50 left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div className="absolute z-50 left-0 right-0 mt-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                                     {/* Options */}
                                     <div className="max-h-56 overflow-y-auto">
                                         {filteredOperators.length === 0 ? (
@@ -227,7 +227,7 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
                             pattern="[0-9]*"
                             maxLength={8}
                             placeholder="••••••"
-                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-4 px-4 text-center tracking-widest text-2xl font-black outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
+                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-4 px-4 text-center tracking-widest text-2xl font-black outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
                             value={pin}
                             onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 8))}
                         />

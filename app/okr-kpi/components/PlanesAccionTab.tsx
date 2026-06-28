@@ -48,7 +48,7 @@ export default function PlanesAccionTab({ user, isActive = true }: { user: any; 
                     <p className="text-sm text-slate-400">Acciones correctivas para KPIs con incumplimientos</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <select value={filterEstado} onChange={e => setFilterEstado(e.target.value)} className="h-9 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200">
+                    <select value={filterEstado} onChange={e => setFilterEstado(e.target.value)} className="h-9 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-700 dark:text-slate-200">
                         <option value="">Todos los estados</option>
                         <option value="Pendiente">Pendiente</option>
                         <option value="En Curso">En Curso</option>
@@ -58,7 +58,7 @@ export default function PlanesAccionTab({ user, isActive = true }: { user: any; 
             </div>
 
             {filtered.length === 0 ? (
-                <div className="bg-white dark:bg-slate-800 border border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-12 text-center">
+                <div className="bg-card text-card-foreground border border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-12 text-center">
                     <ClipboardCheck className="w-12 h-12 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
                     <h3 className="text-lg font-bold text-slate-600 dark:text-slate-300 mb-1">Sin planes de acción</h3>
                     <p className="text-sm text-slate-400">Los planes se crean desde KPIs en estado "No Cumple"</p>
@@ -66,7 +66,7 @@ export default function PlanesAccionTab({ user, isActive = true }: { user: any; 
             ) : (
                 <div className="space-y-3">
                     {filtered.map((plan: any) => (
-                        <div key={plan.id} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md transition-all p-4 group">
+                        <div key={plan.id} className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md transition-all p-4 group">
                             <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
                                 <div className="shrink-0">
                                     {plan.estado === 'Pendiente' && <Clock className="w-6 h-6 text-amber-500" />}
@@ -125,7 +125,7 @@ function PlanFormModal({ plan, operators, onClose, onSave }: any) {
 
     return (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[200] flex items-start justify-center pt-[10vh] overflow-y-auto">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg mx-4 border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200 mb-8">
+            <div className="bg-card text-card-foreground rounded-2xl shadow-2xl w-full max-w-lg mx-4 border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200 mb-8">
                 <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
                     <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">{plan ? 'Editar Plan de Acción' : 'Nuevo Plan'}</h2>
                     <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl"><X className="w-5 h-5 text-slate-400" /></button>

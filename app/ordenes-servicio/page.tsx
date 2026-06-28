@@ -220,7 +220,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
 
     return (
         <div className="fixed inset-0 z-[120] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-800 w-full max-w-2xl rounded-t-3xl md:rounded-[2rem] shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[92vh] flex flex-col overflow-hidden">
+            <div className="bg-card text-card-foreground w-full max-w-2xl rounded-t-3xl md:rounded-[2rem] shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[92vh] flex flex-col overflow-hidden">
                 {/* Header */}
                 <div className="p-5 md:p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
                     <div className="space-y-1">
@@ -258,7 +258,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                     <div className="flex items-center gap-2">
                         <button
                             onClick={handlePrint}
-                            className="p-2.5 bg-slate-100 dark:bg-slate-800/50 hover:bg-emerald-50 hover:text-emerald-600 text-slate-500 dark:text-slate-400 rounded-xl transition-all"
+                            className="p-2.5 bg-muted text-muted-foreground/50 hover:bg-emerald-50 hover:text-emerald-600 text-slate-500 dark:text-slate-400 rounded-xl transition-all"
                             title="Imprimir (Ajustar hojas en navegador)"
                         >
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -267,7 +267,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                         </button>
                         <button
                             onClick={handleDownload}
-                            className="p-2.5 bg-slate-100 dark:bg-slate-800/50 hover:bg-emerald-50 hover:text-emerald-600 text-slate-500 dark:text-slate-400 rounded-xl transition-all"
+                            className="p-2.5 bg-muted text-muted-foreground/50 hover:bg-emerald-50 hover:text-emerald-600 text-slate-500 dark:text-slate-400 rounded-xl transition-all"
                             title="Descargar PDF Original"
                         >
                             <Download className="w-4 h-4" />
@@ -299,7 +299,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                         <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
                             <FileText className="w-3.5 h-3.5 text-blue-500" /> Reporte del Trabajo
                         </h4>
-                        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
+                        <div className="bg-background text-foreground/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
                             <p className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-wrap">{os.reporte}</p>
                         </div>
                     </div>
@@ -337,7 +337,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                             </h4>
                             <div className="border border-slate-100 dark:border-slate-800 rounded-2xl overflow-hidden">
                                 <table className="w-full text-sm">
-                                    <thead className="border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+                                    <thead className="border-b border-slate-100 dark:border-slate-800 bg-background text-foreground/50">
                                         <tr>
                                             <th className="text-left px-4 py-2.5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Material</th>
                                             <th className="text-right px-4 py-2.5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Cant.</th>
@@ -365,7 +365,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                             <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
                                 <MessageSquare className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" /> Comentario Adicional
                             </h4>
-                            <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
+                            <div className="bg-background text-foreground/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
                                 <p className="text-sm text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-wrap">{os.comentario}</p>
                             </div>
                         </div>
@@ -387,7 +387,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                         <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
                             <QrCode className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" /> Link y QR Público
                         </h4>
-                        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center gap-4">
+                        <div className="bg-background text-foreground/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center gap-4">
                             <QRImage url={publicUrl} />
                             <div className="flex-1 space-y-2 w-full">
                                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">El cliente puede escanear el QR o usar el link para ver y firmar la OS.</p>
@@ -395,7 +395,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                                     <input
                                         readOnly
                                         value={publicUrl}
-                                        className="flex-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-medium text-slate-500 dark:text-slate-400 outline-none truncate"
+                                        className="flex-1 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-medium text-slate-500 dark:text-slate-400 outline-none truncate"
                                     />
                                     <button
                                         onClick={copyLink}
@@ -431,7 +431,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-2">Firma</p>
-                                    <div className="bg-white dark:bg-slate-800 rounded-xl border border-emerald-100 p-2 flex items-center justify-center min-w-[150px] min-h-[80px] w-fit">
+                                    <div className="bg-card text-card-foreground rounded-xl border border-emerald-100 p-2 flex items-center justify-center min-w-[150px] min-h-[80px] w-fit">
                                         {loadingFirma ? (
                                             <Loader2 className="w-6 h-6 text-emerald-500 animate-spin" />
                                         ) : firmaImageUrl ? (
@@ -490,7 +490,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                     )}
                     <button
                         onClick={onClose}
-                        className="px-6 py-3 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all active:scale-95"
+                        className="px-6 py-3 bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all active:scale-95"
                     >
                         Cerrar
                     </button>
@@ -535,7 +535,7 @@ function OSNotaModal({ os, onClose, onSaveSuccess }: OSNotaModalProps) {
 
     return (
         <div className="fixed inset-0 z-[130] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-800 w-full max-w-lg rounded-t-3xl md:rounded-[2rem] shadow-2xl border border-slate-200 dark:border-slate-700 p-6 space-y-4 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
+            <div className="bg-card text-card-foreground w-full max-w-lg rounded-t-3xl md:rounded-[2rem] shadow-2xl border border-slate-200 dark:border-slate-700 p-6 space-y-4 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
                 <div className="flex items-center justify-between">
                     <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
                         <StickyNote className="w-5 h-5 text-amber-500" />
@@ -563,7 +563,7 @@ function OSNotaModal({ os, onClose, onSaveSuccess }: OSNotaModalProps) {
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
                     placeholder="Escribe comentarios u observaciones sobre este servicio..."
-                    className="w-full text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-3.5 outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 dark:text-slate-200 transition-all font-medium resize-none placeholder:text-slate-400"
+                    className="w-full text-sm bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl p-3.5 outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 dark:text-slate-200 transition-all font-medium resize-none placeholder:text-slate-400"
                 />
 
                 <div className="flex justify-end gap-2 pt-2">
@@ -747,13 +747,13 @@ function OrdenesServicioContent() {
                     <input
                         type="text"
                         placeholder="Buscar por código OS, PR, proyecto o cliente..."
-                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium shadow-sm"
+                        className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium shadow-sm"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                     />
                 </div>
                 {activeTab === 'activas' && (
-                    <div className="flex gap-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-1 shadow-sm shrink-0">
+                    <div className="flex gap-1.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl p-1 shadow-sm shrink-0">
                         {(['all', 'pendiente', 'firmada', 'cobrada'] as const).map(estado => (
                             <button
                                 key={estado}
@@ -775,7 +775,7 @@ function OrdenesServicioContent() {
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-3">
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm text-center">
+                <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm text-center">
                     <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{ordenes.length}</p>
                     <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Total</p>
                 </div>
@@ -792,10 +792,10 @@ function OrdenesServicioContent() {
             {/* Table */}
             {loading ? (
                 <div className="space-y-3">
-                    {[1, 2, 3].map(i => <div key={i} className="h-20 bg-slate-100 dark:bg-slate-800/50 rounded-2xl animate-pulse" />)}
+                    {[1, 2, 3].map(i => <div key={i} className="h-20 bg-muted text-muted-foreground/50 rounded-2xl animate-pulse" />)}
                 </div>
             ) : filtered.length === 0 ? (
-                <div className="py-20 flex flex-col items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-400 dark:text-slate-500">
+                <div className="py-20 flex flex-col items-center justify-center bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-400 dark:text-slate-500">
                     <FileSignature className="w-12 h-12 mb-4 opacity-20" />
                     <p className="font-semibold text-slate-600 dark:text-slate-300">No se encontraron órdenes de servicio</p>
                 </div>
@@ -807,7 +807,7 @@ function OrdenesServicioContent() {
                         return (
                             <div
                                 key={os.id}
-                                className={`bg-white dark:bg-slate-800 rounded-2xl border shadow-sm hover:shadow-md transition-all p-4 ${isHighlighted ? 'border-primary ring-2 ring-primary/20' : 'border-slate-200 dark:border-slate-700'}`}
+                                className={`bg-card text-card-foreground rounded-2xl border shadow-sm hover:shadow-md transition-all p-4 ${isHighlighted ? 'border-primary ring-2 ring-primary/20' : 'border-slate-200 dark:border-slate-700'}`}
                             >
                                 <div className="flex items-center gap-3 flex-wrap">
                                     {/* Status dot */}
@@ -852,7 +852,7 @@ function OrdenesServicioContent() {
                                         os.estado === 'pendiente' ? 'bg-amber-100 text-amber-700 border border-amber-200' :
                                         os.estado === 'cobrada' ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' :
                                         os.estado === 'pagada' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
-                                        'bg-slate-100 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700'
+                                        'bg-muted text-muted-foreground/50 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700'
                                     }`}>
                                         {os.estado === 'firmada' ? '✓ Firmada' : 
                                          os.estado === 'cobrada' ? 'OC Emitida' :
@@ -898,7 +898,7 @@ function OrdenesServicioContent() {
                                                         e.stopPropagation();
                                                         setOsToCancel(os);
                                                     }}
-                                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-200 hover:text-slate-600 transition-all shadow-sm"
+                                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 bg-background text-foreground/50 hover:bg-slate-200 hover:text-slate-600 transition-all shadow-sm"
                                                     title="Cancelar orden"
                                                 >
                                                     <X className="w-3.5 h-3.5" /> Cancelar
@@ -913,7 +913,7 @@ function OrdenesServicioContent() {
                                             className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black transition-all shadow-sm ${
                                                 os.notaInterna
                                                     ? 'text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 hover:bg-amber-600 hover:text-white dark:hover:bg-amber-600'
-                                                    : 'text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-200 hover:text-slate-600 dark:hover:text-slate-300'
+                                                    : 'text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 bg-background text-foreground/50 hover:bg-slate-200 hover:text-slate-600 dark:hover:text-slate-300'
                                             }`}
                                         >
                                             <StickyNote className="w-3.5 h-3.5" /> Notas
@@ -1004,8 +1004,8 @@ export default function OrdenesServicioPage() {
     return (
         <Suspense fallback={
             <div className="space-y-4">
-                <div className="h-12 bg-slate-100 dark:bg-slate-800/50 rounded-2xl animate-pulse" />
-                {[1, 2, 3].map(i => <div key={i} className="h-20 bg-slate-100 dark:bg-slate-800/50 rounded-2xl animate-pulse" />)}
+                <div className="h-12 bg-muted text-muted-foreground/50 rounded-2xl animate-pulse" />
+                {[1, 2, 3].map(i => <div key={i} className="h-20 bg-muted text-muted-foreground/50 rounded-2xl animate-pulse" />)}
             </div>
         }>
             <OrdenesServicioContent />

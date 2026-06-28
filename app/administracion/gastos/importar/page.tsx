@@ -207,7 +207,7 @@ export default function ImportarGastos() {
   const thClass = "p-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 dark:border-slate-700 align-middle leading-tight";
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900">
+    <div className="flex flex-col h-full bg-background text-foreground">
       <ModuleHeader 
         title="Importar Gastos" 
         description="Carga masiva de facturas mediante planilla Excel"
@@ -216,7 +216,7 @@ export default function ImportarGastos() {
       <div className="flex flex-col flex-1 p-4 md:p-6 overflow-hidden">
         
         {/* Top Controls */}
-        <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 mb-4 shrink-0">
+        <div className="bg-card text-card-foreground p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 mb-4 shrink-0">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
               <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-1">Instrucciones</h3>
@@ -261,7 +261,7 @@ export default function ImportarGastos() {
         </div>
 
         {/* Data Grid Preview */}
-        <div className="flex-1 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col relative">
+        <div className="flex-1 bg-card text-card-foreground rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col relative">
           <div className="p-3 border-b border-slate-100 dark:border-slate-700 flex items-center gap-2 shrink-0">
             <FileSpreadsheet className="w-4 h-4 text-emerald-500" />
             <h3 className="font-bold text-sm text-slate-800 dark:text-slate-100">Vista Previa ({data.length} filas)</h3>
@@ -303,7 +303,7 @@ export default function ImportarGastos() {
                   </thead>
                   <tbody>
                     {data.map((row) => (
-                      <tr key={row.id} className="bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50/80 dark:hover:bg-slate-700/30 transition-colors">
+                      <tr key={row.id} className="bg-card text-card-foreground border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50/80 dark:hover:bg-slate-700/30 transition-colors">
                         <td className="p-0.5 align-top">
                           <input type="date" value={row.fechaEmision} onChange={(e) => updateRow(row.id, 'fechaEmision', e.target.value)} className={`${inputClass} text-center`} />
                         </td>

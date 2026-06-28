@@ -127,7 +127,7 @@ export default function ConfigPage() {
                 </button>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 min-h-[400px] rounded-[2rem] p-6 md:p-8 shadow-sm">
+            <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 min-h-[400px] rounded-[2rem] p-6 md:p-8 shadow-sm">
                 {activeTab === 'tags' && <TagsSection />}
                 {activeTab === 'checklists' && <ChecklistSection />}
                 {activeTab === 'options' && <OptionsSection />}
@@ -180,7 +180,7 @@ function OSSection() {
                 <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Configuración de valores para facturación y reportes de OS.</p>
             </div>
 
-            <div className="space-y-4 bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
+            <div className="space-y-4 bg-background text-foreground/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
                 <div>
                     <h4 className="font-bold text-slate-800 dark:text-slate-100">Valor de Mano de Obra (por hora)</h4>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -195,7 +195,7 @@ function OSSection() {
                         step="0.01"
                         value={setting.valorManoObra}
                         onChange={e => setSetting({ ...setting, valorManoObra: parseFloat(e.target.value) || 0 })}
-                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 pl-8 pr-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                        className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-3 pl-8 pr-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                         placeholder="Ej: 50.00"
                     />
                 </div>
@@ -218,7 +218,7 @@ function ConfigSkeleton() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div className="space-y-1">
                     <h2 className="text-2xl flex items-center gap-2"><div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse"></div> <div className="w-40 h-8 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div></h2>
-                    <div className="w-64 h-4 bg-slate-100 dark:bg-slate-800/50 rounded animate-pulse mt-2"></div>
+                    <div className="w-64 h-4 bg-muted text-muted-foreground/50 rounded animate-pulse mt-2"></div>
                 </div>
             </div>
             <div className="flex border-b border-slate-200 dark:border-slate-700 overflow-x-auto gap-4 py-2">
@@ -226,7 +226,7 @@ function ConfigSkeleton() {
                 <div className="w-24 h-6 bg-slate-200/60 rounded animate-pulse"></div>
                 <div className="w-24 h-6 bg-slate-200/60 rounded animate-pulse"></div>
             </div>
-            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 min-h-[400px] rounded-[2rem] p-6 md:p-8 shadow-sm flex flex-col gap-4">
+            <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 min-h-[400px] rounded-[2rem] p-6 md:p-8 shadow-sm flex flex-col gap-4">
                 <div className="w-1/3 h-8 bg-slate-200/50 rounded animate-pulse mb-4"></div>
                 {Array(3).fill(0).map((_, i) => <div key={i} className="w-full h-16 bg-slate-100/50 rounded-xl animate-pulse"></div>)}
             </div>
@@ -299,7 +299,7 @@ function TagsSection() {
 
             <div className="space-y-3">
                 {editingId === 'new' && (
-                    <div className="flex flex-col gap-4 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-primary/20">
+                    <div className="flex flex-col gap-4 bg-background text-foreground/50 p-4 rounded-xl border border-primary/20">
                         <div className="flex flex-col md:flex-row md:items-center gap-4">
                             <input
                                 className="w-full md:flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
@@ -327,7 +327,7 @@ function TagsSection() {
 
                 {tags.map(tag => (
                     editingId === tag.id ? (
-                        <div key={tag.id} className="flex flex-col gap-4 bg-white dark:bg-slate-800 p-4 rounded-xl border border-primary/20 shadow-lg">
+                        <div key={tag.id} className="flex flex-col gap-4 bg-card text-card-foreground p-4 rounded-xl border border-primary/20 shadow-lg">
                             <div className="flex flex-col md:flex-row md:items-center gap-4">
                                 <input
                                     className="w-full md:flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
@@ -351,7 +351,7 @@ function TagsSection() {
                             </div>
                         </div>
                     ) : (
-                        <div key={tag.id} className="flex items-center justify-between bg-slate-50 dark:bg-slate-900/50 hover:bg-white dark:hover:bg-slate-800 p-4 rounded-xl border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all">
+                        <div key={tag.id} className="flex items-center justify-between bg-background text-foreground/50 hover:bg-white dark:hover:bg-slate-800 p-4 rounded-xl border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all">
                             <div className="flex items-center gap-4">
                                 <span className="font-bold text-slate-800 dark:text-slate-100">{tag.name}</span>
                                 {!tag.active && <span className="px-2 py-0.5 bg-rose-100 text-rose-600 text-[10px] uppercase font-black tracking-widest rounded-md">Inactivo</span>}
@@ -483,7 +483,7 @@ function ChecklistSection() {
                     </p>
                 </div>
                 <select
-                    className="px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-primary/20"
+                    className="px-4 py-2 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-primary/20"
                     value={selectedTag}
                     onChange={e => setSelectedTag(e.target.value)}
                 >
@@ -494,11 +494,11 @@ function ChecklistSection() {
 
             {selectedTag && (
                 <div className="space-y-4 pt-6 border-t border-slate-100 dark:border-slate-800">
-                    <div className="bg-slate-50 dark:bg-slate-900/30 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/80 flex flex-col sm:flex-row items-end gap-3">
+                    <div className="bg-background text-foreground/30 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/80 flex flex-col sm:flex-row items-end gap-3">
                         <div className="flex-1 w-full">
                             <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">Vincular Nueva Plantilla</label>
                             <select
-                                className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-primary/20"
+                                className="w-full px-4 py-2.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-primary/20"
                                 value={selectedTemplateToAdd}
                                 onChange={e => setSelectedTemplateToAdd(e.target.value)}
                             >
@@ -527,7 +527,7 @@ function ChecklistSection() {
                             if (!t) return null;
                             const itemsCount = Array.isArray(t.checklistItems) ? t.checklistItems.length : 0;
                             return (
-                                <div key={lt.id} className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 flex justify-between items-start hover:shadow-sm transition-shadow">
+                                <div key={lt.id} className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700 flex justify-between items-start hover:shadow-sm transition-shadow">
                                     <div className="space-y-1.5">
                                         <div className="flex gap-2 items-center">
                                             <span className="text-[9px] font-black font-mono bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded text-slate-500 dark:text-slate-300">
@@ -636,12 +636,12 @@ function OptionsSection() {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                 <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Desplegables del Sistema</h3>
-                <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-800/50 rounded-xl overflow-x-auto w-full md:w-auto">
+                <div className="flex gap-2 p-1 bg-muted text-muted-foreground/50 rounded-xl overflow-x-auto w-full md:w-auto">
                     {categories.map(cat => (
                         <button
                             key={cat.id}
                             onClick={() => setSelectedCategory(cat.id)}
-                            className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all ${selectedCategory === cat.id ? 'bg-white dark:bg-slate-800 text-primary shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                            className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all ${selectedCategory === cat.id ? 'bg-card text-card-foreground text-primary shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
                         >
                             {cat.label}
                         </button>
@@ -658,7 +658,7 @@ function OptionsSection() {
                 </button>
 
                 {editingId === 'new' && (
-                    <div className="flex flex-col gap-4 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-primary/20">
+                    <div className="flex flex-col gap-4 bg-background text-foreground/50 p-4 rounded-xl border border-primary/20">
                         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                             <input
                                 className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
@@ -686,7 +686,7 @@ function OptionsSection() {
 
                 {options.map((opt: any) => (
                     editingId === opt.id ? (
-                        <div key={opt.id} className="flex flex-col gap-4 bg-white dark:bg-slate-800 p-4 rounded-xl border border-primary/20 shadow-lg">
+                        <div key={opt.id} className="flex flex-col gap-4 bg-card text-card-foreground p-4 rounded-xl border border-primary/20 shadow-lg">
                             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                                 <input
                                     className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-semibold"
@@ -710,9 +710,9 @@ function OptionsSection() {
                             </div>
                         </div>
                     ) : (
-                        <div key={opt.id} className="flex items-center justify-between bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 p-4 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all shadow-sm">
+                        <div key={opt.id} className="flex items-center justify-between bg-card text-card-foreground hover:bg-slate-50 dark:hover:bg-slate-800/80 p-4 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all shadow-sm">
                             <div className="flex items-center gap-4 flex-1">
-                                <span className="w-8 h-8 flex items-center justify-center bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 font-black text-xs rounded-lg shrink-0">{opt.order}</span>
+                                <span className="w-8 h-8 flex items-center justify-center bg-muted text-muted-foreground/50 text-slate-500 dark:text-slate-400 font-black text-xs rounded-lg shrink-0">{opt.order}</span>
                                 <span className={`font-bold text-sm ${opt.active ? 'text-slate-800 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 line-through'}`}>{opt.value}</span>
                                 {!opt.active && <span className="px-2 py-0.5 bg-rose-100 text-rose-600 text-[10px] uppercase font-black tracking-widest rounded-md shrink-0">Inactivo</span>}
                             </div>
@@ -830,7 +830,7 @@ function SystemSection() {
                 <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Configura opciones automáticas del sistema.</p>
             </div>
 
-            <div className="space-y-4 bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
+            <div className="space-y-4 bg-background text-foreground/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
                 <div className="flex items-center justify-between">
                     <div>
                         <h4 className="font-bold text-slate-800 dark:text-slate-100">Alerta Diaria de Carga de Horas</h4>
@@ -860,7 +860,7 @@ function SystemSection() {
                                 min={1}
                                 value={setting.daysWithoutHoursThreshold || 5}
                                 onChange={e => setSetting({ ...setting, daysWithoutHoursThreshold: parseInt(e.target.value) || 0 })}
-                                className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+                                className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
                                 placeholder="Ej: 5"
                             />
                         </div>
@@ -876,7 +876,7 @@ function SystemSection() {
                                 type="time"
                                 disabled
                                 value="18:00"
-                                className="w-full bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-500 dark:text-slate-400 cursor-not-allowed"
+                                className="w-full bg-muted text-muted-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-500 dark:text-slate-400 cursor-not-allowed"
                             />
                         </div>
                     </div>
@@ -884,7 +884,7 @@ function SystemSection() {
             </div>
 
 
-            <div className="space-y-4 bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 mt-6">
+            <div className="space-y-4 bg-background text-foreground/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 mt-6">
                 <div className="flex items-center justify-between">
                     <div>
                         <h4 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
@@ -924,22 +924,22 @@ function SystemSection() {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Latitud</label>
-                                <input type="number" step="any" value={setting.companyGeofenceLat || ''} onChange={e => setSetting({ ...setting, companyGeofenceLat: e.target.value === '' ? null : parseFloat(e.target.value) })} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm" placeholder="-34.123456" />
+                                <input type="number" step="any" value={setting.companyGeofenceLat || ''} onChange={e => setSetting({ ...setting, companyGeofenceLat: e.target.value === '' ? null : parseFloat(e.target.value) })} className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm" placeholder="-34.123456" />
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Longitud</label>
-                                <input type="number" step="any" value={setting.companyGeofenceLng || ''} onChange={e => setSetting({ ...setting, companyGeofenceLng: e.target.value === '' ? null : parseFloat(e.target.value) })} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm" placeholder="-58.123456" />
+                                <input type="number" step="any" value={setting.companyGeofenceLng || ''} onChange={e => setSetting({ ...setting, companyGeofenceLng: e.target.value === '' ? null : parseFloat(e.target.value) })} className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm" placeholder="-58.123456" />
                             </div>
                         </div>
                         <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Radio de Validación (Metros)</label>
-                            <input type="number" value={setting.companyGeofenceRadius || ''} onChange={e => setSetting({ ...setting, companyGeofenceRadius: e.target.value === '' ? null : parseInt(e.target.value) })} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm" placeholder="Ej: 200" />
+                            <input type="number" value={setting.companyGeofenceRadius || ''} onChange={e => setSetting({ ...setting, companyGeofenceRadius: e.target.value === '' ? null : parseInt(e.target.value) })} className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm" placeholder="Ej: 200" />
                         </div>
 
                         <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Token de Validación QR (Empresa)</label>
                             <div className="flex gap-2">
-                                <input type="text" value={setting.companyQrToken || ''} onChange={e => setSetting({ ...setting, companyQrToken: e.target.value.toUpperCase() })} className="flex-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm font-mono" placeholder="TOKEN-BASE" />
+                                <input type="text" value={setting.companyQrToken || ''} onChange={e => setSetting({ ...setting, companyQrToken: e.target.value.toUpperCase() })} className="flex-1 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 outline-none font-bold text-slate-700 dark:text-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm font-mono" placeholder="TOKEN-BASE" />
                                 <button type="button" onClick={() => setSetting({ ...setting, companyQrToken: Math.random().toString(36).substring(2, 10).toUpperCase() })} className="px-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 rounded-xl text-slate-600 dark:text-slate-300 transition-all active:scale-95" title="Generar Nuevo Token">
                                     <Play className="w-4 h-4 rotate-90" />
                                 </button>
@@ -948,7 +948,7 @@ function SystemSection() {
 
                         {setting.companyQrToken && (
                             <div className="pt-4 border-t border-slate-200 dark:border-slate-700 flex flex-col items-center gap-4">
-                                <div id="company-qr" className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+                                <div id="company-qr" className="p-4 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
                                     <QRCodeCanvas value={setting.companyQrToken} size={200} level="H" includeMargin={true} />
                                 </div>
                                 <button onClick={() => { const canvas = document.querySelector('#company-qr canvas') as HTMLCanvasElement; if (canvas) { const win = window.open('', '_blank'); if (win) { win.document.write(`<html><head><title>Imprimir QR - HDB Base</title><style>body{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;}.container{text-align:center;border:2px solid #000;padding:40px;border-radius:20px;}h1{margin-bottom:20px;font-size:24px;}p{margin-top:20px;font-weight:bold;font-size:18px;color:#666;}img{width:300px;height:300px;}</style></head><body><div class="container"><h1>HDB SERVICIOS ELÉCTRICOS</h1><h2>Ficha de Ingreso - BASE / EMPRESA</h2><img src="${canvas.toDataURL()}" /><p>TOKEN: ${setting.companyQrToken}</p></div><script>window.onload=()=>{setTimeout(()=>{window.print();window.onafterprint=()=>window.close();},500);};</script></body></html>`); } } }} className="flex items-center gap-2 px-6 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold hover:bg-slate-700 transition-all"><QrCode className="w-4 h-4" /> Imprimir QR de Empresa</button>
@@ -1008,7 +1008,7 @@ function SystemSection() {
                 <button
                     onClick={handleManualTrigger}
                     disabled={triggering}
-                    className="w-full bg-white dark:bg-slate-800 border border-indigo-200 text-indigo-600 font-bold rounded-xl py-3 hover:bg-indigo-50 transition-all active:scale-95 disabled:opacity-50 shadow-sm flex items-center justify-center gap-2"
+                    className="w-full bg-card text-card-foreground border border-indigo-200 text-indigo-600 font-bold rounded-xl py-3 hover:bg-indigo-50 transition-all active:scale-95 disabled:opacity-50 shadow-sm flex items-center justify-center gap-2"
                 >
                     {triggering ? (
                         <div className="w-5 h-5 border-2 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin"></div>
@@ -1133,12 +1133,12 @@ function ViewsSection() {
                 {views.map(view => (
                     <div
                         key={view.key}
-                        className="bg-slate-50 dark:bg-slate-900/50 p-4 md:p-5 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all space-y-4"
+                        className="bg-background text-foreground/50 p-4 md:p-5 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all space-y-4"
                     >
                         {/* View header */}
                         <div className="flex items-center gap-3">
                             <span className="font-bold text-slate-800 dark:text-slate-100 text-sm md:text-base">{view.label}</span>
-                            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">{view.key}</span>
+                            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono bg-muted text-muted-foreground px-2 py-0.5 rounded-md">{view.key}</span>
                         </div>
 
                         {/* Controls */}
@@ -1158,7 +1158,7 @@ function ViewsSection() {
                                                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
                                                     isActive
                                                         ? `${r.color} border-transparent shadow-sm`
-                                                        : 'bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 opacity-50 hover:opacity-75'
+                                                        : 'bg-card text-card-foreground text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 opacity-50 hover:opacity-75'
                                                 }`}
                                             >
                                                 {r.label}
@@ -1173,7 +1173,7 @@ function ViewsSection() {
                                 <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 block px-0.5">
                                     Ubicación
                                 </label>
-                                <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800/50 rounded-xl">
+                                <div className="flex gap-1 p-1 bg-muted text-muted-foreground/50 rounded-xl">
                                     {accessOptions.map(opt => (
                                         <button
                                             key={opt.id}
@@ -1198,7 +1198,7 @@ function ViewsSection() {
                                 <select
                                     value={view.section}
                                     onChange={(e) => setSectionValue(view.key, e.target.value)}
-                                    className="w-full bg-slate-100 dark:bg-slate-800/50 border-none outline-none focus:ring-2 focus:ring-primary/20 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-200"
+                                    className="w-full bg-muted text-muted-foreground/50 border-none outline-none focus:ring-2 focus:ring-primary/20 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-200"
                                 >
                                     {DEFAULT_SECTIONS.map(sec => (
                                         <option key={sec.key} value={sec.key}>{sec.label}</option>
@@ -1254,7 +1254,7 @@ function ThemeSection() {
                         className={`relative flex flex-col items-center gap-3 p-4 rounded-2xl border-2 transition-all overflow-hidden ${
                             theme === t.id 
                                 ? 'border-primary bg-primary/5 shadow-md shadow-primary/20 scale-105' 
-                                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-750'
+                                : 'border-slate-200 dark:border-slate-700 bg-card text-card-foreground hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-750'
                         }`}
                     >
                         <div className="flex w-full h-12 rounded-xl overflow-hidden shadow-inner border border-slate-100 dark:border-slate-700">

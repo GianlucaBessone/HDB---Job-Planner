@@ -131,7 +131,7 @@ export default function DashboardEstrategicoTab({ user, isActive = true }: { use
 
             {/* OKR Tree */}
             {okrs.length === 0 ? (
-                <div className="bg-white dark:bg-slate-800 border border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-12 text-center">
+                <div className="bg-card text-card-foreground border border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-12 text-center">
                     <Target className="w-12 h-12 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
                     <h3 className="text-lg font-bold text-slate-600 dark:text-slate-300 mb-1">Sin OKRs registrados</h3>
                     <p className="text-sm text-slate-400">Creá tu primer Objetivo Estratégico desde la pestaña "OKRs"</p>
@@ -139,7 +139,7 @@ export default function DashboardEstrategicoTab({ user, isActive = true }: { use
             ) : (
                 <div className="space-y-4">
                     {okrs.map(okr => (
-                        <div key={okr.id} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden transition-all hover:shadow-md">
+                        <div key={okr.id} className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden transition-all hover:shadow-md">
                             {/* OKR Header */}
                             <button
                                 onClick={() => toggleOkr(okr.id)}
@@ -239,7 +239,7 @@ export default function DashboardEstrategicoTab({ user, isActive = true }: { use
 
 function SummaryCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: number; color: string }) {
     return (
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 md:p-4 flex items-center gap-3 shadow-sm">
+        <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl p-3 md:p-4 flex items-center gap-3 shadow-sm">
             <div className={`${color} w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg shrink-0`}>
                 {icon}
             </div>

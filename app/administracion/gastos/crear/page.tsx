@@ -175,7 +175,7 @@ export default function CrearFacturaManual() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900">
+    <div className="flex flex-col h-full bg-background text-foreground">
       <ModuleHeader 
         title="Crear Gasto Manualmente" 
         description="Ingresa los datos de la factura paso a paso"
@@ -196,7 +196,7 @@ export default function CrearFacturaManual() {
           
           {/* Col 1: Proveedor y Comprobante */}
           <div className="space-y-6">
-            <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+            <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
               <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100 dark:border-slate-700">
                 <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
                   <Building2 className="w-5 h-5" />
@@ -240,7 +240,7 @@ export default function CrearFacturaManual() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+            <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
               <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100 dark:border-slate-700">
                 <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400">
                   <FileText className="w-5 h-5" />
@@ -313,11 +313,11 @@ export default function CrearFacturaManual() {
           </div>
 
           {/* Col 2: Importes */}
-          <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+          <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
             <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-6 pb-4 border-b border-slate-100 dark:border-slate-700">Importes</h3>
             <div className="space-y-4">
               
-              <div className="grid grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700/50">
+              <div className="grid grid-cols-2 gap-4 bg-background text-foreground/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700/50">
                 <div>
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Neto Gral / No Gravado</label>
                   <input 

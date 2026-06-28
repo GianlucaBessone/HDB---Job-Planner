@@ -240,27 +240,27 @@ export default function OperatorsPage() {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row gap-4">
+            <div className="bg-card text-card-foreground p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row gap-4">
                 <div className="relative flex-1 group">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500 group-focus-within:text-primary transition-colors" />
                     <input
                         type="text"
                         placeholder="Buscar por nombre..."
-                        className="w-full h-[42px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-slate-700 dark:text-slate-200 text-sm"
+                        className="w-full h-[42px] bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-slate-700 dark:text-slate-200 text-sm"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1.5 rounded-2xl shrink-0">
+                <div className="flex bg-muted text-muted-foreground/50 p-1.5 rounded-2xl shrink-0">
                     <button
                         onClick={() => setViewMode('grid')}
-                        className={`btn-icon-inline p-2 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-slate-800 shadow-sm text-primary' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600'}`}
+                        className={`btn-icon-inline p-2 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-card text-card-foreground shadow-sm text-primary' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600'}`}
                     >
                         <LayoutGrid className="w-5 h-5" />
                     </button>
                     <button
                         onClick={() => setViewMode('list')}
-                        className={`btn-icon-inline p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-800 shadow-sm text-primary' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600'}`}
+                        className={`btn-icon-inline p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-card text-card-foreground shadow-sm text-primary' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600'}`}
                     >
                         <List className="w-5 h-5" />
                     </button>
@@ -270,7 +270,7 @@ export default function OperatorsPage() {
             {/* Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-slate-800 w-full max-w-lg rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] flex flex-col">
+                    <div className="bg-card text-card-foreground w-full max-w-lg rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] flex flex-col">
                         {/* Header - Fixed */}
                         <div className="p-5 md:p-8 flex justify-between items-center border-b flex-shrink-0">
                             <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">
@@ -289,7 +289,7 @@ export default function OperatorsPage() {
                                     <input
                                         autoFocus
                                         type="text"
-                                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-4 px-5 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium disabled:opacity-50"
+                                        className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-4 px-5 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium disabled:opacity-50"
                                         value={formData.nombreCompleto}
                                         onChange={e => setFormData({ ...formData, nombreCompleto: e.target.value })}
                                         disabled={currentUser?.role === 'operador' || currentUser?.role === 'vendedor'}
@@ -318,7 +318,7 @@ export default function OperatorsPage() {
                                         <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">DNI (Firma Electrónica)</label>
                                         <input
                                             type="text"
-                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-4 px-5 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium disabled:opacity-50"
+                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-4 px-5 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium disabled:opacity-50"
                                             value={formData.dni}
                                             onChange={e => setFormData({ ...formData, dni: e.target.value })}
                                             placeholder="Ej: 12345678"
@@ -329,7 +329,7 @@ export default function OperatorsPage() {
                                         <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Cargo / Posición (Firma)</label>
                                         <input
                                             type="text"
-                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-4 px-5 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium disabled:opacity-50"
+                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-4 px-5 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium disabled:opacity-50"
                                             value={formData.posicion}
                                             onChange={e => setFormData({ ...formData, posicion: e.target.value })}
                                             placeholder="Ej: Gerente de Calidad"
@@ -345,7 +345,7 @@ export default function OperatorsPage() {
                                         inputMode="numeric"
                                         pattern="[0-9]*"
                                         maxLength={8}
-                                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-4 px-5 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium tracking-widest"
+                                        className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-4 px-5 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium tracking-widest"
                                         value={formData.pin}
                                         onChange={e => setFormData({ ...formData, pin: e.target.value.replace(/\D/g, '').slice(0, 8) })}
                                         placeholder="Ej: 1234"
@@ -367,14 +367,14 @@ export default function OperatorsPage() {
                                         <button
                                             type="button"
                                             onClick={() => handleResetDeviceClick(editingOperator.id)}
-                                            className="bg-white dark:bg-slate-800 text-amber-600 dark:text-amber-500 px-4 py-2 rounded-xl text-xs font-bold shadow-sm border border-amber-200 dark:border-amber-900/50 hover:bg-amber-50 active:scale-95 transition-all"
+                                            className="bg-card text-card-foreground text-amber-600 dark:text-amber-500 px-4 py-2 rounded-xl text-xs font-bold shadow-sm border border-amber-200 dark:border-amber-900/50 hover:bg-amber-50 active:scale-95 transition-all"
                                         >
                                             Resetear
                                         </button>
                                     </div>
                                 )}
 
-                                <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                <div className="flex items-center justify-between bg-background text-foreground/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
                                     <div>
                                         <h4 className="font-bold text-slate-800 dark:text-slate-100 text-sm">Modo Ausente / Vacaciones</h4>
                                         <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
@@ -401,7 +401,7 @@ export default function OperatorsPage() {
                                         <input
                                             type="text"
                                             placeholder="Escribe y presiona Enter..."
-                                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-4 text-sm outline-none focus:ring-1 focus:ring-primary/20"
+                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-4 text-sm outline-none focus:ring-1 focus:ring-primary/20"
                                             value={customTag}
                                             onChange={e => setCustomTag(e.target.value)}
                                             onKeyDown={handleAddCustomTag}
@@ -414,7 +414,7 @@ export default function OperatorsPage() {
                                                     onClick={() => toggleTag(tag)}
                                                     className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${formData.etiquetas.includes(tag)
                                                         ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
-                                                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-primary/40'
+                                                        : 'bg-card text-card-foreground border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-primary/40'
                                                         }`}
                                                 >
                                                     {tag}
@@ -430,7 +430,7 @@ export default function OperatorsPage() {
                                 <button
                                     type="button"
                                     onClick={() => setIsModalOpen(false)}
-                                    className="flex-1 px-6 py-4 rounded-2xl font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 transition-all"
+                                    className="flex-1 px-6 py-4 rounded-2xl font-bold text-slate-600 dark:text-slate-300 bg-muted text-muted-foreground/50 hover:bg-slate-200 transition-all"
                                 >
                                     Cancelar
                                 </button>
@@ -457,9 +457,9 @@ export default function OperatorsPage() {
                             const tags = op.etiquetas || [];
                             if (viewMode === 'list') {
                                 return (
-                                    <div key={op.id} className="bg-white dark:bg-slate-800 px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between hover:border-primary/30 transition-all group">
+                                    <div key={op.id} className="bg-card text-card-foreground px-4 md:px-6 py-3 md:py-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between hover:border-primary/30 transition-all group">
                                         <div className="flex items-center gap-4 min-w-0">
-                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${op.activo ? 'bg-primary/10 text-primary' : 'bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500'}`}>
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${op.activo ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground/50 text-slate-400 dark:text-slate-500'}`}>
                                                 <UsersIcon className="w-5 h-5" />
                                             </div>
                                             <div className="min-w-0">
@@ -469,7 +469,7 @@ export default function OperatorsPage() {
                                                         op.role === 'admin' || op.role === 'qa' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300' : 
                                                         op.role === 'supervisor' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' :
                                                         op.role === 'vendedor' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 
-                                                        'bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400'
+                                                        'bg-muted text-muted-foreground/50 text-slate-500 dark:text-slate-400'
                                                     }`}>
                                                         {op.role || 'operador'}
                                                     </span>
@@ -511,9 +511,9 @@ export default function OperatorsPage() {
                             }
 
                             return (
-                                <div key={op.id} className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm group hover:border-primary/30 hover:shadow-xl transition-all duration-300 overflow-hidden relative">
+                                <div key={op.id} className="bg-card text-card-foreground p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm group hover:border-primary/30 hover:shadow-xl transition-all duration-300 overflow-hidden relative">
                                     <div className="flex justify-between items-start mb-4 relative z-10">
-                                        <div className={`p-3 rounded-2xl transition-all duration-300 ${op.activo ? 'bg-slate-50 dark:bg-slate-900/50 group-hover:bg-primary group-hover:text-white' : 'bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500'}`}>
+                                        <div className={`p-3 rounded-2xl transition-all duration-300 ${op.activo ? 'bg-background text-foreground/50 group-hover:bg-primary group-hover:text-white' : 'bg-muted text-muted-foreground/50 text-slate-400 dark:text-slate-500'}`}>
                                             <UsersIcon className="w-6 h-6" />
                                         </div>
                                         <div className="flex gap-0.5">
@@ -547,7 +547,7 @@ export default function OperatorsPage() {
                                             <span className={`px-2 py-[2px] rounded-md text-[9px] font-bold uppercase tracking-wider ${
                                                 op.role === 'admin' || op.role === 'qa' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300' : 
                                                 op.role === 'supervisor' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' :
-                                                op.role === 'vendedor' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400'
+                                                op.role === 'vendedor' ? 'bg-emerald-100 text-emerald-700' : 'bg-muted text-muted-foreground/50 text-slate-500 dark:text-slate-400'
                                             }`}>
                                                 {op.role || 'operador'}
                                             </span>
@@ -555,7 +555,7 @@ export default function OperatorsPage() {
                                         <h4 className="font-bold text-lg text-slate-800 dark:text-slate-100 line-clamp-1 group-hover:text-primary transition-colors">{op.nombreCompleto}</h4>
                                         <div className="flex flex-wrap gap-1.5 mt-3 min-h-[32px]">
                                             {tags.map((t: string) => (
-                                                <span key={t} className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-800 group-hover:border-primary/10 transition-colors">
+                                                <span key={t} className="bg-background text-foreground/50 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-800 group-hover:border-primary/10 transition-colors">
                                                     {t}
                                                 </span>
                                             ))}
@@ -575,7 +575,7 @@ export default function OperatorsPage() {
             </div>
 
             {!isLoading && filteredOperators.length === 0 && (
-                <div className="py-24 flex flex-col items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-[40px] text-slate-400 dark:text-slate-500">
+                <div className="py-24 flex flex-col items-center justify-center bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-[40px] text-slate-400 dark:text-slate-500">
                     <ShieldAlert className="w-16 h-16 mb-4 opacity-10 text-slate-900 dark:text-slate-50" />
                     <p className="font-bold text-slate-700 dark:text-slate-200 text-lg">Equipo de trabajo vacío</p>
                 </div>

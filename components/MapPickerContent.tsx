@@ -122,7 +122,7 @@ export default function MapPickerContent({ lat, lng, radius, onChange }: MapPick
                     )}
                 </MapContainer>
             </div>
-            <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-2xl border border-slate-100 dark:border-slate-800">
+            <div className="flex items-center gap-4 bg-background text-foreground/50 p-3 rounded-2xl border border-slate-100 dark:border-slate-800">
                 <div className="flex-1 space-y-1">
                     <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 flex justify-between">
                         <span>Ajustar Radio</span>
@@ -148,7 +148,7 @@ export default function MapPickerContent({ lat, lng, radius, onChange }: MapPick
                             });
                         }
                     }}
-                    className="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-primary hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all active:scale-95 shadow-sm"
+                    className="p-3 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-primary hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all active:scale-95 shadow-sm"
                 >
                     <MapPin className="w-5 h-5" />
                 </button>

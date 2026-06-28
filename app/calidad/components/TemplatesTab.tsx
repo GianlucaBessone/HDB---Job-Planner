@@ -346,7 +346,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                     <input
                         type="text" placeholder="Buscar plantilla de checklist..."
                         value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:border-primary"
+                        className="w-full pl-10 pr-4 py-3 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:border-primary"
                     />
                 </div>
                 <button
@@ -376,7 +376,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                     <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
                 </div>
             ) : filteredTemplates.length === 0 ? (
-                <div className="text-center py-20 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+                <div className="text-center py-20 bg-card text-card-foreground rounded-2xl border border-slate-200 dark:border-slate-700">
                     <CheckSquare className="w-16 h-16 mx-auto text-slate-300 dark:text-slate-600 mb-4" />
                     <p className="font-bold text-slate-500">No se encontraron plantillas de checklist.</p>
                     <p className="text-sm text-slate-400 mt-1">Haga clic en "Nueva Plantilla" para crear la primera.</p>
@@ -384,7 +384,7 @@ export default function TemplatesTab({ user }: { user: any }) {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {filteredTemplates.map(template => (
-                        <div key={template.id} className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow relative group">
+                        <div key={template.id} className="bg-card text-card-foreground rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow relative group">
                             <div className="flex justify-between items-start mb-3">
                                 <span className="text-[10px] font-black font-mono bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300">
                                     {template.code || 'SIN CÓDIGO'}
@@ -469,9 +469,9 @@ export default function TemplatesTab({ user }: { user: any }) {
             {/* Creation/Edit Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 overflow-y-auto">
-                    <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-3xl flex flex-col my-8 animate-in zoom-in-95 duration-200">
+                    <div className="bg-card text-card-foreground rounded-3xl shadow-2xl w-full max-w-3xl flex flex-col my-8 animate-in zoom-in-95 duration-200">
                         {/* Modal Header */}
-                        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50 rounded-t-3xl">
+                        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-background text-foreground/50 rounded-t-3xl">
                             <div className="flex items-center gap-3">
                                 <CheckSquare className="w-6 h-6 text-primary" />
                                 <h3 className="font-black text-slate-800 dark:text-slate-100 text-lg">
@@ -493,7 +493,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                                         value={modalData.code}
                                         onChange={e => setModalData({ ...modalData, code: e.target.value })}
                                         placeholder="Ej. CK-OP-01"
-                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-primary outline-none"
+                                        className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-primary outline-none"
                                     />
                                 </div>
                                 <div>
@@ -503,7 +503,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                                         value={modalData.name}
                                         onChange={e => setModalData({ ...modalData, name: e.target.value })}
                                         placeholder="Nombre descriptivo"
-                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-primary outline-none"
+                                        className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-primary outline-none"
                                     />
                                 </div>
                             </div>
@@ -515,7 +515,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                                     onChange={e => setModalData({ ...modalData, description: e.target.value })}
                                     placeholder="Detalles sobre el uso o alcance de esta verificación..."
                                     rows={2}
-                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-primary outline-none resize-none"
+                                    className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-primary outline-none resize-none"
                                 />
                             </div>
 
@@ -525,7 +525,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                                     <select
                                         value={modalData.riskLevel}
                                         onChange={e => setModalData({ ...modalData, riskLevel: e.target.value })}
-                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-primary outline-none"
+                                        className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-primary outline-none"
                                     >
                                         <option value="low">Bajo (Low)</option>
                                         <option value="medium">Medio (Medium)</option>
@@ -535,7 +535,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                                 </div>
                                 <div>
                                     <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Vincular a Etiquetas de Actividad</label>
-                                    <div className="flex flex-wrap gap-1.5 p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl min-h-[46px] max-h-[120px] overflow-y-auto">
+                                    <div className="flex flex-wrap gap-1.5 p-2 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl min-h-[46px] max-h-[120px] overflow-y-auto">
                                         {allTags.map(tag => {
                                             const isSelected = modalData.tagIds.includes(tag.id);
                                             return (
@@ -551,7 +551,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                                                     className={`text-xs px-2.5 py-1 rounded-lg font-bold border transition-colors ${
                                                         isSelected 
                                                             ? 'bg-primary text-white border-primary shadow-sm'
-                                                            : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-primary/50'
+                                                            : 'bg-card text-card-foreground text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-primary/50'
                                                     }`}
                                                 >
                                                     {tag.name}
@@ -562,10 +562,10 @@ export default function TemplatesTab({ user }: { user: any }) {
                                 </div>
                             </div>
 
-                            <div className="p-4 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-100 dark:border-slate-700/80 space-y-3">
+                            <div className="p-4 bg-background text-foreground/40 rounded-2xl border border-slate-100 dark:border-slate-700/80 space-y-3">
                                 <span className="block text-xs font-black uppercase tracking-widest text-slate-400">Requisitos para Aprobación Técnica</span>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                    <label className="flex items-center gap-2.5 p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-sm transition-shadow">
+                                    <label className="flex items-center gap-2.5 p-3 bg-card text-card-foreground rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-sm transition-shadow">
                                         <input
                                             type="checkbox"
                                             checked={modalData.requiresEvidence}
@@ -577,7 +577,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                                             <p className="text-[10px] text-slate-400">Texto descriptivo obligatorio</p>
                                         </div>
                                     </label>
-                                    <label className="flex items-center gap-2.5 p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-sm transition-shadow">
+                                    <label className="flex items-center gap-2.5 p-3 bg-card text-card-foreground rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-sm transition-shadow">
                                         <input
                                             type="checkbox"
                                             checked={modalData.requiresPhotos}
@@ -589,7 +589,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                                             <p className="text-[10px] text-slate-400">Captura fotográfica mandatoria</p>
                                         </div>
                                     </label>
-                                    <label className="flex items-center gap-2.5 p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-sm transition-shadow">
+                                    <label className="flex items-center gap-2.5 p-3 bg-card text-card-foreground rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-sm transition-shadow">
                                         <input
                                             type="checkbox"
                                             checked={modalData.requiresSignature}
@@ -621,7 +621,7 @@ export default function TemplatesTab({ user }: { user: any }) {
 
                                 <div className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden divide-y divide-slate-100 dark:divide-slate-700">
                                     {modalData.checklistItems.map((item: any, idx: number) => (
-                                        <div key={idx} className="p-3.5 flex gap-4 items-center bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900/10 transition-colors group">
+                                        <div key={idx} className="p-3.5 flex gap-4 items-center bg-card text-card-foreground hover:bg-slate-50 dark:hover:bg-slate-900/10 transition-colors group">
                                             <span className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-500 shrink-0">
                                                 {idx + 1}
                                             </span>
@@ -666,7 +666,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                         </div>
 
                         {/* Modal Footer */}
-                        <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex flex-wrap justify-between items-center gap-3 rounded-b-3xl">
+                        <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-background text-foreground/50 flex flex-wrap justify-between items-center gap-3 rounded-b-3xl">
                             {selectedTemplate ? (
                                 <div className="flex gap-2">
                                     <button
@@ -703,7 +703,7 @@ export default function TemplatesTab({ user }: { user: any }) {
             {/* Signature Modal */}
             {signatureModal.isOpen && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-lg shadow-2xl border border-slate-100 dark:border-slate-700 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                    <div className="bg-card text-card-foreground rounded-3xl w-full max-w-lg shadow-2xl border border-slate-100 dark:border-slate-700 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                         {/* Header */}
                         <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
                             <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
@@ -770,7 +770,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                                         onTouchStart={startDrawing}
                                         onTouchMove={draw}
                                         onTouchEnd={stopDrawing}
-                                        className="w-full h-[180px] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl cursor-crosshair touch-none"
+                                        className="w-full h-[180px] bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl cursor-crosshair touch-none"
                                     />
                                     <div className="absolute bottom-2 right-3 pointer-events-none text-[10px] font-bold text-slate-400/50 uppercase tracking-widest">
                                         Firme Aquí
@@ -780,7 +780,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                         </div>
 
                         {/* Footer */}
-                        <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3">
+                        <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-background text-foreground/50 flex justify-end gap-3">
                             <button
                                 type="button"
                                 onClick={() => setSignatureModal({ ...signatureModal, isOpen: false })}
@@ -805,9 +805,9 @@ export default function TemplatesTab({ user }: { user: any }) {
             {/* AI Generator Modal */}
             {isAiModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 overflow-y-auto">
-                    <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-xl flex flex-col my-8 animate-in zoom-in-95 duration-200">
+                    <div className="bg-card text-card-foreground rounded-3xl shadow-2xl w-full max-w-xl flex flex-col my-8 animate-in zoom-in-95 duration-200">
                         {/* Header */}
-                        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50 rounded-t-3xl">
+                        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-background text-foreground/50 rounded-t-3xl">
                             <div className="flex items-center gap-3">
                                 <Sparkles className="w-6 h-6 text-indigo-500" />
                                 <h3 className="font-black text-slate-800 dark:text-slate-100 text-lg">
@@ -828,7 +828,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                                     value={aiData.tipoTrabajo}
                                     onChange={e => setAiData({ ...aiData, tipoTrabajo: e.target.value })}
                                     placeholder="Ej. Trabajos en Altura, Mantenimiento Eléctrico..."
-                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
                                 />
                             </div>
 
@@ -839,7 +839,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                                     value={aiData.normativa}
                                     onChange={e => setAiData({ ...aiData, normativa: e.target.value })}
                                     placeholder="Ej. OSHA 1926, ISO 9001, Norma Interna..."
-                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
                                 />
                             </div>
 
@@ -849,7 +849,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                                     <select
                                         value={aiData.categoria}
                                         onChange={e => setAiData({ ...aiData, categoria: e.target.value })}
-                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
                                     >
                                         <option value="General">General</option>
                                         <option value="Seguridad">Seguridad / EPP</option>
@@ -859,7 +859,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                                 </div>
                                 <div>
                                     <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">Vincular a Etiquetas</label>
-                                    <div className="flex flex-wrap gap-1.5 p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl min-h-[46px] max-h-[120px] overflow-y-auto">
+                                    <div className="flex flex-wrap gap-1.5 p-2 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl min-h-[46px] max-h-[120px] overflow-y-auto">
                                         {allTags.map(tag => {
                                             const isSelected = aiData.tagIds.includes(tag.id);
                                             return (
@@ -875,7 +875,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                                                     className={`text-xs px-2.5 py-1 rounded-lg font-bold border transition-colors ${
                                                         isSelected 
                                                             ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                                                            : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-indigo-500/50'
+                                                            : 'bg-card text-card-foreground text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-indigo-500/50'
                                                     }`}
                                                 >
                                                     {tag.name}
@@ -888,7 +888,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                         </div>
 
                         {/* Footer */}
-                        <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3 rounded-b-3xl">
+                        <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-background text-foreground/50 flex justify-end gap-3 rounded-b-3xl">
                             <button
                                 type="button"
                                 onClick={() => setIsAiModalOpen(false)}

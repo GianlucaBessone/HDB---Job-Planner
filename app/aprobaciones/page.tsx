@@ -101,7 +101,7 @@ export default function ApprovalsPage() {
             case 'PENDING_APPROVAL': return 'bg-amber-50 text-amber-600 border-amber-100';
             case 'APPROVED': return 'bg-blue-50 text-blue-600 border-blue-100';
             case 'REJECTED': return 'bg-rose-50 text-rose-600 border-rose-100';
-            default: return 'bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-300 border-slate-100 dark:border-slate-800';
+            default: return 'bg-background text-foreground/50 text-slate-600 dark:text-slate-300 border-slate-100 dark:border-slate-800';
         }
     };
 
@@ -119,7 +119,7 @@ export default function ApprovalsPage() {
                 </div>
                 
                 <div className="flex items-center gap-3">
-                    <div className="bg-white dark:bg-slate-800 px-4 py-2 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-2">
+                    <div className="bg-card text-card-foreground px-4 py-2 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-2">
                         <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
                         <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{entries.length} Pendientes</span>
                     </div>
@@ -130,12 +130,12 @@ export default function ApprovalsPage() {
                 {/* Entries List */}
                 <div className="lg:col-span-1 space-y-4 max-h-[calc(100vh-16rem)] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-200">
                     {loading ? (
-                        <div className="p-8 text-center bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-800">
+                        <div className="p-8 text-center bg-card text-card-foreground rounded-3xl border border-slate-100 dark:border-slate-800">
                             <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
                             <p className="text-sm font-bold text-slate-400 dark:text-slate-500">Cargando fichadas...</p>
                         </div>
                     ) : (Array.isArray(entries) && entries.length === 0) ? (
-                        <div className="p-12 text-center bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-800">
+                        <div className="p-12 text-center bg-card text-card-foreground rounded-3xl border border-slate-100 dark:border-slate-800">
                             <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-4 opacity-20" />
                             <p className="text-sm font-bold text-slate-400 dark:text-slate-500">No hay fichadas pendientes</p>
                         </div>
@@ -146,8 +146,8 @@ export default function ApprovalsPage() {
                                 onClick={() => setSelectedEntry(entry)}
                                 className={`w-full text-left p-5 rounded-3xl border transition-all duration-200 cursor-pointer ${
                                     selectedEntry?.id === entry.id 
-                                    ? 'bg-white dark:bg-slate-800 border-primary shadow-xl shadow-primary/10 ring-2 ring-primary/5' 
-                                    : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600'
+                                    ? 'bg-card text-card-foreground border-primary shadow-xl shadow-primary/10 ring-2 ring-primary/5' 
+                                    : 'bg-card text-card-foreground border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600'
                                 }`}
                             >
                                 <div className="flex justify-between items-start mb-3">
@@ -176,8 +176,8 @@ export default function ApprovalsPage() {
                     {selectedEntry ? (
                         <EntryDetail entry={selectedEntry} onAction={handleAction} />
                     ) : (
-                        <div className="h-full min-h-[400px] flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900/50 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-[2.5rem] p-12 text-center">
-                            <div className="w-16 h-16 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center text-slate-300 shadow-sm mb-4">
+                        <div className="h-full min-h-[400px] flex flex-col items-center justify-center bg-background text-foreground/50 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-[2.5rem] p-12 text-center">
+                            <div className="w-16 h-16 bg-card text-card-foreground rounded-2xl flex items-center justify-center text-slate-300 shadow-sm mb-4">
                                 <Search className="w-8 h-8" />
                             </div>
                             <h3 className="text-lg font-bold text-slate-500 dark:text-slate-400 mb-2">Selecciona una fichada</h3>
@@ -194,9 +194,9 @@ function EntryDetail({ entry, onAction }: { entry: any, onAction: (id: string, a
     const flags = parseFlags(entry.validationFlags);
     
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="bg-card text-card-foreground rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden animate-in zoom-in-95 duration-300">
             {/* Map Placeholder or Actual Map */}
-            <div className="h-64 bg-slate-100 dark:bg-slate-800/50 relative">
+            <div className="h-64 bg-muted text-muted-foreground/50 relative">
                 {entry.latitude ? (
                     <TimeEntryMapView lat={entry.latitude} lng={entry.longitude} />
                 ) : (
@@ -233,7 +233,7 @@ function EntryDetail({ entry, onAction }: { entry: any, onAction: (id: string, a
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div className="space-y-4">
                         <div className="flex items-center gap-3">
-                            <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center text-slate-500 dark:text-slate-400">
+                            <div className="w-14 h-14 rounded-2xl bg-muted text-muted-foreground/50 flex items-center justify-center text-slate-500 dark:text-slate-400">
                                 <User className="w-8 h-8" />
                             </div>
                             <div>
@@ -271,13 +271,13 @@ function EntryDetail({ entry, onAction }: { entry: any, onAction: (id: string, a
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="bg-slate-50 dark:bg-slate-900/50 rounded-[2rem] p-6 border border-slate-100 dark:border-slate-800">
+                    <div className="bg-background text-foreground/50 rounded-[2rem] p-6 border border-slate-100 dark:border-slate-800">
                         <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                             <AlertTriangle className="w-4 h-4 text-amber-500" /> Flags de Validación
                         </h4>
                         <div className="space-y-3">
                             {flags.length > 0 ? flags.map((flag: string) => (
-                                <div key={flag} className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                                <div key={flag} className="bg-card text-card-foreground p-3 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between">
                                     <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{getFlagLabel(flag)}</span>
                                     <span className="text-[9px] font-black text-slate-300 uppercase">{flag}</span>
                                 </div>
@@ -292,11 +292,11 @@ function EntryDetail({ entry, onAction }: { entry: any, onAction: (id: string, a
                             <Clock className="w-4 h-4" /> Resumen de Jornada
                         </h4>
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-indigo-100 shadow-sm">
+                            <div className="bg-card text-card-foreground p-4 rounded-2xl border border-indigo-100 shadow-sm">
                                 <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Ingreso</p>
                                 <p className="text-lg font-black text-indigo-600">{entry.horaIngreso || '--:--'}</p>
                             </div>
-                            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-indigo-100 shadow-sm">
+                            <div className="bg-card text-card-foreground p-4 rounded-2xl border border-indigo-100 shadow-sm">
                                 <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Egreso</p>
                                 <p className="text-lg font-black text-slate-600 dark:text-slate-300">{entry.horaEgreso || 'Activo'}</p>
                             </div>

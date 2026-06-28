@@ -288,7 +288,7 @@ export default function FichadasAdminPage() {
                 <div className="flex items-center gap-2 w-full md:w-auto">
                     <button 
                         onClick={loadEntries}
-                        className="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/80 text-slate-600 dark:text-slate-300 transition-all active:scale-95 shadow-sm"
+                        className="p-3 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/80 text-slate-600 dark:text-slate-300 transition-all active:scale-95 shadow-sm"
                         title="Refrescar"
                     >
                         <RefreshCcw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
@@ -311,7 +311,7 @@ export default function FichadasAdminPage() {
             </div>
 
             {/* Filters Bar */}
-            <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] p-6 shadow-xl border border-slate-100 dark:border-slate-800 flex flex-wrap gap-4 items-end">
+            <div className="bg-card text-card-foreground rounded-[2.5rem] p-6 shadow-xl border border-slate-100 dark:border-slate-800 flex flex-wrap gap-4 items-end">
                 <div className="space-y-1.5 flex-1 min-w-[150px]">
                     <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Desde</label>
                     <div className="relative">
@@ -320,7 +320,7 @@ export default function FichadasAdminPage() {
                             type="date"
                             value={filterDateFrom}
                             onChange={e => setFilterDateFrom(e.target.value)}
-                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-10 pr-4 font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs"
+                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-10 pr-4 font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs"
                         />
                     </div>
                 </div>
@@ -333,7 +333,7 @@ export default function FichadasAdminPage() {
                             type="date"
                             value={filterDateTo}
                             onChange={e => setFilterDateTo(e.target.value)}
-                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-10 pr-4 font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs"
+                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 pl-10 pr-4 font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs"
                         />
                     </div>
                 </div>
@@ -367,7 +367,7 @@ export default function FichadasAdminPage() {
                         className={`h-[42px] px-5 rounded-xl font-bold transition-all active:scale-95 text-xs flex items-center gap-2 ${
                             filterSuspicious 
                             ? 'bg-rose-100 text-rose-700 border-2 border-rose-500' 
-                            : 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'
+                            : 'bg-background text-foreground/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'
                         }`}
                     >
                         <AlertTriangle className={`w-4 h-4 ${filterSuspicious ? 'animate-pulse' : ''}`} />
@@ -377,7 +377,7 @@ export default function FichadasAdminPage() {
             </div>
 
             {/* List Table */}
-            <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+            <div className="bg-card text-card-foreground rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
@@ -400,7 +400,7 @@ export default function FichadasAdminPage() {
                             ) : entries.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="p-20 text-center">
-                                        <div className="mx-auto w-16 h-16 bg-slate-50 dark:bg-slate-900/50 rounded-2xl flex items-center justify-center text-slate-300 mb-4">
+                                        <div className="mx-auto w-16 h-16 bg-background text-foreground/50 rounded-2xl flex items-center justify-center text-slate-300 mb-4">
                                             <Search className="w-8 h-8" />
                                         </div>
                                         <p className="font-bold text-slate-400 dark:text-slate-500">No se encontraron fichadas con estos filtros</p>
@@ -447,7 +447,7 @@ export default function FichadasAdminPage() {
                                                     </div>
                                                 </div>
                                                 {entry.horasTrabajadas > 0 && (
-                                                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/50 px-2 py-0.5 rounded-full">{entry.horasTrabajadas}h trabajadas</span>
+                                                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-muted text-muted-foreground/50 px-2 py-0.5 rounded-full">{entry.horasTrabajadas}h trabajadas</span>
                                                 )}
                                             </div>
                                         </td>
@@ -505,7 +505,7 @@ export default function FichadasAdminPage() {
             {isModalOpen && selectedEntry && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6">
                     <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsModalOpen(false)} />
-                    <div className="relative bg-white dark:bg-slate-800 w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+                    <div className="relative bg-card text-card-foreground w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
                         {/* Modal Header */}
                         <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50">
                             <div className="flex items-center gap-4">
@@ -526,12 +526,12 @@ export default function FichadasAdminPage() {
                         <div className="p-8 space-y-8 overflow-y-auto max-h-[70vh]">
                             {/* Summary Cards */}
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-3xl border border-slate-100 dark:border-slate-800">
+                                <div className="bg-background text-foreground/50 p-6 rounded-3xl border border-slate-100 dark:border-slate-800">
                                     <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Destino Declarado</p>
                                     <h4 className="font-extrabold text-slate-800 dark:text-slate-100 leading-tight">{selectedEntry.project?.nombre || 'Base / Empresa'}</h4>
                                     {selectedEntry.project?.cliente && <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">{selectedEntry.project.cliente}</p>}
                                 </div>
-                                <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-3xl border border-slate-100 dark:border-slate-800">
+                                <div className="bg-background text-foreground/50 p-6 rounded-3xl border border-slate-100 dark:border-slate-800">
                                     <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Horario Registrado</p>
                                     <div className="flex items-center gap-3">
                                         <span className="text-lg font-black text-indigo-600">{selectedEntry.horaIngreso || '--:--'}</span>
@@ -551,7 +551,7 @@ export default function FichadasAdminPage() {
                                     {selectedEntry.validationFlags ? (
                                         JSON.parse(selectedEntry.validationFlags).map((flag: string, idx: number) => (
                                             <div key={idx} className="flex items-center gap-4 p-4 bg-rose-50 rounded-2xl border border-rose-100 animate-in slide-in-from-left-2 duration-300" style={{ animationDelay: `${idx * 100}ms` }}>
-                                                <div className="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center text-rose-500 shadow-sm">
+                                                <div className="w-8 h-8 rounded-xl bg-card text-card-foreground flex items-center justify-center text-rose-500 shadow-sm">
                                                     <AlertTriangle className="w-4 h-4" />
                                                 </div>
                                                 <div className="flex-1">
@@ -562,7 +562,7 @@ export default function FichadasAdminPage() {
                                         ))
                                     ) : (
                                         <div className="flex items-center gap-4 p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
-                                            <div className="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center text-emerald-500 shadow-sm">
+                                            <div className="w-8 h-8 rounded-xl bg-card text-card-foreground flex items-center justify-center text-emerald-500 shadow-sm">
                                                 <CheckCircle2 className="w-4 h-4" />
                                             </div>
                                             <div className="flex-1">
@@ -580,7 +580,7 @@ export default function FichadasAdminPage() {
                                     <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
                                         <Smartphone className="w-3.5 h-3.5" /> Identidad del Dispositivo
                                     </h4>
-                                    <div className="bg-slate-100 dark:bg-slate-800/50 p-5 rounded-3xl border border-slate-200 dark:border-slate-700">
+                                    <div className="bg-muted text-muted-foreground/50 p-5 rounded-3xl border border-slate-200 dark:border-slate-700">
                                         <code className="text-[10px] font-bold text-slate-600 dark:text-slate-300 block break-all mb-2">ID: {selectedEntry.deviceId || 'N/A'}</code>
                                         <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 leading-tight">Este ID es único por instalación y se utiliza para evitar que un operario fiche desde múltiples teléfonos no autorizados.</p>
                                     </div>
@@ -597,8 +597,8 @@ export default function FichadasAdminPage() {
                                         {selectedEntry.latitude ? (
                                             <div className="space-y-2">
                                                 <div className="flex items-center gap-2 flex-wrap">
-                                                    <div className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800/50 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Lat: {selectedEntry.latitude.toFixed(6)}</div>
-                                                    <div className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800/50 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Lng: {selectedEntry.longitude?.toFixed(6)}</div>
+                                                    <div className="px-3 py-1.5 bg-muted text-muted-foreground/50 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Lat: {selectedEntry.latitude.toFixed(6)}</div>
+                                                    <div className="px-3 py-1.5 bg-muted text-muted-foreground/50 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Lng: {selectedEntry.longitude?.toFixed(6)}</div>
                                                 </div>
                                                 <a 
                                                     href={`https://www.google.com/maps?q=${selectedEntry.latitude},${selectedEntry.longitude}`}
@@ -620,8 +620,8 @@ export default function FichadasAdminPage() {
                                         {(selectedEntry as any).latitudeEgreso ? (
                                             <div className="space-y-2">
                                                 <div className="flex items-center gap-2 flex-wrap">
-                                                    <div className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800/50 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Lat: {(selectedEntry as any).latitudeEgreso.toFixed(6)}</div>
-                                                    <div className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800/50 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Lng: {(selectedEntry as any).longitudeEgreso?.toFixed(6)}</div>
+                                                    <div className="px-3 py-1.5 bg-muted text-muted-foreground/50 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Lat: {(selectedEntry as any).latitudeEgreso.toFixed(6)}</div>
+                                                    <div className="px-3 py-1.5 bg-muted text-muted-foreground/50 rounded-lg text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Lng: {(selectedEntry as any).longitudeEgreso?.toFixed(6)}</div>
                                                 </div>
                                                 <a 
                                                     href={`https://www.google.com/maps?q=${(selectedEntry as any).latitudeEgreso},${(selectedEntry as any).longitudeEgreso}`}
@@ -641,7 +641,7 @@ export default function FichadasAdminPage() {
 
                         {/* Modal Footer */}
                         <div className="p-6 bg-slate-50/50 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-                            <button onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all text-xs"> Cerrar Detalle </button>
+                            <button onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all text-xs"> Cerrar Detalle </button>
                         </div>
                     </div>
                 </div>
@@ -678,7 +678,7 @@ export default function FichadasAdminPage() {
                                         type="date"
                                         value={cruceFrom}
                                         onChange={e => setCruceFrom(e.target.value)}
-                                        className="w-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 pl-10 pr-4 font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs"
+                                        className="w-full bg-secondary text-secondary-foreground border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 pl-10 pr-4 font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs"
                                     />
                                 </div>
                             </div>
@@ -691,7 +691,7 @@ export default function FichadasAdminPage() {
                                         type="date"
                                         value={cruceTo}
                                         onChange={e => setCruceTo(e.target.value)}
-                                        className="w-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 pl-10 pr-4 font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs"
+                                        className="w-full bg-secondary text-secondary-foreground border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 pl-10 pr-4 font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-xs"
                                     />
                                 </div>
                             </div>
@@ -837,9 +837,9 @@ export default function FichadasAdminPage() {
                                                                 {r.manualRegistros > 0 ? (
                                                                     <div className="flex flex-col items-center gap-1">
                                                                         <div className="flex gap-2">
-                                                                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono font-bold">{r.manualPrimeraEntrada ?? '--:--'}</span>
+                                                                            <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded font-mono font-bold">{r.manualPrimeraEntrada ?? '--:--'}</span>
                                                                             <span className="text-slate-300">→</span>
-                                                                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono font-bold">{r.manualUltimaSalida ?? '--:--'}</span>
+                                                                            <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded font-mono font-bold">{r.manualUltimaSalida ?? '--:--'}</span>
                                                                         </div>
                                                                         <div className="text-[10px] text-slate-500 font-semibold">{r.manualHoras} hs en {r.manualRegistros} registro(s)</div>
                                                                     </div>
@@ -851,9 +851,9 @@ export default function FichadasAdminPage() {
                                                                 {r.fichadaCantidad > 0 ? (
                                                                     <div className="flex flex-col items-center gap-1">
                                                                         <div className="flex gap-2 items-center">
-                                                                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono font-bold">{r.fichadaPrimeraEntrada ?? '--:--'}</span>
+                                                                            <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded font-mono font-bold">{r.fichadaPrimeraEntrada ?? '--:--'}</span>
                                                                             <span className="text-slate-300">→</span>
-                                                                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono font-bold">{r.fichadaUltimaSalida ?? '--:--'}</span>
+                                                                            <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded font-mono font-bold">{r.fichadaUltimaSalida ?? '--:--'}</span>
                                                                             {r.fichadaTieneAbierta && (
                                                                                 <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" title="Fichada abierta actualmente" />
                                                                             )}
@@ -916,8 +916,8 @@ export default function FichadasAdminPage() {
                         </div>
 
                         {/* Footer */}
-                        <div className="p-6 bg-slate-50 dark:bg-slate-900/40 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-                            <button onClick={() => setIsCruceOpen(false)} className="px-6 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all text-xs"> Cerrar </button>
+                        <div className="p-6 bg-background text-foreground/40 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+                            <button onClick={() => setIsCruceOpen(false)} className="px-6 py-2.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all text-xs"> Cerrar </button>
                         </div>
                     </div>
                 </div>

@@ -409,7 +409,7 @@ function ProjectsContent() {
                                     setAppliedFilters(f => ({ ...f, fechaInicio: val }));
                                     setPendingFilters(f => ({ ...f, fechaInicio: val }));
                                 }}
-                                className="w-full h-[56px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl pl-9 pr-3 text-[11px] font-black uppercase tracking-tighter text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer"
+                                className="w-full h-[56px] bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl pl-9 pr-3 text-[11px] font-black uppercase tracking-tighter text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer"
                                 title="Fecha Inicio"
                             />
                         </div>
@@ -424,7 +424,7 @@ function ProjectsContent() {
                                     setAppliedFilters(f => ({ ...f, fechaFin: val }));
                                     setPendingFilters(f => ({ ...f, fechaFin: val }));
                                 }}
-                                className="w-full h-[56px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl pl-9 pr-3 text-[11px] font-black uppercase tracking-tighter text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer"
+                                className="w-full h-[56px] bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl pl-9 pr-3 text-[11px] font-black uppercase tracking-tighter text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer"
                                 title="Fecha Fin"
                             />
                         </div>
@@ -434,7 +434,7 @@ function ProjectsContent() {
                                     setAppliedFilters(f => ({ ...f, fechaInicio: '', fechaFin: '' }));
                                     setPendingFilters(f => ({ ...f, fechaInicio: '', fechaFin: '' }));
                                 }}
-                                className="p-4 bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 rounded-2xl hover:bg-rose-50 hover:text-rose-500 transition-all"
+                                className="p-4 bg-muted text-muted-foreground/50 text-slate-500 dark:text-slate-400 rounded-2xl hover:bg-rose-50 hover:text-rose-500 transition-all"
                                 title="Limpiar fechas"
                             >
                                 <X className="w-5 h-5" />
@@ -452,10 +452,10 @@ function ProjectsContent() {
                         }}
                         className={`px-5 py-3 rounded-2xl text-[10px] font-black transition-all flex items-center gap-2 uppercase tracking-widest ${appliedFilters.estados.length === 0 
                             ? 'bg-primary text-white shadow-lg shadow-primary/20' 
-                            : 'bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-slate-600 border border-slate-100 dark:border-slate-800'}`}
+                            : 'bg-card text-card-foreground text-slate-400 dark:text-slate-500 hover:text-slate-600 border border-slate-100 dark:border-slate-800'}`}
                     >
                         Todos
-                        <span className={`px-2 py-0.5 rounded-md text-[9px] ${appliedFilters.estados.length === 0 ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400'}`}>
+                        <span className={`px-2 py-0.5 rounded-md text-[9px] ${appliedFilters.estados.length === 0 ? 'bg-white/20 text-white' : 'bg-muted text-muted-foreground/50 text-slate-500 dark:text-slate-400'}`}>
                             {projects.length}
                         </span>
                     </button>
@@ -475,11 +475,11 @@ function ProjectsContent() {
                                 }}
                                 className={`px-5 py-3 rounded-2xl text-[10px] font-black transition-all flex items-center gap-2.5 border uppercase tracking-widest ${isActive 
                                     ? `${cfg.bg} ${cfg.color} border-${cfg.dot.split('-')[1]}-200 shadow-md` 
-                                    : 'bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700'}`}
+                                    : 'bg-card text-card-foreground text-slate-400 dark:text-slate-500 border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700'}`}
                             >
                                 <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
                                 {cfg.label}
-                                <span className={`px-2 py-0.5 rounded-md text-[9px] ${isActive ? 'bg-white/50' : 'bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400'}`}>
+                                <span className={`px-2 py-0.5 rounded-md text-[9px] ${isActive ? 'bg-white/50' : 'bg-muted text-muted-foreground/50 text-slate-500 dark:text-slate-400'}`}>
                                     {count}
                                 </span>
                             </button>
@@ -497,8 +497,8 @@ function ProjectsContent() {
                         ))}
                     </div>
                 ) : filteredProjects.length === 0 ? (
-                    <div className="py-24 flex flex-col items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-[2.5rem] text-slate-400 dark:text-slate-500 shadow-sm border-dashed">
-                        <div className="p-6 bg-slate-50 dark:bg-slate-900/50 rounded-full mb-6">
+                    <div className="py-24 flex flex-col items-center justify-center bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-[2.5rem] text-slate-400 dark:text-slate-500 shadow-sm border-dashed">
+                        <div className="p-6 bg-background text-foreground/50 rounded-full mb-6">
                             <AlertCircle className="w-12 h-12 opacity-20" />
                         </div>
                         <p className="font-bold text-slate-600 dark:text-slate-300 text-lg">
@@ -597,17 +597,17 @@ function ProjectsSkeleton() {
                         <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse"></div> 
                         <div className="w-48 h-8 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div>
                     </h2>
-                    <div className="w-64 h-4 bg-slate-100 dark:bg-slate-800/50 rounded animate-pulse hidden md:block mt-2"></div>
+                    <div className="w-64 h-4 bg-muted text-muted-foreground/50 rounded animate-pulse hidden md:block mt-2"></div>
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 p-4 md:p-6 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row gap-4">
+            <div className="bg-card text-card-foreground p-4 md:p-6 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row gap-4">
                 <div className="flex-1">
-                    <div className="w-full h-[50px] bg-slate-100 dark:bg-slate-800/50 rounded-2xl animate-pulse" />
+                    <div className="w-full h-[50px] bg-muted text-muted-foreground/50 rounded-2xl animate-pulse" />
                 </div>
                 <div className="w-full md:w-auto flex gap-2">
-                    <div className="flex-1 md:w-32 h-[50px] bg-slate-100 dark:bg-slate-800/50 rounded-2xl animate-pulse" />
-                    <div className="w-[50px] h-[50px] bg-slate-100 dark:bg-slate-800/50 rounded-2xl animate-pulse" />
+                    <div className="flex-1 md:w-32 h-[50px] bg-muted text-muted-foreground/50 rounded-2xl animate-pulse" />
+                    <div className="w-[50px] h-[50px] bg-muted text-muted-foreground/50 rounded-2xl animate-pulse" />
                 </div>
             </div>
 
@@ -686,7 +686,7 @@ function ProjectDetailsModal({
 
     return (
         <div className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-800 w-full max-w-4xl rounded-t-3xl md:rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="bg-card text-card-foreground w-full max-w-4xl rounded-t-3xl md:rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] overflow-hidden flex flex-col">
                 {/* Header */}
                 <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
                     <div className="space-y-1">
@@ -788,10 +788,10 @@ function ProjectDetailsModal({
                                     <h4 className="flex items-center gap-2 font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest text-xs">
                                         <Users className="w-4 h-4 text-primary" /> Personal Asignado
                                     </h4>
-                                    <div className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-800 rounded-3xl overflow-x-auto shadow-sm">
+                                    <div className="bg-card text-card-foreground border border-slate-100 dark:border-slate-800 rounded-3xl overflow-x-auto shadow-sm">
                                         <table className="w-full text-left">
                                             <thead>
-                                                <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
+                                                <tr className="bg-background text-foreground/50 border-b border-slate-100 dark:border-slate-800">
                                                     <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Operador</th>
                                                     <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Horas Totales</th>
                                                 </tr>
@@ -826,9 +826,9 @@ function ProjectDetailsModal({
                                             <h4 className="flex items-center gap-2 font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest text-xs">
                                                 <Activity className="w-4 h-4 text-primary" /> Historial Reciente
                                             </h4>
-                                            <div className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-800 rounded-3xl overflow-x-auto shadow-sm">
+                                            <div className="bg-card text-card-foreground border border-slate-100 dark:border-slate-800 rounded-3xl overflow-x-auto shadow-sm">
                                                 <table className="w-full text-left text-xs">
-                                                    <thead className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800 font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                                                    <thead className="bg-background text-foreground/50 border-b border-slate-100 dark:border-slate-800 font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                                                         <tr>
                                                             <th className="px-4 py-3">Fecha</th>
                                                             <th className="px-4 py-3">Operador</th>
@@ -861,7 +861,7 @@ function ProjectDetailsModal({
                                     </h4>
                                     <div className="space-y-2 max-h-[600px] overflow-y-auto pr-2 scrollbar-thin">
                                         {visibleItems.length === 0 ? (
-                                            <div className="bg-slate-50 dark:bg-slate-900/50 rounded-3xl p-8 border border-dashed border-slate-200 dark:border-slate-700 text-center text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-widest">Sin tareas definidas para este proyecto</div>
+                                            <div className="bg-background text-foreground/50 rounded-3xl p-8 border border-dashed border-slate-200 dark:border-slate-700 text-center text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-widest">Sin tareas definidas para este proyecto</div>
                                         ) : (
                                             visibleItems.map((item: any) => (
                                                 <div key={item.id} className={`flex items-start gap-3 p-3 rounded-2xl border transition-all ${item.excluded ? 'opacity-40 grayscale border-dashed border-slate-300 dark:border-slate-600' : item.completed ? 'bg-emerald-50/40 border-emerald-100 shadow-sm' : 'bg-slate-50/50 border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700'}`}>
@@ -869,7 +869,7 @@ function ProjectDetailsModal({
                                                         <button
                                                             disabled={item.confirmedBySupervisor}
                                                             onClick={() => onUpdateChecklist(item.id, { completed: !item.completed })}
-                                                            className={`btn-icon-inline mt-0.5 shrink-0 w-6 h-6 rounded-xl border-2 flex items-center justify-center transition-all ${item.completed ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-200' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-primary/40'}`}
+                                                            className={`btn-icon-inline mt-0.5 shrink-0 w-6 h-6 rounded-xl border-2 flex items-center justify-center transition-all ${item.completed ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-200' : 'border-slate-200 dark:border-slate-700 bg-card text-card-foreground hover:border-primary/40'}`}
                                                         >
                                                             {item.completed && <CheckCircle2 className="w-4 h-4" />}
                                                         </button>
@@ -881,7 +881,7 @@ function ProjectDetailsModal({
                                                     <div className="min-w-0 flex-1">
                                                         <p className={`text-sm font-bold leading-snug ${item.excluded ? 'text-slate-400 dark:text-slate-500 line-through' : item.completed ? 'text-emerald-900' : 'text-slate-700 dark:text-slate-200'}`}>{item.description}</p>
                                                         <div className="flex items-center gap-2 mt-1">
-                                                            <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-slate-100 dark:bg-slate-800/50 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">{item.tag}</span>
+                                                            <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-muted text-muted-foreground/50 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">{item.tag}</span>
                                                             {item.excluded && <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase italic">(Excluido)</span>}
                                                         </div>
                                                     </div>
@@ -915,7 +915,7 @@ function ProjectDetailsModal({
                                         <input
                                             readOnly
                                             value={`${typeof window !== 'undefined' ? window.location.origin : ''}/projects/${project.id}/report?token=${project.publicToken || ''}`}
-                                            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-[10px] font-medium text-slate-500 dark:text-slate-400 flex-1 md:w-64 outline-none truncate"
+                                            className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-[10px] font-medium text-slate-500 dark:text-slate-400 flex-1 md:w-64 outline-none truncate"
                                         />
                                         <button
                                             onClick={() => {
@@ -923,7 +923,7 @@ function ProjectDetailsModal({
                                                 navigator.clipboard.writeText(url);
                                                 showToast('Link copiado al portapapeles', 'success');
                                             }}
-                                            className="btn-icon-inline bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 text-primary border border-primary/20 p-2 rounded-xl transition-all shadow-sm active:scale-90 shrink-0"
+                                            className="btn-icon-inline bg-card text-card-foreground hover:bg-slate-50 dark:hover:bg-slate-800/80 text-primary border border-primary/20 p-2 rounded-xl transition-all shadow-sm active:scale-90 shrink-0"
                                             title="Copiar Link"
                                         >
                                             <ClipboardList className="w-5 h-5" />
@@ -945,7 +945,7 @@ function ProjectDetailsModal({
                                         <h4 className="flex items-center gap-2 font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest text-xs">
                                             <MessageSquare className="w-4 h-4 text-primary" /> Registrar Seguimiento / Observación
                                         </h4>
-                                        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-3xl p-6 space-y-4 border border-slate-100 dark:border-slate-800">
+                                        <div className="bg-background text-foreground/50 rounded-3xl p-6 space-y-4 border border-slate-100 dark:border-slate-800">
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="space-y-1.5">
                                                     <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Fecha</label>
@@ -953,7 +953,7 @@ function ProjectDetailsModal({
                                                         type="date"
                                                         value={newLog.fecha}
                                                         onChange={e => setNewLog(prev => ({ ...prev, fecha: e.target.value }))}
-                                                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/20 outline-none"
+                                                        className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/20 outline-none"
                                                     />
                                                 </div>
                                                 <div className="space-y-1.5">
@@ -975,7 +975,7 @@ function ProjectDetailsModal({
                                                     value={newLog.observacion}
                                                     placeholder="Describe el avance o comentario..."
                                                     onChange={e => setNewLog(prev => ({ ...prev, observacion: e.target.value }))}
-                                                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/20 outline-none min-h-[100px] resize-none"
+                                                    className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/20 outline-none min-h-[100px] resize-none"
                                                 />
                                             </div>
                                             <button
@@ -998,7 +998,7 @@ function ProjectDetailsModal({
                                         </h4>
                                         <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin">
                                             {logs.length === 0 ? (
-                                                <div className="bg-slate-50 dark:bg-slate-900/50 border border-dashed border-slate-200 dark:border-slate-700 rounded-3xl p-10 text-center text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-widest">No hay registros aún</div>
+                                                <div className="bg-background text-foreground/50 border border-dashed border-slate-200 dark:border-slate-700 rounded-3xl p-10 text-center text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-widest">No hay registros aún</div>
                                             ) : (
                                                 logs.map((log: any) => {
                                                     const cat = log.categoria || 'Nota';
@@ -1009,7 +1009,7 @@ function ProjectDetailsModal({
                                                         Nota:       'bg-blue-100 text-blue-700 border-blue-200',
                                                     };
                                                     return (
-                                                    <div key={log.id} className={`bg-white dark:bg-slate-800 border p-4 rounded-2xl shadow-sm space-y-2 ${cat === 'Bloqueante' ? 'border-red-100' : 'border-slate-100 dark:border-slate-800'}`}>
+                                                    <div key={log.id} className={`bg-card text-card-foreground border p-4 rounded-2xl shadow-sm space-y-2 ${cat === 'Bloqueante' ? 'border-red-100' : 'border-slate-100 dark:border-slate-800'}`}>
                                                         <div className="flex justify-between items-start">
                                                             <div className="flex items-center gap-2 flex-wrap">
                                                                 <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded-md">{formatDate(log.fecha)}</span>
@@ -1036,7 +1036,7 @@ function ProjectDetailsModal({
                                     <h4 className="flex items-center gap-2 font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest text-xs">
                                         <FileText className="w-4 h-4 text-primary" /> Observaciones y Notas
                                     </h4>
-                                    <div className="bg-slate-50 dark:bg-slate-900/50 rounded-3xl p-5 border border-slate-100 dark:border-slate-800">
+                                    <div className="bg-background text-foreground/50 rounded-3xl p-5 border border-slate-100 dark:border-slate-800">
                                         <p className="text-slate-600 dark:text-slate-300 text-sm italic font-medium leading-relaxed">
                                             "{project.observaciones}"
                                         </p>
@@ -1049,7 +1049,7 @@ function ProjectDetailsModal({
 
                 {/* Footer */}
                 <div className="p-6 border-t border-slate-100 dark:border-slate-800 flex justify-end shrink-0">
-                    <button onClick={onClose} className="px-8 py-3 bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 text-slate-600 dark:text-slate-300 font-black uppercase tracking-widest text-xs rounded-2xl transition-all active:scale-95">
+                    <button onClick={onClose} className="px-8 py-3 bg-muted text-muted-foreground/50 hover:bg-slate-200 text-slate-600 dark:text-slate-300 font-black uppercase tracking-widest text-xs rounded-2xl transition-all active:scale-95">
                         Cerrar Ventana
                     </button>
                 </div>
@@ -1096,7 +1096,7 @@ function ProjectModal({
 
     return (
         <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-800 w-full max-w-xl rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] flex flex-col overflow-hidden">
+            <div className="bg-card text-card-foreground w-full max-w-xl rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] flex flex-col overflow-hidden">
                 {/* Header */}
                 <div className="p-5 md:p-7 pb-0 flex items-center justify-between flex-shrink-0">
                     <h3 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100">
@@ -1128,7 +1128,7 @@ function ProjectModal({
                                 <input
                                     autoFocus
                                     type="text"
-                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                     value={formData.nombre}
                                     onChange={e => set('nombre', e.target.value)}
                                     required
@@ -1141,7 +1141,7 @@ function ProjectModal({
                                     onClick={() => set('activo', !formData.activo)}
                                     className={`relative inline-flex h-10 w-20 items-center rounded-xl transition-all duration-300 focus:outline-none ring-offset-2 focus:ring-2 focus:ring-primary/20 ${formData.activo ? 'bg-primary' : 'bg-slate-200 dark:bg-slate-700'}`}
                                 >
-                                    <span className={`inline-block h-6 w-6 transform rounded-lg bg-white dark:bg-slate-800 shadow-md transition-transform duration-300 ${formData.activo ? 'translate-x-11' : 'translate-x-3'}`} />
+                                    <span className={`inline-block h-6 w-6 transform rounded-lg bg-card text-card-foreground shadow-md transition-transform duration-300 ${formData.activo ? 'translate-x-11' : 'translate-x-3'}`} />
                                     <span className={`absolute text-[9px] font-black uppercase tracking-tighter transition-opacity duration-300 ${formData.activo ? 'left-3 opacity-100 text-white' : 'right-3 opacity-100 text-slate-500 dark:text-slate-400'}`}>
                                         {formData.activo ? 'SÍ' : 'NO'}
                                     </span>
@@ -1156,7 +1156,7 @@ function ProjectModal({
                                     onClick={() => set('noEnMetricas', !formData.noEnMetricas)}
                                     className={`relative inline-flex h-10 w-20 items-center rounded-xl transition-all duration-300 focus:outline-none ring-offset-2 focus:ring-2 focus:ring-primary/20 ${!formData.noEnMetricas ? 'bg-indigo-500' : 'bg-slate-200 dark:bg-slate-700'}`}
                                 >
-                                    <span className={`inline-block h-6 w-6 transform rounded-lg bg-white dark:bg-slate-800 shadow-md transition-transform duration-300 ${!formData.noEnMetricas ? 'translate-x-11' : 'translate-x-3'}`} />
+                                    <span className={`inline-block h-6 w-6 transform rounded-lg bg-card text-card-foreground shadow-md transition-transform duration-300 ${!formData.noEnMetricas ? 'translate-x-11' : 'translate-x-3'}`} />
                                     <span className={`absolute text-[9px] font-black uppercase tracking-tighter transition-opacity duration-300 ${!formData.noEnMetricas ? 'left-3 opacity-100 text-white' : 'right-3 opacity-100 text-slate-500 dark:text-slate-400'}`}>
                                         {!formData.noEnMetricas ? 'SÍ' : 'NO'}
                                     </span>
@@ -1229,7 +1229,7 @@ function ProjectModal({
                         {/* Etiquetas Técnicas */}
                         <div className="space-y-2">
                             <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Etiquetas Técnicas / Especialidades</label>
-                            <div className="flex flex-wrap gap-2 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-700">
+                            <div className="flex flex-wrap gap-2 p-3 bg-background text-foreground/50 rounded-2xl border border-slate-200 dark:border-slate-700">
                                 {systemTags.map(tagObj => {
                                     const tag = tagObj.name;
                                     const active = formData.tags.includes(tag);
@@ -1245,7 +1245,7 @@ function ProjectModal({
                                             }}
                                             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${active
                                                 ? 'bg-primary text-white border-primary shadow-sm'
-                                                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                                : 'bg-card text-card-foreground text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                                                 }`}
                                         >
                                             {tag}
@@ -1269,7 +1269,7 @@ function ProjectModal({
                                             onClick={() => set('estado', s)}
                                             className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${active
                                                 ? `${cfg.bg} ${cfg.color} ring-1 ${cfg.ring} border-transparent`
-                                                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                                : 'bg-card text-card-foreground text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                                                 }`}
                                         >
                                             <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
@@ -1288,7 +1288,7 @@ function ProjectModal({
                                     type="number"
                                     min={0}
                                     inputMode="decimal"
-                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                     value={formData.horasEstimadas}
                                     onChange={e => set('horasEstimadas', e.target.value)}
                                 />
@@ -1299,7 +1299,7 @@ function ProjectModal({
                                     type="number"
                                     min={0}
                                     inputMode="decimal"
-                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                     value={formData.horasConsumidas}
                                     onChange={e => set('horasConsumidas', e.target.value)}
                                 />
@@ -1312,7 +1312,7 @@ function ProjectModal({
                                 <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Fecha Inicio</label>
                                 <input
                                     type="date"
-                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                     value={formData.fechaInicio}
                                     onChange={e => set('fechaInicio', e.target.value)}
                                 />
@@ -1321,7 +1321,7 @@ function ProjectModal({
                                 <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Fecha Fin</label>
                                 <input
                                     type="date"
-                                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
                                     value={formData.fechaFin}
                                     onChange={e => set('fechaFin', e.target.value)}
                                 />
@@ -1333,7 +1333,7 @@ function ProjectModal({
                             <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Observaciones</label>
                             <textarea
                                 rows={3}
-                                className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium resize-none"
+                                className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium resize-none"
                                 value={formData.observaciones}
                                 onChange={e => set('observaciones', e.target.value)}
                                 placeholder="Notas adicionales..."
@@ -1356,7 +1356,7 @@ function ProjectModal({
                                     (formData as any).generarOS ? 'bg-emerald-600' : 'bg-slate-200 dark:bg-slate-700'
                                 }`}
                             >
-                                <span className={`inline-block h-5 w-5 transform rounded-full bg-white dark:bg-slate-800 shadow-md transition-transform duration-300 ${
+                                <span className={`inline-block h-5 w-5 transform rounded-full bg-card text-card-foreground shadow-md transition-transform duration-300 ${
                                     (formData as any).generarOS ? 'translate-x-8' : 'translate-x-1'
                                 }`} />
                             </button>
@@ -1370,7 +1370,7 @@ function ProjectModal({
                             </div>
                             <button type="button" onClick={() => set('aprovisionamiento', !(formData as any).aprovisionamiento)}
                                 className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-300 focus:outline-none shrink-0 ${(formData as any).aprovisionamiento ? 'bg-primary' : 'bg-slate-200 dark:bg-slate-700'}`}>
-                                <span className={`inline-block h-5 w-5 transform rounded-full bg-white dark:bg-slate-800 shadow-md transition-transform duration-300 ${(formData as any).aprovisionamiento ? 'translate-x-8' : 'translate-x-1'}`} />
+                                <span className={`inline-block h-5 w-5 transform rounded-full bg-card text-card-foreground shadow-md transition-transform duration-300 ${(formData as any).aprovisionamiento ? 'translate-x-8' : 'translate-x-1'}`} />
                             </button>
                         </div>
 
@@ -1385,7 +1385,7 @@ function ProjectModal({
                             </div>
                             <button type="button" onClick={() => set('proyectoFijo', !(formData as any).proyectoFijo)}
                                 className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-300 focus:outline-none shrink-0 ml-4 ${(formData as any).proyectoFijo ? 'bg-amber-500' : 'bg-slate-200 dark:bg-slate-700'}`}>
-                                <span className={`inline-block h-5 w-5 transform rounded-full bg-white dark:bg-slate-800 shadow-md transition-transform duration-300 ${(formData as any).proyectoFijo ? 'translate-x-8' : 'translate-x-1'}`} />
+                                <span className={`inline-block h-5 w-5 transform rounded-full bg-card text-card-foreground shadow-md transition-transform duration-300 ${(formData as any).proyectoFijo ? 'translate-x-8' : 'translate-x-1'}`} />
                             </button>
                         </div>
                         </>}
@@ -1402,7 +1402,7 @@ function ProjectModal({
                                 </div>
                                 <button type="button" onClick={() => set('fichajeHabilitado', !(formData as any).fichajeHabilitado)}
                                     className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-300 focus:outline-none shrink-0 ${(formData as any).fichajeHabilitado ? 'bg-primary' : 'bg-slate-200 dark:bg-slate-700'}`}>
-                                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white dark:bg-slate-800 shadow-md transition-transform duration-300 ${(formData as any).fichajeHabilitado ? 'translate-x-8' : 'translate-x-1'}`} />
+                                    <span className={`inline-block h-5 w-5 transform rounded-full bg-card text-card-foreground shadow-md transition-transform duration-300 ${(formData as any).fichajeHabilitado ? 'translate-x-8' : 'translate-x-1'}`} />
                                 </button>
                             </div>
 
@@ -1414,29 +1414,29 @@ function ProjectModal({
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
                                             <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Latitud</label>
-                                            <input type="number" step="any" placeholder="-34.123456" className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium text-sm" value={(formData as any).geofenceLat || ''} onChange={e => set('geofenceLat', e.target.value === '' ? null : parseFloat(e.target.value))} />
+                                            <input type="number" step="any" placeholder="-34.123456" className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium text-sm" value={(formData as any).geofenceLat || ''} onChange={e => set('geofenceLat', e.target.value === '' ? null : parseFloat(e.target.value))} />
                                         </div>
                                         <div className="space-y-1.5">
                                             <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Longitud</label>
-                                            <input type="number" step="any" placeholder="-58.123456" className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium text-sm" value={(formData as any).geofenceLng || ''} onChange={e => set('geofenceLng', e.target.value === '' ? null : parseFloat(e.target.value))} />
+                                            <input type="number" step="any" placeholder="-58.123456" className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium text-sm" value={(formData as any).geofenceLng || ''} onChange={e => set('geofenceLng', e.target.value === '' ? null : parseFloat(e.target.value))} />
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
                                             <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Radio (Metros)</label>
-                                            <input type="number" placeholder="Ej: 100" className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium text-sm" value={(formData as any).geofenceRadius || ''} onChange={e => set('geofenceRadius', e.target.value === '' ? null : parseInt(e.target.value))} />
+                                            <input type="number" placeholder="Ej: 100" className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium text-sm" value={(formData as any).geofenceRadius || ''} onChange={e => set('geofenceRadius', e.target.value === '' ? null : parseInt(e.target.value))} />
                                         </div>
                                         <div className="space-y-1.5">
                                             <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">QR Token (Validación)</label>
                                             <div className="flex gap-2">
-                                                <input type="text" placeholder="Token único..." className="flex-1 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-mono text-sm" value={(formData as any).qrToken || ''} onChange={e => set('qrToken', e.target.value)} />
-                                                <button type="button" onClick={() => set('qrToken', Math.random().toString(36).substring(2, 10).toUpperCase())} className="px-3 bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 rounded-2xl text-slate-600 dark:text-slate-300 transition-all active:scale-95" title="Generar Token"><Play className="w-4 h-4 rotate-90" /></button>
+                                                <input type="text" placeholder="Token único..." className="flex-1 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-mono text-sm" value={(formData as any).qrToken || ''} onChange={e => set('qrToken', e.target.value)} />
+                                                <button type="button" onClick={() => set('qrToken', Math.random().toString(36).substring(2, 10).toUpperCase())} className="px-3 bg-muted text-muted-foreground/50 hover:bg-slate-200 rounded-2xl text-slate-600 dark:text-slate-300 transition-all active:scale-95" title="Generar Token"><Play className="w-4 h-4 rotate-90" /></button>
                                             </div>
                                         </div>
                                     </div>
                                     {(formData as any).qrToken && (
-                                        <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl flex flex-col items-center gap-4 animate-in fade-in zoom-in-95 duration-300">
-                                            <div id="project-qr" className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+                                        <div className="p-4 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl flex flex-col items-center gap-4 animate-in fade-in zoom-in-95 duration-300">
+                                            <div id="project-qr" className="p-4 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
                                                 <QRCodeCanvas value={(formData as any).qrToken} size={160} level="H" includeMargin={true} />
                                             </div>
                                             <button type="button" onClick={() => { const canvas = document.querySelector('#project-qr canvas') as HTMLCanvasElement; if (canvas) { const win = window.open('', '_blank'); if (win) { win.document.write(`<html><head><title>Imprimir QR - ${formData.nombre}</title><style>body{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;}.container{text-align:center;border:2px solid #000;padding:40px;border-radius:20px;}h1{margin-bottom:20px;font-size:24px;}h2{margin-bottom:10px;font-size:20px;}p{margin-top:20px;font-weight:bold;font-size:18px;color:#666;}img{width:300px;height:300px;}</style></head><body><div class="container"><h1>HDB SERVICIOS ELÉCTRICOS</h1><h2>PROYECTO: ${formData.nombre}</h2>${editingProject?.codigoProyecto ? `<h3>CÓDIGO: ${editingProject.codigoProyecto}</h3>` : ''}<img src="${canvas.toDataURL()}" /><p>TOKEN: ${(formData as any).qrToken}</p></div><script>window.onload=()=>{setTimeout(()=>{window.print();window.onafterprint=()=>window.close();},500);};</script></body></html>`); } } }} className="flex items-center gap-2 px-6 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold hover:bg-slate-700 transition-all active:scale-95"><QrCode className="w-4 h-4" /> Imprimir QR para Obra</button>
@@ -1465,7 +1465,7 @@ function ProjectModal({
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-6 py-3 rounded-2xl font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 transition-all active:scale-95"
+                            className="flex-1 px-6 py-3 rounded-2xl font-bold text-slate-600 dark:text-slate-300 bg-muted text-muted-foreground/50 hover:bg-slate-200 transition-all active:scale-95"
                         >
                             Cancelar
                         </button>

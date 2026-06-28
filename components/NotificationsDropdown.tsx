@@ -223,7 +223,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                 {isOpen && (
                     <>
                         <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)}></div>
-                        <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 z-50 overflow-hidden ring-1 ring-slate-900/5 origin-top-right animate-in fade-in slide-in-from-top-2">
+                        <div className="absolute right-0 mt-2 w-80 bg-card text-card-foreground rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 z-50 overflow-hidden ring-1 ring-slate-900/5 origin-top-right animate-in fade-in slide-in-from-top-2">
                             <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50">
                                 <h3 className="font-bold text-slate-800 dark:text-slate-100">Notificaciones</h3>
                                 {unreadCount > 0 && (
@@ -299,7 +299,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                 <>
                     {selectedNotification && selectedNotification.type === 'TIME_MODIFICATION_REQUEST' && (
                         <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                            <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden p-8 relative">
+                            <div className="bg-card text-card-foreground w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden p-8 relative">
                                 <button onClick={() => setSelectedNotification(null)} className="absolute top-4 right-4 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500">
                                     <X className="w-5 h-5" />
                                 </button>
@@ -308,7 +308,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                                         <AlertCircle className="w-6 h-6 text-indigo-500" />
                                         {(selectedNotification.metadata || selectedNotification.message?.includes('modificar')) ? 'Modificación Solicitada' : 'Eliminación Solicitada'}
                                     </h3>
-                                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 font-medium bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 italic">
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 font-medium bg-background text-foreground/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 italic">
                                         "{selectedNotification.message.split('Motivo:')[1]?.trim() || 'Sin motivo especificado'}"
                                     </p>
                                 </div>
@@ -340,7 +340,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                                     </div>
                                 )}
                                 {user?.role === 'operador' && (
-                                    <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 text-center">
+                                    <div className="p-4 bg-background text-foreground/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 text-center">
                                         <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Pendiente de aprobación</p>
                                     </div>
                                 )}
@@ -350,7 +350,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
 
                     {selectedNotification && selectedNotification.type === 'PLANNING_ASSIGNMENT' && (
                         <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                            <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden p-8 relative max-h-[90vh] overflow-y-auto">
+                            <div className="bg-card text-card-foreground w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden p-8 relative max-h-[90vh] overflow-y-auto">
                                 <button onClick={() => setSelectedNotification(null)} className="absolute top-4 right-4 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500 z-10">
                                     <X className="w-5 h-5" />
                                 </button>
@@ -387,13 +387,13 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                                                         <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1">Compañeros:</span>
                                                         <div className="flex flex-wrap gap-1.5">
                                                             {assignment.companionNames.map((name: string, j: number) => (
-                                                                <span key={j} className="text-xs bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-1 rounded-md border border-slate-100 dark:border-slate-800 shadow-sm">{name}</span>
+                                                                <span key={j} className="text-xs bg-card text-card-foreground text-slate-600 dark:text-slate-300 px-2 py-1 rounded-md border border-slate-100 dark:border-slate-800 shadow-sm">{name}</span>
                                                             ))}
                                                         </div>
                                                     </div>
                                                 )}
                                                 {assignment.note && (
-                                                    <div className="mt-3 bg-white dark:bg-slate-800 p-3 rounded-xl border border-amber-100">
+                                                    <div className="mt-3 bg-card text-card-foreground p-3 rounded-xl border border-amber-100">
                                                         <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider block mb-1">Nota de la Asignación:</span>
                                                         <p className="text-sm text-slate-700 dark:text-slate-200 italic">{assignment.note}</p>
                                                     </div>
@@ -417,7 +417,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                                 )}
 
                                 <div className="mt-8">
-                                    <button onClick={() => setSelectedNotification(null)} className="w-full py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 rounded-xl font-bold hover:bg-slate-200 transition-colors">Cerrar</button>
+                                    <button onClick={() => setSelectedNotification(null)} className="w-full py-4 bg-muted text-muted-foreground/50 text-slate-700 dark:text-slate-200 rounded-xl font-bold hover:bg-slate-200 transition-colors">Cerrar</button>
                                 </div>
                             </div>
                         </div>
@@ -425,7 +425,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
 
                     {selectedNotification && selectedNotification.type === 'PLANNING_ASSIGNMENT_SUMMARY' && (
                         <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                            <div className="bg-white dark:bg-slate-800 w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden p-8 relative max-h-[90vh] overflow-y-auto">
+                            <div className="bg-card text-card-foreground w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden p-8 relative max-h-[90vh] overflow-y-auto">
                                 <button onClick={() => setSelectedNotification(null)} className="absolute top-4 right-4 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500 z-10">
                                     <X className="w-5 h-5" />
                                 </button>
@@ -454,7 +454,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                                 </div>
 
                                 <div className="mt-8">
-                                    <button onClick={() => setSelectedNotification(null)} className="w-full py-4 bg-slate-100 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 rounded-xl font-bold hover:bg-slate-200 transition-colors">Cerrar Resumen</button>
+                                    <button onClick={() => setSelectedNotification(null)} className="w-full py-4 bg-muted text-muted-foreground/50 text-slate-700 dark:text-slate-200 rounded-xl font-bold hover:bg-slate-200 transition-colors">Cerrar Resumen</button>
                                 </div>
                             </div>
                         </div>

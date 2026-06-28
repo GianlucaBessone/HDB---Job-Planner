@@ -145,7 +145,7 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            <div className="flex gap-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-1.5 shadow-sm w-fit">
+            <div className="flex gap-1 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl p-1.5 shadow-sm w-fit">
                 <button
                     onClick={() => setActiveTab('proyectos')}
                     className={`px-5 py-2.5 rounded-xl text-sm font-black transition-all ${
@@ -204,7 +204,7 @@ export default function DashboardPage() {
             {activeTab === 'operadores' && <OperadoresTab />}
             {['proyectos', 'ordenes'].includes(activeTab) && <>
 
-            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-[2rem] p-3 md:p-4 shadow-sm space-y-2">
+            <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-[2rem] p-3 md:p-4 shadow-sm space-y-2">
                 <div className="flex items-center justify-between mb-2">
                     <h3 className="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 text-sm">
                         <SlidersHorizontal className="w-4 h-4 text-primary" />
@@ -223,7 +223,7 @@ export default function DashboardPage() {
                         </label>
                         <input
                             type="date"
-                            className="w-full h-11 md:h-9 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none"
+                            className="w-full h-11 md:h-9 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none"
                             value={filterFrom}
                             onChange={e => setFilterFrom(e.target.value)}
                         />
@@ -234,7 +234,7 @@ export default function DashboardPage() {
                         </label>
                         <input
                             type="date"
-                            className="w-full h-11 md:h-9 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none"
+                            className="w-full h-11 md:h-9 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none"
                             value={filterTo}
                             onChange={e => setFilterTo(e.target.value)}
                         />
@@ -255,7 +255,7 @@ export default function DashboardPage() {
                             <Activity className="w-3 h-3" /> Estado
                         </label>
                         <select
-                            className="w-full h-11 md:h-9 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none cursor-pointer"
+                            className="w-full h-11 md:h-9 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none cursor-pointer"
                             value={filterStatus}
                             onChange={e => setFilterStatus(e.target.value)}
                         >
@@ -278,7 +278,7 @@ export default function DashboardPage() {
                 <>
                 {filterStatus === 'fijo' ? (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-                        <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative group overflow-hidden">
+                        <div className="bg-card text-card-foreground p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative group overflow-hidden">
                             <div className="flex items-center justify-between mb-6">
                                 <div className="flex items-center gap-3">
                                     <BarChart3 className="w-5 h-5 text-primary" />
@@ -300,7 +300,7 @@ export default function DashboardPage() {
                             )}
                         </div>
 
-                        <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group">
+                        <div className="bg-card text-card-foreground p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group">
                             <div className="flex items-center justify-between mb-6">
                                 <div className="flex items-center gap-3">
                                     <TrendingUp className="w-5 h-5 text-indigo-500" />
@@ -376,7 +376,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative group overflow-hidden">
+                <div className="bg-card text-card-foreground p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative group overflow-hidden">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
                             <BarChart3 className="w-5 h-5 text-primary" />
@@ -401,7 +401,7 @@ export default function DashboardPage() {
                     )}
                 </div>
 
-                <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group">
+                <div className="bg-card text-card-foreground p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
                             <TrendingUp className="w-5 h-5 text-indigo-500" />
@@ -428,7 +428,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 overflow-visible">
-                <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col items-center overflow-visible">
+                <div className="bg-card text-card-foreground p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col items-center overflow-visible">
                     <div className="flex items-center justify-between w-full mb-6">
                         <div className="flex items-center gap-3">
                             <PieChart className="w-5 h-5 text-emerald-500" />
@@ -453,7 +453,7 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div className="lg:col-span-2 bg-card text-card-foreground p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
                             <Briefcase className="w-5 h-5 text-primary" />
@@ -481,7 +481,7 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 <div className="lg:col-span-8 flex flex-col gap-6">
-                    <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div className="bg-card text-card-foreground p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
                         <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3 mb-5">
                             <Activity className="w-5 h-5 text-primary" />
                             Estado Operativo
@@ -497,7 +497,7 @@ export default function DashboardPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col">
+                        <div className="bg-card text-card-foreground p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col">
                             <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3 mb-4">
                                 <Building2 className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                                 Top Clientes
@@ -508,14 +508,14 @@ export default function DashboardPage() {
                                         return (
                                             <div key={idx} onClick={() => handleChartClick('client', client.name)} className={`flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer group ${isActive ? 'bg-primary/5 border-primary/30 ring-2 ring-primary/20' : 'bg-slate-50/50 border-transparent hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm hover:border-slate-100'}`}>
                                                 <span className={`font-bold text-sm truncate transition-colors ${isActive ? 'text-primary' : 'text-slate-600 dark:text-slate-300 group-hover:text-primary'}`}>{client.name}</span>
-                                                <span className="px-3 py-1 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-800 text-primary text-[10px] font-black rounded-xl shadow-sm shrink-0">{client.count} Proj</span>
+                                                <span className="px-3 py-1 bg-card text-card-foreground border border-slate-100 dark:border-slate-800 text-primary text-[10px] font-black rounded-xl shadow-sm shrink-0">{client.count} Proj</span>
                                             </div>
                                         );
                                     })}
                             </div>
                         </div>
 
-                        <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col">
+                        <div className="bg-card text-card-foreground p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col">
                             <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3 mb-4">
                                 <Users className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                                 Mayor Actividad
@@ -526,7 +526,7 @@ export default function DashboardPage() {
                                         return (
                                             <div key={idx} onClick={() => handleChartClick('operator', op.name)} className={`flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer group ${isActive ? 'bg-indigo-50/80 border-indigo-300 ring-2 ring-indigo-200' : 'bg-indigo-50/30 border-transparent hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm hover:border-indigo-100'}`}>
                                                 <span className={`font-bold text-sm truncate transition-colors ${isActive ? 'text-indigo-700' : 'text-slate-600 dark:text-slate-300 group-hover:text-indigo-600'}`}>{op.name}</span>
-                                                <span className="px-3 py-1 bg-white dark:bg-slate-800 border border-indigo-100 text-indigo-600 text-[10px] font-black rounded-xl shadow-sm shrink-0">{op.count} Asig</span>
+                                                <span className="px-3 py-1 bg-card text-card-foreground border border-indigo-100 text-indigo-600 text-[10px] font-black rounded-xl shadow-sm shrink-0">{op.count} Asig</span>
                                             </div>
                                         );
                                     })}
@@ -536,7 +536,7 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="lg:col-span-4 flex flex-col gap-6">
-                    <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex-1 flex flex-col">
+                    <div className="bg-card text-card-foreground p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex-1 flex flex-col">
                         <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-3 mb-5">
                             <AlertTriangle className="w-5 h-5 text-rose-500" />
                             Alertas de Consumo
@@ -551,7 +551,7 @@ export default function DashboardPage() {
                                         <div 
                                             key={idx} 
                                             onClick={() => handleChartClick('project', p.nombre)}
-                                            className={`p-3 rounded-2xl border transition-all cursor-pointer group ${isActive ? 'bg-rose-50 border-rose-300 ring-2 ring-rose-200' : 'bg-slate-50 dark:bg-slate-900/50 hover:bg-white dark:hover:bg-slate-800 border-transparent hover:border-rose-100 hover:shadow-sm'}`}
+                                            className={`p-3 rounded-2xl border transition-all cursor-pointer group ${isActive ? 'bg-rose-50 border-rose-300 ring-2 ring-rose-200' : 'bg-background text-foreground/50 hover:bg-white dark:hover:bg-slate-800 border-transparent hover:border-rose-100 hover:shadow-sm'}`}
                                         >
                                             <div className="flex justify-between items-center mb-2">
                                                 <div className={`font-bold text-sm truncate transition-colors ${isActive ? 'text-rose-700' : 'text-slate-700 dark:text-slate-200 group-hover:text-rose-600'}`}>
@@ -627,7 +627,7 @@ export default function DashboardPage() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Delays by Area */}
-                    <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative group overflow-hidden">
+                    <div className="bg-card text-card-foreground p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative group overflow-hidden">
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
                                 <Building2 className="w-5 h-5 text-amber-500" />
@@ -654,7 +654,7 @@ export default function DashboardPage() {
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group">
+                    <div className="bg-card text-card-foreground p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group">
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
                                 <TrendingUp className="w-5 h-5 text-amber-500" />
@@ -786,7 +786,7 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
             </div>
 
             {/* Filters */}
-            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-[2rem] p-3 md:p-4 shadow-sm space-y-2">
+            <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-[2rem] p-3 md:p-4 shadow-sm space-y-2">
                 <div className="flex items-center justify-between mb-2">
                     <h4 className="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 text-sm">
                         <SlidersHorizontal className="w-4 h-4 text-indigo-500" />
@@ -801,11 +801,11 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                     <div className="space-y-1.5">
                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1"><Calendar className="w-3 h-3" /> Desde</label>
-                        <input type="date" className="w-full h-11 md:h-9 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-indigo-100 outline-none appearance-none" value={filterFrom} onChange={e => setFilterFrom(e.target.value)} />
+                        <input type="date" className="w-full h-11 md:h-9 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-indigo-100 outline-none appearance-none" value={filterFrom} onChange={e => setFilterFrom(e.target.value)} />
                     </div>
                     <div className="space-y-1.5">
                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1"><Calendar className="w-3 h-3" /> Hasta</label>
-                        <input type="date" className="w-full h-11 md:h-9 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-indigo-100 outline-none appearance-none" value={filterTo} onChange={e => setFilterTo(e.target.value)} />
+                        <input type="date" className="w-full h-11 md:h-9 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-indigo-100 outline-none appearance-none" value={filterTo} onChange={e => setFilterTo(e.target.value)} />
                     </div>
                     <div className="space-y-1.5 pt-0.5">
                         <SearchableSelect
@@ -845,8 +845,8 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
 
             {/* No data state */}
             {m?.total === 0 && (
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-16 text-center space-y-3">
-                    <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800/50 rounded-full flex items-center justify-center mx-auto">
+                <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-3xl p-16 text-center space-y-3">
+                    <div className="w-16 h-16 bg-muted text-muted-foreground/50 rounded-full flex items-center justify-center mx-auto">
                         <Star className="w-8 h-8 text-slate-300" />
                     </div>
                     <p className="font-bold text-slate-500 dark:text-slate-400">Aún no hay encuestas de satisfacción</p>
@@ -896,7 +896,7 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                     {/* Charts row: NPS Donut + Trend */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* NPS Donut */}
-                        <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col items-center">
+                        <div className="bg-card text-card-foreground p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col items-center">
                             <div className="flex items-center justify-between w-full mb-4">
                                 <div className="flex items-center gap-3">
                                     <PieChart className="w-5 h-5 text-indigo-500" />
@@ -926,7 +926,7 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                         </div>
 
                         {/* Promedios de servicio (bar chart with target line) */}
-                        <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <div className="bg-card text-card-foreground p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
                             <div className="flex items-center gap-3 mb-6">
                                 <BarChart3 className="w-5 h-5 text-indigo-500" />
                                 <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Promedios de Servicio</h3>
@@ -949,7 +949,7 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                     {m.porMes.length >= 2 && (
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             {/* NPS trend */}
-                            <div className="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                            <div className="bg-card text-card-foreground p-4 md:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
                                 <div className="flex items-center gap-3 mb-6">
                                     <TrendingUp className="w-5 h-5 text-indigo-500" />
                                     <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Evolución del NPS</h3>
@@ -961,7 +961,7 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                                 />
                             </div>
                             {/* CSAT trend */}
-                            <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+                            <div className="bg-card text-card-foreground p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
                                 <div className="flex items-center gap-3 mb-6">
                                     <BarChart3 className="w-5 h-5 text-blue-500" />
                                     <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Evolución de CSAT</h3>
@@ -975,11 +975,11 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
 
                     {/* Metrics per operator */}
                     {m.porOperador.length > 0 && (
-                        <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <div className="bg-card text-card-foreground p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
                             <div className="flex items-center gap-3 mb-6">
                                 <Users className="w-5 h-5 text-indigo-500" />
                                 <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Métricas por Operador</h3>
-                                <span className="ml-auto text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-slate-50 dark:bg-slate-900/50 px-3 py-1.5 rounded-xl border border-slate-100 dark:border-slate-800">
+                                <span className="ml-auto text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-background text-foreground/50 px-3 py-1.5 rounded-xl border border-slate-100 dark:border-slate-800">
                                     {m.total} encuesta{m.total !== 1 ? 's' : ''}
                                 </span>
                             </div>
@@ -1029,7 +1029,7 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                                                         <td key={idx} className="px-4 py-4">
                                                             <div className="flex flex-col items-center gap-1.5">
                                                                 <span className={`text-base ${ratingColor(val)}`}>{val ?? '—'}</span>
-                                                                <div className="w-16 h-1.5 bg-slate-100 dark:bg-slate-800/50 rounded-full overflow-hidden">
+                                                                <div className="w-16 h-1.5 bg-muted text-muted-foreground/50 rounded-full overflow-hidden">
                                                                     <div className="h-full rounded-full transition-all duration-700"
                                                                         style={{ width: barWidth(val), backgroundColor: color }} />
                                                                 </div>
@@ -1106,7 +1106,7 @@ function ServiceTrendChart({ data, color, targetY, minY, maxY, valueSuffix = '',
                 ))}
             </svg>
             {hovered !== null && points[hovered] && (
-                <div className="absolute w-2.5 h-2.5 rounded-full border-2 bg-white dark:bg-slate-800 pointer-events-none"
+                <div className="absolute w-2.5 h-2.5 rounded-full border-2 bg-card text-card-foreground pointer-events-none"
                     style={{ borderColor: color, left: `${points[hovered].x}%`, top: `${points[hovered].y}%`, transform: 'translate(-50%,-50%)' }}>
                     <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] font-black px-2 py-1 rounded-lg whitespace-nowrap">
                         {data[hovered].label}: {data[hovered].value >= 0 ? '+' : ''}{data[hovered].value}{valueSuffix}
@@ -1185,7 +1185,7 @@ function ServiceMultiTrendChart({ data, targetCsat }: {
 }
 function KpiCard({ title, value, icon, color, trend, tooltip }: { title: string; value: string | number; icon: any; color: string; trend: string; tooltip?: { def: string; purpose: string; calc: string } }) {
     return (
-        <div className="bg-white dark:bg-slate-800 p-2.5 md:p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between h-[64px] md:h-[72px] gap-2">
+        <div className="bg-card text-card-foreground p-2.5 md:p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between h-[64px] md:h-[72px] gap-2">
             <div className="flex items-center gap-2.5 min-w-0">
                 <div className={`w-8 h-8 md:w-9 md:h-9 rounded-lg flex items-center justify-center shrink-0 ${color} text-white shadow-sm`}>
                     {/* El ícono ya viene como prop, aseguramos que encaje */}
@@ -1200,7 +1200,7 @@ function KpiCard({ title, value, icon, color, trend, tooltip }: { title: string;
             </div>
             
             <div className="flex flex-col items-end justify-between shrink-0 h-full py-0.5">
-                {tooltip ? <MetricTooltip {...tooltip} /> : <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1.5 py-0.5 bg-slate-50 dark:bg-slate-900/50 rounded-md">KPI</div>}
+                {tooltip ? <MetricTooltip {...tooltip} /> : <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1.5 py-0.5 bg-background text-foreground/50 rounded-md">KPI</div>}
                 <div className="flex items-center gap-1.5 mt-auto">
                     <div className={`w-1.5 h-1.5 rounded-full ${color} animate-pulse`} />
                     <p className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase max-w-[130px] lg:max-w-[180px] truncate" title={trend}>{trend}</p>
@@ -1238,7 +1238,7 @@ function MetricTooltip({ def, purpose, calc }: { def: string; purpose: string; c
 
 function LegendItem({ label, count, color }: { label: string; count: number; color: string }) {
     return (
-        <div className="flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-900/50 rounded-2xl group hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm transition-all border border-transparent hover:border-slate-100">
+        <div className="flex items-center justify-between px-4 py-3 bg-background text-foreground/50 rounded-2xl group hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm transition-all border border-transparent hover:border-slate-100">
             <div className="flex items-center gap-3">
                 <div className={`w-3 h-3 rounded-full ${color}`} />
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">{label}</span>
@@ -1253,7 +1253,7 @@ function StatusPill({ label, count, color, onClick, isActive }: { label: string;
         primary: 'bg-primary/10 text-primary border-primary/20 hover:bg-primary/20',
         amber: 'bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-100',
         rose: 'bg-rose-50 text-rose-500 border-rose-100 hover:bg-rose-100',
-        slate: 'bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800',
+        slate: 'bg-background text-foreground/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800',
         blue: 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100',
         violet: 'bg-violet-50 text-violet-600 border-violet-100 hover:bg-violet-100'
     };

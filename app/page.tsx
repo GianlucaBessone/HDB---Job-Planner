@@ -210,7 +210,7 @@ export default function HomePage() {
             className={`p-2 rounded-xl transition-all duration-300 active:scale-95 ${
               editMode
                 ? "bg-primary text-white shadow-md shadow-primary/20"
-                : "bg-slate-100 dark:bg-slate-900/60 text-slate-400 dark:text-slate-500 hover:text-primary border border-slate-200 dark:border-slate-800"
+                : "bg-secondary text-secondary-foreground/60 text-slate-400 dark:text-slate-500 hover:text-primary border border-slate-200 dark:border-slate-800"
             }`}
             title="Personalizar inicio"
           >
@@ -268,7 +268,7 @@ export default function HomePage() {
           >
             <ClockIcon className="w-4 h-4" />
             <span>Recientes</span>
-            <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 px-1.5 py-0.5 rounded-md">
+            <span className="text-[10px] font-bold bg-muted text-muted-foreground text-slate-400 dark:text-slate-500 px-1.5 py-0.5 rounded-md">
               {recentViews.length}
             </span>
             {recentsExpanded ? (
@@ -412,7 +412,7 @@ function ActionCard({
   onToggleFavorite?: (key: string) => void;
 }) {
   let containerClass =
-    "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:-translate-y-[1px] hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 flex flex-row items-center h-[72px] p-3 rounded-xl gap-3 outline-primary focus-visible:ring-2 focus-visible:ring-primary/20 overflow-hidden group";
+    "bg-card text-card-foreground border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:-translate-y-[1px] hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 flex flex-row items-center h-[72px] p-3 rounded-xl gap-3 outline-primary focus-visible:ring-2 focus-visible:ring-primary/20 overflow-hidden group";
   let iconWrapperClass = `${view.color} text-white shadow-sm shrink-0 p-2 rounded-lg flex items-center justify-center`;
   let titleClass =
     "font-bold text-[13px] text-slate-800 dark:text-slate-100 leading-tight group-hover:text-primary transition-colors";

@@ -131,7 +131,7 @@ export default function CompetenciesTab({ user }: { user: any }) {
     if (isTech) {
         return (
             <div className="space-y-6 animate-in fade-in duration-300">
-                <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
+                <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
                     <div className="flex items-center gap-3">
                         <div className="p-3 bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 rounded-2xl">
                             <Award className="w-6 h-6" />
@@ -151,7 +151,7 @@ export default function CompetenciesTab({ user }: { user: any }) {
                         return (
                             <div 
                                 key={c.id} 
-                                className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-6 hover:shadow-md transition-shadow"
+                                className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-6 hover:shadow-md transition-shadow"
                             >
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-1">
@@ -177,7 +177,7 @@ export default function CompetenciesTab({ user }: { user: any }) {
                                     {c.evidencia && (
                                         <div className="space-y-1">
                                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Evidencia</p>
-                                            <p className="text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">{c.evidencia}</p>
+                                            <p className="text-xs font-medium text-slate-600 dark:text-slate-300 bg-background text-foreground p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">{c.evidencia}</p>
                                         </div>
                                     )}
                                     <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 pt-2">
@@ -189,7 +189,7 @@ export default function CompetenciesTab({ user }: { user: any }) {
                     })}
 
                     {competencies.length === 0 && (
-                        <div className="col-span-full bg-slate-50 dark:bg-slate-900 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center text-slate-500">
+                        <div className="col-span-full bg-background text-foreground border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center text-slate-500">
                             <Award className="w-12 h-12 mx-auto text-slate-400 mb-3" />
                             <h4 className="text-sm font-black text-slate-700 dark:text-slate-300">Sin Competencias</h4>
                             <p className="text-xs font-medium text-slate-500 mt-1">Aún no cuentas con competencias acreditadas.</p>
@@ -202,7 +202,7 @@ export default function CompetenciesTab({ user }: { user: any }) {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-300">
-            <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
+            <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
                         <div className="p-3 bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 rounded-2xl">
@@ -219,12 +219,12 @@ export default function CompetenciesTab({ user }: { user: any }) {
             </div>
 
             {/* Enterprise Grid Matrix */}
-            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div className="bg-card text-card-foreground rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full border-collapse">
                         <thead>
-                            <tr className="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-700">
-                                <th className="px-6 py-4 text-left text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest sticky left-0 bg-slate-50 dark:bg-slate-900 z-10 w-64">
+                            <tr className="bg-background text-foreground/60 border-b border-slate-200 dark:border-slate-700">
+                                <th className="px-6 py-4 text-left text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest sticky left-0 bg-background text-foreground z-10 w-64">
                                     Operador / Técnico
                                 </th>
                                 {documents.map(doc => (
@@ -237,7 +237,7 @@ export default function CompetenciesTab({ user }: { user: any }) {
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-750">
                             {operators.map(op => (
                                 <tr key={op.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                                    <td className="px-6 py-4 font-bold text-slate-800 dark:text-slate-100 sticky left-0 bg-white dark:bg-slate-800 shadow-md shadow-slate-100/10 z-10 flex items-center gap-2">
+                                    <td className="px-6 py-4 font-bold text-slate-800 dark:text-slate-100 sticky left-0 bg-card text-card-foreground shadow-md shadow-slate-100/10 z-10 flex items-center gap-2">
                                         <div className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-xs font-black">
                                             {op.nombreCompleto.charAt(0)}
                                         </div>
@@ -263,7 +263,7 @@ export default function CompetenciesTab({ user }: { user: any }) {
                                                                 ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/50'
                                                                 : isVencida
                                                                     ? 'bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900/50'
-                                                                    : 'bg-slate-50 dark:bg-slate-900 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-800'
+                                                                    : 'bg-background text-foreground text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-800'
                                                     }`}
                                                 >
                                                     {isVigente && <ShieldCheck className="w-4 h-4 shrink-0" />}
@@ -285,7 +285,7 @@ export default function CompetenciesTab({ user }: { user: any }) {
             {/* Certify technician modal */}
             {selectedCell && (
                 <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-slate-800 w-full max-w-lg rounded-3xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-200 dark:border-slate-700">
+                    <div className="bg-card text-card-foreground w-full max-w-lg rounded-3xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-200 dark:border-slate-700">
                         <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
                             <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
                                 <Award className="w-5 h-5 text-primary" /> Acreditación Técnica QMS
@@ -295,7 +295,7 @@ export default function CompetenciesTab({ user }: { user: any }) {
                         <div className="p-6 space-y-4">
                             <div className="space-y-1">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Técnico Operador</label>
-                                <div className="bg-slate-50 dark:bg-slate-900 px-4 py-3 rounded-xl flex items-center gap-2">
+                                <div className="bg-background text-foreground px-4 py-3 rounded-xl flex items-center gap-2">
                                     <User className="w-4 h-4 text-slate-400" />
                                     <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
                                         {operators.find(o => o.id === selectedCell.operatorId)?.nombreCompleto}
@@ -305,7 +305,7 @@ export default function CompetenciesTab({ user }: { user: any }) {
 
                             <div className="space-y-1">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Norma / Documento</label>
-                                <div className="bg-slate-50 dark:bg-slate-900 px-4 py-3 rounded-xl flex items-center gap-2">
+                                <div className="bg-background text-foreground px-4 py-3 rounded-xl flex items-center gap-2">
                                     <FileText className="w-4 h-4 text-slate-400" />
                                     <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
                                         {documents.find(d => d.id === selectedCell.docId)?.titulo}
@@ -319,7 +319,7 @@ export default function CompetenciesTab({ user }: { user: any }) {
                                     <select
                                         value={formState.estado}
                                         onChange={(e) => setFormState(prev => ({ ...prev, estado: e.target.value }))}
-                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-800 dark:text-slate-100"
+                                        className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-800 dark:text-slate-100"
                                     >
                                         <option value="vigente">Vigente</option>
                                         <option value="pendiente">Pendiente</option>
@@ -334,7 +334,7 @@ export default function CompetenciesTab({ user }: { user: any }) {
                                         type="date"
                                         value={formState.vencimiento}
                                         onChange={(e) => setFormState(prev => ({ ...prev, vencimiento: e.target.value }))}
-                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-800 dark:text-slate-100"
+                                        className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-800 dark:text-slate-100"
                                     />
                                 </div>
                             </div>
@@ -345,7 +345,7 @@ export default function CompetenciesTab({ user }: { user: any }) {
                                     value={formState.evidencia}
                                     onChange={(e) => setFormState(prev => ({ ...prev, evidencia: e.target.value }))}
                                     placeholder="Detalle o enlace del certificado, aprobación práctica, o prueba técnica..."
-                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-800 dark:text-slate-100 h-20 resize-none"
+                                    className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-800 dark:text-slate-100 h-20 resize-none"
                                 />
                             </div>
 
@@ -355,11 +355,11 @@ export default function CompetenciesTab({ user }: { user: any }) {
                                     value={formState.evaluacion}
                                     onChange={(e) => setFormState(prev => ({ ...prev, evaluacion: e.target.value }))}
                                     placeholder="Comentarios de habilitación del auditor..."
-                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-800 dark:text-slate-100 h-20 resize-none"
+                                    className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-800 dark:text-slate-100 h-20 resize-none"
                                 />
                             </div>
                         </div>
-                        <div className="px-6 py-4 bg-slate-50 dark:bg-slate-900/60 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3">
+                        <div className="px-6 py-4 bg-background text-foreground/60 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3">
                             <button
                                 onClick={() => setSelectedCell(null)}
                                 className="px-4 py-2 text-xs font-black text-slate-500 hover:text-slate-700"

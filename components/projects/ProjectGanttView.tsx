@@ -129,7 +129,7 @@ export default function ProjectGanttView({
     };
 
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="bg-card text-card-foreground rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
             {withDates.length === 0 ? (
                 <div className="p-12 text-center text-slate-500 dark:text-slate-400">
                     <Calendar className="w-12 h-12 mx-auto mb-4 opacity-20" />
@@ -168,7 +168,7 @@ export default function ProjectGanttView({
                         <div className="min-w-[800px] h-full relative" style={{ width: `${timeline.totalDays * 12}px` }}> {/* 12px per day min-width */}
                             
                             {/* Header (Weeks) */}
-                            <div className="h-10 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800 sticky top-0 z-10 flex">
+                            <div className="h-10 border-b border-slate-100 dark:border-slate-800 bg-card text-card-foreground sticky top-0 z-10 flex">
                                 {weeks.map((w, i) => {
                                     const leftPct = (differenceInDays(w, timeline.start) / timeline.totalDays) * 100;
                                     if (leftPct > 100) return null;
@@ -236,7 +236,7 @@ export default function ProjectGanttView({
             )}
 
             {withoutDates.length > 0 && (
-                <div className="mt-8 border-t border-slate-100 dark:border-slate-800 p-6 bg-slate-50 dark:bg-slate-900/50">
+                <div className="mt-8 border-t border-slate-100 dark:border-slate-800 p-6 bg-background text-foreground/50">
                     <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-4 flex items-center gap-2">
                         <AlertCircle className="w-4 h-4" /> Proyectos Sin Planificar ({withoutDates.length})
                     </h4>
@@ -245,7 +245,7 @@ export default function ProjectGanttView({
                             <button 
                                 key={p.id} 
                                 onClick={() => onDetails(p)}
-                                className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:border-primary/50 transition-colors shadow-sm"
+                                className="px-3 py-1.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:border-primary/50 transition-colors shadow-sm"
                             >
                                 {p.codigoProyecto && <span className="text-primary mr-1">{p.codigoProyecto}</span>}
                                 {p.nombre}
@@ -326,7 +326,7 @@ function GanttBar({
 
             {/* Quick Edit Popover */}
             {isEditing && (
-                <div className="absolute top-full mt-2 left-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl rounded-2xl p-3 z-50 animate-in fade-in zoom-in-95 w-72 flex flex-col gap-2 cursor-default" onClick={e => e.stopPropagation()}>
+                <div className="absolute top-full mt-2 left-0 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 shadow-xl rounded-2xl p-3 z-50 animate-in fade-in zoom-in-95 w-72 flex flex-col gap-2 cursor-default" onClick={e => e.stopPropagation()}>
                     <div className="font-bold text-xs text-slate-700 dark:text-slate-200 mb-1 flex justify-between">
                         <span>Minicontrol Fechas</span>
                         <button onClick={() => setIsEditing(false)} className="text-slate-400 hover:text-slate-600">✕</button>
@@ -334,14 +334,14 @@ function GanttBar({
                     <div className="flex items-center gap-2">
                         <input 
                             type="date" 
-                            className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs outline-none focus:border-primary flex-1 min-w-0" 
+                            className="bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs outline-none focus:border-primary flex-1 min-w-0" 
                             value={tempStart} 
                             onChange={e => setTempStart(e.target.value)} 
                         />
                         <span className="text-slate-400">→</span>
                         <input 
                             type="date" 
-                            className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs outline-none focus:border-primary flex-1 min-w-0" 
+                            className="bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs outline-none focus:border-primary flex-1 min-w-0" 
                             value={tempEnd} 
                             onChange={e => setTempEnd(e.target.value)} 
                         />

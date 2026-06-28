@@ -117,11 +117,11 @@ export default function GastosAjustes() {
 
 
   return (
-    <div className="p-6 h-full overflow-y-auto bg-slate-50 dark:bg-slate-900/50 relative">
+    <div className="p-6 h-full overflow-y-auto bg-background text-foreground/50 relative">
       {/* Custom Delete Confirmation Modal */}
       {deleteConfirm && (
         <div className="absolute inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-2xl max-w-sm w-full mx-4 border border-slate-200 dark:border-slate-700">
+          <div className="bg-card text-card-foreground p-6 rounded-xl shadow-2xl max-w-sm w-full mx-4 border border-slate-200 dark:border-slate-700">
             <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4">{deleteConfirm.title}</h3>
             <div className="flex justify-end space-x-3">
               <button onClick={() => setDeleteConfirm(null)} className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
@@ -152,7 +152,7 @@ export default function GastosAjustes() {
         
         {/* Columna Códigos de Gasto */}
         <div className="space-y-6">
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="bg-card text-card-foreground p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
             <h3 className="text-lg font-semibold mb-4 text-slate-800 dark:text-slate-200">Nuevo Código de Gasto</h3>
             <form onSubmit={handleCreateCodigo} className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -185,7 +185,7 @@ export default function GastosAjustes() {
             </form>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="bg-card text-card-foreground p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
             <h3 className="text-lg font-semibold mb-4 text-slate-800 dark:text-slate-200 flex items-center">
               <List className="w-5 h-5 mr-2 text-blue-500" />
               Listado de Códigos
@@ -223,7 +223,7 @@ export default function GastosAjustes() {
 
         {/* Columna Proveedores */}
         <div className="space-y-6">
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="bg-card text-card-foreground p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
           <h3 className="text-lg font-semibold mb-4 text-slate-800 dark:text-slate-200">Nuevo Proveedor Manual</h3>
           <form onSubmit={handleCreateProveedor} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -255,7 +255,7 @@ export default function GastosAjustes() {
           </form>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+        <div className="bg-card text-card-foreground p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
           <h3 className="text-lg font-semibold mb-4 text-slate-800 dark:text-slate-200 flex items-center">
             <Building2 className="w-5 h-5 mr-2 text-blue-500" />
             Listado de Proveedores

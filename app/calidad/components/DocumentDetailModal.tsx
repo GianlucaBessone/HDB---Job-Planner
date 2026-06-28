@@ -1315,7 +1315,7 @@ export default function DocumentDetailModal({
   if (loading)
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm pt-20">
-        <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 flex flex-col items-center gap-4">
+        <div className="bg-card text-card-foreground rounded-3xl p-8 flex flex-col items-center gap-4">
           <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
           <p className="text-slate-500 font-medium">Cargando documento...</p>
         </div>
@@ -1328,8 +1328,8 @@ export default function DocumentDetailModal({
     <>
       {showVersionModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 pt-20">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+          <div className="bg-card text-card-foreground rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-700 bg-background text-foreground/50">
               <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
                 <FileCheck className="w-5 h-5 text-indigo-600" />
                 Control de Versiones
@@ -1416,7 +1416,7 @@ export default function DocumentDetailModal({
                       ? "Explique por qué no es necesario incrementar la versión..."
                       : "Describa brevemente los cambios realizados..."
                   }
-                  className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-indigo-500 transition-colors resize-none h-24"
+                  className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-indigo-500 transition-colors resize-none h-24"
                 />
               </div>
 
@@ -1430,7 +1430,7 @@ export default function DocumentDetailModal({
                       <select
                         value={newRevisadorId}
                         onChange={(e) => setNewRevisadorId(e.target.value)}
-                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-xs font-bold focus:border-indigo-500 outline-none"
+                        className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-xs font-bold focus:border-indigo-500 outline-none"
                       >
                         <option value="">(Sin asignar)</option>
                         {operators
@@ -1453,7 +1453,7 @@ export default function DocumentDetailModal({
                       <select
                         value={newAprobadorId}
                         onChange={(e) => setNewAprobadorId(e.target.value)}
-                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-xs font-bold focus:border-indigo-500 outline-none"
+                        className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-xs font-bold focus:border-indigo-500 outline-none"
                       >
                         <option value="">(Sin asignar)</option>
                         {operators
@@ -1484,7 +1484,7 @@ export default function DocumentDetailModal({
                 </>
               )}
             </div>
-            <div className="p-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3">
+            <div className="p-4 border-t border-slate-100 dark:border-slate-700 bg-background text-foreground/50 flex justify-end gap-3">
               <button
                 type="button"
                 onClick={() => {
@@ -1519,9 +1519,9 @@ export default function DocumentDetailModal({
       )}
 
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 sm:p-6 pt-20 sm:pt-24">
-        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-5xl max-h-[calc(100vh-8rem)] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="bg-card text-card-foreground rounded-3xl shadow-2xl w-full max-w-5xl max-h-[calc(100vh-8rem)] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
           {/* Header */}
-          <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-start bg-slate-50 dark:bg-slate-900/50">
+          <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-start bg-background text-foreground/50">
             <div className="flex gap-4 items-start">
               <div className="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
                 <FileText className="w-6 h-6" />
@@ -1565,7 +1565,7 @@ export default function DocumentDetailModal({
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 px-6 gap-6 pt-2">
+          <div className="flex border-b border-slate-100 dark:border-slate-700 bg-card text-card-foreground px-6 gap-6 pt-2">
             {[
               { id: "info", label: "Información General" },
               { id: "lms", label: "LMS & Capacitación" },
@@ -1588,7 +1588,7 @@ export default function DocumentDetailModal({
           </div>
 
           {/* Body */}
-          <div className="flex-1 overflow-y-auto p-6 bg-slate-50 dark:bg-slate-900/20">
+          <div className="flex-1 overflow-y-auto p-6 bg-background text-foreground/20">
             {tab === "info" && (
               <div className="space-y-6 max-w-3xl mx-auto">
                 {/* Digital SOP Procedure Section */}
@@ -1657,7 +1657,7 @@ export default function DocumentDetailModal({
                   // EDITING MODE
                   if (isDigital && isEditingDigital) {
                     return (
-                      <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border-2 border-indigo-300 dark:border-indigo-700 space-y-6 shadow-xl shadow-indigo-500/5">
+                      <div className="bg-card text-card-foreground p-6 rounded-3xl border-2 border-indigo-300 dark:border-indigo-700 space-y-6 shadow-xl shadow-indigo-500/5">
                         <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
                           <div className="flex items-center gap-2">
                             <Sparkles className="w-5 h-5 text-indigo-500" />
@@ -1702,7 +1702,7 @@ export default function DocumentDetailModal({
                             }
                             rows={3}
                             placeholder="Describa el propósito y metas operativas..."
-                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:border-indigo-500 outline-none resize-none"
+                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:border-indigo-500 outline-none resize-none"
                           />
                         </div>
 
@@ -1721,7 +1721,7 @@ export default function DocumentDetailModal({
                             }
                             rows={3}
                             placeholder="Defina el alcance del documento..."
-                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:border-indigo-500 outline-none resize-none"
+                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:border-indigo-500 outline-none resize-none"
                           />
                         </div>
 
@@ -1740,7 +1740,7 @@ export default function DocumentDetailModal({
                             }
                             rows={6}
                             placeholder="Detalle paso a paso las actividades..."
-                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:border-indigo-500 outline-none resize-none"
+                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:border-indigo-500 outline-none resize-none"
                           />
                         </div>
 
@@ -1759,7 +1759,7 @@ export default function DocumentDetailModal({
                             }
                             rows={3}
                             placeholder="Defina roles y responsabilidades..."
-                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:border-indigo-500 outline-none resize-none"
+                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:border-indigo-500 outline-none resize-none"
                           />
                         </div>
 
@@ -1778,7 +1778,7 @@ export default function DocumentDetailModal({
                               })
                             }
                             placeholder="https://www.youtube.com/watch?v=..."
-                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:border-indigo-500 outline-none"
+                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:border-indigo-500 outline-none"
                           />
                         </div>
 
@@ -1795,7 +1795,7 @@ export default function DocumentDetailModal({
                                   (d: any, i: number) => (
                                     <div
                                       key={i}
-                                      className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/30 px-3 py-2 rounded-lg text-xs"
+                                      className="flex items-center gap-2 bg-background text-foreground/30 px-3 py-2 rounded-lg text-xs"
                                     >
                                       <span className="font-black text-indigo-600 min-w-[60px]">
                                         {d.term}
@@ -1852,7 +1852,7 @@ export default function DocumentDetailModal({
                                         ],
                                       })
                                     }
-                                    className="px-2 py-1 text-[10px] font-bold bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-700 rounded-md hover:bg-indigo-100 text-indigo-700 dark:text-indigo-300 transition-colors"
+                                    className="px-2 py-1 text-[10px] font-bold bg-card text-card-foreground border border-indigo-200 dark:border-indigo-700 rounded-md hover:bg-indigo-100 text-indigo-700 dark:text-indigo-300 transition-colors"
                                   >
                                     {a.term}
                                   </button>
@@ -1939,7 +1939,7 @@ export default function DocumentDetailModal({
                                   (r: any, i: number) => (
                                     <div
                                       key={i}
-                                      className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/30 px-3 py-2 rounded-lg text-xs"
+                                      className="flex items-center gap-2 bg-background text-foreground/30 px-3 py-2 rounded-lg text-xs"
                                     >
                                       <span className="font-black text-emerald-600 min-w-[80px]">
                                         [{r.codigo}]
@@ -1977,10 +1977,10 @@ export default function DocumentDetailModal({
                                 setShowRefResults(e.target.value.length > 1);
                               }}
                               placeholder="Buscar documento interno por código o título..."
-                              className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl pl-8 pr-3 py-2 text-xs outline-none focus:border-indigo-500"
+                              className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl pl-8 pr-3 py-2 text-xs outline-none focus:border-indigo-500"
                             />
                             {showRefResults && (
-                              <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-40 overflow-y-auto z-10">
+                              <div className="absolute top-full left-0 right-0 mt-1 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-40 overflow-y-auto z-10">
                                 {allDocs
                                   .filter(
                                     (d: any) =>
@@ -2127,7 +2127,7 @@ export default function DocumentDetailModal({
                         )}
 
                         {youtubeUrl && !isOnline && (
-                          <div className="bg-slate-100 dark:bg-slate-900/50 rounded-2xl p-6 text-center border border-slate-200 dark:border-slate-700">
+                          <div className="bg-secondary text-secondary-foreground/50 rounded-2xl p-6 text-center border border-slate-200 dark:border-slate-700">
                             <Play className="w-8 h-8 text-slate-400 mx-auto mb-2" />
                             <p className="text-xs font-bold text-slate-500">
                               Video no disponible sin conexión a internet
@@ -2155,7 +2155,7 @@ export default function DocumentDetailModal({
                           .map((section, idx) => (
                             <div
                               key={idx}
-                              className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700"
+                              className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700"
                             >
                               <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-2">
                                 {section.title}
@@ -2169,14 +2169,14 @@ export default function DocumentDetailModal({
                         {/* Definiciones table */}
                         {digitalData.definiciones &&
                           digitalData.definiciones.length > 0 && (
-                            <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                            <div className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
                               <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-3">
                                 6. Definiciones y Abreviaturas
                               </p>
                               <div className="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
                                 <table className="w-full text-xs">
                                   <thead>
-                                    <tr className="bg-slate-50 dark:bg-slate-900/50">
+                                    <tr className="bg-background text-foreground/50">
                                       <th className="text-left px-3 py-2 font-black text-slate-500 uppercase text-[10px]">
                                         Término
                                       </th>
@@ -2210,7 +2210,7 @@ export default function DocumentDetailModal({
                         {/* Referencias */}
                         {digitalData.referencias &&
                           digitalData.referencias.length > 0 && (
-                            <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                            <div className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
                               <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-3">
                                 7. Referencias
                               </p>
@@ -2241,7 +2241,7 @@ export default function DocumentDetailModal({
                   return (
                     <div className="space-y-3">
                       {doc.descripcion ? (
-                        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                        <div className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
                           <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
                             Descripción General
                           </p>
@@ -2279,7 +2279,7 @@ export default function DocumentDetailModal({
                 })()}
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
+                  <div className="bg-card text-card-foreground p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
                       Tipo de Documento
                     </p>
@@ -2287,7 +2287,7 @@ export default function DocumentDetailModal({
                       {doc.tipoDocumento}
                     </p>
                   </div>
-                  <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
+                  <div className="bg-card text-card-foreground p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
                       Área / Sector
                     </p>
@@ -2295,7 +2295,7 @@ export default function DocumentDetailModal({
                       {doc.area}
                     </p>
                   </div>
-                  <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
+                  <div className="bg-card text-card-foreground p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
                       Nivel de Criticidad
                     </p>
@@ -2316,7 +2316,7 @@ export default function DocumentDetailModal({
                       {doc.nivelCriticidad}
                     </p>
                   </div>
-                  <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
+                  <div className="bg-card text-card-foreground p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
                       Versión Actual
                     </p>
@@ -2327,12 +2327,12 @@ export default function DocumentDetailModal({
                 </div>
 
                 {/* Responsables: Creado Por (original), Editado Por, Revisado Por, Aprobado Por */}
-                <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
+                <div className="bg-card text-card-foreground p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
                     Responsables del Documento
                   </p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="text-center p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl">
+                    <div className="text-center p-3 bg-background text-foreground/50 rounded-xl">
                       <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
                         Creado Por
                       </p>
@@ -2371,7 +2371,7 @@ export default function DocumentDetailModal({
 
                 {/* Etiquetas */}
                 {doc.tags && Array.isArray(doc.tags) && doc.tags.length > 0 && (
-                  <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
+                  <div className="bg-card text-card-foreground p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
                       Etiquetas (Tipo de Actividad)
                     </p>
@@ -2388,7 +2388,7 @@ export default function DocumentDetailModal({
                   </div>
                 )}
 
-                <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+                <div className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4">
                   <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2">
                     <p className="text-xs font-black text-slate-400 uppercase tracking-widest">
                       Requerimientos Operativos Obligatorios
@@ -2449,7 +2449,7 @@ export default function DocumentDetailModal({
                             onChange={(e) =>
                               setEditValidezMeses(e.target.value)
                             }
-                            className="w-full max-w-[200px] bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold focus:border-indigo-500 outline-none"
+                            className="w-full max-w-[200px] bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold focus:border-indigo-500 outline-none"
                           />
                         </div>
                       )}
@@ -2497,7 +2497,7 @@ export default function DocumentDetailModal({
 
                 {/* Workflow de Firmas y Aprobaciones */}
                 {doc.workflowState && (
-                  <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-6">
+                  <div className="bg-card text-card-foreground p-6 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-6">
                     <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-700 pb-3">
                       <FileSignature className="w-5 h-5 text-indigo-500" />
                       <h3 className="font-bold text-slate-800 dark:text-slate-100">
@@ -2513,7 +2513,7 @@ export default function DocumentDetailModal({
                           doc.workflowState.creatorStatus === "approved" ||
                           doc.workflowState.creatorSignature
                             ? "bg-emerald-50/30 dark:bg-emerald-950/10 border-emerald-200 dark:border-emerald-900/50"
-                            : "bg-slate-50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-800"
+                            : "bg-background text-foreground/50 border-slate-100 dark:border-slate-800"
                         }`}
                       >
                         <div>
@@ -2548,7 +2548,7 @@ export default function DocumentDetailModal({
                                 <ShieldCheck className="w-4 h-4" /> Ver Firma Digital
                               </button>
                             ) : (
-                              <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-1 bg-slate-50 dark:bg-slate-900 inline-block">
+                              <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-1 bg-background text-foreground inline-block">
                                 <img
                                   src={doc.workflowState.creatorSignature}
                                   alt="Firma Creador"
@@ -2579,7 +2579,7 @@ export default function DocumentDetailModal({
                               ? "bg-emerald-50/30 dark:bg-emerald-950/10 border-emerald-200 dark:border-emerald-900/50"
                               : doc.workflowState.revisadorStatus === "rejected"
                                 ? "bg-red-50/30 dark:bg-red-950/10 border-red-200 dark:border-red-900/50"
-                                : "bg-slate-50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-800"
+                                : "bg-background text-foreground/50 border-slate-100 dark:border-slate-800"
                           }`}
                         >
                           <div>
@@ -2621,7 +2621,7 @@ export default function DocumentDetailModal({
                                   <ShieldCheck className="w-4 h-4" /> Ver Firma Digital
                                 </button>
                               ) : (
-                                <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-1 bg-slate-50 dark:bg-slate-900 inline-block">
+                                <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-1 bg-background text-foreground inline-block">
                                   <img
                                     src={doc.workflowState.revisadorSignature}
                                     alt="Firma Revisador"
@@ -2658,7 +2658,7 @@ export default function DocumentDetailModal({
                               ? "bg-emerald-50/30 dark:bg-emerald-950/10 border-emerald-200 dark:border-emerald-900/50"
                               : doc.workflowState.aprobadorStatus === "rejected"
                                 ? "bg-red-50/30 dark:bg-red-950/10 border-red-200 dark:border-red-900/50"
-                                : "bg-slate-50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-800"
+                                : "bg-background text-foreground/50 border-slate-100 dark:border-slate-800"
                           }`}
                         >
                           <div>
@@ -2700,7 +2700,7 @@ export default function DocumentDetailModal({
                                   <ShieldCheck className="w-4 h-4" /> Ver Firma Digital
                                 </button>
                               ) : (
-                                <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-1 bg-slate-50 dark:bg-slate-900 inline-block">
+                                <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-1 bg-background text-foreground inline-block">
                                   <img
                                     src={doc.workflowState.aprobadorSignature}
                                     alt="Firma Aprobador"
@@ -2907,7 +2907,7 @@ export default function DocumentDetailModal({
                 </div>
 
                 {doc.applicabilityRules?.length === 0 ? (
-                  <div className="text-center py-12 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 border-dashed">
+                  <div className="text-center py-12 bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 border-dashed">
                     <ShieldAlert className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-3" />
                     <p className="font-bold text-slate-500">
                       No hay reglas definidas.
@@ -2922,7 +2922,7 @@ export default function DocumentDetailModal({
                     {doc.applicabilityRules?.map((rule: any) => (
                       <div
                         key={rule.id}
-                        className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm relative group"
+                        className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm relative group"
                       >
                         <button
                           onClick={() => deleteRule(rule.id)}
@@ -3002,14 +3002,14 @@ export default function DocumentDetailModal({
                   </button>
                 </div>
 
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden shadow-sm">
+                <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden shadow-sm">
                   <div className="divide-y divide-slate-100 dark:divide-slate-700">
                     {checklistItems.map((item, idx) => (
                       <div
                         key={idx}
                         className="p-4 flex gap-4 items-center group"
                       >
-                        <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-500 shrink-0">
+                        <div className="w-6 h-6 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-bold text-slate-500 shrink-0">
                           {idx + 1}
                         </div>
                         <input
@@ -3049,7 +3049,7 @@ export default function DocumentDetailModal({
                       </div>
                     ))}
                   </div>
-                  <div className="p-3 bg-slate-50 dark:bg-slate-900/50">
+                  <div className="p-3 bg-background text-foreground/50">
                     <button
                       onClick={() =>
                         setChecklistItems([
@@ -3069,7 +3069,7 @@ export default function DocumentDetailModal({
             {tab === "lms" && (
               <div className="space-y-6">
                 {/* Material de Capacitación Block */}
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4 shadow-sm animate-in fade-in duration-200">
+                <div className="bg-card text-card-foreground p-6 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4 shadow-sm animate-in fade-in duration-200">
                   <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-3">
                     <div className="flex items-center gap-2">
                       <BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
@@ -3101,7 +3101,7 @@ export default function DocumentDetailModal({
 
                   <div className="pt-2">
                     {/* Upload Final File */}
-                    <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="bg-background text-foreground/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                       <div className="space-y-1">
                         <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
                           Subir Archivo de Respaldo (Opcional)
@@ -3129,7 +3129,7 @@ export default function DocumentDetailModal({
                   {doc.versions?.[0]?.files?.some(
                     (f: any) => f.esPrincipal,
                   ) && (
-                    <div className="mt-4 p-3.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-xl flex items-center justify-between">
+                    <div className="mt-4 p-3.5 bg-background text-foreground/50 border border-slate-100 dark:border-slate-800 rounded-xl flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
                         <div className="w-9 h-9 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 flex items-center justify-center">
                           <FileText className="w-5 h-5 text-indigo-600" />
@@ -3156,7 +3156,7 @@ export default function DocumentDetailModal({
                       <a
                         href={`/api/documentos/${doc.id}/download`}
                         download
-                        className="px-3.5 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 rounded-lg text-xs font-bold text-indigo-600 flex items-center gap-1.5 transition-all shadow-sm"
+                        className="px-3.5 py-1.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 hover:bg-slate-100 rounded-lg text-xs font-bold text-indigo-600 flex items-center gap-1.5 transition-all shadow-sm"
                       >
                         <Download className="w-3.5 h-3.5" /> Descargar Archivo
                       </a>
@@ -3166,7 +3166,7 @@ export default function DocumentDetailModal({
 
                 {/* Evaluación Multiple Choice Block */}
                 {doc.requiereCapacitacion && (
-                  <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-5 shadow-sm">
+                  <div className="bg-card text-card-foreground p-6 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-5 shadow-sm">
                     <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-3">
                       <div className="flex items-center gap-2">
                         <Award className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
@@ -3258,7 +3258,7 @@ export default function DocumentDetailModal({
 
                     {/* Question Builder Form */}
                     {(showQuestionBuilder || quizQuestions.length === 0) && (
-                      <div className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-4 animate-in fade-in duration-200">
+                      <div className="bg-background text-foreground/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-4 animate-in fade-in duration-200">
                         <div className="flex justify-between items-center">
                           <span className="text-xs font-black uppercase tracking-widest text-indigo-600 block">
                             Diseñador de Preguntas
@@ -3454,7 +3454,7 @@ export default function DocumentDetailModal({
 
                 {/* Seguimiento de Operarios LMS (Real-time tracking) */}
                 {doc.estado === "vigente" && doc.requiereCapacitacion && (
-                  <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-5 shadow-sm">
+                  <div className="bg-card text-card-foreground p-6 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-5 shadow-sm">
                     <div className="border-b border-slate-100 dark:border-slate-700 pb-3">
                       <div className="flex items-center gap-2">
                         <Clock className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
@@ -3489,7 +3489,7 @@ export default function DocumentDetailModal({
 
                       if (total === 0) {
                         return (
-                          <div className="text-center py-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl">
+                          <div className="text-center py-6 bg-background text-foreground/50 rounded-2xl">
                             <p className="text-xs text-slate-400">
                               No hay técnicos activos afectados a la
                               capacitación de este documento.
@@ -3524,7 +3524,7 @@ export default function DocumentDetailModal({
                                 {failedPct}%
                               </span>
                             </div>
-                            <div className="bg-slate-50 dark:bg-slate-900/30 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 text-center animate-in zoom-in-95 duration-200">
+                            <div className="bg-background text-foreground/30 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 text-center animate-in zoom-in-95 duration-200">
                               <span className="text-[10px] uppercase font-bold tracking-wider text-slate-505 block mb-1">
                                 Pendientes
                               </span>
@@ -3538,7 +3538,7 @@ export default function DocumentDetailModal({
                           </div>
 
                           {/* Visual Bar Stacked */}
-                          <div className="h-3 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden flex shadow-inner">
+                          <div className="h-3 w-full rounded-full bg-muted text-muted-foreground overflow-hidden flex shadow-inner">
                             {approved > 0 && (
                               <div
                                 className="h-full bg-emerald-500 transition-all duration-500"
@@ -3563,10 +3563,10 @@ export default function DocumentDetailModal({
                           </div>
 
                           {/* Table list */}
-                          <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm bg-white dark:bg-slate-800">
+                          <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm bg-card text-card-foreground">
                             <table className="w-full border-collapse text-left text-xs">
                               <thead>
-                                <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-150 dark:border-slate-800">
+                                <tr className="bg-background text-foreground/50 border-b border-slate-150 dark:border-slate-800">
                                   <th className="p-3 font-bold text-slate-700 dark:text-slate-300">
                                     Técnico / Operario
                                   </th>
@@ -3641,7 +3641,7 @@ export default function DocumentDetailModal({
                     <div
                       key={v.id}
                       onClick={() => !isVigente && setCompareVersion(v)}
-                      className={`bg-white dark:bg-slate-800 p-5 rounded-2xl border transition-all ${
+                      className={`bg-card text-card-foreground p-5 rounded-2xl border transition-all ${
                         !isVigente
                           ? "border-slate-200 dark:border-slate-700 cursor-pointer hover:border-indigo-400 hover:shadow-md dark:hover:border-indigo-600 group relative"
                           : "border-emerald-200 dark:border-emerald-900/50 cursor-default"
@@ -3688,8 +3688,8 @@ export default function DocumentDetailModal({
         {/* New Rule Modal */}
         {showRuleModal && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 pt-20">
-            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl w-full max-w-md max-h-[80vh] overflow-hidden animate-in zoom-in-95 duration-200">
-              <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+            <div className="bg-card text-card-foreground rounded-3xl shadow-xl w-full max-w-md max-h-[80vh] overflow-hidden animate-in zoom-in-95 duration-200">
+              <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-background text-foreground/50">
                 <h3 className="font-bold text-slate-800 dark:text-slate-100">
                   Nueva Regla Rápida
                 </h3>
@@ -3718,7 +3718,7 @@ export default function DocumentDetailModal({
                     onChange={(e) =>
                       setNewRule({ ...newRule, tipoActividad: e.target.value })
                     }
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                    className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
                   >
                     <option value="">Todas las actividades</option>
                     {activityOptions.map((opt) => (
@@ -3734,7 +3734,7 @@ export default function DocumentDetailModal({
                     <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
                       Etiquetas de Proyecto Requeridas (Opcional)
                     </label>
-                    <div className="flex flex-wrap gap-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 max-h-32 overflow-y-auto">
+                    <div className="flex flex-wrap gap-2 p-3 bg-background text-foreground rounded-2xl border border-slate-200 dark:border-slate-700 max-h-32 overflow-y-auto">
                       {projectTags.map((tag) => {
                         const isSelected =
                           newRule.tagsRequeridos?.includes(tag);
@@ -3755,7 +3755,7 @@ export default function DocumentDetailModal({
                             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
                               isSelected
                                 ? "bg-indigo-600 border-indigo-600 text-white shadow-sm"
-                                : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                                : "bg-card text-card-foreground border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
                             }`}
                           >
                             {tag}
@@ -3781,7 +3781,7 @@ export default function DocumentDetailModal({
                           bloqueanteDeInicio: e.target.checked,
                         })
                       }
-                      className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600 bg-slate-50 dark:bg-slate-900"
+                      className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600 bg-background text-foreground"
                     />
                     <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                       Es un documento bloqueante
@@ -3797,7 +3797,7 @@ export default function DocumentDetailModal({
                           generaChecklist: e.target.checked,
                         })
                       }
-                      className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600 bg-slate-50 dark:bg-slate-900"
+                      className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-600 bg-background text-foreground"
                     />
                     <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                       Genera checklist dinámico
@@ -3805,7 +3805,7 @@ export default function DocumentDetailModal({
                   </label>
                 </div>
               </div>
-              <div className="p-6 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-3">
+              <div className="p-6 border-t border-slate-100 dark:border-slate-700 bg-background text-foreground/50 flex justify-end gap-3">
                 <button
                   onClick={() => {
                     setShowRuleModal(false);
