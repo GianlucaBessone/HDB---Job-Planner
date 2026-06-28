@@ -19,6 +19,7 @@ import OneSignal from 'react-onesignal';
 import SyncIndicator from "@/components/SyncIndicator";
 import { Loader2, BellRing } from "lucide-react";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { ColorThemeProvider } from "@/components/ColorThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import ViewSearch from "@/components/ViewSearch";
 
@@ -281,21 +282,24 @@ export default function RootLayout({
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
                 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
+                <script dangerouslySetInnerHTML={{ __html: `!function(){try{var e=localStorage.getItem("color-theme");if(e){document.documentElement.setAttribute("data-color-theme",e)}}catch(e){}}();` }} />
                 <title>HDB | SGI</title>
                 <meta name="description" content="Sistema de Gestión Integral" />
             </head>
             <body className="font-sans min-h-[100dvh] bg-slate-50/50 dark:bg-slate-900 overscroll-none text-slate-900 dark:text-slate-100" style={{ fontFamily: '"Outfit", sans-serif' }}>
-                <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-                    {content}
-                    {/* Global View Search — available when logged in */}
-                    {currentUser && (
-                        <ViewSearch
-                            views={effectiveViews}
-                            role={role}
-                        />
-                    )}
-                    <Analytics />
-                </ThemeProvider>
+                <ColorThemeProvider>
+                    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+                        {content}
+                        {/* Global View Search — available when logged in */}
+                        {currentUser && (
+                            <ViewSearch
+                                views={effectiveViews}
+                                role={role}
+                            />
+                        )}
+                        <Analytics />
+                    </ThemeProvider>
+                </ColorThemeProvider>
             </body>
         </html>
     );

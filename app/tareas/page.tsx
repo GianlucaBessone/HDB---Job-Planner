@@ -979,7 +979,7 @@ export default function TareasPage() {
                                                                 {c.operator.nombreCompleto} ({c.operator.role})
                                                             </span>
                                                         )}
-                                                        <div className={`px-4 py-2 rounded-2xl text-sm ${isMe ? 'bg-blue-600 text-white rounded-tr-sm' : 'bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-tl-sm shadow-sm'}`}>
+                                                        <div className={`px-4 py-2 rounded-2xl text-sm ${isMe ? 'bg-primary text-white rounded-tr-sm' : 'bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-tl-sm shadow-sm'}`}>
                                                             {c.mensaje}
                                                         </div>
                                                         <span className="text-[9px] text-slate-400 mt-1 mx-1">
@@ -1008,7 +1008,7 @@ export default function TareasPage() {
                                         <button 
                                             onClick={handlePostComentario}
                                             disabled={isComentando || !comentarioInput.trim()}
-                                            className="px-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors shrink-0 flex items-center justify-center"
+                                            className="px-4 bg-primary text-white rounded-xl hover:bg-primary/90 disabled:opacity-50 transition-colors shrink-0 flex items-center justify-center"
                                         >
                                             {isComentando ? <Loader2 className="w-5 h-5 animate-spin" /> : <ChevronRight className="w-5 h-5" />}
                                         </button>
@@ -1030,7 +1030,7 @@ export default function TareasPage() {
                                     {(!editingTarea || getPermissions(editingTarea).canEditFull) && (
                                         <button
                                             onClick={() => setIsViewMode(false)}
-                                            className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all active:scale-95"
+                                            className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 shadow-lg shadow-blue-600/20 transition-all active:scale-95"
                                         >
                                             <Edit3 className="w-4 h-4" /> Editar
                                         </button>

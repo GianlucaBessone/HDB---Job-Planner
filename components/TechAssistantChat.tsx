@@ -500,7 +500,7 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
                                                         <Sparkles className="w-3 h-3 text-blue-600 dark:text-blue-400" />
                                                     </div>
                                                 )}
-                                                <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${msg.role === 'user' ? 'bg-blue-600 text-white font-bold rounded-tr-none' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-tl-none prose prose-sm dark:prose-invert prose-p:leading-snug prose-p:mb-2 prose-a:text-blue-500'}`}>
+                                                <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${msg.role === 'user' ? 'bg-primary text-white font-bold rounded-tr-none' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-tl-none prose prose-sm dark:prose-invert prose-p:leading-snug prose-p:mb-2 prose-a:text-blue-500'}`}>
                                                     {msg.role === 'model' ? (
                                                         <ReactMarkdown>{msg.content}</ReactMarkdown>
                                                     ) : (
@@ -543,7 +543,7 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
                             <div className="shrink-0">
                                 <form onSubmit={handleSystemQuery} className="p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 flex gap-2">
                                     <input type="text" placeholder="Ej. ¿Cuántas horas trabajé este mes?" value={systemQuery} onChange={e => setSystemQuery(e.target.value)} disabled={loading} className="flex-1 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs font-bold focus:border-blue-500 outline-none transition-all disabled:opacity-70" />
-                                    <button type="submit" disabled={!systemQuery.trim() || loading} className="px-4 bg-blue-600 text-white rounded-xl flex items-center justify-center hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50"><Send className="w-4 h-4" /></button>
+                                    <button type="submit" disabled={!systemQuery.trim() || loading} className="px-4 bg-primary text-white rounded-xl flex items-center justify-center hover:bg-primary/90 active:scale-95 transition-all disabled:opacity-50"><Send className="w-4 h-4" /></button>
                                 </form>
                                 <div className="p-2 border-t border-slate-100 dark:border-slate-805 bg-slate-50 dark:bg-slate-950 text-center flex justify-center gap-4">
                                     <button type="button" onClick={() => { setSystemMessages([{ role: 'model', content: 'Hola. Soy tu Asistente del Sistema HDB SGI. ¿En qué te puedo ayudar hoy?' }]); setSystemConversationId(null); }} className="text-[10px] font-black text-slate-400 hover:text-slate-600 uppercase tracking-widest">Limpiar Chat</button>

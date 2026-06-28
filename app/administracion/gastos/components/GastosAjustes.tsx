@@ -178,7 +178,7 @@ export default function GastosAjustes() {
                 />
               </div>
               <div className="md:col-span-2 flex justify-end">
-                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                <button type="submit" className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
                   Guardar Código
                 </button>
               </div>
@@ -248,7 +248,7 @@ export default function GastosAjustes() {
               />
             </div>
             <div className="md:col-span-2 flex justify-end">
-              <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+              <button type="submit" className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
                 Guardar Proveedor
               </button>
             </div>

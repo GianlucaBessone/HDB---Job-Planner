@@ -462,7 +462,7 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                                                 className={`text-xs font-black px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 active:scale-95 duration-200 ${
                                                     d.leido 
                                                         ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50 cursor-default' 
-                                                        : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-200 dark:shadow-none hover:shadow-none'
+                                                        : 'bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/20 dark:shadow-none hover:shadow-none'
                                                 }`}
                                             >
                                                 {loadingAction === d.id ? (

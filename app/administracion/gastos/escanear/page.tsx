@@ -381,7 +381,7 @@ export default function EscanearFactura() {
                   <>
                     <button 
                       onClick={() => cameraInputRef.current?.click()}
-                      className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center gap-3"
+                      className="w-full py-4 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center gap-3"
                     >
                       <Camera className="w-5 h-5" />
                       Tomar Foto (Cámara)
@@ -414,7 +414,7 @@ export default function EscanearFactura() {
                   <>
                     <button 
                       onClick={() => fileInputRef.current?.click()}
-                      className={`w-full py-4 ${isMobile ? 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border-2 border-slate-200 dark:border-slate-700' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/30'} rounded-xl font-bold transition-all flex items-center justify-center gap-3`}
+                      className={`w-full py-4 ${isMobile ? 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border-2 border-slate-200 dark:border-slate-700' : 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-blue-600/30'} rounded-xl font-bold transition-all flex items-center justify-center gap-3`}
                     >
                       <Upload className="w-5 h-5" />
                       Subir Archivo de Factura
@@ -450,7 +450,7 @@ export default function EscanearFactura() {
                 </button>
                 <button 
                   onClick={() => capturedImage && processImageFromDataUrl(capturedImage)}
-                  className="px-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-medium transition-colors shadow-lg shadow-blue-900/50"
+                  className="px-6 py-3 bg-primary hover:bg-blue-500 rounded-xl font-medium transition-colors shadow-lg shadow-blue-900/50"
                 >
                   <Check className="w-5 h-5 inline mr-2" />
                   Procesar Factura
@@ -626,7 +626,7 @@ export default function EscanearFactura() {
                 <button 
                   onClick={saveFactura}
                   disabled={saving || !selectedCodigo}
-                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl font-medium transition-colors flex items-center shadow-sm"
+                  className="px-6 py-2.5 bg-primary hover:bg-primary/90 disabled:opacity-50 text-white rounded-xl font-medium transition-colors flex items-center shadow-sm"
                 >
                   {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
                   {saving ? 'Guardando...' : (fileQueue.length > 0 ? (queueIndex < fileQueue.length - 1 ? 'Guardar y Siguiente' : 'Guardar y Finalizar Lote') : 'Confirmar y Guardar')}

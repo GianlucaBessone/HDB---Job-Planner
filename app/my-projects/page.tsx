@@ -830,7 +830,7 @@ export default function MyProjectsPage() {
                                 <button
                                     onClick={acceptAllDelegations}
                                     disabled={isLoadingDelegations}
-                                    className="bg-blue-600 text-white font-black text-[10px] uppercase tracking-widest px-4 py-2 rounded-xl hover:bg-blue-700 active:scale-95 transition-all shadow-md shadow-blue-200 disabled:opacity-50"
+                                    className="bg-primary text-white font-black text-[10px] uppercase tracking-widest px-4 py-2 rounded-xl hover:bg-primary/90 active:scale-95 transition-all shadow-md shadow-primary/20 disabled:opacity-50"
                                 >
                                     {isLoadingDelegations ? 'Procesando...' : 'Aceptar Todas'}
                                 </button>
@@ -851,7 +851,7 @@ export default function MyProjectsPage() {
                                             </button>
                                             <button
                                                 onClick={() => acceptDelegation(del.id)}
-                                                className="flex-[2] md:flex-none bg-blue-600 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md hover:bg-blue-700 active:scale-95 transition-all"
+                                                className="flex-[2] md:flex-none bg-primary text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md hover:bg-primary/90 active:scale-95 transition-all"
                                             >
                                                 Aceptar
                                             </button>
@@ -1440,7 +1440,7 @@ export default function MyProjectsPage() {
                                 onClick={submitMaterialAction}
                                 disabled={!materialQuantity || isSubmittingMaterial}
                                 className={`flex-[2] text-white py-3.5 rounded-2xl font-bold transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 active:scale-95 ${
-                                    materialAction === 'uso' ? 'bg-emerald-600 shadow-emerald-200 hover:bg-emerald-700' : 'bg-blue-600 shadow-blue-200 hover:bg-blue-700'
+                                    materialAction === 'uso' ? 'bg-emerald-600 shadow-emerald-200 hover:bg-emerald-700' : 'bg-primary shadow-primary/20 hover:bg-primary/90'
                                 }`}
                             >
                                 {isSubmittingMaterial ? <Loader2 className="w-4 h-4 animate-spin" /> : <Package className="w-4 h-4" />}

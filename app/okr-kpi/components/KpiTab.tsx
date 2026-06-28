@@ -80,7 +80,7 @@ export default function KpiTab({ user, isActive = true }: { user: any; isActive?
                         <option value="">Todos los OKRs</option>
                         {okrs.map((o: any) => <option key={o.id} value={o.id}>{o.codigoOkr} — {o.nombre}</option>)}
                     </select>
-                    <button onClick={() => { setEditingKpi(null); setShowKpiModal(true); }} className="flex items-center gap-2 h-9 px-4 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 shadow-sm shrink-0">
+                    <button onClick={() => { setEditingKpi(null); setShowKpiModal(true); }} className="flex items-center gap-2 h-9 px-4 bg-primary text-white rounded-lg font-bold text-sm hover:bg-primary/90 shadow-sm shrink-0">
                         <Plus className="w-4 h-4" /> Nuevo KPI
                     </button>
                 </div>
@@ -320,7 +320,7 @@ function KpiFormModal({ kpi, okrs, operators, datasets, onClose, onSave }: any) 
                     )}
                     <div className="flex justify-end gap-3 pt-2">
                         <button type="button" onClick={onClose} className="h-10 px-5 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Cancelar</button>
-                        <button type="submit" disabled={saving || !form.nombre || !form.valorObjetivo || (!kpi && !form.okrId) || (form.tipoRegistro === 'Dataset' && (!form.datasetId || !form.campoValor))} className="h-10 px-6 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 disabled:opacity-50 shadow-sm">
+                        <button type="submit" disabled={saving || !form.nombre || !form.valorObjetivo || (!kpi && !form.okrId) || (form.tipoRegistro === 'Dataset' && (!form.datasetId || !form.campoValor))} className="h-10 px-6 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary/90 disabled:opacity-50 shadow-sm">
                             {saving ? 'Guardando...' : kpi ? 'Actualizar' : 'Crear KPI'}
                         </button>
                     </div>

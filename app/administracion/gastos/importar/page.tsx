@@ -241,7 +241,7 @@ export default function ImportarGastos() {
               <button 
                 onClick={() => fileInputRef.current?.click()}
                 disabled={loading}
-                className="flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm shadow-blue-600/20 transition-colors disabled:opacity-50"
+                className="flex items-center justify-center px-4 py-2 bg-primary hover:bg-primary/90 text-white text-xs font-bold rounded-lg shadow-sm shadow-blue-600/20 transition-colors disabled:opacity-50"
               >
                 {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
                 Subir Archivo Excel

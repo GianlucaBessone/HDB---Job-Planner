@@ -34,11 +34,13 @@ import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
 import { QRCodeCanvas } from 'qrcode.react';
 import { ViewConfig, DEFAULT_VIEWS, getViewConfig, DEFAULT_SECTIONS } from '@/lib/viewAccess';
+import { useColorTheme } from '@/components/ColorThemeProvider';
+import { Check } from 'lucide-react';
 
 export default function ConfigPage() {
     const router = useRouter();
     const [userRole, setUserRole] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<'tags' | 'checklists' | 'options' | 'os' | 'system' | 'vistas'>('tags');
+    const [activeTab, setActiveTab] = useState<'tags' | 'checklists' | 'options' | 'os' | 'system' | 'vistas' | 'theme'>('tags');
 
     useEffect(() => {
         const stored = localStorage.getItem('currentUser');
@@ -116,6 +118,13 @@ export default function ConfigPage() {
                     <Eye className="w-4 h-4" />
                     Vistas
                 </button>
+                <button
+                    onClick={() => setActiveTab('theme')}
+                    className={`flex items-center gap-1.5 px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${activeTab === 'theme' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'}`}
+                >
+                    <Settings className="w-4 h-4" />
+                    Tema de Color
+                </button>
             </div>
 
             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 min-h-[400px] rounded-[2rem] p-6 md:p-8 shadow-sm">
@@ -125,6 +134,7 @@ export default function ConfigPage() {
                 {activeTab === 'system' && <SystemSection />}
                 {activeTab === 'os' && <OSSection />}
                 {activeTab === 'vistas' && <ViewsSection />}
+                {activeTab === 'theme' && <ThemeSection />}
             </div>
         </div>
     );
@@ -1207,6 +1217,73 @@ function ViewsSection() {
             >
                 {saving ? 'Guardando...' : 'Guardar Configuración de Vistas'}
             </button>
+        </div>
+    );
+}
+
+// ----- THEME SECTION -----
+function ThemeSection() {
+    const { theme, setTheme } = useColorTheme();
+
+    const themes = [
+        { id: 'actual', name: 'Actual (Azul Default)', colorCode: '#2563EB', darkColorCode: '#3B82F6' },
+        { id: 'azul', name: 'Azul Intenso', colorCode: '#1D4ED8', darkColorCode: '#2563EB' },
+        { id: 'naranja', name: 'Naranja', colorCode: '#F97316', darkColorCode: '#EA580C' },
+        { id: 'verde', name: 'Verde', colorCode: '#16A34A', darkColorCode: '#22C55E' },
+        { id: 'celeste', name: 'Celeste', colorCode: '#0EA5E9', darkColorCode: '#38BDF8' },
+        { id: 'rojo', name: 'Rojo', colorCode: '#EF4444', darkColorCode: '#F87171' },
+        { id: 'rosa', name: 'Rosa', colorCode: '#EC4899', darkColorCode: '#F472B6' },
+        { id: 'violeta', name: 'Violeta', colorCode: '#8B5CF6', darkColorCode: '#A855F7' },
+        { id: 'gris', name: 'Gris', colorCode: '#64748B', darkColorCode: '#94A3B8' },
+    ];
+
+    return (
+        <div className="space-y-6">
+            <div>
+                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Tema de Color Global</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
+                    Personaliza el color de acento de toda la aplicación. Este ajuste se guarda localmente en tu dispositivo.
+                </p>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-4">
+                {themes.map((t) => (
+                    <button
+                        key={t.id}
+                        onClick={() => setTheme(t.id as any)}
+                        className={`relative flex flex-col items-center gap-3 p-4 rounded-2xl border-2 transition-all overflow-hidden ${
+                            theme === t.id 
+                                ? 'border-primary bg-primary/5 shadow-md shadow-primary/20 scale-105' 
+                                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-750'
+                        }`}
+                    >
+                        <div className="flex w-full h-12 rounded-xl overflow-hidden shadow-inner border border-slate-100 dark:border-slate-700">
+                            <div className="flex-1" style={{ backgroundColor: t.colorCode }}></div>
+                            <div className="flex-1" style={{ backgroundColor: t.darkColorCode }}></div>
+                        </div>
+                        
+                        <div className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                            {t.name}
+                        </div>
+
+                        {theme === t.id && (
+                            <div className="absolute top-2 right-2 w-5 h-5 bg-primary text-white rounded-full flex items-center justify-center shadow-sm">
+                                <Check className="w-3 h-3" strokeWidth={4} />
+                            </div>
+                        )}
+                    </button>
+                ))}
+            </div>
+            
+            <div className="bg-primary/10 border border-primary/20 text-primary p-4 rounded-xl mt-6 flex items-center gap-3">
+                <div className="w-10 h-10 bg-primary text-primary-foreground rounded-lg flex items-center justify-center shrink-0 shadow-lg shadow-primary/30">
+                    <Settings className="w-5 h-5" />
+                </div>
+                <div>
+                    <h4 className="font-bold text-sm">Vista Previa Dinámica</h4>
+                    <p className="text-xs opacity-80 font-medium">Así lucen los botones, iconos y badges con el tema seleccionado.</p>
+                </div>
+            </div>
         </div>
     );
 }

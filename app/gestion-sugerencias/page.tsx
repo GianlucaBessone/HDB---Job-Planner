@@ -235,7 +235,7 @@ export default function GestionSugerenciasPage() {
                     </p>
                 </div>
                 <div className="flex flex-col md:flex-row items-center gap-4">
-                    <div className="flex items-stretch bg-blue-600 hover:bg-blue-500 rounded-lg shadow-sm border border-blue-500 transition-colors">
+                    <div className="flex items-stretch bg-primary hover:bg-blue-500 rounded-lg shadow-sm border border-blue-500 transition-colors">
                         <button
                             onClick={() => router.push('/ideas-sugerencias-reclamos')}
                             className="flex items-center gap-2 text-white px-4 py-2.5 font-bold text-sm border-r border-blue-500/50"
@@ -855,7 +855,7 @@ export default function GestionSugerenciasPage() {
                             <button 
                                 onClick={handleSave}
                                 disabled={isSaving}
-                                className="px-6 py-2.5 rounded-xl font-bold text-sm text-white bg-blue-600 hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-lg shadow-blue-200 disabled:opacity-50"
+                                className="px-6 py-2.5 rounded-xl font-bold text-sm text-white bg-primary hover:bg-primary/90 transition-colors flex items-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50"
                             >
                                 {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                                 Guardar Cambios

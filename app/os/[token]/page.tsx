@@ -347,7 +347,7 @@ function SurveyView({
                 </div>
                 <button
                     onClick={onDone}
-                    className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-base shadow-lg shadow-blue-200 active:scale-95 transition-all hover:bg-blue-700"
+                    className="w-full py-4 bg-primary text-white rounded-2xl font-black text-base shadow-lg shadow-primary/20 active:scale-95 transition-all hover:bg-primary/90"
                 >
                     Volver a la Orden de Servicio
                 </button>
@@ -459,7 +459,7 @@ function SurveyView({
                     onClick={handleSubmit}
                     disabled={submitting}
                     type="button"
-                    className="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-black text-sm shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:active:scale-100"
+                    className="flex-[2] py-4 bg-primary text-white rounded-2xl font-black text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:active:scale-100"
                 >
                     {submitting ? (
                         <>
@@ -506,7 +506,7 @@ function PostFirmaModal({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
             <div className="bg-white dark:bg-slate-800 w-full max-w-sm rounded-3xl shadow-2xl p-7 animate-in zoom-in-95 duration-300 space-y-5">
                 {/* Icon */}
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-blue-200">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-primary/20">
                     <Smile className="w-9 h-9 text-white" />
                 </div>
 
@@ -525,7 +525,7 @@ function PostFirmaModal({
                 <div className="space-y-2.5 pt-1">
                     <button
                         onClick={() => setShowSurvey(true)}
-                        className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-base shadow-lg shadow-blue-200 active:scale-95 transition-all hover:bg-blue-700 flex items-center justify-center gap-2"
+                        className="w-full py-4 bg-primary text-white rounded-2xl font-black text-base shadow-lg shadow-primary/20 active:scale-95 transition-all hover:bg-primary/90 flex items-center justify-center gap-2"
                     >
                         <Star className="w-5 h-5" fill="currentColor" />
                         Responder encuesta
@@ -865,7 +865,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
             {/* Header */}
             <div className="bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-800 shadow-sm">
                 <div className="max-w-2xl mx-auto px-4 py-5 flex items-center gap-3">
-                    <div className="bg-blue-600 p-2 rounded-xl shadow-lg shadow-blue-200">
+                    <div className="bg-primary p-2 rounded-xl shadow-lg shadow-primary/20">
                         <FileText className="w-5 h-5 text-white" />
                     </div>
                     <div>
@@ -1123,7 +1123,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                                         className={`w-full py-4 rounded-2xl font-black text-base transition-all ${
                                             hasBlocks
                                                 ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
-                                                : 'bg-blue-600 text-white shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95'
+                                                : 'bg-primary text-white shadow-lg shadow-primary/20 hover:bg-primary/90 active:scale-95'
                                         }`}
                                     >
                                         {hasBlocks ? 'Firma Bloqueada por Calidad' : 'Firmar Orden de Servicio'}
@@ -1218,7 +1218,7 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                                     <button
                                         onClick={handleNextStep}
                                         type="button"
-                                        className="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-black text-sm shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                        className="flex-[2] py-4 bg-primary text-white rounded-2xl font-black text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center gap-2"
                                     >
                                         Siguiente Paso
                                     </button>

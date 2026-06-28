@@ -69,7 +69,7 @@ export default function GastosPage() {
             </button>
             <button
               onClick={() => router.push('/administracion/gastos/escanear')}
-              className="flex items-center justify-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl shadow-sm transition-colors w-full sm:w-auto"
+              className="flex items-center justify-center px-4 py-2.5 bg-primary hover:bg-primary/90 text-white text-sm font-medium rounded-xl shadow-sm transition-colors w-full sm:w-auto"
             >
               <Camera className="w-4 h-4 mr-2" />
               Escanear Factura (IA)

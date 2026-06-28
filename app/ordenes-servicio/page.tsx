@@ -458,7 +458,7 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
                 <div className="p-5 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-2 shrink-0">
                     <button
                         onClick={handlePrint}
-                        className="flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3 bg-blue-600 text-white rounded-2xl font-black text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-95"
+                        className="flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3 bg-primary text-white rounded-2xl font-black text-sm hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 active:scale-95"
                     >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -869,7 +869,7 @@ function OrdenesServicioContent() {
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 onClick={(e) => e.stopPropagation()}
-                                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-blue-600 border border-blue-200 bg-blue-50 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-blue-600 border border-blue-200 bg-blue-50 hover:bg-primary hover:text-white transition-all shadow-sm"
                                             >
                                                 <FileText className="w-3.5 h-3.5" /> PDF Cobro
                                             </a>
