@@ -194,7 +194,7 @@ function EditableText({ value, onSave, className }: { value: string, onSave: (v:
                 onChange={e => setVal(e.target.value)} 
                 onBlur={handleBlur}
                 onKeyDown={handleKeyDown}
-                className={`bg-white dark:bg-slate-900 border border-primary/50 shadow-sm rounded px-1.5 py-0.5 outline-none focus:ring-2 focus:ring-primary/20 ${className}`}
+                className={`bg-card text-card-foreground border border-primary/50 shadow-sm rounded px-1.5 py-0.5 outline-none focus:ring-2 focus:ring-primary/20 ${className}`}
             />
         );
     }
@@ -253,7 +253,7 @@ function EditableNumber({ value, onSave, className }: { value: number | string, 
                 onChange={e => setVal(e.target.value)} 
                 onBlur={handleBlur}
                 onKeyDown={handleKeyDown}
-                className={`bg-white dark:bg-slate-900 border border-primary/50 shadow-sm rounded px-1.5 py-0.5 outline-none focus:ring-2 focus:ring-primary/20 text-right ${className}`}
+                className={`bg-card text-card-foreground border border-primary/50 shadow-sm rounded px-1.5 py-0.5 outline-none focus:ring-2 focus:ring-primary/20 text-right ${className}`}
             />
         );
     }

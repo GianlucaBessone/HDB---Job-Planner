@@ -275,7 +275,7 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
             {/* Slider Drawer Panel */}
             {isOpen && (
                 <div className="fixed inset-0 z-[9999] flex justify-end bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="w-full sm:w-[480px] bg-white dark:bg-slate-900 h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-350 ease-out relative">
+                    <div className="w-full sm:w-[480px] bg-card text-card-foreground h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-350 ease-out relative">
                         
                         {/* HEADER */}
                         <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-950/40">
@@ -319,7 +319,7 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
                         </div>
 
                         {/* BODY */}
-                        <div className="flex-1 overflow-y-auto bg-white dark:bg-slate-900 flex flex-col relative">
+                        <div className="flex-1 overflow-y-auto bg-card text-card-foreground flex flex-col relative">
                             {error && (
                                 <div className="m-5 p-3.5 bg-red-50 dark:bg-red-950/20 border border-red-150 dark:border-red-900/30 text-red-600 dark:text-red-400 rounded-2xl text-[11px] font-bold flex items-center gap-2">
                                     <AlertCircle className="w-4 h-4 shrink-0" />
@@ -379,7 +379,7 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
                                                             <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
                                                         </button>
                                                         {showProjectDropdown && (
-                                                            <div className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-20 overflow-hidden animate-in fade-in duration-100 max-h-60 flex flex-col">
+                                                            <div className="absolute left-0 right-0 mt-1.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-20 overflow-hidden animate-in fade-in duration-100 max-h-60 flex flex-col">
                                                                 <div className="p-2 border-b border-slate-100 dark:border-slate-800 shrink-0">
                                                                     <input
                                                                         type="text"
@@ -439,7 +439,7 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
                                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><AlertCircle className="w-3.5 h-3.5 text-indigo-500" /> Causas Posibles:</span>
                                                     <div className="space-y-2">
                                                         {diagnosis.causasPosibles.map((c, i) => (
-                                                            <div key={i} className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-3 space-y-1.5 shadow-sm">
+                                                            <div key={i} className="bg-card text-card-foreground border border-slate-100 dark:border-slate-800/80 rounded-2xl p-3 space-y-1.5 shadow-sm">
                                                                 <div className="flex justify-between items-start">
                                                                     <p className="font-bold text-slate-800 dark:text-slate-200 text-xs flex-1">{c.causa}</p>
                                                                     <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${getProbabilityBadge(c.probabilidad)}`}>{c.probabilidad}</span>
@@ -476,12 +476,12 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
                                                 <div className="border border-slate-100 dark:border-slate-800 rounded-3xl p-4 bg-slate-50/50 dark:bg-slate-950/20 space-y-3.5 max-h-[220px] overflow-y-auto">
                                                     {messages.map((msg, i) => (
                                                         <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                                            <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs ${msg.role === 'user' ? 'bg-indigo-600 text-white font-bold rounded-tr-none' : 'bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-650 dark:text-slate-300 font-bold rounded-tl-none'}`}>
+                                                            <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs ${msg.role === 'user' ? 'bg-indigo-600 text-white font-bold rounded-tr-none' : 'bg-card text-card-foreground border border-slate-100 dark:border-slate-800 text-slate-650 dark:text-slate-300 font-bold rounded-tl-none'}`}>
                                                                 {msg.content}
                                                             </div>
                                                         </div>
                                                     ))}
-                                                    {followUpLoading && <div className="flex justify-start"><div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl rounded-tl-none px-3.5 py-2.5 flex items-center gap-2"><Loader2 className="w-4 h-4 text-purple-600 animate-spin" /><span className="text-xs font-bold text-slate-400 animate-pulse">Gemini refinando...</span></div></div>}
+                                                    {followUpLoading && <div className="flex justify-start"><div className="bg-card text-card-foreground border border-slate-100 dark:border-slate-800 rounded-2xl rounded-tl-none px-3.5 py-2.5 flex items-center gap-2"><Loader2 className="w-4 h-4 text-purple-600 animate-spin" /><span className="text-xs font-bold text-slate-400 animate-pulse">Gemini refinando...</span></div></div>}
                                                     <div ref={messagesEndRef} />
                                                 </div>
                                             </div>
@@ -529,7 +529,7 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
                         {/* FOOTER (INPUTS) */}
                         {activeMode === 'FIELD' && diagnosis && (
                             <div className="shrink-0">
-                                <form onSubmit={handleSendFollowUp} className="p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 flex gap-2">
+                                <form onSubmit={handleSendFollowUp} className="p-4 border-t border-slate-100 dark:border-slate-800 bg-card text-card-foreground flex gap-2">
                                     <input type="text" placeholder="Ej. Medí continuidad y da infinito..." value={followUpText} onChange={e => setFollowUpText(e.target.value)} disabled={followUpLoading} className="flex-1 bg-background text-foreground/60 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs font-bold focus:border-indigo-500 outline-none transition-all disabled:opacity-70" />
                                     <button type="submit" disabled={!followUpText.trim() || followUpLoading} className="px-4 bg-indigo-600 text-white rounded-xl flex items-center justify-center hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50"><Send className="w-4 h-4" /></button>
                                 </form>
@@ -541,7 +541,7 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
 
                         {activeMode === 'SYSTEM' && (
                             <div className="shrink-0">
-                                <form onSubmit={handleSystemQuery} className="p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 flex gap-2">
+                                <form onSubmit={handleSystemQuery} className="p-4 border-t border-slate-100 dark:border-slate-800 bg-card text-card-foreground flex gap-2">
                                     <input type="text" placeholder="Ej. ¿Cuántas horas trabajé este mes?" value={systemQuery} onChange={e => setSystemQuery(e.target.value)} disabled={loading} className="flex-1 bg-background text-foreground/60 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs font-bold focus:border-blue-500 outline-none transition-all disabled:opacity-70" />
                                     <button type="submit" disabled={!systemQuery.trim() || loading} className="px-4 bg-primary text-white rounded-xl flex items-center justify-center hover:bg-primary/90 active:scale-95 transition-all disabled:opacity-50"><Send className="w-4 h-4" /></button>
                                 </form>

@@ -149,7 +149,7 @@ export default function DatasetFormModal({ dataset, operators, onClose, onSave }
     const modalContent = (
         <div className="fixed inset-0 bg-slate-50 dark:bg-slate-950 z-[9999] flex flex-col animate-in fade-in duration-200">
             {/* Header */}
-            <header className="h-14 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 shrink-0 shadow-sm z-10">
+            <header className="h-14 bg-card text-card-foreground border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 shrink-0 shadow-sm z-10">
                 <div className="flex items-center gap-3 flex-1">
                     <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center">
                         <Database className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
@@ -178,7 +178,7 @@ export default function DatasetFormModal({ dataset, operators, onClose, onSave }
 
             <div className="flex-1 flex overflow-hidden">
                 {/* Left Sidebar: Schema Browser */}
-                <aside className="w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col shrink-0">
+                <aside className="w-72 bg-card text-card-foreground border-r border-slate-200 dark:border-slate-800 flex flex-col shrink-0">
                     <div className="p-3 border-b border-slate-200 dark:border-slate-800 bg-background text-foreground/50">
                         <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
                             <Table2 className="w-4 h-4" /> Esquema de Datos
@@ -284,7 +284,7 @@ export default function DatasetFormModal({ dataset, operators, onClose, onSave }
 
                     {/* Results Panel */}
                     {(previewData !== null || previewError || previewLoading) && (
-                        <div className="h-64 border-t border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col shrink-0 animate-in slide-in-from-bottom-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-20">
+                        <div className="h-64 border-t border-slate-300 dark:border-slate-800 bg-card text-card-foreground flex flex-col shrink-0 animate-in slide-in-from-bottom-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-20">
                             <div className="flex items-center justify-between px-4 py-2 border-b border-slate-200 dark:border-slate-800 bg-background text-foreground/50">
                                 <h3 className="text-xs font-bold text-slate-600 dark:text-slate-300">Resultados de Prueba</h3>
                                 <button onClick={() => { setPreviewData(null); setPreviewError(null); }} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded">
@@ -292,7 +292,7 @@ export default function DatasetFormModal({ dataset, operators, onClose, onSave }
                                 </button>
                             </div>
                             
-                            <div className="flex-1 overflow-auto bg-white dark:bg-slate-900 p-0 relative">
+                            <div className="flex-1 overflow-auto bg-card text-card-foreground p-0 relative">
                                 {previewLoading ? (
                                     <div className="absolute inset-0 flex items-center justify-center text-slate-400">
                                         <div className="w-6 h-6 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-2" />
@@ -348,7 +348,7 @@ export default function DatasetFormModal({ dataset, operators, onClose, onSave }
                 </main>
 
                 {/* Right Sidebar: Quick Actions & Settings */}
-                <aside className="w-80 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 flex flex-col shrink-0 overflow-y-auto">
+                <aside className="w-80 bg-card text-card-foreground border-l border-slate-200 dark:border-slate-800 flex flex-col shrink-0 overflow-y-auto">
                     
                     {/* Settings Section */}
                     <div className="p-4 border-b border-slate-200 dark:border-slate-800 space-y-4">

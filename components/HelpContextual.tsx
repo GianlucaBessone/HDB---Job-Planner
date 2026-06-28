@@ -58,7 +58,7 @@ export default function HelpContextual({ slug, iconType = 'help' }: HelpContextu
           
           {/* Slide-over Panel */}
           <div
-            className="fixed inset-y-0 right-0 z-50 flex flex-col min-h-0 bg-white dark:bg-slate-900 shadow-2xl transition-transform duration-300 ease-in-out w-full max-w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl"
+            className="fixed inset-y-0 right-0 z-50 flex flex-col min-h-0 bg-card text-card-foreground shadow-2xl transition-transform duration-300 ease-in-out w-full max-w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl"
             
           >
             {/* Header */}

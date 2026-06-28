@@ -222,7 +222,7 @@ function KpiFormModal({ kpi, okrs, operators, datasets, onClose, onSave }: any) 
                     {!kpi && (
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">OKR Asociado *</label>
-                            <select value={form.okrId} onChange={e => setForm(p => ({ ...p, okrId: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none">
+                            <select value={form.okrId} onChange={e => setForm(p => ({ ...p, okrId: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
                                 <option value="">Seleccionar OKR...</option>
                                 {okrs.map((o: any) => <option key={o.id} value={o.id}>{o.codigoOkr} — {o.nombre}</option>)}
                             </select>
@@ -230,30 +230,30 @@ function KpiFormModal({ kpi, okrs, operators, datasets, onClose, onSave }: any) 
                     )}
                     <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nombre *</label>
-                        <input value={form.nombre} onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none" placeholder="Ej: Índice de satisfacción del cliente" />
+                        <input value={form.nombre} onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" placeholder="Ej: Índice de satisfacción del cliente" />
                     </div>
                     <div className="grid grid-cols-3 gap-4">
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Valor Objetivo *</label>
-                            <input type="number" step="any" value={form.valorObjetivo} onChange={e => setForm(p => ({ ...p, valorObjetivo: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none" />
+                            <input type="number" step="any" value={form.valorObjetivo} onChange={e => setForm(p => ({ ...p, valorObjetivo: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" />
                         </div>
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Mín. Aceptable</label>
-                            <input type="number" step="any" value={form.valorMinimoAceptable} onChange={e => setForm(p => ({ ...p, valorMinimoAceptable: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none" />
+                            <input type="number" step="any" value={form.valorMinimoAceptable} onChange={e => setForm(p => ({ ...p, valorMinimoAceptable: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" />
                         </div>
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Máx. Esperado</label>
-                            <input type="number" step="any" value={form.valorMaximoEsperado} onChange={e => setForm(p => ({ ...p, valorMaximoEsperado: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none" />
+                            <input type="number" step="any" value={form.valorMaximoEsperado} onChange={e => setForm(p => ({ ...p, valorMaximoEsperado: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" />
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Unidad de Medida</label>
-                            <input value={form.unidadMedida} onChange={e => setForm(p => ({ ...p, unidadMedida: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none" placeholder="Ej: %, puntos, horas" />
+                            <input value={form.unidadMedida} onChange={e => setForm(p => ({ ...p, unidadMedida: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" placeholder="Ej: %, puntos, horas" />
                         </div>
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Frecuencia Medición</label>
-                            <select value={form.frecuenciaMedicion} onChange={e => setForm(p => ({ ...p, frecuenciaMedicion: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none">
+                            <select value={form.frecuenciaMedicion} onChange={e => setForm(p => ({ ...p, frecuenciaMedicion: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
                                 <option value="">Seleccionar...</option>
                                 <option value="Diario">Diario</option>
                                 <option value="Semanal">Semanal</option>
@@ -267,24 +267,24 @@ function KpiFormModal({ kpi, okrs, operators, datasets, onClose, onSave }: any) 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Responsable Carga</label>
-                            <select value={form.responsableCargaId} onChange={e => setForm(p => ({ ...p, responsableCargaId: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none">
+                            <select value={form.responsableCargaId} onChange={e => setForm(p => ({ ...p, responsableCargaId: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
                                 <option value="">Seleccionar...</option>
                                 {operators.map((op: any) => <option key={op.id} value={op.id}>{op.nombreCompleto}</option>)}
                             </select>
                         </div>
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Fuente de Datos</label>
-                            <input value={form.fuenteDatos} onChange={e => setForm(p => ({ ...p, fuenteDatos: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none" placeholder="Ej: Sistema ERP, encuestas" />
+                            <input value={form.fuenteDatos} onChange={e => setForm(p => ({ ...p, fuenteDatos: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" placeholder="Ej: Sistema ERP, encuestas" />
                         </div>
                     </div>
                     <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Fórmula de Cálculo</label>
-                        <input value={form.formulaCalculo} onChange={e => setForm(p => ({ ...p, formulaCalculo: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none" placeholder="Ej: (Clientes satisfechos / Total encuestas) x 100" />
+                        <input value={form.formulaCalculo} onChange={e => setForm(p => ({ ...p, formulaCalculo: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" placeholder="Ej: (Clientes satisfechos / Total encuestas) x 100" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Tipo de Registro</label>
-                            <select value={form.tipoRegistro} onChange={e => setForm(p => ({ ...p, tipoRegistro: e.target.value, datasetId: e.target.value === 'Manual' ? '' : p.datasetId }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none">
+                            <select value={form.tipoRegistro} onChange={e => setForm(p => ({ ...p, tipoRegistro: e.target.value, datasetId: e.target.value === 'Manual' ? '' : p.datasetId }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
                                 <option value="Manual">Manual</option>
                                 <option value="Dataset">Dataset (Automático)</option>
                             </select>
@@ -294,7 +294,7 @@ function KpiFormModal({ kpi, okrs, operators, datasets, onClose, onSave }: any) 
                         <div className="bg-muted/50 text-muted-foreground p-4 rounded-xl space-y-4 border border-slate-200 dark:border-slate-700">
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Dataset Origen *</label>
-                                <select value={form.datasetId} onChange={e => setForm(p => ({ ...p, datasetId: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none">
+                                <select value={form.datasetId} onChange={e => setForm(p => ({ ...p, datasetId: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
                                     <option value="">Seleccionar Dataset...</option>
                                     {datasets.map((d: any) => <option key={d.id} value={d.id}>{d.codigoDataset} — {d.nombre}</option>)}
                                 </select>
@@ -302,11 +302,11 @@ function KpiFormModal({ kpi, okrs, operators, datasets, onClose, onSave }: any) 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Campo Valor *</label>
-                                    <input value={form.campoValor} onChange={e => setForm(p => ({ ...p, campoValor: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none" placeholder="Ej: cantidad_ventas" />
+                                    <input value={form.campoValor} onChange={e => setForm(p => ({ ...p, campoValor: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" placeholder="Ej: cantidad_ventas" />
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Agregación (Opcional)</label>
-                                    <select value={form.funcionAgregacion} onChange={e => setForm(p => ({ ...p, funcionAgregacion: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none">
+                                    <select value={form.funcionAgregacion} onChange={e => setForm(p => ({ ...p, funcionAgregacion: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
                                         <option value="">Ninguna (Primer valor)</option>
                                         <option value="SUM">Suma (SUM)</option>
                                         <option value="AVG">Promedio (AVG)</option>
@@ -369,11 +369,11 @@ function MedicionModal({ kpi, onClose, onSave }: { kpi: any; onClose: () => void
                     </div>
                     <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Fecha Medición</label>
-                        <input type="date" value={fecha} onChange={e => setFecha(e.target.value)} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none" />
+                        <input type="date" value={fecha} onChange={e => setFecha(e.target.value)} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" />
                     </div>
                     <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Valor Obtenido *</label>
-                        <input type="number" step="any" value={valor} onChange={e => setValor(e.target.value)} required className="w-full h-12 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-lg font-bold bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" placeholder="0" autoFocus />
+                        <input type="number" step="any" value={valor} onChange={e => setValor(e.target.value)} required className="w-full h-12 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-lg font-bold bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" placeholder="0" autoFocus />
                     </div>
                     {previewEstado && (
                         <div className={`rounded-xl p-3 flex items-center justify-center gap-2 text-sm font-bold ${
@@ -388,7 +388,7 @@ function MedicionModal({ kpi, onClose, onSave }: { kpi: any; onClose: () => void
                     )}
                     <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Comentario</label>
-                        <textarea value={comentario} onChange={e => setComentario(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none resize-none" />
+                        <textarea value={comentario} onChange={e => setComentario(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none resize-none" />
                     </div>
                     <div className="flex justify-end gap-3 pt-2">
                         <button type="button" onClick={onClose} className="h-10 px-5 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Cancelar</button>

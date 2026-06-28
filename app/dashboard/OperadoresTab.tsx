@@ -1416,7 +1416,7 @@ export default function OperadoresTab() {
                                         <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
                                             Evalúa las habilidades técnicas validadas y vigentes en el mes. El sistema valora la especialización, midiendo el peso acumulado contra una meta base de 25 puntos (perfil especialista), permitiendo que técnicos enfocados alcancen el 100% sin ser penalizados por no poseer la totalidad de las 8 disciplinas posibles.
                                         </p>
-                                        <div className="text-[10px] bg-white dark:bg-slate-900 p-2 rounded-xl border border-indigo-100/30 dark:border-slate-800 font-mono text-slate-500">
+                                        <div className="text-[10px] bg-card text-card-foreground p-2 rounded-xl border border-indigo-100/30 dark:border-slate-800 font-mono text-slate-500">
                                             Score = Min(100, Round((Sumatoria_Pesos_Activos / Meta_Especialista_25) * 100))
                                         </div>
                                     </div>
@@ -1430,7 +1430,7 @@ export default function OperadoresTab() {
                                         <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
                                             Combina la satisfacción CSAT (promedio de atención, calidad y tiempo del cliente, escala 1-10) y el impacto NPS. Promotores (9-10) otorgan 100 pts, Pasivos (7-8) 70 pts y Detractores (0-6) 0 pts.
                                         </p>
-                                        <div className="text-[10px] bg-white dark:bg-slate-900 p-2 rounded-xl border border-amber-100/30 dark:border-slate-800 font-mono text-slate-500">
+                                        <div className="text-[10px] bg-card text-card-foreground p-2 rounded-xl border border-amber-100/30 dark:border-slate-800 font-mono text-slate-500">
                                             Score = (CSAT * 10 * 0.70) + (Avg_NPS_Impact * 0.30)
                                         </div>
                                     </div>
@@ -1444,7 +1444,7 @@ export default function OperadoresTab() {
                                         <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
                                             Calcula la presencia efectiva sobre días hábiles. Las faltas justificadas (médicas, licencias) no penalizan y se restan de los días laborables del mes. Las faltas injustificadas reducen de forma matemáticamente proporcional la tasa de cumplimiento del pilar de asistencia.
                                         </p>
-                                        <div className="text-[10px] bg-white dark:bg-slate-900 p-2 rounded-xl border border-emerald-100/30 dark:border-slate-800 font-mono text-slate-500">
+                                        <div className="text-[10px] bg-card text-card-foreground p-2 rounded-xl border border-emerald-100/30 dark:border-slate-800 font-mono text-slate-500">
                                             Asistencia = ((Hábiles - Justificadas - Injustificadas) / (Hábiles - Justificadas)) * 100
                                         </div>
                                     </div>
@@ -1458,7 +1458,7 @@ export default function OperadoresTab() {
                                         <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
                                             Evalúa la precisión y consistencia del registro de jornada. Descuenta puntos si hay fichadas sospechosas y aplica una penalización (máx 20 pts) si la discrepancia entre horas declaradas manualmente y horas registradas por fichador automático supera el 15%.
                                         </p>
-                                        <div className="text-[10px] bg-white dark:bg-slate-900 p-2 rounded-xl border border-sky-100/30 dark:border-slate-800 font-mono text-slate-500">
+                                        <div className="text-[10px] bg-card text-card-foreground p-2 rounded-xl border border-sky-100/30 dark:border-slate-800 font-mono text-slate-500">
                                             Score = 100 - (% Suspicious * 100) - Penalidad_Discrepancia
                                         </div>
                                     </div>
@@ -1574,7 +1574,7 @@ export default function OperadoresTab() {
                                     {SCORE_CONFIG_ITEMS.filter(i => i.category === 'base').map(item => (
                                         <div key={item.key} className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all ${
                                             scoreConfig[item.key]
-                                                ? 'bg-white dark:bg-slate-900/50 border-slate-200 dark:border-slate-700'
+                                                ? 'bg-card text-card-foreground/50 border-slate-200 dark:border-slate-700'
                                                 : 'bg-background text-foreground/80 border-slate-100 dark:border-slate-800 opacity-60'
                                         }`}>
                                             <div className="flex items-center gap-3">
@@ -1607,7 +1607,7 @@ export default function OperadoresTab() {
                                     {SCORE_CONFIG_ITEMS.filter(i => i.category === 'modifier').map(item => (
                                         <div key={item.key} className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all ${
                                             scoreConfig[item.key]
-                                                ? 'bg-white dark:bg-slate-900/50 border-slate-200 dark:border-slate-700'
+                                                ? 'bg-card text-card-foreground/50 border-slate-200 dark:border-slate-700'
                                                 : 'bg-background text-foreground/80 border-slate-100 dark:border-slate-800 opacity-60'
                                         }`}>
                                             <div className="flex items-center gap-3">

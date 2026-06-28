@@ -133,27 +133,27 @@ function PlanFormModal({ plan, operators, onClose, onSave }: any) {
                 <form onSubmit={handleSubmit} className="p-5 space-y-4">
                     <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Descripción *</label>
-                        <textarea value={form.descripcion} onChange={e => setForm(p => ({ ...p, descripcion: e.target.value }))} rows={3} required className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none resize-none" />
+                        <textarea value={form.descripcion} onChange={e => setForm(p => ({ ...p, descripcion: e.target.value }))} rows={3} required className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none resize-none" />
                     </div>
                     <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Causa del Incumplimiento</label>
-                        <textarea value={form.causa} onChange={e => setForm(p => ({ ...p, causa: e.target.value }))} rows={2} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none resize-none" />
+                        <textarea value={form.causa} onChange={e => setForm(p => ({ ...p, causa: e.target.value }))} rows={2} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none resize-none" />
                     </div>
                     <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Acción Correctiva</label>
-                        <textarea value={form.accionCorrectiva} onChange={e => setForm(p => ({ ...p, accionCorrectiva: e.target.value }))} rows={2} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none resize-none" />
+                        <textarea value={form.accionCorrectiva} onChange={e => setForm(p => ({ ...p, accionCorrectiva: e.target.value }))} rows={2} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none resize-none" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Responsable</label>
-                            <select value={form.responsableId} onChange={e => setForm(p => ({ ...p, responsableId: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none">
+                            <select value={form.responsableId} onChange={e => setForm(p => ({ ...p, responsableId: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
                                 <option value="">Seleccionar...</option>
                                 {operators.map((op: any) => <option key={op.id} value={op.id}>{op.nombreCompleto}</option>)}
                             </select>
                         </div>
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Estado</label>
-                            <select value={form.estado} onChange={e => setForm(p => ({ ...p, estado: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none">
+                            <select value={form.estado} onChange={e => setForm(p => ({ ...p, estado: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
                                 <option value="Pendiente">Pendiente</option>
                                 <option value="En Curso">En Curso</option>
                                 <option value="Cerrado">Cerrado</option>
@@ -163,11 +163,11 @@ function PlanFormModal({ plan, operators, onClose, onSave }: any) {
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Fecha Compromiso</label>
-                            <input type="date" value={form.fechaCompromiso} onChange={e => setForm(p => ({ ...p, fechaCompromiso: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none" />
+                            <input type="date" value={form.fechaCompromiso} onChange={e => setForm(p => ({ ...p, fechaCompromiso: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" />
                         </div>
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Fecha Cierre</label>
-                            <input type="date" value={form.fechaCierre} onChange={e => setForm(p => ({ ...p, fechaCierre: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none" />
+                            <input type="date" value={form.fechaCierre} onChange={e => setForm(p => ({ ...p, fechaCierre: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" />
                         </div>
                     </div>
                     <div className="flex justify-end gap-3 pt-2">

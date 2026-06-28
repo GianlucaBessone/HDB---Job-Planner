@@ -691,7 +691,7 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                                                                         {analysisResult.anomaliasDetectadas.length > 0 ? (
                                                                             <div className="space-y-2">
                                                                                 {analysisResult.anomaliasDetectadas.map((a: any, idx: number) => (
-                                                                                    <div key={idx} className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-xl p-3 space-y-1 shadow-sm">
+                                                                                    <div key={idx} className="bg-card text-card-foreground border border-slate-100 dark:border-slate-800/80 rounded-xl p-3 space-y-1 shadow-sm">
                                                                                         <div className="flex justify-between items-center gap-2">
                                                                                             <span className="font-bold text-xs text-slate-800 dark:text-slate-200">{a.anomalia}</span>
                                                                                             <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${
@@ -813,7 +813,7 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                         <div className="bg-background text-foreground/40 rounded-2xl p-4 border border-slate-100 dark:border-slate-800 space-y-3">
                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Observaciones Sugeridas / Reporte Final:</label>
                             {os.comentario ? (
-                                <p className="text-xs font-medium text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed bg-white dark:bg-slate-950 p-3 rounded-xl border border-slate-150 dark:border-slate-850">
+                                <p className="text-xs font-medium text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed bg-card text-card-foreground p-3 rounded-xl border border-slate-150 dark:border-slate-850">
                                     {os.comentario}
                                 </p>
                             ) : (

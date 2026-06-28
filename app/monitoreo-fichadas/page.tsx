@@ -651,7 +651,7 @@ export default function FichadasAdminPage() {
             {isCruceOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 overflow-hidden">
                     <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsCruceOpen(false)} />
-                    <div className="relative bg-white dark:bg-slate-950 w-full max-w-7xl h-[90vh] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-300">
+                    <div className="relative bg-card text-card-foreground w-full max-w-7xl h-[90vh] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-300">
                         {/* Header */}
                         <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800/50 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/20">
                             <div className="flex items-center gap-4">
@@ -738,7 +738,7 @@ export default function FichadasAdminPage() {
                                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                                     <div 
                                         onClick={() => setCruceStatusFilter(null)}
-                                        className={`bg-white dark:bg-slate-900 p-4 rounded-3xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all active:scale-95 ${cruceStatusFilter === null ? 'border-indigo-500 ring-2 ring-indigo-500/20 shadow-md scale-[1.02]' : 'border-slate-100 dark:border-slate-800'}`}
+                                        className={`bg-card text-card-foreground p-4 rounded-3xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all active:scale-95 ${cruceStatusFilter === null ? 'border-indigo-500 ring-2 ring-indigo-500/20 shadow-md scale-[1.02]' : 'border-slate-100 dark:border-slate-800'}`}
                                     >
                                         <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Días Evaluados</span>
                                         <span className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-2">{cruceRows.length}</span>
@@ -783,7 +783,7 @@ export default function FichadasAdminPage() {
                             )}
 
                             {/* Table */}
-                            <div className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
+                            <div className="bg-card text-card-foreground rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
                                 {cruceLoading ? (
                                     <div className="p-20 text-center space-y-3">
                                         <div className="inline-block w-8 h-8 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>

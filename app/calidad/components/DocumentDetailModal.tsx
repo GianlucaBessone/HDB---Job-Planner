@@ -1871,7 +1871,7 @@ export default function DocumentDetailModal({
                                   setNewTerm(e.target.value.toUpperCase())
                                 }
                                 placeholder="EJ"
-                                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs font-bold outline-none focus:border-indigo-500"
+                                className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs font-bold outline-none focus:border-indigo-500"
                               />
                             </div>
                             <div className="flex-1">
@@ -1882,7 +1882,7 @@ export default function DocumentDetailModal({
                                 value={newDef}
                                 onChange={(e) => setNewDef(e.target.value)}
                                 placeholder="Descripción del término..."
-                                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-indigo-500"
+                                className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-indigo-500"
                               />
                             </div>
                             <button
@@ -2052,7 +2052,7 @@ export default function DocumentDetailModal({
                               value={customRefText}
                               onChange={(e) => setCustomRefText(e.target.value)}
                               placeholder="O agregar referencia manual (ej: ISO 9001:2015)..."
-                              className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-indigo-500"
+                              className="flex-1 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-indigo-500"
                             />
                             <button
                               onClick={() => {
@@ -2837,7 +2837,7 @@ export default function DocumentDetailModal({
                                   value={comments}
                                   onChange={(e) => setComments(e.target.value)}
                                   placeholder="Describa brevemente qué cambios se deben realizar para estar de acuerdo..."
-                                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-medium focus:border-indigo-500 outline-none h-20 resize-none"
+                                  className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm font-medium focus:border-indigo-500 outline-none h-20 resize-none"
                                 />
                                 <div className="flex justify-end">
                                   <button
@@ -2858,7 +2858,7 @@ export default function DocumentDetailModal({
                                   Firma Digital de Conformidad{" "}
                                   <span className="text-red-500">*</span>
                                 </label>
-                                <div className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden bg-white dark:bg-slate-950 p-4">
+                                <div className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden bg-card text-card-foreground p-4">
                                   <SignatureButton 
                                     documentId={documentId} 
                                     documentVersion={`v${doc.versionMayor}.${doc.versionMenor}`}

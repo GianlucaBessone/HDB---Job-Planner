@@ -367,7 +367,7 @@ export default function EscanearFactura() {
         {!capturedImage && (
           <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-muted text-muted-foreground">
             
-            <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 max-w-md w-full shadow-2xl border border-slate-200 dark:border-slate-700 text-center flex flex-col items-center">
+            <div className="bg-card text-card-foreground rounded-3xl p-8 max-w-md w-full shadow-2xl border border-slate-200 dark:border-slate-700 text-center flex flex-col items-center">
               
               <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-6">
                 <Camera className="w-10 h-10 text-blue-600 dark:text-blue-400" />
@@ -462,7 +462,7 @@ export default function EscanearFactura() {
 
         {/* Validation Form */}
         {ocrData && (
-          <div className="absolute inset-0 bg-white dark:bg-slate-900 text-slate-900 dark:text-white overflow-y-auto p-4 md:p-8">
+          <div className="absolute inset-0 bg-card text-card-foreground text-slate-900 dark:text-white overflow-y-auto p-4 md:p-8">
             <div className="max-w-3xl mx-auto space-y-6">
               
               <div className="flex items-center justify-between">
@@ -485,11 +485,11 @@ export default function EscanearFactura() {
                     <div className="space-y-3">
                       <div>
                         <label className="block text-xs text-slate-500">Razón Social</label>
-                        <input type="text" value={proveedor.razonSocial} onChange={e => setProveedor({...proveedor, razonSocial: e.target.value})} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1" />
+                        <input type="text" value={proveedor.razonSocial} onChange={e => setProveedor({...proveedor, razonSocial: e.target.value})} className="w-full bg-card text-card-foreground border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1" />
                       </div>
                       <div>
                         <label className="block text-xs text-slate-500">CUIT</label>
-                        <input type="text" value={proveedor.cuit} onChange={e => setProveedor({...proveedor, cuit: e.target.value})} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
+                        <input type="text" value={proveedor.cuit} onChange={e => setProveedor({...proveedor, cuit: e.target.value})} className="w-full bg-card text-card-foreground border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
                       </div>
                     </div>
                   </div>
@@ -501,14 +501,14 @@ export default function EscanearFactura() {
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="block text-xs text-slate-500">Fecha Emisión</label>
-                          <input type="date" value={comprobante.fechaEmision} onChange={e => setComprobante({...comprobante, fechaEmision: e.target.value})} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1" />
+                          <input type="date" value={comprobante.fechaEmision} onChange={e => setComprobante({...comprobante, fechaEmision: e.target.value})} className="w-full bg-card text-card-foreground border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1" />
                         </div>
                         <div>
                           <label className="block text-xs text-slate-500">Tipo de Comprobante</label>
                           <select
                             value={comprobante.tipoComprobante}
                             onChange={(e) => setComprobante({ ...comprobante, tipoComprobante: e.target.value })}
-                            className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1"
+                            className="w-full bg-card text-card-foreground border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1"
                           >
                             <option value="Factura A">Factura A</option>
                             <option value="Factura B">Factura B</option>
@@ -521,11 +521,11 @@ export default function EscanearFactura() {
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="block text-xs text-slate-500">Pto. Vta.</label>
-                          <input type="text" value={comprobante.puntoVenta} onChange={e => setComprobante({...comprobante, puntoVenta: e.target.value})} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
+                          <input type="text" value={comprobante.puntoVenta} onChange={e => setComprobante({...comprobante, puntoVenta: e.target.value})} className="w-full bg-card text-card-foreground border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
                         </div>
                         <div>
                           <label className="block text-xs text-slate-500">Nro.</label>
-                          <input type="text" value={comprobante.numeroComprobante} onChange={e => setComprobante({...comprobante, numeroComprobante: e.target.value})} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
+                          <input type="text" value={comprobante.numeroComprobante} onChange={e => setComprobante({...comprobante, numeroComprobante: e.target.value})} className="w-full bg-card text-card-foreground border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
                         </div>
                       </div>
                       <div>
@@ -549,19 +549,19 @@ export default function EscanearFactura() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                     <div>
                       <label className="block text-xs text-slate-500">Neto General</label>
-                      <input type="number" step="0.01" value={totales.netoGeneral} onChange={e => setTotales({...totales, netoGeneral: parseFloat(e.target.value) || 0})} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
+                      <input type="number" step="0.01" value={totales.netoGeneral} onChange={e => setTotales({...totales, netoGeneral: parseFloat(e.target.value) || 0})} className="w-full bg-card text-card-foreground border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
                     </div>
                     <div>
                       <label className="block text-xs text-slate-500">Neto 21%</label>
-                      <input type="number" step="0.01" value={totales.neto21} onChange={e => setTotales({...totales, neto21: parseFloat(e.target.value) || 0})} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
+                      <input type="number" step="0.01" value={totales.neto21} onChange={e => setTotales({...totales, neto21: parseFloat(e.target.value) || 0})} className="w-full bg-card text-card-foreground border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
                     </div>
                     <div>
                       <label className="block text-xs text-slate-500">Neto 10.5%</label>
-                      <input type="number" step="0.01" value={totales.neto10_5} onChange={e => setTotales({...totales, neto10_5: parseFloat(e.target.value) || 0})} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
+                      <input type="number" step="0.01" value={totales.neto10_5} onChange={e => setTotales({...totales, neto10_5: parseFloat(e.target.value) || 0})} className="w-full bg-card text-card-foreground border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
                     </div>
                     <div>
                       <label className="block text-xs text-slate-500">Neto 27%</label>
-                      <input type="number" step="0.01" value={totales.neto27} onChange={e => setTotales({...totales, neto27: parseFloat(e.target.value) || 0})} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
+                      <input type="number" step="0.01" value={totales.neto27} onChange={e => setTotales({...totales, neto27: parseFloat(e.target.value) || 0})} className="w-full bg-card text-card-foreground border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
                     </div>
                   </div>
 
@@ -569,19 +569,19 @@ export default function EscanearFactura() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                     <div>
                       <label className="block text-xs text-slate-500">IVA 21%</label>
-                      <input type="number" step="0.01" value={totales.iva21} onChange={e => setTotales({...totales, iva21: parseFloat(e.target.value) || 0})} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
+                      <input type="number" step="0.01" value={totales.iva21} onChange={e => setTotales({...totales, iva21: parseFloat(e.target.value) || 0})} className="w-full bg-card text-card-foreground border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
                     </div>
                     <div>
                       <label className="block text-xs text-slate-500">IVA 10.5%</label>
-                      <input type="number" step="0.01" value={totales.iva10_5} onChange={e => setTotales({...totales, iva10_5: parseFloat(e.target.value) || 0})} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
+                      <input type="number" step="0.01" value={totales.iva10_5} onChange={e => setTotales({...totales, iva10_5: parseFloat(e.target.value) || 0})} className="w-full bg-card text-card-foreground border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
                     </div>
                     <div>
                       <label className="block text-xs text-slate-500">IVA 27%</label>
-                      <input type="number" step="0.01" value={totales.iva27} onChange={e => setTotales({...totales, iva27: parseFloat(e.target.value) || 0})} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
+                      <input type="number" step="0.01" value={totales.iva27} onChange={e => setTotales({...totales, iva27: parseFloat(e.target.value) || 0})} className="w-full bg-card text-card-foreground border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
                     </div>
                     <div>
                       <label className="block text-xs text-slate-500">No Gravados</label>
-                      <input type="number" step="0.01" value={totales.noGravados} onChange={e => setTotales({...totales, noGravados: parseFloat(e.target.value) || 0})} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
+                      <input type="number" step="0.01" value={totales.noGravados} onChange={e => setTotales({...totales, noGravados: parseFloat(e.target.value) || 0})} className="w-full bg-card text-card-foreground border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
                     </div>
                   </div>
 
@@ -589,11 +589,11 @@ export default function EscanearFactura() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
                       <label className="block text-xs text-slate-500">Perc. IVA</label>
-                      <input type="number" step="0.01" value={totales.percepcionesIva} onChange={e => setTotales({...totales, percepcionesIva: parseFloat(e.target.value) || 0})} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
+                      <input type="number" step="0.01" value={totales.percepcionesIva} onChange={e => setTotales({...totales, percepcionesIva: parseFloat(e.target.value) || 0})} className="w-full bg-card text-card-foreground border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
                     </div>
                     <div>
                       <label className="block text-xs text-slate-500">Perc. IIBB</label>
-                      <input type="number" step="0.01" value={totales.percepcionesIibb} onChange={e => setTotales({...totales, percepcionesIibb: parseFloat(e.target.value) || 0})} className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
+                      <input type="number" step="0.01" value={totales.percepcionesIibb} onChange={e => setTotales({...totales, percepcionesIibb: parseFloat(e.target.value) || 0})} className="w-full bg-card text-card-foreground border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm mt-1 font-mono" />
                     </div>
                     <div className="md:col-span-2">
                       <label className="block text-xs text-slate-500 font-bold text-blue-600 dark:text-blue-400">Total a Pagar</label>

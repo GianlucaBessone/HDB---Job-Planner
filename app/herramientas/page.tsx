@@ -545,7 +545,7 @@ function HerramientasTab({ user }: { user: any }) {
                                             setReplicateCantidad(val === '' ? '' : Math.min(100, Math.max(1, parseInt(val) || 1)));
                                         }}
                                         placeholder="Cantidad"
-                                        className="w-28 bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-800 rounded-xl py-2.5 px-4 text-sm font-bold text-center outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                                        className="w-28 bg-card text-card-foreground border border-indigo-200 dark:border-indigo-800 rounded-xl py-2.5 px-4 text-sm font-bold text-center outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                                     />
                                     <button
                                         onClick={handleReplicate}
@@ -1469,7 +1469,7 @@ function VerificacionTab({ user }: { user: any }) {
                                                 </h4>
                                                 <div className="space-y-2.5">
                                                     {conControl.map((h: any) => (
-                                                        <div key={h.id} className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm">
+                                                        <div key={h.id} className="p-3.5 rounded-2xl bg-card text-card-foreground border border-slate-200 dark:border-slate-700 shadow-sm">
                                                             <div className="flex justify-between items-start mb-2 gap-3">
                                                                 <div className="flex-1">
                                                                     <span className="text-sm font-black text-slate-800 dark:text-slate-100 block leading-tight">{h.nombre}</span>

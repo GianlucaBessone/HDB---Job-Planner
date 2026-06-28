@@ -669,7 +669,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                                     value={pin}
                                                     onChange={(e) => setPin(e.target.value.replace(/[^0-9]/g, ''))}
                                                     placeholder="Ingresa tu PIN"
-                                                    className="w-full h-[44px] md:h-[50px] bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-3 px-4 text-sm font-bold tracking-widest outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
+                                                    className="w-full h-[44px] md:h-[50px] bg-card text-card-foreground/80 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-3 px-4 text-sm font-bold tracking-widest outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
                                                 />
                                                 <button
                                                     type="button"

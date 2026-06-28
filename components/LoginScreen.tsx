@@ -100,7 +100,7 @@ export default function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (user:
 
     if (isLoading) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-950 transition-colors duration-300">
+            <div className="min-h-screen flex flex-col items-center justify-center bg-card text-card-foreground transition-colors duration-300">
                 <div className="flex flex-col items-center text-center px-4 animate-in fade-in duration-500">
                     {/* Logo Squircle wrapper with modern shadow */}
                     <div className="relative w-28 h-28 mb-6 transition-transform duration-300">

@@ -142,11 +142,11 @@ function GraficoFormModal({ grafico, datasets, onClose, onSave }: { grafico: any
                 <form onSubmit={handleSubmit} className="p-5 space-y-4">
                     <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nombre *</label>
-                        <input value={form.nombre} onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none" />
+                        <input value={form.nombre} onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" />
                     </div>
                     <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Tipo de Gráfico *</label>
-                        <select value={form.tipoGrafico} onChange={e => setForm(p => ({ ...p, tipoGrafico: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none">
+                        <select value={form.tipoGrafico} onChange={e => setForm(p => ({ ...p, tipoGrafico: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
                             <option value="Linea">📈 Línea</option>
                             <option value="Barra">📊 Barra</option>
                             <option value="Gauge">🎯 Gauge</option>
@@ -156,11 +156,11 @@ function GraficoFormModal({ grafico, datasets, onClose, onSave }: { grafico: any
                     </div>
                     <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Descripción</label>
-                        <textarea value={form.descripcion} onChange={e => setForm(p => ({ ...p, descripcion: e.target.value }))} rows={2} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none resize-none" />
+                        <textarea value={form.descripcion} onChange={e => setForm(p => ({ ...p, descripcion: e.target.value }))} rows={2} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none resize-none" />
                     </div>
                     <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Dataset Origen</label>
-                        <select value={form.datasetId} onChange={e => setForm(p => ({ ...p, datasetId: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none">
+                        <select value={form.datasetId} onChange={e => setForm(p => ({ ...p, datasetId: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
                             <option value="">Seleccionar Dataset...</option>
                             {datasets.map(ds => (
                                 <option key={ds.id} value={ds.id}>{ds.codigoDataset} — {ds.nombre}</option>
@@ -171,18 +171,18 @@ function GraficoFormModal({ grafico, datasets, onClose, onSave }: { grafico: any
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Eje X (Categoría)</label>
-                                <input value={form.configuracion.ejeX} onChange={e => setForm(p => ({ ...p, configuracion: { ...p.configuracion, ejeX: e.target.value } }))} placeholder="Ej: mes" className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none" />
+                                <input value={form.configuracion.ejeX} onChange={e => setForm(p => ({ ...p, configuracion: { ...p.configuracion, ejeX: e.target.value } }))} placeholder="Ej: mes" className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" />
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Serie(s) Eje Y</label>
-                                <input value={form.configuracion.series.join(', ')} onChange={e => setForm(p => ({ ...p, configuracion: { ...p.configuracion, series: e.target.value.split(',').map(s => s.trim()).filter(Boolean) } }))} placeholder="Ej: ventas, gastos" className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none" />
+                                <input value={form.configuracion.series.join(', ')} onChange={e => setForm(p => ({ ...p, configuracion: { ...p.configuracion, series: e.target.value.split(',').map(s => s.trim()).filter(Boolean) } }))} placeholder="Ej: ventas, gastos" className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" />
                             </div>
                         </div>
                     )}
                     {grafico && (
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Estado</label>
-                            <select value={form.estado} onChange={e => setForm(p => ({ ...p, estado: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none">
+                            <select value={form.estado} onChange={e => setForm(p => ({ ...p, estado: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
                                 <option value="Activo">Activo</option>
                                 <option value="Inactivo">Inactivo</option>
                             </select>

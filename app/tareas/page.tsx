@@ -1003,7 +1003,7 @@ export default function TareasPage() {
                                                 }
                                             }}
                                             placeholder="Escribe un mensaje..."
-                                            className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-sm outline-none focus:border-blue-500"
+                                            className="flex-1 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-sm outline-none focus:border-blue-500"
                                         />
                                         <button 
                                             onClick={handlePostComentario}

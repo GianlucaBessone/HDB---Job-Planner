@@ -1013,7 +1013,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                 {showAiDrawer && (
                     <div className="absolute right-0 top-0 bottom-0 w-full sm:w-[420px] bg-background text-foreground border-l border-slate-200 dark:border-slate-800 shadow-2xl z-30 flex flex-col animate-in slide-in-from-right duration-300 ease-out">
                         {/* Drawer Header */}
-                        <div className="p-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-950">
+                        <div className="p-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-card text-card-foreground">
                             <div className="flex items-center gap-2">
                                 <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center">
                                     <Sparkles className="w-4 h-4" />
@@ -1038,24 +1038,24 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                     <div className="space-y-3">
                                         <div>
                                             <h4 className="font-bold text-slate-400 uppercase text-[9px] mb-1">Título del Procedimiento</h4>
-                                            <div className="bg-white dark:bg-slate-950 p-3 border border-slate-200 dark:border-slate-850 rounded-xl font-bold text-slate-805 dark:text-slate-200 leading-snug">{aiResult.titulo}</div>
+                                            <div className="bg-card text-card-foreground p-3 border border-slate-200 dark:border-slate-850 rounded-xl font-bold text-slate-805 dark:text-slate-200 leading-snug">{aiResult.titulo}</div>
                                         </div>
 
                                         <div>
                                             <h4 className="font-bold text-slate-400 uppercase text-[9px] mb-1">Objetivo del Procedimiento</h4>
-                                            <div className="bg-white dark:bg-slate-950 p-3 border border-slate-200 dark:border-slate-850 rounded-xl text-slate-600 dark:text-slate-350 max-h-[120px] overflow-y-auto whitespace-pre-wrap">{aiResult.objetivo}</div>
+                                            <div className="bg-card text-card-foreground p-3 border border-slate-200 dark:border-slate-850 rounded-xl text-slate-600 dark:text-slate-350 max-h-[120px] overflow-y-auto whitespace-pre-wrap">{aiResult.objetivo}</div>
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-slate-400 uppercase text-[9px] mb-1">Alcance y Límites</h4>
-                                            <div className="bg-white dark:bg-slate-950 p-3 border border-slate-200 dark:border-slate-850 rounded-xl text-slate-600 dark:text-slate-350 max-h-[120px] overflow-y-auto whitespace-pre-wrap">{aiResult.alcance}</div>
+                                            <div className="bg-card text-card-foreground p-3 border border-slate-200 dark:border-slate-850 rounded-xl text-slate-600 dark:text-slate-350 max-h-[120px] overflow-y-auto whitespace-pre-wrap">{aiResult.alcance}</div>
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-slate-400 uppercase text-[9px] mb-1">Desarrollo de Pasos Operativos</h4>
-                                            <div className="bg-white dark:bg-slate-950 p-3 border border-slate-200 dark:border-slate-850 rounded-xl text-slate-600 dark:text-slate-350 max-h-[180px] overflow-y-auto whitespace-pre-wrap">{aiResult.desarrollo}</div>
+                                            <div className="bg-card text-card-foreground p-3 border border-slate-200 dark:border-slate-850 rounded-xl text-slate-600 dark:text-slate-350 max-h-[180px] overflow-y-auto whitespace-pre-wrap">{aiResult.desarrollo}</div>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="p-5 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex gap-2">
+                                <div className="p-5 border-t border-slate-200 dark:border-slate-800 bg-card text-card-foreground flex gap-2">
                                     <button 
                                         type="button" 
                                         onClick={() => {
@@ -1107,7 +1107,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                                 placeholder="Ej. Prueba hidráulica de mangueras"
                                                 value={aiParams.proceso}
                                                 onChange={e => setAiParams({...aiParams, proceso: e.target.value})}
-                                                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 h-[46px] text-xs font-bold focus:border-indigo-500 outline-none" 
+                                                className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-800 rounded-xl px-4 h-[46px] text-xs font-bold focus:border-indigo-500 outline-none" 
                                             />
                                         </div>
                                         <div>
@@ -1118,7 +1118,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                                 placeholder="Ej. Surtidores de combustible HDB"
                                                 value={aiParams.alcance}
                                                 onChange={e => setAiParams({...aiParams, alcance: e.target.value})}
-                                                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 h-[46px] text-xs font-bold focus:border-indigo-500 outline-none" 
+                                                className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-800 rounded-xl px-4 h-[46px] text-xs font-bold focus:border-indigo-500 outline-none" 
                                             />
                                         </div>
                                         <div>
@@ -1129,7 +1129,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                                 placeholder="Ej. Técnicos de Operaciones Especiales"
                                                 value={aiParams.sector}
                                                 onChange={e => setAiParams({...aiParams, sector: e.target.value})}
-                                                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 h-[46px] text-xs font-bold focus:border-indigo-500 outline-none" 
+                                                className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-800 rounded-xl px-4 h-[46px] text-xs font-bold focus:border-indigo-500 outline-none" 
                                             />
                                         </div>
                                         <div>
@@ -1138,7 +1138,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                                 placeholder="Ej. Indicar uso obligatorio de calzado aislante y despresurización previa de tuberías..."
                                                 value={aiParams.detallesAdicionales}
                                                 onChange={e => setAiParams({...aiParams, detallesAdicionales: e.target.value})}
-                                                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-xs font-bold focus:border-indigo-500 outline-none h-28 resize-none"
+                                                className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-xs font-bold focus:border-indigo-500 outline-none h-28 resize-none"
                                             />
                                         </div>
                                     </div>
@@ -1149,7 +1149,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                         </div>
                                     )}
                                 </div>
-                                <div className="p-5 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+                                <div className="p-5 border-t border-slate-200 dark:border-slate-800 bg-card text-card-foreground">
                                     <button 
                                         type="button" 
                                         disabled={aiLoading} 

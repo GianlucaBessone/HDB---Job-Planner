@@ -449,7 +449,7 @@ export default function CapacitacionPage() {
                 Responda todas las preguntas. Puntaje mínimo:{" "}
                 {selectedTraining.puntajeMinimo || 70}%
               </p>
-              <div className="flex items-center gap-2 text-xs font-black text-indigo-600 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-full border border-indigo-200 dark:border-indigo-800">
+              <div className="flex items-center gap-2 text-xs font-black text-indigo-600 bg-card text-card-foreground px-3 py-1.5 rounded-full border border-indigo-200 dark:border-indigo-800">
                 <Clock className="w-4 h-4 animate-pulse" />
                 <span>
                   {Math.floor(seconds / 60)}:
@@ -1042,7 +1042,7 @@ export default function CapacitacionPage() {
                             nombreCurso: e.target.value,
                           })
                         }
-                        className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500"
+                        className="w-full px-3 py-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500"
                       />
                     </div>
                     <div className="space-y-1">
@@ -1058,7 +1058,7 @@ export default function CapacitacionPage() {
                             institucion: e.target.value,
                           })
                         }
-                        className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500"
+                        className="w-full px-3 py-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
@@ -1075,7 +1075,7 @@ export default function CapacitacionPage() {
                               horas: e.target.value,
                             })
                           }
-                          className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500"
+                          className="w-full px-3 py-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500"
                         />
                       </div>
                       <div className="space-y-1">
@@ -1091,7 +1091,7 @@ export default function CapacitacionPage() {
                               fechaEmision: e.target.value,
                             })
                           }
-                          className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500"
+                          className="w-full px-3 py-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500"
                         />
                       </div>
                     </div>
@@ -1107,7 +1107,7 @@ export default function CapacitacionPage() {
                             descripcion: e.target.value,
                           })
                         }
-                        className="w-full h-20 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500 resize-none"
+                        className="w-full h-20 px-3 py-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500 resize-none"
                       />
                     </div>
                     <div className="flex gap-2 justify-end pt-2">

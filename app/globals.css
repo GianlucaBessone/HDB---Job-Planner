@@ -72,18 +72,18 @@
     --primary: 250 85% 60%;
     --primary-foreground: 0 0% 100%;
     --ring: 250 85% 60%;
-    --background: 250 15% 99%;
+    --background: 250 15% 96%;
     --foreground: 250 35% 15%;
-    --card: 250 15% 100%;
+    --card: 250 15% 99%;
     --card-foreground: 250 35% 15%;
-    --popover: 250 15% 100%;
+    --popover: 250 15% 99%;
     --popover-foreground: 250 35% 15%;
-    --secondary: 250 25% 96%;
+    --secondary: 250 25% 92%;
     --secondary-foreground: 250 45% 20%;
-    --muted: 250 15% 96%;
+    --muted: 250 15% 92%;
     --muted-foreground: 250 15% 45%;
-    --border: 250 15% 90%;
-    --input: 250 15% 90%;
+    --border: 250 15% 86%;
+    --input: 250 15% 86%;
   }
   .dark[data-color-theme="indigo"] {
     --primary: 250 85% 65%;
@@ -108,18 +108,18 @@
     --primary: 25 95% 53%;
     --primary-foreground: 0 0% 100%;
     --ring: 25 95% 53%;
-    --background: 25 15% 99%;
+    --background: 25 15% 96%;
     --foreground: 25 35% 15%;
-    --card: 25 15% 100%;
+    --card: 25 15% 99%;
     --card-foreground: 25 35% 15%;
-    --popover: 25 15% 100%;
+    --popover: 25 15% 99%;
     --popover-foreground: 25 35% 15%;
-    --secondary: 25 25% 96%;
+    --secondary: 25 25% 92%;
     --secondary-foreground: 25 45% 20%;
-    --muted: 25 15% 96%;
+    --muted: 25 15% 92%;
     --muted-foreground: 25 15% 45%;
-    --border: 25 15% 90%;
-    --input: 25 15% 90%;
+    --border: 25 15% 86%;
+    --input: 25 15% 86%;
   }
   .dark[data-color-theme="naranja"] {
     --primary: 25 95% 48%;
@@ -144,18 +144,18 @@
     --primary: 142 76% 36%;
     --primary-foreground: 0 0% 100%;
     --ring: 142 76% 36%;
-    --background: 142 15% 99%;
+    --background: 142 15% 96%;
     --foreground: 142 35% 15%;
-    --card: 142 15% 100%;
+    --card: 142 15% 99%;
     --card-foreground: 142 35% 15%;
-    --popover: 142 15% 100%;
+    --popover: 142 15% 99%;
     --popover-foreground: 142 35% 15%;
-    --secondary: 142 25% 96%;
+    --secondary: 142 25% 92%;
     --secondary-foreground: 142 45% 20%;
-    --muted: 142 15% 96%;
+    --muted: 142 15% 92%;
     --muted-foreground: 142 15% 45%;
-    --border: 142 15% 90%;
-    --input: 142 15% 90%;
+    --border: 142 15% 86%;
+    --input: 142 15% 86%;
   }
   .dark[data-color-theme="verde"] {
     --primary: 142 76% 45%;
@@ -180,18 +180,18 @@
     --primary: 199 89% 48%;
     --primary-foreground: 0 0% 100%;
     --ring: 199 89% 48%;
-    --background: 199 15% 99%;
+    --background: 199 15% 96%;
     --foreground: 199 35% 15%;
-    --card: 199 15% 100%;
+    --card: 199 15% 99%;
     --card-foreground: 199 35% 15%;
-    --popover: 199 15% 100%;
+    --popover: 199 15% 99%;
     --popover-foreground: 199 35% 15%;
-    --secondary: 199 25% 96%;
+    --secondary: 199 25% 92%;
     --secondary-foreground: 199 45% 20%;
-    --muted: 199 15% 96%;
+    --muted: 199 15% 92%;
     --muted-foreground: 199 15% 45%;
-    --border: 199 15% 90%;
-    --input: 199 15% 90%;
+    --border: 199 15% 86%;
+    --input: 199 15% 86%;
   }
   .dark[data-color-theme="celeste"] {
     --primary: 199 89% 48%;
@@ -216,18 +216,18 @@
     --primary: 0 84% 60%;
     --primary-foreground: 0 0% 100%;
     --ring: 0 84% 60%;
-    --background: 0 15% 99%;
+    --background: 0 15% 96%;
     --foreground: 0 35% 15%;
-    --card: 0 15% 100%;
+    --card: 0 15% 99%;
     --card-foreground: 0 35% 15%;
-    --popover: 0 15% 100%;
+    --popover: 0 15% 99%;
     --popover-foreground: 0 35% 15%;
-    --secondary: 0 25% 96%;
+    --secondary: 0 25% 92%;
     --secondary-foreground: 0 45% 20%;
-    --muted: 0 15% 96%;
+    --muted: 0 15% 92%;
     --muted-foreground: 0 15% 45%;
-    --border: 0 15% 90%;
-    --input: 0 15% 90%;
+    --border: 0 15% 86%;
+    --input: 0 15% 86%;
   }
   .dark[data-color-theme="rojo"] {
     --primary: 0 84% 50%;
@@ -252,18 +252,18 @@
     --primary: 330 81% 60%;
     --primary-foreground: 0 0% 100%;
     --ring: 330 81% 60%;
-    --background: 330 15% 99%;
+    --background: 330 15% 96%;
     --foreground: 330 35% 15%;
-    --card: 330 15% 100%;
+    --card: 330 15% 99%;
     --card-foreground: 330 35% 15%;
-    --popover: 330 15% 100%;
+    --popover: 330 15% 99%;
     --popover-foreground: 330 35% 15%;
-    --secondary: 330 25% 96%;
+    --secondary: 330 25% 92%;
     --secondary-foreground: 330 45% 20%;
-    --muted: 330 15% 96%;
+    --muted: 330 15% 92%;
     --muted-foreground: 330 15% 45%;
-    --border: 330 15% 90%;
-    --input: 330 15% 90%;
+    --border: 330 15% 86%;
+    --input: 330 15% 86%;
   }
   .dark[data-color-theme="rosa"] {
     --primary: 330 81% 50%;
@@ -288,18 +288,18 @@
     --primary: 262 83% 58%;
     --primary-foreground: 0 0% 100%;
     --ring: 262 83% 58%;
-    --background: 262 15% 99%;
+    --background: 262 15% 96%;
     --foreground: 262 35% 15%;
-    --card: 262 15% 100%;
+    --card: 262 15% 99%;
     --card-foreground: 262 35% 15%;
-    --popover: 262 15% 100%;
+    --popover: 262 15% 99%;
     --popover-foreground: 262 35% 15%;
-    --secondary: 262 25% 96%;
+    --secondary: 262 25% 92%;
     --secondary-foreground: 262 45% 20%;
-    --muted: 262 15% 96%;
+    --muted: 262 15% 92%;
     --muted-foreground: 262 15% 45%;
-    --border: 262 15% 90%;
-    --input: 262 15% 90%;
+    --border: 262 15% 86%;
+    --input: 262 15% 86%;
   }
   .dark[data-color-theme="violeta"] {
     --primary: 262 83% 58%;
@@ -324,18 +324,18 @@
     --primary: 215 16% 47%;
     --primary-foreground: 0 0% 100%;
     --ring: 215 16% 47%;
-    --background: 215 15% 99%;
+    --background: 215 15% 96%;
     --foreground: 215 35% 15%;
-    --card: 215 15% 100%;
+    --card: 215 15% 99%;
     --card-foreground: 215 35% 15%;
-    --popover: 215 15% 100%;
+    --popover: 215 15% 99%;
     --popover-foreground: 215 35% 15%;
-    --secondary: 215 25% 96%;
+    --secondary: 215 25% 92%;
     --secondary-foreground: 215 45% 20%;
-    --muted: 215 15% 96%;
+    --muted: 215 15% 92%;
     --muted-foreground: 215 15% 45%;
-    --border: 215 15% 90%;
-    --input: 215 15% 90%;
+    --border: 215 15% 86%;
+    --input: 215 15% 86%;
   }
   .dark[data-color-theme="gris"] {
     --primary: 215 16% 47%;
@@ -355,6 +355,55 @@
     --input: 215 20% 20%;
   }
 }
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  /* HIGH DENSITY ERP SCALING */
+  html {
+    font-size: 14px; /* Base desktop ERP density (~12.5% reduction) */
+  }
+  @media (max-width: 1024px) {
+    html {
+      font-size: 13.5px; /* Tablet */
+    }
+  }
+  @media (max-width: 768px) {
+    html {
+      font-size: 14.5px; /* Mobile (larger for touch targets) */
+    }
+  }
+  @media (max-width: 380px) {
+    html {
+      font-size: 13px; /* Small mobile */
+    }
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    min-width: 320px;
+  }
+}
+
+.glass {
+  @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-xl;
+}
+
+.dark .glass {
+  @apply bg-slate-900/70 border-slate-700/50;
+}
+
+.whatsapp-preview {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  @apply bg-[#E5DDD5] p-6 rounded-2xl shadow-inner overflow-y-auto max-h-[400px] text-xs leading-relaxed text-[#111B21] border border-slate-300 whitespace-pre-wrap;
+}
+
+.dark .whatsapp-preview {
+  @apply bg-[#0e1621] text-slate-100 border-slate-700;
+}
+
 /* ════════════════════════════════════════════════════════════════════════════ */
 /* DARK MODE — COMPREHENSIVE OVERRIDES FOR PROFESSIONAL UI                   */
 /* ════════════════════════════════════════════════════════════════════════════ */

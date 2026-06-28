@@ -350,7 +350,7 @@ function EditablePriceCell({ value, onSave, formatCurrency }: { value: number, o
                 onChange={e => setVal(e.target.value)} 
                 onBlur={handleBlur}
                 onKeyDown={handleKeyDown}
-                className="w-24 bg-white dark:bg-slate-900 border border-primary/50 shadow-sm rounded px-1.5 py-1 outline-none focus:ring-2 focus:ring-primary/20 text-right text-sm font-medium"
+                className="w-24 bg-card text-card-foreground border border-primary/50 shadow-sm rounded px-1.5 py-1 outline-none focus:ring-2 focus:ring-primary/20 text-right text-sm font-medium"
             />
         );
     }

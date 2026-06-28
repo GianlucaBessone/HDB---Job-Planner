@@ -632,7 +632,7 @@ export default function GestionSugerenciasPage() {
                                     <div>
                                         <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">Estado de la Acción</label>
                                         <select 
-                                            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-bold text-slate-800 dark:text-slate-200"
+                                            className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-bold text-slate-800 dark:text-slate-200"
                                             value={editForm.estado}
                                             onChange={(e) => setEditForm({...editForm, estado: e.target.value})}
                                         >
@@ -651,7 +651,7 @@ export default function GestionSugerenciasPage() {
                                         <div className="relative">
                                             <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                                             <select 
-                                                className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-bold text-slate-800 dark:text-slate-200"
+                                                className="w-full pl-9 pr-4 py-2.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-bold text-slate-800 dark:text-slate-200"
                                                 value={editForm.responsable_id}
                                                 onChange={(e) => setEditForm({...editForm, responsable_id: e.target.value})}
                                             >
@@ -671,7 +671,7 @@ export default function GestionSugerenciasPage() {
                                                 <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                                                 <input 
                                                     type="datetime-local"
-                                                    className="w-full pl-9 pr-2 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium text-slate-800 dark:text-slate-200"
+                                                    className="w-full pl-9 pr-2 py-2.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium text-slate-800 dark:text-slate-200"
                                                     value={editForm.reunion_programada}
                                                     onChange={(e) => setEditForm({...editForm, reunion_programada: e.target.value})}
                                                 />
@@ -683,7 +683,7 @@ export default function GestionSugerenciasPage() {
                                                 <FileClock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                                                 <input 
                                                     type="datetime-local"
-                                                    className="w-full pl-9 pr-2 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium text-slate-800 dark:text-slate-200"
+                                                    className="w-full pl-9 pr-2 py-2.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium text-slate-800 dark:text-slate-200"
                                                     value={editForm.fecha_cierre}
                                                     onChange={(e) => setEditForm({...editForm, fecha_cierre: e.target.value})}
                                                 />
@@ -698,7 +698,7 @@ export default function GestionSugerenciasPage() {
                                             <NotebookTabs className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
                                             <textarea 
                                                 placeholder="Documentar análisis de causa, plan de acción o motivo de rechazo..."
-                                                className="w-full pl-9 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium text-slate-800 dark:text-slate-200 min-h-[100px] resize-y"
+                                                className="w-full pl-9 pr-4 py-3 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium text-slate-800 dark:text-slate-200 min-h-[100px] resize-y"
                                                 value={editForm.notas_resolucion}
                                                 onChange={(e) => setEditForm({...editForm, notas_resolucion: e.target.value})}
                                             />
@@ -726,13 +726,13 @@ export default function GestionSugerenciasPage() {
                                             <input 
                                                 type="text"
                                                 placeholder="Descripción de la acción..."
-                                                className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium dark:text-slate-200"
+                                                className="w-full px-4 py-2.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium dark:text-slate-200"
                                                 value={nuevaAccion.descripcion}
                                                 onChange={(e) => setNuevaAccion({...nuevaAccion, descripcion: e.target.value})}
                                             />
                                             <div className="grid grid-cols-2 gap-3">
                                                 <select 
-                                                    className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium dark:text-slate-200"
+                                                    className="w-full px-4 py-2.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium dark:text-slate-200"
                                                     value={nuevaAccion.responsableId}
                                                     onChange={(e) => setNuevaAccion({...nuevaAccion, responsableId: e.target.value})}
                                                 >
@@ -743,7 +743,7 @@ export default function GestionSugerenciasPage() {
                                                 </select>
                                                 <input 
                                                     type="date"
-                                                    className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium dark:text-slate-200"
+                                                    className="w-full px-4 py-2.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium dark:text-slate-200"
                                                     value={nuevaAccion.fechaLimite}
                                                     onChange={(e) => setNuevaAccion({...nuevaAccion, fechaLimite: e.target.value})}
                                                 />
@@ -806,7 +806,7 @@ export default function GestionSugerenciasPage() {
                                             <input 
                                                 type="text"
                                                 placeholder="Escribe un comentario..."
-                                                className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium dark:text-slate-200"
+                                                className="w-full px-4 py-2.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium dark:text-slate-200"
                                                 value={editForm.comentarioInterno}
                                                 onChange={(e) => setEditForm({...editForm, comentarioInterno: e.target.value})}
                                             />

@@ -62,7 +62,7 @@ export default function DatasetHistoryModal({ dataset, onClose }: any) {
                                         </div>
                                     )}
                                     {record.estado === 'Exito' && (
-                                        <div className="text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2 rounded-lg">
+                                        <div className="text-xs text-slate-500 dark:text-slate-400 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 p-2 rounded-lg">
                                             <span className="font-bold">Ejecutado por:</span> {record.tipoTrigger}
                                             <div className="mt-1 line-clamp-1 font-mono text-[10px] text-slate-400" title={record.queryEjecutada}>{record.queryEjecutada}</div>
                                         </div>

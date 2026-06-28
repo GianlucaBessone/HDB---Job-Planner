@@ -52,7 +52,7 @@ export function ThemeToggle() {
             {/* Moving Thumb */}
             <span
                 className={`
-                    absolute left-0.5 flex items-center justify-center w-5 h-5 rounded-full bg-white dark:bg-slate-900 shadow-sm transition-transform duration-300 ease-in-out z-10
+                    absolute left-0.5 flex items-center justify-center w-5 h-5 rounded-full bg-card text-card-foreground shadow-sm transition-transform duration-300 ease-in-out z-10
                     ${isDark ? 'translate-x-6' : 'translate-x-0'}
                 `}
             >
