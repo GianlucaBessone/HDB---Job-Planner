@@ -1227,7 +1227,7 @@ function ThemeSection() {
 
     const themes = [
         { id: 'actual', name: 'Actual (Azul Default)', colorCode: '#2563EB', darkColorCode: '#3B82F6' },
-        { id: 'azul', name: 'Azul Intenso', colorCode: '#1D4ED8', darkColorCode: '#2563EB' },
+        { id: 'indigo', name: 'Índigo', colorCode: '#5B4EF5', darkColorCode: '#7368F7' },
         { id: 'naranja', name: 'Naranja', colorCode: '#F97316', darkColorCode: '#EA580C' },
         { id: 'verde', name: 'Verde', colorCode: '#16A34A', darkColorCode: '#22C55E' },
         { id: 'celeste', name: 'Celeste', colorCode: '#0EA5E9', darkColorCode: '#38BDF8' },

@@ -268,7 +268,7 @@ export default function DelaysPage() {
                         setFormData(prev => ({ ...prev, projectId: '', motivo: '', duracion: '' as any, area: '', responsableArea: '' }));
                         setIsModalOpen(true);
                     }}
-                    className="bg-amber-500 text-white px-4 py-2.5 md:px-6 md:py-3 rounded-xl md:rounded-2xl font-bold flex items-center gap-2 hover:bg-amber-600 shadow-lg shadow-amber-500/20 active:scale-95 transition-all w-full md:w-auto justify-center text-sm"
+                    className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-4 py-2.5 md:px-6 md:py-3 rounded-xl md:rounded-2xl font-bold flex items-center gap-2 hover:bg-primary hover:text-primary-foreground hover:border-primary shadow-sm hover:shadow-primary/20 hover:shadow-lg active:scale-95 transition-all w-full md:w-auto justify-center text-sm"
                 >
                     <Plus className="w-4 h-4" /> Registrar Demora
                 </button>
@@ -425,7 +425,7 @@ export default function DelaysPage() {
                                                 <td className="p-4 text-right">
                                                     <div className="flex items-center justify-end gap-1">
                                                         {(currentUser?.role === 'admin' || currentUser?.role === 'supervisor' || currentUser?.role === 'qa') && (
-                                                            <button onClick={() => handleEditClick(delay)} className="btn-icon-inline p-2 rounded-xl text-slate-300 hover:text-indigo-500 hover:bg-indigo-50 transition-all">
+                                                            <button onClick={() => handleEditClick(delay)} className="btn-icon-inline p-2 rounded-xl text-slate-300 hover:text-primary hover:bg-primary/10 transition-all">
                                                                 <Edit2 className="w-4 h-4" />
                                                             </button>
                                                         )}
@@ -463,7 +463,7 @@ export default function DelaysPage() {
                                             </div>
                                             <div className="flex items-center gap-1 shrink-0">
                                                 {(currentUser?.role === 'admin' || currentUser?.role === 'supervisor' || currentUser?.role === 'qa') && (
-                                                    <button onClick={() => handleEditClick(delay)} className="btn-icon-inline p-2 md:p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-500 transition-colors">
+                                                    <button onClick={() => handleEditClick(delay)} className="btn-icon-inline p-2 md:p-1.5 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors">
                                                         <Edit2 className="w-4 h-4 md:w-3.5 md:h-3.5" />
                                                     </button>
                                                 )}
@@ -677,7 +677,7 @@ export default function DelaysPage() {
                                     Cancelar
                                 </button>
                                 <button type="submit"
-                                    className="flex-[2] bg-amber-500 text-white py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-amber-600 shadow-xl shadow-amber-500/20 transition-all active:scale-95">
+                                    className="flex-[2] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-primary hover:text-primary-foreground hover:border-primary shadow-sm hover:shadow-primary/20 hover:shadow-xl transition-all active:scale-95">
                                     {editingDelayId ? 'Guardar Cambios' : 'Registrar Evento'}
                                 </button>
                             </div>

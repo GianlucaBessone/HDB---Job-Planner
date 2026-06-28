@@ -536,7 +536,7 @@ export default function TimesheetsPage() {
                 </div>
                 <button
                     onClick={() => openEditModal()}
-                    className="bg-indigo-500 text-white px-4 py-2.5 md:px-6 md:py-3 rounded-xl md:rounded-2xl font-bold flex items-center gap-2 hover:bg-indigo-600 shadow-lg shadow-indigo-500/20 active:scale-95 transition-all text-sm w-full md:w-auto justify-center"
+                    className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-4 py-2.5 md:px-6 md:py-3 rounded-xl md:rounded-2xl font-bold flex items-center gap-2 hover:bg-primary hover:text-primary-foreground hover:border-primary shadow-sm hover:shadow-primary/20 hover:shadow-lg active:scale-95 transition-all text-sm w-full md:w-auto justify-center"
                 >
                     <Plus className="w-4 h-4" />
                     Carga Manual
@@ -932,7 +932,7 @@ export default function TimesheetsPage() {
                                             >
                                                 <div className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-300 ${
                                                     formMode === 'proyecto'
-                                                        ? 'bg-indigo-500 text-white'
+                                                        ? 'bg-primary text-primary-foreground'
                                                         : 'bg-orange-500 text-white'
                                                 }`}>
                                                     {formMode === 'proyecto' ? <Briefcase className="w-4 h-4" /> : <UserX className="w-4 h-4" />}
@@ -1080,7 +1080,7 @@ export default function TimesheetsPage() {
                             {/* Footer - Fixed */}
                             <div className="p-5 md:p-7 border-t border-slate-100 dark:border-slate-800 flex gap-3 flex-shrink-0">
                                 <button type="button" onClick={() => { setIsModalOpen(false); }} className="flex-1 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95">Cancelar</button>
-                                <button type="submit" className="flex-[2] bg-indigo-500 text-white py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-indigo-600 shadow-xl shadow-indigo-500/20 active:scale-95 transition-all">Guardar Registro</button>
+                                <button type="submit" className="flex-[2] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-primary hover:text-primary-foreground hover:border-primary shadow-sm hover:shadow-primary/20 hover:shadow-xl active:scale-95 transition-all">Guardar Registro</button>
                             </div>
                         </form>
                     </div>
@@ -1179,7 +1179,7 @@ export default function TimesheetsPage() {
                             </div>
                             <div className="flex justify-end gap-3 pt-4">
                                 <button type="button" onClick={() => { setIsRequestModalOpen(false); setPendingAction(null); setRequestMessage(''); }} className="flex-1 px-6 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 text-slate-600 dark:text-slate-300 active:scale-95">Cancelar</button>
-                                <button type="submit" className="flex-1 px-6 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl active:scale-95 bg-indigo-500 hover:bg-indigo-600 text-white shadow-indigo-500/20">Enviar Solicitud</button>
+                                <button type="submit" className="flex-1 px-6 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all active:scale-95 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-primary hover:text-primary-foreground hover:border-primary shadow-sm hover:shadow-primary/20 hover:shadow-xl">Enviar Solicitud</button>
                             </div>
                         </form>
                     </div>

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type ColorTheme = 'actual' | 'azul' | 'naranja' | 'verde' | 'celeste' | 'rojo' | 'rosa' | 'violeta' | 'gris';
+type ColorTheme = 'actual' | 'indigo' | 'naranja' | 'verde' | 'celeste' | 'rojo' | 'rosa' | 'violeta' | 'gris';
 
 interface ColorThemeContextType {
     theme: ColorTheme;
