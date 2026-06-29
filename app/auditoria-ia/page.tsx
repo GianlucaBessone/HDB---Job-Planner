@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { useViewState } from '@/lib/hooks/useViewState';
+import { useCommandStore } from '@/lib/store/useCommandStore';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
@@ -56,7 +58,17 @@ type ViewMode = 'consumption' | 'audit' | 'chats';
 export default function AiAuditPage() {
     const router = useRouter();
     const [currentUser, setCurrentUser] = useState<any>(null);
-    const [viewMode, setViewMode] = useState<ViewMode>('consumption');
+    const [filters, setFilters] = useViewState('auditoria-ia-filters', {
+        viewMode: 'consumption' as ViewMode,
+        filterAction: '',
+        filterSuccess: '',
+        searchTerm: ''
+    });
+    const { viewMode, filterAction, filterSuccess, searchTerm } = filters;
+    const setViewMode = (val: ViewMode) => setFilters({ viewMode: val });
+    const setFilterAction = (val: string) => setFilters({ filterAction: val });
+    const setFilterSuccess = (val: string) => setFilters({ filterSuccess: val });
+    const setSearchTerm = (val: string) => setFilters({ searchTerm: val });
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState<any>(null);
     const [logs, setLogs] = useState<any[]>([]);
@@ -65,10 +77,11 @@ export default function AiAuditPage() {
     const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
     const [expandedChatId, setExpandedChatId] = useState<string | null>(null);
 
-    // Filters
-    const [filterAction, setFilterAction] = useState('');
-    const [filterSuccess, setFilterSuccess] = useState('');
-    const [searchTerm, setSearchTerm] = useState('');
+    const [expandedChatId, setExpandedChatId] = useState<string | null>(null);
+
+    const registerCommand = useCommandStore((state) => state.registerCommand);
+    const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
+    const latestActions = useRef({ fetchData: () => {} });
 
     useEffect(() => {
         const stored = localStorage.getItem('currentUser');
@@ -112,8 +125,23 @@ export default function AiAuditPage() {
     };
 
     useEffect(() => {
+        latestActions.current = { fetchData };
+    });
+
+    useEffect(() => {
         fetchData();
     }, [currentUser, filterAction, filterSuccess]);
+
+    useEffect(() => {
+        registerCommand({
+            id: 'auditoria-ia-refresh',
+            label: 'Actualizar Auditoría IA',
+            category: 'Contextual',
+            keys: ['ctrl', 'r'],
+            action: () => latestActions.current.fetchData()
+        });
+        return () => unregisterCommand('auditoria-ia-refresh');
+    }, [registerCommand, unregisterCommand]);
 
     if (!currentUser) {
         return (

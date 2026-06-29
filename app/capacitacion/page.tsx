@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useViewState } from "@/lib/hooks/useViewState";
+import { useCommandStore } from "@/lib/store/useCommandStore";
 import {
   BookOpen,
   CheckCircle2,
@@ -34,9 +36,17 @@ export default function CapacitacionPage() {
   const [trainings, setTrainings] = useState<any[]>([]);
   const [certificates, setCertificates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"internal" | "external">(
-    "internal",
-  );
+  const [filters, setFilters] = useViewState('capacitacion-filters', {
+    activeTab: "internal" as "internal" | "external",
+    viewMode: "list" as "list" | "detail" | "quiz"
+  });
+  const { activeTab, viewMode } = filters;
+  const setActiveTab = (val: "internal" | "external") => setFilters({ activeTab: val });
+  const setViewMode = (val: "list" | "detail" | "quiz") => setFilters({ viewMode: val });
+
+  const registerCommand = useCommandStore((state) => state.registerCommand);
+  const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
+  const latestActions = useRef({ refresh: () => {} });
 
   // Internal Training States
   const [selectedTraining, setSelectedTraining] = useState<any>(null);
@@ -45,7 +55,6 @@ export default function CapacitacionPage() {
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
   const [submitting, setSubmitting] = useState(false);
   const [quizResult, setQuizResult] = useState<any>(null);
-  const [viewMode, setViewMode] = useState<"list" | "detail" | "quiz">("list");
   const [seconds, setSeconds] = useState(0);
   const timerRef = useRef<any>(null);
 
@@ -96,6 +105,28 @@ export default function CapacitacionPage() {
       loadCertificates();
     }
   }, [user]);
+
+  useEffect(() => {
+    latestActions.current = {
+      refresh: () => {
+        if (user?.id) {
+          loadTrainings();
+          loadCertificates();
+        }
+      }
+    };
+  });
+
+  useEffect(() => {
+    registerCommand({
+      id: 'capacitacion-refresh',
+      label: 'Actualizar Capacitaciones',
+      category: 'Contextual',
+      keys: ['ctrl', 'r'],
+      action: () => latestActions.current.refresh()
+    });
+    return () => unregisterCommand('capacitacion-refresh');
+  }, [registerCommand, unregisterCommand]);
 
   useEffect(() => {
     if (viewMode === "quiz" && selectedTraining && !quizResult) {

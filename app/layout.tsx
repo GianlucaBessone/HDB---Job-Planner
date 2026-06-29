@@ -21,8 +21,10 @@ import { Loader2, BellRing } from "lucide-react";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ColorThemeProvider } from "@/components/ColorThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import ViewSearch from "@/components/ViewSearch";
-
+import { CommandPalette } from "@/components/CommandPalette";
+import { ERPProviders } from "@/components/providers/ERPProviders";
+import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
+import { GlobalDrawer } from "@/components/drawers/GlobalDrawer";
 
 export default function RootLayout({
     children,
@@ -250,6 +252,7 @@ export default function RootLayout({
                 />
 
                 <main className="flex-1 w-full px-4 md:px-6 py-6 md:py-8 pb-32 md:pb-8">
+                    <Breadcrumbs />
                     {children}
                     <SpeedInsights />
                 </main>
@@ -289,15 +292,18 @@ export default function RootLayout({
             <body className="font-sans min-h-[100dvh] bg-background text-foreground overscroll-none text-slate-900 dark:text-slate-100" style={{ fontFamily: '"Outfit", sans-serif' }}>
                 <ColorThemeProvider>
                     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-                        {content}
-                        {/* Global View Search — available when logged in */}
-                        {currentUser && (
-                            <ViewSearch
-                                views={effectiveViews}
-                                role={role}
-                            />
-                        )}
-                        <Analytics />
+                        <ERPProviders>
+                            {content}
+                            {/* Global Command Palette — available when logged in */}
+                            {currentUser && (
+                                <CommandPalette
+                                    views={effectiveViews}
+                                    role={role}
+                                />
+                            )}
+                            <GlobalDrawer />
+                            <Analytics />
+                        </ERPProviders>
                     </ThemeProvider>
                 </ColorThemeProvider>
             </body>

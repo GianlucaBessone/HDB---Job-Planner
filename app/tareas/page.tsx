@@ -16,6 +16,9 @@ import {
     User, FolderKanban, Eye, Edit3, Timer, Flag, Briefcase,
     BellPlus, Loader2
 } from 'lucide-react';
+import { useViewState } from '@/lib/hooks/useViewState';
+import { useCommandStore } from '@/lib/store/useCommandStore';
+import { useRef } from 'react';
 
 // ── Types ──────────────────────────────────────────────────────────
 interface Tarea {
@@ -98,9 +101,15 @@ export default function TareasPage() {
     const [operators, setOperators] = useState<any[]>([]);
     const [projects, setProjects] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [view, setView] = useState<'kanban' | 'lista'>('kanban');
-    const [search, setSearch] = useState('');
-    const [filterPrioridad, setFilterPrioridad] = useState('');
+    const [filters, setFilters] = useViewState('tareas-filters', {
+        view: 'kanban' as 'kanban' | 'lista',
+        search: '',
+        filterPrioridad: ''
+    });
+    const { view, search, filterPrioridad } = filters;
+    const setView = (val: typeof view) => setFilters({ view: val });
+    const setSearch = (val: string) => setFilters({ search: val });
+    const setFilterPrioridad = (val: string) => setFilters({ filterPrioridad: val });
 
     const [showModal, setShowModal] = useState(false);
     const [isViewMode, setIsViewMode] = useState(false);
@@ -289,6 +298,22 @@ export default function TareasPage() {
         }
     };
 
+    const registerCommand = useCommandStore((state) => state.registerCommand);
+    const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
+    const latestActions = useRef({ openNew: () => {} });
+    
+    // Will set openNew below
+    useEffect(() => {
+        registerCommand({
+            id: 'tareas-new',
+            label: 'Nueva Tarea',
+            category: 'Contextual',
+            keys: ['ctrl', 'n'],
+            action: () => latestActions.current.openNew()
+        });
+        return () => unregisterCommand('tareas-new');
+    }, [registerCommand, unregisterCommand]);
+
     // ── Modal Handlers ─────────────────────────────────────────────
     const openNew = () => {
         setEditingTarea(null);
@@ -308,6 +333,7 @@ export default function TareasPage() {
         setFormRecordatorios([]);
         setShowModal(true);
     };
+    latestActions.current.openNew = openNew;
 
     const openEdit = (t: Tarea, forceEdit = false) => {
         const { canEditFull } = getPermissions(t);

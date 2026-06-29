@@ -6,12 +6,22 @@ import SignatureDetailModal from '@/components/SignatureDetailModal';
 import HelpContextual from '@/components/HelpContextual';
 import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
+import { useViewState } from '@/lib/hooks/useViewState';
+import { useCommandStore } from '@/lib/store/useCommandStore';
+import { useRef } from 'react';
 
 export default function VerificacionFirmasPage() {
     const [signatures, setSignatures] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('ALL');
+    
+    const [filters, setFilters] = useViewState('verificacion-firmas-filters', {
+        searchTerm: '',
+        statusFilter: 'ALL'
+    });
+    const { searchTerm, statusFilter } = filters;
+    const setSearchTerm = (val: string) => setFilters({ searchTerm: val });
+    const setStatusFilter = (val: typeof statusFilter) => setFilters({ statusFilter: val });
+
     const [selectedSignature, setSelectedSignature] = useState<any | null>(null);
     const [isVerifying, setIsVerifying] = useState<string | null>(null);
     const [currentUser, setCurrentUser] = useState<any>(null);
@@ -40,6 +50,25 @@ export default function VerificacionFirmasPage() {
             setIsLoading(false);
         }
     };
+
+    const registerCommand = useCommandStore((state) => state.registerCommand);
+    const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
+    const latestActions = useRef({ loadSignatures });
+    
+    useEffect(() => {
+        latestActions.current = { loadSignatures };
+    });
+
+    useEffect(() => {
+        registerCommand({
+            id: 'firmas-refresh',
+            label: 'Actualizar Firmas',
+            category: 'Contextual',
+            keys: ['r'],
+            action: () => latestActions.current.loadSignatures()
+        });
+        return () => unregisterCommand('firmas-refresh');
+    }, [registerCommand, unregisterCommand]);
 
     const verifyIntegrity = async (id: string) => {
         setIsVerifying(id);

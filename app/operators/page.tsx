@@ -23,28 +23,22 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import { safeApiRequest } from '@/lib/offline';
 import SearchableSelect from '@/components/SearchableSelect';
 import { showToast } from '@/components/Toast';
+import { useViewState } from '@/lib/hooks/useViewState';
+import { useCommandStore } from '@/lib/store/useCommandStore';
+import { useRef } from 'react';
 
 // PREDEFINED_TAGS is now loaded dynamically from the backend config
 
 export default function OperatorsPage() {
     const [operators, setOperators] = useState<any[]>([]);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
-    const [currentUser, setCurrentUser] = useState<any>(null);
-    const [editingOperator, setEditingOperator] = useState<any>(null);
-    const [formData, setFormData] = useState({
-        nombreCompleto: '',
-        activo: true,
-        enVacaciones: false,
-        role: 'operador',
-        dni: '',
-        posicion: '',
-        pin: '1234',
-        etiquetas: [] as string[]
+    const [filters, setFilters] = useViewState('operators-filters', {
+        searchTerm: '',
+        viewMode: 'list' as 'grid' | 'list'
     });
-    const [customTag, setCustomTag] = useState('');
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+    const { searchTerm, viewMode } = filters;
+    const setSearchTerm = (val: string) => setFilters({ searchTerm: val });
+    const setViewMode = (val: typeof viewMode) => setFilters({ viewMode: val });
+
     const [systemTags, setSystemTags] = useState<string[]>([]);
 
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -205,6 +199,25 @@ export default function OperatorsPage() {
     };
 
     const normalize = (str: string) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+    const registerCommand = useCommandStore((state) => state.registerCommand);
+    const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
+    const latestActions = useRef({ openCreate });
+    
+    useEffect(() => {
+        latestActions.current = { openCreate };
+    });
+
+    useEffect(() => {
+        registerCommand({
+            id: 'operators-new',
+            label: 'Nuevo Operador',
+            category: 'Contextual',
+            keys: ['ctrl', 'n'],
+            action: () => latestActions.current.openCreate()
+        });
+        return () => unregisterCommand('operators-new');
+    }, [registerCommand, unregisterCommand]);
 
     const filteredOperators = operators.filter(op =>
         normalize(op.nombreCompleto).includes(normalize(searchTerm))

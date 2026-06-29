@@ -39,6 +39,8 @@ import { formatDateTime } from '@/lib/formatDate';
 import SignatureButton from '@/components/SignatureButton';
 import SignatureDetailModal from '@/components/SignatureDetailModal';
 import CodeBadge from '@/components/CodeBadge';
+import { useViewState } from '@/lib/hooks/useViewState';
+import { useCommandStore } from '@/lib/store/useCommandStore';
 
 interface ChecklistItem {
     id: string;
@@ -69,7 +71,18 @@ export default function MyProjectsPage() {
     const [user, setUser] = useState<any>(null);
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
+    
+    const [filters, setFilters] = useViewState('my-projects-filters', {
+        searchTerm: '',
+        viewAll: false,
+        activeMaterialTab: 'general' as 'general' | 'devueltos',
+        materialSearch: ''
+    });
+    const { searchTerm, viewAll, activeMaterialTab, materialSearch } = filters;
+    const setSearchTerm = (val: string) => setFilters({ searchTerm: val });
+    const setViewAll = (val: boolean) => setFilters({ viewAll: val });
+    const setActiveMaterialTab = (val: typeof activeMaterialTab) => setFilters({ activeMaterialTab: val });
+    const setMaterialSearch = (val: string) => setFilters({ materialSearch: val });
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -104,8 +117,6 @@ export default function MyProjectsPage() {
     const [newLogCategoria, setNewLogCategoria] = useState<'Reporte' | 'Nota' | 'Bloqueante' | 'Consulta'>('Nota');
     const [isSubmittingLog, setIsSubmittingLog] = useState(false);
 
-    const [viewAll, setViewAll] = useState(false);
-
     // OS state per selected project
     const [projectOS, setProjectOS] = useState<any | null>(null);
     const [loadingOS, setLoadingOS] = useState(false);
@@ -121,10 +132,6 @@ export default function MyProjectsPage() {
     const [materialQuantity, setMaterialQuantity] = useState('');
     const [materialNote, setMaterialNote] = useState('');
     const [isSubmittingMaterial, setIsSubmittingMaterial] = useState(false);
-
-    // Material List State (Tabs & Search)
-    const [activeMaterialTab, setActiveMaterialTab] = useState<'general' | 'devueltos'>('general');
-    const [materialSearch, setMaterialSearch] = useState('');
 
     // Delegation State
     const [isDelegationModalOpen, setIsDelegationModalOpen] = useState(false);
@@ -221,6 +228,33 @@ export default function MyProjectsPage() {
             setLoading(false);
         }
     };
+
+    const registerCommand = useCommandStore((state) => state.registerCommand);
+    const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
+    const latestActions = useRef({ loadMyProjects, user, viewAll });
+    
+    useEffect(() => {
+        latestActions.current = { loadMyProjects, user, viewAll };
+    });
+
+    useEffect(() => {
+        registerCommand({
+            id: 'my-projects-refresh',
+            label: 'Actualizar Mis Proyectos',
+            category: 'Contextual',
+            keys: ['r'],
+            action: () => {
+                if (latestActions.current.user) {
+                    latestActions.current.loadMyProjects(
+                        latestActions.current.user.id,
+                        latestActions.current.viewAll,
+                        latestActions.current.user.nombreCompleto
+                    );
+                }
+            }
+        });
+        return () => unregisterCommand('my-projects-refresh');
+    }, [registerCommand, unregisterCommand]);
 
     const loadChecklist = async (projectId: string) => {
         setLoadingChecklist(true);

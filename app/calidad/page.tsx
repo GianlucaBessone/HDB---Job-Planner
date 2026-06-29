@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useViewState } from '@/lib/hooks/useViewState';
 import {
     FileCheck, BookOpen, AlertTriangle, History, LayoutDashboard, GraduationCap, Award
 } from 'lucide-react';
@@ -34,7 +35,10 @@ function CalidadPage() {
     const initialTab = (searchParams.get('tab') as TabId) || 'library';
 
     const [currentUser, setCurrentUser] = useState<any>(null);
-    const [activeTab, setActiveTab] = useState<TabId>(initialTab);
+    const [filters, setFilters] = useViewState('calidad-filters', { activeTab: initialTab });
+    const { activeTab } = filters;
+    const setActiveTab = (val: TabId) => setFilters({ activeTab: val });
+
     const [visitedTabs, setVisitedTabs] = useState<Record<TabId, boolean>>(() => {
         return { [initialTab]: true } as Record<TabId, boolean>;
     });

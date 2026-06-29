@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import {
     FileSignature, Search, Eye, Download, CheckCircle2, Clock, X,
     AlertCircle, Loader2, FileText, User, Package, PenLine, Building2,
@@ -15,11 +15,16 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import { ViewConfig, isViewAllowed } from '@/lib/viewAccess';
 import CodeBadge from '@/components/CodeBadge';
 import dynamic from 'next/dynamic';
+import { useViewState } from '@/lib/hooks/useViewState';
+import { useCommandStore } from '@/lib/store/useCommandStore';
+import { useDrawerStore } from '@/lib/store/useDrawerStore';
 
 const OSCobroModal = dynamic(() => import('@/components/OSCobroModal'), { 
     ssr: false, 
     loading: () => <div className="hidden" /> 
 });
+
+const OSNotaModal = dynamic(() => import('@/components/OSNotaModal'), { ssr: false });
 
 interface OrdenServicio {
     id: string;
@@ -500,104 +505,25 @@ function OSDetalle({ os, onClose }: { os: OrdenServicio; onClose: () => void }) 
     );
 }
 
-interface OSNotaModalProps {
-    os: OrdenServicio;
-    onClose: () => void;
-    onSaveSuccess: (updated: OrdenServicio) => void;
-}
-
-function OSNotaModal({ os, onClose, onSaveSuccess }: OSNotaModalProps) {
-    const [note, setNote] = useState<string>(os.notaInterna || '');
-    const [isSaving, setIsSaving] = useState<boolean>(false);
-
-    const handleSave = async () => {
-        setIsSaving(true);
-        try {
-            const res = await fetch(`/api/ordenes-servicio/${os.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ notaInterna: note || null })
-            });
-            if (res.ok) {
-                const updated = await res.json();
-                onSaveSuccess(updated);
-                showToast('Nota interna guardada', 'success');
-            } else {
-                const err = await res.json();
-                showToast(err.error || 'Error al guardar la nota', 'error');
-            }
-        } catch (err) {
-            showToast('Error de conexión', 'error');
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    return (
-        <div className="fixed inset-0 z-[130] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-card text-card-foreground w-full max-w-lg rounded-t-3xl md:rounded-[2rem] shadow-2xl border border-slate-200 dark:border-slate-700 p-6 space-y-4 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300">
-                <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                        <StickyNote className="w-5 h-5 text-amber-500" />
-                        Nota Interna (Privada)
-                    </h3>
-                    <button 
-                        onClick={onClose} 
-                        className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400 dark:text-slate-500 transition-all"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
-
-                <div className="space-y-1">
-                    <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                        OS: {os.codigoOS || os.id.slice(-8).toUpperCase()} | {os.project.nombre}
-                    </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                        Esta nota es estrictamente de uso interno para la empresa. No se plasmará en ningún PDF, factura, ni link público que vea el cliente.
-                    </p>
-                </div>
-
-                <textarea
-                    rows={6}
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    placeholder="Escribe comentarios u observaciones sobre este servicio..."
-                    className="w-full text-sm bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl p-3.5 outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 dark:text-slate-200 transition-all font-medium resize-none placeholder:text-slate-400"
-                />
-
-                <div className="flex justify-end gap-2 pt-2">
-                    <button
-                        onClick={onClose}
-                        disabled={isSaving}
-                        className="px-4 py-2 bg-slate-100 dark:bg-slate-700/50 hover:bg-slate-200 text-slate-600 dark:text-slate-300 rounded-xl font-bold text-xs transition-all active:scale-95 disabled:opacity-50"
-                    >
-                        Cancelar
-                    </button>
-                    <button
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-black text-xs transition-all shadow-md shadow-amber-500/20 active:scale-95 disabled:opacity-50 flex items-center gap-1.5"
-                    >
-                        {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-                        Guardar Nota
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
 function OrdenesServicioContent() {
     const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
     const highlightId = searchParams.get('highlight') || '';
 
     const [ordenes, setOrdenes] = useState<OrdenServicio[]>([]);
     const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filterEstado, setFilterEstado] = useState<'all' | 'pendiente' | 'firmada' | 'cobrada'>('all');
-    const [activeTab, setActiveTab] = useState<'activas' | 'historial'>('activas');
-    const [selectedOS, setSelectedOS] = useState<OrdenServicio | null>(null);
+    
+    const [filters, setFilters] = useViewState('ordenes-servicio-filters', {
+        searchTerm: '',
+        filterEstado: 'all' as 'all' | 'pendiente' | 'firmada' | 'cobrada',
+        activeTab: 'activas' as 'activas' | 'historial'
+    });
+    const { searchTerm, filterEstado, activeTab } = filters;
+    const setSearchTerm = (val: string) => setFilters({ searchTerm: val });
+    const setFilterEstado = (val: typeof filterEstado) => setFilters({ filterEstado: val });
+    const setActiveTab = (val: typeof activeTab) => setFilters({ activeTab: val });
+
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
     const [osToDelete, setOsToDelete] = useState<string | null>(null);
@@ -629,6 +555,38 @@ function OrdenesServicioContent() {
             setLoading(false);
         }
     };
+
+    const openOSDrawer = (os: OrdenServicio) => {
+        // Set context IDs for next/prev navigation based on current filtered view
+        useDrawerStore.getState().setContextIds(filtered.map(o => o.id));
+        
+        // Use query params for deep linking without losing page state
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('drawer', 'os');
+        params.set('id', os.id);
+        
+        const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+        router.push(newUrl, { scroll: false });
+    };
+
+    const registerCommand = useCommandStore((state) => state.registerCommand);
+    const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
+    const latestActions = useRef({ loadOrdenes });
+    
+    useEffect(() => {
+        latestActions.current = { loadOrdenes };
+    });
+
+    useEffect(() => {
+        registerCommand({
+            id: 'ordenes-servicio-refresh',
+            label: 'Actualizar Órdenes',
+            category: 'Contextual',
+            keys: ['r'],
+            action: () => latestActions.current.loadOrdenes()
+        });
+        return () => unregisterCommand('ordenes-servicio-refresh');
+    }, [registerCommand, unregisterCommand]);
 
     const handlePagarOS = async (os: OrdenServicio) => {
         try {
@@ -807,7 +765,8 @@ function OrdenesServicioContent() {
                         return (
                             <div
                                 key={os.id}
-                                className={`bg-card text-card-foreground rounded-2xl border shadow-sm hover:shadow-md transition-all p-4 ${isHighlighted ? 'border-primary ring-2 ring-primary/20' : 'border-slate-200 dark:border-slate-700'}`}
+                                onClick={() => openOSDrawer(os)}
+                                className={`bg-card text-card-foreground rounded-2xl border shadow-sm transition-all p-4 cursor-pointer hover:border-primary/40 hover:shadow-md hover:bg-slate-50/50 dark:hover:bg-slate-900/50 ${isHighlighted ? 'border-primary ring-2 ring-primary/20' : 'border-slate-200 dark:border-slate-700'}`}
                             >
                                 <div className="flex items-center gap-3 flex-wrap">
                                     {/* Status dot */}
@@ -918,14 +877,12 @@ function OrdenesServicioContent() {
                                         >
                                             <StickyNote className="w-3.5 h-3.5" /> Notas
                                         </button>
+
                                         <button
-                                            onClick={() => setSelectedOS(os)}
-                                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-primary/40 hover:text-primary transition-all shadow-sm"
-                                        >
-                                            <Eye className="w-3.5 h-3.5" /> Ver
-                                        </button>
-                                        <button
-                                            onClick={() => setOsToDelete(os.id)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setOsToDelete(os.id);
+                                            }}
                                             title="Eliminar OS"
                                             disabled={isDeleting === os.id}
                                             className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 hover:border-red-500 hover:bg-red-50 hover:text-red-500 transition-all disabled:opacity-50"
@@ -944,7 +901,7 @@ function OrdenesServicioContent() {
                 </div>
             )}
 
-            {selectedOS && <OSDetalle os={selectedOS} onClose={() => setSelectedOS(null)} />}
+            {/* Drawer global maneja el detalle ahora */}
             
             {osCobroToOpen && (
                 <OSCobroModal 

@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useViewState } from '@/lib/hooks/useViewState';
+import { useCommandStore } from '@/lib/store/useCommandStore';
 import {
     Wrench, Plus, Search, ScanLine, Camera, ArrowLeft, X, Save, Trash2, Edit2,
     CheckCircle2, AlertTriangle, Clock, RefreshCw, Minus, ClipboardCheck, Filter,
@@ -93,7 +95,9 @@ function HerramientasPage() {
     const initialTab = (searchParams.get('tab') as TabId) || 'herramientas';
 
     const [currentUser, setCurrentUser] = useState<any>(null);
-    const [activeTab, setActiveTab] = useState<TabId>(initialTab);
+    const [filters, setFilters] = useViewState('herramientas-filters', { activeTab: initialTab });
+    const { activeTab } = filters;
+    const setActiveTab = (val: TabId) => setFilters({ activeTab: val });
 
     useEffect(() => {
         const stored = localStorage.getItem('currentUser');
@@ -122,6 +126,27 @@ function HerramientasPage() {
             setActiveTab(allowedTabs[0].id);
         }
     }, [role, allowedTabs, activeTab]);
+
+    const registerCommand = useCommandStore((state) => state.registerCommand);
+    const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
+    const latestActions = useRef({ setActiveTab });
+    
+    useEffect(() => {
+        latestActions.current = { setActiveTab };
+    });
+
+    useEffect(() => {
+        registerCommand({
+            id: 'tools-refresh',
+            label: 'Actualizar Herramientas',
+            category: 'Contextual',
+            keys: ['ctrl', 'r'],
+            action: () => window.location.reload()
+        });
+        return () => {
+            unregisterCommand('tools-refresh');
+        };
+    }, [registerCommand, unregisterCommand]);
 
     // Loading state — all hooks have been called above
     if (!currentUser) return (

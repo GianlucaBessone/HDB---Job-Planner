@@ -28,6 +28,9 @@ import SearchableSelect from '@/components/SearchableSelect';
 import { formatDate, formatTime, formatSheetDates } from '@/lib/formatDate';
 import { safeApiRequest } from '@/lib/offline';
 import { getProjectOptions } from '@/lib/projectSelectHelper';
+import { useViewState } from '@/lib/hooks/useViewState';
+import { useCommandStore } from '@/lib/store/useCommandStore';
+import { useRef } from 'react';
 
 interface Project {
     id: string;
@@ -64,15 +67,24 @@ export default function DelaysPage() {
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [recentProjects, setRecentProjects] = useState<string[]>([]);
 
-    const [viewMode, setViewMode] = useState<'tarjetas' | 'tabla'>('tabla');
-    const [filterDateFrom, setFilterDateFrom] = useState(() => {
-        const d = new Date();
-        d.setMonth(d.getMonth() - 1);
-        return d.toISOString().split('T')[0];
+    const [filters, setFilters] = useViewState('delays-filters', {
+        viewMode: 'tabla' as 'tarjetas' | 'tabla',
+        filterDateFrom: (() => {
+            const d = new Date();
+            d.setMonth(d.getMonth() - 1);
+            return d.toISOString().split('T')[0];
+        })(),
+        filterDateTo: new Date().toISOString().split('T')[0],
+        filterClientId: '',
+        filterProjectId: ''
     });
-    const [filterDateTo, setFilterDateTo] = useState(new Date().toISOString().split('T')[0]);
-    const [filterClientId, setFilterClientId] = useState('');
-    const [filterProjectId, setFilterProjectId] = useState('');
+    
+    const { viewMode, filterDateFrom, filterDateTo, filterClientId, filterProjectId } = filters;
+    const setViewMode = (val: 'tarjetas' | 'tabla') => setFilters({ viewMode: val });
+    const setFilterDateFrom = (val: string) => setFilters({ filterDateFrom: val });
+    const setFilterDateTo = (val: string) => setFilters({ filterDateTo: val });
+    const setFilterClientId = (val: string) => setFilters({ filterClientId: val });
+    const setFilterProjectId = (val: string) => setFilters({ filterProjectId: val });
 
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [delayToDelete, setDelayToDelete] = useState<string | null>(null);
@@ -246,16 +258,54 @@ export default function DelaysPage() {
 
     const hasActiveFilters = !!(filterClientId || filterProjectId || searchTerm);
 
+    const registerCommand = useCommandStore((state) => state.registerCommand);
+    const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
+    const latestActions = useRef({ 
+        openCreate: () => {
+            setEditingDelayId(null);
+            setFormData(prev => ({ ...prev, projectId: '', motivo: '', duracion: '' as any, area: '', responsableArea: '' }));
+            setIsModalOpen(true);
+        },
+        exportToExcel 
+    });
+    
+    useEffect(() => {
+        latestActions.current = { 
+            openCreate: () => {
+                setEditingDelayId(null);
+                setFormData(prev => ({ ...prev, projectId: '', motivo: '', duracion: '' as any, area: '', responsableArea: '' }));
+                setIsModalOpen(true);
+            },
+            exportToExcel 
+        };
+    });
+
+    useEffect(() => {
+        registerCommand({
+            id: 'delays-nuevo',
+            label: 'Registrar Demora',
+            category: 'Contextual',
+            keys: ['ctrl', 'n'],
+            action: () => latestActions.current.openCreate()
+        });
+        registerCommand({
+            id: 'delays-export-excel',
+            label: 'Exportar Excel',
+            category: 'Contextual',
+            keys: ['ctrl', 'e'],
+            action: () => latestActions.current.exportToExcel()
+        });
+        return () => {
+            unregisterCommand('delays-nuevo');
+            unregisterCommand('delays-export-excel');
+        };
+    }, [registerCommand, unregisterCommand]);
+
     return (
         <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500 mb-1">
-                        <Link href="/projects" className="hover:text-primary transition-colors flex items-center gap-1 text-xs font-bold uppercase tracking-widest">
-                            <ArrowLeft className="w-3 h-3" /> Regresar a Proyectos
-                        </Link>
-                    </div>
                     <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
                         <Timer className="w-6 h-6 md:w-8 md:h-8 text-amber-500" />
                         Demoras del Cliente

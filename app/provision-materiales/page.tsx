@@ -34,6 +34,8 @@ import * as XLSX from "xlsx";
 import { createPortal } from "react-dom";
 import { showToast } from "@/components/Toast";
 import { ViewConfig, isViewAllowed } from "@/lib/viewAccess";
+import { useViewState } from "@/lib/hooks/useViewState";
+import { useCommandStore } from "@/lib/store/useCommandStore";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 type MaterialUso = {
@@ -1688,10 +1690,15 @@ export default function ProvisionMaterialesPage() {
   const [user, setUser] = useState<any>(null);
   const [proyectos, setProyectos] = useState<Proyecto[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<
-    "todos" | "activos" | "pendiente_devolucion" | "cerrado"
-  >("todos");
-  const [searchQuery, setSearchQuery] = useState("");
+  
+  const [filters, setFilters] = useViewState("provision-materiales-filters", {
+    filter: "todos" as "todos" | "activos" | "pendiente_devolucion" | "cerrado",
+    searchQuery: ""
+  });
+  const { filter, searchQuery } = filters;
+  const setFilter = (val: typeof filter) => setFilters({ filter: val });
+  const setSearchQuery = (val: string) => setFilters({ searchQuery: val });
+
   const [showImport, setShowImport] = useState(false);
   const [importResults, setImportResults] = useState<any[] | null>(null);
   const [viewConfig, setViewConfig] = useState<ViewConfig[] | null>(null);
@@ -1722,6 +1729,25 @@ export default function ProvisionMaterialesPage() {
     setProyectos(Array.isArray(data) ? data : []);
     if (showLoader) setLoading(false);
   }, []);
+
+  const registerCommand = useCommandStore((state) => state.registerCommand);
+  const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
+  const latestActions = useRef({ loadData });
+  
+  useEffect(() => {
+    latestActions.current = { loadData };
+  });
+
+  useEffect(() => {
+    registerCommand({
+        id: 'provision-materiales-refresh',
+        label: 'Actualizar Proyectos',
+        category: 'Contextual',
+        keys: ['r'],
+        action: () => latestActions.current.loadData(true)
+    });
+    return () => unregisterCommand('provision-materiales-refresh');
+  }, [registerCommand, unregisterCommand]);
 
   const refreshSingleProject = async (id: string) => {
     const res = await fetch(

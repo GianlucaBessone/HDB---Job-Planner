@@ -17,6 +17,9 @@ import {
 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { safeApiRequest } from '@/lib/offline';
+import { useViewState } from '@/lib/hooks/useViewState';
+import { useCommandStore } from '@/lib/store/useCommandStore';
+import { useRef } from 'react';
 
 interface Client {
     id: string;
@@ -40,7 +43,13 @@ const normalize = (s: string) =>
 
 export default function ClientsPage() {
     const [clients, setClients] = useState<Client[]>([]);
-    const [searchTerm, setSearchTerm] = useState('');
+    
+    const [filters, setFilters] = useViewState('clients-filters', {
+        searchTerm: ''
+    });
+    const { searchTerm } = filters;
+    const setSearchTerm = (val: string) => setFilters({ searchTerm: val });
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [editingClient, setEditingClient] = useState<Client | null>(null);
@@ -131,6 +140,25 @@ export default function ClientsPage() {
             );
         });
     }, [clients, searchTerm]);
+
+    const registerCommand = useCommandStore((state) => state.registerCommand);
+    const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
+    const latestActions = useRef({ openCreate });
+    
+    useEffect(() => {
+        latestActions.current = { openCreate };
+    });
+
+    useEffect(() => {
+        registerCommand({
+            id: 'clients-new',
+            label: 'Nuevo Cliente',
+            category: 'Contextual',
+            keys: ['ctrl', 'n'],
+            action: () => latestActions.current.openCreate()
+        });
+        return () => unregisterCommand('clients-new');
+    }, [registerCommand, unregisterCommand]);
 
     return (
         <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">

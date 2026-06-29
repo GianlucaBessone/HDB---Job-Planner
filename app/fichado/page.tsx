@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useViewState } from '@/lib/hooks/useViewState';
+import { useCommandStore } from '@/lib/store/useCommandStore';
 import { 
     Play, 
     Square, 
@@ -46,7 +48,15 @@ export default function PunchInPage() {
     const [locationError, setLocationError] = useState<string | null>(null);
     const [isRefreshingLocation, setIsRefreshingLocation] = useState(false);
     const [deviceId, setDeviceId] = useState<string>('');
-    const [validationMode, setValidationMode] = useState<'gps' | 'qr'>('gps');
+    const [filters, setFilters] = useViewState('fichado-filters', {
+        validationMode: 'gps' as 'gps' | 'qr'
+    });
+    const { validationMode } = filters;
+    const setValidationMode = (val: 'gps' | 'qr') => setFilters({ validationMode: val });
+
+    const registerCommand = useCommandStore((state) => state.registerCommand);
+    const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
+    const latestActions = useRef({ refreshLocation: () => {} });
 
     // QR State
     const [isScanning, setIsScanning] = useState(false);
@@ -85,6 +95,21 @@ export default function PunchInPage() {
         // Get initial location
         refreshLocation();
     }, []);
+
+    useEffect(() => {
+        latestActions.current = { refreshLocation };
+    });
+
+    useEffect(() => {
+        registerCommand({
+            id: 'fichado-refresh-location',
+            label: 'Actualizar GPS',
+            category: 'Contextual',
+            keys: ['ctrl', 'r'],
+            action: () => latestActions.current.refreshLocation()
+        });
+        return () => unregisterCommand('fichado-refresh-location');
+    }, [registerCommand, unregisterCommand]);
 
     const loadData = async (userId: string) => {
         setIsLoading(true);

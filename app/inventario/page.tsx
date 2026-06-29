@@ -6,6 +6,8 @@ import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { ViewConfig, isViewAllowed } from '@/lib/viewAccess';
+import { useViewState } from '@/lib/hooks/useViewState';
+import { useCommandStore } from '@/lib/store/useCommandStore';
 
 interface Material {
     codigo: string;
@@ -17,7 +19,13 @@ interface Material {
 export default function InventarioPage() {
     const [materiales, setMateriales] = useState<Material[]>([]);
     const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [filters, setFilters] = useViewState('inventario-filters', {
+        searchTerm: '',
+        searchMode: 'codigo' as 'codigo' | 'nombre'
+    });
+    const { searchTerm, searchMode } = filters;
+    const setSearchTerm = (val: string) => setFilters({ searchTerm: val });
+    const setSearchMode = (val: typeof searchMode) => setFilters({ searchMode: val });
     
     // Modal states
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -163,7 +171,24 @@ export default function InventarioPage() {
         setIsEditModalOpen(true);
     };
 
-    const [searchMode, setSearchMode] = useState<'codigo' | 'nombre'>('codigo');
+    const registerCommand = useCommandStore((state) => state.registerCommand);
+    const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
+    const latestActions = useRef({ openCreateModal });
+    
+    useEffect(() => {
+        latestActions.current = { openCreateModal };
+    });
+
+    useEffect(() => {
+        registerCommand({
+            id: 'inventario-new',
+            label: 'Nuevo Material',
+            category: 'Contextual',
+            keys: ['ctrl', 'n'],
+            action: () => latestActions.current.openCreateModal()
+        });
+        return () => unregisterCommand('inventario-new');
+    }, [registerCommand, unregisterCommand]);
 
     const filtered = useMemo(() => {
         const normalize = (s: string) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();

@@ -12,6 +12,9 @@ import { formatDate, formatTime, formatSheetDates } from '@/lib/formatDate';
 import { getProjectOptions, filterOperatorProjects } from '@/lib/projectSelectHelper';
 import CodeBadge from '@/components/CodeBadge';
 import HelpContextual from '@/components/HelpContextual';
+import { useViewState } from '@/lib/hooks/useViewState';
+import { useCommandStore } from '@/lib/store/useCommandStore';
+import { useRef } from 'react';
 
 interface Project {
     id: string;
@@ -60,15 +63,20 @@ export default function TimesheetsPage() {
 
 
     // Filters and View Mode
-    const [viewMode, setViewMode] = useState<'tarjetas' | 'planilla' | 'resumen'>('tarjetas');
-    const [filterDateFrom, setFilterDateFrom] = useState(() => {
-        const d = new Date();
-        d.setDate(1);
-        return d.toISOString().split('T')[0];
+    const [filters, setFilters] = useViewState('timesheets-filters', {
+        viewMode: 'tarjetas' as 'tarjetas' | 'planilla' | 'resumen',
+        filterDateFrom: new Date(new Date().setDate(1)).toISOString().split('T')[0],
+        filterDateTo: new Date().toISOString().split('T')[0],
+        filterOperator: '',
+        filterProject: ''
     });
-    const [filterDateTo, setFilterDateTo] = useState(new Date().toISOString().split('T')[0]);
-    const [filterOperator, setFilterOperator] = useState('');
-    const [filterProject, setFilterProject] = useState('');
+
+    const { viewMode, filterDateFrom, filterDateTo, filterOperator, filterProject } = filters;
+    const setViewMode = (val: 'tarjetas' | 'planilla' | 'resumen') => setFilters({ viewMode: val });
+    const setFilterDateFrom = (val: string) => setFilters({ filterDateFrom: val });
+    const setFilterDateTo = (val: string) => setFilters({ filterDateTo: val });
+    const setFilterOperator = (val: string) => setFilters({ filterOperator: val });
+    const setFilterProject = (val: string) => setFilters({ filterProject: val });
     const [currentUser, setCurrentUser] = useState<any>(null);
 
     // Modal State
@@ -521,6 +529,35 @@ export default function TimesheetsPage() {
 
     const totalFilteredNormales = filteredCompleted.filter(e => !e.isExtra).reduce((sum, e) => sum + e.horasTrabajadas, 0);
     const totalFilteredExtras = filteredCompleted.filter(e => e.isExtra).reduce((sum, e) => sum + e.horasTrabajadas, 0);
+
+    const registerCommand = useCommandStore((state) => state.registerCommand);
+    const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
+    const latestActions = useRef({ openEditModal, exportToExcel });
+    
+    useEffect(() => {
+        latestActions.current = { openEditModal, exportToExcel };
+    });
+
+    useEffect(() => {
+        registerCommand({
+            id: 'ts-carga-manual',
+            label: 'Carga Manual',
+            category: 'Contextual',
+            keys: ['ctrl', 'n'],
+            action: () => latestActions.current.openEditModal()
+        });
+        registerCommand({
+            id: 'ts-export-excel',
+            label: 'Exportar Excel',
+            category: 'Contextual',
+            keys: ['ctrl', 'e'],
+            action: () => latestActions.current.exportToExcel()
+        });
+        return () => {
+            unregisterCommand('ts-carga-manual');
+            unregisterCommand('ts-export-excel');
+        };
+    }, [registerCommand, unregisterCommand]);
 
     return (
         <div className="w-full space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">

@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useViewState } from '@/lib/hooks/useViewState';
+import { useCommandStore } from '@/lib/store/useCommandStore';
 import { Loader2, Search, Filter, ShieldCheck, UserCheck, CalendarDays, NotebookTabs, ArrowRightCircle, Users, Lightbulb, BadgeCheck, FileClock, X, Check, Save, Brain, BarChart3, MessageSquare, History, ListTodo, Copy } from "lucide-react";
 import { showToast } from '@/components/Toast';
 
@@ -18,8 +20,17 @@ export default function GestionSugerenciasPage() {
     const [operadores, setOperadores] = useState<any[]>(_cachedOperadores || []);
     const [loading, setLoading] = useState(_cachedSugerencias === null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('Todos');
-    const [activeTab, setActiveTab] = useState<'lista' | 'dashboard'>('lista');
+    const [filters, setFilters] = useViewState('gestion-sugerencias-filters', {
+        statusFilter: 'Todos',
+        activeTab: 'lista' as 'lista' | 'dashboard'
+    });
+    const { statusFilter, activeTab } = filters;
+    const setStatusFilter = (val: string) => setFilters({ statusFilter: val });
+    const setActiveTab = (val: 'lista' | 'dashboard') => setFilters({ activeTab: val });
+
+    const registerCommand = useCommandStore((state) => state.registerCommand);
+    const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
+    const latestActions = useRef({ refresh: () => {} });
     
     // Modal states
     const [selectedSug, setSelectedSug] = useState<any>(null);
@@ -84,6 +95,23 @@ export default function GestionSugerenciasPage() {
     useEffect(() => {
         fetchData();
     }, [fetchData]);
+
+    useEffect(() => {
+        latestActions.current = {
+            refresh: () => fetchData(true)
+        };
+    });
+
+    useEffect(() => {
+        registerCommand({
+            id: 'gestion-sugerencias-refresh',
+            label: 'Actualizar Sugerencias',
+            category: 'Contextual',
+            keys: ['ctrl', 'r'],
+            action: () => latestActions.current.refresh()
+        });
+        return () => unregisterCommand('gestion-sugerencias-refresh');
+    }, [registerCommand, unregisterCommand]);
 
     const handleOpenModal = (sug: any) => {
         setSelectedSug(sug);

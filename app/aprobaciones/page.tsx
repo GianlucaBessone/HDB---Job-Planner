@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { format } from "date-fns";
+import { useCommandStore } from "@/lib/store/useCommandStore";
 import { 
     ShieldCheck, 
     Clock, 
@@ -58,6 +59,10 @@ export default function ApprovalsPage() {
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [selectedEntry, setSelectedEntry] = useState<any>(null);
 
+    const registerCommand = useCommandStore((state) => state.registerCommand);
+    const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
+    const latestActions = useRef({ loadEntries: () => {} });
+
     const loadEntries = async () => {
         setLoading(true);
         try {
@@ -77,6 +82,21 @@ export default function ApprovalsPage() {
         setCurrentUser(user);
         loadEntries();
     }, []);
+
+    useEffect(() => {
+        latestActions.current = { loadEntries };
+    });
+
+    useEffect(() => {
+        registerCommand({
+            id: 'aprobaciones-refresh',
+            label: 'Actualizar Fichadas Pendientes',
+            category: 'Contextual',
+            keys: ['ctrl', 'r'],
+            action: () => latestActions.current.loadEntries()
+        });
+        return () => unregisterCommand('aprobaciones-refresh');
+    }, [registerCommand, unregisterCommand]);
 
     const handleAction = async (id: string, action: 'APPROVED' | 'REJECTED') => {
         try {

@@ -32,6 +32,8 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import SearchableSelect from '@/components/SearchableSelect';
 import { Layout } from 'lucide-react';
 import { getProjectOptions } from '@/lib/projectSelectHelper';
+import { useCommandStore } from '@/lib/store/useCommandStore';
+import { useRef } from 'react';
 
 export default function PlanningPage() {
     const {
@@ -282,6 +284,53 @@ export default function PlanningPage() {
     const whatsappMessage = formatWhatsAppMessage({ date: fecha, blocks });
     const copyToClipboard = () => { navigator.clipboard.writeText(whatsappMessage); showToast('Mensaje copiado al portapapeles', 'success'); };
     const openInWhatsApp = () => { const url = `https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`; window.open(url, '_blank'); };
+
+    const registerCommand = useCommandStore((state) => state.registerCommand);
+    const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
+    const latestActions = useRef({
+        addWorkBlock: () => addBlock('work'),
+        addNoteBlock: () => addBlock('note'),
+        save: handleSave,
+        copyWA: copyToClipboard
+    });
+    
+    useEffect(() => {
+        latestActions.current = {
+            addWorkBlock: () => addBlock('work'),
+            addNoteBlock: () => addBlock('note'),
+            save: handleSave,
+            copyWA: copyToClipboard
+        };
+    });
+
+    useEffect(() => {
+        registerCommand({
+            id: 'planning-add-block',
+            label: 'Añadir Bloque',
+            category: 'Contextual',
+            keys: ['ctrl', 'n'],
+            action: () => latestActions.current.addWorkBlock()
+        });
+        registerCommand({
+            id: 'planning-add-note',
+            label: 'Añadir Nota',
+            category: 'Contextual',
+            keys: ['ctrl', 'shift', 'n'],
+            action: () => latestActions.current.addNoteBlock()
+        });
+        registerCommand({
+            id: 'planning-save',
+            label: 'Guardar Planificación',
+            category: 'Contextual',
+            keys: ['ctrl', 's'],
+            action: () => latestActions.current.save()
+        });
+        return () => {
+            unregisterCommand('planning-add-block');
+            unregisterCommand('planning-add-note');
+            unregisterCommand('planning-save');
+        };
+    }, [registerCommand, unregisterCommand]);
 
     const handleNotifyPlanning = async () => {
         try {

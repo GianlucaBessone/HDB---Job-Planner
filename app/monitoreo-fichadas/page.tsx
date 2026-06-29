@@ -34,6 +34,9 @@ import { showToast } from '@/components/Toast';
 import SearchableSelect from '@/components/SearchableSelect';
 import CodeBadge from '@/components/CodeBadge';
 import * as XLSX from 'xlsx';
+import { useViewState } from '@/lib/hooks/useViewState';
+import { useCommandStore } from '@/lib/store/useCommandStore';
+import { useRef } from 'react';
 
 interface TimeEntry {
     id: string;
@@ -64,15 +67,24 @@ export default function FichadasAdminPage() {
     const [currentUser, setCurrentUser] = useState<any>(null);
 
     // Filters
-    const [filterDateFrom, setFilterDateFrom] = useState(() => {
-        const d = new Date();
-        d.setHours(0,0,0,0);
-        return d.toISOString().split('T')[0];
+    const [filters, setFilters] = useViewState('monitoreo-fichadas-filters', {
+        filterDateFrom: (() => {
+            const d = new Date();
+            d.setHours(0,0,0,0);
+            return d.toISOString().split('T')[0];
+        })(),
+        filterDateTo: new Date().toISOString().split('T')[0],
+        filterOperator: '',
+        filterProject: '',
+        filterSuspicious: false
     });
-    const [filterDateTo, setFilterDateTo] = useState(new Date().toISOString().split('T')[0]);
-    const [filterOperator, setFilterOperator] = useState('');
-    const [filterProject, setFilterProject] = useState('');
-    const [filterSuspicious, setFilterSuspicious] = useState(false);
+    
+    const { filterDateFrom, filterDateTo, filterOperator, filterProject, filterSuspicious } = filters;
+    const setFilterDateFrom = (val: string) => setFilters({ filterDateFrom: val });
+    const setFilterDateTo = (val: string) => setFilters({ filterDateTo: val });
+    const setFilterOperator = (val: string) => setFilters({ filterOperator: val });
+    const setFilterProject = (val: string) => setFilters({ filterProject: val });
+    const setFilterSuspicious = (val: boolean) => setFilters({ filterSuspicious: val });
 
     // Verificar Cruce modal
     const [isCruceOpen, setIsCruceOpen] = useState(false);
@@ -270,6 +282,51 @@ export default function FichadasAdminPage() {
         };
         return descriptions[flag] || flag;
     };
+
+    const registerCommand = useCommandStore((state) => state.registerCommand);
+    const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
+    const latestActions = useRef({ 
+        refresh: loadEntries,
+        cruce: () => setIsCruceOpen(true),
+        exportToExcel 
+    });
+    
+    useEffect(() => {
+        latestActions.current = { 
+            refresh: loadEntries,
+            cruce: () => setIsCruceOpen(true),
+            exportToExcel 
+        };
+    });
+
+    useEffect(() => {
+        registerCommand({
+            id: 'fichadas-refresh',
+            label: 'Actualizar Datos',
+            category: 'Contextual',
+            keys: ['ctrl', 'r'],
+            action: () => latestActions.current.refresh()
+        });
+        registerCommand({
+            id: 'fichadas-cruce',
+            label: 'Verificar Cruce de Horas',
+            category: 'Contextual',
+            keys: ['ctrl', 'n'],
+            action: () => latestActions.current.cruce()
+        });
+        registerCommand({
+            id: 'fichadas-export-excel',
+            label: 'Exportar a Excel',
+            category: 'Contextual',
+            keys: ['ctrl', 'e'],
+            action: () => latestActions.current.exportToExcel()
+        });
+        return () => {
+            unregisterCommand('fichadas-refresh');
+            unregisterCommand('fichadas-cruce');
+            unregisterCommand('fichadas-export-excel');
+        };
+    }, [registerCommand, unregisterCommand]);
 
     return (
         <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">

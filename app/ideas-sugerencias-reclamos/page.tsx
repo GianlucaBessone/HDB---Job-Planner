@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useViewState } from '@/lib/hooks/useViewState';
+import { useCommandStore } from '@/lib/store/useCommandStore';
 import { 
     Lightbulb, 
     MessageSquare, 
@@ -130,14 +132,39 @@ export default function IdeasSugerenciasReclamosPage() {
     const [submissionResult, setSubmissionResult] = useState<any>(null);
 
     // Navigation and Pizarra States
-    const [activeTab, setActiveTab] = useState<'registrar' | 'pizarra'>('registrar');
+    const [filters, setFilters] = useViewState('ideas-sugerencias-filters', {
+        activeTab: 'registrar' as 'registrar' | 'pizarra',
+        statusFilter: 'Todos',
+        areaFilter: 'Todos'
+    });
+    const { activeTab, statusFilter, areaFilter } = filters;
+    const setActiveTab = (val: 'registrar' | 'pizarra') => setFilters({ activeTab: val });
+    const setStatusFilter = (val: string) => setFilters({ statusFilter: val });
+    const setAreaFilter = (val: string) => setFilters({ areaFilter: val });
+    
     const [sugerencias, setSugerencias] = useState<any[]>([]);
     const [isLoadingSugerencias, setIsLoadingSugerencias] = useState(false);
     const [errorSugerencias, setErrorSugerencias] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('Todos');
-    const [areaFilter, setAreaFilter] = useState('Todos');
     const [expandedCard, setExpandedCard] = useState<string | null>(null);
+
+    const registerCommand = useCommandStore((state) => state.registerCommand);
+    const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
+    const latestActions = useRef({ 
+        refresh: () => {
+            if (activeTab === 'pizarra') {
+                setIsLoadingSugerencias(true);
+                setErrorSugerencias('');
+                fetch('/api/sugerencias')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (Array.isArray(data)) setSugerencias(data);
+                    })
+                    .catch(() => setErrorSugerencias('Error al cargar datos desde el servidor.'))
+                    .finally(() => setIsLoadingSugerencias(false));
+            }
+        } 
+    });
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const errorBannerRef = useRef<HTMLDivElement>(null);
@@ -171,6 +198,35 @@ export default function IdeasSugerenciasReclamosPage() {
             errorBannerRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     }, [errorMessage]);
+
+    useEffect(() => {
+        latestActions.current = {
+            refresh: () => {
+                if (activeTab === 'pizarra') {
+                    setIsLoadingSugerencias(true);
+                    setErrorSugerencias('');
+                    fetch('/api/sugerencias')
+                        .then(res => res.json())
+                        .then(data => {
+                            if (Array.isArray(data)) setSugerencias(data);
+                        })
+                        .catch(() => setErrorSugerencias('Error al cargar datos desde el servidor.'))
+                        .finally(() => setIsLoadingSugerencias(false));
+                }
+            }
+        };
+    });
+
+    useEffect(() => {
+        registerCommand({
+            id: 'ideas-sugerencias-refresh',
+            label: 'Actualizar Pizarra',
+            category: 'Contextual',
+            keys: ['ctrl', 'r'],
+            action: () => latestActions.current.refresh()
+        });
+        return () => unregisterCommand('ideas-sugerencias-refresh');
+    }, [registerCommand, unregisterCommand]);
 
     // Fetch suggestions when activeTab changes to 'pizarra'
     useEffect(() => {

@@ -65,6 +65,10 @@ import {
     VIEW_STORAGE_KEY
 } from '@/lib/projectTypes';
 
+import { useViewState } from '@/lib/hooks/useViewState';
+import { useCommandStore } from '@/lib/store/useCommandStore';
+import { useRef } from 'react';
+
 import ProjectViewSelector from '@/components/projects/ProjectViewSelector';
 import ProjectCardView from '@/components/projects/ProjectCardView';
 import ProjectSpreadsheetView from '@/components/projects/ProjectSpreadsheetView';
@@ -80,15 +84,15 @@ function ProjectsContent() {
     const [operators, setOperators] = useState<{ id: string; nombreCompleto: string; role?: string }[]>([]);
     const [clients, setClients] = useState<{ id: string; nombre: string }[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [viewType, setViewType] = useState<ViewType>('card');
+    const [viewType, setViewType] = useViewState<ViewType>(VIEW_STORAGE_KEY, 'card');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [editingProject, setEditingProject] = useState<Project | null>(null);
     const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [pendingFilters, setPendingFilters] = useState<Filters>(EMPTY_FILTERS);
-    const [appliedFilters, setAppliedFilters] = useState<Filters>(EMPTY_FILTERS);
-    const [activeTab, setActiveTab] = useState('proyectos');
+    const [pendingFilters, setPendingFilters] = useViewState<Filters>('projects-pendingFilters', EMPTY_FILTERS);
+    const [appliedFilters, setAppliedFilters] = useViewState<Filters>('projects-appliedFilters', EMPTY_FILTERS);
+    const [activeTab, setActiveTab] = useViewState('projects-activeTab', 'proyectos');
 
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
@@ -105,9 +109,6 @@ function ProjectsContent() {
     useEffect(() => {
         const user = localStorage.getItem('currentUser');
         if (user) setCurrentUser(JSON.parse(user));
-        
-        const savedView = localStorage.getItem(VIEW_STORAGE_KEY) as ViewType;
-        if (savedView) setViewType(savedView);
     }, []);
 
     // Details Modal State
@@ -350,6 +351,27 @@ function ProjectsContent() {
         });
     }, [projects, searchTerm, appliedFilters]);
 
+    const registerCommand = useCommandStore((state) => state.registerCommand);
+    const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
+    const latestActions = useRef({ openCreate });
+    
+    useEffect(() => {
+        latestActions.current = { openCreate };
+    });
+
+    useEffect(() => {
+        registerCommand({
+            id: 'proj-nuevo',
+            label: 'Nuevo Proyecto',
+            category: 'Contextual',
+            keys: ['ctrl', 'n'],
+            action: () => latestActions.current.openCreate()
+        });
+        return () => {
+            unregisterCommand('proj-nuevo');
+        };
+    }, [registerCommand, unregisterCommand]);
+
     // ── Render ────────────────────────────────────────────────────────────────
     return (
         <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -391,10 +413,7 @@ function ProjectsContent() {
                 <div className="flex flex-col xl:flex-row justify-between items-stretch xl:items-center gap-4">
                     <ProjectViewSelector 
                         value={viewType} 
-                        onChange={(val) => {
-                            setViewType(val);
-                            localStorage.setItem(VIEW_STORAGE_KEY, val);
-                        }} 
+                        onChange={setViewType} 
                     />
 
                     {/* Date Filters Area */}

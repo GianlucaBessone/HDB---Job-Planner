@@ -13,24 +13,37 @@ import DynamicChart from '@/app/okr-kpi/components/DynamicChart';
 import { useDashboardAggregation } from './useDashboardAggregation';
 import { useOrdenesServicioAggregation } from './useOrdenesServicioAggregation';
 import OrdenesServicioTab from './OrdenesServicioTab';
+import { useViewState } from '@/lib/hooks/useViewState';
+import { useCommandStore } from '@/lib/store/useCommandStore';
+import { useRef } from 'react';
 
 const fetcher = (url: string) => safeApiRequest(url).then(res => res.json());
 
 export default function DashboardPage() {
     const [isLoading, setIsLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'proyectos' | 'servicios' | 'operadores' | 'ordenes'>('proyectos');
+    const [filtersObj, setFiltersObj] = useViewState('dashboard-filters', {
+        activeTab: 'proyectos' as 'proyectos' | 'servicios' | 'operadores' | 'ordenes',
+        filterFrom: '',
+        filterTo: '',
+        filterClientId: '',
+        filterStatus: 'active',
+        filterProjectId: '',
+        filterClassification: '',
+        filterOperator: '',
+        filterArea: ''
+    });
 
-    // Filter States
-    const [filterFrom, setFilterFrom] = useState<string>('');
-    const [filterTo, setFilterTo] = useState<string>('');
-    const [filterClientId, setFilterClientId] = useState<string>('');
-    const [filterStatus, setFilterStatus] = useState('active');
+    const { activeTab, filterFrom, filterTo, filterClientId, filterStatus, filterProjectId, filterClassification, filterOperator, filterArea } = filtersObj;
     
-    // New Advanced Cross-Filters
-    const [filterProjectId, setFilterProjectId] = useState<string>('');
-    const [filterClassification, setFilterClassification] = useState<string>('');
-    const [filterOperator, setFilterOperator] = useState<string>('');
-    const [filterArea, setFilterArea] = useState<string>('');
+    const setActiveTab = (val: typeof activeTab) => setFiltersObj({ activeTab: val });
+    const setFilterFrom = (val: string) => setFiltersObj({ filterFrom: val });
+    const setFilterTo = (val: string) => setFiltersObj({ filterTo: val });
+    const setFilterClientId = (val: string) => setFiltersObj({ filterClientId: val });
+    const setFilterStatus = (val: string) => setFiltersObj({ filterStatus: val });
+    const setFilterProjectId = (val: string) => setFiltersObj({ filterProjectId: val });
+    const setFilterClassification = (val: string) => setFiltersObj({ filterClassification: val });
+    const setFilterOperator = (val: string) => setFiltersObj({ filterOperator: val });
+    const setFilterArea = (val: string) => setFiltersObj({ filterArea: val });
 
     const filters = useMemo(() => ({
         filterStatus, filterClientId, filterFrom, filterTo,
@@ -111,15 +124,38 @@ export default function DashboardPage() {
     };
 
     const clearFilters = () => {
-        setFilterStatus('active');
-        setFilterClientId('');
-        setFilterFrom('');
-        setFilterTo('');
-        setFilterProjectId('');
-        setFilterClassification('');
-        setFilterOperator('');
-        setFilterArea('');
+        setFiltersObj({
+            filterStatus: 'active',
+            filterClientId: '',
+            filterFrom: '',
+            filterTo: '',
+            filterProjectId: '',
+            filterClassification: '',
+            filterOperator: '',
+            filterArea: ''
+        });
     };
+
+    const registerCommand = useCommandStore((state) => state.registerCommand);
+    const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
+    const latestActions = useRef({ clearFilters });
+    
+    useEffect(() => {
+        latestActions.current = { clearFilters };
+    });
+
+    useEffect(() => {
+        registerCommand({
+            id: 'dash-clear',
+            label: 'Limpiar Filtros del Dashboard',
+            category: 'Contextual',
+            keys: ['ctrl', 'l'],
+            action: () => latestActions.current.clearFilters()
+        });
+        return () => {
+            unregisterCommand('dash-clear');
+        };
+    }, [registerCommand, unregisterCommand]);
 
     if (isLoading && !data) {
         return (

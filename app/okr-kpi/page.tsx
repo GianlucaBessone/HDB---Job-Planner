@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useViewState } from '@/lib/hooks/useViewState';
 import { Target } from 'lucide-react';
 
 import DashboardEstrategicoTab from './components/DashboardEstrategicoTab';
@@ -17,7 +18,9 @@ type TabId = 'dashboard' | 'okr' | 'kpi' | 'graficos' | 'planes' | 'historico';
 export default function OkrKpiPage() {
     const router = useRouter();
     const [currentUser, setCurrentUser] = useState<any>(null);
-    const [activeTab, setActiveTab] = useState<TabId>('dashboard');
+    const [filters, setFilters] = useViewState('okr-kpi-filters', { activeTab: 'dashboard' as TabId });
+    const { activeTab } = filters;
+    const setActiveTab = (val: TabId) => setFilters({ activeTab: val });
     const [visitedTabs, setVisitedTabs] = useState<Record<TabId, boolean>>({ dashboard: true } as Record<TabId, boolean>);
 
     useEffect(() => {

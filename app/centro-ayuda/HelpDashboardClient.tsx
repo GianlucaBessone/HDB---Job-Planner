@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Search, ChevronRight, LifeBuoy, X } from 'lucide-react';
 import { renderIcon } from '@/lib/iconRegistry';
+import { useViewState } from '@/lib/hooks/useViewState';
 
 interface Article {
   id: string;
@@ -31,7 +32,9 @@ interface HelpDashboardClientProps {
 }
 
 export default function HelpDashboardClient({ categories, popularArticles }: HelpDashboardClientProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useViewState('help-dashboard-filters', { searchQuery: '' });
+  const { searchQuery } = filters;
+  const setSearchQuery = (val: string) => setFilters({ searchQuery: val });
 
   // Extract all articles for client-side search
   const allArticles = categories.flatMap(cat => 

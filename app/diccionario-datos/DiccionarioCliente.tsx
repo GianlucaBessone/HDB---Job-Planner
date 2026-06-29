@@ -1,19 +1,32 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Database, RefreshCw, Search, Eye, EyeOff, Edit2, X, Table as TableIcon, Key } from 'lucide-react';
 import { showToast } from '@/components/Toast';
+import { useViewState } from '@/lib/hooks/useViewState';
+import { useCommandStore } from '@/lib/store/useCommandStore';
 
 export default function DiccionarioCliente({ user }: { user: any }) {
     const [tablas, setTablas] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [syncing, setSyncing] = useState(false);
-    const [search, setSearch] = useState('');
-    const [incluirOcultas, setIncluirOcultas] = useState(false);
+    
+    const [filters, setFilters] = useViewState('diccionario-datos-filters', {
+        search: '',
+        incluirOcultas: false
+    });
+    const { search, incluirOcultas } = filters;
+    const setSearch = (val: string) => setFilters({ search: val });
+    const setIncluirOcultas = (val: boolean) => setFilters({ incluirOcultas: val });
+
     const [selectedTabla, setSelectedTabla] = useState<any | null>(null);
     const [loadingDetalle, setLoadingDetalle] = useState(false);
     const [editingCampo, setEditingCampo] = useState<any | null>(null);
     const [syncProgress, setSyncProgress] = useState<{ actual: number; total: number; tablaActual: string } | null>(null);
+
+    const registerCommand = useCommandStore((state) => state.registerCommand);
+    const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
+    const latestActions = useRef({ fetchTablas: () => {} });
 
     const fetchTablas = useCallback(async () => {
         setLoading(true);
@@ -27,6 +40,21 @@ export default function DiccionarioCliente({ user }: { user: any }) {
     useEffect(() => {
         fetchTablas();
     }, [fetchTablas]);
+
+    useEffect(() => {
+        latestActions.current = { fetchTablas };
+    });
+
+    useEffect(() => {
+        registerCommand({
+            id: 'diccionario-refresh',
+            label: 'Actualizar Diccionario',
+            category: 'Contextual',
+            keys: ['ctrl', 'r'],
+            action: () => latestActions.current.fetchTablas()
+        });
+        return () => unregisterCommand('diccionario-refresh');
+    }, [registerCommand, unregisterCommand]);
 
     const handleSync = async () => {
         setSyncing(true);

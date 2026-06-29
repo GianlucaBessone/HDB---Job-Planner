@@ -7,12 +7,19 @@ import { safeApiRequest } from '@/lib/offline';
 import { formatDateTime } from '@/lib/formatDate';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useViewState } from '@/lib/hooks/useViewState';
+import { useCommandStore } from '@/lib/store/useCommandStore';
 
 function NotificationsContent() {
     const [user, setUser] = useState<any>(null);
     const [notifications, setNotifications] = useState<any[]>([]);
-    const [activeTab, setActiveTab] = useState<'unread' | 'read'>('unread');
-    const [unreadSubTab, setUnreadSubTab] = useState<'generales' | 'prioritarias'>('prioritarias');
+    const [filters, setFilters] = useViewState('notifications-filters', {
+        activeTab: 'unread' as 'unread' | 'read',
+        unreadSubTab: 'prioritarias' as 'generales' | 'prioritarias'
+    });
+    const { activeTab, unreadSubTab } = filters;
+    const setActiveTab = (val: 'unread' | 'read') => setFilters({ activeTab: val });
+    const setUnreadSubTab = (val: 'generales' | 'prioritarias') => setFilters({ unreadSubTab: val });
     const [showClearModal, setShowClearModal] = useState(false);
     const [loading, setLoading] = useState(true);
     const [highlightId, setHighlightId] = useState<string | null>(null);
@@ -126,6 +133,22 @@ function NotificationsContent() {
             setLoading(false);
         }
     };
+
+    const registerCommand = useCommandStore((state) => state.registerCommand);
+    const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
+    
+    useEffect(() => {
+        registerCommand({
+            id: 'notif-refresh',
+            label: 'Actualizar Notificaciones',
+            category: 'Contextual',
+            keys: ['ctrl', 'r'],
+            action: () => window.location.reload()
+        });
+        return () => {
+            unregisterCommand('notif-refresh');
+        };
+    }, [registerCommand, unregisterCommand]);
 
     const handleToggleRead = async (id: string, currentReadStatus: boolean) => {
         try {

@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { useViewState } from '@/lib/hooks/useViewState';
+import { useCommandStore } from '@/lib/store/useCommandStore';
 import {
     Settings,
     Tags,
@@ -40,7 +42,15 @@ import { Check } from 'lucide-react';
 export default function ConfigPage() {
     const router = useRouter();
     const [userRole, setUserRole] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<'tags' | 'checklists' | 'options' | 'os' | 'system' | 'vistas' | 'theme'>('tags');
+    const [filters, setFilters] = useViewState('configuracion-filters', {
+        activeTab: 'tags' as 'tags' | 'checklists' | 'options' | 'os' | 'system' | 'vistas' | 'theme'
+    });
+    const { activeTab } = filters;
+    const setActiveTab = (val: any) => setFilters({ activeTab: val });
+
+    const registerCommand = useCommandStore((state) => state.registerCommand);
+    const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
+    const latestActions = useRef({ refresh: () => {} });
 
     useEffect(() => {
         const stored = localStorage.getItem('currentUser');

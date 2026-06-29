@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useViewState } from "@/lib/hooks/useViewState";
+import { useCommandStore } from "@/lib/store/useCommandStore";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { 
@@ -168,9 +170,15 @@ export default function AuditPage() {
     const [logs, setLogs] = useState<any[]>([]);
     const [stats, setStats] = useState<{ todayCount: number; totalCount: number; uniqueUsersToday: number } | null>(null);
     const [loading, setLoading] = useState(true);
-    const [filterEntity, setFilterEntity] = useState("");
-    const [filterAction, setFilterAction] = useState("");
+    const [filters, setFilters] = useViewState('auditoria-filters', { filterEntity: "", filterAction: "" });
+    const { filterEntity, filterAction } = filters;
+    const setFilterEntity = (val: string) => setFilters({ filterEntity: val });
+    const setFilterAction = (val: string) => setFilters({ filterAction: val });
     const [expandedLog, setExpandedLog] = useState<string | null>(null);
+
+    const registerCommand = useCommandStore((state) => state.registerCommand);
+    const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
+    const latestActions = useRef({ loadLogs: () => {} });
 
     const loadLogs = async () => {
         setLoading(true);
@@ -197,8 +205,23 @@ export default function AuditPage() {
     };
 
     useEffect(() => {
+        latestActions.current = { loadLogs };
+    });
+
+    useEffect(() => {
         loadLogs();
     }, [filterEntity, filterAction]);
+
+    useEffect(() => {
+        registerCommand({
+            id: 'auditoria-refresh',
+            label: 'Actualizar Auditoría',
+            category: 'Contextual',
+            keys: ['ctrl', 'r'],
+            action: () => latestActions.current.loadLogs()
+        });
+        return () => unregisterCommand('auditoria-refresh');
+    }, [registerCommand, unregisterCommand]);
 
     const getActionStyle = (action: string) => {
         switch (action) {
