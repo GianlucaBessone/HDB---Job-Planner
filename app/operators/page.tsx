@@ -46,6 +46,12 @@ export default function OperatorsPage() {
     const [isResetAllConfirmOpen, setIsResetAllConfirmOpen] = useState(false);
     const [isResetDeviceConfirmOpen, setIsResetDeviceConfirmOpen] = useState(false);
     const [operatorToReset, setOperatorToReset] = useState<string | null>(null);
+    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingOperator, setEditingOperator] = useState<any>(null);
+    const [formData, setFormData] = useState<any>({ nombreCompleto: '', activo: true, enVacaciones: false, etiquetas: [], role: 'operador', dni: '', posicion: '', pin: '1234' });
+    const [customTag, setCustomTag] = useState('');
 
     useEffect(() => {
         const stored = localStorage.getItem('currentUser');

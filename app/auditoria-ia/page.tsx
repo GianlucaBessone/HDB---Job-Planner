@@ -77,8 +77,6 @@ export default function AiAuditPage() {
     const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
     const [expandedChatId, setExpandedChatId] = useState<string | null>(null);
 
-    const [expandedChatId, setExpandedChatId] = useState<string | null>(null);
-
     const registerCommand = useCommandStore((state) => state.registerCommand);
     const unregisterCommand = useCommandStore((state) => state.unregisterCommand);
     const latestActions = useRef({ fetchData: () => {} });
