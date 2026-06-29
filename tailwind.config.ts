@@ -17,12 +17,12 @@ const config: Config = {
                 '2xl': '1600px',
             },
             fontSize: {
-                'h1-desktop': ['24px', { lineHeight: '1.25', fontWeight: '700' }],
-                'h2-desktop': ['18px', { lineHeight: '1.375', fontWeight: '600' }],
-                'h3-desktop': ['14px', { lineHeight: '1.5', fontWeight: '500' }],
-                'body-desktop': ['13px', { lineHeight: '1.5' }],
-                'secondary-desktop': ['11px', { lineHeight: '1.5' }],
-                'label-desktop': ['10px', { lineHeight: '1.5', letterSpacing: '0.05em', fontWeight: '600' }],
+                'h1-desktop': ['1.5rem', { lineHeight: '1.25', fontWeight: '700' }],
+                'h2-desktop': ['1.125rem', { lineHeight: '1.375', fontWeight: '600' }],
+                'h3-desktop': ['0.875rem', { lineHeight: '1.5', fontWeight: '500' }],
+                'body-desktop': ['0.8125rem', { lineHeight: '1.5' }],
+                'secondary-desktop': ['0.6875rem', { lineHeight: '1.5' }],
+                'label-desktop': ['0.625rem', { lineHeight: '1.5', letterSpacing: '0.05em', fontWeight: '600' }],
             },
             maxWidth: {
                 '1800': '1800px',
