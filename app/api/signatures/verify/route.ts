@@ -9,7 +9,7 @@ export async function GET() {
             orderBy: { SignedAtUTC: 'desc' }
         });
 
-        const docIds = [...new Set(signatures.map(s => s.DocumentID))];
+        const docIds = Array.from(new Set(signatures.map(s => s.DocumentID)));
         const docs = await prisma.controlledDocument.findMany({
             where: { id: { in: docIds } },
             select: { id: true, codigoDocumental: true }
