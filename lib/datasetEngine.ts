@@ -251,7 +251,7 @@ export async function testearSQL(sql: string, opciones?: { variables?: VariableD
 
     const limite = opciones?.limite || 10;
     if (!sqlEjecutar.toUpperCase().includes('LIMIT')) {
-        sqlEjecutar = `${sqlEjecutar}\nLIMIT ${limite}`;
+        sqlEjecutar = `${sqlEjecutar.trim().replace(/;$/, '')}\nLIMIT ${limite}`;
     }
 
     const inicio = Date.now();
@@ -334,7 +334,7 @@ export async function ejecutarDataset(
     // 4. Aplicar límite
     const limite = opciones?.preview ? 10 : (dataset.limiteRegistros || 10000);
     if (!sql.toUpperCase().includes('LIMIT')) {
-        sql = `${sql}\nLIMIT ${limite}`;
+        sql = `${sql.trim().replace(/;$/, '')}\nLIMIT ${limite}`;
     }
 
     // 5. Ejecutar con timeout

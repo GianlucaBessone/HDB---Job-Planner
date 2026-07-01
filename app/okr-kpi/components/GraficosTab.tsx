@@ -114,6 +114,8 @@ export default function GraficosTab({ user, isActive = true }: { user: any; isAc
     );
 }
 
+import DynamicChart from './DynamicChart';
+
 function GraficoFormModal({ grafico, datasets, onClose, onSave }: { grafico: any; datasets: any[]; onClose: () => void; onSave: (data: any) => void }) {
     const [form, setForm] = useState({
         nombre: grafico?.nombre || '',
@@ -133,68 +135,87 @@ function GraficoFormModal({ grafico, datasets, onClose, onSave }: { grafico: any
     };
 
     return (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[200] flex items-center justify-center">
-            <div className="bg-card text-card-foreground rounded-2xl shadow-2xl w-full max-w-md mx-4 border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200">
-                <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+            <div className="bg-card text-card-foreground rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+                <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700 shrink-0">
                     <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">{grafico ? 'Editar Gráfico' : 'Nuevo Gráfico'}</h2>
                     <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl"><X className="w-5 h-5 text-slate-400" /></button>
                 </div>
-                <form onSubmit={handleSubmit} className="p-5 space-y-4">
-                    <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nombre *</label>
-                        <input value={form.nombre} onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Tipo de Gráfico *</label>
-                        <select value={form.tipoGrafico} onChange={e => setForm(p => ({ ...p, tipoGrafico: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
-                            <option value="Linea">📈 Línea</option>
-                            <option value="Barra">📊 Barra</option>
-                            <option value="Gauge">🎯 Gauge</option>
-                            <option value="Indicador">📍 Indicador</option>
-                            <option value="Torta">🥧 Torta</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Descripción</label>
-                        <textarea value={form.descripcion} onChange={e => setForm(p => ({ ...p, descripcion: e.target.value }))} rows={2} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none resize-none" />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Dataset Origen</label>
-                        <select value={form.datasetId} onChange={e => setForm(p => ({ ...p, datasetId: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
-                            <option value="">Seleccionar Dataset...</option>
-                            {datasets.map(ds => (
-                                <option key={ds.id} value={ds.id}>{ds.codigoDataset} — {ds.nombre}</option>
-                            ))}
-                        </select>
-                    </div>
-                    {form.datasetId && (
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Eje X (Categoría)</label>
-                                <input value={form.configuracion.ejeX} onChange={e => setForm(p => ({ ...p, configuracion: { ...p.configuracion, ejeX: e.target.value } }))} placeholder="Ej: mes" className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Serie(s) Eje Y</label>
-                                <input value={form.configuracion.series.join(', ')} onChange={e => setForm(p => ({ ...p, configuracion: { ...p.configuracion, series: e.target.value.split(',').map(s => s.trim()).filter(Boolean) } }))} placeholder="Ej: ventas, gastos" className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" />
-                            </div>
-                        </div>
-                    )}
-                    {grafico && (
+                
+                <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
+                    <form onSubmit={handleSubmit} className="p-5 space-y-4 md:w-1/2 overflow-y-auto border-r border-slate-200 dark:border-slate-700 custom-scrollbar">
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Estado</label>
-                            <select value={form.estado} onChange={e => setForm(p => ({ ...p, estado: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
-                                <option value="Activo">Activo</option>
-                                <option value="Inactivo">Inactivo</option>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nombre *</label>
+                            <input value={form.nombre} onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))} required className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Tipo de Gráfico *</label>
+                            <select value={form.tipoGrafico} onChange={e => setForm(p => ({ ...p, tipoGrafico: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
+                                <option value="Linea">📈 Línea</option>
+                                <option value="Barra">📊 Barra</option>
+                                <option value="Gauge">🎯 Gauge</option>
+                                <option value="Indicador">📍 Indicador</option>
+                                <option value="Torta">🥧 Torta</option>
                             </select>
                         </div>
-                    )}
-                    <div className="flex justify-end gap-3 pt-2">
-                        <button type="button" onClick={onClose} className="h-10 px-5 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Cancelar</button>
-                        <button type="submit" disabled={saving || !form.nombre} className="h-10 px-6 bg-violet-600 text-white rounded-lg text-sm font-bold hover:bg-violet-700 disabled:opacity-50 shadow-sm">
-                            {saving ? 'Guardando...' : grafico ? 'Actualizar' : 'Crear Gráfico'}
-                        </button>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Descripción</label>
+                            <textarea value={form.descripcion} onChange={e => setForm(p => ({ ...p, descripcion: e.target.value }))} rows={2} className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none resize-none" />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Dataset Origen</label>
+                            <select value={form.datasetId} onChange={e => setForm(p => ({ ...p, datasetId: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
+                                <option value="">Seleccionar Dataset...</option>
+                                {datasets.map(ds => (
+                                    <option key={ds.id} value={ds.id}>{ds.codigoDataset} — {ds.nombre}</option>
+                                ))}
+                            </select>
+                        </div>
+                        {form.datasetId && (
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Eje X (Categoría)</label>
+                                    <input value={form.configuracion.ejeX} onChange={e => setForm(p => ({ ...p, configuracion: { ...p.configuracion, ejeX: e.target.value } }))} placeholder="Ej: mes" className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Serie(s) Eje Y</label>
+                                    <input value={form.configuracion.series.join(', ')} onChange={e => setForm(p => ({ ...p, configuracion: { ...p.configuracion, series: e.target.value.split(',').map(s => s.trim()).filter(Boolean) } }))} placeholder="Ej: ventas, gastos" className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none" />
+                                </div>
+                            </div>
+                        )}
+                        {grafico && (
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Estado</label>
+                                <select value={form.estado} onChange={e => setForm(p => ({ ...p, estado: e.target.value }))} className="w-full h-10 px-3 border border-slate-200 dark:border-slate-600 rounded-lg text-sm bg-card text-card-foreground text-slate-800 dark:text-slate-100 outline-none">
+                                    <option value="Activo">Activo</option>
+                                    <option value="Inactivo">Inactivo</option>
+                                </select>
+                            </div>
+                        )}
+                        <div className="flex justify-end gap-3 pt-2">
+                            <button type="button" onClick={onClose} className="h-10 px-5 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Cancelar</button>
+                            <button type="submit" disabled={saving || !form.nombre} className="h-10 px-6 bg-violet-600 text-white rounded-lg text-sm font-bold hover:bg-violet-700 disabled:opacity-50 shadow-sm">
+                                {saving ? 'Guardando...' : grafico ? 'Actualizar' : 'Crear Gráfico'}
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div className="md:w-1/2 bg-slate-50 dark:bg-slate-900 p-6 flex flex-col relative overflow-y-auto custom-scrollbar">
+                        <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
+                            Vista Previa en Vivo
+                        </h3>
+                        {form.datasetId ? (
+                            <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm h-[350px] w-full relative">
+                                <DynamicChart grafico={form} height="100%" />
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center h-[350px] bg-slate-100 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 text-slate-400">
+                                <BarChart3 className="w-10 h-10 mb-2 opacity-50" />
+                                <span className="text-sm font-bold">Seleccioná un Dataset para previsualizar</span>
+                            </div>
+                        )}
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     );

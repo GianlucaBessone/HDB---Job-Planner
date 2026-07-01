@@ -1232,19 +1232,6 @@ function MaterialesTable({
           ].includes(matEstado);
 
         return matEstado === statusFilter;
-      })
-      .sort((a, b) => {
-        if (a.codigo && b.codigo) {
-          const numA = parseInt(a.codigo, 10);
-          const numB = parseInt(b.codigo, 10);
-          if (!isNaN(numA) && !isNaN(numB)) {
-            return numA - numB;
-          }
-          return a.codigo.localeCompare(b.codigo, undefined, { numeric: true });
-        }
-        if (a.codigo) return -1;
-        if (b.codigo) return 1;
-        return a.nombre.localeCompare(b.nombre);
       });
   }, [materiales, searchQuery, statusFilter, activeTab]);
 

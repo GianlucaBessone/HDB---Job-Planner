@@ -47,6 +47,57 @@ let cachedActivityOptions: string[] | null = null;
 let cachedProjectTags: string[] | null = null;
 const cachedDocuments: Record<string, any> = {};
 
+const parseLegacyResponsabilidades = (text: any) => {
+  if (Array.isArray(text)) return text;
+  if (!text || typeof text !== "string") return [];
+  
+  const lines = text.split('\n');
+  const result = [];
+  
+  // Single short string fallback
+  if (lines.length === 1 && lines[0].length < 150 && !lines[0].includes(':')) {
+    return [{ rol: "General", responsabilidad: lines[0].trim() }];
+  }
+
+  let currentRol = "General";
+  let currentResp: string[] = [];
+
+  const saveCurrent = () => {
+    if (currentResp.length > 0) {
+      result.push({ rol: currentRol, responsabilidad: currentResp.join('\n').trim() });
+    }
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    const isHeaderWithColon = line.endsWith(':') && line.length < 60;
+    const isHeaderWithoutColon = line.length < 60 && !line.startsWith('-') && !line.match(/^\d+\./) && i + 1 < lines.length && lines[i+1].trim().startsWith('-');
+    const inlineColonMatch = line.match(/^([^:]+):\s*(.+)$/);
+
+    if (isHeaderWithColon || isHeaderWithoutColon) {
+      saveCurrent();
+      currentRol = line.replace(/:$/, '').trim();
+      currentResp = [];
+    } else if (inlineColonMatch && inlineColonMatch[1].length < 40 && !inlineColonMatch[1].startsWith('-')) {
+      saveCurrent();
+      currentRol = inlineColonMatch[1].trim();
+      currentResp = [inlineColonMatch[2].trim()];
+    } else {
+      currentResp.push(line);
+    }
+  }
+  
+  saveCurrent();
+
+  if (result.length === 0 && text.trim()) {
+      return [{ rol: "General", responsabilidad: text.trim() }];
+  }
+
+  return result;
+};
+
 export default function DocumentDetailModal({
   documentId,
   onClose,
@@ -108,6 +159,7 @@ export default function DocumentDetailModal({
   const [editReqLectura, setEditReqLectura] = useState(false);
   const [editReqCapacitacion, setEditReqCapacitacion] = useState(false);
   const [editValidezMeses, setEditValidezMeses] = useState("");
+  const [editTags, setEditTags] = useState<string[]>([]);
   const [savingReqs, setSavingReqs] = useState(false);
 
   // Version Control Modal State
@@ -161,7 +213,7 @@ export default function DocumentDetailModal({
     objetivo: "",
     alcance: "",
     desarrollo: "",
-    responsabilidades: "",
+    responsabilidades: [],
     videoUrl: "",
     definiciones: [],
     referencias: [],
@@ -172,6 +224,8 @@ export default function DocumentDetailModal({
   >([]);
   const [newTerm, setNewTerm] = useState("");
   const [newDef, setNewDef] = useState("");
+  const [newRol, setNewRol] = useState("");
+  const [newResp, setNewResp] = useState("");
   const [saveToFrequents, setSaveToFrequents] = useState(true);
   const [refSearch, setRefSearch] = useState("");
   const [showRefResults, setShowRefResults] = useState(false);
@@ -223,6 +277,9 @@ export default function DocumentDetailModal({
     try {
       if (doc.descripcion && doc.descripcion.trim().startsWith("{")) {
         digitalData = JSON.parse(doc.descripcion);
+        if (digitalData) {
+          digitalData.responsabilidades = parseLegacyResponsabilidades(digitalData.responsabilidades);
+        }
       }
     } catch (e) {}
 
@@ -456,7 +513,39 @@ export default function DocumentDetailModal({
                     <div class="section-content">${(digitalData && digitalData.desarrollo) || "No especificado."}</div>
 
                     <div class="section-title">5. Responsabilidades</div>
-                    <div class="section-content">${(digitalData && digitalData.responsabilidades) || "No especificado."}</div>
+                    ${
+                      digitalData &&
+                      digitalData.responsabilidades &&
+                      Array.isArray(digitalData.responsabilidades) &&
+                      digitalData.responsabilidades.length > 0
+                        ? `
+                        <table class="glossary-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 25%;">Rol</th>
+                                    <th>Responsabilidad</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${digitalData.responsabilidades
+                                  .map(
+                                    (r: any) => `
+                                    <tr>
+                                        <td class="glossary-term">${r.rol}</td>
+                                        <td>${r.responsabilidad}</td>
+                                    </tr>
+                                `,
+                                  )
+                                  .join("")}
+                            </tbody>
+                        </table>
+                    `
+                        : digitalData && typeof digitalData.responsabilidades === "string" && digitalData.responsabilidades.trim() !== ""
+                        ? `<div class="section-content">${digitalData.responsabilidades}</div>`
+                        : `
+                        <div class="section-content">No se han registrado responsabilidades específicas.</div>
+                    `
+                    }
 
                     <div class="section-title">6. Definiciones y Abreviaturas</div>
                     ${
@@ -574,6 +663,7 @@ export default function DocumentDetailModal({
       setEditReqLectura(doc.requiereConfirmacionLectura || false);
       setEditReqCapacitacion(doc.requiereCapacitacion || false);
       setEditValidezMeses(doc.validezMeses?.toString() || "");
+      setEditTags(Array.isArray(doc.tags) ? doc.tags : []);
     }
   }, [doc]);
 
@@ -587,6 +677,7 @@ export default function DocumentDetailModal({
           ? parseInt(editValidezMeses)
           : null
         : null,
+      tags: editTags,
     });
     setVersionAction("menor");
     setVersionJustification("");
@@ -972,7 +1063,7 @@ export default function DocumentDetailModal({
             objetivo: parsed.objetivo || "",
             alcance: parsed.alcance || "",
             desarrollo: parsed.desarrollo || "",
-            responsabilidades: parsed.responsabilidades || "",
+            responsabilidades: parseLegacyResponsabilidades(parsed.responsabilidades),
             videoUrl: parsed.videoUrl || "",
             definiciones: parsed.definiciones || [],
             referencias: parsed.referencias || [],
@@ -983,7 +1074,7 @@ export default function DocumentDetailModal({
           objetivo: "",
           alcance: "",
           desarrollo: "",
-          responsabilidades: "",
+          responsabilidades: [],
           videoUrl: "",
           definiciones: [],
           referencias: [],
@@ -1086,7 +1177,7 @@ export default function DocumentDetailModal({
               objetivo: parsed.objetivo || "",
               alcance: parsed.alcance || "",
               desarrollo: parsed.desarrollo || "",
-              responsabilidades: parsed.responsabilidades || "",
+              responsabilidades: parseLegacyResponsabilidades(parsed.responsabilidades),
               videoUrl: parsed.videoUrl || "",
               definiciones: parsed.definiciones || [],
               referencias: parsed.referencias || [],
@@ -1097,7 +1188,7 @@ export default function DocumentDetailModal({
             objetivo: "",
             alcance: "",
             desarrollo: "",
-            responsabilidades: "",
+            responsabilidades: [],
             videoUrl: "",
             definiciones: [],
             referencias: [],
@@ -1604,6 +1695,7 @@ export default function DocumentDetailModal({
                       if (parsed.isDigital) {
                         isDigital = true;
                         digitalData = parsed;
+                        digitalData.responsabilidades = parseLegacyResponsabilidades(digitalData.responsabilidades);
                       }
                     }
                   } catch (e) {}
@@ -1745,26 +1837,92 @@ export default function DocumentDetailModal({
                         </div>
 
                         {/* Responsabilidades */}
-                        <div className="space-y-1.5">
+                        <div className="space-y-3 border-t border-slate-200 dark:border-slate-700 pt-4">
                           <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider">
                             5. Responsabilidades
                           </label>
-                          <textarea
-                            value={editedDigitalData.responsabilidades}
-                            onChange={(e) =>
-                              setEditedDigitalData({
-                                ...editedDigitalData,
-                                responsabilidades: e.target.value,
-                              })
-                            }
-                            rows={3}
-                            placeholder="Defina roles y responsabilidades..."
-                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:border-indigo-500 outline-none resize-none"
-                          />
+                          {editedDigitalData.responsabilidades &&
+                            Array.isArray(editedDigitalData.responsabilidades) &&
+                            editedDigitalData.responsabilidades.length > 0 && (
+                              <div className="space-y-1.5">
+                                {editedDigitalData.responsabilidades.map(
+                                  (r: any, i: number) => (
+                                    <div
+                                      key={i}
+                                      className="flex items-center gap-2 bg-background text-foreground/30 px-3 py-2 rounded-lg text-xs"
+                                    >
+                                      <span className="font-black text-indigo-600 min-w-[100px]">
+                                        {r.rol}
+                                      </span>
+                                      <span className="text-slate-600 dark:text-slate-300 flex-1">
+                                        {r.responsabilidad}
+                                      </span>
+                                      <button
+                                        onClick={() => {
+                                          const updated = [
+                                            ...editedDigitalData.responsabilidades,
+                                          ];
+                                          updated.splice(i, 1);
+                                          setEditedDigitalData({
+                                            ...editedDigitalData,
+                                            responsabilidades: updated,
+                                          });
+                                        }}
+                                        className="text-red-400 hover:text-red-600"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                  ),
+                                )}
+                              </div>
+                            )}
+                          <div className="flex gap-2 items-end">
+                            <div className="flex-shrink-0 w-32">
+                              <label className="text-[9px] font-bold text-slate-400 uppercase">
+                                Rol
+                              </label>
+                              <input
+                                value={newRol}
+                                onChange={(e) => setNewRol(e.target.value)}
+                                placeholder="Ej: Gerente"
+                                className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs font-bold outline-none focus:border-indigo-500"
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <label className="text-[9px] font-bold text-slate-400 uppercase">
+                                Responsabilidad
+                              </label>
+                              <textarea
+                                value={newResp}
+                                onChange={(e) => setNewResp(e.target.value)}
+                                placeholder="Describa la responsabilidad..."
+                                rows={2}
+                                className="w-full bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-indigo-500 resize-none"
+                              />
+                            </div>
+                            <button
+                              onClick={() => {
+                                if (!newRol || !newResp) return;
+                                setEditedDigitalData({
+                                  ...editedDigitalData,
+                                  responsabilidades: [
+                                    ...(Array.isArray(editedDigitalData.responsabilidades) ? editedDigitalData.responsabilidades : []),
+                                    { rol: newRol, responsabilidad: newResp },
+                                  ],
+                                });
+                                setNewRol("");
+                                setNewResp("");
+                              }}
+                              className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 flex-shrink-0"
+                            >
+                              + Agregar
+                            </button>
+                          </div>
                         </div>
 
                         {/* Video URL */}
-                        <div className="space-y-1.5">
+                        <div className="space-y-3 border-t border-slate-200 dark:border-slate-700 pt-4">
                           <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider">
                             Link de Video / Capacitación (YouTube)
                           </label>
@@ -2148,7 +2306,7 @@ export default function DocumentDetailModal({
                           },
                           {
                             title: "5. Responsabilidades",
-                            content: digitalData.responsabilidades,
+                            content: typeof digitalData.responsabilidades === "string" ? digitalData.responsabilidades : null,
                           },
                         ]
                           .filter((s) => s.content)
@@ -2165,6 +2323,48 @@ export default function DocumentDetailModal({
                               </p>
                             </div>
                           ))}
+
+                        {/* Responsabilidades table */}
+                        {digitalData.responsabilidades &&
+                          Array.isArray(digitalData.responsabilidades) &&
+                          digitalData.responsabilidades.length > 0 && (
+                            <div className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                              <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-3">
+                                5. Responsabilidades
+                              </p>
+                              <div className="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
+                                <table className="w-full text-xs">
+                                  <thead>
+                                    <tr className="bg-background text-foreground/50">
+                                      <th className="text-left px-3 py-2 font-black text-slate-500 uppercase text-[10px]">
+                                        Rol
+                                      </th>
+                                      <th className="text-left px-3 py-2 font-black text-slate-500 uppercase text-[10px]">
+                                        Responsabilidad
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {digitalData.responsabilidades.map(
+                                      (r: any, i: number) => (
+                                        <tr
+                                          key={i}
+                                          className="border-t border-slate-100 dark:border-slate-700"
+                                        >
+                                          <td className="px-3 py-2 font-black text-indigo-600">
+                                            {r.rol}
+                                          </td>
+                                          <td className="px-3 py-2 text-slate-600 dark:text-slate-300">
+                                            {r.responsabilidad}
+                                          </td>
+                                        </tr>
+                                      ),
+                                    )}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          )}
 
                         {/* Definiciones table */}
                         {digitalData.definiciones &&
@@ -2257,7 +2457,7 @@ export default function DocumentDetailModal({
                               objetivo: "",
                               alcance: "",
                               desarrollo: "",
-                              responsabilidades: "",
+                              responsabilidades: [],
                               videoUrl: "",
                               definiciones: [],
                               referencias: [],
@@ -2453,6 +2653,38 @@ export default function DocumentDetailModal({
                           />
                         </div>
                       )}
+
+                      <div className="pt-2 border-t border-slate-100 dark:border-slate-700/50">
+                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2">
+                          Etiquetas de Asignación / Tipo de Actividad
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          {projectTags.map((tag) => (
+                            <label
+                              key={tag}
+                              className={`cursor-pointer px-3 py-1.5 text-xs font-bold rounded-lg border transition-colors ${
+                                editTags.includes(tag)
+                                  ? "bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800"
+                                  : "bg-white text-slate-600 border-slate-200 hover:bg-muted text-muted-foreground dark:text-slate-300 dark:border-slate-700"
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                className="hidden"
+                                checked={editTags.includes(tag)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setEditTags([...editTags, tag]);
+                                  } else {
+                                    setEditTags(editTags.filter((t) => t !== tag));
+                                  }
+                                }}
+                              />
+                              {tag}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
 
                       <div className="flex justify-end pt-2 border-t border-slate-100 dark:border-slate-700/50">
                         <button

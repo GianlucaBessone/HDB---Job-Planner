@@ -168,7 +168,8 @@ export default function DatasetFormModal({ dataset, operators, onClose, onSave }
                     </button>
                     <button 
                         onClick={handleSubmit} 
-                        disabled={saving || !form.nombre || !form.consultaSQL.trim()} 
+                        disabled={saving || !form.nombre || (form.modoConsulta === 'SQL' ? !form.consultaSQL.trim() : (!form.definicionVisual.campos || form.definicionVisual.campos.length === 0))} 
+                        title={!form.nombre ? 'Falta el nombre del dataset' : (form.modoConsulta === 'SQL' && !form.consultaSQL.trim() ? 'Falta la consulta SQL' : (form.modoConsulta === 'Visual' && (!form.definicionVisual.campos || form.definicionVisual.campos.length === 0) ? 'Debe seleccionar al menos un campo' : ''))}
                         className="h-9 px-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2"
                     >
                         <Save className="w-4 h-4" /> {saving ? 'Guardando...' : 'Guardar Dataset'}
