@@ -129,7 +129,8 @@ export default function VerificacionFirmasPage() {
     const normalize = (str: string) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
     const filteredSignatures = signatures.filter(sig => {
-        const matchesSearch = normalize(sig.DocumentID).includes(normalize(searchTerm)) || 
+        const matchesSearch = normalize(sig.DocumentCode || '').includes(normalize(searchTerm)) ||
+                              normalize(sig.DocumentID).includes(normalize(searchTerm)) || 
                               normalize(sig.UserName).includes(normalize(searchTerm)) ||
                               normalize(sig.DNI).includes(normalize(searchTerm)) ||
                               normalize(sig.SignatureID).includes(normalize(searchTerm));
@@ -225,11 +226,8 @@ export default function VerificacionFirmasPage() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                                                {sig.DocumentID}
-                                                <span className="px-1.5 py-0.5 bg-muted text-muted-foreground text-slate-500 dark:text-slate-400 rounded text-[9px] font-black uppercase tracking-wider">
-                                                    v{sig.DocumentVersion}
-                                                </span>
+                                            <div className="font-bold text-slate-800 dark:text-slate-200">
+                                                {sig.DocumentCode || sig.DocumentID} {sig.DocumentVersion}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
