@@ -69,6 +69,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
 
     // Steps: general, content_1 (Objetivo/Alcance), content_2 (Desarrollo/Resp), content_3 (Glosario/Refs), signature
     const [activeStep, setActiveStep] = useState('general');
+    const [opSearchQuery, setOpSearchQuery] = useState('');
 
     const [formData, setFormData] = useState({
         titulo: '',
@@ -80,7 +81,8 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
         validezMeses: '12',
         revisadorId: '',
         aprobadorId: '',
-        tags: [] as string[]
+        tags: [] as string[],
+        operatorIds: [] as string[]
     });
 
     const [previewCode, setPreviewCode] = useState<string>('Calculando...');
@@ -577,6 +579,77 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                                 {tag.name}
                                             </label>
                                         ))}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Operadores Afectados Directamente (Sin etiquetas)</label>
+                                    
+                                    {/* Selected operators as badges */}
+                                    <div className="flex flex-wrap gap-1.5 mb-2">
+                                        {formData.operatorIds.map(opId => {
+                                            const op = operators.find(o => o.id === opId);
+                                            if (!op) return null;
+                                            return (
+                                                <span key={opId} className="inline-flex items-center gap-1 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 px-2 py-1 rounded-lg text-xs font-bold border border-indigo-100 dark:border-indigo-800">
+                                                    {op.nombreCompleto || op.nombre}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setFormData({ ...formData, operatorIds: formData.operatorIds.filter(id => id !== opId) })}
+                                                        className="hover:text-red-500 text-slate-400 font-bold ml-0.5 text-xs leading-none"
+                                                    >
+                                                        &times;
+                                                    </button>
+                                                </span>
+                                            );
+                                        })}
+                                        {formData.operatorIds.length === 0 && (
+                                            <span className="text-xs text-slate-400 italic">Ningún operador seleccionado directamente</span>
+                                        )}
+                                    </div>
+
+                                    {/* Search and add operators */}
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            placeholder="Buscar operador para agregar..."
+                                            value={opSearchQuery}
+                                            onChange={e => setOpSearchQuery(e.target.value)}
+                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold focus:border-indigo-500 outline-none"
+                                        />
+                                        {opSearchQuery.trim() && (
+                                            <div className="absolute z-10 w-full mt-1 bg-popover text-popover-foreground border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-48 overflow-y-auto p-1.5 space-y-1">
+                                                {operators
+                                                    .filter(op => {
+                                                        const name = (op.nombreCompleto || op.nombre || '').toLowerCase();
+                                                        const query = opSearchQuery.toLowerCase();
+                                                        return name.includes(query) && !formData.operatorIds.includes(op.id);
+                                                    })
+                                                    .map(op => (
+                                                        <button
+                                                            key={op.id}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setFormData({ ...formData, operatorIds: [...formData.operatorIds, op.id] });
+                                                                setOpSearchQuery('');
+                                                            }}
+                                                            className="w-full text-left px-3 py-1.5 text-xs rounded-lg hover:bg-muted text-muted-foreground transition-colors font-bold flex items-center justify-between"
+                                                        >
+                                                            <span>{op.nombreCompleto || op.nombre}</span>
+                                                            <span className="text-[9px] uppercase px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded font-normal">
+                                                                {op.role || 'operador'}
+                                                            </span>
+                                                        </button>
+                                                    ))}
+                                                {operators.filter(op => {
+                                                    const name = (op.nombreCompleto || op.nombre || '').toLowerCase();
+                                                    const query = opSearchQuery.toLowerCase();
+                                                    return name.includes(query) && !formData.operatorIds.includes(op.id);
+                                                }).length === 0 && (
+                                                    <p className="text-[10px] text-slate-400 p-2 italic text-center">No se encontraron operadores disponibles</p>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 

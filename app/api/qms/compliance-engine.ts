@@ -44,7 +44,13 @@ export async function triggerAutomaticTraining(documentId: string) {
             } else {
                 // De lo contrario, verificar coincidencia de etiquetas
                 const opTagsArr = op.etiquetas ? (Array.isArray(op.etiquetas) ? op.etiquetas : JSON.parse(op.etiquetas as string)) : [];
-                matches = docTags.some((tag: string) => opTagsArr.includes(tag));
+                const matchesTags = docTags.some((tag: string) => opTagsArr.includes(tag));
+
+                // O asignación directa de operador
+                const docOperators = doc.operatorIds ? (Array.isArray(doc.operatorIds) ? doc.operatorIds : JSON.parse(doc.operatorIds as string)) : [];
+                const matchesOperator = docOperators.includes(op.id);
+
+                matches = matchesTags || matchesOperator;
             }
 
             if (matches) {
@@ -218,7 +224,12 @@ export async function syncOperatorTrainings(operatorId: string) {
                 matches = true;
             } else {
                 const docTags = doc.tags ? (Array.isArray(doc.tags) ? doc.tags : JSON.parse(doc.tags as string)) : [];
-                matches = docTags.some((tag: string) => opTags.includes(tag));
+                const matchesTags = docTags.some((tag: string) => opTags.includes(tag));
+
+                const docOperators = doc.operatorIds ? (Array.isArray(doc.operatorIds) ? doc.operatorIds : JSON.parse(doc.operatorIds as string)) : [];
+                const matchesOperator = docOperators.includes(op.id);
+
+                matches = matchesTags || matchesOperator;
             }
 
             if (matches) {

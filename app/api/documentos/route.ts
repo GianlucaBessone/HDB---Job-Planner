@@ -92,7 +92,7 @@ export async function POST(req: Request) {
             revisadorId, revisadorNombre, descripcion,
             requiereConfirmacionLectura, requiereCapacitacion, nivelCriticidad,
             documentoReemplazadoId, motivoCambio,
-            tags, observaciones, proximaRevision, validezMeses,
+            tags, operatorIds, observaciones, proximaRevision, validezMeses,
             userId, userName, creatorSignature
         } = data;
 
@@ -218,6 +218,7 @@ export async function POST(req: Request) {
                 documentoReemplazadoId: documentoReemplazadoId || null,
                 motivoCambio: motivoCambio || null,
                 tags: tags || [],
+                operatorIds: operatorIds || [],
                 observaciones: observaciones || null,
                 proximaRevision: proximaRevision ? new Date(proximaRevision) : null,
                 createdBy: userId || null,
@@ -236,6 +237,7 @@ export async function POST(req: Request) {
             descripcion: descripcion || null,
             nivelCriticidad: nivelCriticidad || 'media',
             tags: tags || [],
+            operatorIds: operatorIds || [],
             requiereConfirmacionLectura: requiereConfirmacionLectura || false,
             requiereCapacitacion: requiereCapacitacion || false,
             validezMeses: validezMeses ? parseInt(validezMeses) : null,

@@ -660,6 +660,7 @@ model ControlledDocument {
 
   // Metadata
   tags          Json    @default("[]") // Array de strings
+  operatorIds   Json    @default("[]") // Array de strings (IDs de operadores que afecta directamente)
   observaciones String? @db.Text
   workflowState Json? // Workflow de firmas y acuerdos
 

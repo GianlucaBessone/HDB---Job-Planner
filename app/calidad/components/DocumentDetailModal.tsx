@@ -160,6 +160,8 @@ export default function DocumentDetailModal({
   const [editReqCapacitacion, setEditReqCapacitacion] = useState(false);
   const [editValidezMeses, setEditValidezMeses] = useState("");
   const [editTags, setEditTags] = useState<string[]>([]);
+  const [editOperatorIds, setEditOperatorIds] = useState<string[]>([]);
+  const [opSearchQuery, setOpSearchQuery] = useState("");
   const [savingReqs, setSavingReqs] = useState(false);
 
   // Version Control Modal State
@@ -664,6 +666,7 @@ export default function DocumentDetailModal({
       setEditReqCapacitacion(doc.requiereCapacitacion || false);
       setEditValidezMeses(doc.validezMeses?.toString() || "");
       setEditTags(Array.isArray(doc.tags) ? doc.tags : []);
+      setEditOperatorIds(doc.operatorIds ? (Array.isArray(doc.operatorIds) ? doc.operatorIds : JSON.parse(doc.operatorIds as string)) : []);
     }
   }, [doc]);
 
@@ -678,6 +681,7 @@ export default function DocumentDetailModal({
           : null
         : null,
       tags: editTags,
+      operatorIds: editOperatorIds,
     });
     setVersionAction("menor");
     setVersionJustification("");
@@ -2686,6 +2690,82 @@ export default function DocumentDetailModal({
                         </div>
                       </div>
 
+                      <div className="pt-2 border-t border-slate-100 dark:border-slate-700/50 space-y-2">
+                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-wider">
+                          Operadores Afectados Directamente (Sin etiquetas requeridas)
+                        </label>
+                        
+                        {/* Selected operators as badges */}
+                        <div className="flex flex-wrap gap-1.5">
+                          {editOperatorIds.map((opId) => {
+                            const op = operators.find((o) => o.id === opId);
+                            if (!op) return null;
+                            return (
+                              <span
+                                key={opId}
+                                className="inline-flex items-center gap-1 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 px-2 py-1 rounded-lg text-xs font-bold border border-indigo-100 dark:border-indigo-800"
+                              >
+                                {op.nombreCompleto || op.nombre}
+                                <button
+                                  type="button"
+                                  onClick={() => setEditOperatorIds(editOperatorIds.filter((id) => id !== opId))}
+                                  className="hover:text-red-500 text-slate-400 font-bold ml-0.5 text-xs leading-none"
+                                >
+                                  &times;
+                                </button>
+                              </span>
+                            );
+                          })}
+                          {editOperatorIds.length === 0 && (
+                            <span className="text-xs text-slate-400 italic">Ningún operador seleccionado directamente</span>
+                          )}
+                        </div>
+
+                        {/* Search and add operators */}
+                        <div className="relative">
+                          <input
+                            type="text"
+                            placeholder="Buscar operador para agregar..."
+                            value={opSearchQuery}
+                            onChange={(e) => setOpSearchQuery(e.target.value)}
+                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold focus:border-indigo-500 outline-none"
+                          />
+                          {opSearchQuery.trim() && (
+                            <div className="absolute z-10 w-full mt-1 bg-popover text-popover-foreground border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-48 overflow-y-auto p-1.5 space-y-1">
+                              {operators
+                                .filter((op) => {
+                                  const name = (op.nombreCompleto || op.nombre || "").toLowerCase();
+                                  const query = opSearchQuery.toLowerCase();
+                                  return name.includes(query) && !editOperatorIds.includes(op.id);
+                                })
+                                .map((op) => (
+                                  <button
+                                    key={op.id}
+                                    type="button"
+                                    onClick={() => {
+                                      setEditOperatorIds([...editOperatorIds, op.id]);
+                                      setOpSearchQuery("");
+                                    }}
+                                    className="w-full text-left px-3 py-1.5 text-xs rounded-lg hover:bg-muted text-muted-foreground transition-colors font-bold flex items-center justify-between"
+                                  >
+                                    <span>{op.nombreCompleto || op.nombre}</span>
+                                    <span className="text-[9px] uppercase px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded font-normal">
+                                      {op.role || "operador"}
+                                    </span>
+                                  </button>
+                                ))}
+                              {operators.filter((op) => {
+                                const name = (op.nombreCompleto || op.nombre || "").toLowerCase();
+                                const query = opSearchQuery.toLowerCase();
+                                return name.includes(query) && !editOperatorIds.includes(op.id);
+                              }).length === 0 && (
+                                <p className="text-[10px] text-slate-400 p-2 italic text-center">No se encontraron operadores disponibles</p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
                       <div className="flex justify-end pt-2 border-t border-slate-100 dark:border-slate-700/50">
                         <button
                           type="button"
@@ -2700,29 +2780,53 @@ export default function DocumentDetailModal({
                       </div>
                     </div>
                   ) : (
-                    <div className="flex gap-4 flex-wrap">
-                      {doc.requiereConfirmacionLectura && (
-                        <div className="flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-3 py-1.5 rounded-lg text-sm font-bold">
-                          <CheckCircle2 className="w-4 h-4" /> Requiere
-                          Confirmación de Lectura
-                        </div>
-                      )}
-                      {doc.requiereCapacitacion && (
-                        <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-3 py-1.5 rounded-lg text-sm font-bold">
-                          <ShieldAlert className="w-4 h-4" /> Requiere
-                          Capacitación{" "}
-                          {doc.validezMeses
-                            ? `(Vence c/ ${doc.validezMeses} meses)`
-                            : "(Sin vto. establecido)"}
-                        </div>
-                      )}
-                      {!doc.requiereConfirmacionLectura &&
-                        !doc.requiereCapacitacion && (
-                          <p className="text-xs text-slate-400">
-                            Este documento no tiene requerimientos obligatorios
-                            asociados.
-                          </p>
+                    <div className="space-y-3">
+                      <div className="flex gap-4 flex-wrap">
+                        {doc.requiereConfirmacionLectura && (
+                          <div className="flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-3 py-1.5 rounded-lg text-sm font-bold">
+                            <CheckCircle2 className="w-4 h-4" /> Requiere
+                            Confirmación de Lectura
+                          </div>
                         )}
+                        {doc.requiereCapacitacion && (
+                          <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-3 py-1.5 rounded-lg text-sm font-bold">
+                            <ShieldAlert className="w-4 h-4" /> Requiere
+                            Capacitación{" "}
+                            {doc.validezMeses
+                              ? `(Vence c/ ${doc.validezMeses} meses)`
+                              : "(Sin vto. establecido)"}
+                          </div>
+                        )}
+                        {!doc.requiereConfirmacionLectura &&
+                          !doc.requiereCapacitacion && (
+                            <p className="text-xs text-slate-400">
+                              Este documento no tiene requerimientos obligatorios
+                              asociados.
+                            </p>
+                          )}
+                      </div>
+
+                      {doc.operatorIds && Array.isArray(doc.operatorIds) && doc.operatorIds.length > 0 && (
+                        <div className="pt-2 border-t border-slate-100 dark:border-slate-700/50">
+                          <p className="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2">
+                            Afecta directamente a (Sin etiquetas):
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {doc.operatorIds.map((opId: string) => {
+                              const op = operators.find((o) => o.id === opId);
+                              if (!op) return null;
+                              return (
+                                <span
+                                  key={opId}
+                                  className="bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded text-xs font-bold border border-slate-200 dark:border-slate-700"
+                                >
+                                  {op.nombreCompleto || op.nombre}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

@@ -74,6 +74,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             descripcion: doc.descripcion,
             nivelCriticidad: doc.nivelCriticidad,
             tags: doc.tags,
+            operatorIds: doc.operatorIds || [],
             requiereConfirmacionLectura: doc.requiereConfirmacionLectura,
             requiereCapacitacion: doc.requiereCapacitacion,
             validezMeses: doc.validezMeses,

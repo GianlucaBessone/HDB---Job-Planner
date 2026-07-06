@@ -72,7 +72,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
             aprobadorId, aprobadorNombre,
             requiereConfirmacionLectura, requiereCapacitacion, nivelCriticidad,
             documentoReemplazadoId, motivoCambio,
-            tags, observaciones, proximaRevision, validezMeses,
+            tags, operatorIds, observaciones, proximaRevision, validezMeses,
             descripcion, creatorSignature,
             userId, userName
         } = data;
@@ -100,6 +100,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         if (documentoReemplazadoId !== undefined) updateData.documentoReemplazadoId = documentoReemplazadoId || null;
         if (motivoCambio !== undefined) updateData.motivoCambio = motivoCambio;
         if (tags !== undefined) updateData.tags = tags;
+        if (operatorIds !== undefined) updateData.operatorIds = operatorIds;
         if (observaciones !== undefined) updateData.observaciones = observaciones;
         if (proximaRevision !== undefined) updateData.proximaRevision = proximaRevision ? new Date(proximaRevision) : null;
         if (descripcion !== undefined) updateData.descripcion = descripcion;
