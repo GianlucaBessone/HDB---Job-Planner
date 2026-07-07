@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { safeApiRequest } from '@/lib/offline';
 import { Search, Plus, FileText, CheckCircle2, ShieldAlert, Trash2, Edit3, Save, X, PlusCircle, CheckSquare, Camera, Award, RefreshCw, AlertTriangle, FileSignature, Check, Sparkles, Loader2 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
+import SignatureButton from '@/components/SignatureButton';
 
 export default function TemplatesTab({ user }: { user: any }) {
     const [templates, setTemplates] = useState<any[]>([]);
@@ -26,59 +27,9 @@ export default function TemplatesTab({ user }: { user: any }) {
         reason: '',
         showWarning: false
     });
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [isDrawing, setIsDrawing] = useState(false);
+    const [pendingTemplateSignature, setPendingTemplateSignature] = useState<any>(null);
 
-    const getCoordinates = (e: any) => {
-        const canvas = canvasRef.current;
-        if (!canvas) return { x: 0, y: 0 };
-        const rect = canvas.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        return {
-            x: clientX - rect.left,
-            y: clientY - rect.top
-        };
-    };
 
-    const startDrawing = (e: any) => {
-        const coords = getCoordinates(e);
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-        
-        ctx.beginPath();
-        ctx.moveTo(coords.x, coords.y);
-        ctx.lineWidth = 3;
-        ctx.lineCap = 'round';
-        ctx.strokeStyle = '#0f172a';
-        setIsDrawing(true);
-    };
-
-    const draw = (e: any) => {
-        if (!isDrawing) return;
-        const coords = getCoordinates(e);
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-        
-        ctx.lineTo(coords.x, coords.y);
-        ctx.stroke();
-    };
-
-    const stopDrawing = () => {
-        setIsDrawing(false);
-    };
-
-    const clearCanvas = () => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-    };
 
     // Edit/New modal state
     const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
@@ -270,8 +221,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                 reason: '',
                 showWarning: !bumpVersion
             });
-            // Clear canvas when modal opens
-            setTimeout(() => clearCanvas(), 50);
+            setPendingTemplateSignature(null);
             return;
         }
 
@@ -320,10 +270,11 @@ export default function TemplatesTab({ user }: { user: any }) {
     };
 
     const handleConfirmSignature = () => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        
-        const signatureData = canvas.toDataURL('image/png');
+        if (!pendingTemplateSignature) {
+            showToast('Debe firmar electrónicamente para confirmar', 'error');
+            return;
+        }
+        const signatureData = pendingTemplateSignature.SignatureID;
 
         if (signatureModal.showWarning && !signatureModal.reason.trim()) {
             return showToast('Debe ingresar una justificación para no incrementar la versión', 'error');
@@ -750,31 +701,13 @@ export default function TemplatesTab({ user }: { user: any }) {
                                     <label className="block text-xs font-black uppercase tracking-widest text-slate-400">
                                         Firma Digital <span className="text-red-500">*</span>
                                     </label>
-                                    <button
-                                        type="button"
-                                        onClick={clearCanvas}
-                                        className="text-[10px] font-bold text-slate-400 hover:text-red-500 transition-colors uppercase tracking-wider"
-                                    >
-                                        Limpiar
-                                    </button>
                                 </div>
-                                <div className="relative">
-                                    <canvas
-                                        ref={canvasRef}
-                                        width={464}
-                                        height={180}
-                                        onMouseDown={startDrawing}
-                                        onMouseMove={draw}
-                                        onMouseUp={stopDrawing}
-                                        onMouseLeave={stopDrawing}
-                                        onTouchStart={startDrawing}
-                                        onTouchMove={draw}
-                                        onTouchEnd={stopDrawing}
-                                        className="w-full h-[180px] bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl cursor-crosshair touch-none"
+                                <div className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden bg-card text-card-foreground p-4">
+                                    <SignatureButton 
+                                        documentId={selectedTemplate?.id || 'template-edit'} 
+                                        documentVersion={`v${(selectedTemplate?.version || 0) + (signatureModal.bumpVersion ? 1 : 0)}`}
+                                        onSignComplete={(sig) => setPendingTemplateSignature(sig)}
                                     />
-                                    <div className="absolute bottom-2 right-3 pointer-events-none text-[10px] font-bold text-slate-400/50 uppercase tracking-widest">
-                                        Firme Aquí
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -791,7 +724,8 @@ export default function TemplatesTab({ user }: { user: any }) {
                             <button
                                 type="button"
                                 onClick={handleConfirmSignature}
-                                className={`px-5 py-2.5 rounded-xl text-sm font-black text-white hover:bg-primary/95 transition-all shadow-md shadow-primary/20 flex items-center gap-1.5 ${
+                                disabled={!pendingTemplateSignature}
+                                className={`px-5 py-2.5 rounded-xl text-sm font-black text-white hover:bg-primary/95 transition-all shadow-md shadow-primary/20 flex items-center gap-1.5 disabled:opacity-50 ${
                                     signatureModal.showWarning ? 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/10' : 'bg-primary'
                                 }`}
                             >

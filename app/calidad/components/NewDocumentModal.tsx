@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { 
     X, FileText, Loader2, FileSignature, Check, ChevronRight, ChevronLeft, 
     Plus, Trash2, Search, Link2, BookOpen, Play, AlertCircle, Sparkles, PlusCircle 
@@ -9,6 +9,7 @@ import { safeApiRequest } from '@/lib/offline';
 import TechAssistantChat from '@/components/TechAssistantChat';
 import { useModalScroll } from '@/lib/useModalScroll';
 import { showToast } from '@/components/Toast';
+import SignatureButton from '@/components/SignatureButton';
 
 export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose: () => void, onSuccess: (newDocId: string) => void, user: any }) {
     useModalScroll(true);
@@ -131,9 +132,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
     const [showRefResults, setShowRefResults] = useState(false);
     const [customRefText, setCustomRefText] = useState('');
 
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [isDrawing, setIsDrawing] = useState(false);
-    const [hasSigned, setHasSigned] = useState(false);
+    const [pendingCreatorSignature, setPendingCreatorSignature] = useState<any>(null);
 
     // Predefined baseline definitions
     const DEFAULT_ABBREVIATIONS = [
@@ -167,67 +166,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
 
     const mergedAbbreviations = [...DEFAULT_ABBREVIATIONS, ...customAbbrevs];
 
-    const getCoordinates = (e: any) => {
-        const canvas = canvasRef.current;
-        if (!canvas) return { x: 0, y: 0 };
-        const rect = canvas.getBoundingClientRect();
-        
-        // Handle touch events
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        
-        return {
-            x: (clientX - rect.left) * scaleX,
-            y: (clientY - rect.top) * scaleY
-        };
-    };
 
-    const startDrawing = (e: any) => {
-        const coords = getCoordinates(e);
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-        
-        ctx.beginPath();
-        ctx.moveTo(coords.x, coords.y);
-        ctx.lineWidth = 5;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.strokeStyle = '#0f172a';
-        ctx.shadowBlur = 1;
-        ctx.shadowColor = '#0f172a';
-        setIsDrawing(true);
-        setHasSigned(true);
-    };
-
-    const draw = (e: any) => {
-        if (!isDrawing) return;
-        const coords = getCoordinates(e);
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-        
-        ctx.lineTo(coords.x, coords.y);
-        ctx.stroke();
-    };
-
-    const stopDrawing = () => {
-        setIsDrawing(false);
-    };
-
-    const clearCanvas = () => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        setHasSigned(false);
-    };
 
     // Abbreviations Helpers
     const handleSelectAbbreviation = (item: { term: string; definition: string }) => {
@@ -297,14 +236,11 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const signatureData = canvas.toDataURL('image/png');
-        
-        if (!hasSigned) {
-            showToast('Debe firmar el documento para crearlo (Firma Digital del Creador)', 'error');
+        if (!pendingCreatorSignature) {
+            showToast('Debe firmar electrónicamente el documento para crearlo (Firma Digital del Creador)', 'error');
             return;
         }
+        const signatureData = pendingCreatorSignature.SignatureID;
 
         if (!formData.revisadorId || !formData.aprobadorId) {
             showToast('Debe seleccionar un Revisador y un Aprobador para crear el documento.', 'error');
@@ -1027,32 +963,14 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                         <FileSignature className="w-4 h-4 text-indigo-500" />
                                         <span>Firma Digital del Creador <span className="text-red-500">*</span></span>
                                     </h3>
-                                    <p className="text-[10px] text-slate-400 font-bold">Dibuje su firma autorizante para registrar la validez formal del documento en el flujo QMS.</p>
+                                    <p className="text-[10px] text-slate-400 font-bold">Valide su identidad electrónicamente para registrar la validez formal del documento en el flujo QMS.</p>
 
-                                    <div className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden bg-background text-foreground/50">
-                                        <canvas
-                                            ref={canvasRef}
-                                            width={800}
-                                            height={300}
-                                            onMouseDown={startDrawing}
-                                            onMouseMove={draw}
-                                            onMouseUp={stopDrawing}
-                                            onMouseLeave={stopDrawing}
-                                            onTouchStart={startDrawing}
-                                            onTouchMove={draw}
-                                            onTouchEnd={stopDrawing}
-                                            className="w-full bg-transparent dark:invert cursor-crosshair touch-none h-[150px]"
+                                    <div className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden bg-card text-card-foreground p-4">
+                                        <SignatureButton 
+                                            documentId={previewCode || 'new-doc'} 
+                                            documentVersion="v1.0"
+                                            onSignComplete={(sig) => setPendingCreatorSignature(sig)}
                                         />
-                                        <div className="px-4 py-2 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center bg-background text-foreground">
-                                            <span className="text-[10px] font-bold text-slate-400">Escriba su firma arriba</span>
-                                            <button
-                                                type="button"
-                                                onClick={clearCanvas}
-                                                className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-950/20"
-                                            >
-                                                Limpiar
-                                            </button>
-                                        </div>
                                     </div>
                                 </div>
 
@@ -1070,7 +988,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                         <button type="button" onClick={onClose} className="px-5 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
                                             Cancelar
                                         </button>
-                                        <button disabled={loading || !!previewError || previewCode === 'Calculando...'} type="submit" className="px-6 py-2.5 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors flex items-center gap-2 shadow-lg shadow-indigo-600/10">
+                                        <button disabled={loading || !pendingCreatorSignature || !!previewError || previewCode === 'Calculando...'} type="submit" className="px-6 py-2.5 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors flex items-center gap-2 shadow-lg shadow-indigo-600/10 disabled:opacity-50">
                                             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                                             Crear e ir al detalle
                                         </button>
