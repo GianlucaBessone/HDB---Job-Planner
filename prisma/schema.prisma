@@ -134,7 +134,7 @@ model Operator {
   responsibleProjects       Project[]                   @relation("ProjectResponsable")
   createdAt                 DateTime                    @default(now())
   timeEntries               TimeEntry[]
-  notifications             Notification[]
+  activities                ActivityRecipient[]
   ordenesServicio           OrdenServicioOperador[]
   fichadas                  Fichada[]
   toolMovements             ToolMovement[]
@@ -239,21 +239,38 @@ model TimeEntry {
   @@index([operatorId])
 }
 
-model Notification {
-  id             String    @id @default(cuid())
-  operatorId     String? // If null and forSupervisors=true, it goes to all supervisors
-  operator       Operator? @relation(fields: [operatorId], references: [id], onDelete: Cascade)
-  forSupervisors Boolean   @default(false)
-  title          String
-  message        String
-  type           String // TIME_EDIT_REQUEST, PLANNING_ASSIGNMENT
-  relatedId      String? // ID of TimeEntry or Planning block
-  metadata       Json? // To store requested modifications or planning block details
-  read           Boolean   @default(false)
-  createdAt      DateTime  @default(now())
+model Activity {
+  id         String              @id @default(cuid())
+  type       String              // OS_ASSIGNED, PROJECT_CREATED, etc.
+  priority   String              // LOW, NORMAL, HIGH, CRITICAL
+  category   String              // Work Orders, Projects, Inventory, etc.
+  title      String
+  message    String
+  entityType String?             // e.g. "workOrder", "project"
+  entityId   String?
+  metadata   Json?
+  createdBy  String?             // ID of the user who triggered this
+  createdAt  DateTime            @default(now())
+
+  recipients ActivityRecipient[]
+
+  @@index([createdAt])
+  @@index([entityType, entityId])
+}
+
+model ActivityRecipient {
+  id         String    @id @default(cuid())
+  activityId String
+  activity   Activity  @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  operatorId String
+  operator   Operator  @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  readAt     DateTime? // Null means unread
+  archivedAt DateTime? // Null means active
+  createdAt  DateTime  @default(now())
 
   @@index([operatorId])
-  @@index([createdAt])
+  @@index([activityId])
+  @@index([archivedAt, operatorId])
 }
 
 model ProjectTag {

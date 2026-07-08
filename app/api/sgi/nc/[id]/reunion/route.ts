@@ -35,14 +35,17 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             const message = `Has sido convocado a una reunión el ${new Date(body.fecha).toLocaleString()} para tratar la NC de ${nc?.categoria || 'Calidad'}.\nAsunto: ${body.agenda || body.motivo}`;
 
             await Promise.all(operatorIds.map(opId => 
-                prisma.notification.create({
+                prisma.activity.create({
                     data: {
-                        operatorId: opId,
+                        type: 'MEETING_SCHEDULED',
+                        priority: 'NORMAL',
+                        category: 'Quality',
                         title,
                         message,
-                        type: 'REUNION_NC',
-                        relatedId: reunion.id,
+                        entityType: 'reunion',
+                        entityId: reunion.id,
                         metadata: { ncId: params.id, reunionId: reunion.id },
+                        recipients: { create: [{ operatorId: opId }] }
                     }
                 })
             ));

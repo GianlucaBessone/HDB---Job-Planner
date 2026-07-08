@@ -125,17 +125,20 @@ export async function triggerAutomaticTraining(documentId: string) {
                     });
 
                     // Generar notificación / tarea automática
-                    await prisma.notification.create({
+                    await prisma.activity.create({
                         data: {
-                            operatorId: op.id,
+                            type: 'QMS_TRAINING',
+                            priority: 'HIGH',
+                            category: 'Quality',
                             title: approvedTraining 
                                 ? 'Nueva Versión de Documento' 
                                 : (doc.requiereCapacitacion ? 'Capacitación Obligatoria Asignada' : 'Lectura Obligatoria Asignada'),
                             message: approvedTraining
                                 ? `Se ha publicado una nueva versión (${doc.versionMayor}.${doc.versionMenor}) del documento "${doc.titulo}". Tu revisión anterior ha quedado registrada en tu historial y debes completar esta nueva revisión.`
                                 : `Se ha publicado una nueva versión crítica del documento "${doc.titulo}". Debes completar su ${doc.requiereCapacitacion ? 'capacitación' : 'lectura'} obligatoria para poder operar.`,
-                            type: 'QMS_TRAINING',
-                            relatedId: doc.id
+                            entityType: 'documento',
+                            entityId: doc.id,
+                            recipients: { create: [{ operatorId: op.id }] }
                         }
                     });
 
@@ -291,13 +294,16 @@ export async function syncOperatorTrainings(operatorId: string) {
                     });
 
                     // Generate automatic notification
-                    await prisma.notification.create({
+                    await prisma.activity.create({
                         data: {
-                            operatorId: op.id,
+                            type: 'QMS_TRAINING',
+                            priority: 'HIGH',
+                            category: 'Quality',
                             title: doc.requiereCapacitacion ? 'Capacitación Obligatoria Asignada' : 'Lectura Obligatoria Asignada',
                             message: `Se ha publicado una nueva versión crítica del documento "${doc.titulo}". Debes completar la ${doc.requiereCapacitacion ? 'capacitación' : 'lectura'} obligatoria para poder operar.`,
-                            type: 'QMS_TRAINING',
-                            relatedId: doc.id
+                            entityType: 'documento',
+                            entityId: doc.id,
+                            recipients: { create: [{ operatorId: op.id }] }
                         }
                     });
 

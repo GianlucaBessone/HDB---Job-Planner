@@ -6,12 +6,15 @@ export async function POST(req: Request) {
     const { fecha, blocks } = await req.json();
 
     try {
-        // 1. Delete previous notifications for this planning date
-        await prisma.notification.deleteMany({
+        // 1. Archive previous activities for this planning date
+        await prisma.activityRecipient.updateMany({
             where: {
-                type: 'PLANNING_ASSIGNMENT',
-                relatedId: fecha
-            }
+                activity: {
+                    type: 'PLANNING_ASSIGNMENT',
+                    entityId: fecha
+                }
+            },
+            data: { archivedAt: new Date() }
         });
 
         const notificationsData: any[] = [];
@@ -50,17 +53,19 @@ export async function POST(req: Request) {
         for (const opId of Object.keys(operatorBlocks)) {
             const opAssignments = operatorBlocks[opId];
             notificationsData.push({
-                operatorId: opId,
-                forSupervisors: false,
+                type: 'PLANNING_ASSIGNMENT',
+                priority: 'NORMAL',
+                category: 'System',
                 title: `Planificación Asignada`,
                 message: `Tienes ${opAssignments.length} asignaciones para el ${fecha}. Toca para ver los detalles.`,
-                type: 'PLANNING_ASSIGNMENT',
-                relatedId: fecha,
+                entityType: 'planning',
+                entityId: fecha,
                 metadata: {
                     fecha,
                     assignments: opAssignments,
                     notes: globalNotes
-                }
+                },
+                operatorId: opId // Keep this for recipient mapping later
             });
         }
 
@@ -69,8 +74,7 @@ export async function POST(req: Request) {
             where: { role: { in: ['admin', 'qa'] } }
         });
 
-        // Format summary message
-        let summaryText = `Resumen de Planificación (${fecha}):\n`;
+        let summaryText = `Asignaciones publicadas para el ${fecha}:\n\n`;
         const operatorIds = Object.keys(operatorBlocks);
 
         if (operatorIds.length > 0) {
@@ -88,32 +92,47 @@ export async function POST(req: Request) {
 
         for (const admin of administrators) {
             notificationsData.push({
-                operatorId: admin.id,
-                forSupervisors: false,
+                type: 'PLANNING_ASSIGNMENT_SUMMARY',
+                priority: 'LOW',
+                category: 'System',
                 title: `Resumen Planificación`,
                 message: summaryText,
-                type: 'PLANNING_ASSIGNMENT_SUMMARY',
-                relatedId: fecha,
+                entityType: 'planning',
+                entityId: fecha,
                 metadata: {
                     fecha,
                     fullBlocks: blocks
-                }
+                },
+                operatorId: admin.id
             });
         }
 
         if (notificationsData.length > 0) {
-            console.log("🔔 [INTERNAL_NOTIFICATION] Generando notificaciones:", {
+            console.log("🔔 [INTERNAL_ACTIVITY] Generando actividades:", {
                 fecha,
                 total: notificationsData.length,
                 operatorIds: notificationsData.map(n => n.operatorId),
                 types: notificationsData.map(n => n.type)
             });
 
-            await prisma.notification.createMany({
-                data: notificationsData
-            });
+            // Create activities one by one due to nested recipients
+            await Promise.all(notificationsData.map(data => 
+                prisma.activity.create({
+                    data: {
+                        type: data.type,
+                        priority: data.priority,
+                        category: data.category,
+                        title: data.title,
+                        message: data.message,
+                        entityType: data.entityType,
+                        entityId: data.entityId,
+                        metadata: data.metadata,
+                        recipients: { create: [{ operatorId: data.operatorId }] }
+                    }
+                })
+            ));
 
-            console.log("✅ [INTERNAL_NOTIFICATION] Guardadas en DB correctamente");
+            console.log("✅ [INTERNAL_ACTIVITY] Guardadas en DB correctamente");
 
             // Send push notifications - MUST await before returning response (Vercel compatibility)
             console.log("📡 [PUSH_DISPATCH_START] Sending", notificationsData.length, "push notifications");

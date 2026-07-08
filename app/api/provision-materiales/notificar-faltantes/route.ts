@@ -57,31 +57,20 @@ export async function POST(req: Request) {
 
         // Guardar notificación para cada destinatario
         if (recipientIds.length > 0) {
-            await Promise.all(recipientIds.map(opId => 
-                prisma.notification.create({
-                    data: {
-                        operatorId: opId,
-                        title,
-                        message,
-                        type: 'FALTANTES_MATERIALES',
-                        relatedId: proyecto.id,
-                        metadata: { notificador: notificadorNombre || userName, faltantes, date: new Date().toISOString() },
-                    }
-                })
-            ));
+            await prisma.activity.create({
+                data: {
+                    type: 'MATERIAL_REQUEST',
+                    priority: 'HIGH',
+                    category: 'Materials',
+                    title,
+                    message,
+                    entityType: 'project',
+                    entityId: proyecto.id,
+                    metadata: { notificador: notificadorNombre || userName, faltantes, date: new Date().toISOString() },
+                    recipients: { create: recipientIds.map(id => ({ operatorId: id })) }
+                }
+            });
         }
-
-        // Mantener una para "forSupervisors" general si el sistema la usa para el dropdown global
-        await prisma.notification.create({
-            data: {
-                forSupervisors: true,
-                title,
-                message,
-                type: 'FALTANTES_MATERIALES',
-                relatedId: proyecto.id,
-                metadata: { notificador: notificadorNombre || userName, faltantes, date: new Date().toISOString() },
-            }
-        });
 
         // Enviar Push (OneSignal va a combinar tags de rol con estos external IDs)
         await sendPushNotification({

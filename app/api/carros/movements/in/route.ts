@@ -49,14 +49,20 @@ export async function POST(req: Request) {
                 prisma.operator.findMany({ where: { role: 'supervisor', activo: true } })
             ]);
 
-            await prisma.notification.createMany({
-                data: supers.map(s => ({
-                    operatorId: s.id,
-                    title: `Herramientas faltantes - Devolución: ${mov.carro.nombre}`,
-                    message: `El operador ${op?.nombreCompleto || 'Desconocido'} reportó faltantes al devolver desde la obra ${pb?.nombre || 'Desconocida'}:\n- ${missingDetails}`,
-                    type: 'WARNING'
-                }))
-            });
+            if (supers.length > 0) {
+                await prisma.activity.create({
+                    data: {
+                        type: 'TOOL_MISSING',
+                        priority: 'HIGH',
+                        category: 'System',
+                        title: `Herramientas faltantes - Devolución: ${mov.carro.nombre}`,
+                        message: `El operador ${op?.nombreCompleto || 'Desconocido'} reportó faltantes al devolver desde la obra ${pb?.nombre || 'Desconocida'}:\n- ${missingDetails}`,
+                        entityType: 'carro',
+                        entityId: mov.carro.id,
+                        recipients: { create: supers.map(s => ({ operatorId: s.id })) }
+                    }
+                });
+            }
         }
 
         return NextResponse.json(updatedMov);

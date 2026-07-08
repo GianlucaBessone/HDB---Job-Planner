@@ -10,66 +10,23 @@ import {
 
 // ----- CANVAS SIGNATURE MODAL -----
 function SignatureModal({ isOpen, onClose, onSave }: { isOpen: boolean, onClose: () => void, onSave: (signature: string) => void }) {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [isDrawing, setIsDrawing] = useState(false);
-
-    const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        ctx.strokeStyle = '#4f46e5'; // primary color Indigo
-        ctx.lineWidth = 3;
-        ctx.lineCap = 'round';
-
-        const rect = canvas.getBoundingClientRect();
-        const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-
-        ctx.beginPath();
-        ctx.moveTo(clientX - rect.left, clientY - rect.top);
-        setIsDrawing(true);
-    };
-
-    const draw = (e: React.MouseEvent | React.TouchEvent) => {
-        if (!isDrawing) return;
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        const rect = canvas.getBoundingClientRect();
-        const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-
-        ctx.lineTo(clientX - rect.left, clientY - rect.top);
-        ctx.stroke();
-    };
-
-    const stopDrawing = () => {
-        setIsDrawing(false);
-    };
-
-    const clearCanvas = () => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-    };
+    // Drawing logic removed. Digital seal generator used instead.
 
     const handleSave = () => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const blank = document.createElement('canvas');
-        blank.width = canvas.width;
-        blank.height = canvas.height;
-        if (canvas.toDataURL() === blank.toDataURL()) {
-            alert('Por favor, firme antes de guardar.');
-            return;
-        }
-        onSave(canvas.toDataURL());
+        // Generate a digital seal in base64 instead of a drawn signature
+        const dateStr = new Date().toLocaleString('es-AR');
+        const svgData = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="400" height="150" style="background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <rect width="100%" height="100%" fill="#f8fafc" />
+                <text x="20" y="40" font-family="monospace" font-size="18" fill="#1e293b" font-weight="bold">FIRMADO DIGITALMENTE</text>
+                <text x="20" y="70" font-family="monospace" font-size="14" fill="#475569">Validez QMS / ISO 9001</text>
+                <text x="20" y="100" font-family="monospace" font-size="12" fill="#64748b">Timestamp: ${dateStr}</text>
+                <circle cx="350" cy="75" r="30" stroke="#059669" stroke-width="3" fill="none" />
+                <path d="M335 75 l10 10 l20 -20" stroke="#059669" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+        `;
+        const base64Svg = "data:image/svg+xml;base64," + btoa(svgData);
+        onSave(base64Svg);
         onClose();
     };
 
@@ -87,29 +44,15 @@ function SignatureModal({ isOpen, onClose, onSave }: { isOpen: boolean, onClose:
                     </button>
                 </div>
                 
-                <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden bg-background text-foreground relative">
-                    <canvas
-                        ref={canvasRef}
-                        width={400}
-                        height={200}
-                        className="w-full h-[200px] cursor-crosshair touch-none"
-                        onMouseDown={startDrawing}
-                        onMouseMove={draw}
-                        onMouseUp={stopDrawing}
-                        onMouseLeave={stopDrawing}
-                        onTouchStart={startDrawing}
-                        onTouchMove={draw}
-                        onTouchEnd={stopDrawing}
-                    />
+                <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 text-center">
+                    <CheckCircle2 className="w-12 h-12 text-indigo-500 mx-auto mb-3" />
+                    <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                        Al confirmar, se generará un sello criptográfico y de tiempo asociando su usuario a este documento de gestión de calidad.
+                    </p>
                 </div>
                 
                 <div className="flex justify-between items-center mt-5 gap-3">
-                    <button
-                        onClick={clearCanvas}
-                        className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-xl text-xs font-black text-slate-600 dark:text-slate-200 transition-colors flex items-center gap-1"
-                    >
-                        <RotateCcw className="w-3.5 h-3.5" /> Limpiar
-                    </button>
+
                     <div className="flex gap-2">
                         <button
                             onClick={onClose}

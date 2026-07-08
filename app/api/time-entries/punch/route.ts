@@ -327,21 +327,31 @@ export async function POST(req: Request) {
             const notifTitle = `⚠️ Fichada con Alertas — ${operator.nombreCompleto}`;
             const notifMessage = `Destino: ${projectName}\nAlertas: ${humanFlags.join(' • ')}\nToca para revisar en Monitoreo.`;
 
-            // 1. Store notification in DB (visible in bell dropdown for supervisors)
-            await prisma.notification.create({
+            // 1. Fetch supervisors to notify
+            const supervisors = await prisma.operator.findMany({
+                where: { role: { in: ['admin', 'supervisor', 'qa'] }, activo: true },
+                select: { id: true }
+            });
+            const recipientData = supervisors.map(s => ({ operatorId: s.id }));
+
+            // 2. Store activity in DB
+            await prisma.activity.create({
                 data: {
-                    forSupervisors: true,
+                    type: 'SYSTEM', // FICHADA_ALERTA
+                    priority: 'HIGH',
+                    category: 'System',
                     title: notifTitle,
                     message: notifMessage,
-                    type: 'FICHADA_ALERTA',
-                    relatedId: entry.id,
+                    entityType: 'timeEntry',
+                    entityId: entry.id,
                     metadata: {
                         operatorName: operator.nombreCompleto,
                         projectName,
                         flags: validationFlags,
                         url: '/monitoreo-fichadas',
                         entryId: entry.id
-                    }
+                    },
+                    recipients: { create: recipientData }
                 }
             });
 

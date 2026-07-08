@@ -60,14 +60,20 @@ export async function POST(req: Request) {
                 prisma.operator.findMany({ where: { role: 'supervisor', activo: true } })
             ]);
 
-            await prisma.notification.createMany({
-                data: supers.map(s => ({
-                    operatorId: s.id,
-                    title: `Herramientas faltantes - Salida: ${cart.nombre}`,
-                    message: `El operador ${op?.nombreCompleto || 'Desconocido'} registró la salida en obra ${pb?.nombre || 'Desconocida'} con faltantes:\n- ${missingDetails}`,
-                    type: 'WARNING'
-                }))
-            });
+            if (supers.length > 0) {
+                await prisma.activity.create({
+                    data: {
+                        type: 'TOOL_MISSING',
+                        priority: 'HIGH',
+                        category: 'System',
+                        title: `Herramientas faltantes - Salida: ${cart.nombre}`,
+                        message: `El operador ${op?.nombreCompleto || 'Desconocido'} registró la salida en obra ${pb?.nombre || 'Desconocida'} con faltantes:\n- ${missingDetails}`,
+                        entityType: 'carro',
+                        entityId: cart.id,
+                        recipients: { create: supers.map(s => ({ operatorId: s.id })) }
+                    }
+                });
+            }
         }
 
         return NextResponse.json(mov);

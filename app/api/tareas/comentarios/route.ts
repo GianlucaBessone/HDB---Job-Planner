@@ -79,13 +79,16 @@ export async function POST(req: NextRequest) {
                 console.error('[ONESIGNAL]', e); 
             }
             
-            await Promise.allSettled(targetIds.map(opId => prisma.notification.create({
+            await Promise.allSettled(targetIds.map(opId => prisma.activity.create({
                 data: { 
-                    operatorId: opId, 
+                    type: 'COMMENT_CREATED', 
+                    priority: 'NORMAL',
+                    category: 'Work Orders',
                     title: 'Nuevo Comentario', 
                     message: msg, 
-                    type: 'NUEVO_COMENTARIO', 
-                    relatedId: tarea.id 
+                    entityType: 'tarea',
+                    entityId: tarea.id,
+                    recipients: { create: [{ operatorId: opId }] }
                 }
             })));
         }

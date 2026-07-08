@@ -128,18 +128,21 @@ export async function GET(req: NextRequest) {
 
         // Create internal notification records for each involved operator
         const notifPromises = userIds.map(opId =>
-            prisma.notification.create({
+            prisma.activity.create({
                 data: {
-                    operatorId: opId,
+                    type: 'REMINDER',
+                    priority: 'HIGH',
+                    category: 'System',
                     title: `${prefix} Recordatorio de Tarea`,
                     message: mensaje,
-                    type: 'TAREA_REMINDER',
-                    relatedId: recordatorio.tarea!.id,
+                    entityType: 'tarea',
+                    entityId: recordatorio.tarea!.id,
                     metadata: {
                         tareaId: recordatorio.tarea!.id,
                         tareaTitulo: recordatorio.tarea!.titulo,
                         recordatorioId: recordatorio.id,
                     },
+                    recipients: { create: [{ operatorId: opId }] }
                 },
             })
         );

@@ -46,163 +46,44 @@ export interface SignatureRef {
     getDataUrl: () => string;
 }
 
-// ─── Signature Canvas (Fullscreen-optimized, dark-mode aware) ──────────────────
-const SignatureCanvas = forwardRef<SignatureRef, { fullscreen?: boolean }>((props, ref) => {
-    const { fullscreen = false } = props;
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [isDrawing, setIsDrawing] = useState(false);
-    const [hasStrokes, setHasStrokes] = useState(false);
-    const lastPos = useRef<{ x: number; y: number } | null>(null);
-
-    // Dynamic canvas sizing
-    useEffect(() => {
-        const resizeCanvas = () => {
-            const container = containerRef.current;
-            const canvas = canvasRef.current;
-            if (!container || !canvas) return;
-            
-            // If user has drawn, resizing will wipe the canvas buffer. Avoid this.
-            if (canvas.getAttribute('data-has-strokes') === 'true') return;
-
-            const rect = container.getBoundingClientRect();
-            if (rect.width > 0 && rect.height > 0) {
-                const dpr = Math.min(window.devicePixelRatio || 1, 2);
-                canvas.width = rect.width * dpr;
-                canvas.height = rect.height * dpr;
-            }
-        };
-
-        resizeCanvas();
-        // Resize again after the modal open transition settles
-        const timeout = setTimeout(resizeCanvas, 350);
-        window.addEventListener('resize', resizeCanvas);
-        
-        return () => {
-            clearTimeout(timeout);
-            window.removeEventListener('resize', resizeCanvas);
-        };
-    }, []);
+// ─── Digital Signature Box (Replaces SignatureCanvas) ──────────────────────────
+const DigitalSignatureBox = forwardRef<SignatureRef, { fullscreen?: boolean; nombre?: string; dni?: string }>((props, ref) => {
+    const { fullscreen = false, nombre, dni } = props;
 
     useImperativeHandle(ref, () => ({
-        clear: clear,
-        isEmpty: () => !hasStrokes,
+        clear: () => {},
+        isEmpty: () => false,
         getDataUrl: () => {
-            return canvasRef.current?.toDataURL('image/png') || '';
+            const dateStr = new Date().toLocaleString('es-AR');
+            const svgData = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="400" height="150" style="background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <rect width="100%" height="100%" fill="#f8fafc" />
+                    <text x="20" y="40" font-family="monospace" font-size="18" fill="#1e293b" font-weight="bold">FIRMADO DIGITALMENTE</text>
+                    <text x="20" y="65" font-family="monospace" font-size="14" fill="#475569">Operador/Cliente: ${nombre || 'Usuario'}</text>
+                    <text x="20" y="85" font-family="monospace" font-size="14" fill="#475569">DNI: ${dni || 'N/A'}</text>
+                    <text x="20" y="115" font-family="monospace" font-size="12" fill="#64748b">Timestamp: ${dateStr}</text>
+                    <circle cx="350" cy="75" r="30" stroke="#059669" stroke-width="3" fill="none" />
+                    <path d="M335 75 l10 10 l20 -20" stroke="#059669" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            `;
+            return "data:image/svg+xml;base64," + btoa(svgData);
         }
     }));
-
-    const getPos = (e: React.MouseEvent | React.TouchEvent) => {
-        const canvas = canvasRef.current!;
-        const rect = canvas.getBoundingClientRect();
-        
-        // Compute correct scale using internal resolution vs CSS resolution
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-
-        if ('touches' in e) {
-            return {
-                x: (e.touches[0].clientX - rect.left) * scaleX,
-                y: (e.touches[0].clientY - rect.top) * scaleY,
-            };
-        }
-        return {
-            x: (e.clientX - rect.left) * scaleX,
-            y: (e.clientY - rect.top) * scaleY,
-        };
-    };
-
-    const startDraw = (e: React.MouseEvent | React.TouchEvent) => {
-        if (e.cancelable) e.preventDefault();
-        const canvas = canvasRef.current!;
-        const ctx = canvas.getContext('2d')!;
-        const pos = getPos(e);
-        
-        canvas.setAttribute('data-has-strokes', 'true');
-        ctx.beginPath();
-        ctx.moveTo(pos.x, pos.y);
-        lastPos.current = pos;
-        setIsDrawing(true);
-        setHasStrokes(true);
-    };
-
-    const draw = (e: React.MouseEvent | React.TouchEvent) => {
-        if (e.cancelable) e.preventDefault();
-        if (!isDrawing || !lastPos.current) return;
-        const canvas = canvasRef.current!;
-        const ctx = canvas.getContext('2d')!;
-        const pos = getPos(e);
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        
-        // Always draw with dark slate ink. The canvas has `dark:invert` so it renders 
-        // as white in dark mode visually, but saves as dark ink for the PDFs.
-        ctx.lineWidth = 3 * dpr;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.strokeStyle = '#0f172a';
-        ctx.lineTo(pos.x, pos.y);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(pos.x, pos.y);
-        lastPos.current = pos;
-    };
-
-    const endDraw = () => {
-        setIsDrawing(false);
-        lastPos.current = null;
-    };
-
-    const clear = () => {
-        const canvas = canvasRef.current!;
-        const ctx = canvas.getContext('2d')!;
-        // clearRect needs to wipe the entire internal buffer correctly
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        canvas.setAttribute('data-has-strokes', 'false');
-        setHasStrokes(false);
-    };
-
     return (
-        <div className="relative group flex-1 flex flex-col">
-            <div
-                ref={containerRef}
-                className={`relative border-2 border-slate-200 dark:border-slate-600 overflow-hidden bg-card text-card-foreground transition-all focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/20 ${
-                    fullscreen ? 'rounded-2xl flex-1' : 'rounded-2xl aspect-[3/2]'
-                }`}
-            >
-                <canvas
-                    ref={canvasRef}
-                    className="w-full h-full touch-none cursor-crosshair block absolute inset-0 dark:invert transition-all"
-                    onMouseDown={startDraw}
-                    onMouseMove={draw}
-                    onMouseUp={endDraw}
-                    onMouseLeave={endDraw}
-                    onTouchStart={startDraw}
-                    onTouchMove={draw}
-                    onTouchEnd={endDraw}
-                />
-                {!hasStrokes && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-40">
-                        <PenLine className="w-10 h-10 text-slate-400 dark:text-slate-500 mb-2" />
-                        <p className="text-slate-400 dark:text-slate-500 font-bold text-base">Firmá aquí</p>
-                        <p className="text-slate-300 dark:text-slate-600 font-medium text-xs mt-1">Dibujá con el dedo o el mouse</p>
-                    </div>
-                )}
-                {/* Baseline guide */}
-                <div className={`absolute left-[10%] right-[10%] h-px bg-slate-200 dark:bg-slate-600 pointer-events-none ${fullscreen ? 'bottom-[20%]' : 'bottom-[22%]'}`} />
+        <div className={`relative ${fullscreen ? 'fixed inset-0 z-50 bg-slate-900 flex flex-col' : 'w-full h-full'}`}>
+            <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 text-center my-4">
+                <CheckCircle2 className="w-12 h-12 text-indigo-500 mx-auto mb-3" />
+                <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                    Al confirmar, se generará un sello digital automático con sus datos ({nombre}, DNI: {dni}).
+                </p>
+                <p className="text-xs text-slate-500 mt-2">
+                    Esta acción reemplaza la firma manuscrita tradicional.
+                </p>
             </div>
-            {hasStrokes && (
-                <button
-                    onClick={clear}
-                    type="button"
-                    className="absolute top-3 right-3 bg-white/90 dark:bg-slate-700/90 backdrop-blur-sm text-slate-500 dark:text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm border border-slate-200 dark:border-slate-600 transition-all active:scale-95 z-10"
-                >
-                    Limpiar
-                </button>
-            )}
         </div>
     );
 });
-SignatureCanvas.displayName = 'SignatureCanvas';
+DigitalSignatureBox.displayName = 'DigitalSignatureBox';
 
 // ─── Rating Button ─────────────────────────────────────────────────────────────
 function RatingButton({ value, selected, onClick, min, max }: { value: number; selected: boolean; onClick: () => void; min: number; max: number }) {
@@ -1227,9 +1108,11 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                         ) : (
                             <div className="space-y-4 flex-1 flex flex-col min-h-0">
                                 <div className="flex-1 flex flex-col min-h-0 relative">
-                                    <SignatureCanvas 
+                                    <DigitalSignatureBox 
                                         ref={sigRef} 
                                         fullscreen={true} 
+                                        nombre={firmaNombre} 
+                                        dni={firmaDni}
                                     />
                                 </div>
 

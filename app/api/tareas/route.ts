@@ -134,17 +134,20 @@ export async function POST(req: NextRequest) {
 
             // Internal DB Notifications
             const notifPromises = userIds.map((opId: string) =>
-                prisma.notification.create({
+                prisma.activity.create({
                     data: {
-                        operatorId: opId,
+                        type: 'TASK_ASSIGNED',
+                        priority: 'NORMAL',
+                        category: 'Work Orders',
                         title: 'Nueva Tarea Asignada',
                         message: `${creadorNombre} te ha involucrado en la tarea: "${titulo}"`,
-                        type: 'NUEVA_TAREA',
-                        relatedId: tarea.id,
+                        entityType: 'tarea',
+                        entityId: tarea.id,
                         metadata: {
                             tareaId: tarea.id,
                             tareaTitulo: titulo,
                         },
+                        recipients: { create: [{ operatorId: opId }] }
                     },
                 })
             );
@@ -257,8 +260,8 @@ export async function PUT(req: NextRequest) {
             if (targetIds.length > 0) {
                 const msg = `${actingUserName} ha cambiado el estado de "${tarea.titulo}" a ${label}.`;
                 try { sendPushNotification({ userIds: targetIds, title: 'Cambio de Estado', message: msg, data: { url: `/tareas?id=${tarea.id}` } }).catch(e => console.error(e)); } catch (e) { console.error('[ONESIGNAL]', e); }
-                await Promise.allSettled(targetIds.map(opId => prisma.notification.create({
-                    data: { operatorId: opId, title: 'Cambio de Estado', message: msg, type: 'TAREA_ACTUALIZADA', relatedId: tarea.id }
+                await Promise.allSettled(targetIds.map(opId => prisma.activity.create({
+                    data: { type: 'TASK_UPDATED', priority: 'NORMAL', category: 'Work Orders', title: 'Cambio de Estado', message: msg, entityType: 'tarea', entityId: tarea.id, recipients: { create: [{ operatorId: opId }] } }
                 })));
             }
         } else if (keysChanged.length > 0) {
@@ -271,8 +274,8 @@ export async function PUT(req: NextRequest) {
             if (targetIds.length > 0) {
                 const msg = `${actingUserName} ha actualizado la tarea "${tarea.titulo}".`;
                 try { sendPushNotification({ userIds: targetIds, title: 'Tarea Actualizada', message: msg, data: { url: `/tareas?id=${tarea.id}` } }).catch(e => console.error(e)); } catch (e) { console.error('[ONESIGNAL]', e); }
-                await Promise.allSettled(targetIds.map(opId => prisma.notification.create({
-                    data: { operatorId: opId, title: 'Tarea Actualizada', message: msg, type: 'TAREA_ACTUALIZADA', relatedId: tarea.id }
+                await Promise.allSettled(targetIds.map(opId => prisma.activity.create({
+                    data: { type: 'TASK_UPDATED', priority: 'NORMAL', category: 'Work Orders', title: 'Tarea Actualizada', message: msg, entityType: 'tarea', entityId: tarea.id, recipients: { create: [{ operatorId: opId }] } }
                 })));
             }
         }
@@ -287,15 +290,15 @@ export async function PUT(req: NextRequest) {
             if (removedIds.length > 0) {
                 const msg = `${actingUserName} te ha removido de la tarea "${oldTarea.titulo}".`;
                 try { sendPushNotification({ userIds: removedIds, title: 'Removido de Tarea', message: msg }).catch(e => console.error(e)); } catch (e) { console.error('[ONESIGNAL]', e); }
-                await Promise.allSettled(removedIds.map(opId => prisma.notification.create({
-                    data: { operatorId: opId, title: 'Removido de Tarea', message: msg, type: 'TAREA_REMOVIDA', relatedId: tarea.id }
+                await Promise.allSettled(removedIds.map(opId => prisma.activity.create({
+                    data: { type: 'TASK_UPDATED', priority: 'LOW', category: 'Work Orders', title: 'Removido de Tarea', message: msg, entityType: 'tarea', entityId: tarea.id, recipients: { create: [{ operatorId: opId }] } }
                 })));
             }
             if (addedIds.length > 0) {
                 const msg = `${actingUserName} te ha asignado a la tarea "${tarea.titulo}".`;
                 try { sendPushNotification({ userIds: addedIds, title: 'Nueva Asignación', message: msg, data: { url: `/tareas?id=${tarea.id}` } }).catch(e => console.error(e)); } catch (e) { console.error('[ONESIGNAL]', e); }
-                await Promise.allSettled(addedIds.map(opId => prisma.notification.create({
-                    data: { operatorId: opId, title: 'Nueva Asignación', message: msg, type: 'NUEVA_TAREA', relatedId: tarea.id }
+                await Promise.allSettled(addedIds.map(opId => prisma.activity.create({
+                    data: { type: 'TASK_ASSIGNED', priority: 'NORMAL', category: 'Work Orders', title: 'Nueva Asignación', message: msg, entityType: 'tarea', entityId: tarea.id, recipients: { create: [{ operatorId: opId }] } }
                 })));
             }
         }
@@ -366,8 +369,8 @@ export async function DELETE(req: NextRequest) {
         if (targetIds.length > 0) {
             const msg = `${actingUserName} ha eliminado la tarea "${oldTarea.titulo}".`;
             try { sendPushNotification({ userIds: targetIds, title: 'Tarea Eliminada', message: msg }).catch(e => console.error(e)); } catch (e) { console.error('[ONESIGNAL]', e); }
-            await Promise.allSettled(targetIds.map(opId => prisma.notification.create({
-                data: { operatorId: opId, title: 'Tarea Eliminada', message: msg, type: 'TAREA_REMOVIDA', relatedId: oldTarea.id }
+            await Promise.allSettled(targetIds.map(opId => prisma.activity.create({
+                data: { type: 'TASK_DELETED', priority: 'LOW', category: 'Work Orders', title: 'Tarea Eliminada', message: msg, entityType: 'tarea', entityId: oldTarea.id, recipients: { create: [{ operatorId: opId }] } }
             })));
         }
 

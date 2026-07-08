@@ -239,16 +239,18 @@ export async function POST(req: Request, { params }: { params: { id: string } })
                     }
                 });
 
-                await prisma.notification.create({
+                await prisma.activity.create({
                     data: {
-                        operatorId: doc.createdBy,
+                        type: 'QMS_DOCUMENT_REJECTED',
+                        priority: 'HIGH',
+                        category: 'Quality',
                         title: "Documento Observado",
                         message: `El revisador/aprobador ${userName} ha dejado observaciones en tu documento "${doc.titulo}".`,
-                        type: 'QMS_DOCUMENT_REJECTED',
-                        relatedId: doc.id,
-                        forSupervisors: false
+                        entityType: 'documento',
+                        entityId: doc.id,
+                        recipients: { create: [{ operatorId: doc.createdBy }] }
                     }
-                }).catch(e => console.error("Error creating document observed notification:", e));
+                }).catch(e => console.error("Error creating document observed activity:", e));
 
                 const { sendPushNotification } = await import('@/lib/onesignal');
                 await sendPushNotification({

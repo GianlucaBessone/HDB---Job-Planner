@@ -5,14 +5,14 @@ import { createPortal } from 'react-dom';
 import { Bell, Check, X, BellOff, MessageSquare, AlertTriangle, AlertCircle, Info, Clock, CheckCircle2, MoreHorizontal, User, FileText, Timer, Calendar, ShieldAlert } from 'lucide-react';
 import { formatDate, formatTime } from '@/lib/formatDate';
 import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
+import { format, isToday, isYesterday, isThisWeek } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { showToast } from './Toast';
 import { safeApiRequest } from '@/lib/offline';
 import ProjectFinalizeAuthModal from './ProjectFinalizeAuthModal';
 import { useModalScroll } from '@/lib/useModalScroll';
 
-export default function NotificationsDropdown({ user }: { user: any }) {
+export default function ActivityCenterDropdown({ user }: { user: any }) {
     const [notifications, setNotifications] = useState<any[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [selectedNotification, setSelectedNotification] = useState<any>(null);
@@ -29,7 +29,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
         if (!user) return;
         const fetchNotifications = async (isPoll = false) => {
             try {
-                const res = await safeApiRequest(`/api/notifications?operatorId=${user.id}&role=${user.role}`);
+                const res = await safeApiRequest(`/api/activities?operatorId=${user.id}`);
                 const data = await res.json();
                 if (Array.isArray(data)) {
                     if (isPoll && knownIdsRef.current.size > 0) {
@@ -66,11 +66,11 @@ export default function NotificationsDropdown({ user }: { user: any }) {
 
     if (!user) return null;
 
-    const markAsRead = async (id: string, e?: React.MouseEvent) => {
+    const markAsRead = async (id: string, recipientId: string, e?: React.MouseEvent) => {
         if (e) e.stopPropagation();
         setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
         try {
-            await safeApiRequest(`/api/notifications/${id}`, {
+            await safeApiRequest(`/api/activities/${recipientId}`, {
                 method: 'PATCH',
                 body: JSON.stringify({ read: true })
             });
@@ -80,7 +80,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
     };
 
     const handleNotificationClick = (notif: any) => {
-        if (!notif.read) markAsRead(notif.id);
+        if (!notif.read) markAsRead(notif.id, notif.recipientId);
 
         // Types that have their own modal
         const hasOwnModal = [
@@ -124,7 +124,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        id: notif.relatedId,
+                        id: notif.entityId,
                         horaIngreso: resData.horaIngreso,
                         horaEgreso: resData.horaEgreso,
                         isExtra: resData.isExtra,
@@ -135,7 +135,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                 if (!res.ok) success = false;
             } else {
                 // Delete request
-                const res = await safeApiRequest(`/api/time-entries?id=${notif.relatedId}&requestUserId=${user.id}&requestUserRole=${user.role}`, {
+                const res = await safeApiRequest(`/api/time-entries?id=${notif.entityId}&requestUserId=${user.id}&requestUserRole=${user.role}`, {
                     method: 'DELETE'
                 });
                 if (!res.ok) success = false;
@@ -146,14 +146,17 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                 return;
             }
 
-            const feedbackRes = await safeApiRequest('/api/notifications', {
+            const feedbackRes = await safeApiRequest('/api/activities', {
                 method: 'POST',
                 body: JSON.stringify({
-                    operatorId: notif.operatorId,
-                    forSupervisors: false,
+                    type: 'SYSTEM_MESSAGE',
+                    priority: 'NORMAL',
+                    category: 'System',
                     title: 'Solicitud Aprobada',
                     message: `Tu solicitud para ${resData ? 'modificar' : 'eliminar'} el registro ha sido aprobada.`,
-                    type: 'SYSTEM_MESSAGE'
+                    entityType: 'general',
+                    entityId: 'system',
+                    recipients: [{ operatorId: notif.operatorId }]
                 }),
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -162,7 +165,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                 console.warn('Feedback notification failed to send');
             }
 
-            await safeApiRequest(`/api/notifications/${notif.id}`, { method: 'DELETE' });
+            await safeApiRequest(`/api/activities/${notif.recipientId}`, { method: 'DELETE' });
             setNotifications(prev => prev.filter(n => n.id !== notif.id));
             setSelectedNotification(null);
             showToast('Modificación aprobada y aplicada.', 'success');
@@ -179,14 +182,17 @@ export default function NotificationsDropdown({ user }: { user: any }) {
             const notif = selectedNotification;
             const resData = notif.metadata;
 
-            const feedbackRes = await safeApiRequest('/api/notifications', {
+            const feedbackRes = await safeApiRequest('/api/activities', {
                 method: 'POST',
                 body: JSON.stringify({
-                    operatorId: notif.operatorId,
-                    forSupervisors: false,
+                    type: 'SYSTEM_MESSAGE',
+                    priority: 'NORMAL',
+                    category: 'System',
                     title: 'Solicitud Rechazada',
                     message: `Tu solicitud para ${resData ? 'modificar' : 'eliminar'} el registro ha sido rechazada por el supervisor.`,
-                    type: 'SYSTEM_MESSAGE'
+                    entityType: 'general',
+                    entityId: 'system',
+                    recipients: [{ operatorId: notif.operatorId }]
                 }),
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -195,7 +201,7 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                 console.warn('Feedback notification failed to send');
             }
 
-            await safeApiRequest(`/api/notifications/${notif.id}`, { method: 'DELETE' });
+            await safeApiRequest(`/api/activities/${notif.recipientId}`, { method: 'DELETE' });
             setNotifications(prev => prev.filter(n => n.id !== notif.id));
             setSelectedNotification(null);
             showToast('Solicitud rechazada.', 'success');
@@ -206,6 +212,91 @@ export default function NotificationsDropdown({ user }: { user: any }) {
     };
 
     const unreadCount = notifications.filter(n => !n.read).length;
+
+    // Grouping Logic
+    const groupedNotifications = {
+        hoy: [] as typeof notifications,
+        ayer: [] as typeof notifications,
+        semana: [] as typeof notifications,
+        anteriores: [] as typeof notifications,
+    };
+
+    notifications.forEach(n => {
+        const d = new Date(n.createdAt);
+        if (isToday(d)) {
+            groupedNotifications.hoy.push(n);
+        } else if (isYesterday(d)) {
+            groupedNotifications.ayer.push(n);
+        } else if (isThisWeek(d)) {
+            groupedNotifications.semana.push(n);
+        } else {
+            groupedNotifications.anteriores.push(n);
+        }
+    });
+
+    const renderNotification = (notif: typeof notifications[0]) => {
+        const match = notif.message.match(/\[(Nota|Reporte|Consulta|Bloqueante)\]/);
+        const parsedCategory = match ? match[1] : notif.category;
+        const cleanMessage = match ? notif.message.replace(match[0], '').trim() : notif.message;
+        
+        const catStyles: Record<string, { bg: string, text: string, border: string, icon: any }> = {
+            Bloqueante: { bg: 'bg-red-50 dark:bg-red-950/20', text: 'text-red-700 dark:text-red-400', border: 'border-red-200 dark:border-red-900', icon: ShieldAlert },
+            Reporte:    { bg: 'bg-emerald-50 dark:bg-emerald-950/20', text: 'text-emerald-700 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-900', icon: FileText },
+            Consulta:   { bg: 'bg-fuchsia-50 dark:bg-fuchsia-950/20', text: 'text-fuchsia-700 dark:text-fuchsia-400', border: 'border-fuchsia-200 dark:border-fuchsia-900', icon: MessageSquare },
+            Nota:       { bg: 'bg-blue-50 dark:bg-blue-950/20', text: 'text-blue-700 dark:text-blue-400', border: 'border-blue-200 dark:border-blue-900', icon: Info },
+            System:     { bg: 'bg-indigo-50 dark:bg-indigo-950/20', text: 'text-indigo-700 dark:text-indigo-400', border: 'border-indigo-200 dark:border-indigo-900', icon: AlertCircle },
+        };
+        
+        const style = catStyles[parsedCategory] || catStyles['System'];
+        const Icon = style.icon;
+
+        return (
+            <div
+                key={notif.id}
+                onClick={() => handleNotificationClick(notif)}
+                className={`p-4 hover:bg-slate-50 dark:hover:bg-slate-800/80 cursor-pointer transition-all relative flex gap-4 ${!notif.read ? 'bg-primary/5 dark:bg-primary/10' : ''}`}
+            >
+                <div className="shrink-0 mt-0.5 relative">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${style.bg} ${style.border} ${style.text}`}>
+                        <Icon className="w-5 h-5" />
+                    </div>
+                    {!notif.read && <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-primary rounded-full border-2 border-white dark:border-slate-900 shadow-sm"></div>}
+                </div>
+                <div className="flex-1 min-w-0 pr-2">
+                    <div className="flex flex-col gap-1 mb-1">
+                        <h4 className={`text-sm ${!notif.read ? 'font-bold text-slate-800 dark:text-slate-100' : 'font-medium text-slate-600 dark:text-slate-300'}`}>
+                            {notif.title}
+                        </h4>
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed font-medium">
+                        {cleanMessage}
+                    </p>
+                    <div className="flex items-center gap-2 mt-2">
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-bold">
+                            {formatTime(notif.createdAt)}
+                        </span>
+                        {parsedCategory && (
+                            <>
+                                <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></span>
+                                <span className={`text-[9px] font-black uppercase tracking-widest ${style.text}`}>
+                                    {parsedCategory}
+                                </span>
+                            </>
+                        )}
+                    </div>
+                </div>
+                {!notif.read && (
+                    <button
+                        onClick={(e) => markAsRead(notif.id, notif.recipientId, e)}
+                        className="absolute right-4 top-4 p-1.5 hover:bg-primary/10 rounded-lg text-primary/60 hover:text-primary transition-colors h-fit"
+                        title="Marcar como leída"
+                    >
+                        <Check className="w-4 h-4" />
+                    </button>
+                )}
+            </div>
+        );
+    };
 
     return (
         <>
@@ -223,72 +314,75 @@ export default function NotificationsDropdown({ user }: { user: any }) {
                 {isOpen && (
                     <>
                         <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)}></div>
-                        <div className="absolute right-0 mt-2 w-80 bg-card text-card-foreground rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 z-50 overflow-hidden ring-1 ring-slate-900/5 origin-top-right animate-in fade-in slide-in-from-top-2">
-                            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50">
-                                <h3 className="font-bold text-slate-800 dark:text-slate-100">Notificaciones</h3>
+                        <div className="absolute right-0 mt-2 w-96 max-w-[calc(100vw-2rem)] bg-card text-card-foreground rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 z-50 overflow-hidden ring-1 ring-slate-900/5 origin-top-right animate-in fade-in zoom-in-95 duration-200">
+                            <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-sm">
+                                <div>
+                                    <h3 className="font-black text-lg text-slate-800 dark:text-slate-100 tracking-tight">Centro de Actividad</h3>
+                                    <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-1">Eventos del Sistema</p>
+                                </div>
                                 {unreadCount > 0 && (
-                                    <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-md">{unreadCount} nuevas</span>
+                                    <span className="text-xs font-black text-primary bg-primary/10 px-3 py-1.5 rounded-xl shadow-sm">{unreadCount} nuevas</span>
                                 )}
                             </div>
 
-                            <div className="max-h-96 overflow-y-auto">
+                            <div className="max-h-[28rem] overflow-y-auto overscroll-contain">
                                 {notifications.length === 0 ? (
                                     <div className="p-8 text-center text-slate-400 dark:text-slate-500 text-sm font-medium">
-                                        No hay notificaciones
+                                        No hay actividad reciente
                                     </div>
                                 ) : (
-                                    <div className="divide-y divide-slate-50">
-                                        {notifications.map(notif => {
-                                            const match = notif.message.match(/\[(Nota|Reporte|Consulta|Bloqueante)\]/);
-                                            const category = match ? match[1] : null;
-                                            const cleanMessage = match ? notif.message.replace(match[0], '').trim() : notif.message;
-                                            const catStyles: Record<string, string> = {
-                                                Bloqueante: 'bg-red-100 text-red-700 border-red-200',
-                                                Reporte:    'bg-emerald-100 text-emerald-700 border-emerald-200',
-                                                Consulta:   'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200',
-                                                Nota:       'bg-blue-100 text-blue-700 border-blue-200',
-                                            };
-                                            return (
-                                            <div
-                                                key={notif.id}
-                                                onClick={() => handleNotificationClick(notif)}
-                                                className={`p-4 hover:bg-slate-50 dark:hover:bg-slate-800/80 cursor-pointer transition-colors relative flex gap-3 ${!notif.read ? 'bg-primary/5' : ''}`}
-                                            >
-                                                <div className="mt-1 shrink-0">
-                                                    {!notif.read && <div className="w-2 h-2 rounded-full bg-primary mt-1.5"></div>}
+                                    <div className="flex flex-col">
+                                        {groupedNotifications.hoy.length > 0 && (
+                                            <div>
+                                                <div className="bg-slate-100/50 dark:bg-slate-900/50 px-4 py-2 text-xs font-black text-slate-500 uppercase tracking-widest border-y border-slate-100 dark:border-slate-800 sticky top-0 z-10 backdrop-blur-md">
+                                                    Hoy
                                                 </div>
-                                                <div className="flex-1 min-w-0 pr-2">
-                                                    <div className="flex flex-col gap-1.5 mb-1.5">
-                                                        <h4 className={`text-sm ${!notif.read ? 'font-bold text-slate-800 dark:text-slate-100' : 'font-medium text-slate-600 dark:text-slate-300'}`}>
-                                                            {notif.title}
-                                                        </h4>
-                                                        {category && (
-                                                            <div className={`inline-flex px-1.5 py-0.5 rounded text-[9px] font-black border uppercase tracking-widest self-start w-max ${catStyles[category] || catStyles['Nota']}`}>
-                                                                {category === 'Bloqueante' && '🚨 '}{category}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">
-                                                        {cleanMessage}
-                                                    </p>
-                                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-2 block uppercase tracking-wider font-semibold">
-                                                        {formatDate(notif.createdAt)} {formatTime(notif.createdAt)}
-                                                    </span>
+                                                <div className="divide-y divide-slate-50 dark:divide-slate-800/50">
+                                                    {groupedNotifications.hoy.map(renderNotification)}
                                                 </div>
-                                                {!notif.read && (
-                                                    <button
-                                                        onClick={(e) => markAsRead(notif.id, e)}
-                                                        className="p-1.5 hover:bg-primary/10 rounded-lg text-primary/60 hover:text-primary transition-colors h-fit"
-                                                        title="Marcar como leída"
-                                                    >
-                                                        <Check className="w-4 h-4" />
-                                                    </button>
-                                                )}
                                             </div>
-                                            );
-                                        })}
+                                        )}
+                                        {groupedNotifications.ayer.length > 0 && (
+                                            <div>
+                                                <div className="bg-slate-100/50 dark:bg-slate-900/50 px-4 py-2 text-xs font-black text-slate-500 uppercase tracking-widest border-y border-slate-100 dark:border-slate-800 sticky top-0 z-10 backdrop-blur-md">
+                                                    Ayer
+                                                </div>
+                                                <div className="divide-y divide-slate-50 dark:divide-slate-800/50">
+                                                    {groupedNotifications.ayer.map(renderNotification)}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {groupedNotifications.semana.length > 0 && (
+                                            <div>
+                                                <div className="bg-slate-100/50 dark:bg-slate-900/50 px-4 py-2 text-xs font-black text-slate-500 uppercase tracking-widest border-y border-slate-100 dark:border-slate-800 sticky top-0 z-10 backdrop-blur-md">
+                                                    Últimos 7 días
+                                                </div>
+                                                <div className="divide-y divide-slate-50 dark:divide-slate-800/50">
+                                                    {groupedNotifications.semana.map(renderNotification)}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {groupedNotifications.anteriores.length > 0 && (
+                                            <div>
+                                                <div className="bg-slate-100/50 dark:bg-slate-900/50 px-4 py-2 text-xs font-black text-slate-500 uppercase tracking-widest border-y border-slate-100 dark:border-slate-800 sticky top-0 z-10 backdrop-blur-md">
+                                                    Más Antiguos
+                                                </div>
+                                                <div className="divide-y divide-slate-50 dark:divide-slate-800/50">
+                                                    {groupedNotifications.anteriores.map(renderNotification)}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
+                            </div>
+                            
+                            <div className="p-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+                                <button
+                                    onClick={() => { setIsOpen(false); router.push('/notifications'); }}
+                                    className="w-full py-2.5 text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-all shadow-sm"
+                                >
+                                    Ver toda la actividad
+                                </button>
                             </div>
                         </div>
                     </>

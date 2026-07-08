@@ -13,7 +13,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import ToastContainer from "@/components/Toast";
 import LoginScreen from "@/components/LoginScreen";
-import NotificationsDropdown from "@/components/NotificationsDropdown";
+import ActivityCenterDropdown from "@/components/ActivityCenterDropdown";
 import OneSignalInit from "@/components/OneSignalInit";
 import OneSignal from 'react-onesignal';
 import SyncIndicator from "@/components/SyncIndicator";
@@ -234,7 +234,7 @@ export default function RootLayout({
                                     appId={process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID || "35ce6a9c-c4c7-4645-98dc-b363dc91642b"}
                                     user={currentUser}
                                 />
-                                <NotificationsDropdown user={currentUser} />
+                                <ActivityCenterDropdown user={currentUser} />
                             </div>
                         </div>
                     </div>

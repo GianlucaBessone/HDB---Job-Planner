@@ -146,16 +146,18 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
                 const message = `Tu propuesta "${sugerencia.titulo}" cambió de estado a: ${estado}.`;
 
                 // In-app notification
-                await prisma.notification.create({
+                await prisma.activity.create({
                     data: {
-                        operatorId: sugerencia.usuario_id,
+                        type: 'STATUS_UPDATED',
+                        priority: 'NORMAL',
+                        category: 'System',
                         title,
                         message,
-                        type: 'SUGERENCIA_ESTADO_CHANGE',
-                        relatedId: sugerencia.id,
-                        forSupervisors: false
+                        entityType: 'sugerencia',
+                        entityId: sugerencia.id,
+                        recipients: { create: [{ operatorId: sugerencia.usuario_id }] }
                     }
-                }).catch(e => console.error("Error creating state change notification:", e));
+                }).catch(e => console.error("Error creating state change activity:", e));
 
                 // Push notification
                 await sendPushNotification({
@@ -193,16 +195,18 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
                 const message = `Se ha agregado una nueva observación a tu propuesta "${sugerencia.titulo}".`;
 
                 // In-app notification
-                await prisma.notification.create({
+                await prisma.activity.create({
                     data: {
-                        operatorId: sugerencia.usuario_id,
+                        type: 'COMMENT_CREATED',
+                        priority: 'NORMAL',
+                        category: 'System',
                         title,
                         message,
-                        type: 'SUGERENCIA_COMENTARIO',
-                        relatedId: sugerencia.id,
-                        forSupervisors: false
+                        entityType: 'sugerencia',
+                        entityId: sugerencia.id,
+                        recipients: { create: [{ operatorId: sugerencia.usuario_id }] }
                     }
-                }).catch(e => console.error("Error creating comment notification:", e));
+                }).catch(e => console.error("Error creating comment activity:", e));
 
                 // Push notification
                 await sendPushNotification({
@@ -239,16 +243,18 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
                 const title = "Nueva Acción de Mejora Asignada";
                 const message = `Se te ha asignado una nueva acción: "${accion.descripcion}" vinculada al ticket #${sugerencia.id}.`;
                 
-                await prisma.notification.create({
+                await prisma.activity.create({
                     data: {
-                        operatorId: accion.responsableId,
+                        type: 'TASK_ASSIGNED',
+                        priority: 'HIGH',
+                        category: 'Work Orders',
                         title,
                         message,
-                        type: 'ACCION_MEJORA_ASSIGNED',
-                        relatedId: sugerencia.id,
-                        forSupervisors: false
+                        entityType: 'sugerencia',
+                        entityId: sugerencia.id,
+                        recipients: { create: [{ operatorId: accion.responsableId }] }
                     }
-                }).catch(e => console.error("Error creating action notification:", e));
+                }).catch(e => console.error("Error creating action activity:", e));
 
                 await sendPushNotification({
                     userIds: [accion.responsableId],

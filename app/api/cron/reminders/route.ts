@@ -88,13 +88,16 @@ export async function GET(req: Request) {
 
         // Send notifications to operators who haven't logged hours today (and are not MIA for threshold days)
         for (const op of noHoursOperators) {
-            await prisma.notification.create({
+            await prisma.activity.create({
                 data: {
-                    operatorId: op.id,
-                    forSupervisors: false,
+                    type: 'DAILY_REMINDER',
+                    priority: 'LOW',
+                    category: 'System',
                     title: 'Recordatorio Diario de Horas',
                     message: 'Aún no has registrado tus horas de hoy. Por favor no olvides cargarlas en tu Timesheet.',
-                    type: 'DAILY_REMINDER'
+                    entityType: 'general',
+                    entityId: 'system',
+                    recipients: { create: [{ operatorId: op.id }] }
                 }
             });
             await sendPushNotification({
@@ -108,12 +111,17 @@ export async function GET(req: Request) {
         // Send alerts to supervisors for operators absent >= threshold days
         if (fiveDaysAbsentOperators.length > 0) {
             const opNames = fiveDaysAbsentOperators.map(o => o.nombreCompleto).join(', ');
-            await prisma.notification.create({
+            const supers = await prisma.operator.findMany({ where: { role: { in: ['admin', 'supervisor'] }, activo: true } });
+            await prisma.activity.create({
                 data: {
-                    forSupervisors: true,
+                    type: 'ABSENT_ALERT',
+                    priority: 'HIGH',
+                    category: 'System',
                     title: 'Alerta de Ausentismo Prolongado',
                     message: `Los siguientes operadores no han registrado carga horaria en los últimos ${absentThreshold} días o más: ${opNames}`,
-                    type: 'ABSENT_ALERT'
+                    entityType: 'general',
+                    entityId: 'system',
+                    recipients: { create: supers.map(s => ({ operatorId: s.id })) }
                 }
             });
             await sendPushNotification({

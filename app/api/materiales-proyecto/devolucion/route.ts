@@ -124,25 +124,31 @@ export async function POST(req: Request) {
             message = `La devolución de "${material.nombre}" (${finalCantidad} ${material.unidad}) fue confirmada por ${confirmadoPor} (${estadoLabel}).${comentario ? ` Observación: ${comentario}` : ''}`;
         }
 
-        await prisma.notification.createMany({
-            data: supervisors.map(s => ({
-                operatorId: s.id,
+        await prisma.activity.create({
+            data: {
+                type: 'MATERIAL_RETURN',
+                priority: 'NORMAL',
+                category: 'Materials',
                 title,
                 message,
-                type: 'MATERIAL_DEVOLUCION',
-                relatedId: material.proyectoId,
-            })),
+                entityType: 'project',
+                entityId: material.proyectoId,
+                recipients: { create: supervisors.map(s => ({ operatorId: s.id })) }
+            }
         });
 
         // Notify the delegated user specifically
         if (estado === 'delegacion_pendiente' && delegadoAId) {
-            await prisma.notification.create({
+            await prisma.activity.create({
                 data: {
-                    operatorId: delegadoAId,
+                    type: 'MATERIAL_DELEGATION',
+                    priority: 'HIGH',
+                    category: 'Materials',
                     title: `Te han delegado materiales`,
                     message: `${delegadoPorNombre} te ha delegado ${finalCantidad} ${material.unidad} de "${material.nombre}" en la obra ${material.proyecto.nombre}.`,
-                    type: 'DELEGACION_MATERIAL',
-                    relatedId: material.proyectoId,
+                    entityType: 'project',
+                    entityId: material.proyectoId,
+                    recipients: { create: [{ operatorId: delegadoAId }] }
                 }
             });
 

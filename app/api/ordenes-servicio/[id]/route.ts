@@ -179,13 +179,23 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             const uniqueRecipients = Array.from(uniqueRecipientsMap.values());
 
             if (uniqueRecipients.length > 0) {
-                await tx.notification.createMany({
-                    data: uniqueRecipients.map(op => ({
-                        operatorId: op.id,
+                const activity = await tx.activity.create({
+                    data: {
+                        type: 'OS_FIRMADA',
+                        priority: 'HIGH',
+                        category: 'Nota',
                         title: notifTitle,
                         message: notifMsg,
-                        type: 'OS_FIRMADA',
-                        relatedId: os.id,
+                        entityType: 'orden_servicio',
+                        entityId: os.id,
+                        metadata: { url: `/ordenes-servicio/ver/${os.id}` },
+                    },
+                });
+
+                await tx.activityRecipient.createMany({
+                    data: uniqueRecipients.map(op => ({
+                        activityId: activity.id,
+                        operatorId: op.id,
                     })),
                 });
             }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, Suspense } from 'react';
-import { Bell, Check, Trash2, ArrowRight, CheckCircle2, Circle } from 'lucide-react';
+import { Bell, Check, Trash2, ArrowRight, CheckCircle2, Circle, ShieldAlert, FileText, MessageSquare, Info, AlertCircle, CalendarDays } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 import { safeApiRequest } from '@/lib/offline';
 import { formatDateTime } from '@/lib/formatDate';
@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useViewState } from '@/lib/hooks/useViewState';
 import { useCommandStore } from '@/lib/store/useCommandStore';
+import NotificationModals from '@/components/NotificationModals';
 
 function NotificationsContent() {
     const [user, setUser] = useState<any>(null);
@@ -23,6 +24,7 @@ function NotificationsContent() {
     const [showClearModal, setShowClearModal] = useState(false);
     const [loading, setLoading] = useState(true);
     const [highlightId, setHighlightId] = useState<string | null>(null);
+    const [selectedNotification, setSelectedNotification] = useState<any | null>(null);
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -61,18 +63,18 @@ function NotificationsContent() {
         if (idsToClear.length === 0) return;
 
         try {
-            const res = await safeApiRequest(`/api/notifications?operatorId=${user.id}&role=${user.role}`, {
+            const res = await safeApiRequest(`/api/activities?operatorId=${user.id}`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ids: idsToClear })
             });
             if (res.ok) {
                 setNotifications(prev => prev.filter(n => !idsToClear.includes(n.id)));
-                showToast('Notificaciones de la pestaña eliminadas', 'success');
+                showToast('Actividad limpiada', 'success');
                 window.dispatchEvent(new Event('notifications-updated'));
             }
         } catch (error) {
-            showToast('Error al limpiar notificaciones', 'error');
+            showToast('Error al limpiar actividad', 'error');
         }
     };
 
@@ -118,7 +120,7 @@ function NotificationsContent() {
     const loadNotifications = async (userId: string, role: string, signal?: AbortSignal) => {
         setLoading(true);
         try {
-            const res = await safeApiRequest(`/api/notifications?operatorId=${userId}&role=${role}`, { signal });
+            const res = await safeApiRequest(`/api/activities?operatorId=${userId}`, { signal });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             
             const data = await res.json();
@@ -127,8 +129,8 @@ function NotificationsContent() {
             }
         } catch (error: any) {
             if (error.name === 'AbortError') return;
-            console.error('Error fetching notifications:', error);
-            showToast('Error al cargar notificaciones', 'error');
+            console.error('Error fetching activities:', error);
+            showToast('Error al cargar actividad', 'error');
         } finally {
             setLoading(false);
         }
@@ -150,9 +152,9 @@ function NotificationsContent() {
         };
     }, [registerCommand, unregisterCommand]);
 
-    const handleToggleRead = async (id: string, currentReadStatus: boolean) => {
+    const handleToggleRead = async (id: string, recipientId: string, currentReadStatus: boolean) => {
         try {
-            const res = await safeApiRequest(`/api/notifications/${id}`, {
+            const res = await safeApiRequest(`/api/activities/${recipientId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ read: !currentReadStatus })
@@ -163,22 +165,42 @@ function NotificationsContent() {
                 window.dispatchEvent(new Event('notifications-updated'));
             }
         } catch (error) {
-            showToast('Error al actualizar notificación', 'error');
+            showToast('Error al actualizar actividad', 'error');
         }
     };
 
-    const handleDelete = async (id: string) => {
+    const handleDelete = async (id: string, recipientId: string) => {
         try {
-            const res = await safeApiRequest(`/api/notifications/${id}`, {
+            const res = await safeApiRequest(`/api/activities/${recipientId}`, {
                 method: 'DELETE',
             });
             if (res.ok) {
                 setNotifications(prev => prev.filter(n => n.id !== id));
-                showToast('Notificación eliminada', 'success');
+                showToast('Actividad eliminada', 'success');
                 window.dispatchEvent(new Event('notifications-updated'));
             }
         } catch (error) {
-            showToast('Error al eliminar notificación', 'error');
+            showToast('Error al eliminar actividad', 'error');
+        }
+    };
+
+    const handleNotificationClick = (notif: any) => {
+        if (!notif.read) handleToggleRead(notif.id, notif.recipientId, false);
+
+        const hasOwnModal = [
+            'TIME_MODIFICATION_REQUEST',
+            'PLANNING_ASSIGNMENT',
+            'PLANNING_ASSIGNMENT_SUMMARY',
+            'PROJECT_FINALIZE_REQUEST'
+        ].includes(notif.type);
+
+        if (hasOwnModal) {
+            setSelectedNotification(notif);
+        } else if (notif.type === 'FICHADA_ALERTA' || notif.type === 'approval_required') {
+            const meta = notif.metadata && typeof notif.metadata === 'object' ? notif.metadata : {};
+            router.push(meta.url || '/monitoreo-fichadas');
+        } else if (notif.metadata?.url) {
+            router.push(notif.metadata.url);
         }
     };
 
@@ -193,7 +215,7 @@ function NotificationsContent() {
                     </Link>
                     <h1 className="text-lg sm:text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-1.5 truncate">
                         <Bell className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" />
-                        <span className="truncate">Centro de Notificaciones</span>
+                        <span className="truncate">Centro de Actividad</span>
                     </h1>
                 </div>
                 {notifications.length > 0 && (
@@ -202,7 +224,7 @@ function NotificationsContent() {
                         className="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 dark:bg-rose-950/20 dark:border-rose-900 dark:text-rose-400 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border border-rose-100 shadow-sm shrink-0"
                     >
                         <Trash2 className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">Limpiar Notificaciones</span>
+                        <span className="hidden sm:inline">Limpiar Actividad</span>
                         <span className="sm:hidden">Limpiar</span>
                     </button>
                 )}
@@ -243,70 +265,84 @@ function NotificationsContent() {
             {loading ? (
                 <div className="text-center py-10">
                     <div className="w-8 h-8 border-4 border-slate-200 dark:border-slate-700 border-t-primary rounded-full animate-spin mx-auto"></div>
-                    <p className="mt-4 text-sm font-bold text-slate-400 dark:text-slate-500">Cargando notificaciones...</p>
+                    <p className="mt-4 text-sm font-bold text-slate-400 dark:text-slate-500">Cargando actividad...</p>
                 </div>
             ) : displayedNotifications.length === 0 ? (
                 <div className="text-center py-16 bg-card text-card-foreground rounded-3xl border border-dashed border-slate-200 dark:border-slate-700">
                     <Bell className="w-12 h-12 text-slate-200 mx-auto mb-4" />
-                    <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">No tienes notificaciones {activeTab === 'unread' ? (unreadSubTab === 'prioritarias' ? 'prioritarias' : 'generales') : 'leídas'}.</p>
+                    <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">No hay actividad {activeTab === 'unread' ? (unreadSubTab === 'prioritarias' ? 'prioritaria' : 'general') : 'leída'}.</p>
                 </div>
             ) : (
                 <div className="space-y-4">
                     {displayedNotifications.map((notification) => {
                         const isHighlighted = notification.id === highlightId;
                         const match = notification.message.match(/\[(Nota|Reporte|Consulta|Bloqueante)\]/);
-                        const category = match ? match[1] : null;
+                        const parsedCategory = match ? match[1] : (notification.category || notification.type);
                         const cleanMessage = match ? notification.message.replace(match[0], '').trim() : notification.message;
-                        const catStyles: Record<string, string> = {
-                            Bloqueante: 'bg-red-100 text-red-700 border-red-200',
-                            Reporte:    'bg-emerald-100 text-emerald-700 border-emerald-200',
-                            Consulta:   'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200',
-                            Nota:       'bg-blue-100 text-blue-700 border-blue-200',
+                        
+                        const catStyles: Record<string, { bg: string, text: string, border: string, icon: any }> = {
+                            Bloqueante: { bg: 'bg-red-50 dark:bg-red-950/20', text: 'text-red-700 dark:text-red-400', border: 'border-red-200 dark:border-red-900', icon: ShieldAlert },
+                            Reporte:    { bg: 'bg-emerald-50 dark:bg-emerald-950/20', text: 'text-emerald-700 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-900', icon: FileText },
+                            Consulta:   { bg: 'bg-fuchsia-50 dark:bg-fuchsia-950/20', text: 'text-fuchsia-700 dark:text-fuchsia-400', border: 'border-fuchsia-200 dark:border-fuchsia-900', icon: MessageSquare },
+                            Nota:       { bg: 'bg-blue-50 dark:bg-blue-950/20', text: 'text-blue-700 dark:text-blue-400', border: 'border-blue-200 dark:border-blue-900', icon: Info },
+                            System:     { bg: 'bg-indigo-50 dark:bg-indigo-950/20', text: 'text-indigo-700 dark:text-indigo-400', border: 'border-indigo-200 dark:border-indigo-900', icon: AlertCircle },
+                            PLANNING_ASSIGNMENT: { bg: 'bg-emerald-50 dark:bg-emerald-950/20', text: 'text-emerald-700 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-900', icon: CalendarDays },
                         };
+
+                        const style = catStyles[parsedCategory] || catStyles['System'];
+                        const Icon = style.icon;
 
                         return (
                         <div
                             key={notification.id}
                             id={`notif-${notification.id}`}
-                            className={`p-5 rounded-3xl border transition-all ${
+                            onClick={() => handleNotificationClick(notification)}
+                            className={`p-5 rounded-3xl border transition-all flex gap-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/80 ${
                                 notification.read ? 'bg-card text-card-foreground border-slate-200 dark:border-slate-700 opacity-70' : 'bg-card text-card-foreground border-indigo-100 shadow-md shadow-indigo-100/50'
                             } ${isHighlighted ? 'ring-2 ring-primary ring-offset-2 scale-[1.01] shadow-lg shadow-primary/10' : ''}`}
                         >
-                            <div className="flex justify-between items-start mb-2">
-                                <div className="space-y-1.5 flex-1 pr-4">
-                                    <h3 className={`text-base font-black ${notification.read ? 'text-slate-700 dark:text-slate-200' : 'text-indigo-900'}`}>{notification.title}</h3>
-                                    {category && (
-                                        <div className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-black border uppercase tracking-widest ${catStyles[category] || catStyles['Nota']}`}>
-                                            {category === 'Bloqueante' && '🚨 '}{category}
-                                        </div>
-                                    )}
+                            <div className="shrink-0 mt-0.5 relative">
+                                <div className={`w-12 h-12 rounded-full flex items-center justify-center border ${style.bg} ${style.border} ${style.text}`}>
+                                    <Icon className="w-6 h-6" />
                                 </div>
-                                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 bg-muted text-muted-foreground/50 px-2 py-1 rounded-lg shrink-0">
-                                    {formatDateTime(notification.createdAt).replace(' ', ' - ')}
-                                </span>
                             </div>
+                            
+                            <div className="flex-1 min-w-0">
+                                <div className="flex justify-between items-start mb-2">
+                                    <div className="space-y-1.5 flex-1 pr-4">
+                                        <h3 className={`text-base font-black ${notification.read ? 'text-slate-700 dark:text-slate-200' : 'text-indigo-900'}`}>{notification.title}</h3>
+                                        {parsedCategory && (
+                                            <div className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-black border uppercase tracking-widest ${style.text} ${style.border} ${style.bg}`}>
+                                                {parsedCategory === 'Bloqueante' && '🚨 '}{parsedCategory}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 bg-muted text-muted-foreground/50 px-2 py-1 rounded-lg shrink-0">
+                                        {formatDateTime(notification.createdAt).replace(' ', ' - ')}
+                                    </span>
+                                </div>
                             <p className="text-sm font-medium text-slate-600 dark:text-slate-300 whitespace-pre-wrap mb-4">
                                 {cleanMessage}
                             </p>
                             
-                            <div className="flex justify-end gap-2 border-t border-slate-50 pt-3">
-                                <button
-                                    onClick={() => handleToggleRead(notification.id, notification.read)}
-                                    className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors ${notification.read ? 'bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 hover:bg-slate-200' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'}`}
-                                >
-                                    {notification.read ? (
-                                        <><Circle className="w-3.5 h-3.5" /> Marcar no leída</>
-                                    ) : (
-                                        <><CheckCircle2 className="w-3.5 h-3.5" /> Marcar como leída</>
-                                    )}
-                                </button>
-                                <button
-                                    onClick={() => handleDelete(notification.id)}
-                                    className="px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors"
-                                >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                    Eliminar
-                                </button>
+                                <div className="flex justify-end gap-2 border-t border-slate-50 pt-3">
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleToggleRead(notification.id, notification.recipientId, notification.read); }}
+                                        className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors ${notification.read ? 'bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 hover:bg-slate-200' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'}`}
+                                    >
+                                        {notification.read ? (
+                                            <><Circle className="w-3.5 h-3.5" /> Marcar no leída</>
+                                        ) : (
+                                            <><CheckCircle2 className="w-3.5 h-3.5" /> Marcar como leída</>
+                                        )}
+                                    </button>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleDelete(notification.id, notification.recipientId); }}
+                                        className="p-2 bg-rose-50 text-rose-500 hover:bg-rose-100 hover:text-rose-600 rounded-xl transition-colors"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         );
@@ -346,6 +382,16 @@ function NotificationsContent() {
                     </div>
                 </div>
             )}
+            
+            <NotificationModals 
+                selectedNotification={selectedNotification} 
+                user={user} 
+                onClose={() => setSelectedNotification(null)}
+                onSuccess={(id: string) => {
+                    setNotifications(prev => prev.filter(n => n.id !== id));
+                    window.dispatchEvent(new Event('notifications-updated'));
+                }}
+            />
         </div>
     );
 }

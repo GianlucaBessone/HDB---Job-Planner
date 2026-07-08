@@ -169,16 +169,18 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
                 }).catch(e => console.error("Error sending push notification to reviewers:", e));
 
                 for (const targetId of notifiedUserIds) {
-                    await prisma.notification.create({
+                    await prisma.activity.create({
                         data: {
-                            operatorId: targetId,
+                            type: 'QMS_DOCUMENT_REVIEW',
+                            priority: 'HIGH',
+                            category: 'Quality',
                             title: "Revisión Documental Requerida",
                             message: `El documento "${doc.codigoDocumental}" ha sido modificado y requiere tu firma/revisión nuevamente.`,
-                            type: 'QMS_DOCUMENT_REVIEW',
-                            relatedId: doc.id,
-                            forSupervisors: false
+                            entityType: 'documento',
+                            entityId: doc.id,
+                            recipients: { create: [{ operatorId: targetId }] }
                         }
-                    }).catch(e => console.error("Error creating internal QMS notification:", e));
+                    }).catch(e => console.error("Error creating internal QMS activity:", e));
                 }
             }
         }

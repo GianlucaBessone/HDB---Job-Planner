@@ -50,26 +50,32 @@ export async function POST(req: Request) {
 
         // Notify supervisors
         if (supervisors.length > 0) {
-            await prisma.notification.createMany({
-                data: supervisors.map(s => ({
-                    operatorId: s.id,
+            await prisma.activity.create({
+                data: {
+                    type: 'MATERIAL_RETURN',
+                    priority: 'NORMAL',
+                    category: 'Materials',
                     title: `Delegación Masiva – ${projectName}`,
                     message: `${delegadoPorNombre} delegó la devolución de ${delegations.length} materiales a ${delegadoANombre}.`,
-                    type: 'MATERIAL_DEVOLUCION',
-                    relatedId: projectId,
-                })),
+                    entityType: 'project',
+                    entityId: projectId,
+                    recipients: { create: supervisors.map(s => ({ operatorId: s.id })) }
+                }
             });
         }
 
         // Notify delegate
         if (estado === 'delegacion_pendiente' && delegadoAId) {
-            await prisma.notification.create({
+            await prisma.activity.create({
                 data: {
-                    operatorId: delegadoAId,
+                    type: 'MATERIAL_DELEGATION',
+                    priority: 'HIGH',
+                    category: 'Materials',
                     title: `Te han delegado múltiples materiales`,
                     message: `${delegadoPorNombre} te ha delegado la devolución de ${delegations.length} materiales en la obra ${projectName}.`,
-                    type: 'DELEGACION_MATERIAL',
-                    relatedId: projectId,
+                    entityType: 'project',
+                    entityId: projectId,
+                    recipients: { create: [{ operatorId: delegadoAId }] }
                 }
             });
 
