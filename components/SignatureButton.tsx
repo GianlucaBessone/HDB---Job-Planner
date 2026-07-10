@@ -99,7 +99,7 @@ export default function SignatureButton({ documentId, documentVersion, onSignCom
 
     if (isSigned) {
         return (
-            <div className={`flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-bold text-sm ${className}`}>
+            <div className={`flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-bold text-sm`}>
                 <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                 Firmado Electrónicamente
             </div>

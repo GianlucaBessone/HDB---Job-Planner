@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "windows"]
 }
 
 datasource db {
@@ -54,6 +55,7 @@ model Project {
   toolMovements           ToolMovement[]
   documentChecklists      DocumentChecklist[]
   tareas                  Tarea[]
+  technicalReports        TechnicalReport[]
 
   @@index([qrToken])
 }
@@ -163,10 +165,14 @@ model Operator {
   documentPrints           DocumentPrint[]
 
   // OKR / KPI
-  okrsResponsable    Okr[]           @relation("OkrResponsable")
-  kpisResponsable    Kpi[]           @relation("KpiResponsableCarga")
-  planesAccionKpi    PlanAccionKpi[] @relation("PlanAccionKpiResponsable")
-  datasetsResponsable Dataset[]      @relation("DatasetResponsable")
+  okrsResponsable     Okr[]             @relation("OkrResponsable")
+  kpisResponsable     Kpi[]             @relation("KpiResponsableCarga")
+  planesAccionKpi     PlanAccionKpi[]   @relation("PlanAccionKpiResponsable")
+  datasetsResponsable Dataset[]         @relation("DatasetResponsable")
+  technicalReports    TechnicalReport[] @relation("ReportResponsable")
+
+  technicalReportEvidences TechnicalReportEvidence[]
+  technicalReportPersonnel TechnicalReportPersonnel[]
 }
 
 model FavoriteBlock {
@@ -190,14 +196,15 @@ model Planning {
 }
 
 model HdbClient {
-  id        String    @id @default(cuid())
-  nombre    String
-  email     String?
-  telefono  String?
-  direccion String?
-  activo    Boolean   @default(true)
-  projects  Project[]
-  createdAt DateTime  @default(now())
+  id               String            @id @default(cuid())
+  nombre           String
+  email            String?
+  telefono         String?
+  direccion        String?
+  activo           Boolean           @default(true)
+  projects         Project[]
+  createdAt        DateTime          @default(now())
+  technicalReports TechnicalReport[]
 }
 
 model TimeEntry {
@@ -240,17 +247,17 @@ model TimeEntry {
 }
 
 model Activity {
-  id         String              @id @default(cuid())
-  type       String              // OS_ASSIGNED, PROJECT_CREATED, etc.
-  priority   String              // LOW, NORMAL, HIGH, CRITICAL
-  category   String              // Work Orders, Projects, Inventory, etc.
+  id         String   @id @default(cuid())
+  type       String // OS_ASSIGNED, PROJECT_CREATED, etc.
+  priority   String // LOW, NORMAL, HIGH, CRITICAL
+  category   String // Work Orders, Projects, Inventory, etc.
   title      String
   message    String
-  entityType String?             // e.g. "workOrder", "project"
+  entityType String? // e.g. "workOrder", "project"
   entityId   String?
   metadata   Json?
-  createdBy  String?             // ID of the user who triggered this
-  createdAt  DateTime            @default(now())
+  createdBy  String? // ID of the user who triggered this
+  createdAt  DateTime @default(now())
 
   recipients ActivityRecipient[]
 
@@ -381,8 +388,9 @@ model OrdenServicio {
   checklists           OSChecklist[]
 
   // Rework tracking
-  esReTrabajo     Boolean @default(false)
+  esReTrabajo     Boolean           @default(false)
   ordenOriginalId String?
+  TechnicalReport TechnicalReport[]
 
   @@index([projectId])
 }
@@ -1746,6 +1754,7 @@ model DocumentSignatureAudit {
 
   documentReadConfirmations DocumentReadConfirmation[]
   technicianTrainings       TechnicianTraining[]
+  TechnicalReport           TechnicalReport[]
 
   @@index([DocumentID])
   @@index([UserID])
@@ -1806,11 +1815,11 @@ model Kpi {
   estado               String    @default("Activo") // Activo | Inactivo
 
   // Tipo de registro y fuente de datos
-  tipoRegistro       String   @default("Manual") // Manual | Dataset
-  datasetId          String?
-  dataset            Dataset? @relation("KpiDataset", fields: [datasetId], references: [id], onDelete: SetNull)
-  campoValor         String?  // Columna del resultado del Dataset a usar como valor
-  funcionAgregacion   String?  // SUM | AVG | COUNT | MIN | MAX | LAST | null
+  tipoRegistro      String   @default("Manual") // Manual | Dataset
+  datasetId         String?
+  dataset           Dataset? @relation("KpiDataset", fields: [datasetId], references: [id], onDelete: SetNull)
+  campoValor        String? // Columna del resultado del Dataset a usar como valor
+  funcionAgregacion String? // SUM | AVG | COUNT | MIN | MAX | LAST | null
 
   // Cumplimiento calculado (snapshot del último registro)
   ultimoValor        Float?
@@ -1858,8 +1867,8 @@ model GraficoConfig {
   estado        String  @default("Activo") // Activo | Inactivo
 
   // Fuente de datos desde Dataset
-  datasetId     String?
-  dataset       Dataset? @relation("GraficoDataset", fields: [datasetId], references: [id], onDelete: SetNull)
+  datasetId String?
+  dataset   Dataset? @relation("GraficoDataset", fields: [datasetId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1893,12 +1902,12 @@ model PlanAccionKpi {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 model DiccionarioTabla {
-  id                  String   @id @default(uuid())
-  nombreTabla         String   @unique
-  descripcion         String?  @db.Text
-  cantidadRegistros   Int      @default(0)
+  id                  String    @id @default(uuid())
+  nombreTabla         String    @unique
+  descripcion         String?   @db.Text
+  cantidadRegistros   Int       @default(0)
   ultimaActualizacion DateTime?
-  oculta              Boolean  @default(false)
+  oculta              Boolean   @default(false)
 
   campos DiccionarioCampo[]
 
@@ -1949,7 +1958,7 @@ model Dataset {
   // Ejecución programada
   tipoEjecucion    String    @default("Manual") // Manual | Programada
   cronExpresion    String?
-  frecuencia       String?   // Cada hora | Diario | Semanal | Mensual | Personalizada
+  frecuencia       String? // Cada hora | Diario | Semanal | Mensual | Personalizada
   horaEjecucion    String?
   zonaHoraria      String?   @default("America/Argentina/Buenos_Aires")
   proximaEjecucion DateTime?
@@ -1966,9 +1975,9 @@ model Dataset {
   fechaModificacion DateTime @updatedAt
   usuarioCreacionId String?
 
-  historico       DatasetEjecucion[]
-  kpisAsociados   Kpi[]            @relation("KpiDataset")
-  graficosAsociados GraficoConfig[] @relation("GraficoDataset")
+  historico         DatasetEjecucion[]
+  kpisAsociados     Kpi[]              @relation("KpiDataset")
+  graficosAsociados GraficoConfig[]    @relation("GraficoDataset")
 
   @@index([estado])
   @@index([responsableId])
@@ -1993,4 +2002,87 @@ model DatasetEjecucion {
   @@index([datasetId])
   @@index([fechaEjecucion])
   @@index([estado])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INFORMES TÉCNICOS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model TechnicalReportTemplate {
+  id          String            @id @default(cuid())
+  name        String            @unique
+  description String?
+  isActive    Boolean           @default(true)
+  schema      Json
+  pdfConfig   Json?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  reports     TechnicalReport[]
+}
+
+model TechnicalReport {
+  id           String                  @id @default(cuid())
+  reportNumber String                  @unique
+  templateId   String
+  template     TechnicalReportTemplate @relation(fields: [templateId], references: [id])
+  status       String                  @default("borrador")
+  date         DateTime                @default(now())
+  startTime    String?
+  endTime      String?
+
+  projectId       String?
+  project         Project?       @relation(fields: [projectId], references: [id])
+  ordenServicioId String?
+  ordenServicio   OrdenServicio? @relation(fields: [ordenServicioId], references: [id])
+  clientId        String?
+  client          HdbClient?     @relation(fields: [clientId], references: [id])
+
+  planta           String?
+  sector           String?
+  equipo           String?
+  activo           String?
+  responsableId    String?
+  responsable      Operator? @relation("ReportResponsable", fields: [responsableId], references: [id])
+  empresaEjecutora String?   @default("HDB")
+
+  data Json
+
+  version          Int               @default(1)
+  originalReportId String?
+  originalReport   TechnicalReport?  @relation("ReportVersion", fields: [originalReportId], references: [id], onDelete: SetNull)
+  versions         TechnicalReport[] @relation("ReportVersion")
+
+  signatureId String?
+  signature   DocumentSignatureAudit?    @relation(fields: [signatureId], references: [SignatureID])
+  evidences   TechnicalReportEvidence[]
+  personnel   TechnicalReportPersonnel[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+  @@index([clientId])
+}
+
+model TechnicalReportPersonnel {
+  id          String          @id @default(cuid())
+  reportId    String
+  report      TechnicalReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  operatorId  String?
+  operator    Operator?       @relation(fields: [operatorId], references: [id], onDelete: SetNull)
+  name        String
+  role        String
+  hoursWorked Float
+}
+
+model TechnicalReportEvidence {
+  id           String          @id @default(cuid())
+  reportId     String
+  report       TechnicalReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  type         String
+  url          String
+  description  String?
+  uploadedById String?
+  uploadedBy   Operator?       @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  uploadedAt   DateTime        @default(now())
 }

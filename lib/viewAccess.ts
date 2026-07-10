@@ -52,6 +52,7 @@ export const DEFAULT_VIEWS: ViewConfig[] = [
     { key: '/timesheets',    label: 'Registro de Tiempos',    description: 'Horas trabajadas',                roles: ['operador', 'supervisor', 'admin', 'qa'],    access: 'ambos', section: 'operaciones', iconName: 'Clock',         color: 'bg-blue-600' },
     { key: '/my-projects',   label: 'Mis Proyectos (Resp.)',  description: 'Proyectos a tu cargo',            roles: ['operador', 'supervisor', 'admin', 'qa'],    access: 'ambos', section: 'operaciones', iconName: 'ClipboardList', color: 'bg-indigo-500' },
     { key: '/delays',        label: 'Demoras del Cliente',    description: 'Registro de inconvenientes',      roles: ['operador', 'supervisor', 'admin', 'qa'],    access: 'ambos', section: 'operaciones', iconName: 'Timer',         color: 'bg-amber-500' },
+    { key: '/informes-tecnicos', label: 'Informes Técnicos',  description: 'Relevamiento y diagnósticos',     roles: ['operador', 'supervisor', 'admin', 'qa'],    access: 'ambos', section: 'operaciones', iconName: 'FileText',      color: 'bg-indigo-600' },
 
     // ─ Gestión y Seguimiento ─
     { key: '/dashboard',          label: 'Panel de Análisis',        description: 'Métricas globales',           roles: ['supervisor', 'admin', 'qa'],             access: 'ambos', section: 'gestion', iconName: 'LayoutDashboard', color: 'bg-cyan-600' },
