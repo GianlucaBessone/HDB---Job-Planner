@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Camera, X, Check, Loader2, Save, Upload, ArrowLeft, Usb } from 'lucide-react';
+import { Camera, X, Check, Loader2, Save, Upload, ArrowLeft, Usb, SkipForward } from 'lucide-react';
 import ModuleHeader from '@/components/ModuleHeader';
 import SearchableSelect from '@/components/SearchableSelect';
 
@@ -455,6 +455,15 @@ export default function EscanearFactura() {
                   <Check className="w-5 h-5 inline mr-2" />
                   Procesar Factura
                 </button>
+                {fileQueue.length > 0 && (
+                  <button 
+                    onClick={skipNext}
+                    className="px-6 py-3 bg-yellow-600 hover:bg-yellow-500 rounded-xl font-medium transition-colors shadow-lg shadow-yellow-900/50 text-white"
+                  >
+                    <SkipForward className="w-5 h-5 inline mr-2" />
+                    Saltar
+                  </button>
+                )}
               </div>
             )}
           </div>
