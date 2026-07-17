@@ -94,27 +94,32 @@ export default function EscanearFactura() {
   const processNewScans = async () => {
     if (!scannerFolderHandle) return;
     try {
-      const newFiles = [];
+      const newFilesData = [];
       for await (const entry of scannerFolderHandle.values()) {
         if (entry.kind === 'file') {
           const cleanName = entry.name.toLowerCase().replace(/[\n\r\s]+/g, '');
           if (cleanName.endsWith('.png') || cleanName.endsWith('.jpg') || cleanName.endsWith('.jpeg') || cleanName.endsWith('.pdf') || cleanName.endsWith('.webp')) {
             if (!initialFiles.includes(entry.name)) {
-              newFiles.push(entry);
+              const file = await entry.getFile();
+              newFilesData.push({ handle: entry, lastModified: file.lastModified });
             }
           }
         }
       }
       
-      if (newFiles.length === 0) {
+      if (newFilesData.length === 0) {
         setNotification({ type: 'warning', message: 'No se encontraron nuevos archivos desde la última vinculación.' });
         return;
       }
       
-      setFileQueue(newFiles);
+      // Ordenar por fecha de modificación (de más antigua a más nueva)
+      newFilesData.sort((a, b) => a.lastModified - b.lastModified);
+      const sortedNewFiles = newFilesData.map(item => item.handle);
+      
+      setFileQueue(sortedNewFiles);
       setQueueIndex(0);
       setIsWaitingScanner(false);
-      processFileHandle(newFiles[0]);
+      processFileHandle(sortedNewFiles[0]);
     } catch (err: any) {
       console.error(err);
       setNotification({ type: 'error', message: 'Error al leer la carpeta: ' + err.message });
