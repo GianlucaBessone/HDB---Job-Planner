@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenAI, Type } from '@google/genai';
+import { logAiRequest } from '@/lib/ai/audit';
 
 // Initialize the new Gemini SDK
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -71,9 +72,19 @@ const RESPONSE_SCHEMA = {
 };
 
 export async function POST(req: NextRequest) {
+  const startTime = Date.now();
+  let userId = 'anonymous';
+  let userName = 'Usuario Anónimo';
+  let userRole = 'Desconocido';
+  
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File;
+    
+    // We can also extract userId, userName, userRole if they are sent in formData
+    if (formData.has('userId')) userId = formData.get('userId') as string;
+    if (formData.has('userName')) userName = formData.get('userName') as string;
+    if (formData.has('userRole')) userRole = formData.get('userRole') as string;
     
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
@@ -116,10 +127,51 @@ export async function POST(req: NextRequest) {
     }
 
     const jsonData = JSON.parse(resultText);
+    
+    // Log success
+    const inputTokens = response.usageMetadata?.promptTokenCount || 0;
+    const outputTokens = response.usageMetadata?.candidatesTokenCount || 0;
+    const totalTokens = response.usageMetadata?.totalTokenCount || 0;
+    
+    await logAiRequest({
+      action: 'OCR',
+      model: 'gemini-2.5-flash',
+      provider: 'google',
+      inputTokens,
+      outputTokens,
+      totalTokens,
+      estimatedCost: (inputTokens * 0.000000075) + (outputTokens * 0.0000003), // Approximate 2.5-flash cost
+      latencyMs: Date.now() - startTime,
+      userId,
+      userName,
+      userRole,
+      success: true,
+      entity: 'Factura',
+      entityId: file.name
+    });
 
     return NextResponse.json({ data: jsonData });
   } catch (error: any) {
     console.error('Error in OCR processing:', error);
+    
+    // Log failure
+    await logAiRequest({
+      action: 'OCR',
+      model: 'gemini-2.5-flash',
+      provider: 'google',
+      inputTokens: 0,
+      outputTokens: 0,
+      totalTokens: 0,
+      estimatedCost: 0,
+      latencyMs: Date.now() - startTime,
+      userId,
+      userName,
+      userRole,
+      success: false,
+      errorMessage: error.message || 'Error desconocido al procesar OCR',
+      entity: 'Factura'
+    });
+    
     return NextResponse.json({ error: 'Failed to process document', details: error.message }, { status: 500 });
   }
 }

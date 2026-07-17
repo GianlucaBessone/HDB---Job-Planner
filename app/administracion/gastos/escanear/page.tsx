@@ -179,6 +179,16 @@ export default function EscanearFactura() {
 
       const formData = new FormData();
       formData.append('file', file);
+      
+      const storedUser = localStorage.getItem('currentUser');
+      if (storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          if (parsedUser.id) formData.append('userId', parsedUser.id);
+          if (parsedUser.nombreCompleto) formData.append('userName', parsedUser.nombreCompleto);
+          if (parsedUser.role) formData.append('userRole', parsedUser.role);
+        } catch (e) {}
+      }
 
       const response = await fetch('/api/ia/ocr-factura', {
         method: 'POST',
