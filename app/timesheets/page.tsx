@@ -58,6 +58,7 @@ export default function TimesheetsPage() {
     const [recentProjects, setRecentProjects] = useState<string[]>([]);
     const [causas, setCausas] = useState<CausaOption[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const formatEntryDate = (dateStr: string) => formatDate(dateStr);
 
@@ -275,6 +276,7 @@ export default function TimesheetsPage() {
             return;
         }
 
+        setIsSubmitting(true);
         try {
             const payload: any = {
                 operatorId: formData.operatorId,
@@ -321,6 +323,8 @@ export default function TimesheetsPage() {
             loadData();
         } catch (error) {
             console.error(error);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -1116,8 +1120,8 @@ export default function TimesheetsPage() {
 
                             {/* Footer - Fixed */}
                             <div className="p-5 md:p-7 border-t border-slate-100 dark:border-slate-800 flex gap-3 flex-shrink-0">
-                                <button type="button" onClick={() => { setIsModalOpen(false); }} className="flex-1 bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95">Cancelar</button>
-                                <button type="submit" className="flex-[2] bg-muted text-muted-foreground text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-primary hover:text-primary-foreground hover:border-primary shadow-sm hover:shadow-primary/20 hover:shadow-xl active:scale-95 transition-all">Guardar Registro</button>
+                                <button type="button" onClick={() => { setIsModalOpen(false); }} disabled={isSubmitting} className="flex-1 bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95 disabled:opacity-50">Cancelar</button>
+                                <button type="submit" disabled={isSubmitting} className="flex-[2] bg-muted text-muted-foreground text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-primary hover:text-primary-foreground hover:border-primary shadow-sm hover:shadow-primary/20 hover:shadow-xl active:scale-95 transition-all disabled:opacity-50">{isSubmitting ? 'Guardando...' : 'Guardar Registro'}</button>
                             </div>
                         </form>
                     </div>

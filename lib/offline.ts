@@ -112,6 +112,18 @@ export async function safeApiRequest(
 ): Promise<Response> {
   const method = (options.method || 'GET').toUpperCase();
 
+  // Extract or generate idempotency key for mutations to prevent duplicates on offline fallback
+  let actionId: string | undefined = undefined;
+  if (method !== 'GET') {
+    const headers = new Headers(options.headers || {});
+    actionId = headers.get('X-Idempotency-Key') || uuidv4();
+    headers.set('X-Idempotency-Key', actionId);
+    
+    const newHeaders: Record<string, string> = {};
+    headers.forEach((value, key) => { newHeaders[key] = value; });
+    options.headers = newHeaders;
+  }
+
   // ----------- ONLINE PATH -----------
   if (typeof navigator !== 'undefined' && navigator.onLine) {
     try {
@@ -143,19 +155,20 @@ export async function safeApiRequest(
       // If fetch explicitly fails (network error), fallback to offline
       // Clean endpoint for offline queue/cache key
       const cleanEndpoint = endpoint.split('_t=')[0].replace(/[?&]$/, '');
-      return handleOfflineRequest(cleanEndpoint, method, options);
+      return handleOfflineRequest(cleanEndpoint, method, options, actionId);
     }
   }
 
   // ----------- OFFLINE PATH -----------
   console.log(`[SafeAPI] Offline detected for ${endpoint} (${method})`);
-  return handleOfflineRequest(endpoint, method, options);
+  return handleOfflineRequest(endpoint, method, options, actionId);
 }
 
 async function handleOfflineRequest(
   endpoint: string,
   method: string,
-  options: RequestInit
+  options: RequestInit,
+  providedActionId?: string
 ): Promise<Response> {
   try {
     const db = await getDB();
@@ -184,7 +197,7 @@ async function handleOfflineRequest(
       }
     }
 
-    const actionId = uuidv4();
+    const actionId = providedActionId || uuidv4();
     console.log(`[SafeAPI] Queuing mutation: ${method} ${endpoint} (ID: ${actionId})`);
 
     await db.put('pendingActions', {
