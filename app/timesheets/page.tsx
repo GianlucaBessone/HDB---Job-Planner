@@ -15,6 +15,19 @@ import HelpContextual from '@/components/HelpContextual';
 import { useViewState } from '@/lib/hooks/useViewState';
 import { useCommandStore } from '@/lib/store/useCommandStore';
 import { useRef } from 'react';
+import { calculateHours } from '@/lib/timeUtils';
+import { DatePicker } from '@/components/ui/DatePicker';
+import { TimePicker } from '@/components/ui/TimePicker';
+
+interface Assignment {
+    id: string;
+    type: 'proyecto' | 'causa';
+    targetId: string;
+    horas: number;
+    isExtra: boolean;
+    isDevolucion: boolean;
+    descripcionDevolucion: string;
+}
 
 interface Project {
     id: string;
@@ -83,18 +96,13 @@ export default function TimesheetsPage() {
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
-    const [formMode, setFormMode] = useState<'proyecto' | 'causa'>('proyecto');
     const [formData, setFormData] = useState({
         operatorId: '',
-        projectId: '',
-        causaRegistro: '',
         fecha: new Date().toISOString().split('T')[0],
         horaIngreso: '',
-        horaEgreso: '',
-        isExtra: false,
-        isDevolucion: false,
-        descripcionDevolucion: ''
+        horaEgreso: ''
     });
+    const [assignments, setAssignments] = useState<Assignment[]>([]);
 
     const [pendingAction, setPendingAction] = useState<any>(null);
 
@@ -183,19 +191,22 @@ export default function TimesheetsPage() {
     const openEditModal = (entry?: TimeEntry) => {
         if (entry) {
             setEditingEntry(entry);
-            const isCausaMode = !!entry.causaRegistro;
-            setFormMode(isCausaMode ? 'causa' : 'proyecto');
             setFormData({
                 operatorId: entry.operatorId,
-                projectId: entry.projectId || '',
-                causaRegistro: entry.causaRegistro || '',
                 fecha: entry.fecha,
                 horaIngreso: entry.horaIngreso || '',
-                horaEgreso: entry.horaEgreso || '',
+                horaEgreso: entry.horaEgreso || ''
+            });
+            const isCausaMode = !!entry.causaRegistro;
+            setAssignments([{
+                id: 'edit-1',
+                type: isCausaMode ? 'causa' : 'proyecto',
+                targetId: (isCausaMode ? entry.causaRegistro : entry.projectId) || '',
+                horas: entry.horasTrabajadas,
                 isExtra: entry.isExtra || false,
                 isDevolucion: entry.isDevolucion || false,
                 descripcionDevolucion: entry.descripcionDevolucion || ''
-            });
+            }]);
 
             if (entry.estadoConfirmado) {
                 if (currentUser?.role === 'operador') {
@@ -206,123 +217,171 @@ export default function TimesheetsPage() {
             }
         } else {
             setEditingEntry(null);
-            setFormMode('proyecto');
             setFormData({
                 operatorId: currentUser?.role === 'operador' ? currentUser.id : '',
-                projectId: '',
-                causaRegistro: '',
                 fecha: new Date().toISOString().split('T')[0],
                 horaIngreso: '',
-                horaEgreso: '',
+                horaEgreso: ''
+            });
+            setAssignments([{
+                id: Math.random().toString(36).substring(7),
+                type: 'proyecto',
+                targetId: '',
+                horas: 0,
                 isExtra: false,
                 isDevolucion: false,
                 descripcionDevolucion: ''
-            });
+            }]);
         }
         setIsModalOpen(true);
     };
 
-    const handleToggleMode = () => {
-        setFormMode(prev => {
-            const newMode = prev === 'proyecto' ? 'causa' : 'proyecto';
-            // Clear the value of the opposite mode
-            if (newMode === 'proyecto') {
-                setFormData(fd => ({ ...fd, causaRegistro: '', horaIngreso: fd.horaIngreso, horaEgreso: fd.horaEgreso }));
-            } else {
-                setFormData(fd => ({ ...fd, projectId: '' }));
-            }
-            return newMode;
-        });
+    const handleAddAssignment = () => {
+        setAssignments([...assignments, {
+            id: Math.random().toString(36).substring(7),
+            type: 'proyecto',
+            targetId: '',
+            horas: 0,
+            isExtra: false,
+            isDevolucion: false,
+            descripcionDevolucion: ''
+        }]);
     };
 
-    const handleCausaChange = (causaValue: string) => {
-        setFormData(fd => {
-            const update: any = { ...fd, causaRegistro: causaValue, isExtra: false, isDevolucion: false };
-            // Auto-fill times when selecting a causa
-            if (causaValue === 'Carpeta Médica') {
-                update.horaIngreso = '08:00';
-                update.horaEgreso = '16:00';
-            } else if (['Falta', 'Permiso', 'Administrativo'].includes(causaValue)) {
-                update.horaIngreso = '08:00';
-                update.horaEgreso = '17:00';
-            } else if (causaValue && !fd.horaIngreso && !fd.horaEgreso) {
-                update.horaIngreso = '08:00';
-                update.horaEgreso = '17:00';
-            }
-            return update;
-        });
+    const handleRemoveAssignment = (id: string) => {
+        setAssignments(assignments.filter(a => a.id !== id));
     };
+
+    const handleAssignmentChange = (id: string, field: keyof Assignment, value: any) => {
+        setAssignments(prev => prev.map(a => {
+            if (a.id === id) {
+                const updated = { ...a, [field]: value };
+                if (field === 'type') {
+                    updated.targetId = '';
+                    updated.isExtra = false;
+                    updated.isDevolucion = false;
+                }
+                if (field === 'targetId' && updated.type === 'causa') {
+                    // Causa auto-fill logic (informational)
+                }
+                return updated as Assignment;
+            }
+            return a;
+        }));
+    };
+
+    const totalJornada = formData.horaIngreso && formData.horaEgreso ? calculateHours(formData.horaIngreso, formData.horaEgreso) : 0;
+    const horasAsignadas = assignments.reduce((sum, a) => sum + (Number(a.horas) || 0), 0);
+    const horasRestantes = Math.round((totalJornada - horasAsignadas) * 100) / 100;
 
     const handleSubmitForm = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Validation: must have selection in the active mode
-        if (formMode === 'proyecto' && !formData.projectId) {
-            showToast('Debe seleccionar un Proyecto.', 'error');
-            return;
-        }
-        if (formMode === 'causa' && !formData.causaRegistro) {
-            showToast('Debe seleccionar una Causa.', 'error');
+        if (assignments.length === 0) {
+            showToast('Debe agregar al menos una asignación.', 'error');
             return;
         }
 
-        // DEVOLUCIÓN or Administrativo requires description
-        if (formData.isDevolucion && !formData.descripcionDevolucion.trim()) {
-            showToast('Para tipo DEVOLUCIÓN debe ingresar una descripción obligatoria.', 'error');
+        const invalidAssignment = assignments.find(a => !a.targetId || a.horas <= 0);
+        if (invalidAssignment) {
+            showToast('Todas las asignaciones deben tener un proyecto/causa y horas mayor a 0.', 'error');
             return;
         }
-        if (formMode === 'causa' && formData.causaRegistro === 'Administrativo' && !formData.descripcionDevolucion.trim()) {
-            showToast('Debe ingresar un texto explicativo para causa Administrativo.', 'error');
+
+        const devMissing = assignments.find(a => a.isDevolucion && !a.descripcionDevolucion.trim());
+        const adminMissing = assignments.find(a => a.type === 'causa' && a.targetId === 'Administrativo' && !a.descripcionDevolucion.trim());
+        if (devMissing || adminMissing) {
+            showToast('Las devoluciones o causas Administrativas requieren una descripción.', 'error');
+            return;
+        }
+
+        if (horasRestantes !== 0) {
+            showToast('Las horas asignadas deben coincidir exactamente con el total de la jornada.', 'error');
             return;
         }
 
         setIsSubmitting(true);
         try {
-            const payload: any = {
-                operatorId: formData.operatorId,
-                fecha: formData.fecha,
-                horaIngreso: formData.horaIngreso,
-                horaEgreso: formData.horaEgreso,
-                isExtra: formData.isDevolucion || formMode === 'causa' ? false : formData.isExtra,
-                isDevolucion: formMode === 'causa' ? false : formData.isDevolucion,
-                descripcionDevolucion: formData.isDevolucion || (formMode === 'causa' && formData.causaRegistro === 'Administrativo') ? formData.descripcionDevolucion.trim() : null,
-                requestUserId: currentUser?.id,
-                requestUserRole: currentUser?.role
-            };
-
-            // Only send the active mode's value
-            if (formMode === 'proyecto') {
-                payload.projectId = formData.projectId;
-                payload.causaRegistro = null;
-            } else {
-                payload.causaRegistro = formData.causaRegistro;
-                payload.projectId = null;
-            }
-
-            let url = '/api/time-entries';
-            let method = 'POST';
-
             if (editingEntry) {
-                payload.id = editingEntry.id;
-                method = 'PUT';
-            }
+                // Editing a single entry
+                const a = assignments[0];
+                const payload = {
+                    id: editingEntry.id,
+                    operatorId: formData.operatorId,
+                    fecha: formData.fecha,
+                    horaIngreso: formData.horaIngreso,
+                    horaEgreso: formData.horaEgreso,
+                    projectId: a.type === 'proyecto' ? a.targetId : null,
+                    causaRegistro: a.type === 'causa' ? a.targetId : null,
+                    isExtra: a.isDevolucion || a.type === 'causa' ? false : a.isExtra,
+                    isDevolucion: a.type === 'causa' ? false : a.isDevolucion,
+                    descripcionDevolucion: a.isDevolucion || (a.type === 'causa' && a.targetId === 'Administrativo') ? a.descripcionDevolucion.trim() : null,
+                    requestUserId: currentUser?.id,
+                    requestUserRole: currentUser?.role
+                };
+                
+                const res = await safeApiRequest('/api/time-entries', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
 
-            const res = await safeApiRequest(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    throw new Error(errorData.error || 'Error al actualizar');
+                }
+            } else {
+                // New entries (split jornada)
+                let currentStartTime = formData.horaIngreso;
+                
+                const addHoursToTime = (timeStr: string, hoursToAdd: number) => {
+                    const [h, m] = timeStr.split(':').map(Number);
+                    const totalMins = h * 60 + m + hoursToAdd * 60;
+                    const newH = Math.floor(totalMins / 60) % 24;
+                    const newM = Math.round(totalMins % 60);
+                    return `${newH.toString().padStart(2, '0')}:${newM.toString().padStart(2, '0')}`;
+                };
+                
+                const promises = assignments.map(a => {
+                    const sliceStart = currentStartTime;
+                    const sliceEnd = addHoursToTime(sliceStart, a.horas);
+                    currentStartTime = sliceEnd;
 
-            if (!res.ok) {
-                const errorData = await res.json();
-                showToast(errorData.error, 'error');
-                return;
+                    const payload = {
+                        operatorId: formData.operatorId,
+                        fecha: formData.fecha,
+                        horaIngreso: sliceStart,
+                        horaEgreso: sliceEnd,
+                        projectId: a.type === 'proyecto' ? a.targetId : null,
+                        causaRegistro: a.type === 'causa' ? a.targetId : null,
+                        isExtra: a.isDevolucion || a.type === 'causa' ? false : a.isExtra,
+                        isDevolucion: a.type === 'causa' ? false : a.isDevolucion,
+                        descripcionDevolucion: a.isDevolucion || (a.type === 'causa' && a.targetId === 'Administrativo') ? a.descripcionDevolucion.trim() : null,
+                        requestUserId: currentUser?.id,
+                        requestUserRole: currentUser?.role
+                    };
+
+                    return safeApiRequest('/api/time-entries', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    }).then(async res => {
+                        if (!res.ok) {
+                            const err = await res.json();
+                            throw new Error(err.error || 'Error al crear');
+                        }
+                        return res.json();
+                    });
+                });
+
+                await Promise.all(promises);
             }
 
             setIsModalOpen(false);
             loadData();
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
+            showToast(error.message || 'Error al guardar.', 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -373,12 +432,13 @@ export default function TimesheetsPage() {
             const isDelete = pendingAction.type === 'request_deletion';
             const actionText = isDelete ? 'eliminar' : 'modificar';
 
+            const a = assignments[0];
             const metadata = isDelete ? null : {
                 horaIngreso: formData.horaIngreso,
                 horaEgreso: formData.horaEgreso,
-                isExtra: formData.isDevolucion ? false : formData.isExtra,
-                isDevolucion: formData.isDevolucion,
-                descripcionDevolucion: formData.isDevolucion ? formData.descripcionDevolucion : null
+                isExtra: a?.isDevolucion ? false : a?.isExtra,
+                isDevolucion: a?.isDevolucion,
+                descripcionDevolucion: a?.isDevolucion ? a?.descripcionDevolucion : null
             };
 
             const res = await safeApiRequest('/api/notifications', {
@@ -959,169 +1019,194 @@ export default function TimesheetsPage() {
                                         />
                                     </div>
 
-                                    {/* Toggle Proyecto / Causa */}
-                                    <div className="space-y-3 md:col-span-2">
-                                        <div className="flex items-center gap-3">
-                                            <button
-                                                type="button"
-                                                onClick={handleToggleMode}
-                                                className={`group relative flex items-center gap-2.5 w-full py-3 px-4 rounded-2xl font-bold text-sm transition-all duration-300 border-2 ${
-                                                    formMode === 'proyecto'
-                                                        ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300'
-                                                        : 'bg-orange-50 dark:bg-orange-900/20 border-orange-300 dark:border-orange-700 text-orange-700 dark:text-orange-300'
-                                                }`}
-                                            >
-                                                <div className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-300 ${
-                                                    formMode === 'proyecto'
-                                                        ? 'bg-primary text-primary-foreground'
-                                                        : 'bg-orange-500 text-white'
-                                                }`}>
-                                                    {formMode === 'proyecto' ? <Briefcase className="w-4 h-4" /> : <UserX className="w-4 h-4" />}
-                                                </div>
-                                                <span className="flex-1 text-left">
-                                                    {formMode === 'proyecto' ? 'Modo: Proyecto' : 'Modo: Causa / Ausencia'}
-                                                </span>
-                                                <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest opacity-60">
-                                                    <span>Cambiar</span>
-                                                    {formMode === 'proyecto' 
-                                                        ? <ToggleLeft className="w-5 h-5" />
-                                                        : <ToggleRight className="w-5 h-5" />
-                                                    }
-                                                </div>
-                                            </button>
+                                    {/* Información General */}
+                                    <div className="md:col-span-2 space-y-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-1.5 h-6 bg-indigo-500 rounded-full"></div>
+                                            <h4 className="font-bold text-slate-800 dark:text-slate-100">1. Información de la Jornada</h4>
                                         </div>
-
-                                        {/* Proyecto selector (visible in proyecto mode) */}
-                                        {formMode === 'proyecto' && (
-                                            <div className="animate-in fade-in zoom-in-95 duration-300">
-                                                <SearchableSelect
-                                                    label="Proyecto"
-                                                    options={getProjectOptions(activeProjects, recentProjects)}
-                                                    value={formData.projectId}
-                                                    onChange={(val) => setFormData({ ...formData, projectId: val })}
-                                                    placeholder="Seleccionar proyecto..."
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-2 md:col-span-2">
+                                                <DatePicker
+                                                    label="Fecha"
+                                                    value={formData.fecha}
+                                                    onChange={val => setFormData({ ...formData, fecha: val })}
                                                 />
                                             </div>
-                                        )}
 
-                                        {/* Causa selector (visible in causa mode) */}
-                                        {formMode === 'causa' && (
-                                            <div className="animate-in fade-in zoom-in-95 duration-300">
-                                                <SearchableSelect
-                                                    label="Causa / Ausencia"
-                                                    options={causas.map(c => ({ id: c.value, label: c.value }))}
-                                                    value={formData.causaRegistro}
-                                                    onChange={handleCausaChange}
-                                                    placeholder="Seleccionar causa..."
-                                                    icon={<UserX className="w-3.5 h-3.5" />}
+                                            <div className="space-y-2">
+                                                <TimePicker
+                                                    label="Hora Inicio"
+                                                    value={formData.horaIngreso}
+                                                    onChange={val => setFormData({ ...formData, horaIngreso: val })}
                                                 />
-                                                {formData.causaRegistro && (
-                                                    <p className="text-[10px] text-orange-500 dark:text-orange-400 font-bold mt-1.5 px-1 flex items-center gap-1 animate-in fade-in duration-300">
-                                                        <Clock className="w-3 h-3" />
-                                                        {formData.causaRegistro === 'Carpeta Médica' ? 'Horario autocompletado: 08:00 – 16:00 (editable)' : 'Horario autocompletado: 08:00 – 17:00 (editable)'}
-                                                    </p>
-                                                )}
                                             </div>
-                                        )}
-                                    </div>
 
-                                    {/* Fecha */}
-                                    <div className="space-y-2 md:col-span-2">
-                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">Fecha</label>
-                                        <input
-                                            type="date"
-                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700 dark:text-slate-200"
-                                            required
-                                            value={formData.fecha}
-                                            onChange={e => setFormData({ ...formData, fecha: e.target.value })}
-                                        />
-                                    </div>
-
-                                    {/* Hora Ingreso */}
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">Hora Inicio</label>
-                                        <input
-                                            type="time"
-                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700 dark:text-slate-200"
-                                            required
-                                            value={formData.horaIngreso}
-                                            onChange={e => setFormData({ ...formData, horaIngreso: e.target.value })}
-                                        />
-                                    </div>
-
-                                    {/* Hora Egreso */}
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">Hora Fin</label>
-                                        <input
-                                            type="time"
-                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700 dark:text-slate-200"
-                                            required
-                                            value={formData.horaEgreso}
-                                            onChange={e => setFormData({ ...formData, horaEgreso: e.target.value })}
-                                        />
-                                    </div>
-
-                                    {/* Tipo de Horas */}
-                                    {formMode === 'proyecto' ? (
-                                        <div className="space-y-2 md:col-span-2">
-                                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">Tipo de Horas</label>
-                                            <div className="flex gap-3">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setFormData({ ...formData, isExtra: false, isDevolucion: false, descripcionDevolucion: '' })}
-                                                    className={`flex-1 py-3 px-3 rounded-2xl font-bold transition-all text-sm ${!formData.isExtra && !formData.isDevolucion ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500 shadow-md shadow-indigo-500/10' : 'bg-background text-foreground/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
-                                                >
-                                                    Normal
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setFormData({ ...formData, isExtra: true, isDevolucion: false, descripcionDevolucion: '' })}
-                                                    className={`flex-1 py-3 px-3 rounded-2xl font-bold transition-all text-sm ${formData.isExtra && !formData.isDevolucion ? 'bg-amber-100 text-amber-700 border-2 border-amber-500 shadow-md shadow-amber-500/10' : 'bg-background text-foreground/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
-                                                >
-                                                    Extra
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setFormData({ ...formData, isExtra: false, isDevolucion: true })}
-                                                    className={`flex-1 py-3 px-3 rounded-2xl font-bold transition-all text-sm ${formData.isDevolucion ? 'bg-purple-100 text-purple-700 border-2 border-purple-500 shadow-md shadow-purple-500/10' : 'bg-background text-foreground/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
-                                                >
-                                                    Devolución
-                                                </button>
+                                            <div className="space-y-2">
+                                                <TimePicker
+                                                    label="Hora Fin"
+                                                    value={formData.horaEgreso}
+                                                    onChange={val => setFormData({ ...formData, horaEgreso: val })}
+                                                />
                                             </div>
                                         </div>
-                                    ) : (
-                                        <div className="space-y-2 md:col-span-2">
-                                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">Tipo de Horas</label>
-                                            <div className="w-full bg-red-50 dark:bg-red-900/10 border-2 border-red-200 dark:border-red-800 rounded-2xl py-3 px-4 text-red-600 dark:text-red-400 font-black flex items-center gap-2 justify-center shadow-inner uppercase tracking-widest text-sm">
-                                                <UserX className="w-5 h-5" />
-                                                Ausencia
+                                    </div>
+
+                                    {/* Indicadores */}
+                                    <div className="md:col-span-2 sticky -top-5 md:-top-7 z-20 pt-5 md:pt-7 pb-2 -mt-5 md:-mt-7 bg-card/95 backdrop-blur-sm">
+                                        <div className="flex bg-slate-100 dark:bg-slate-800/90 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 justify-between items-center shadow-lg shadow-slate-200/20 dark:shadow-none">
+                                            <div className="text-center">
+                                                <p className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Total Jornada</p>
+                                                <p className="text-lg font-black text-indigo-600 dark:text-indigo-400">{totalJornada}h</p>
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Asignadas</p>
+                                                <p className="text-lg font-black text-slate-700 dark:text-slate-200">{horasAsignadas}h</p>
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Restantes</p>
+                                                <p className={`text-lg font-black ${horasRestantes === 0 ? 'text-emerald-500' : horasRestantes > 0 ? 'text-amber-500' : 'text-rose-500'}`}>
+                                                    {horasRestantes > 0 ? `+${horasRestantes}` : horasRestantes}h
+                                                </p>
                                             </div>
                                         </div>
-                                    )}
+                                    </div>
 
-                                    {/* Descripción obligatoria para DEVOLUCIÓN o ADMINISTRATIVO */}
-                                    {(formData.isDevolucion || (formMode === 'causa' && formData.causaRegistro === 'Administrativo')) && (
-                                        <div className="space-y-2 md:col-span-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                                            <label className="text-[10px] font-black text-purple-500 uppercase tracking-widest flex items-center gap-2 px-1">
-                                                <AlertCircle className="w-3 h-3" />
-                                                {formMode === 'causa' && formData.causaRegistro === 'Administrativo' ? 'Texto Explicativo (obligatorio)' : 'Descripción de Devolución (obligatoria)'}
-                                            </label>
-                                            <textarea
-                                                required
-                                                placeholder={formMode === 'causa' && formData.causaRegistro === 'Administrativo' ? "Explique el motivo administrativo..." : "Describa el motivo de la devolución de horas..."}
-                                                value={formData.descripcionDevolucion}
-                                                onChange={e => setFormData({ ...formData, descripcionDevolucion: e.target.value })}
-                                                className="w-full bg-purple-50/50 dark:bg-purple-900/10 border-2 border-purple-300 dark:border-purple-700 rounded-2xl py-3 px-4 resize-none h-24 outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 font-medium text-slate-700 dark:text-slate-200 transition-all text-sm placeholder:text-purple-300 dark:placeholder:text-purple-600"
-                                            />
+                                    {/* Asignaciones */}
+                                    <div className="md:col-span-2 space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-1.5 h-6 bg-orange-500 rounded-full"></div>
+                                                <h4 className="font-bold text-slate-800 dark:text-slate-100">2. Distribución de Horas</h4>
+                                            </div>
+                                            {!editingEntry && (
+                                                <button
+                                                    type="button"
+                                                    onClick={handleAddAssignment}
+                                                    className="flex items-center gap-1.5 text-xs font-bold bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-xl hover:bg-indigo-100 transition-colors"
+                                                >
+                                                    <Plus className="w-3.5 h-3.5" /> Agregar fila
+                                                </button>
+                                            )}
                                         </div>
-                                    )}
+
+                                        <div className="space-y-4">
+                                            {assignments.map((a, idx) => (
+                                                <div key={a.id} className="p-4 bg-background border border-slate-200 dark:border-slate-700 rounded-2xl space-y-4 relative group">
+                                                    {!editingEntry && assignments.length > 1 && (
+                                                        <button 
+                                                            type="button" 
+                                                            onClick={() => handleRemoveAssignment(a.id)}
+                                                            className="absolute -top-2.5 -right-2.5 bg-rose-100 text-rose-500 p-1.5 rounded-full hover:bg-rose-500 hover:text-white transition-all shadow-sm opacity-0 group-hover:opacity-100"
+                                                        >
+                                                            <X className="w-3 h-3" />
+                                                        </button>
+                                                    )}
+                                                    
+                                                    <div className="flex flex-col md:flex-row gap-4 items-start md:items-end">
+                                                        <div className="w-full md:w-[140px] flex-shrink-0 space-y-2">
+                                                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Tipo</label>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleAssignmentChange(a.id, 'type', a.type === 'proyecto' ? 'causa' : 'proyecto')}
+                                                                className={`flex items-center justify-center gap-2 w-full h-[46px] rounded-xl font-bold text-xs transition-all border ${
+                                                                    a.type === 'proyecto'
+                                                                        ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                                                                        : 'bg-orange-50 border-orange-200 text-orange-700'
+                                                                }`}
+                                                            >
+                                                                {a.type === 'proyecto' ? <Briefcase className="w-3.5 h-3.5" /> : <UserX className="w-3.5 h-3.5" />}
+                                                                {a.type === 'proyecto' ? 'Proyecto' : 'Causa'}
+                                                            </button>
+                                                        </div>
+
+                                                        <div className="w-full flex-1 min-w-0">
+                                                            {a.type === 'proyecto' ? (
+                                                                <SearchableSelect
+                                                                    label="Proyecto"
+                                                                    options={getProjectOptions(activeProjects, recentProjects)}
+                                                                    value={a.targetId}
+                                                                    onChange={(val) => handleAssignmentChange(a.id, 'targetId', val)}
+                                                                    placeholder="Seleccionar..."
+                                                                />
+                                                            ) : (
+                                                                <SearchableSelect
+                                                                    label="Causa / Ausencia"
+                                                                    options={causas.map(c => ({ id: c.value, label: c.value }))}
+                                                                    value={a.targetId}
+                                                                    onChange={(val) => handleAssignmentChange(a.id, 'targetId', val)}
+                                                                    placeholder="Seleccionar..."
+                                                                />
+                                                            )}
+                                                        </div>
+
+                                                        <div className="w-full md:w-[100px] flex-shrink-0 space-y-2">
+                                                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Horas</label>
+                                                            <input
+                                                                type="number"
+                                                                step="0.5"
+                                                                min="0.5"
+                                                                max="24"
+                                                                required
+                                                                value={a.horas || ''}
+                                                                onChange={e => handleAssignmentChange(a.id, 'horas', parseFloat(e.target.value))}
+                                                                className="w-full h-[46px] bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-center"
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    {a.type === 'proyecto' ? (
+                                                        <div className="flex gap-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => { handleAssignmentChange(a.id, 'isExtra', false); handleAssignmentChange(a.id, 'isDevolucion', false); }}
+                                                                className={`flex-1 py-2 px-2 rounded-xl font-bold transition-all text-xs ${!a.isExtra && !a.isDevolucion ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-background text-slate-500 border-2 border-slate-200'}`}
+                                                            >
+                                                                Normal
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => { handleAssignmentChange(a.id, 'isExtra', true); handleAssignmentChange(a.id, 'isDevolucion', false); }}
+                                                                className={`flex-1 py-2 px-2 rounded-xl font-bold transition-all text-xs ${a.isExtra && !a.isDevolucion ? 'bg-amber-100 text-amber-700 border-2 border-amber-500' : 'bg-background text-slate-500 border-2 border-slate-200'}`}
+                                                            >
+                                                                Extra
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => { handleAssignmentChange(a.id, 'isExtra', false); handleAssignmentChange(a.id, 'isDevolucion', true); }}
+                                                                className={`flex-1 py-2 px-2 rounded-xl font-bold transition-all text-xs ${a.isDevolucion ? 'bg-purple-100 text-purple-700 border-2 border-purple-500' : 'bg-background text-slate-500 border-2 border-slate-200'}`}
+                                                            >
+                                                                Devolución
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="w-full bg-red-50 border-2 border-red-200 rounded-xl py-2 px-3 text-red-600 font-black flex items-center justify-center text-xs">
+                                                            Ausencia
+                                                        </div>
+                                                    )}
+
+                                                    {(a.isDevolucion || (a.type === 'causa' && a.targetId === 'Administrativo')) && (
+                                                        <div className="animate-in fade-in slide-in-from-top-2 duration-300 pt-2">
+                                                            <textarea
+                                                                required
+                                                                placeholder="Descripción obligatoria..."
+                                                                value={a.descripcionDevolucion}
+                                                                onChange={e => handleAssignmentChange(a.id, 'descripcionDevolucion', e.target.value)}
+                                                                className="w-full bg-purple-50/50 border-2 border-purple-300 rounded-xl py-2 px-3 resize-none h-16 outline-none focus:border-purple-500 text-xs font-medium"
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
                             {/* Footer - Fixed */}
                             <div className="p-5 md:p-7 border-t border-slate-100 dark:border-slate-800 flex gap-3 flex-shrink-0">
                                 <button type="button" onClick={() => { setIsModalOpen(false); }} disabled={isSubmitting} className="flex-1 bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95 disabled:opacity-50">Cancelar</button>
-                                <button type="submit" disabled={isSubmitting} className="flex-[2] bg-muted text-muted-foreground text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-primary hover:text-primary-foreground hover:border-primary shadow-sm hover:shadow-primary/20 hover:shadow-xl active:scale-95 transition-all disabled:opacity-50">{isSubmitting ? 'Guardando...' : 'Guardar Registro'}</button>
+                                <button type="submit" disabled={isSubmitting || (!editingEntry && horasRestantes !== 0)} className="flex-[2] bg-muted text-muted-foreground text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-primary hover:text-primary-foreground hover:border-primary shadow-sm hover:shadow-primary/20 hover:shadow-xl active:scale-95 transition-all disabled:opacity-50">{isSubmitting ? 'Guardando...' : 'Guardar Registro'}</button>
                             </div>
                         </form>
                     </div>
@@ -1159,23 +1244,17 @@ export default function TimesheetsPage() {
                                 <>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">Hora Inicio Sugerida</label>
-                                            <input
-                                                type="time"
-                                                className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700 dark:text-slate-200"
-                                                required
+                                            <TimePicker
+                                                label="Hora Inicio Sugerida"
                                                 value={formData.horaIngreso}
-                                                onChange={e => setFormData({ ...formData, horaIngreso: e.target.value })}
+                                                onChange={val => setFormData({ ...formData, horaIngreso: val })}
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">Hora Fin Sugerida</label>
-                                            <input
-                                                type="time"
-                                                className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-slate-700 dark:text-slate-200"
-                                                required
+                                            <TimePicker
+                                                label="Hora Fin Sugerida"
                                                 value={formData.horaEgreso}
-                                                onChange={e => setFormData({ ...formData, horaEgreso: e.target.value })}
+                                                onChange={val => setFormData({ ...formData, horaEgreso: val })}
                                             />
                                         </div>
                                     </div>
@@ -1184,26 +1263,41 @@ export default function TimesheetsPage() {
                                         <div className="flex gap-3">
                                             <button
                                                 type="button"
-                                                onClick={() => setFormData({ ...formData, isExtra: false, isDevolucion: false, descripcionDevolucion: '' })}
-                                                className={`flex-1 py-3 px-3 rounded-2xl font-bold transition-all text-sm ${!formData.isExtra && !formData.isDevolucion ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-background text-foreground/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
+                                                onClick={() => { handleAssignmentChange(assignments[0]?.id, 'isExtra', false); handleAssignmentChange(assignments[0]?.id, 'isDevolucion', false); }}
+                                                className={`flex-1 py-3 px-3 rounded-2xl font-bold transition-all text-sm ${!assignments[0]?.isExtra && !assignments[0]?.isDevolucion ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-500' : 'bg-background text-foreground/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
                                             >
                                                 Normal
                                             </button>
                                             <button
                                                 type="button"
-                                                onClick={() => setFormData({ ...formData, isExtra: true, isDevolucion: false, descripcionDevolucion: '' })}
-                                                className={`flex-1 py-3 px-3 rounded-2xl font-bold transition-all text-sm ${formData.isExtra && !formData.isDevolucion ? 'bg-amber-100 text-amber-700 border-2 border-amber-500' : 'bg-background text-foreground/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
+                                                onClick={() => { handleAssignmentChange(assignments[0]?.id, 'isExtra', true); handleAssignmentChange(assignments[0]?.id, 'isDevolucion', false); }}
+                                                className={`flex-1 py-3 px-3 rounded-2xl font-bold transition-all text-sm ${assignments[0]?.isExtra && !assignments[0]?.isDevolucion ? 'bg-amber-100 text-amber-700 border-2 border-amber-500' : 'bg-background text-foreground/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
                                             >
                                                 Extra
                                             </button>
                                             <button
                                                 type="button"
-                                                onClick={() => setFormData({ ...formData, isExtra: false, isDevolucion: true })}
-                                                className={`flex-1 py-3 px-3 rounded-2xl font-bold transition-all text-sm ${formData.isDevolucion ? 'bg-purple-100 text-purple-700 border-2 border-purple-500' : 'bg-background text-foreground/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
+                                                onClick={() => { handleAssignmentChange(assignments[0]?.id, 'isExtra', false); handleAssignmentChange(assignments[0]?.id, 'isDevolucion', true); }}
+                                                className={`flex-1 py-3 px-3 rounded-2xl font-bold transition-all text-sm ${assignments[0]?.isDevolucion ? 'bg-purple-100 text-purple-700 border-2 border-purple-500' : 'bg-background text-foreground/50 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}
                                             >
                                                 Devolución
                                             </button>
                                         </div>
+                                        {assignments[0]?.isDevolucion && (
+                                            <div className="space-y-2 mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                <label className="text-[10px] font-black text-purple-500 uppercase tracking-widest flex items-center gap-2 px-1">
+                                                    <AlertCircle className="w-3 h-3" />
+                                                    Descripción de Devolución (obligatoria)
+                                                </label>
+                                                <textarea
+                                                    required
+                                                    placeholder="Describa el motivo de la devolución de horas..."
+                                                    value={assignments[0]?.descripcionDevolucion || ''}
+                                                    onChange={e => handleAssignmentChange(assignments[0]?.id, 'descripcionDevolucion', e.target.value)}
+                                                    className="w-full bg-purple-50/50 dark:bg-purple-900/10 border-2 border-purple-300 dark:border-purple-700 rounded-2xl py-3 px-4 resize-none h-20 outline-none focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 font-medium text-slate-700 dark:text-slate-200 transition-all text-sm placeholder:text-purple-300 dark:placeholder:text-purple-600"
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 </>
                             )}

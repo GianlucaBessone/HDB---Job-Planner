@@ -1013,3 +1013,18 @@ body.modal-open {
   max-height: 90vh;
   overflow-y: auto;
 }
+
+/* ── Hide scrollbar for wheel picker ── */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ── Fade mask for wheel picker ── */
+.mask-image-fade {
+  mask-image: linear-gradient(to bottom, transparent, black 30%, black 70%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 30%, black 70%, transparent);
+}
