@@ -2086,3 +2086,200 @@ model TechnicalReportEvidence {
   uploadedBy   Operator?       @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
   uploadedAt   DateTime        @default(now())
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RRHH - RECLUTAMIENTO (ATS)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model RecruitmentVacancy {
+  id             String    @id @default(cuid())
+  title          String
+  status         String    @default("ABIERTA") // ABIERTA, PAUSADA, CERRADA
+  priority       String    @default("MEDIA") // BAJA, MEDIA, ALTA, URGENTE
+  positionsCount Int       @default(1)
+  branch         String?
+  responsableId  String? // Relation to Operator (future: Employee)
+  startDate      DateTime  @default(now())
+  endDate        DateTime?
+  description    String    @db.Text
+  requirements   String    @db.Text
+  keywords       Json      @default("[]") // Para match rápido
+
+  candidates  CandidateStageHistory[]
+  interviews  Interview[]
+  aiAnalyses  CandidateAIAnalysis[]
+  evaluations TechnicalEvaluation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Candidate {
+  id           String  @id @default(cuid())
+  firstName    String
+  lastName     String
+  phone        String?
+  whatsapp     String?
+  email        String?
+  city         String?
+  linkedin     String?
+  observations String? @db.Text
+  status       String  @default("ACTIVO") // ACTIVO, CONTRATADO, BASE_TALENTOS, RECHAZADO
+
+  // Scores
+  aiScore        Float?
+  interviewScore Float?
+  techScore      Float?
+
+  cvs          CandidateCV[]
+  skills       CandidateSkill[]
+  experience   CandidateExperience[]
+  education    CandidateEducation[]
+  tags         CandidateTag[]
+  aiAnalyses   CandidateAIAnalysis[]
+  stageHistory CandidateStageHistory[]
+  interviews   Interview[]
+  evaluations  TechnicalEvaluation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CandidateCV {
+  id          String    @id @default(cuid())
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  fileUrl     String    @db.Text
+  fileName    String
+  fileType    String
+  parsedText  String?   @db.Text // Texto extraído para IA
+
+  createdAt DateTime @default(now())
+}
+
+model CandidateAIAnalysis {
+  id          String              @id @default(cuid())
+  candidateId String
+  candidate   Candidate           @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  vacancyId   String?
+  vacancy     RecruitmentVacancy? @relation(fields: [vacancyId], references: [id], onDelete: SetNull)
+
+  matchScore  Float
+  explanation String @db.Text // HTML/Markdown con la justificación
+  strengths   Json   @default("[]")
+  weaknesses  Json   @default("[]")
+  risks       Json   @default("[]")
+
+  rawAiResponse Json?
+
+  createdAt DateTime @default(now())
+}
+
+model CandidateStageHistory {
+  id          String             @id @default(cuid())
+  candidateId String
+  candidate   Candidate          @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  vacancyId   String
+  vacancy     RecruitmentVacancy @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+
+  stage     String // POSTULADO, PRESELECCION, CONTACTADO, ENTREVISTA_RRHH, ENTREVISTA_TEC, FINALISTA, CONTRATADO, RECHAZADO
+  notes     String? @db.Text
+  movedById String?
+
+  createdAt DateTime @default(now())
+}
+
+model Interview {
+  id          String             @id @default(cuid())
+  candidateId String
+  candidate   Candidate          @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  vacancyId   String
+  vacancy     RecruitmentVacancy @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+
+  date          DateTime
+  modality      String // PRESENCIAL, VIRTUAL
+  location      String?
+  interviewerId String?
+  status        String   @default("PROGRAMADA") // PROGRAMADA, REALIZADA, CANCELADA
+
+  evaluation InterviewEvaluation?
+
+  createdAt DateTime @default(now())
+}
+
+model InterviewEvaluation {
+  id          String    @id @default(cuid())
+  interviewId String    @unique
+  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+
+  criteriaScores Json // e.g., {"comunicacion": 8, "conocimientos": 9}
+  aiSummary      String? @db.Text
+  strengths      String? @db.Text
+  weaknesses     String? @db.Text
+  risks          String? @db.Text
+  recommendation String? @db.Text
+
+  createdAt DateTime @default(now())
+}
+
+model TechnicalEvaluation {
+  id          String             @id @default(cuid())
+  candidateId String
+  candidate   Candidate          @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  vacancyId   String
+  vacancy     RecruitmentVacancy @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+
+  formTemplateId String? // Si usamos un sistema de formularios dinámicos
+  score          Float
+  details        Json // Resultados detallados
+
+  createdAt DateTime @default(now())
+}
+
+model CandidateExperience {
+  id          String    @id @default(cuid())
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  company     String
+  position    String
+  startDate   String?
+  endDate     String?
+  description String?   @db.Text
+}
+
+model CandidateEducation {
+  id          String    @id @default(cuid())
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  institution String
+  degree      String
+  startDate   String?
+  endDate     String?
+}
+
+model CandidateSkill {
+  id          String    @id @default(cuid())
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  name        String
+  level       String? // Básico, Intermedio, Avanzado (opcional)
+  type        String? // HARD, SOFT
+}
+
+model CandidateTag {
+  id          String    @id @default(cuid())
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  name        String // Ej: "Junior", "Riesgo Rotación", "Electricista"
+}
+
+model MessageTemplate {
+  id        String   @id @default(cuid())
+  name      String
+  subject   String?
+  content   String   @db.Text
+  type      String // EMAIL, WHATSAPP
+  variables Json // Ej: ["candidateName", "vacancyTitle"]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

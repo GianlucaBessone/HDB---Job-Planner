@@ -43,14 +43,14 @@ export function DatePicker({ value, onChange, label, placeholder = 'Seleccionar 
 
     const renderHeader = () => {
         return (
-            <div className="flex justify-between items-center mb-4">
-                <button type="button" onClick={prevMonth} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+            <div className="flex justify-between items-center mb-3">
+                <button type="button" onClick={prevMonth} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
                     <ChevronLeft className="w-5 h-5 text-slate-600 dark:text-slate-300" />
                 </button>
                 <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100 capitalize">
                     {format(currentMonth, 'MMMM yyyy', { locale: es })}
                 </h2>
-                <button type="button" onClick={nextMonth} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                <button type="button" onClick={nextMonth} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
                     <ChevronRight className="w-5 h-5 text-slate-600 dark:text-slate-300" />
                 </button>
             </div>
@@ -63,7 +63,7 @@ export function DatePicker({ value, onChange, label, placeholder = 'Seleccionar 
 
         for (let i = 0; i < 7; i++) {
             days.push(
-                <div key={i} className="text-center text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
+                <div key={i} className="text-center text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1.5">
                     {format(addDays(startDate, i), 'EEEEEE', { locale: es })}
                 </div>
             );
@@ -94,7 +94,7 @@ export function DatePicker({ value, onChange, label, placeholder = 'Seleccionar 
                         type="button"
                         key={day.toString()}
                         onClick={() => onDateClick(cloneDay)}
-                        className={`w-9 h-9 flex items-center justify-center rounded-full text-sm font-bold transition-all mx-auto
+                        className={`w-8.5 h-8.5 md:w-9 md:h-9 flex items-center justify-center rounded-full text-xs md:text-sm font-bold transition-all mx-auto
                             ${!isCurrentMonth ? 'text-slate-300 dark:text-slate-600 font-medium' : ''}
                             ${isSelected 
                                 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' 
@@ -120,11 +120,11 @@ export function DatePicker({ value, onChange, label, placeholder = 'Seleccionar 
     };
 
     const calendarContent = (
-        <div className="p-5">
-            <div className="md:hidden flex justify-between items-center mb-4 pb-4 border-b border-slate-100 dark:border-slate-800">
-                <h3 className="font-bold text-slate-800 dark:text-slate-100">Seleccionar fecha</h3>
-                <button type="button" onClick={() => setIsOpen(false)} className="p-2 -mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                    <X className="w-5 h-5" />
+        <div className="p-4 md:p-5">
+            <div className="md:hidden flex justify-between items-center mb-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">Seleccionar fecha</h3>
+                <button type="button" onClick={() => setIsOpen(false)} className="p-1.5 -mr-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <X className="w-4 h-4" />
                 </button>
             </div>
             {renderHeader()}
@@ -155,16 +155,16 @@ export function DatePicker({ value, onChange, label, placeholder = 'Seleccionar 
             {isOpen && (
                 <>
                     {/* Mobile Backdrop */}
-                    <div className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm md:hidden animate-in fade-in duration-200" onClick={() => setIsOpen(false)} />
+                    <div className="fixed inset-0 z-[105] bg-slate-900/40 backdrop-blur-sm md:hidden animate-in fade-in duration-200" onClick={() => setIsOpen(false)} />
                     
                     {/* Responsive Modal/Popover */}
                     <div className={`
-                        fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-3xl shadow-2xl border-t border-slate-200 dark:border-slate-700
-                        md:absolute md:bottom-auto md:left-0 md:right-auto md:top-[calc(100%+8px)] md:w-[320px] md:rounded-2xl md:border md:origin-top-left
-                        animate-in md:zoom-in-95 slide-in-from-bottom-full md:slide-in-from-bottom-0 duration-300
+                        fixed bottom-6 left-4 right-4 max-w-sm mx-auto z-[110] bg-card rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700
+                        md:absolute md:bottom-auto md:left-0 md:right-auto md:top-[calc(100%+6px)] md:w-[320px] md:rounded-2xl md:border md:origin-top-left
+                        animate-in md:zoom-in-95 slide-in-from-bottom-6 md:slide-in-from-bottom-0 duration-300
                     `}>
                         {/* Drag Handle for Mobile */}
-                        <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mt-4 md:hidden" />
+                        <div className="w-10 h-1 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mt-3 md:hidden" />
                         
                         {calendarContent}
                     </div>
