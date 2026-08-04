@@ -273,6 +273,7 @@ export default function TimesheetsPage() {
     const totalJornada = formData.horaIngreso && formData.horaEgreso ? calculateHours(formData.horaIngreso, formData.horaEgreso) : 0;
     const horasAsignadas = assignments.reduce((sum, a) => sum + (Number(a.horas) || 0), 0);
     const horasRestantes = Math.round((totalJornada - horasAsignadas) * 100) / 100;
+    const isAbsence = assignments.some(a => a.type === 'causa' && ['falta', 'médica'].some(t => (a.targetId || '').toLowerCase().includes(t)));
 
     const handleSubmitForm = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -282,9 +283,9 @@ export default function TimesheetsPage() {
             return;
         }
 
-        const invalidAssignment = assignments.find(a => !a.targetId || a.horas <= 0);
+        const invalidAssignment = assignments.find(a => !a.targetId || (a.type === 'proyecto' && a.horas <= 0) || (a.type === 'causa' && a.horas < 0));
         if (invalidAssignment) {
-            showToast('Todas las asignaciones deben tener un proyecto/causa y horas mayor a 0.', 'error');
+            showToast('Todas las asignaciones deben tener un proyecto/causa válido. Los proyectos requieren horas mayor a 0.', 'error');
             return;
         }
 
@@ -295,7 +296,7 @@ export default function TimesheetsPage() {
             return;
         }
 
-        if (horasRestantes !== 0) {
+        if (!isAbsence && horasRestantes !== 0) {
             showToast('Las horas asignadas deben coincidir exactamente con el total de la jornada.', 'error');
             return;
         }
@@ -985,7 +986,7 @@ export default function TimesheetsPage() {
             {/* Modal de Carga Manual / Edición */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-card text-card-foreground w-full max-w-xl rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] flex flex-col overflow-hidden">
+                    <div className="bg-card text-card-foreground w-full max-w-4xl rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[92vh] md:max-h-[90vh] flex flex-col overflow-hidden pb-[env(safe-area-inset-bottom)]">
                         {/* Header - Fixed */}
                         <div className="p-5 md:p-7 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
                             <h3 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100">
@@ -1145,11 +1146,11 @@ export default function TimesheetsPage() {
                                                             <input
                                                                 type="number"
                                                                 step="0.5"
-                                                                min="0.5"
+                                                                min="0"
                                                                 max="24"
-                                                                required
-                                                                value={a.horas || ''}
-                                                                onChange={e => handleAssignmentChange(a.id, 'horas', parseFloat(e.target.value))}
+                                                                required={a.type === 'proyecto'}
+                                                                value={a.horas === 0 ? 0 : (a.horas || '')}
+                                                                onChange={e => handleAssignmentChange(a.id, 'horas', parseFloat(e.target.value) || 0)}
                                                                 className="w-full h-[46px] bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-center"
                                                             />
                                                         </div>
@@ -1206,7 +1207,7 @@ export default function TimesheetsPage() {
                             {/* Footer - Fixed */}
                             <div className="p-5 md:p-7 border-t border-slate-100 dark:border-slate-800 flex gap-3 flex-shrink-0">
                                 <button type="button" onClick={() => { setIsModalOpen(false); }} disabled={isSubmitting} className="flex-1 bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95 disabled:opacity-50">Cancelar</button>
-                                <button type="submit" disabled={isSubmitting || (!editingEntry && horasRestantes !== 0)} className="flex-[2] bg-muted text-muted-foreground text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-primary hover:text-primary-foreground hover:border-primary shadow-sm hover:shadow-primary/20 hover:shadow-xl active:scale-95 transition-all disabled:opacity-50">{isSubmitting ? 'Guardando...' : 'Guardar Registro'}</button>
+                                <button type="submit" disabled={isSubmitting || (!editingEntry && !isAbsence && horasRestantes !== 0)} className="flex-[2] bg-muted text-muted-foreground text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-primary hover:text-primary-foreground hover:border-primary shadow-sm hover:shadow-primary/20 hover:shadow-xl active:scale-95 transition-all disabled:opacity-50">{isSubmitting ? 'Guardando...' : 'Guardar Registro'}</button>
                             </div>
                         </form>
                     </div>
