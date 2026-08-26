@@ -3,6 +3,8 @@ import { LifeBuoy } from 'lucide-react';
 import ModuleHeader from '@/components/ModuleHeader';
 import HelpDashboardClient from './HelpDashboardClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function CentroAyudaPage() {
   const categories = await prisma.helpCategory.findMany({
     where: { active: true },

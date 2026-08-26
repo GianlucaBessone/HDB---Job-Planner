@@ -159,14 +159,14 @@ export function DatePicker({ value, onChange, label, placeholder = 'Seleccionar 
                     
                     {/* Responsive Modal/Popover */}
                     <div className={`
-                        fixed bottom-6 mb-[env(safe-area-inset-bottom)] left-4 right-4 max-w-sm mx-auto z-[110] bg-card rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700
-                        md:absolute md:bottom-auto md:mb-0 md:left-0 md:right-auto md:top-[calc(100%+6px)] md:w-[320px] md:rounded-2xl md:border md:origin-top-left
-                        animate-in md:zoom-in-95 slide-in-from-bottom-6 md:slide-in-from-bottom-0 duration-300
+                        fixed bottom-0 left-0 right-0 z-[110] bg-card rounded-t-3xl shadow-[0_-8px_30px_rgb(0,0,0,0.12)] border-t border-slate-200 dark:border-slate-700
+                        md:absolute md:bottom-auto md:left-0 md:right-auto md:top-[calc(100%+6px)] md:w-[320px] md:rounded-2xl md:border md:origin-top-left
+                        animate-in md:zoom-in-95 slide-in-from-bottom-8 md:slide-in-from-bottom-0 duration-300 pb-[env(safe-area-inset-bottom)]
                     `}>
                         {/* Drag Handle for Mobile */}
-                        <div className="w-10 h-1 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mt-3 md:hidden" />
+                        <div className="w-10 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mt-3 mb-1 md:hidden" />
                         
-                        <div className="pb-2 md:pb-0 max-h-[80vh] overflow-y-auto overflow-x-hidden custom-scrollbar">
+                        <div className="pb-4 md:pb-0 max-h-[85vh] overflow-y-auto overflow-x-hidden custom-scrollbar">
                             {calendarContent}
                         </div>
                     </div>

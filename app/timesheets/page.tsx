@@ -985,8 +985,8 @@ export default function TimesheetsPage() {
 
             {/* Modal de Carga Manual / Edición */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-card text-card-foreground w-full max-w-4xl rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[92vh] md:max-h-[90vh] flex flex-col overflow-hidden pb-[env(safe-area-inset-bottom)]">
+                <div className="fixed inset-0 z-[100] flex flex-col bg-card text-card-foreground animate-in fade-in duration-300">
+                    <div className="w-full h-full flex flex-col overflow-hidden pb-[env(safe-area-inset-bottom)]">
                         {/* Header - Fixed */}
                         <div className="p-5 md:p-7 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
                             <h3 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100">
