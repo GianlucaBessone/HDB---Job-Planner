@@ -25,12 +25,15 @@ interface ResultadoOkr {
  *  - valorObtenido >= valorObjetivo * 0.9 → En Riesgo
  *  - valorObtenido <  valorObjetivo * 0.9 → No Cumple
  */
-export function calcularCumplimientoKpi(valorObtenido: number, valorObjetivo: number): ResultadoKpi {
+export function calcularCumplimientoKpi(valorObtenido: number, valorObjetivo: number, valorMaximoEsperado?: number | null): ResultadoKpi {
     if (valorObjetivo === 0) {
         return { estado: 'Cumple', porcentaje: 100 };
     }
 
-    const porcentaje = Math.min((valorObtenido / valorObjetivo) * 100, 200); // cap at 200%
+    const divisor = valorMaximoEsperado ?? valorObjetivo;
+    const divisorFinal = divisor === 0 ? 1 : divisor; // Evitar división por cero
+
+    const porcentaje = Math.min((valorObtenido / divisorFinal) * 100, 200); // cap at 200%
 
     if (valorObtenido >= valorObjetivo) {
         return { estado: 'Cumple', porcentaje };
@@ -49,7 +52,7 @@ export function calcularCumplimientoKpi(valorObtenido: number, valorObjetivo: nu
  * Calcula el avance global del OKR basado en el promedio porcentual
  * de cumplimiento de todos los KPI activos asociados.
  */
-export function calcularAvanceOkr(kpis: { valorObjetivo: number; ultimoValor: number | null; estado: string }[]): ResultadoOkr {
+export function calcularAvanceOkr(kpis: { valorObjetivo: number; ultimoValor: number | null; estado: string; valorMaximoEsperado?: number | null }[]): ResultadoOkr {
     const kpisActivos = kpis.filter(k => k.estado === 'Activo');
 
     if (kpisActivos.length === 0) {
@@ -63,7 +66,7 @@ export function calcularAvanceOkr(kpis: { valorObjetivo: number; ultimoValor: nu
     }
 
     const sumaPercentajes = kpisConMedicion.reduce((acc, kpi) => {
-        const { porcentaje } = calcularCumplimientoKpi(kpi.ultimoValor!, kpi.valorObjetivo);
+        const { porcentaje } = calcularCumplimientoKpi(kpi.ultimoValor!, kpi.valorObjetivo, kpi.valorMaximoEsperado);
         return acc + Math.min(porcentaje, 100); // Cap at 100% for averaging
     }, 0);
 
@@ -94,6 +97,7 @@ export async function recalcularTrasNuevaMedicion(kpiId: string): Promise<void> 
         select: {
             id: true,
             valorObjetivo: true,
+            valorMaximoEsperado: true,
             ultimoValor: true,
             okrId: true,
         },
@@ -113,7 +117,7 @@ export async function recalcularTrasNuevaMedicion(kpiId: string): Promise<void> 
     // 3. Calcular cumplimiento KPI
     let estadoCumplimiento: string | null = null;
     if (ultimoValor !== null) {
-        const resultado = calcularCumplimientoKpi(ultimoValor, kpi.valorObjetivo);
+        const resultado = calcularCumplimientoKpi(ultimoValor, kpi.valorObjetivo, kpi.valorMaximoEsperado);
         estadoCumplimiento = resultado.estado;
     }
 
@@ -138,6 +142,7 @@ export async function recalcularAvanceOkr(okrId: string): Promise<void> {
         where: { okrId },
         select: {
             valorObjetivo: true,
+            valorMaximoEsperado: true,
             ultimoValor: true,
             estado: true,
         },

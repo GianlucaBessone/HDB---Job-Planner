@@ -123,6 +123,11 @@ export default function KpiTab({ user, isActive = true }: { user: any; isActive?
                                     <div className="text-center">
                                         <p className="text-xs text-slate-400 font-medium">Objetivo</p>
                                         <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{kpi.valorObjetivo}</p>
+                                        {kpi.ultimoValor !== null && kpi.valorObjetivo > 0 && (
+                                            <p className="text-[10px] text-slate-500 font-medium">
+                                                Avance: {Math.min(Math.round((kpi.ultimoValor / (kpi.valorMaximoEsperado || kpi.valorObjetivo)) * 100), 200)}%
+                                            </p>
+                                        )}
                                     </div>
                                     {kpi.unidadMedida && <span className="text-xs text-slate-400 font-medium">{kpi.unidadMedida}</span>}
                                 </div>
