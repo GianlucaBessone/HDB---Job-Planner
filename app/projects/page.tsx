@@ -74,7 +74,7 @@ import ProjectCardView from '@/components/projects/ProjectCardView';
 import ProjectSpreadsheetView from '@/components/projects/ProjectSpreadsheetView';
 import ProjectGanttView from '@/components/projects/ProjectGanttView';
 import ProjectCalendarView from '@/components/projects/ProjectCalendarView';
-import ModuleHeader from '@/components/ModuleHeader';
+import ProjectsHeader from '@/components/projects/ProjectsHeader';
 import ProjectCostModal from '@/components/projects/ProjectCostModal';
 
 // ── Content Component ──────────────────────────────────────────────────────────
@@ -92,7 +92,6 @@ function ProjectsContent() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [pendingFilters, setPendingFilters] = useViewState<Filters>('projects-pendingFilters', EMPTY_FILTERS);
     const [appliedFilters, setAppliedFilters] = useViewState<Filters>('projects-appliedFilters', EMPTY_FILTERS);
-    const [activeTab, setActiveTab] = useViewState('projects-activeTab', 'proyectos');
 
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
@@ -378,35 +377,11 @@ function ProjectsContent() {
 
             {/* ── Page Header ── */}
             <div className="flex flex-col gap-6 mb-8">
-                <ModuleHeader
-                    title="Gestión de Proyectos"
-                    description="Control y seguimiento de proyectos activos"
-                    icon={<Layout className="w-5 h-5" />}
-                    helpSlug="gestion-proyectos"
-                    tabs={[
-                        { id: 'dashboard', label: 'Dashboard' },
-                        { id: 'proyectos', label: 'Proyectos' },
-                        { id: 'cronograma', label: 'Cronograma' },
-                        { id: 'recursos', label: 'Recursos' },
-                        { id: 'riesgos', label: 'Riesgos' },
-                        { id: 'documentacion', label: 'Documentación' },
-                        { id: 'reportes', label: 'Reportes' },
-                    ]}
-                    activeTabId={activeTab}
-                    onTabChange={setActiveTab}
-                    actions={[
-                        {
-                            id: 'nuevo',
-                            label: 'Nuevo Proyecto',
-                            icon: <Plus className="w-4 h-4" />,
-                            variant: 'primary',
-                            onClick: openCreate,
-                            hideLabelOnMobile: true
-                        }
-                    ]}
+                <ProjectsHeader
+                    activeTabId="proyectos"
                     searchValue={searchTerm}
                     onSearchChange={setSearchTerm}
-                    searchPlaceholder="Buscar proyecto..."
+                    onNewProject={openCreate}
                 />
                 
                 {/* View Selector and Filter Row */}

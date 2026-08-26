@@ -429,11 +429,13 @@ function AddMaterialForm({
 function DevolucionModal({
   material,
   userName,
+  operatorId,
   onClose,
   onDone,
 }: {
   material: Material;
   userName: string;
+  operatorId?: string;
   onClose: () => void;
   onDone: () => void;
 }) {
@@ -473,6 +475,7 @@ function DevolucionModal({
         estado,
         comentario,
         confirmadoPor: userName,
+        operatorId,
       }),
     });
     setSaving(false);
@@ -1175,6 +1178,7 @@ function MaterialesTable({
         materialId: id,
         cantidadUtilizada: diff,
         operadorNombre: user?.nombreCompleto || user?.nombre || "Ajuste de Almacén",
+        operatorId: user?.id,
       }),
     });
     onRefresh();
@@ -1640,6 +1644,7 @@ function MaterialesTable({
         <DevolucionModal
           material={devolucionTarget}
           userName={user?.nombreCompleto || "Vendedor"}
+          operatorId={user?.id}
           onClose={() => setDevolucionTarget(null)}
           onDone={onRefresh}
         />

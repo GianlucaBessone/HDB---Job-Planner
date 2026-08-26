@@ -4,12 +4,12 @@
     "private": true,
     "main": "electron/main.js",
     "scripts": {
-        "dev": "next dev",
+        "dev": "next dev -p 3333",
         "build": "npx prisma generate && next build",
-        "start": "next start",
+        "start": "next start -p 3333",
         "lint": "next lint",
         "postinstall": "prisma generate",
-        "electron:dev": "concurrently \"npm run dev\" \"wait-on tcp:3000 && electron .\"",
+        "electron:dev": "concurrently \"npm run dev\" \"wait-on tcp:3333 && electron .\"",
         "electron:build": "npm run build && electron-builder",
         "electron:pack": "electron-builder --dir"
     },

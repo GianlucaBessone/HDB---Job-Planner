@@ -163,7 +163,8 @@ export default function MyProjectsPage() {
             const totalUsado = m.usos.reduce((acc: number, u: any) => acc + u.cantidadUtilizada, 0);
             const totalDevuelto = (m.devoluciones || []).filter((d: any) => d.estado !== 'pendiente' && d.estado !== 'delegacion_pendiente' && d.estado !== 'delegacion_rechazada').reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
             const pendingDevolucion = (m.devoluciones || []).filter((d: any) => d.estado === 'pendiente' || d.estado === 'delegacion_pendiente').reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
-            const balance = m.cantidadEntregada - totalUsado - totalDevuelto - pendingDevolucion;
+            const balanceRaw = m.cantidadEntregada - totalUsado - totalDevuelto - pendingDevolucion;
+            const balance = Math.round(balanceRaw * 100) / 100;
 
             const hasPending = pendingDevolucion > 0;
             const isDevuelto = ['cerrado_ok', 'cerrado_con_reserva'].includes(m.estado) || (balance <= 0 && !hasPending);
@@ -401,11 +402,14 @@ export default function MyProjectsPage() {
         // Validations
         const totalUsado = (selectedMaterial.usos || []).reduce((acc: number, u: any) => acc + u.cantidadUtilizada, 0);
         const totalDevuelto = (selectedMaterial.devoluciones || []).reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
-        const balance = selectedMaterial.cantidadEntregada - totalUsado - totalDevuelto;
+        const balanceRaw = selectedMaterial.cantidadEntregada - totalUsado - totalDevuelto;
+        const balance = Math.round(balanceRaw * 100) / 100;
+        const remainingRaw = selectedMaterial.cantidadEntregada - totalUsado;
+        const remaining = Math.round(remainingRaw * 100) / 100;
 
         if (materialAction === 'uso') {
-            if (qty > (selectedMaterial.cantidadEntregada - totalUsado)) {
-                showToast(`No puede informar más uso que el entregado (${(selectedMaterial.cantidadEntregada - totalUsado).toFixed(2)} ${selectedMaterial.unidad} restante)`, 'error');
+            if (qty > remaining) {
+                showToast(`No puede informar más uso que el entregado (${remaining.toFixed(2)} ${selectedMaterial.unidad} restante)`, 'error');
                 return;
             }
         } else {
@@ -425,13 +429,15 @@ export default function MyProjectsPage() {
                 ? {
                     materialId: selectedMaterial.id,
                     cantidadUtilizada: qty,
-                    operadorNombre: user.nombreCompleto
+                    operadorNombre: user.nombreCompleto,
+                    operatorId: user?.id
                   }
                 : {
                     materialId: selectedMaterial.id,
                     cantidadADevolver: qty,
                     estado: 'pendiente',
-                    comentario: materialNote
+                    comentario: materialNote,
+                    operatorId: user?.id
                   };
 
             const res = await safeApiRequest(endpoint, {
@@ -468,7 +474,8 @@ export default function MyProjectsPage() {
 
         const totalUsado = (selectedMaterial.usos || []).reduce((acc: number, u: any) => acc + u.cantidadUtilizada, 0);
         const totalDevuelto = (selectedMaterial.devoluciones || []).reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
-        const balance = selectedMaterial.cantidadEntregada - totalUsado - totalDevuelto;
+        const balanceRaw = selectedMaterial.cantidadEntregada - totalUsado - totalDevuelto;
+        const balance = Math.round(balanceRaw * 100) / 100;
 
         if (qty > balance) {
             showToast(`No puede delegar más del balance disponible (${balance.toFixed(2)} ${selectedMaterial.unidad})`, 'error');
@@ -499,7 +506,8 @@ export default function MyProjectsPage() {
                     delegadoANombre: targetUser.nombreCompleto,
                     delegadoPorId: user?.id,
                     delegadoPorNombre: user?.nombreCompleto,
-                    firmaDelegacion: pendingDelegationSignature
+                    firmaDelegacion: pendingDelegationSignature,
+                    operatorId: user?.id
                 })
             });
 
@@ -530,7 +538,8 @@ export default function MyProjectsPage() {
             const totalUsado = m.usos.reduce((acc: number, u: any) => acc + u.cantidadUtilizada, 0);
             const totalDevuelto = (m.devoluciones || []).filter((d: any) => d.estado !== 'pendiente' && d.estado !== 'delegacion_pendiente').reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
             const pendingDevolucion = (m.devoluciones || []).filter((d: any) => d.estado === 'pendiente' || d.estado === 'delegacion_pendiente').reduce((acc: number, d: any) => acc + d.cantidadADevolver, 0);
-            const balance = m.cantidadEntregada - totalUsado - totalDevuelto - pendingDevolucion;
+            const balanceRaw = m.cantidadEntregada - totalUsado - totalDevuelto - pendingDevolucion;
+            const balance = Math.round(balanceRaw * 100) / 100;
             return {
                 materialId: m.id,
                 cantidadADevolver: balance,
@@ -575,7 +584,8 @@ export default function MyProjectsPage() {
                     delegadoPorNombre: user?.nombreCompleto,
                     firmaDelegacion: pendingDelegationSignature,
                     projectId: selectedProject.id,
-                    projectName: selectedProject.nombre
+                    projectName: selectedProject.nombre,
+                    operatorId: user?.id
                 })
             });
 
@@ -605,7 +615,8 @@ export default function MyProjectsPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     id: delegacionId,
-                    estado: 'pendiente' // Aceptarlo lo pasa a estado normal pendiente de devolución en almacén
+                    estado: 'pendiente', // Aceptarlo lo pasa a estado normal pendiente de devolución en almacén
+                    operatorId: user?.id
                 })
             });
 
@@ -627,7 +638,8 @@ export default function MyProjectsPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     id: delegacionId,
-                    estado: 'delegacion_rechazada'
+                    estado: 'delegacion_rechazada',
+                    operatorId: user?.id
                 })
             });
 
@@ -653,7 +665,8 @@ export default function MyProjectsPage() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         id: delegation.id,
-                        estado: 'pendiente'
+                        estado: 'pendiente',
+                        operatorId: user?.id
                     })
                 });
                 if (!res.ok) errorCount++;

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 interface ViewStateStore {
     states: Record<string, any>;
@@ -13,10 +13,21 @@ export const useViewStateStore = create<ViewStateStore>()(
     persist(
         (set, get) => ({
             states: {},
-            setState: (key, state) => set((prev) => ({
-                states: { ...prev.states, [key]: { ...prev.states[key], ...state } }
-            })),
-            getState: (key) => get().states[key] || null,
+            setState: (key, state) => set((prev) => {
+                const prevState = prev.states[key];
+                let newState;
+                if (typeof state === 'object' && state !== null && !Array.isArray(state)) {
+                    // Spread only if it's an object
+                    newState = { ...(prevState || {}), ...state };
+                } else {
+                    // Otherwise, just replace (primitives, arrays, etc)
+                    newState = state;
+                }
+                return {
+                    states: { ...prev.states, [key]: newState }
+                };
+            }),
+            getState: (key) => get().states[key] ?? null,
             clearState: (key) => set((prev) => {
                 const newStates = { ...prev.states };
                 delete newStates[key];
@@ -26,6 +37,7 @@ export const useViewStateStore = create<ViewStateStore>()(
         }),
         {
             name: 'hdb-view-states',
+            storage: createJSONStorage(() => sessionStorage)
         }
     )
 );

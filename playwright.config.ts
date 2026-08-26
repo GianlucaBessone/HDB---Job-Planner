@@ -15,7 +15,7 @@ export default defineConfig({
   reporter: [['html', { open: 'never' }]],
   
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://localhost:3333',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     // Bypass system browser binary download issue on Ubuntu 26.04 by using system Google Chrome
@@ -32,7 +32,7 @@ export default defineConfig({
   // Hook into the Next.js dev server, reusing it if already running
   webServer: {
     command: 'npm run dev',
-    url: 'http://localhost:3000',
+    url: 'http://localhost:3333',
     reuseExistingServer: true,
     stdout: 'ignore',
     stderr: 'pipe',

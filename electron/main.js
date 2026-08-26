@@ -24,8 +24,8 @@ async function createWindow(port) {
 
 app.on('ready', async () => {
   if (!app.isPackaged) {
-    // Modo de desarrollo: asumimos que npm run dev corre Next.js en el puerto 3000
-    createWindow(3000).then(() => {
+    // Modo de desarrollo: asumimos que npm run dev corre Next.js en el puerto 3333
+    createWindow(3333).then(() => {
       if (mainWindow) {
         mainWindow.webContents.openDevTools();
       }

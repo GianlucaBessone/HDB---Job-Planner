@@ -14,34 +14,70 @@ export async function POST(req: Request) {
             delegadoPorId,
             delegadoPorNombre,
             projectId,
-            projectName
+            projectName,
+            operatorId
         } = body;
+
+        if (!operatorId) {
+            return NextResponse.json({ error: 'operatorId es requerido para esta acción' }, { status: 401 });
+        }
+
+        const operator = await prisma.operator.findUnique({ where: { id: operatorId, activo: true } });
+        if (!operator) {
+            return NextResponse.json({ error: 'Operador no válido o inactivo' }, { status: 401 });
+        }
 
         if (!delegations || delegations.length === 0 || !estado) {
             return NextResponse.json({ error: 'Faltan campos requeridos o no hay delegaciones' }, { status: 400 });
         }
 
-        // Loop over delegations and create MaterialDevolucion and update MaterialProyecto
-        for (const item of delegations) {
-            await prisma.materialDevolucion.create({
-                data: {
-                    materialId: item.materialId,
-                    cantidadADevolver: parseFloat(item.cantidadADevolver),
-                    estado,
-                    comentario: comentario || null,
-                    delegadoAId: delegadoAId || null,
-                    delegadoANombre: delegadoANombre || null,
-                    firmaDelegacion: firmaDelegacion || null,
-                    delegadoPorId: delegadoPorId || null,
-                    delegadoPorNombre: delegadoPorNombre || null,
+        // --- Transaction: Balance Check & DB Updates ---
+        await prisma.$transaction(async (tx) => {
+            for (const item of delegations) {
+                const finalCantidad = parseFloat(item.cantidadADevolver);
+                if (isNaN(finalCantidad) || finalCantidad <= 0) {
+                    throw new Error(`Cantidad inválida para el material ${item.materialNombre}`);
                 }
-            });
 
-            await prisma.materialProyecto.update({
-                where: { id: item.materialId },
-                data: { estado: 'pendiente_devolucion' }
-            });
-        }
+                // Balance check
+                const matDb = await tx.materialProyecto.findUnique({
+                    where: { id: item.materialId },
+                    include: { usos: true, devoluciones: true }
+                });
+
+                if (!matDb) throw new Error(`Material no encontrado: ${item.materialNombre}`);
+
+                const totalUsado = matDb.usos.reduce((acc, u) => acc + u.cantidadUtilizada, 0);
+                const totalDevueltoOk = matDb.devoluciones.filter(d => d.estado === 'cerrado_ok' || d.estado === 'cerrado_con_reserva').reduce((acc, d) => acc + d.cantidadADevolver, 0);
+                const pendingDevolucion = matDb.devoluciones.filter(d => d.estado === 'pendiente' || d.estado === 'delegacion_pendiente').reduce((acc, d) => acc + d.cantidadADevolver, 0);
+                
+                const balance = matDb.cantidadEntregada - totalUsado - totalDevueltoOk - pendingDevolucion;
+                const roundedBalance = Math.round(balance * 100) / 100;
+
+                if (finalCantidad > roundedBalance) {
+                    throw new Error(`Saldo insuficiente para ${item.materialNombre}. Balance actual: ${roundedBalance}`);
+                }
+
+                await tx.materialDevolucion.create({
+                    data: {
+                        materialId: item.materialId,
+                        cantidadADevolver: finalCantidad,
+                        estado,
+                        comentario: comentario || null,
+                        delegadoAId: delegadoAId || null,
+                        delegadoANombre: delegadoANombre || null,
+                        firmaDelegacion: firmaDelegacion || null,
+                        delegadoPorId: delegadoPorId || null,
+                        delegadoPorNombre: delegadoPorNombre || null,
+                    }
+                });
+
+                await tx.materialProyecto.update({
+                    where: { id: item.materialId },
+                    data: { estado: 'pendiente_devolucion' }
+                });
+            }
+        });
 
         const supervisors = await prisma.operator.findMany({
             where: { role: { in: ['supervisor', 'admin', 'qa'] }, activo: true },
@@ -93,8 +129,8 @@ export async function POST(req: Request) {
         }
 
         return NextResponse.json({ success: true }, { status: 201 });
-    } catch (e) {
+    } catch (e: any) {
         console.error('Error in batch delegacion:', e);
-        return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
+        return NextResponse.json({ error: e.message || 'Error interno del servidor' }, { status: 400 });
     }
 }
