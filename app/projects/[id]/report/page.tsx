@@ -45,11 +45,13 @@ export default async function ProjectReportPage({ params, searchParams }: { para
     const totalDelaysHours = project.clientDelays.reduce((acc, d) => acc + d.duracion, 0);
     const totalRealHours = project.timeEntries.reduce((acc, t) => acc + (t.isExtra ? t.horasTrabajadas * 2 : t.horasTrabajadas), 0);
 
-    const IPT = project.horasEstimadas > 0 && totalRealHours > 0
-        ? (project.horasEstimadas / totalRealHours).toFixed(2)
-        : project.horasEstimadas > 0 ? 'N/A' : 'N/A';
+    const estimatedHours = project.proyectoFijo ? totalRealHours : project.horasEstimadas;
 
-    const savedHours = project.horasEstimadas - totalRealHours;
+    const IPT = estimatedHours > 0 && totalRealHours > 0
+        ? (estimatedHours / totalRealHours).toFixed(2)
+        : estimatedHours > 0 ? 'N/A' : 'N/A';
+
+    const savedHours = estimatedHours - totalRealHours;
 
     // Impacto de demoras sobre lo ejecutado
     const delayImpactPct = totalRealHours > 0
@@ -138,11 +140,13 @@ export default async function ProjectReportPage({ params, searchParams }: { para
                 <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-10">
                     <div className="bg-background text-foreground/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-center items-center text-center">
                         <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Hs Estimadas</p>
-                        <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{project.horasEstimadas}h</p>
+                        <p className="text-2xl font-black text-slate-800 dark:text-slate-100">
+                            {project.proyectoFijo ? `${totalRealHours.toFixed(1)}h` : `${project.horasEstimadas}h`}
+                        </p>
                     </div>
                     <div className="bg-background text-foreground/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-center items-center text-center">
                         <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Hs Reales</p>
-                        <p className={`text-2xl font-black ${totalRealHours > project.horasEstimadas ? 'text-rose-500' : 'text-emerald-500'}`}>
+                        <p className={`text-2xl font-black ${totalRealHours > estimatedHours ? 'text-rose-500' : 'text-emerald-500'}`}>
                             {totalRealHours.toFixed(1)}h
                         </p>
                     </div>

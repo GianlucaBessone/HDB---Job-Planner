@@ -101,6 +101,7 @@ export const ProjectReportPDF = ({
     const totalDelaysHours = delaysByArea.reduce((a, d) => a + d.horas, 0);
     const hasClientStr = project.client?.nombre || project.cliente || 'Sin cliente';
     const hasObs = !!project.observaciones;
+    const estimatedHours = project.proyectoFijo ? totalRealHours : (project.horasEstimadas || 0);
 
     // Dynamic status badge
     const STATUS_MAP: Record<string, { label: string; icon: string; color: string }> = {
@@ -142,11 +143,13 @@ export const ProjectReportPDF = ({
                 <View style={S.kpiRow}>
                     <View style={S.kpiBox}>
                         <Text style={S.kpiLabel}>Hs. Estimadas</Text>
-                        <Text style={S.kpiValue}>{project.horasEstimadas}h</Text>
+                        <Text style={S.kpiValue}>
+                            {project.proyectoFijo ? `${totalRealHours.toFixed(1)}h` : `${project.horasEstimadas}h`}
+                        </Text>
                     </View>
                     <View style={S.kpiBox}>
                         <Text style={S.kpiLabel}>Hs. Reales</Text>
-                        <Text style={[S.kpiValue, { color: totalRealHours > project.horasEstimadas ? '#F43F5E' : '#10B981' }]}>
+                        <Text style={[S.kpiValue, { color: totalRealHours > estimatedHours ? '#F43F5E' : '#10B981' }]}>
                             {totalRealHours.toFixed(1)}h
                         </Text>
                     </View>
