@@ -13,7 +13,7 @@ export async function encrypt(payload: SessionPayload) {
   return new SignJWT(payload as any)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime('7d')
+    .setExpirationTime('30d')
     .sign(encodedSecret);
 }
 

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { decrypt } from './lib/auth';
+import { decrypt, encrypt } from './lib/auth';
 
 const PUBLIC_ROUTES = [
   '/api/auth/login',
@@ -55,11 +55,28 @@ export async function middleware(request: NextRequest) {
   requestHeaders.set('x-user-id', payload.id as string);
   requestHeaders.set('x-user-role', payload.role as string || '');
 
-  return NextResponse.next({
+  const response = NextResponse.next({
     request: {
       headers: requestHeaders,
     },
   });
+
+  // Implement rolling session (refresh token)
+  const sessionPayload = {
+      id: payload.id as string,
+      role: payload.role as string | null,
+      nombreCompleto: payload.nombreCompleto as string
+  };
+  const refreshedToken = await encrypt(sessionPayload);
+  response.cookies.set('sgi_session', refreshedToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+  });
+
+  return response;
 }
 
 export const config = {
