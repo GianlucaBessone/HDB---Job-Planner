@@ -264,13 +264,33 @@ function AddMaterialForm({
     return () => clearTimeout(timeout);
   }, [form.codigo]);
 
+  const parseNum = (str: string) => {
+    if (!str) return "";
+    if (str.includes('.') && str.includes(',')) {
+      return str.replace(/\./g, '').replace(',', '.');
+    }
+    if (str.includes(',')) {
+      return str.replace(',', '.');
+    }
+    return str;
+  };
+
   const handleSubmit = async () => {
     if (!form.nombre) return;
     setSaving(true);
+
+    const payload = {
+      ...form,
+      cantidadSolicitada: parseNum(form.cantidadSolicitada),
+      cantidadDisponible: parseNum(form.cantidadDisponible),
+      cantidadEntregada: parseNum(form.cantidadEntregada),
+      precioVenta: parseNum(form.precioVenta),
+    };
+
     await fetch("/api/materiales-proyecto", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ proyectoId, ...form }),
+      body: JSON.stringify({ proyectoId, ...payload }),
     });
     setSaving(false);
     setForm({
@@ -288,7 +308,7 @@ function AddMaterialForm({
 
   const handleQty =
     (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      const val = e.target.value.replace(/[^0-9.]/g, "");
+      const val = e.target.value.replace(/[^0-9.,]/g, "");
       setForm((p) => ({ ...p, [field]: val }));
     };
 
@@ -341,7 +361,7 @@ function AddMaterialForm({
       <input
         type="text"
         inputMode="numeric"
-        pattern="[0-9.]*"
+        pattern="[0-9.,]*"
         placeholder="Sol."
         title="Solicitada"
         value={form.cantidadSolicitada}
@@ -351,7 +371,7 @@ function AddMaterialForm({
       <input
         type="text"
         inputMode="numeric"
-        pattern="[0-9.]*"
+        pattern="[0-9.,]*"
         placeholder="Disp."
         title="Disponible"
         value={form.cantidadDisponible}
@@ -361,7 +381,7 @@ function AddMaterialForm({
       <input
         type="text"
         inputMode="numeric"
-        pattern="[0-9.]*"
+        pattern="[0-9.,]*"
         placeholder="Entr."
         title="Entregada"
         value={form.cantidadEntregada}
@@ -377,7 +397,7 @@ function AddMaterialForm({
           <input
             type="text"
             inputMode="numeric"
-            pattern="[0-9.]*"
+            pattern="[0-9.,]*"
             placeholder="Precio"
             value={form.precioVenta}
             onChange={handleQty("precioVenta")}
