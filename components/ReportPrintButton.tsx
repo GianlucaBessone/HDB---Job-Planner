@@ -13,6 +13,7 @@ interface ReportPrintButtonProps {
     delaysByArea: any[];
     delayImpactPct: string;
     clientDelays: any[];
+    dateRange?: { start?: string; end?: string };
 }
 
 export default function ReportPrintButton({
@@ -24,6 +25,7 @@ export default function ReportPrintButton({
     delaysByArea,
     delayImpactPct,
     clientDelays,
+    dateRange,
 }: ReportPrintButtonProps) {
     const [isMounted, setIsMounted] = useState(false);
 
@@ -38,7 +40,7 @@ export default function ReportPrintButton({
         </button>
     );
 
-    const filename = `Reporte_${project.nombre.replace(/\s+/g, '_')}.pdf`;
+    const filename = `Informe_${project.nombre.replace(/\s+/g, '_')}${dateRange?.start ? `_${dateRange.start}` : ''}.pdf`;
 
     return (
         <PDFDownloadLink
@@ -52,6 +54,7 @@ export default function ReportPrintButton({
                     delaysByArea={delaysByArea}
                     delayImpactPct={delayImpactPct}
                     clientDelays={clientDelays}
+                    dateRange={dateRange}
                 />
             }
             fileName={filename}
@@ -67,7 +70,7 @@ export default function ReportPrintButton({
                     ) : (
                         <FileText className="w-5 h-5" />
                     )}
-                    {loading ? 'Preparando PDF...' : 'Descargar PDF Oficial'}
+                    {loading ? 'Preparando Informe...' : 'Descargar Informe'}
                 </button>
             )}
         </PDFDownloadLink>
