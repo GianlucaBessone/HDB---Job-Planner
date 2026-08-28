@@ -295,34 +295,46 @@ export default function ProjectReportView({ project }: ProjectReportViewProps) {
                 {/* ── KPI Cards ── */}
                 <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-10">
                     <div className="bg-background text-foreground/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-center items-center text-center">
-                        <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Hs Estimadas</p>
+                        <div className="h-7 flex items-center justify-center mb-1">
+                            <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-tight">Hs Estimadas</p>
+                        </div>
                         <p className="text-2xl font-black text-slate-800 dark:text-slate-100">
                             {project.proyectoFijo ? `${totalRealHours.toFixed(1)}h` : `${project.horasEstimadas}h`}
                         </p>
                     </div>
                     <div className="bg-background text-foreground/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-center items-center text-center">
-                        <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Hs Reales</p>
+                        <div className="h-7 flex items-center justify-center mb-1">
+                            <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-tight">Hs Reales</p>
+                        </div>
                         <p className={`text-2xl font-black ${totalRealHours > estimatedHours ? 'text-rose-500' : 'text-emerald-500'}`}>
                             {totalRealHours.toFixed(1)}h
                         </p>
                     </div>
                     <div className="bg-background text-foreground/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-center items-center text-center">
-                        <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Ahorro / Desvío</p>
+                        <div className="h-7 flex items-center justify-center mb-1">
+                            <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-tight">Ahorro / Desvío</p>
+                        </div>
                         <p className={`text-2xl font-black ${savedHours >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                             {savedHours > 0 ? '+' : ''}{savedHours.toFixed(1)}h
                         </p>
                     </div>
                     <div className="bg-indigo-50 dark:bg-indigo-950/40 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-900/40 flex flex-col justify-center items-center text-center">
-                        <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1">Eficiencia (IPT)</p>
+                        <div className="h-7 flex items-center justify-center mb-1">
+                            <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest leading-tight">Eficiencia (IPT)</p>
+                        </div>
                         <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400">{IPT}</p>
                     </div>
                     <div className="bg-amber-50 dark:bg-amber-950/40 p-4 rounded-2xl border border-amber-200 dark:border-amber-900/40 flex flex-col justify-center items-center text-center">
-                        <p className="text-[9px] font-black text-amber-500 uppercase tracking-widest mb-1">Carga Demoras</p>
+                        <div className="h-7 flex items-center justify-center mb-1">
+                            <p className="text-[9px] font-black text-amber-500 uppercase tracking-widest leading-tight">Carga Demoras</p>
+                        </div>
                         <p className="text-2xl font-black text-amber-500">{delayImpactPct}%</p>
                     </div>
                     <div className="bg-emerald-50 dark:bg-emerald-950/40 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-900/40 flex flex-col justify-center items-center text-center">
-                        <p className="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-1">Avance Técnico</p>
-                        <p className="text-base font-black text-emerald-600 dark:text-emerald-400">
+                        <div className="h-7 flex items-center justify-center mb-1">
+                            <p className="text-[9px] font-black text-emerald-400 uppercase tracking-widest leading-tight">Avance Técnico</p>
+                        </div>
+                        <p className="text-xl md:text-2xl font-black text-emerald-600 dark:text-emerald-400">
                             {project.checklistItems?.filter((i: any) => i.completed && !i.excluded).length || 0} / {project.checklistItems?.filter((i: any) => !i.excluded).length || 0}
                         </p>
                     </div>
