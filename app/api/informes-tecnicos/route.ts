@@ -59,15 +59,30 @@ export async function POST(req: Request) {
         // Generate report number
         const date = new Date();
         const year = date.getFullYear();
-        const count = await prisma.technicalReport.count({
+        
+        const lastReport = await prisma.technicalReport.findFirst({
             where: {
-                createdAt: {
-                    gte: new Date(`${year}-01-01`),
-                    lt: new Date(`${year + 1}-01-01`)
+                reportNumber: {
+                    startsWith: `IT-${year}-`
                 }
+            },
+            orderBy: {
+                reportNumber: 'desc'
             }
         });
-        const reportNumber = `IT-${year}-${String(count + 1).padStart(4, '0')}`;
+
+        let nextNumber = 1;
+        if (lastReport) {
+            const parts = lastReport.reportNumber.split('-');
+            if (parts.length === 3) {
+                const num = parseInt(parts[2], 10);
+                if (!isNaN(num)) {
+                    nextNumber = num + 1;
+                }
+            }
+        }
+        
+        const reportNumber = `IT-${year}-${String(nextNumber).padStart(4, '0')}`;
 
         const report = await prisma.technicalReport.create({
             data: {
