@@ -173,6 +173,10 @@ model Operator {
 
   technicalReportEvidences TechnicalReportEvidence[]
   technicalReportPersonnel TechnicalReportPersonnel[]
+
+  // EPP (Elementos de Protección Personal)
+  eppDeliveries            EppDelivery[]
+  eppRequests              EppRequest[]
 }
 
 model FavoriteBlock {
@@ -205,6 +209,7 @@ model HdbClient {
   projects         Project[]
   createdAt        DateTime          @default(now())
   technicalReports TechnicalReport[]
+  eppPublicShares  EppPublicShare[]
 }
 
 model TimeEntry {
@@ -2317,4 +2322,136 @@ model MessageTemplate {
   variables Json // Ej: ["candidateName", "vacancyTitle"]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ==========================================
+// MÓDULO EPP (ELEMENTOS DE PROTECCIÓN PERSONAL)
+// ==========================================
+
+model EppItem {
+  id                 String              @id @default(cuid())
+  codigo             String?             @unique // Ej: EPP-CASCO-01
+  nombre             String              // Ej: Casco de Seguridad con Barbijo
+  descripcion        String?             @db.Text
+  categoria          String              // Cabeza, Protección Ocular, Auditivo, Manos, Calzado, Altura, Ropa
+  esGlobal           Boolean             @default(true) // true = entregado a todos los operadores; false = específico
+  diasValidez        Int                 @default(365) // Días de vigencia desde la entrega
+  stockActual        Int                 @default(0)
+  stockMinimo        Int                 @default(5)
+  talle              String?             // Opcional si aplica
+  marca              String?
+  normaCertificacion String?             // IRAM, ANSI, CE
+  activo             Boolean             @default(true)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  stockMovements     EppStockMovement[]
+  deliveryItems      EppDeliveryItem[]
+  requests           EppRequest[]
+
+  @@index([categoria])
+  @@index([esGlobal])
+}
+
+model EppStockMovement {
+  id             String       @id @default(cuid())
+  eppItemId      String
+  eppItem        EppItem      @relation(fields: [eppItemId], references: [id], onDelete: Cascade)
+  tipo           String       // INGRESO | EGRESO_ENTREGA | AJUSTE
+  cantidad       Int
+  stockAnterior  Int
+  stockPosterior Int
+  motivo         String?
+  remitoFactura  String?
+  proveedor      String?
+  deliveryId     String?
+  delivery       EppDelivery? @relation(fields: [deliveryId], references: [id], onDelete: SetNull)
+  registradoPor  String?
+  createdAt      DateTime     @default(now())
+
+  @@index([eppItemId])
+  @@index([deliveryId])
+  @@index([createdAt])
+}
+
+model EppDelivery {
+  id                 String            @id @default(cuid())
+  codigoActa         String            @unique // Ej: EPP-ENT-2026-0001
+  operatorId         String
+  operator           Operator          @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  fechaEntrega       DateTime          @default(now())
+  entregadoPor       String?           // Supervisor que despachó
+  estado             String            @default("PENDIENTE_FIRMA") // PENDIENTE_FIRMA | FIRMADA | RECHAZADA
+  signatureId        String?           // ID en DocumentSignatureAudit (checksum app estándar)
+  signatureHash      String?           // Checksum SHA-256
+  firmaManuscritaUrl String?           @db.Text
+  signedAt           DateTime?
+  observaciones      String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  items              EppDeliveryItem[]
+  stockMovements     EppStockMovement[]
+
+  @@index([operatorId])
+  @@index([estado])
+  @@index([fechaEntrega])
+}
+
+model EppDeliveryItem {
+  id                    String      @id @default(cuid())
+  deliveryId            String
+  delivery              EppDelivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  eppItemId             String
+  eppItem               EppItem     @relation(fields: [eppItemId], references: [id], onDelete: Cascade)
+  cantidad              Int         @default(1)
+  talle                 String?
+  confirmadoPorOperador Boolean     @default(false)
+  fechaEntrega          DateTime    @default(now())
+  diasValidez           Int
+  fechaVencimiento      DateTime
+  estado                String      @default("PENDIENTE") // PENDIENTE | VIGENTE | POR_VENCER | VENCIDO
+  createdAt             DateTime    @default(now())
+
+  @@index([deliveryId])
+  @@index([eppItemId])
+  @@index([fechaVencimiento])
+}
+
+model EppRequest {
+  id              String    @id @default(cuid())
+  operatorId      String
+  operator        Operator  @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  eppItemId       String
+  eppItem         EppItem   @relation(fields: [eppItemId], references: [id], onDelete: Cascade)
+  talle           String?
+  motivo          String    // VENCIMIENTO | DETERIORO | EXTRAVIO | NUEVA_TAREA
+  comentario      String?   @db.Text
+  estado          String    @default("PENDIENTE") // PENDIENTE | APROBADA | RECHAZADA | ENTREGADA
+  fechaSolicitud  DateTime  @default(now())
+  fechaResolucion DateTime?
+  resueltoPor     String?
+  motivoRechazo   String?
+
+  @@index([operatorId])
+  @@index([estado])
+}
+
+model EppPublicShare {
+  id           String     @id @default(cuid())
+  token        String     @unique // Token único para acceso público
+  titulo       String?    // Ej: "Matriz EPP General" o "Matriz EPP - Aluar"
+  tipo         String     @default("GENERAL") // GENERAL | CLIENTE
+  clientId     String?
+  client       HdbClient? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  clientNombre String?
+  activo       Boolean    @default(true)
+  visitas      Int        @default(0)
+  ultimaVisita DateTime?
+  creadoPor    String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([token])
+  @@index([clientId])
 }
