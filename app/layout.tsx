@@ -173,15 +173,15 @@ export default function RootLayout({
         );
     } else if (!currentUser && !isPublicPage) {
         content = <LoginScreen onLoginSuccess={handleLoginSuccess} />;
-    } else if (isPublicPage && !currentUser) {
+    } else if (isPublicPage) {
         // Public view (No header/sidebar) — light by default, with compact toggle
         content = (
-            <div className="flex flex-col min-h-[100dvh] overflow-x-hidden bg-background">
+            <div className="flex flex-col min-h-[100dvh] w-full overflow-x-hidden bg-background">
                 {/* Compact public header with theme toggle */}
                 <div className="fixed top-3 right-3 z-50">
                     <ThemeToggle />
                 </div>
-                <main className="flex-1 w-full max-w-4xl mx-auto py-4">
+                <main className="flex-1 w-full max-w-4xl mx-auto px-2 sm:px-4 py-2 sm:py-4 min-w-0">
                     {children}
                 </main>
             </div>
@@ -291,7 +291,7 @@ export default function RootLayout({
             </head>
             <body className="font-sans min-h-[100dvh] bg-background text-foreground overscroll-none text-slate-900 dark:text-slate-100" style={{ fontFamily: '"Outfit", sans-serif' }}>
                 <ColorThemeProvider>
-                    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+                    <ThemeProvider attribute="class" defaultTheme={isPublicPage ? "light" : "system"} enableSystem={!isPublicPage}>
                         <ERPProviders>
                             {content}
                             {/* Global Command Palette — available when logged in */}

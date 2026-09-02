@@ -9,12 +9,18 @@ import {
 } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { Suspense } from 'react';
+import { useTheme } from 'next-themes';
 
 function PublicHerramientasContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { setTheme } = useTheme();
     const [searchId, setSearchId] = useState('');
     const [isScanning, setIsScanning] = useState(false);
+
+    useEffect(() => {
+        setTheme('light');
+    }, [setTheme]);
 
     useEffect(() => {
         const queryId = searchParams.get('id');
