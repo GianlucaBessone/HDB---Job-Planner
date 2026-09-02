@@ -372,7 +372,7 @@ export default function ToolCartsSection() {
                         
                         <div className="flex justify-center bg-white p-4 rounded-xl border-2 border-dashed border-slate-200 mb-6" ref={qrRef}>
                             <QRCodeCanvas 
-                                value={`TOOLCART:${qrCart.id}`}
+                                value={typeof window !== 'undefined' ? `${window.location.origin}/public/herramientas/${qrCart.id}` : `TOOLCART:${qrCart.id}`}
                                 size={200}
                                 level="H"
                                 includeMargin={true}

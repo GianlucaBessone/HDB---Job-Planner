@@ -8,7 +8,8 @@ import {
     Wrench, Plus, Search, ScanLine, Camera, ArrowLeft, X, Save, Trash2, Edit2,
     CheckCircle2, AlertTriangle, Clock, RefreshCw, Minus, ClipboardCheck, Filter,
     ChevronDown, ChevronUp, Package, QrCode, Printer, Eye, ShieldCheck, Settings2,
-    Link as LinkIcon, Unlink, AlertCircle, Zap, Hammer, Droplets, Cog, Copy
+    Link as LinkIcon, Unlink, AlertCircle, Zap, Hammer, Droplets, Cog, Copy,
+    ExternalLink, Share2, Globe
 } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { QRCodeCanvas } from 'qrcode.react';
@@ -668,9 +669,12 @@ function HerramientasTab({ user }: { user: any }) {
                             <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100">{qrTool.nombre}</h3>
                             <p className="text-sm font-bold text-slate-500 mt-1">ID: {qrTool.id}</p>
                         </div>
-                        <div className="flex justify-center bg-white p-4 rounded-xl border-2 border-dashed border-slate-200 mb-6" ref={qrRef}>
-                            <QRCodeCanvas value={`TOOL:${qrTool.id}`} size={200} level="H" includeMargin={true} />
+                        <div className="flex justify-center bg-white p-4 rounded-xl border-2 border-dashed border-slate-200 mb-4" ref={qrRef}>
+                            <QRCodeCanvas value={typeof window !== 'undefined' ? `${window.location.origin}/public/herramientas/${qrTool.id}` : `TOOL:${qrTool.id}`} size={200} level="H" includeMargin={true} />
                         </div>
+                        <p className="text-[11px] text-slate-400 text-center mb-6 font-medium">
+                            Escaneable por clientes y auditores desde cualquier smartphone para consultar estado en vivo.
+                        </p>
                         <div className="flex gap-3">
                             <button onClick={() => setQrTool(null)} className="flex-1 py-3 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors">Cerrar</button>
                             <button onClick={() => handlePrintQr(qrTool)} className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2">
@@ -934,7 +938,7 @@ function CarrosTab({ user }: { user: any }) {
                                                     <Unlink className="w-4 h-4" />
                                                 </button>
                                                 {/* Hidden QR for batch print */}
-                                                <div className="hidden"><QRCodeCanvas id={`qr-batch-${h.id}`} value={`TOOL:${h.id}`} size={100} level="H" /></div>
+                                                <div className="hidden"><QRCodeCanvas id={`qr-batch-${h.id}`} value={typeof window !== 'undefined' ? `${window.location.origin}/public/herramientas/${h.id}` : `TOOL:${h.id}`} size={100} level="H" /></div>
                                             </div>
                                         ))
                                     ) : (
@@ -1237,9 +1241,12 @@ function VerificacionTab({ user }: { user: any }) {
     const handleScan = (text: string) => {
         setIsScanning(false);
         let id = text;
-        if (text.startsWith('TOOL:')) id = text.split(':')[1];
+        if (id.includes('/public/herramientas/')) {
+            const parts = id.split('/public/herramientas/');
+            id = parts[1].split('?')[0].split('#')[0];
+        } else if (text.startsWith('TOOL:')) id = text.split(':')[1];
         else if (text.startsWith('TOOLCART:')) id = text.split(':')[1];
-        loadTool(id);
+        loadTool(id.trim());
     };
 
     const loadTool = async (id: string) => {
@@ -1276,6 +1283,20 @@ function VerificacionTab({ user }: { user: any }) {
             loadTool(tool.id);
             setVerifyMode(false);
         } catch (e) { showToast('Error de conexión', 'error'); }
+    };
+
+    const handleCopyPublicLink = (toolId: string) => {
+        if (typeof window !== 'undefined') {
+            const url = `${window.location.origin}/public/herramientas/${encodeURIComponent(toolId)}`;
+            navigator.clipboard.writeText(url);
+            showToast('Enlace público copiado al portapapeles', 'success');
+        }
+    };
+
+    const handleOpenPublicView = (toolId: string) => {
+        if (typeof window !== 'undefined') {
+            window.open(`/public/herramientas/${encodeURIComponent(toolId)}`, '_blank');
+        }
     };
 
     const handlePrintPlanilla = () => {
@@ -1385,6 +1406,17 @@ function VerificacionTab({ user }: { user: any }) {
                         </button>
                     </div>
                 </div>
+
+                <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-center">
+                    <a 
+                        href="/public/herramientas" 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+                    >
+                        <Globe className="w-3.5 h-3.5" /> Portal Público de Auditoría (Clientes) <ExternalLink className="w-3 h-3" />
+                    </a>
+                </div>
             </div>
 
             {isScanning && <ScannerModal onScan={handleScan} onClose={() => setIsScanning(false)} />}
@@ -1412,7 +1444,13 @@ function VerificacionTab({ user }: { user: any }) {
                             <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">{tool.nombre}</h3>
                             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 font-mono mt-1">ID: {tool.id}</p>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
+                            <button onClick={() => handleOpenPublicView(tool.id)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400 hover:text-indigo-600 transition-colors" title="Abrir Vista Pública para Auditoría">
+                                <ExternalLink className="w-5 h-5" />
+                            </button>
+                            <button onClick={() => handleCopyPublicLink(tool.id)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400 hover:text-indigo-600 transition-colors" title="Copiar Enlace Público para Cliente">
+                                <Share2 className="w-5 h-5" />
+                            </button>
                             <button onClick={handlePrintPlanilla} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400 hover:text-indigo-600 transition-colors" title="Imprimir Planilla">
                                 <Printer className="w-5 h-5" />
                             </button>
@@ -1686,39 +1724,78 @@ function HistorialTab({ user }: { user: any }) {
 // SHARED COMPONENTS
 // ═══════════════════════════════════════════════════════════════════════════════
 function ScannerModal({ onScan, onClose }: { onScan: (text: string) => void, onClose: () => void }) {
+    const scannerRef = useRef<Html5Qrcode | null>(null);
+    const containerId = useRef(`internal-reader-${Math.random().toString(36).substring(2, 9)}`).current;
+
     useEffect(() => {
-        const html5QrCode = new Html5Qrcode("reader");
-        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-        html5QrCode.start({ facingMode: "environment" }, config,
-            (decodedText) => { onScan(decodedText); html5QrCode.stop().catch(() => {}); },
-            () => {}
-        ).catch(err => {
-            console.error(err);
-            showToast("Error al iniciar cámara. Verifica los permisos.", "error");
-            onClose();
-        });
-        return () => { if (html5QrCode.isScanning) html5QrCode.stop().catch(() => {}); };
-    }, [onScan, onClose]);
+        let isCancelled = false;
+
+        const timer = setTimeout(() => {
+            if (isCancelled) return;
+            const html5QrCode = new Html5Qrcode(containerId);
+            scannerRef.current = html5QrCode;
+
+            const config = { fps: 15, qrbox: { width: 220, height: 220 }, aspectRatio: 1.0 };
+            html5QrCode.start(
+                { facingMode: "environment" },
+                config,
+                (decodedText) => {
+                    if (!isCancelled) {
+                        onScan(decodedText);
+                        html5QrCode.stop().then(() => {
+                            try { html5QrCode.clear(); } catch (_) {}
+                        }).catch(() => {});
+                    }
+                },
+                () => {}
+            ).catch(err => {
+                console.error(err);
+                if (!isCancelled) {
+                    showToast("Error al iniciar cámara. Verifica los permisos.", "error");
+                    onClose();
+                }
+            });
+        }, 100);
+
+        return () => {
+            isCancelled = true;
+            clearTimeout(timer);
+            if (scannerRef.current) {
+                if (scannerRef.current.isScanning) {
+                    scannerRef.current.stop().then(() => {
+                        try { scannerRef.current?.clear(); } catch (_) {}
+                    }).catch(() => {});
+                } else {
+                    try { scannerRef.current.clear(); } catch (_) {}
+                }
+            }
+        };
+    }, [containerId, onScan, onClose]);
 
     return (
-        <div className="fixed inset-0 z-[200] bg-slate-900/90 backdrop-blur-md flex flex-col items-center justify-center p-6 animate-in fade-in duration-300">
-            <div className="w-full max-w-sm bg-card text-card-foreground rounded-[2.5rem] overflow-hidden shadow-2xl space-y-4">
-                <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                    <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2"><Camera className="w-5 h-5 text-primary" /> Escaneando QR</h3>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400"><X className="w-6 h-6" /></button>
+        <div className="fixed inset-0 z-[200] bg-slate-900/90 backdrop-blur-md flex flex-col items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+            <div className="w-full max-w-sm bg-card text-card-foreground rounded-3xl overflow-hidden shadow-2xl space-y-3">
+                <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-xs sm:text-sm">
+                        <Camera className="w-4 h-4 text-primary" /> Escaneando Código QR
+                    </h3>
+                    <button onClick={onClose} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-400">
+                        <X className="w-5 h-5" />
+                    </button>
                 </div>
-                <div className="relative aspect-square bg-slate-900">
-                    <div id="reader" className="w-full h-full" />
-                    <div className="absolute inset-0 border-[40px] border-slate-900/40 pointer-events-none flex items-center justify-center">
-                        <div className="w-full h-full border-2 border-primary/50 rounded-2xl shadow-[0_0_0_999px_rgba(15,23,42,0.6)]" />
+                
+                <div className="p-3">
+                    <div className="relative aspect-square w-full max-w-[280px] mx-auto rounded-2xl overflow-hidden bg-slate-950 border-2 border-primary/40 shadow-inner">
+                        <div id={containerId} className="w-full h-full [&>video]:!w-full [&>video]:!h-full [&>video]:!object-cover [&>canvas]:!hidden" />
                     </div>
                 </div>
-                <div className="p-6 text-center">
-                    <p className="text-xs font-bold text-slate-500 dark:text-slate-400">Apunta la cámara al código QR</p>
+
+                <div className="px-4 pb-4 text-center">
+                    <p className="text-[11px] font-bold text-slate-500">Apunta la cámara al código QR</p>
                 </div>
             </div>
-            <button onClick={onClose} className="mt-8 px-8 py-3 bg-white/10 hover:bg-white/20 text-white rounded-full font-black uppercase tracking-widest text-[10px] transition-all">
-                Cancelar Escaneo
+            <button onClick={onClose} className="mt-4 px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-full font-bold text-xs uppercase tracking-widest transition-all">
+                Cancelar
             </button>
         </div>
     );

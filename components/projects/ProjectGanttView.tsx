@@ -37,10 +37,13 @@ export default function ProjectGanttView({
         const withoutDates: Project[] = [];
         
         projects.forEach(p => {
-            if (p.fechaInicio && p.fechaFin && isValid(parseISO(p.fechaInicio)) && isValid(parseISO(p.fechaFin))) {
+            const startRaw = p.fechaInicio ? (p.fechaInicio.includes('T') ? p.fechaInicio.split('T')[0] : p.fechaInicio) : '';
+            const endRaw = p.fechaFin ? (p.fechaFin.includes('T') ? p.fechaFin.split('T')[0] : p.fechaFin) : '';
+
+            if (startRaw && endRaw && isValid(parseISO(startRaw)) && isValid(parseISO(endRaw))) {
                 // Ensure end date is >= start date
-                if (parseISO(p.fechaFin) >= parseISO(p.fechaInicio)) {
-                    withDates.push(p);
+                if (parseISO(endRaw) >= parseISO(startRaw)) {
+                    withDates.push({ ...p, fechaInicio: startRaw, fechaFin: endRaw });
                 } else {
                     withoutDates.push(p);
                 }
@@ -144,33 +147,36 @@ export default function ProjectGanttView({
                             <span className="text-[10px] font-black tracking-widest uppercase text-slate-400 dark:text-slate-500">Proyectos ({withDates.length})</span>
                         </div>
                         <div className="py-2">
-                            {withDates.map(p => (
-                                <div key={p.id} className="h-14 px-4 flex items-center justify-between group hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer" onClick={() => onDetails(p)}>
-                                    <div className="min-w-0 flex-1">
-                                        <div className="font-bold text-slate-700 dark:text-slate-200 text-sm truncate group-hover:text-primary transition-colors">
-                                            {p.codigoProyecto ? <span className="font-mono text-primary mr-1.5">{p.codigoProyecto}</span> : null}
-                                            {p.nombre}
+                            {withDates.map(p => {
+                                const cfg = STATUS_CONFIG[p.estado] || STATUS_CONFIG.activo;
+                                return (
+                                    <div key={p.id} className="h-14 px-4 flex items-center justify-between group hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer" onClick={() => onDetails(p)}>
+                                        <div className="min-w-0 flex-1">
+                                            <div className="font-bold text-slate-700 dark:text-slate-200 text-sm truncate group-hover:text-primary transition-colors">
+                                                {p.codigoProyecto ? <span className="font-mono text-primary mr-1.5">{p.codigoProyecto}</span> : null}
+                                                {p.nombre}
+                                            </div>
+                                            <div className="text-[10px] font-medium text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                                                {p.responsableUser?.nombreCompleto || p.responsable || 'Sin asignar'}
+                                            </div>
                                         </div>
-                                        <div className="text-[10px] font-medium text-slate-400 dark:text-slate-500 truncate mt-0.5">
-                                            {p.responsableUser?.nombreCompleto || p.responsable || 'Sin asignar'}
+                                        <div className="w-2.5 h-2.5 rounded-full shrink-0 ml-2 shadow-sm">
+                                            <div className={`w-full h-full rounded-full ${cfg?.dot || 'bg-slate-400'}`} />
                                         </div>
                                     </div>
-                                    <div className="w-2.5 h-2.5 rounded-full shrink-0 ml-2 shadow-sm" style={{ backgroundColor: STATUS_CONFIG[p.estado] ? `var(--tw-colors-${STATUS_CONFIG[p.estado].bg.replace('bg-', '')})` : '#cbd5e1' }}>
-                                        <div className={`w-full h-full rounded-full ${STATUS_CONFIG[p.estado]?.dot || 'bg-slate-400'}`} />
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
 
                     {/* Right Panel: Timeline */}
                     <div className="flex-1 overflow-x-auto custom-scrollbar">
-                        <div className="min-w-[800px] h-full relative" style={{ width: `${timeline.totalDays * 12}px` }}> {/* 12px per day min-width */}
+                        <div className="min-w-[800px] h-full relative" style={{ width: `${Math.max(timeline.totalDays * 12, 800)}px` }}> {/* 12px per day min-width */}
                             
                             {/* Header (Weeks) */}
                             <div className="h-10 border-b border-slate-100 dark:border-slate-800 bg-card text-card-foreground sticky top-0 z-10 flex">
                                 {weeks.map((w, i) => {
-                                    const leftPct = (differenceInDays(w, timeline.start) / timeline.totalDays) * 100;
+                                    const leftPct = timeline.totalDays > 0 ? (differenceInDays(w, timeline.start) / timeline.totalDays) * 100 : 0;
                                     if (leftPct > 100) return null;
                                     return (
                                         <div key={i} className="absolute h-full border-l border-slate-100 dark:border-slate-800 px-2 py-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase flex flex-col justify-center" style={{ left: `${leftPct}%` }}>
@@ -184,7 +190,7 @@ export default function ProjectGanttView({
                             {/* Grid / Today Line */}
                             <div className="absolute top-10 bottom-0 left-0 right-0 pointer-events-none z-0">
                                 {weeks.map((w, i) => {
-                                    const leftPct = (differenceInDays(w, timeline.start) / timeline.totalDays) * 100;
+                                    const leftPct = timeline.totalDays > 0 ? (differenceInDays(w, timeline.start) / timeline.totalDays) * 100 : 0;
                                     if (leftPct > 100) return null;
                                     return <div key={i} className="absolute top-0 bottom-0 border-l border-slate-100 dark:border-slate-800/50 border-dashed" style={{ left: `${leftPct}%` }} />;
                                 })}
@@ -193,7 +199,7 @@ export default function ProjectGanttView({
                                 {differenceInDays(new Date(), timeline.start) >= -1 && differenceInDays(new Date(), timeline.start) <= timeline.totalDays && (
                                     <div 
                                         className="absolute top-0 bottom-0 w-[1px] bg-red-400 z-20" 
-                                        style={{ left: `${((Date.now() - timeline.start.getTime()) / (1000 * 60 * 60 * 24) / timeline.totalDays) * 100}%` }}
+                                        style={{ left: `${timeline.totalDays > 0 ? ((Date.now() - timeline.start.getTime()) / (1000 * 60 * 60 * 24) / timeline.totalDays) * 100 : 0}%` }}
                                     >
                                         <div className="absolute -top-1 -ml-1.5 w-3 h-3 rounded-full bg-red-500 ring-4 ring-white dark:ring-slate-800" />
                                     </div>
@@ -205,13 +211,13 @@ export default function ProjectGanttView({
                                 {withDates.map((p, index) => {
                                     const start = parseISO(p.fechaInicio!);
                                     const end = parseISO(p.fechaFin!);
-                                    const leftPct = Math.max(0, (differenceInDays(start, timeline.start) / timeline.totalDays) * 100);
-                                    let widthPct = (differenceInDays(end, start) / timeline.totalDays) * 100;
+                                    const leftPct = timeline.totalDays > 0 ? Math.max(0, Math.min(100, (differenceInDays(start, timeline.start) / timeline.totalDays) * 100)) : 0;
+                                    let widthPct = timeline.totalDays > 0 ? Math.max(1, (differenceInDays(end, start) / timeline.totalDays) * 100) : 1;
                                     // Make sure it doesn't overflow the right bound visually
-                                    if (leftPct + widthPct > 100) widthPct = 100 - leftPct;
+                                    if (leftPct + widthPct > 100) widthPct = Math.max(1, 100 - leftPct);
 
                                     const progress = (p.horasEstimadas || 0) > 0 ? Math.min(100, Math.round((p.horasConsumidas / p.horasEstimadas) * 100)) : 0;
-                                    const cfg = STATUS_CONFIG[p.estado];
+                                    const cfg = STATUS_CONFIG[p.estado] || STATUS_CONFIG.activo;
                                     const isSaving = savingId === p.id;
 
                                     return (
@@ -276,14 +282,17 @@ function GanttBar({
     isSaving: boolean;
     onDatesChange: (start: string, end: string) => void;
 }) {
+    const safeCfg = cfg || STATUS_CONFIG.activo;
     const [isEditing, setIsEditing] = useState(false);
     const [tempStart, setTempStart] = useState("");
     const [tempEnd, setTempEnd] = useState("");
 
     // Start editing
     const openEditor = () => {
-        setTempStart(project.fechaInicio!);
-        setTempEnd(project.fechaFin!);
+        const start = project.fechaInicio ? (project.fechaInicio.includes('T') ? project.fechaInicio.split('T')[0] : project.fechaInicio) : '';
+        const end = project.fechaFin ? (project.fechaFin.includes('T') ? project.fechaFin.split('T')[0] : project.fechaFin) : '';
+        setTempStart(start);
+        setTempEnd(end);
         setIsEditing(true);
     };
 
@@ -306,9 +315,9 @@ function GanttBar({
              title={`${project.nombre}\nAsignado a: ${project.responsableUser?.nombreCompleto || '—'}\nF. Inicio: ${format(parseISO(project.fechaInicio!), 'dd/MM/yyyy')} | F. Fin: ${format(parseISO(project.fechaFin!), 'dd/MM/yyyy')}\nAvance Consumido: ${progress}%`}
         >
             {/* The Bar background and progress overlay */}
-            <div className={`absolute inset-0 rounded-full border opacity-30 ${cfg.bg} ${cfg.ring} ${(cfg.dot.replace('bg-', 'border-'))}`} />
+            <div className={`absolute inset-0 rounded-full border opacity-30 ${safeCfg.bg || 'bg-blue-50'} ${safeCfg.ring || 'ring-blue-200'} ${(safeCfg.dot?.replace('bg-', 'border-') || 'border-blue-500')}`} />
             
-            <div className={`absolute left-0 top-0 bottom-0 rounded-full ${cfg.dot} opacity-20`} style={{ width: `${progress}%` }} />
+            <div className={`absolute left-0 top-0 bottom-0 rounded-full ${safeCfg.dot || 'bg-blue-500'} opacity-20`} style={{ width: `${progress}%` }} />
             
             <div className="absolute inset-0 border border-transparent hover:border-slate-300 dark:hover:border-slate-500 rounded-full z-10" onClick={openEditor} />
             

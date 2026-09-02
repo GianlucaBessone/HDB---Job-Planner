@@ -56,7 +56,9 @@ export default function ProjectCalendarView({
         const dateStr = format(day, 'yyyy-MM-dd');
         return projects.filter(p => {
             if (!p.fechaInicio || !p.fechaFin) return false;
-            return dateStr >= p.fechaInicio && dateStr <= p.fechaFin;
+            const start = p.fechaInicio.includes('T') ? p.fechaInicio.split('T')[0] : p.fechaInicio;
+            const end = p.fechaFin.includes('T') ? p.fechaFin.split('T')[0] : p.fechaFin;
+            return dateStr >= start && dateStr <= end;
         });
     };
 
@@ -139,12 +141,12 @@ export default function ProjectCalendarView({
                                                 <button
                                                     key={p.id}
                                                     onClick={() => onDetails(p)}
-                                                    className={`text-left px-2 py-1 rounded border text-[10px] font-bold truncate leading-tight shadow-sm hover:brightness-95 transition-all text-slate-800 dark:text-slate-100 w-full hover:z-10 relative`}
-                                                    style={{ backgroundColor: `var(--tw-colors-${cfg.dot.split('-')[1]}-500)` }}
+                                                    className={`text-left px-2 py-1 rounded-lg border text-[10px] font-bold truncate leading-tight shadow-sm hover:brightness-95 transition-all w-full hover:z-10 relative flex items-center gap-1.5 ${cfg.bg || 'bg-blue-50'} ${cfg.color || 'text-blue-700'} border-slate-200/60 dark:border-slate-700/60`}
                                                     title={`${p.nombre} (${cfg.label})`}
                                                 >
-                                                    <span className="text-white mix-blend-difference opacity-90 drop-shadow-md">
-                                                        {p.codigoProyecto && <span className="opacity-70 mr-1 font-mono">{p.codigoProyecto}</span>}
+                                                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${cfg.dot || 'bg-blue-500'}`} />
+                                                    <span className="truncate">
+                                                        {p.codigoProyecto && <span className="opacity-70 mr-1 font-mono font-bold">{p.codigoProyecto}</span>}
                                                         {p.nombre}
                                                     </span>
                                                 </button>

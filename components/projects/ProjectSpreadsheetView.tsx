@@ -270,12 +270,15 @@ function EditableNumber({ value, onSave, className }: { value: number | string, 
 }
 
 function EditableDate({ value, onSave, className }: { value: string, onSave: (v: string) => void, className?: string }) {
-    const [val, setVal] = useState(value);
+    const formattedVal = value ? (value.includes('T') ? value.split('T')[0] : value) : '';
+    const [val, setVal] = useState(formattedVal);
     
-    useEffect(() => { setVal(value); }, [value]);
+    useEffect(() => { 
+        setVal(value ? (value.includes('T') ? value.split('T')[0] : value) : ''); 
+    }, [value]);
 
     const handleBlur = () => {
-        if (val !== value) onSave(val);
+        if (val !== formattedVal) onSave(val);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -283,7 +286,7 @@ function EditableDate({ value, onSave, className }: { value: string, onSave: (v:
             e.currentTarget.blur();
         }
         if (e.key === 'Escape') {
-            setVal(value);
+            setVal(formattedVal);
         }
     };
 

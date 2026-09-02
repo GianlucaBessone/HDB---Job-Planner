@@ -371,6 +371,9 @@ function ProjectsContent() {
         };
     }, [registerCommand, unregisterCommand]);
 
+    const validViews: ViewType[] = ['card', 'spreadsheet', 'gantt', 'calendar'];
+    const activeView: ViewType = (typeof viewType === 'string' && validViews.includes(viewType)) ? viewType : 'card';
+
     // ── Render ────────────────────────────────────────────────────────────────
     return (
         <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -387,7 +390,7 @@ function ProjectsContent() {
                 {/* View Selector and Filter Row */}
                 <div className="flex flex-col xl:flex-row justify-between items-stretch xl:items-center gap-4">
                     <ProjectViewSelector 
-                        value={viewType} 
+                        value={activeView} 
                         onChange={setViewType} 
                     />
 
@@ -513,15 +516,17 @@ function ProjectsContent() {
                         </p>
                         <p className="text-sm text-slate-400 dark:text-slate-500 mt-2 font-medium">Aún no se han registrado proyectos en este estado.</p>
                     </div>
-                ) : viewType === 'card' ? (
+                ) : activeView === 'card' ? (
                     <ProjectCardView projects={filteredProjects} onEdit={openEdit} onDetails={openDetails} handleDeleteClick={handleDeleteClick} onViewCost={openCostModal} />
-                ) : viewType === 'spreadsheet' ? (
+                ) : activeView === 'spreadsheet' ? (
                     <ProjectSpreadsheetView projects={filteredProjects} onRefresh={loadData} onViewCost={openCostModal} />
-                ) : viewType === 'gantt' ? (
+                ) : activeView === 'gantt' ? (
                     <ProjectGanttView projects={filteredProjects} onRefresh={loadData} onDetails={openDetails} />
-                ) : viewType === 'calendar' ? (
+                ) : activeView === 'calendar' ? (
                     <ProjectCalendarView projects={filteredProjects} onDetails={openDetails} />
-                ) : null}
+                ) : (
+                    <ProjectCardView projects={filteredProjects} onEdit={openEdit} onDetails={openDetails} handleDeleteClick={handleDeleteClick} onViewCost={openCostModal} />
+                )}
             </div>
 
             {isDetailsOpen && selectedProjectForDetails && (
