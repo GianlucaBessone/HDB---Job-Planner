@@ -28,6 +28,11 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
                 documentosReemplazantes: {
                     select: { id: true, codigoDocumental: true, titulo: true }
                 },
+                subAccess: {
+                    include: {
+                        module: true
+                    }
+                },
                 trainings: {
                     include: {
                         operator: true
@@ -73,7 +78,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
             requiereConfirmacionLectura, requiereCapacitacion, nivelCriticidad,
             documentoReemplazadoId, motivoCambio,
             tags, operatorIds, observaciones, proximaRevision, validezMeses,
-            descripcion, creatorSignature,
+            descripcion, creatorSignature, subAccessId,
             userId, userName
         } = data;
 
@@ -87,6 +92,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         if (tipoDocumento !== undefined) updateData.tipoDocumento = tipoDocumento;
         if (area !== undefined) updateData.area = area;
         if (estado !== undefined) updateData.estado = estado;
+        if (subAccessId !== undefined) updateData.subAccessId = subAccessId || null;
         if (responsableId !== undefined) updateData.responsableId = responsableId || null;
         if (responsableNombre !== undefined) updateData.responsableNombre = responsableNombre || null;
         if (revisadorId !== undefined) updateData.revisadorId = revisadorId || null;

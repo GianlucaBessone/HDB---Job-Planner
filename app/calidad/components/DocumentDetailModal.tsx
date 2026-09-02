@@ -146,6 +146,8 @@ export default function DocumentDetailModal({
     tagsRequeridos: [],
   });
 
+  const [accessModules, setAccessModules] = useState<any[]>([]);
+
   // Workflow state hooks
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -1127,13 +1129,21 @@ export default function DocumentDetailModal({
         ? Promise.resolve(null)
         : safeApiRequest("/api/operators");
 
-      const [docRes, optRes, tagsRes, allDocsRes, opsRes] = await Promise.all([
+      const accesosPromise = safeApiRequest("/api/documentos/accesos");
+
+      const [docRes, optRes, tagsRes, allDocsRes, opsRes, accesosRes] = await Promise.all([
         docPromise,
         optPromise,
         tagsPromise,
         allDocsPromise,
         opsPromise,
+        accesosPromise
       ]);
+
+      if (accesosRes && accesosRes.ok) {
+        const accesosData = await accesosRes.json();
+        if (Array.isArray(accesosData.modules)) setAccessModules(accesosData.modules);
+      }
 
       if (opsRes && opsRes.ok) {
         const opsData = await opsRes.json();
@@ -1222,6 +1232,29 @@ export default function DocumentDetailModal({
       console.error(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleChangeSubAccess = async (newSubAccessId: string) => {
+    try {
+      const res = await safeApiRequest(`/api/documentos/${documentId}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          subAccessId: newSubAccessId || null,
+          userId: user?.id,
+          userName: user?.nombreCompleto || user?.nombre,
+        }),
+      });
+      if (res.ok) {
+        showToast("Sub-acceso actualizado exitosamente", "success");
+        loadDocument(true);
+      } else {
+        const err = await res.json();
+        showToast(err.error || "Error al actualizar sub-acceso", "error");
+      }
+    } catch (e) {
+      console.error(e);
+      showToast("Error de red", "error");
     }
   };
 
@@ -1622,7 +1655,7 @@ export default function DocumentDetailModal({
                 <FileText className="w-6 h-6" />
               </div>
               <div>
-                <div className="flex gap-2 items-center mb-1">
+                <div className="flex flex-wrap gap-2 items-center mb-1">
                   <span className="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded text-[10px] font-black uppercase font-mono tracking-widest">
                     {doc.codigoDocumental}
                   </span>
@@ -1637,6 +1670,26 @@ export default function DocumentDetailModal({
                   >
                     {doc.estado}
                   </span>
+                  <div className="flex items-center gap-1 bg-primary/10 border border-primary/20 px-2 py-0.5 rounded text-[10px] font-black text-primary">
+                    <span>📁</span>
+                    <select
+                      value={doc.subAccessId || ""}
+                      onChange={(e) => handleChangeSubAccess(e.target.value)}
+                      className="bg-transparent text-primary font-black outline-none cursor-pointer text-[10px]"
+                      title="Haz clic para reasignar o clasificar el sub-acceso"
+                    >
+                      <option value="" className="text-slate-800 dark:text-slate-200 bg-card">Sin Sub-acceso (Asignar...)</option>
+                      {accessModules.map((mod: any) => (
+                        <optgroup key={mod.id} label={`Módulo ${mod.codigo}: ${mod.nombre}`} className="text-slate-800 dark:text-slate-200 bg-card">
+                          {mod.subAccesses?.map((sub: any) => (
+                            <option key={sub.id} value={sub.id} className="text-slate-800 dark:text-slate-200 bg-card">
+                              {sub.codigo} - {sub.nombre}
+                            </option>
+                          ))}
+                        </optgroup>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">
                   {doc.titulo}

@@ -642,6 +642,36 @@ model ToolMovementItem {
 // CALIDAD Y CONTROL DOCUMENTAL — QMS / ISO 9001
 // ═══════════════════════════════════════════════════════════════════════════════
 
+model DocumentAccessModule {
+  id          String              @id @default(cuid())
+  codigo      String              @unique // "1", "2", "3"
+  nombre      String              // "Procesos Estratégicos y Liderazgo", etc.
+  descripcion String?             @db.Text
+  icon        String?             // "Compass", "Layers", "LifeBuoy", etc.
+  color       String?             // "indigo", "emerald", "amber", etc.
+  orden       Int                 @default(0)
+  subAccesses DocumentSubAccess[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+}
+
+model DocumentSubAccess {
+  id              String               @id @default(cuid())
+  moduleId        String
+  module          DocumentAccessModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  codigo          String               // "1.1", "1.2", "2.1", etc.
+  nombre          String               // "Dirección y Liderazgo", etc.
+  descripcion     String?              @db.Text
+  icon            String?
+  orden           Int                  @default(0)
+  esPersonalizado Boolean              @default(false)
+  documentos      ControlledDocument[]
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@index([moduleId])
+}
+
 model ControlledDocument {
   id               String @id @default(cuid())
   codigoDocumental String @unique // PR-TEC-001, IN-SEG-003, etc.
@@ -649,6 +679,10 @@ model ControlledDocument {
   tipoDocumento    String // Procedimiento | Instructivo | Manual técnico | Formulario | Política | Norma de seguridad | Checklist estándar | Protocolo | Especificación técnica | Certificado
   area             String // Producción | Calidad | Seguridad | IT | RRHH | etc.
   estado           String @default("borrador") // borrador | en_revision | vigente | obsoleto
+
+  // Estructura de Accesos y Procesos SGI
+  subAccessId String?
+  subAccess   DocumentSubAccess? @relation(fields: [subAccessId], references: [id], onDelete: SetNull)
 
   // Versión actual (snapshot para consulta rápida)
   versionMayor Int @default(1)
@@ -714,6 +748,7 @@ model ControlledDocument {
   @@index([estado])
   @@index([nivelCriticidad])
   @@index([proximaRevision])
+  @@index([subAccessId])
 }
 
 model DocumentVersion {

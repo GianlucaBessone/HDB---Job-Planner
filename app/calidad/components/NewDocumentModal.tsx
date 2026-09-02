@@ -11,12 +11,23 @@ import { useModalScroll } from '@/lib/useModalScroll';
 import { showToast } from '@/components/Toast';
 import SignatureButton from '@/components/SignatureButton';
 
-export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose: () => void, onSuccess: (newDocId: string) => void, user: any }) {
+export default function NewDocumentModal({
+    onClose,
+    onSuccess,
+    user,
+    initialSubAccessId = null
+}: {
+    onClose: () => void;
+    onSuccess: (newDocId: string) => void;
+    user: any;
+    initialSubAccessId?: string | null;
+}) {
     useModalScroll(true);
     const [loading, setLoading] = useState(false);
     const [operators, setOperators] = useState<any[]>([]);
     const [tagsList, setTagsList] = useState<any[]>([]);
     const [allDocs, setAllDocs] = useState<any[]>([]);
+    const [accessModules, setAccessModules] = useState<any[]>([]);
 
     // AI Assistant Drawer state
     const [showAiDrawer, setShowAiDrawer] = useState(false);
@@ -76,6 +87,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
         titulo: '',
         tipoDocumento: 'PG',
         area: 'GLB',
+        subAccessId: initialSubAccessId || '',
         nivelCriticidad: 'medio',
         requiereConfirmacionLectura: true,
         requiereCapacitacion: false,
@@ -150,11 +162,13 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
         Promise.all([
             safeApiRequest('/api/operators').then(res => res.json()),
             safeApiRequest('/api/config/tags').then(res => res.json()),
-            safeApiRequest('/api/documentos').then(res => res.json())
-        ]).then(([opsData, tagsData, docsData]) => {
+            safeApiRequest('/api/documentos').then(res => res.json()),
+            safeApiRequest('/api/documentos/accesos').then(res => res.json())
+        ]).then(([opsData, tagsData, docsData, accesosData]) => {
             if (Array.isArray(opsData)) setOperators(opsData);
             if (Array.isArray(tagsData)) setTagsList(tagsData);
             if (Array.isArray(docsData)) setAllDocs(docsData);
+            if (accesosData && Array.isArray(accesosData.modules)) setAccessModules(accesosData.modules);
         }).catch(console.error);
 
         // Load custom abbreviations
@@ -445,7 +459,7 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-1 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Área / Sector</label>
                                         <select
@@ -458,6 +472,24 @@ export default function NewDocumentModal({ onClose, onSuccess, user }: { onClose
                                             <option value="ADM">ADM - Administración</option>
                                             <option value="QAC">QAC - Aseguramiento y Control de Calidad</option>
                                             <option value="HRM">HRM - Gestión de Recursos Humanos</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Sub-Acceso / Proceso SGI</label>
+                                        <select
+                                            value={formData.subAccessId} onChange={e => setFormData({ ...formData, subAccessId: e.target.value })}
+                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
+                                        >
+                                            <option value="">(Sin asignar a sub-acceso)</option>
+                                            {accessModules.map(mod => (
+                                                <optgroup key={mod.id} label={`Módulo ${mod.codigo}: ${mod.nombre}`}>
+                                                    {mod.subAccesses?.map((sub: any) => (
+                                                        <option key={sub.id} value={sub.id}>
+                                                            {sub.codigo} - {sub.nombre}
+                                                        </option>
+                                                    ))}
+                                                </optgroup>
+                                            ))}
                                         </select>
                                     </div>
                                 </div>

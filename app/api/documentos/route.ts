@@ -13,6 +13,7 @@ export async function GET(req: Request) {
         const criticidad = searchParams.get('criticidad');
         const search = searchParams.get('search');
         const vencidos = searchParams.get('vencidos');
+        const subAccessId = searchParams.get('subAccessId');
 
         const where: any = {};
 
@@ -20,6 +21,13 @@ export async function GET(req: Request) {
         if (area) where.area = area;
         if (estado) where.estado = estado;
         if (criticidad) where.nivelCriticidad = criticidad;
+        if (subAccessId) {
+            if (subAccessId === 'unassigned') {
+                where.subAccessId = null;
+            } else {
+                where.subAccessId = subAccessId;
+            }
+        }
 
         if (search) {
             where.OR = [
@@ -39,6 +47,11 @@ export async function GET(req: Request) {
         const docs = await prisma.controlledDocument.findMany({
             where,
             include: {
+                subAccess: {
+                    include: {
+                        module: true
+                    }
+                },
                 versions: {
                     orderBy: [{ versionMayor: 'desc' }, { versionMenor: 'desc' }],
                     take: 1,
@@ -93,7 +106,7 @@ export async function POST(req: Request) {
             requiereConfirmacionLectura, requiereCapacitacion, nivelCriticidad,
             documentoReemplazadoId, motivoCambio,
             tags, operatorIds, observaciones, proximaRevision, validezMeses,
-            userId, userName, creatorSignature
+            userId, userName, creatorSignature, subAccessId
         } = data;
 
         if (!titulo?.trim()) {
@@ -202,6 +215,7 @@ export async function POST(req: Request) {
                 tipoDocumento,
                 area,
                 estado: estadoInicial,
+                subAccessId: subAccessId || null,
                 versionMayor: 1,
                 versionMenor: 0,
                 descripcion: descripcion || null,
