@@ -178,10 +178,10 @@ export default function RootLayout({
         content = (
             <div className="flex flex-col min-h-[100dvh] w-full overflow-x-hidden bg-background">
                 {/* Compact public header with theme toggle */}
-                <div className="fixed top-3 right-3 z-50">
+                <div className="fixed top-3 right-3 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-full shadow-sm p-1 border border-slate-200/60 dark:border-slate-800/60">
                     <ThemeToggle />
                 </div>
-                <main className="flex-1 w-full max-w-4xl mx-auto px-2 sm:px-4 py-2 sm:py-4 min-w-0">
+                <main className="flex-1 w-full min-w-0">
                     {children}
                 </main>
             </div>

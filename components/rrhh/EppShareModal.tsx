@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { showToast } from '@/components/Toast';
+import ConfirmModal from '@/components/ConfirmModal';
 import { 
     getClientsForEppShare, 
     createEppPublicShare, 
@@ -45,6 +46,9 @@ export default function EppShareModal({ isOpen, onClose }: EppShareModalProps) {
     // Enlace recién creado / seleccionado para mostrar QR y copiar
     const [activeShare, setActiveShare] = useState<any | null>(null);
     const [copied, setCopied] = useState(false);
+
+    // Diálogo nativo de confirmación para revocar enlace
+    const [shareToDeleteId, setShareToDeleteId] = useState<string | null>(null);
 
     const [origin, setOrigin] = useState('');
 
@@ -124,15 +128,11 @@ export default function EppShareModal({ isOpen, onClose }: EppShareModalProps) {
         }
     };
 
-    const handleDeleteShare = async (id: string) => {
-        if (!confirm('¿Deseas revocar y eliminar este enlace público? Quienes tengan la URL ya no podrán acceder.')) {
-            return;
-        }
-
+    const confirmDeleteShare = async (id: string) => {
         try {
             const res = await deleteEppPublicShare(id);
             if (res.success) {
-                showToast('Enlace revocado', 'info');
+                showToast('Enlace revocado y eliminado con éxito', 'info');
                 const updated = shares.filter(s => s.id !== id);
                 setShares(updated);
                 if (activeShare?.id === id) {
@@ -143,6 +143,8 @@ export default function EppShareModal({ isOpen, onClose }: EppShareModalProps) {
             }
         } catch (e: any) {
             showToast(e.message, 'error');
+        } finally {
+            setShareToDeleteId(null);
         }
     };
 
@@ -419,7 +421,7 @@ export default function EppShareModal({ isOpen, onClose }: EppShareModalProps) {
                                                 </button>
 
                                                 <button
-                                                    onClick={() => handleDeleteShare(sh.id)}
+                                                    onClick={() => setShareToDeleteId(sh.id)}
                                                     title="Revocar enlace"
                                                     className="p-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-rose-600 hover:text-white rounded-lg text-rose-500 transition-all"
                                                 >
@@ -443,6 +445,20 @@ export default function EppShareModal({ isOpen, onClose }: EppShareModalProps) {
                     </button>
                 </div>
             </div>
+
+            {/* Ventana Nativa de Confirmación de la App */}
+            <ConfirmModal
+                isOpen={Boolean(shareToDeleteId)}
+                onClose={() => setShareToDeleteId(null)}
+                onConfirm={() => {
+                    if (shareToDeleteId) confirmDeleteShare(shareToDeleteId);
+                }}
+                title="Revocar Enlace Público"
+                message="¿Deseas revocar y eliminar este enlace público? Quienes tengan la URL o el código QR ya no podrán acceder a la matriz."
+                confirmText="Revocar Enlace"
+                cancelText="Cancelar"
+                isDestructive={true}
+            />
         </div>
     );
 }

@@ -123,7 +123,7 @@ export default function EppManagementPage() {
     ];
 
     return (
-        <div className="w-full max-w-7xl mx-auto p-4 md:p-6 space-y-6 animate-in fade-in duration-300">
+        <div className="w-full max-w-[1700px] mx-auto p-3 sm:p-5 md:p-6 space-y-6 animate-in fade-in duration-300">
             {/* Cabecera del Módulo */}
             <ModuleHeader
                 title="Elementos de Protección Personal (EPP)"
