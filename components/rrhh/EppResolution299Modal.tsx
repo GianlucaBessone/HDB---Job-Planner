@@ -217,7 +217,7 @@ export default function EppResolution299Modal({
                 <td colspan="2" style="padding: 0;">
                     <table style="width: 100%; border-collapse: collapse; margin: -1px; font-size: 9px;">
                         <tr>
-                            <td style="width: 40%; border: 1px solid #000; border-top: none; border-left: none; padding: 2px 5px;">(3) Dirección: <span class="bold">Juan Laiz N° 496</span></td>
+                            <td style="width: 40%; border: 1px solid #000; border-top: none; border-left: none; padding: 2px 5px;">(3) Dirección: <span class="bold">Juan Bautista Alberdi 448</span></td>
                             <td style="width: 25%; border: 1px solid #000; border-top: none; padding: 2px 5px;">(4) Localidad: <span class="bold">Arroyito</span></td>
                             <td style="width: 15%; border: 1px solid #000; border-top: none; padding: 2px 5px;">(5) C.P.: <span class="bold">2434</span></td>
                             <td style="width: 20%; border: 1px solid #000; border-top: none; border-right: none; padding: 2px 5px;">(6) Provincia: <span class="bold">Córdoba</span></td>
@@ -440,7 +440,7 @@ export default function EppResolution299Modal({
                             </div>
                             <div className="grid grid-cols-12 border-b border-black">
                                 <div className="col-span-5 p-1.5 border-r border-black">
-                                    (3) Dirección: <strong>Juan Laiz N° 496</strong>
+                                    (3) Dirección: <strong>Juan Bautista Alberdi 448</strong>
                                 </div>
                                 <div className="col-span-3 p-1.5 border-r border-black">
                                     (4) Localidad: <strong>Arroyito</strong>

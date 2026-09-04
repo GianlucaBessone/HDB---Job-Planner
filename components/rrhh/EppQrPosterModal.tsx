@@ -6,14 +6,7 @@ import {
     X, 
     QrCode, 
     Copy, 
-    Check, 
-    ShieldCheck, 
-    Building2, 
-    Users, 
-    ExternalLink,
-    Smartphone,
-    FileCheck2,
-    CheckCircle2
+    Check
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { renderToString } from 'react-dom/server';
@@ -44,8 +37,7 @@ export default function EppQrPosterModal({
     if (!isOpen || !shareUrl) return null;
 
     const isCliente = share.tipo === 'CLIENTE' && Boolean(share.clientNombre);
-    const clientName = share.clientNombre || 'Cliente Asignado';
-    const mainTitle = share.titulo || (isCliente ? `Matriz de EPP · ${clientName}` : 'Matriz General de EPP');
+    const clientName = share.clientNombre || '';
     const emitDate = new Date().toLocaleDateString('es-AR', {
         day: '2-digit',
         month: '2-digit',
@@ -64,7 +56,7 @@ export default function EppQrPosterModal({
         const qrSvg = renderToString(
             <QRCodeSVG 
                 value={shareUrl} 
-                size={230} 
+                size={260} 
                 level="H"
                 includeMargin={false}
             />
@@ -74,331 +66,280 @@ export default function EppQrPosterModal({
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Cartel QR - Matriz de Cumplimiento EPP - ${isCliente ? clientName : 'Dotación General'}</title>
+    <title>QR Matriz EPP - ${isCliente ? clientName : 'General'}</title>
     <style>
         @page {
             size: A4 portrait;
-            margin: 10mm 12mm;
+            margin: 15mm 18mm;
         }
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
         }
         body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
-            background: #ffffff;
-            color: #0f172a;
-            -webkit-font-smoothing: antialiased;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #1a1a1a;
+            background: #fff;
+            line-height: 1.3;
         }
-        .poster-frame {
-            border: 3px solid #0f172a;
-            border-radius: 16px;
-            padding: 24px 28px;
-            min-height: 272mm;
-            max-height: 272mm;
+        .page {
+            width: 100%;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            page-break-inside: avoid;
-            background: #ffffff;
-            position: relative;
+            min-height: 267mm;
         }
-        .header-section {
+
+        /* ── Header bar ── */
+        .header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 14px;
+            padding: 0 0 12px 0;
+            border-bottom: 2px solid #1a1a1a;
         }
-        .header-brand {
+        .header-left {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
         }
-        .header-brand img {
-            height: 48px;
-            max-width: 140px;
+        .header-left img {
+            height: 44px;
             object-fit: contain;
         }
-        .header-brand-info h2 {
-            margin: 0;
-            font-size: 15px;
-            font-weight: 900;
-            letter-spacing: -0.2px;
-            color: #0f172a;
-            text-transform: uppercase;
-        }
-        .header-brand-info p {
-            margin: 2px 0 0 0;
-            font-size: 10px;
-            color: #475569;
-            font-weight: 600;
-        }
-        .header-badge {
-            background-color: #0f172a;
-            color: #ffffff;
-            padding: 7px 14px;
-            border-radius: 9999px;
-            text-align: right;
-        }
-        .header-badge .badge-main {
-            font-size: 11px;
-            font-weight: 900;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            display: block;
-        }
-        .header-badge .badge-sub {
-            font-size: 8.5px;
-            opacity: 0.85;
-            display: block;
-        }
-        .title-block {
-            text-align: center;
-            margin: 18px 0 12px 0;
-        }
-        .title-block .subtitle-tag {
-            display: inline-block;
-            background: #f1f5f9;
-            color: #334155;
-            font-size: 10px;
-            font-weight: 800;
-            padding: 4px 12px;
-            border-radius: 6px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 6px;
-        }
-        .title-block h1 {
-            margin: 0;
-            font-size: 22px;
-            font-weight: 900;
-            color: #0f172a;
-            line-height: 1.15;
-            text-transform: uppercase;
-        }
-        .title-block p {
-            margin: 5px 0 0 0;
-            font-size: 12px;
-            font-weight: 600;
-            color: #475569;
-        }
-        .client-box {
-            border: 2px solid ${isCliente ? '#f59e0b' : '#6366f1'};
-            background: ${isCliente ? '#fffbeb' : '#f8fafc'};
-            border-radius: 12px;
-            padding: 12px 18px;
-            margin: 8px 0 14px 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .client-box .label {
-            font-size: 9.5px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: ${isCliente ? '#b45309' : '#4338ca'};
-            margin-bottom: 2px;
-        }
-        .client-box .value {
-            font-size: 17px;
-            font-weight: 900;
-            color: #0f172a;
-        }
-        .client-box .meta {
-            font-size: 10px;
-            font-weight: 600;
-            color: #64748b;
-            text-align: right;
-            max-width: 250px;
-        }
-        .qr-hero-card {
-            background: #ffffff;
-            border: 2px solid #cbd5e1;
-            border-radius: 14px;
-            padding: 20px 24px;
-            text-align: center;
-            margin: 4px 0;
-        }
-        .qr-hero-card .scan-headline {
-            font-size: 15px;
-            font-weight: 900;
-            color: #0f172a;
+        .header-left .company-name {
+            font-size: 14px;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.3px;
-            margin-bottom: 3px;
         }
-        .qr-hero-card .scan-subtext {
-            font-size: 11px;
-            font-weight: 600;
-            color: #64748b;
-            margin-bottom: 16px;
-        }
-        .qr-code-wrapper {
-            display: inline-block;
-            background: #ffffff;
-            padding: 14px;
-            border: 2px solid #0f172a;
-            border-radius: 14px;
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
-            margin-bottom: 14px;
-        }
-        .qr-code-wrapper svg {
-            display: block;
-            margin: 0 auto;
-        }
-        .instructions-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-top: 10px;
-            text-align: left;
-        }
-        .instruction-item {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 10px 12px;
-        }
-        .instruction-item .item-title {
+        .header-right {
+            text-align: right;
             font-size: 10px;
-            font-weight: 800;
-            color: #0f172a;
-            text-transform: uppercase;
-            margin-bottom: 3px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            color: #444;
+            line-height: 1.5;
         }
-        .instruction-item .item-desc {
-            font-size: 9px;
-            color: #475569;
-            line-height: 1.35;
-            font-weight: 500;
-        }
-        .url-access-box {
-            background: #f1f5f9;
-            border: 1px dashed #94a3b8;
-            border-radius: 10px;
-            padding: 8px 14px;
-            margin: 12px 0 6px 0;
+
+        /* ── Department band ── */
+        .dept-band {
+            background: #1a1a1a;
+            color: #fff;
             text-align: center;
-        }
-        .url-access-box .url-label {
-            font-size: 9px;
-            font-weight: 800;
+            padding: 8px 0;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
-            color: #475569;
+            margin-top: 0;
+        }
+
+        /* ── Content area ── */
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 28px 0 0 0;
+        }
+
+        .doc-title {
+            font-size: 20px;
+            font-weight: 700;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .doc-subtitle {
+            font-size: 12px;
+            color: #555;
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        ${isCliente ? `
+        .client-line {
+            width: 100%;
+            border: 1px solid #ccc;
+            padding: 10px 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+        .client-line .cl-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #666;
+            white-space: nowrap;
+        }
+        .client-line .cl-value {
+            font-size: 14px;
+            font-weight: 700;
+        }
+        ` : ''}
+
+        /* ── QR block ── */
+        .qr-block {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .qr-frame {
+            display: inline-block;
+            padding: 16px;
+            border: 2px solid #1a1a1a;
+        }
+        .qr-frame svg {
+            display: block;
+        }
+
+        .scan-instruction {
+            font-size: 15px;
+            font-weight: 700;
+            text-align: center;
+            margin: 20px 0 6px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .scan-detail {
+            font-size: 11px;
+            color: #555;
+            text-align: center;
+            max-width: 420px;
+            margin: 0 auto 20px auto;
+        }
+
+        /* ── Info rows ── */
+        .info-section {
+            width: 100%;
+            border-top: 1px solid #ddd;
+            padding-top: 16px;
+            margin-top: 8px;
+        }
+        .info-section .info-heading {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        .info-list {
+            list-style: none;
+            padding: 0;
+        }
+        .info-list li {
+            font-size: 10.5px;
+            padding: 4px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+        }
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+        .info-list li .bullet {
+            font-weight: 700;
+            color: #1a1a1a;
+            flex-shrink: 0;
+        }
+
+        /* ── URL fallback ── */
+        .url-row {
+            width: 100%;
+            margin-top: 16px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background: #fafafa;
+        }
+        .url-row .url-label {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #888;
             margin-bottom: 2px;
         }
-        .url-access-box .url-text {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 10.5px;
-            font-weight: 700;
-            color: #0f172a;
+        .url-row .url-value {
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
             word-break: break-all;
+            color: #1a1a1a;
         }
-        .footer-section {
-            border-top: 2px solid #e2e8f0;
-            padding-top: 12px;
+
+        /* ── Footer ── */
+        .footer {
+            border-top: 2px solid #1a1a1a;
+            padding-top: 8px;
+            margin-top: 20px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            font-size: 9px;
-            color: #64748b;
-        }
-        .footer-section .footer-left {
-            font-weight: 700;
-            color: #334155;
-        }
-        .footer-section .footer-right {
-            text-align: right;
-            font-weight: 600;
+            font-size: 8.5px;
+            color: #666;
         }
     </style>
 </head>
 <body>
-    <div class="poster-frame">
-        <!-- Encabezado Corporativo -->
-        <div class="header-section">
-            <div class="header-brand">
-                <img src="${origin}/logo-hdb.jpg" alt="HDB Servicios Eléctricos" onerror="this.style.display='none'" />
-                <div class="header-brand-info">
-                    <h2>HDB Servicios Eléctricos</h2>
-                    <p>Bassignana Hernán David · C.U.I.T.: 20-26566944-2</p>
-                    <p>Departamento de Higiene y Seguridad Laboral</p>
+    <div class="page">
+        <div class="header">
+            <div class="header-left">
+                <img src="${origin}/logo-hdb.jpg" alt="HDB" onerror="this.style.display='none'" />
+                <span class="company-name">HDB Servicios Eléctricos</span>
+            </div>
+            <div class="header-right">
+                Bassignana Hernán David<br>
+                C.U.I.T. 20-26566944-2
+            </div>
+        </div>
+
+        <div class="dept-band">
+            Departamento de Higiene y Seguridad
+        </div>
+
+        <div class="content">
+            <div class="doc-title">Registro de Cumplimiento EPP</div>
+            <div class="doc-subtitle">Matriz de entrega y vigencia de Elementos de Protección Personal</div>
+
+            ${isCliente ? `
+            <div class="client-line">
+                <span class="cl-label">Cliente:</span>
+                <span class="cl-value">${clientName}</span>
+            </div>
+            ` : ''}
+
+            <div class="qr-block">
+                <div class="qr-frame">
+                    ${qrSvg}
                 </div>
             </div>
-            <div class="header-badge">
-                <span class="badge-main">Higiene y Seguridad</span>
-                <span class="badge-sub">Sistema de Gestión Integral HDB</span>
+
+            <div class="scan-instruction">Escanee este código para consultar el registro</div>
+            <div class="scan-detail">
+                Apunte con la cámara de su teléfono al código QR para acceder a la matriz de cumplimiento EPP actualizada en tiempo real. No requiere aplicaciones ni contraseñas.
+            </div>
+
+            <div class="info-section">
+                <div class="info-heading">Información disponible en el registro digital</div>
+                <ul class="info-list">
+                    <li><span class="bullet">—</span> Estado de entrega y vigencia de EPP por operario</li>
+                    <li><span class="bullet">—</span> Fechas de última entrega y próximo vencimiento</li>
+                    <li><span class="bullet">—</span> Actas de entrega con firma del trabajador (Res. SRT 299/11)</li>
+                    <li><span class="bullet">—</span> Planilla oficial imprimible conforme al Anexo I</li>
+                </ul>
+            </div>
+
+            <div class="url-row">
+                <div class="url-label">Acceso alternativo por URL</div>
+                <div class="url-value">${shareUrl}</div>
             </div>
         </div>
 
-        <!-- Título Principal -->
-        <div class="title-block">
-            <span class="subtitle-tag">Registro Oficial de Control y Asignación</span>
-            <h1>Matriz de Cumplimiento y Entrega de EPP</h1>
-            <p>${mainTitle}</p>
-        </div>
-
-        <!-- Tarjeta de Alcance / Cliente -->
-        <div class="client-box">
-            <div>
-                <div class="label">${isCliente ? 'Cliente / Destinatario' : 'Alcance del Registro'}</div>
-                <div class="value">${isCliente ? clientName : 'Dotación Operativa General'}</div>
-            </div>
-            <div class="meta">
-                ${isCliente 
-                    ? 'Operarios con horas de servicio asignadas en los últimos 90 días y su estado de protección personal.'
-                    : 'Control integral de entregas y vigencias para todo el personal operativo de la empresa.'}
-            </div>
-        </div>
-
-        <!-- Card Central con Código QR -->
-        <div class="qr-hero-card">
-            <div class="scan-headline">Escanee para acceder al registro de cumplimiento EPP</div>
-            <div class="scan-subtext">Consulte en tiempo real la vigencia, entregas y actas digitales de los operarios</div>
-
-            <div class="qr-code-wrapper">
-                ${qrSvg}
-            </div>
-
-            <!-- Guía de 3 pasos / especificación -->
-            <div class="instructions-grid">
-                <div class="instruction-item">
-                    <div class="item-title">📱 Escaneo Inmediato</div>
-                    <div class="item-desc">Apunte con la cámara de su teléfono o tablet al código QR. No requiere descargar aplicaciones ni ingresar contraseñas.</div>
-                </div>
-                <div class="instruction-item">
-                    <div class="item-title">🛡️ Estado en Tiempo Real</div>
-                    <div class="item-desc">Verifique qué EPP posee cada trabajador, su fecha de renovación y el estado de cumplimiento operativo al día de hoy.</div>
-                </div>
-                <div class="instruction-item">
-                    <div class="item-title">✍️ Planilla Oficial 299/11</div>
-                    <div class="item-desc">Acceso instantáneo a los legajos digitales y constancias firmadas conforme a la normativa oficial de la SRT.</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Acceso alternativo por URL -->
-        <div class="url-access-box">
-            <div class="url-label">Enlace de Acceso Directo (Si no dispone de escáner QR):</div>
-            <div class="url-text">${shareUrl}</div>
-        </div>
-
-        <!-- Pie de Página y Auditoría -->
-        <div class="footer-section">
-            <div class="footer-left">
-                HDB SERVICIOS ELÉCTRICOS · Juan Laiz N° 496, Arroyito, Córdoba
-            </div>
-            <div class="footer-right">
-                Fecha de Emisión: ${emitDate} · Documento Oficial de Consulta en Higiene y Seguridad
-            </div>
+        <div class="footer">
+            <span>HDB Servicios Eléctricos · Juan Bautista Alberdi 448, Arroyito, Córdoba</span>
+            <span>Emitido el ${emitDate}</span>
         </div>
     </div>
 </body>
@@ -408,20 +349,16 @@ export default function EppQrPosterModal({
     const handlePrint = () => {
         const html = getHtmlContent();
         
-        // Intentar abrir ventana popup
         const printWindow = window.open('', '_blank', 'width=950,height=1000');
         if (printWindow) {
             printWindow.document.open();
             printWindow.document.write(html);
             printWindow.document.close();
             printWindow.focus();
-            setTimeout(() => {
-                printWindow.print();
-            }, 600);
+            setTimeout(() => { printWindow.print(); }, 600);
             return;
         }
 
-        // Fallback a iframe invisible si el navegador bloquea popups
         const iframe = document.createElement('iframe');
         iframe.style.position = 'fixed';
         iframe.style.right = '0';
@@ -447,17 +384,16 @@ export default function EppQrPosterModal({
                 iframe.contentWindow.print();
             }
             setTimeout(() => {
-                if (document.body.contains(iframe)) {
-                    document.body.removeChild(iframe);
-                }
+                if (document.body.contains(iframe)) document.body.removeChild(iframe);
             }, 60000);
         }, 600);
     };
 
+    // ── Modal UI ──
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/80 backdrop-blur-xs animate-in fade-in overflow-y-auto">
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl my-6">
-                {/* Cabecera del Modal */}
+                {/* Cabecera */}
                 <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-950/40">
                     <div className="flex items-center gap-3">
                         <div className="p-2.5 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 rounded-2xl">
@@ -465,14 +401,13 @@ export default function EppQrPosterModal({
                         </div>
                         <div>
                             <h3 className="font-black text-slate-900 dark:text-slate-100 text-base">
-                                Cartel de Notificación con Código QR (A4 Vertical)
+                                Imprimir QR de Acceso
                             </h3>
                             <p className="text-xs text-slate-500 dark:text-slate-400">
-                                Listo para imprimir en A4 y colocar en cartelera de obra, comedor o enviar al cliente
+                                Hoja A4 vertical para cartelera de obra, comedor u oficina
                             </p>
                         </div>
                     </div>
-
                     <button 
                         onClick={onClose} 
                         className="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800"
@@ -481,105 +416,83 @@ export default function EppQrPosterModal({
                     </button>
                 </div>
 
-                {/* Vista Previa del Cartel A4 */}
+                {/* Vista previa */}
                 <div className="p-4 sm:p-6 max-h-[75vh] overflow-y-auto bg-slate-100/70 dark:bg-slate-950/60 text-xs">
-                    <div className="bg-white dark:bg-slate-900 border-2 border-slate-800 dark:border-slate-700 rounded-2xl p-5 sm:p-6 shadow-md max-w-xl mx-auto space-y-4 text-slate-800 dark:text-slate-100">
-                        {/* Header preview */}
-                        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
-                            <div className="flex items-center gap-2.5">
-                                <div className="font-black text-xs text-slate-900 dark:text-white uppercase tracking-tight">
-                                    HDB SERVICIOS ELÉCTRICOS
-                                </div>
-                            </div>
-                            <span className="px-2.5 py-0.5 rounded-full bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 text-[10px] font-black uppercase tracking-wider">
-                                Higiene y Seguridad
-                            </span>
-                        </div>
-
-                        {/* Title block preview */}
-                        <div className="text-center space-y-1">
-                            <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
-                                REGISTRO OFICIAL DE CONTROL Y ASIGNACIÓN
-                            </span>
-                            <h4 className="text-base sm:text-lg font-black text-slate-900 dark:text-white uppercase">
-                                Matriz de Cumplimiento y Entrega de EPP
-                            </h4>
-                            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                                {mainTitle}
-                            </p>
-                        </div>
-
-                        {/* Client / Scope box preview */}
-                        <div className={`p-3 rounded-xl border flex items-center justify-between ${
-                            isCliente 
-                                ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800' 
-                                : 'bg-indigo-50 dark:bg-indigo-950/30 border-indigo-300 dark:border-indigo-800'
-                        }`}>
-                            <div className="space-y-0.5">
-                                <span className="text-[9px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                                    {isCliente ? 'Cliente / Destinatario' : 'Alcance del Registro'}
+                    <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 max-w-xl mx-auto text-slate-800 dark:text-slate-100" style={{ aspectRatio: '210/297' }}>
+                        <div className="flex flex-col h-full p-5 sm:p-6">
+                            {/* Header */}
+                            <div className="flex items-center justify-between pb-2.5 border-b-2 border-slate-900 dark:border-slate-300">
+                                <span className="font-bold text-xs uppercase tracking-tight text-slate-900 dark:text-white">
+                                    HDB Servicios Eléctricos
                                 </span>
-                                <div className="text-sm font-black text-slate-900 dark:text-white">
-                                    {isCliente ? clientName : 'Dotación Operativa General'}
-                                </div>
+                                <span className="text-[10px] text-slate-500 dark:text-slate-400 text-right leading-snug">
+                                    Bassignana Hernán David<br />
+                                    C.U.I.T. 20-26566944-2
+                                </span>
                             </div>
-                            <div className="text-right text-[10px] text-slate-500 dark:text-slate-400 hidden sm:block max-w-[200px]">
-                                {isCliente ? 'Operarios asignados al cliente' : 'Toda la dotación activa de la empresa'}
-                            </div>
-                        </div>
 
-                        {/* QR card hero preview */}
-                        <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 text-center space-y-3">
-                            <div>
-                                <h5 className="font-black text-xs uppercase tracking-wide text-slate-900 dark:text-slate-100">
-                                    Escanee para acceder al registro de cumplimiento EPP
-                                </h5>
-                                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                                    Acceso dinámico y auditable en tiempo real
+                            {/* Dept band */}
+                            <div className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-center py-1.5 text-[10px] font-bold uppercase tracking-widest">
+                                Departamento de Higiene y Seguridad
+                            </div>
+
+                            {/* Content */}
+                            <div className="flex-1 flex flex-col items-center pt-4">
+                                <h4 className="text-sm font-bold uppercase text-center tracking-wide text-slate-900 dark:text-white">
+                                    Registro de Cumplimiento EPP
+                                </h4>
+                                <p className="text-[10px] text-slate-500 dark:text-slate-400 text-center mb-3">
+                                    Matriz de entrega y vigencia de Elementos de Protección Personal
                                 </p>
+
+                                {isCliente && (
+                                    <div className="w-full border border-slate-300 dark:border-slate-700 px-3 py-2 mb-3 flex items-baseline gap-2">
+                                        <span className="text-[9px] font-bold uppercase text-slate-500">Cliente:</span>
+                                        <span className="text-xs font-bold text-slate-900 dark:text-white">{clientName}</span>
+                                    </div>
+                                )}
+
+                                {/* QR */}
+                                <div className="inline-block p-3 border-2 border-slate-900 dark:border-slate-600 my-2">
+                                    <QRCodeSVG value={shareUrl} size={140} level="H" />
+                                </div>
+
+                                <p className="text-xs font-bold uppercase text-center mt-2 text-slate-900 dark:text-white tracking-wide">
+                                    Escanee este código para consultar el registro
+                                </p>
+                                <p className="text-[10px] text-slate-500 dark:text-slate-400 text-center max-w-xs mt-1 leading-relaxed">
+                                    Apunte con la cámara de su teléfono al código QR. No requiere aplicaciones ni contraseñas.
+                                </p>
+
+                                {/* Info */}
+                                <div className="w-full border-t border-slate-200 dark:border-slate-800 pt-2.5 mt-3">
+                                    <span className="text-[9px] font-bold uppercase text-slate-500 tracking-wider block mb-1.5">
+                                        Información disponible
+                                    </span>
+                                    <ul className="space-y-0.5 text-[10px] text-slate-700 dark:text-slate-300">
+                                        <li className="flex gap-1.5"><span className="font-bold text-slate-900 dark:text-white">—</span> Estado de entrega y vigencia de EPP por operario</li>
+                                        <li className="flex gap-1.5"><span className="font-bold text-slate-900 dark:text-white">—</span> Actas con firma del trabajador (Res. SRT 299/11)</li>
+                                        <li className="flex gap-1.5"><span className="font-bold text-slate-900 dark:text-white">—</span> Planilla oficial imprimible conforme al Anexo I</li>
+                                    </ul>
+                                </div>
+
+                                {/* URL */}
+                                <div className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 px-3 py-1.5 mt-2.5">
+                                    <span className="text-[8px] font-bold uppercase text-slate-400 block">Acceso alternativo</span>
+                                    <span className="font-mono text-[9px] text-slate-600 dark:text-slate-300 break-all select-all">{shareUrl}</span>
+                                </div>
                             </div>
 
-                            <div className="inline-block p-3 bg-white rounded-2xl border-2 border-slate-900 dark:border-slate-700 shadow-sm">
-                                <QRCodeSVG 
-                                    value={shareUrl} 
-                                    size={180} 
-                                    level="H" 
-                                />
+                            {/* Footer */}
+                            <div className="flex justify-between border-t-2 border-slate-900 dark:border-slate-300 pt-1.5 mt-3 text-[8px] text-slate-500 dark:text-slate-400">
+                                <span>HDB Servicios Eléctricos · Arroyito, Córdoba</span>
+                                <span>Emitido el {emitDate}</span>
                             </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-left pt-1">
-                                <div className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-[10px]">
-                                    <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1">
-                                        <Smartphone className="w-3 h-3 text-indigo-500" /> Cámara Móvil
-                                    </div>
-                                    <p className="text-slate-500 text-[9px] mt-0.5">Sin instalar apps ni iniciar sesión</p>
-                                </div>
-                                <div className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-[10px]">
-                                    <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1">
-                                        <ShieldCheck className="w-3 h-3 text-emerald-500" /> Cobertura EPP
-                                    </div>
-                                    <p className="text-slate-500 text-[9px] mt-0.5">Vigencias y reposiciones al día</p>
-                                </div>
-                                <div className="p-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-[10px]">
-                                    <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1">
-                                        <FileCheck2 className="w-3 h-3 text-amber-500" /> Res. SRT 299/11
-                                    </div>
-                                    <p className="text-slate-500 text-[9px] mt-0.5">Planillas con firma digital</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* URL direct display preview */}
-                        <div className="p-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 text-center">
-                            <span className="text-[9px] font-bold text-slate-500 uppercase block">Enlace público directo:</span>
-                            <span className="font-mono text-[10px] text-slate-700 dark:text-slate-300 break-all select-all font-semibold">
-                                {shareUrl}
-                            </span>
                         </div>
                     </div>
                 </div>
 
-                {/* Acciones del Modal */}
+                {/* Acciones */}
                 <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 flex flex-col sm:flex-row items-center justify-between gap-3">
                     <button
                         type="button"
@@ -605,7 +518,7 @@ export default function EppQrPosterModal({
                             className="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 text-xs shadow-md active:scale-95 transition-all"
                         >
                             <Printer className="w-4 h-4" />
-                            Imprimir Cartel (A4)
+                            Imprimir QR
                         </button>
                     </div>
                 </div>

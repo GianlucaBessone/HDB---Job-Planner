@@ -213,7 +213,139 @@ export default function PublicEppMatrixPage() {
                                 </button>
 
                                 <button
-                                    onClick={() => window.print()}
+                                    onClick={() => {
+                                        const origin = typeof window !== 'undefined' ? window.location.origin : '';
+                                        const isCliente = share.tipo === 'CLIENTE' && Boolean(share.clientNombre);
+                                        const printDate = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                                        const printTime = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+
+                                        const getEstadoText = (cell: any) => {
+                                            if (cell.estado === 'VIGENTE') return `Vigente (${cell.diasRestantes}d)`;
+                                            if (cell.estado === 'POR_VENCER') return `Por vencer (${cell.diasRestantes}d)`;
+                                            if (cell.estado === 'VENCIDO') return `Vencido (${Math.abs(cell.diasRestantes)}d)`;
+                                            if (cell.estado === 'PENDIENTE_FIRMA') return 'Pte. Firma';
+                                            return '—';
+                                        };
+
+                                        const getEstadoBg = (cell: any) => {
+                                            if (cell.estado === 'VIGENTE') return 'background:#e6f4ea;';
+                                            if (cell.estado === 'POR_VENCER') return 'background:#fef3cd;';
+                                            if (cell.estado === 'VENCIDO') return 'background:#fce4ec;';
+                                            if (cell.estado === 'PENDIENTE_FIRMA') return 'background:#e8eaf6;';
+                                            return 'color:#999;';
+                                        };
+
+                                        const getStatusLabel = (row: any) => {
+                                            if (row.generalStatus === 'AL_DIA') return 'Al Día';
+                                            if (row.generalStatus === 'POR_VENCER') return 'Por Vencer';
+                                            return 'Con Vencidos';
+                                        };
+
+                                        const tableRows = filteredRows.map((row: any) => {
+                                            const op = row.operator;
+                                            const cellsHtml = row.cells.map((cell: any) => 
+                                                `<td style="padding:5px 6px;text-align:center;font-size:9px;border:1px solid #ccc;${getEstadoBg(cell)}">${getEstadoText(cell)}</td>`
+                                            ).join('');
+                                            return `<tr>
+                                                <td style="padding:6px 8px;font-size:10px;font-weight:700;border:1px solid #ccc;white-space:nowrap;">${op.nombreCompleto}</td>
+                                                <td style="padding:6px 8px;font-size:9px;border:1px solid #ccc;text-align:center;">${op.dni || 'S/D'}</td>
+                                                <td style="padding:6px 8px;font-size:9px;border:1px solid #ccc;">${op.posicion || 'Operario'}</td>
+                                                ${cellsHtml}
+                                                <td style="padding:5px 6px;text-align:center;font-size:9px;font-weight:700;border:1px solid #ccc;">${getStatusLabel(row)}</td>
+                                            </tr>`;
+                                        }).join('');
+
+                                        const eppHeaders = eppGlobales.map((epp: any) => 
+                                            `<th style="padding:6px 4px;text-align:center;font-size:8px;font-weight:700;border:1px solid #ccc;background:#1a1a1a;color:#fff;min-width:80px;">${epp.nombre}<br><span style="font-weight:400;font-size:7px;opacity:0.7;">${epp.diasValidez}d</span></th>`
+                                        ).join('');
+
+                                        const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Matriz EPP - ${isCliente ? share.clientNombre : 'General'} - ${printDate}</title>
+    <style>
+        @page { size: A4 landscape; margin: 8mm 10mm; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; background: #fff; line-height: 1.3; }
+        .header { display: flex; align-items: center; justify-content: space-between; padding: 0 0 8px 0; border-bottom: 2px solid #1a1a1a; }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .header-left img { height: 36px; object-fit: contain; }
+        .header-left .name { font-size: 13px; font-weight: 700; text-transform: uppercase; }
+        .header-right { text-align: right; font-size: 9px; color: #444; line-height: 1.5; }
+        .dept-band { background: #1a1a1a; color: #fff; text-align: center; padding: 5px 0; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
+        .info-row { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0 6px 0; border-bottom: 1px solid #ddd; }
+        .info-row .title { font-size: 14px; font-weight: 700; text-transform: uppercase; }
+        .info-row .meta { font-size: 9px; color: #666; }
+        ${isCliente ? `.client-row { padding: 6px 0; font-size: 10px; } .client-row .cl-label { font-weight: 700; color: #666; text-transform: uppercase; font-size: 9px; } .client-row .cl-value { font-weight: 700; font-size: 12px; margin-left: 6px; }` : ''}
+        .summary { display: flex; gap: 16px; padding: 8px 0; border-bottom: 1px solid #ddd; font-size: 9px; }
+        .summary .item { }
+        .summary .item .label { font-weight: 700; text-transform: uppercase; color: #888; font-size: 8px; }
+        .summary .item .val { font-weight: 700; font-size: 13px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+        table thead th { position: sticky; top: 0; }
+        .footer { border-top: 2px solid #1a1a1a; padding-top: 6px; margin-top: 10px; display: flex; justify-content: space-between; font-size: 7.5px; color: #888; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <img src="${origin}/logo-hdb.jpg" alt="HDB" onerror="this.style.display='none'" />
+            <span class="name">HDB Servicios Eléctricos</span>
+        </div>
+        <div class="header-right">
+            Bassignana Hernán David<br>
+            C.U.I.T. 20-26566944-2
+        </div>
+    </div>
+    <div class="dept-band">Departamento de Higiene y Seguridad</div>
+
+    <div class="info-row">
+        <span class="title">Matriz de Cumplimiento y Entrega de EPP</span>
+        <span class="meta">Emitido: ${printDate} a las ${printTime} hs</span>
+    </div>
+
+    ${isCliente ? `<div class="client-row"><span class="cl-label">Cliente:</span><span class="cl-value">${share.clientNombre}</span></div>` : ''}
+
+    <div class="summary">
+        <div class="item"><div class="label">Operadores</div><div class="val">${stats.totalOperadores}</div></div>
+        <div class="item"><div class="label">Cobertura</div><div class="val">${stats.porcentajeCobertura}%</div></div>
+        <div class="item"><div class="label">Vigentes</div><div class="val" style="color:#2e7d32;">${stats.vigentesCount}</div></div>
+        <div class="item"><div class="label">Por Vencer</div><div class="val" style="color:#e65100;">${stats.porVencerCount}</div></div>
+        <div class="item"><div class="label">Vencidos</div><div class="val" style="color:#c62828;">${stats.vencidosCount}</div></div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="padding:6px 8px;text-align:left;font-size:9px;font-weight:700;border:1px solid #ccc;background:#1a1a1a;color:#fff;min-width:140px;">Operador</th>
+                <th style="padding:6px 4px;text-align:center;font-size:9px;font-weight:700;border:1px solid #ccc;background:#1a1a1a;color:#fff;min-width:60px;">DNI</th>
+                <th style="padding:6px 4px;text-align:left;font-size:9px;font-weight:700;border:1px solid #ccc;background:#1a1a1a;color:#fff;min-width:80px;">Puesto</th>
+                ${eppHeaders}
+                <th style="padding:6px 4px;text-align:center;font-size:9px;font-weight:700;border:1px solid #ccc;background:#1a1a1a;color:#fff;min-width:70px;">Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${tableRows}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <span>HDB Servicios Eléctricos · Juan Bautista Alberdi 448, Arroyito, Córdoba</span>
+        <span>Pág. 1 · Documento generado desde el Sistema de Gestión Integrado</span>
+    </div>
+</body>
+</html>`;
+
+                                        const printWindow = window.open('', '_blank', 'width=1200,height=800');
+                                        if (printWindow) {
+                                            printWindow.document.open();
+                                            printWindow.document.write(html);
+                                            printWindow.document.close();
+                                            printWindow.focus();
+                                            setTimeout(() => { printWindow.print(); }, 600);
+                                        }
+                                    }}
                                     className="px-3.5 sm:px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-2 active:scale-95 whitespace-nowrap"
                                 >
                                     <Printer className="w-4 h-4" />
