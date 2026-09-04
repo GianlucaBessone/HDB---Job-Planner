@@ -25,10 +25,12 @@ import {
     User,
     Check,
     Minus,
-    ArrowRight
+    ArrowRight,
+    QrCode
 } from 'lucide-react';
 import { getPublicEppMatrixData } from '@/app/rrhh/personal/epp/actions';
 import EppResolution299Modal from '@/components/rrhh/EppResolution299Modal';
+import EppQrPosterModal from '@/components/rrhh/EppQrPosterModal';
 
 export default function PublicEppMatrixPage() {
     const params = useParams();
@@ -45,6 +47,7 @@ export default function PublicEppMatrixPage() {
     // Drawer / Modal de detalle de operario
     const [selectedRow, setSelectedRow] = useState<any | null>(null);
     const [print299ModalOpen, setPrint299ModalOpen] = useState(false);
+    const [qrPosterModalOpen, setQrPosterModalOpen] = useState(false);
 
     const loadData = async () => {
         if (!token) return;
@@ -147,7 +150,7 @@ export default function PublicEppMatrixPage() {
                             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                                 <span className="px-3 py-1 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shadow-2xs">
                                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                                    Higiene y Seguridad · ISO 45001
+                                    Higiene y Seguridad
                                 </span>
 
                                 {share.tipo === 'CLIENTE' ? (
@@ -198,6 +201,15 @@ export default function PublicEppMatrixPage() {
                                     className="p-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl text-slate-700 dark:text-slate-300 transition-all active:scale-95"
                                 >
                                     <RefreshCw className="w-4 h-4" />
+                                </button>
+
+                                <button
+                                    onClick={() => setQrPosterModalOpen(true)}
+                                    className="px-3.5 sm:px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-2 active:scale-95 whitespace-nowrap"
+                                    title="Generar cartel A4 con código QR para imprimir"
+                                >
+                                    <QrCode className="w-4 h-4" />
+                                    <span>Cartel QR A4</span>
                                 </button>
 
                                 <button
@@ -667,7 +679,7 @@ export default function PublicEppMatrixPage() {
                 {/* Footer Público */}
                 <footer className="text-center text-xs text-slate-400 py-4 space-y-1">
                     <p>
-                        Sistema de Gestión Integrado · HDB Servicios Eléctricos SRL
+                        Sistema de Gestión Integrado · HDB Servicios Eléctricos
                     </p>
                     <p className="text-[10px] text-slate-500 font-mono">
                         Documento auditado digitalmente bajo estándares de trazabilidad criptográfica
@@ -822,6 +834,14 @@ export default function PublicEppMatrixPage() {
                     deliveries={selectedRow.historialDeliveries || []}
                 />
             )}
+
+            {/* Modal de Cartel Imprimible A4 con Código QR */}
+            <EppQrPosterModal
+                isOpen={qrPosterModalOpen}
+                onClose={() => setQrPosterModalOpen(false)}
+                shareUrl={typeof window !== 'undefined' ? window.location.href : ''}
+                share={share || {}}
+            />
         </div>
     );
 }

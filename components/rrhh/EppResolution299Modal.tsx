@@ -321,7 +321,7 @@ export default function EppResolution299Modal({
 
         <!-- Nota al pie (18) -->
         <div class="footer-note">
-            (18) Información adicional: Constancia emitida bajo Resolución SRT 299/11 y protocolo ISO 45001. Las entregas y firmas digitales cuentan con plena validez legal y trazabilidad criptográfica SHA-256 en el Sistema de Gestión Integral HDB.
+            (18) Información adicional: Constancia emitida bajo Resolución SRT 299/11 y normativas de Higiene y Seguridad Laboral. Las entregas y firmas digitales cuentan con plena validez legal y trazabilidad criptográfica SHA-256 en el Sistema de Gestión Integral HDB.
         </div>
     </div>
 
@@ -538,7 +538,7 @@ export default function EppResolution299Modal({
                         )}
 
                         <div className="border border-black p-1.5 text-[9px] mt-1">
-                            (18) Información adicional: Constancia de entrega conforme a Resolución SRT 299/11 y protocolo ISO 45001 con trazabilidad criptográfica.
+                            (18) Información adicional: Constancia de entrega conforme a Resolución SRT 299/11 y normativas de Higiene y Seguridad con trazabilidad criptográfica.
                         </div>
                     </div>
                 </div>
