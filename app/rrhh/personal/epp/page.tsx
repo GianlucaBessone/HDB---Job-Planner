@@ -61,34 +61,34 @@ export default function EppManagementPage() {
         loadAllData();
     }, []);
 
-    const loadAllData = async () => {
-        setLoading(true);
+    const loadAllData = async (showSpinner = true) => {
+        if (showSpinner) setLoading(true);
         try {
-            const [matrixRes, catalogRes, requestsRes] = await Promise.all([
+            const [matrixRes, catalogRes, requestsRes] = await Promise.allSettled([
                 getEppMatrix(),
                 getEppCatalog(),
                 getEppRequests()
             ]);
 
-            if (matrixRes.success && matrixRes.data) {
-                setOperadores(matrixRes.data.operadores || []);
-                setEppGlobales(matrixRes.data.eppGlobales || []);
-                setMatriz(matrixRes.data.matriz || {});
-                setStats(matrixRes.data.stats || {});
+            if (matrixRes.status === 'fulfilled' && matrixRes.value.success && matrixRes.value.data) {
+                setOperadores(matrixRes.value.data.operadores || []);
+                setEppGlobales(matrixRes.value.data.eppGlobales || []);
+                setMatriz(matrixRes.value.data.matriz || {});
+                setStats(matrixRes.value.data.stats || {});
             }
 
-            if (catalogRes.success) {
-                setCatalogItems(catalogRes.data || []);
+            if (catalogRes.status === 'fulfilled' && catalogRes.value.success) {
+                setCatalogItems(catalogRes.value.data || []);
             }
 
-            if (requestsRes.success) {
-                setRequests(requestsRes.data || []);
+            if (requestsRes.status === 'fulfilled' && requestsRes.value.success) {
+                setRequests(requestsRes.value.data || []);
             }
         } catch (e: any) {
             console.error('Error cargando datos EPP:', e);
             showToast('Error al sincronizar datos de EPP', 'error');
         } finally {
-            setLoading(false);
+            if (showSpinner) setLoading(false);
         }
     };
 
@@ -246,7 +246,7 @@ export default function EppManagementPage() {
                     {activeTab === 'stock' && (
                         <EppStockManager
                             items={catalogItems}
-                            onRefresh={loadAllData}
+                            onRefresh={() => loadAllData(false)}
                         />
                     )}
 

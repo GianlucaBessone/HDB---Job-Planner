@@ -189,7 +189,24 @@ export async function getEppCatalog() {
         });
         return { success: true, data: items };
     } catch (error: any) {
-        return { success: false, error: error.message };
+        console.error('Error al obtener catálogo EPP (reintentando):', error.message);
+        try {
+            const items = await prisma.eppItem.findMany({
+                orderBy: [{ activo: 'desc' }, { nombre: 'asc' }],
+                include: {
+                    _count: {
+                        select: {
+                            deliveryItems: true,
+                            stockMovements: true
+                        }
+                    }
+                }
+            });
+            return { success: true, data: items };
+        } catch (retryErr: any) {
+            console.error('Error definitivo al obtener catálogo EPP:', retryErr);
+            return { success: false, error: retryErr.message };
+        }
     }
 }
 
@@ -244,7 +261,16 @@ export async function createEppItem(data: {
 
         safeRevalidate('/rrhh/personal/epp');
         safeRevalidate('/mis-epp');
-        return { success: true, data: newItem };
+        return { 
+            success: true, 
+            data: {
+                ...newItem,
+                _count: {
+                    deliveryItems: 0,
+                    stockMovements: newItem.stockActual > 0 ? 1 : 0
+                }
+            } 
+        };
     } catch (error: any) {
         if (error.code === 'P2002' || error.message?.includes('Unique constraint')) {
             return { success: false, error: 'El código de catálogo ingresado ya está en uso por otro elemento de EPP' };

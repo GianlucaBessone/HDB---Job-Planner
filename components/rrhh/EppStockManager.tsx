@@ -33,10 +33,17 @@ interface EppStockManagerProps {
 }
 
 export default function EppStockManager({ items, onRefresh }: EppStockManagerProps) {
+    const [localItems, setLocalItems] = useState<any[]>(items || []);
     const [subTab, setSubTab] = useState<'ITEMS' | 'KARDEX'>('ITEMS');
     const [search, setSearch] = useState('');
     const [movements, setMovements] = useState<any[]>([]);
     const [loadingMovements, setLoadingMovements] = useState(false);
+
+    useEffect(() => {
+        if (items) {
+            setLocalItems(items);
+        }
+    }, [items]);
 
     // Modal Crear Elemento
     const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -129,9 +136,24 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
         setCreatingItem(true);
         try {
             const res = await createEppItem(newItemData);
-            if (res.success) {
-                showToast('Elemento de EPP creado correctamente', 'success');
+            if (res.success && res.data) {
+                showToast(
+                    res.data.esGlobal 
+                        ? 'Elemento de EPP Global creado correctamente' 
+                        : 'Elemento de EPP Específico creado correctamente', 
+                    'success'
+                );
                 setCreateModalOpen(false);
+
+                // Inserción optimista inmediata en la lista local para visualización instantánea
+                setLocalItems(prev => {
+                    const filtered = prev.filter(i => i.id !== res.data.id);
+                    return [...filtered, res.data].sort((a, b) => {
+                        if (a.activo !== b.activo) return a.activo ? -1 : 1;
+                        return a.nombre.localeCompare(b.nombre);
+                    });
+                });
+
                 setNewItemData({
                     nombre: '',
                     codigo: '',
@@ -145,7 +167,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                     marca: '',
                     normaCertificacion: 'IRAM'
                 });
-                onRefresh();
+                await onRefresh();
             } else {
                 showToast(res.error || 'Error al crear elemento', 'error');
             }
@@ -174,9 +196,11 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                 registradoPor: stockData.registradoPor
             });
 
-            if (res.success) {
+            if (res.success && res.data) {
                 showToast('Stock ingresado y registrado en Kardex correctamente', 'success');
                 setStockModalOpen(false);
+                const updatedItem = (res.data as any).item || res.data;
+                setLocalItems(prev => prev.map(i => i.id === selectedItemId ? { ...i, stockActual: updatedItem?.stockActual ?? ((i.stockActual || 0) + Number(stockData.cantidad)) } : i));
                 setStockData({
                     cantidad: 10,
                     remitoFactura: '',
@@ -184,7 +208,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                     motivo: 'Compra / Reposición de almacén',
                     registradoPor: 'Supervisor'
                 });
-                onRefresh();
+                await onRefresh();
                 if (subTab === 'KARDEX') loadMovements();
             } else {
                 showToast(res.error || 'Error al registrar stock', 'error');
@@ -273,10 +297,11 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
             }
 
             const res = await updateEppItem(editingItemId, payload);
-            if (res.success) {
+            if (res.success && res.data) {
                 showToast('Elemento de EPP actualizado con éxito', 'success');
                 setEditModalOpen(false);
-                onRefresh();
+                setLocalItems(prev => prev.map(i => i.id === editingItemId ? { ...i, ...res.data } : i));
+                await onRefresh();
                 if (subTab === 'KARDEX') loadMovements();
             } else {
                 showToast(res.error || 'Error al actualizar elemento', 'error');
@@ -288,7 +313,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
         }
     };
 
-    const filteredItems = items.filter(it => 
+    const filteredItems = localItems.filter(it => 
         it.nombre.toLowerCase().includes(search.toLowerCase()) ||
         (it.codigo && it.codigo.toLowerCase().includes(search.toLowerCase())) ||
         it.categoria.toLowerCase().includes(search.toLowerCase())
@@ -310,7 +335,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                         }`}
                     >
                         <Package className="w-4 h-4" />
-                        Catálogo de EPP ({items.length})
+                        Catálogo de EPP ({localItems.length})
                     </button>
 
                     <button
@@ -1039,7 +1064,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                                     className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-100"
                                 >
                                     <option value="">-- Seleccione elemento --</option>
-                                    {items.map(it => (
+                                    {localItems.map(it => (
                                         <option key={it.id} value={it.id}>
                                             {it.nombre} (Stock actual: {it.stockActual})
                                         </option>

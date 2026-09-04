@@ -13,10 +13,12 @@ import {
     FileSignature, 
     FileText,
     PlusCircle,
-    Fingerprint
+    Fingerprint,
+    Printer
 } from 'lucide-react';
 import { getOperatorEppProfile } from '@/app/rrhh/personal/epp/actions';
 import SignatureDetailModal from '@/components/SignatureDetailModal';
+import EppResolution299Modal from '@/components/rrhh/EppResolution299Modal';
 
 interface EppOperatorDrawerProps {
     operatorId: string | null;
@@ -28,6 +30,7 @@ export default function EppOperatorDrawer({ operatorId, onClose, onStartDelivery
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState<any>(null);
     const [selectedSignatureId, setSelectedSignatureId] = useState<string | null>(null);
+    const [printModalOpen, setPrintModalOpen] = useState(false);
 
     useEffect(() => {
         if (!operatorId) {
@@ -115,10 +118,23 @@ export default function EppOperatorDrawer({ operatorId, onClose, onStartDelivery
 
                                 {/* Historial de Entregas */}
                                 <div>
-                                    <h4 className="text-sm font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                        <FileSignature className="w-4 h-4 text-emerald-500" />
-                                        Historial de Entregas y Actas ({deliveries.length})
-                                    </h4>
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h4 className="text-sm font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
+                                            <FileSignature className="w-4 h-4 text-emerald-500" />
+                                            Historial de Entregas ({deliveries.length})
+                                        </h4>
+
+                                        {deliveries.length > 0 && (
+                                            <button
+                                                onClick={() => setPrintModalOpen(true)}
+                                                className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 active:scale-95"
+                                                title="Imprimir Planilla Oficial según Resolución 299/11 Anexo I"
+                                            >
+                                                <Printer className="w-3.5 h-3.5" />
+                                                <span>Planilla Res. 299/11</span>
+                                            </button>
+                                        )}
+                                    </div>
 
                                     {deliveries.length === 0 ? (
                                         <div className="p-8 text-center bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-400 text-xs font-medium">
@@ -248,6 +264,16 @@ export default function EppOperatorDrawer({ operatorId, onClose, onStartDelivery
                     isOpen={Boolean(selectedSignatureId)}
                     onClose={() => setSelectedSignatureId(null)}
                     signatureId={selectedSignatureId}
+                />
+            )}
+
+            {/* Modal de Planilla Oficial Res. 299/11 */}
+            {op && (
+                <EppResolution299Modal
+                    isOpen={printModalOpen}
+                    onClose={() => setPrintModalOpen(false)}
+                    operator={op}
+                    deliveries={deliveries}
                 />
             )}
         </div>

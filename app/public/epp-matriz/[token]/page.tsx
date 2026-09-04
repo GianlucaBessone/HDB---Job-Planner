@@ -28,6 +28,7 @@ import {
     ArrowRight
 } from 'lucide-react';
 import { getPublicEppMatrixData } from '@/app/rrhh/personal/epp/actions';
+import EppResolution299Modal from '@/components/rrhh/EppResolution299Modal';
 
 export default function PublicEppMatrixPage() {
     const params = useParams();
@@ -43,6 +44,7 @@ export default function PublicEppMatrixPage() {
 
     // Drawer / Modal de detalle de operario
     const [selectedRow, setSelectedRow] = useState<any | null>(null);
+    const [print299ModalOpen, setPrint299ModalOpen] = useState(false);
 
     const loadData = async () => {
         if (!token) return;
@@ -788,16 +790,37 @@ export default function PublicEppMatrixPage() {
                             )}
                         </div>
 
-                        <div className="p-3.5 sm:p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 flex justify-end shrink-0">
+                        <div className="p-3.5 sm:p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 shrink-0">
+                            {selectedRow.historialDeliveries?.length > 0 && (
+                                <button
+                                    onClick={() => setPrint299ModalOpen(true)}
+                                    className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 rounded-xl font-bold transition-all text-xs flex items-center justify-center gap-1.5 shadow-sm active:scale-95"
+                                    title="Imprimir Planilla Oficial según Resolución SRT 299/11 Anexo I"
+                                >
+                                    <Printer className="w-4 h-4" />
+                                    <span>Planilla Res. 299/11 (Apaisada)</span>
+                                </button>
+                            )}
+
                             <button
                                 onClick={() => setSelectedRow(null)}
-                                className="w-full sm:w-auto px-5 py-2.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold transition-all text-xs"
+                                className="px-5 py-2.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold transition-all text-xs text-center"
                             >
                                 Cerrar
                             </button>
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Modal de Planilla Oficial Res. 299/11 */}
+            {selectedRow && (
+                <EppResolution299Modal
+                    isOpen={print299ModalOpen}
+                    onClose={() => setPrint299ModalOpen(false)}
+                    operator={selectedRow.operator}
+                    deliveries={selectedRow.historialDeliveries || []}
+                />
             )}
         </div>
     );
