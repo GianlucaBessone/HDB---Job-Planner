@@ -48,14 +48,26 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
     // Modal Crear Elemento
     const [createModalOpen, setCreateModalOpen] = useState(false);
     const [creatingItem, setCreatingItem] = useState(false);
-    const [newItemData, setNewItemData] = useState({
+    const [newItemData, setNewItemData] = useState<{
+        nombre: string;
+        codigo: string;
+        descripcion: string;
+        categoria: string;
+        esGlobal: boolean;
+        diasValidez: number | string;
+        stockActual: number | string;
+        stockMinimo: number | string;
+        talle: string;
+        marca: string;
+        normaCertificacion: string;
+    }>({
         nombre: '',
         codigo: '',
         descripcion: '',
         categoria: 'Cabeza',
         esGlobal: true,
         diasValidez: 365,
-        stockActual: 10,
+        stockActual: '',
         stockMinimo: 5,
         talle: '',
         marca: '',
@@ -66,8 +78,14 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
     const [stockModalOpen, setStockModalOpen] = useState(false);
     const [selectedItemId, setSelectedItemId] = useState('');
     const [addingStock, setAddingStock] = useState(false);
-    const [stockData, setStockData] = useState({
-        cantidad: 10,
+    const [stockData, setStockData] = useState<{
+        cantidad: number | string;
+        remitoFactura: string;
+        proveedor: string;
+        motivo: string;
+        registradoPor: string;
+    }>({
+        cantidad: '',
         remitoFactura: '',
         proveedor: '',
         motivo: 'Compra / Reposición de almacén',
@@ -78,7 +96,24 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [editingItemId, setEditingItemId] = useState<string | null>(null);
     const [savingEdit, setSavingEdit] = useState(false);
-    const [editFormData, setEditFormData] = useState({
+    const [editFormData, setEditFormData] = useState<{
+        nombre: string;
+        codigo: string;
+        descripcion: string;
+        categoria: string;
+        esGlobal: boolean;
+        diasValidez: number | string;
+        stockMinimo: number | string;
+        talle: string;
+        marca: string;
+        normaCertificacion: string;
+        activo: boolean;
+        stockActualOriginal: number;
+        enableStockAdjustment: boolean;
+        nuevoStockManual: number | string;
+        motivoAjuste: string;
+        supervisorAjuste: string;
+    }>({
         nombre: '',
         codigo: '',
         descripcion: '',
@@ -93,7 +128,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
         // Campos de ajuste manual de stock auditado
         stockActualOriginal: 0,
         enableStockAdjustment: false,
-        nuevoStockManual: 0,
+        nuevoStockManual: '',
         motivoAjuste: '',
         supervisorAjuste: 'Supervisor de Pañol'
     });
@@ -135,7 +170,12 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
 
         setCreatingItem(true);
         try {
-            const res = await createEppItem(newItemData);
+            const res = await createEppItem({
+                ...newItemData,
+                diasValidez: Number(newItemData.diasValidez) || 365,
+                stockActual: Number(newItemData.stockActual) || 0,
+                stockMinimo: Number(newItemData.stockMinimo) || 5,
+            });
             if (res.success && res.data) {
                 showToast(
                     res.data.esGlobal 
@@ -161,7 +201,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                     categoria: 'Cabeza',
                     esGlobal: true,
                     diasValidez: 365,
-                    stockActual: 10,
+                    stockActual: '',
                     stockMinimo: 5,
                     talle: '',
                     marca: '',
@@ -187,9 +227,10 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
 
         setAddingStock(true);
         try {
+            const qtyToAdd = Math.max(1, Number(stockData.cantidad) || 1);
             const res = await addEppStock({
                 eppItemId: selectedItemId,
-                cantidad: Number(stockData.cantidad),
+                cantidad: qtyToAdd,
                 remitoFactura: stockData.remitoFactura,
                 proveedor: stockData.proveedor,
                 motivo: stockData.motivo,
@@ -200,9 +241,9 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                 showToast('Stock ingresado y registrado en Kardex correctamente', 'success');
                 setStockModalOpen(false);
                 const updatedItem = (res.data as any).item || res.data;
-                setLocalItems(prev => prev.map(i => i.id === selectedItemId ? { ...i, stockActual: updatedItem?.stockActual ?? ((i.stockActual || 0) + Number(stockData.cantidad)) } : i));
+                setLocalItems(prev => prev.map(i => i.id === selectedItemId ? { ...i, stockActual: updatedItem?.stockActual ?? ((i.stockActual || 0) + qtyToAdd) } : i));
                 setStockData({
-                    cantidad: 10,
+                    cantidad: '',
                     remitoFactura: '',
                     proveedor: '',
                     motivo: 'Compra / Reposición de almacén',
@@ -246,7 +287,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
             activo: item.activo !== undefined ? Boolean(item.activo) : true,
             stockActualOriginal: item.stockActual || 0,
             enableStockAdjustment: focusAdjustment,
-            nuevoStockManual: item.stockActual || 0,
+            nuevoStockManual: item.stockActual ?? 0,
             motivoAjuste: '',
             supervisorAjuste: supervisorName
         });
@@ -262,11 +303,12 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
         }
 
         if (editFormData.enableStockAdjustment) {
-            if (editFormData.nuevoStockManual < 0) {
+            const stockManualNum = editFormData.nuevoStockManual === '' ? 0 : Number(editFormData.nuevoStockManual);
+            if (stockManualNum < 0) {
                 showToast('La cantidad de stock no puede ser negativa', 'error');
                 return;
             }
-            if (editFormData.nuevoStockManual !== editFormData.stockActualOriginal && !editFormData.motivoAjuste.trim()) {
+            if (stockManualNum !== editFormData.stockActualOriginal && !editFormData.motivoAjuste.trim()) {
                 showToast('Debe ingresar un motivo para auditar el ajuste de stock', 'error');
                 return;
             }
@@ -280,17 +322,18 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                 descripcion: editFormData.descripcion,
                 categoria: editFormData.categoria,
                 esGlobal: editFormData.esGlobal,
-                diasValidez: Number(editFormData.diasValidez),
-                stockMinimo: Number(editFormData.stockMinimo),
+                diasValidez: Number(editFormData.diasValidez) || 365,
+                stockMinimo: Number(editFormData.stockMinimo) || 5,
                 talle: editFormData.talle,
                 marca: editFormData.marca,
                 normaCertificacion: editFormData.normaCertificacion,
                 activo: editFormData.activo
             };
 
-            if (editFormData.enableStockAdjustment && editFormData.nuevoStockManual !== editFormData.stockActualOriginal) {
+            const stockManualNum = editFormData.nuevoStockManual === '' ? 0 : Number(editFormData.nuevoStockManual);
+            if (editFormData.enableStockAdjustment && stockManualNum !== editFormData.stockActualOriginal) {
                 payload.ajusteStock = {
-                    nuevoStock: Number(editFormData.nuevoStockManual),
+                    nuevoStock: stockManualNum,
                     motivo: editFormData.motivoAjuste.trim(),
                     registradoPor: editFormData.supervisorAjuste
                 };
@@ -319,7 +362,7 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
         it.categoria.toLowerCase().includes(search.toLowerCase())
     );
 
-    const adjustmentDiff = editFormData.nuevoStockManual - editFormData.stockActualOriginal;
+    const adjustmentDiff = (editFormData.nuevoStockManual === '' ? 0 : Number(editFormData.nuevoStockManual)) - editFormData.stockActualOriginal;
 
     return (
         <div className="space-y-4">
@@ -695,8 +738,10 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                                         type="number"
                                         min="1"
                                         required
-                                        value={newItemData.diasValidez}
-                                        onChange={(e) => setNewItemData({ ...newItemData, diasValidez: parseInt(e.target.value) || 365 })}
+                                        placeholder="365"
+                                        value={newItemData.diasValidez === '' ? '' : newItemData.diasValidez}
+                                        onChange={(e) => setNewItemData({ ...newItemData, diasValidez: e.target.value === '' ? '' : (parseInt(e.target.value) || 0) })}
+                                        onFocus={(e) => e.target.select()}
                                         className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-center text-slate-800 dark:text-slate-100"
                                     />
                                 </div>
@@ -708,8 +753,10 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                                     <input
                                         type="number"
                                         min="0"
-                                        value={newItemData.stockActual}
-                                        onChange={(e) => setNewItemData({ ...newItemData, stockActual: parseInt(e.target.value) || 0 })}
+                                        placeholder="0"
+                                        value={newItemData.stockActual === '' ? '' : newItemData.stockActual}
+                                        onChange={(e) => setNewItemData({ ...newItemData, stockActual: e.target.value === '' ? '' : (parseInt(e.target.value) || 0) })}
+                                        onFocus={(e) => e.target.select()}
                                         className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-center text-slate-800 dark:text-slate-100"
                                     />
                                 </div>
@@ -721,8 +768,10 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                                     <input
                                         type="number"
                                         min="0"
-                                        value={newItemData.stockMinimo}
-                                        onChange={(e) => setNewItemData({ ...newItemData, stockMinimo: parseInt(e.target.value) || 5 })}
+                                        placeholder="5"
+                                        value={newItemData.stockMinimo === '' ? '' : newItemData.stockMinimo}
+                                        onChange={(e) => setNewItemData({ ...newItemData, stockMinimo: e.target.value === '' ? '' : (parseInt(e.target.value) || 0) })}
+                                        onFocus={(e) => e.target.select()}
                                         className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-center text-slate-800 dark:text-slate-100"
                                     />
                                 </div>
@@ -876,8 +925,10 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                                         type="number"
                                         min="1"
                                         required
-                                        value={editFormData.diasValidez}
-                                        onChange={(e) => setEditFormData({ ...editFormData, diasValidez: parseInt(e.target.value) || 365 })}
+                                        placeholder="365"
+                                        value={editFormData.diasValidez === '' ? '' : editFormData.diasValidez}
+                                        onChange={(e) => setEditFormData({ ...editFormData, diasValidez: e.target.value === '' ? '' : (parseInt(e.target.value) || 0) })}
+                                        onFocus={(e) => e.target.select()}
                                         className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-center text-slate-800 dark:text-slate-100"
                                     />
                                 </div>
@@ -889,8 +940,10 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                                     <input
                                         type="number"
                                         min="0"
-                                        value={editFormData.stockMinimo}
-                                        onChange={(e) => setEditFormData({ ...editFormData, stockMinimo: parseInt(e.target.value) || 5 })}
+                                        placeholder="5"
+                                        value={editFormData.stockMinimo === '' ? '' : editFormData.stockMinimo}
+                                        onChange={(e) => setEditFormData({ ...editFormData, stockMinimo: e.target.value === '' ? '' : (parseInt(e.target.value) || 0) })}
+                                        onFocus={(e) => e.target.select()}
                                         className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-center text-slate-800 dark:text-slate-100"
                                     />
                                 </div>
@@ -961,8 +1014,10 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                                                     type="number"
                                                     min="0"
                                                     required
-                                                    value={editFormData.nuevoStockManual}
-                                                    onChange={(e) => setEditFormData({ ...editFormData, nuevoStockManual: parseInt(e.target.value) || 0 })}
+                                                    placeholder="0"
+                                                    value={editFormData.nuevoStockManual === '' ? '' : editFormData.nuevoStockManual}
+                                                    onChange={(e) => setEditFormData({ ...editFormData, nuevoStockManual: e.target.value === '' ? '' : (parseInt(e.target.value) || 0) })}
+                                                    onFocus={(e) => e.target.select()}
                                                     className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-amber-300 dark:border-amber-700 rounded-xl text-xs font-black text-center text-slate-900 dark:text-slate-100"
                                                 />
                                             </div>
@@ -1081,8 +1136,10 @@ export default function EppStockManager({ items, onRefresh }: EppStockManagerPro
                                         type="number"
                                         min="1"
                                         required
-                                        value={stockData.cantidad}
-                                        onChange={(e) => setStockData({ ...stockData, cantidad: parseInt(e.target.value) || 1 })}
+                                        placeholder="10"
+                                        value={stockData.cantidad === '' ? '' : stockData.cantidad}
+                                        onChange={(e) => setStockData({ ...stockData, cantidad: e.target.value === '' ? '' : (parseInt(e.target.value) || 0) })}
+                                        onFocus={(e) => e.target.select()}
                                         className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black text-center text-slate-800 dark:text-slate-100"
                                     />
                                 </div>

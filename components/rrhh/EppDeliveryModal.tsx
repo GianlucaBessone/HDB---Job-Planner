@@ -64,7 +64,7 @@ export default function EppDeliveryModal({
 
     // Catálogo item selector temporal
     const [tempItemId, setTempItemId] = useState<string>('');
-    const [tempCantidad, setTempCantidad] = useState<number>(1);
+    const [tempCantidad, setTempCantidad] = useState<number | string>(1);
     const [tempTalle, setTempTalle] = useState<string>('');
 
     useEffect(() => {
@@ -185,7 +185,8 @@ export default function EppDeliveryModal({
         const dbItem = catalog.find(c => c.id === tempItemId);
         if (!dbItem) return;
 
-        if (dbItem.stockActual < tempCantidad) {
+        const qtyToDeliver = Math.max(1, Number(tempCantidad) || 1);
+        if (dbItem.stockActual < qtyToDeliver) {
             showToast(`Stock insuficiente. Disponible: ${dbItem.stockActual}`, 'error');
             return;
         }
@@ -193,14 +194,14 @@ export default function EppDeliveryModal({
         const existingIndex = itemsToDeliver.findIndex(it => it.eppItemId === tempItemId);
         if (existingIndex >= 0) {
             const updated = [...itemsToDeliver];
-            updated[existingIndex].cantidad += tempCantidad;
+            updated[existingIndex].cantidad += qtyToDeliver;
             setItemsToDeliver(updated);
         } else {
             setItemsToDeliver(prev => [
                 ...prev,
                 {
                     eppItemId: tempItemId,
-                    cantidad: tempCantidad,
+                    cantidad: qtyToDeliver,
                     talle: tempTalle || dbItem.talle || ''
                 }
             ]);
@@ -395,8 +396,9 @@ export default function EppDeliveryModal({
                                         <input
                                             type="number"
                                             min="1"
-                                            value={tempCantidad}
-                                            onChange={(e) => setTempCantidad(Math.max(1, parseInt(e.target.value) || 1))}
+                                            value={tempCantidad === '' ? '' : tempCantidad}
+                                            onChange={(e) => setTempCantidad(e.target.value === '' ? '' : (parseInt(e.target.value) || 0))}
+                                            onFocus={(e) => e.target.select()}
                                             placeholder="Cant."
                                             className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-center text-slate-800 dark:text-slate-100"
                                         />

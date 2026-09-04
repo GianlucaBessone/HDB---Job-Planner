@@ -23,7 +23,7 @@ interface Assignment {
     id: string;
     type: 'proyecto' | 'causa';
     targetId: string;
-    horas: number;
+    horas: number | string;
     isExtra: boolean;
     isDevolucion: boolean;
     descripcionDevolucion: string;
@@ -202,7 +202,7 @@ export default function TimesheetsPage() {
                 id: 'edit-1',
                 type: isCausaMode ? 'causa' : 'proyecto',
                 targetId: (isCausaMode ? entry.causaRegistro : entry.projectId) || '',
-                horas: entry.horasTrabajadas,
+                horas: entry.horasTrabajadas ?? '',
                 isExtra: entry.isExtra || false,
                 isDevolucion: entry.isDevolucion || false,
                 descripcionDevolucion: entry.descripcionDevolucion || ''
@@ -227,7 +227,7 @@ export default function TimesheetsPage() {
                 id: Math.random().toString(36).substring(7),
                 type: 'proyecto',
                 targetId: '',
-                horas: 0,
+                horas: '',
                 isExtra: false,
                 isDevolucion: false,
                 descripcionDevolucion: ''
@@ -241,7 +241,7 @@ export default function TimesheetsPage() {
             id: Math.random().toString(36).substring(7),
             type: 'proyecto',
             targetId: '',
-            horas: 0,
+            horas: '',
             isExtra: false,
             isDevolucion: false,
             descripcionDevolucion: ''
@@ -283,7 +283,7 @@ export default function TimesheetsPage() {
             return;
         }
 
-        const invalidAssignment = assignments.find(a => !a.targetId || (a.type === 'proyecto' && a.horas <= 0) || (a.type === 'causa' && a.horas < 0));
+        const invalidAssignment = assignments.find(a => !a.targetId || (a.type === 'proyecto' && (Number(a.horas) || 0) <= 0) || (a.type === 'causa' && (Number(a.horas) || 0) < 0));
         if (invalidAssignment) {
             showToast('Todas las asignaciones deben tener un proyecto/causa válido. Los proyectos requieren horas mayor a 0.', 'error');
             return;
@@ -345,7 +345,7 @@ export default function TimesheetsPage() {
                 
                 const promises = assignments.map(a => {
                     const sliceStart = currentStartTime;
-                    const sliceEnd = addHoursToTime(sliceStart, a.horas);
+                    const sliceEnd = addHoursToTime(sliceStart, Number(a.horas) || 0);
                     currentStartTime = sliceEnd;
 
                     const payload = {
@@ -1149,8 +1149,10 @@ export default function TimesheetsPage() {
                                                                 min="0"
                                                                 max="24"
                                                                 required={a.type === 'proyecto'}
-                                                                value={a.horas === 0 ? 0 : (a.horas || '')}
-                                                                onChange={e => handleAssignmentChange(a.id, 'horas', parseFloat(e.target.value) || 0)}
+                                                                placeholder="0"
+                                                                value={a.horas === '' ? '' : a.horas}
+                                                                onChange={e => handleAssignmentChange(a.id, 'horas', e.target.value === '' ? '' : (parseFloat(e.target.value) || 0))}
+                                                                onFocus={e => e.target.select()}
                                                                 className="w-full h-[46px] bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 font-bold text-center"
                                                             />
                                                         </div>
