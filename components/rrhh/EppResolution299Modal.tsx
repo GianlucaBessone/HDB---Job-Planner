@@ -549,13 +549,13 @@ export default function EppResolution299Modal({
                                                     {del.estado === 'FIRMADA' ? (
                                                         <div 
                                                             className="flex items-center justify-between gap-1 bg-emerald-50 dark:bg-emerald-950/30 px-1 py-0.5 rounded cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900 transition-colors"
-                                                            onClick={() => handleCopyHash(del.signatureHash || del.signatureId || del.codigoActa || '')}
-                                                            title="Copiar Hash de Integridad"
+                                                            onClick={() => handleCopyHash(del.signatureId || del.codigoActa || '')}
+                                                            title="Copiar Código de Firma"
                                                         >
-                                                            <span className="font-mono text-[7px] truncate max-w-[90px]" title={del.signatureHash || del.signatureId || del.codigoActa}>
-                                                                {del.signatureHash || del.signatureId || del.codigoActa || 'FIRMADA DIGITAL'}
+                                                            <span className="font-mono text-[7px] truncate max-w-[90px]" title={del.signatureId || del.codigoActa}>
+                                                                {del.signatureId || del.codigoActa || 'FIRMADA DIGITAL'}
                                                             </span>
-                                                            {copiedHash === (del.signatureHash || del.signatureId || del.codigoActa) ? (
+                                                            {copiedHash === (del.signatureId || del.codigoActa) ? (
                                                                 <CheckCircle2 className="w-3 h-3 shrink-0 text-emerald-600" />
                                                             ) : (
                                                                 <Copy className="w-3 h-3 shrink-0 text-emerald-600/70" />
