@@ -15,6 +15,7 @@ const PUBLIC_DYNAMIC_ROUTES = [
   /^\/api\/encuesta-servicio$/, // POST
   /^\/api\/encuesta-servicio\/[^\/]+$/, // GET
   /^\/api\/centro-ayuda\/articulo\/[^\/]+$/, // GET ayuda contextual
+  /^\/api\/signatures\/verify\/[^\/]+$/, // POST verificacion publica
 ];
 
 export async function middleware(request: NextRequest) {

@@ -144,6 +144,18 @@ export default function EppManagementPage() {
                         onClick: loadAllData
                     },
                     {
+                        id: 'verify-signatures',
+                        label: 'Portal Verificación',
+                        icon: <CheckCircle2 className="w-4 h-4" />,
+                        variant: 'outline',
+                        onClick: () => {
+                            const url = `${window.location.origin}/public/verificar-firma`;
+                            navigator.clipboard.writeText(url);
+                            showToast('Enlace copiado. Abriendo portal...', 'success');
+                            setTimeout(() => window.open(url, '_blank'), 1000);
+                        }
+                    },
+                    {
                         id: 'share-matrix',
                         label: 'Compartir Matriz',
                         icon: <Share2 className="w-4 h-4" />,

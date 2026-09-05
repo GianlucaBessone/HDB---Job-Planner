@@ -26,7 +26,6 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             return NextResponse.json({ error: 'Firma no encontrada' }, { status: 404 });
         }
 
-        // Recalculate hash using the stored fields
         let recalculatedHash: string;
         try {
             recalculatedHash = generateSignatureHash(
