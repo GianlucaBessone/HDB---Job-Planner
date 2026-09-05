@@ -10,8 +10,11 @@ import {
     Building2, 
     Fingerprint,
     Calendar,
-    Download
+    Download,
+    Copy
 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
+import { renderToString } from 'react-dom/server';
 
 interface EppResolution299ModalProps {
     isOpen: boolean;
@@ -38,6 +41,14 @@ export default function EppResolution299Modal({
 
     // Filtro por acta específica o todas
     const [selectedDeliveryId, setSelectedDeliveryId] = useState<string>('ALL');
+    const [copiedHash, setCopiedHash] = useState<string | null>(null);
+
+    const handleCopyHash = (hash: string) => {
+        if (!hash) return;
+        navigator.clipboard.writeText(hash);
+        setCopiedHash(hash);
+        setTimeout(() => setCopiedHash(null), 2000);
+    };
 
     if (!isOpen || !operator) return null;
 
@@ -74,6 +85,10 @@ export default function EppResolution299Modal({
         }
 
         const origin = window.location.origin;
+        const verifyUrl = `${origin}/public/verificar-firma`;
+        const qrSvg = renderToString(
+            <QRCodeSVG value={verifyUrl} size={50} level="M" />
+        );
 
         const htmlContent = `
 <!DOCTYPE html>
@@ -320,8 +335,16 @@ export default function EppResolution299Modal({
         </table>
 
         <!-- Nota al pie (18) -->
-        <div class="footer-note">
-            (18) Información adicional: Constancia emitida bajo Resolución SRT 299/11 y normativas de Higiene y Seguridad Laboral. Las entregas y firmas digitales cuentan con plena validez legal y trazabilidad criptográfica SHA-256 en el Sistema de Gestión Integral HDB.
+        <div class="footer-note" style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+                (18) Información adicional: Constancia emitida bajo Resolución SRT 299/11 y normativas de Higiene y Seguridad Laboral. Las entregas y firmas digitales cuentan con plena validez legal y trazabilidad criptográfica SHA-256 en el Sistema de Gestión Integral HDB.
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; margin-left: 10px;">
+                <div style="font-size: 7px; text-align: right; max-width: 100px; line-height: 1.1;">Escanee el QR para verificar firmas en el Portal SGI</div>
+                <div style="display: flex; align-items: center; justify-content: center;">
+                    ${qrSvg}
+                </div>
+            </div>
         </div>
     </div>
 
@@ -343,7 +366,7 @@ export default function EppResolution299Modal({
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in overflow-y-auto">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-5xl w-full overflow-hidden shadow-2xl flex flex-col my-auto max-h-[95vh]">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-[1200px] w-full overflow-hidden shadow-2xl flex flex-col my-auto max-h-[95vh]">
                 {/* Header del Modal */}
                 <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-950/50 shrink-0">
                     <div className="flex items-center gap-3">
@@ -523,7 +546,24 @@ export default function EppResolution299Modal({
                                                     {new Date(it.fechaEntrega || del.fechaEntrega).toLocaleDateString('es-AR')}
                                                 </td>
                                                 <td className="p-1 text-center font-bold text-[9px] text-emerald-800">
-                                                    ✓ FIRMADA DIGITAL
+                                                    {del.estado === 'FIRMADA' ? (
+                                                        <div 
+                                                            className="flex items-center justify-between gap-1 bg-emerald-50 dark:bg-emerald-950/30 px-1 py-0.5 rounded cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900 transition-colors"
+                                                            onClick={() => handleCopyHash(del.signatureHash || del.signatureId || del.codigoActa || '')}
+                                                            title="Copiar Hash de Integridad"
+                                                        >
+                                                            <span className="font-mono text-[7px] truncate max-w-[90px]" title={del.signatureHash || del.signatureId || del.codigoActa}>
+                                                                {del.signatureHash || del.signatureId || del.codigoActa || 'FIRMADA DIGITAL'}
+                                                            </span>
+                                                            {copiedHash === (del.signatureHash || del.signatureId || del.codigoActa) ? (
+                                                                <CheckCircle2 className="w-3 h-3 shrink-0 text-emerald-600" />
+                                                            ) : (
+                                                                <Copy className="w-3 h-3 shrink-0 text-emerald-600/70" />
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-slate-400 font-normal">PENDIENTE</span>
+                                                    )}
                                                 </td>
                                             </tr>
                                         );
@@ -537,8 +577,20 @@ export default function EppResolution299Modal({
                             </div>
                         )}
 
-                        <div className="border border-black p-1.5 text-[9px] mt-1">
-                            (18) Información adicional: Constancia de entrega conforme a Resolución SRT 299/11 y normativas de Higiene y Seguridad con trazabilidad criptográfica.
+                        <div className="border border-black p-1.5 text-[9px] mt-1 flex items-center justify-between">
+                            <div>
+                                (18) Información adicional: Constancia de entrega conforme a Resolución SRT 299/11 y normativas de Higiene y Seguridad con trazabilidad criptográfica.
+                            </div>
+                            <div className="flex items-center gap-2 ml-4 shrink-0">
+                                <div className="text-[7.5px] text-right max-w-[120px] text-slate-700 leading-tight">
+                                    Escanee el código QR para verificar la validez de las firmas en el Portal SGI.
+                                </div>
+                                <QRCodeSVG 
+                                    value={typeof window !== 'undefined' ? `${window.location.origin}/public/verificar-firma` : ''} 
+                                    size={36} 
+                                    level="M" 
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
