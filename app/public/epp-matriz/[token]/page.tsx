@@ -204,12 +204,21 @@ export default function PublicEppMatrixPage() {
                                 </button>
 
                                 <button
+                                    onClick={() => window.open('/public/verificar-firma', '_blank')}
+                                    className="px-3.5 sm:px-4 py-2.5 bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-2 active:scale-95 whitespace-nowrap"
+                                    title="Abrir Portal de Verificación"
+                                >
+                                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                                    <span>Portal de Verificación</span>
+                                </button>
+
+                                <button
                                     onClick={() => setQrPosterModalOpen(true)}
                                     className="px-3.5 sm:px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-2 active:scale-95 whitespace-nowrap"
                                     title="Generar cartel A4 con código QR para imprimir"
                                 >
                                     <QrCode className="w-4 h-4" />
-                                    <span>Cartel QR A4</span>
+                                    <span>Imprimir QR</span>
                                 </button>
 
                                 <button
