@@ -5,6 +5,7 @@ import {
     ShieldAlert, History, Settings, Wrench, FileCheck,
     BookOpen, Sparkles, Bell, Lightbulb, LifeBuoy, ListTodo,
     Target, Gauge, Receipt, FileBadge, HardHat, Shield,
+    ShoppingCart, Boxes, Warehouse, CreditCard,
     type LucideIcon
 } from 'lucide-react';
 
@@ -40,6 +41,10 @@ const ICON_MAP: Record<string, LucideIcon> = {
     FileBadge,
     HardHat,
     Shield,
+    ShoppingCart,
+    Boxes,
+    Warehouse,
+    CreditCard,
 };
 
 export function getIcon(name: string): LucideIcon {

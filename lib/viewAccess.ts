@@ -38,10 +38,11 @@ export interface SectionConfig {
 export const DEFAULT_SECTIONS: SectionConfig[] = [
     { key: 'operaciones',    label: 'Operaciones',               iconName: 'Wrench',          order: 1 },
     { key: 'gestion',        label: 'Gestión y Seguimiento',     iconName: 'LayoutGrid',      order: 2 },
-    { key: 'logistica',      label: 'Logística y Materiales',    iconName: 'Package',         order: 3 },
-    { key: 'calidad',        label: 'Calidad y Mejora Continua', iconName: 'FileCheck',       order: 4 },
-    { key: 'administracion', label: 'Administración',            iconName: 'Settings',        order: 5 },
-    { key: 'trazabilidad',   label: 'Auditoría y Trazabilidad',  iconName: 'Fingerprint',     order: 6 },
+    { key: 'ventas',         label: 'Ventas y Comercial',        iconName: 'ShoppingCart',   order: 3 },
+    { key: 'logistica',      label: 'Logística y Materiales',    iconName: 'Package',         order: 4 },
+    { key: 'calidad',        label: 'Calidad y Mejora Continua', iconName: 'FileCheck',       order: 5 },
+    { key: 'administracion', label: 'Administración',            iconName: 'Settings',        order: 6 },
+    { key: 'trazabilidad',   label: 'Auditoría y Trazabilidad',  iconName: 'Fingerprint',     order: 7 },
 ];
 
 // ── Default Views ──────────────────────────────────────────────────
@@ -64,6 +65,12 @@ export const DEFAULT_VIEWS: ViewConfig[] = [
     { key: '/monitoreo-fichadas', label: 'Monitoreo de Fichadas',    description: 'Control en tiempo real',      roles: ['supervisor', 'admin', 'qa'],             access: 'ambos', section: 'trazabilidad', iconName: 'ShieldAlert',     color: 'bg-rose-600' },
     { key: '/tareas',              label: 'Tareas',                   description: 'Planificación y recordatorios', roles: ['operador', 'supervisor', 'admin', 'qa'], access: 'ambos', section: 'gestion', iconName: 'ListTodo',        color: 'bg-purple-600' },
     { key: '/okr-kpi',             label: 'OKR y KPI',                description: 'Objetivos e indicadores estratégicos', roles: ['admin', 'qa', 'supervisor'],     access: 'ambos', section: 'gestion', iconName: 'Target',          color: 'bg-emerald-600' },
+
+    // ─ Ventas y Comercial ─
+    { key: '/ventas/gestion',            label: 'Gestión Comercial',        description: 'Maestro de productos y precios', roles: ['admin', 'supervisor', 'vendedor', 'qa'], access: 'ambos', section: 'ventas', iconName: 'Boxes', color: 'bg-emerald-600' },
+    { key: '/ventas/pdv',                label: 'Punto de Venta (PDV)',     description: 'Fase 3 — Próximamente', roles: ['admin', 'supervisor', 'vendedor', 'qa'], access: 'ambos', section: 'ventas', iconName: 'CreditCard', color: 'bg-slate-400' },
+    { key: '/ventas/almacen',            label: 'Almacén y Stock',          description: 'Fase 2 — Próximamente', roles: ['admin', 'supervisor', 'vendedor', 'qa'], access: 'ambos', section: 'ventas', iconName: 'Warehouse', color: 'bg-slate-400' },
+    { key: '/ventas/cuentas-corrientes', label: 'Cuentas Corrientes',       description: 'Fase 4 — Próximamente', roles: ['admin', 'supervisor', 'vendedor', 'qa'], access: 'ambos', section: 'ventas', iconName: 'Receipt', color: 'bg-slate-400' },
 
     // ─ Logística y Materiales ─
     { key: '/inventario',           label: 'Inventario de Materiales',  description: 'Stock y movimientos',                roles: ['admin', 'qa', 'vendedor'],                      access: 'ambos', section: 'logistica', iconName: 'PackageSearch', color: 'bg-amber-600' },

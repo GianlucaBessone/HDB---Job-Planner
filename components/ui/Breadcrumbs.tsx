@@ -91,28 +91,28 @@ export function Breadcrumbs() {
     };
 
     return (
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-1.5 mb-2 h-7">
             <button 
                 onClick={handleBack}
-                className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-slate-500 transition-colors mr-2 flex items-center gap-1 text-sm font-bold"
+                className="px-2 py-1 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors mr-1.5 flex items-center gap-1 text-xs font-bold"
                 title="Volver (Alt + Flecha Izquierda)"
             >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Volver</span>
             </button>
 
-            <nav className="flex items-center text-sm font-medium text-slate-500 overflow-x-auto whitespace-nowrap hide-scrollbar">
+            <nav className="flex items-center text-xs font-medium text-slate-500 overflow-x-auto whitespace-nowrap hide-scrollbar">
                 <Link href="/" className="hover:text-primary transition-colors flex items-center shrink-0">
-                    <Home className="w-4 h-4" />
+                    <Home className="w-3.5 h-3.5" />
                 </Link>
                 
                 {breadcrumbItems.map((item, index) => {
                     const isLast = index === breadcrumbItems.length - 1;
                     return (
                         <div key={item.url} className="flex items-center shrink-0">
-                            <ChevronRight className="w-3.5 h-3.5 mx-1 text-slate-400" />
+                            <ChevronRight className="w-3 h-3 mx-1 text-slate-400" />
                             {isLast ? (
-                                <span className="text-slate-800 dark:text-slate-200 font-black">{item.label}</span>
+                                <span className="text-slate-800 dark:text-slate-200 font-bold">{item.label}</span>
                             ) : (
                                 <Link 
                                     href={item.url} 

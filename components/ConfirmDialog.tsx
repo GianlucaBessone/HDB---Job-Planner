@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { AlertCircle, X } from 'lucide-react';
+import { AlertCircle, X, Loader2 } from 'lucide-react';
 
 interface ConfirmDialogProps {
     isOpen: boolean;
@@ -12,6 +12,8 @@ interface ConfirmDialogProps {
     confirmLabel?: string;
     cancelLabel?: string;
     variant?: 'danger' | 'warning' | 'info';
+    isLoading?: boolean;
+    loadingLabel?: string;
 }
 
 export default function ConfirmDialog({
@@ -22,7 +24,9 @@ export default function ConfirmDialog({
     onCancel,
     confirmLabel = 'Eliminar',
     cancelLabel = 'Cancelar',
-    variant = 'danger'
+    variant = 'danger',
+    isLoading = false,
+    loadingLabel = 'Procesando...'
 }: ConfirmDialogProps) {
     if (!isOpen) return null;
 
@@ -48,7 +52,8 @@ export default function ConfirmDialog({
                         </div>
                         <button
                             onClick={onCancel}
-                            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500 transition-colors"
+                            disabled={isLoading}
+                            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500 transition-colors disabled:opacity-50"
                         >
                             <X className="w-5 h-5" />
                         </button>
@@ -64,15 +69,24 @@ export default function ConfirmDialog({
                     <div className="flex gap-3">
                         <button
                             onClick={onCancel}
-                            className="flex-1 px-6 py-3.5 rounded-2xl font-bold text-slate-600 dark:text-slate-300 bg-muted text-muted-foreground/50 hover:bg-slate-200 transition-all active:scale-95"
+                            disabled={isLoading}
+                            className="flex-1 px-6 py-3.5 rounded-2xl font-bold text-slate-600 dark:text-slate-300 bg-muted text-muted-foreground/50 hover:bg-slate-200 transition-all active:scale-95 disabled:opacity-50"
                         >
                             {cancelLabel}
                         </button>
                         <button
                             onClick={onConfirm}
-                            className={`flex-[1.5] px-6 py-3.5 rounded-2xl font-bold transition-all shadow-lg active:scale-95 ${variantStyles[variant]}`}
+                            disabled={isLoading}
+                            className={`flex-[1.5] px-6 py-3.5 rounded-2xl font-bold transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 disabled:opacity-75 ${variantStyles[variant]}`}
                         >
-                            {confirmLabel}
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    <span>{loadingLabel}</span>
+                                </>
+                            ) : (
+                                confirmLabel
+                            )}
                         </button>
                     </div>
                 </div>

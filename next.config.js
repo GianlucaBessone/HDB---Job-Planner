@@ -18,4 +18,6 @@ const nextConfig = {
 };
 
 module.exports = withPWA(nextConfig);
-// Force reload Prisma client cache
+// Reload trigger: 2026-09-10-dynamic-price-lists
+
+

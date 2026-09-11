@@ -1702,15 +1702,15 @@ model TareaComentario {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 model Proveedor {
-  id             String           @id @default(cuid())
+  id             String              @id @default(cuid())
   razonSocial    String
   nombreFantasia String?
-  cuit           String           @unique
+  cuit           String              @unique
   condicionIva   String?
-  domicilio      String?          @db.Text
-  activo         Boolean          @default(true)
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  domicilio      String?             @db.Text
+  activo         Boolean             @default(true)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
   facturas       FacturaConsumo[]
 }
 
@@ -2455,3 +2455,266 @@ model EppPublicShare {
   @@index([token])
   @@index([clientId])
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MÓDULO VENTAS — FASE 1: GESTIÓN COMERCIAL
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Categoria {
+  id        String     @id @default(cuid())
+  nombre    String     @unique
+  activo    Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  productos Producto[]
+}
+
+model UnidadMedida {
+  id        String     @id @default(cuid())
+  codigo    String     @unique // "UN", "M", "KG", "L", "ROLLO", "CAJA", etc.
+  nombre    String     // "Unidad", "Metro", "Kilogramo", etc.
+  activo    Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  productos Producto[]
+}
+
+model Marca {
+  id            String        @id @default(cuid())
+  nombre        String        @unique
+  activo        Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  productos     Producto[]
+  listasPrecios ListaPrecio[]
+}
+
+model Familia {
+  id            String        @id @default(cuid())
+  nombre        String        @unique
+  activo        Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  subfamilias   SubFamilia[]
+  productos     Producto[]
+  listasPrecios ListaPrecio[]
+}
+
+model SubFamilia {
+  id        String     @id @default(cuid())
+  familiaId String
+  familia   Familia    @relation(fields: [familiaId], references: [id], onDelete: Cascade)
+  nombre    String
+  activo    Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  productos Producto[]
+
+  @@unique([familiaId, nombre])
+  @@index([familiaId])
+}
+
+model IvaAlicuota {
+  id             String     @id @default(cuid())
+  porcentaje     Float      @unique // 0, 2.5, 5, 10.5, 21, 27
+  nombre         String     // "21%", "10.5%", "Exento (0%)", etc.
+  activo         Boolean    @default(true)
+  predeterminado Boolean    @default(false)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  productos      Producto[]
+}
+
+model ListaPrecio {
+  id               String           @id @default(cuid())
+  codigo           String           @unique // "LISTA_1", "LISTA_2", "LISTA_3", "GREMIO_15", etc.
+  nombre           String           // "Lista de Precio 1", "Gremio -15%", etc.
+  descripcion      String?
+  tipoAjuste       String           @default("MANUAL") // MANUAL | PORCENTAJE_COSTO | MARGEN_COSTO | DESCUENTO_BASE | RECARGO_BASE
+  valorAjuste      Float            @default(0) // % de ajuste (ej: 15 para +15% o -10)
+  listaBaseId      String?
+  listaBase        ListaPrecio?     @relation("ListaPrecioBase", fields: [listaBaseId], references: [id], onDelete: SetNull)
+  listasDerivadas  ListaPrecio[]    @relation("ListaPrecioBase")
+  aplicaA          String           @default("TODOS") // TODOS | FAMILIA | MARCA
+  familiaId        String?
+  familia          Familia?         @relation(fields: [familiaId], references: [id], onDelete: SetNull)
+  marcaId          String?
+  marca            Marca?           @relation(fields: [marcaId], references: [id], onDelete: SetNull)
+  orden            Int              @default(1)
+  esPredeterminada Boolean          @default(false)
+  activo           Boolean          @default(true)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@index([tipoAjuste])
+  @@index([aplicaA])
+  @@index([familiaId])
+  @@index([marcaId])
+}
+
+model Almacen {
+  id               String                    @id @default(cuid())
+  codigo           String                    @unique // "ALM-CENTRAL"
+  nombre           String                    // "Almacén Central"
+  descripcion      String?
+  esPredeterminado Boolean                   @default(false)
+  activo           Boolean                   @default(true)
+  createdAt        DateTime                  @default(now())
+  updatedAt        DateTime                  @updatedAt
+  ubicaciones      AlmacenUbicacion[]
+  stocks           ProductoStock[]
+  movimientos      ProductoStockMovimiento[]
+}
+
+model AlmacenUbicacion {
+  id        String          @id @default(cuid())
+  almacenId String
+  almacen   Almacen         @relation(fields: [almacenId], references: [id], onDelete: Cascade)
+  codigo    String          // "ESTANTE-A1", "PASILLO-1"
+  nombre    String?
+  activo    Boolean         @default(true)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  stocks    ProductoStock[]
+
+  @@unique([almacenId, codigo])
+  @@index([almacenId])
+}
+
+model Producto {
+  id           String              @id @default(cuid())
+  sku          String              @unique // SKU Interno
+  codigoBarras String?             @unique // Código de barras para lector
+  descripcion  String
+  categoriaId  String?
+  categoria    Categoria?          @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
+  marcaId      String?
+  marca        Marca?              @relation(fields: [marcaId], references: [id], onDelete: SetNull)
+  familiaId    String?
+  familia      Familia?            @relation(fields: [familiaId], references: [id], onDelete: SetNull)
+  subFamiliaId String?
+  subFamilia   SubFamilia?         @relation(fields: [subFamiliaId], references: [id], onDelete: SetNull)
+  unidadId     String?
+  unidad       UnidadMedida?       @relation(fields: [unidadId], references: [id], onDelete: SetNull)
+  ivaId        String?
+  iva          IvaAlicuota?        @relation(fields: [ivaId], references: [id], onDelete: SetNull)
+  rentabilidad Float                     @default(0) // Margen de ganancia (%)
+  precioBase   Float                     @default(0) // Precio Base de Venta (único precio propio del producto)
+  activo       Boolean                   @default(true) // Baja lógica
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+
+  proveedores  ProductoProveedorVentas[]
+  stocks       ProductoStock[]
+  movimientos  ProductoStockMovimiento[]
+  historial    ProductoHistorial[]
+
+  @@index([sku])
+  @@index([codigoBarras])
+  @@index([descripcion])
+  @@index([categoriaId])
+  @@index([marcaId])
+  @@index([familiaId])
+  @@index([unidadId])
+  @@index([activo])
+}
+
+model ProveedorVentas {
+  id             String                    @id @default(cuid())
+  codigo         String?                   @unique
+  razonSocial    String
+  nombreFantasia String?
+  cuit           String?
+  condicionIva   String?                   // Responsable Inscripto, Monotributo, etc.
+  telefono       String?
+  email          String?
+  direccion      String?
+  localidad      String?
+  provincia      String?
+  activo         Boolean                   @default(true)
+  createdAt      DateTime                  @default(now())
+  updatedAt      DateTime                  @updatedAt
+  productos      ProductoProveedorVentas[]
+
+  @@index([codigo])
+  @@index([razonSocial])
+  @@index([cuit])
+  @@index([activo])
+}
+
+model ProductoProveedorVentas {
+  id           String          @id @default(cuid())
+  productoId   String
+  producto     Producto        @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  proveedorId  String
+  proveedor    ProveedorVentas @relation(fields: [proveedorId], references: [id], onDelete: Restrict)
+  skuProveedor String?
+  costo        Float           @default(0)
+  esPrincipal  Boolean         @default(true)
+  orden        Int             @default(1)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@unique([productoId, proveedorId])
+  @@index([productoId])
+  @@index([proveedorId])
+  @@index([skuProveedor])
+}
+
+model ProductoStock {
+  id          String            @id @default(cuid())
+  productoId  String
+  producto    Producto          @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  almacenId   String
+  almacen     Almacen           @relation(fields: [almacenId], references: [id], onDelete: Restrict)
+  ubicacionId String?
+  ubicacion   AlmacenUbicacion? @relation(fields: [ubicacionId], references: [id], onDelete: SetNull)
+  stockActual Float             @default(0)
+  stockMinimo Float             @default(0)
+  stockMaximo Float             @default(0)
+  updatedAt   DateTime          @updatedAt
+
+  @@unique([productoId, almacenId])
+  @@index([productoId])
+  @@index([almacenId])
+}
+
+model ProductoStockMovimiento {
+  id             String   @id @default(cuid())
+  productoId     String
+  producto       Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  almacenId      String
+  almacen        Almacen  @relation(fields: [almacenId], references: [id], onDelete: Restrict)
+  tipo           String   // AJUSTE | CONTEO | ENTRADA | SALIDA | TRANSFERENCIA | CORRECCION
+  cantidad       Float
+  stockAnterior  Float
+  stockPosterior Float
+  motivo         String?
+  usuarioId      String?
+  usuarioNombre  String?
+  createdAt      DateTime @default(now())
+
+  @@index([productoId])
+  @@index([almacenId])
+  @@index([createdAt])
+}
+
+model ProductoHistorial {
+  id            String   @id @default(cuid())
+  productoId    String
+  producto      Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  tipo          String   // CREACION | EDICION_DATOS | CAMBIO_PRECIO | CAMBIO_COSTO | CAMBIO_IVA | AJUSTE_MASIVO | IMPORTACION_EXCEL | BAJA_LOGICA | AJUSTE_STOCK
+  campo         String?  // p1 | p2 | p3 | costo | iva | rentabilidad | descripcion | stock, etc.
+  valorAnterior String?
+  valorNuevo    String?
+  origen        String   // EDICION_DIRECTA | AJUSTE_RAPIDO | AJUSTE_LOTES | IMPORTACION_EXCEL | AJUSTE_STOCK
+  detalles      Json?    // Metadatos { porcentaje, listaPrecio, nombreArchivo, cantidadAfectada, etc. }
+  usuarioId     String?
+  usuarioNombre String?
+  createdAt     DateTime @default(now())
+
+  @@index([productoId])
+  @@index([tipo])
+  @@index([createdAt])
+}
+
