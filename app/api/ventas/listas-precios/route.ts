@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { logAudit } from '@/lib/audit';
+import { recalcularPreciosParaLista } from '@/lib/ventas/listaPrecioService';
 
 const listaPrecioCreateSchema = z.object({
   nombre: z.string().min(1, 'El nombre de la lista es obligatorio'),
@@ -120,25 +121,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-/**
- * Función auxiliar para validar productos aplicables según la regla de la lista
- */
-export async function recalcularPreciosParaLista(listaId: string, userId?: string): Promise<number> {
-  const lista = await prisma.listaPrecio.findUnique({
-    where: { id: listaId },
-  });
-  if (!lista || lista.tipoAjuste === 'MANUAL') return 0;
-
-  // Build filter for applicable products
-  const where: any = { activo: true };
-  if (lista.aplicaA === 'FAMILIA' && lista.familiaId) {
-    where.familiaId = lista.familiaId;
-  } else if (lista.aplicaA === 'MARCA' && lista.marcaId) {
-    where.marcaId = lista.marcaId;
-  }
-
-  const count = await prisma.producto.count({ where });
-  return count;
 }

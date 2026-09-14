@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { logAudit } from '@/lib/audit';
-import { recalcularPreciosParaLista } from '../route';
+import { recalcularPreciosParaLista } from '@/lib/ventas/listaPrecioService';
 
 const listaPrecioUpdateSchema = z.object({
   nombre: z.string().min(1, 'El nombre es obligatorio'),
