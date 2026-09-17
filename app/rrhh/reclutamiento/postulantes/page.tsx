@@ -53,11 +53,11 @@ export default function TalentPoolPage() {
                 searchPlaceholder="Buscar por nombre, puesto, habilidades..."
                 actions={[
                     {
-                        id: 'filter',
-                        label: 'Filtros',
-                        icon: <Filter />,
-                        onClick: () => {},
-                        variant: 'outline'
+                        id: 'new-candidate',
+                        label: 'Nuevo Postulante',
+                        icon: <Plus />,
+                        variant: 'primary',
+                        onClick: () => router.push('/rrhh/reclutamiento/postulantes/nuevo')
                     }
                 ]}
             />

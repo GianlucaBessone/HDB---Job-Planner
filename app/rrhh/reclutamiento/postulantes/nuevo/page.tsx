@@ -1,12 +1,15 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import ModuleHeader from '@/components/ModuleHeader';
 import { createCandidate, getVacancies } from '@/app/rrhh/actions';
 
-export default function NuevoPostulantePage() {
+function NuevoPostulanteForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const initialVacancyId = searchParams.get('vacancyId') || '';
+
     const [isLoading, setIsLoading] = useState(false);
     const [vacancies, setVacancies] = useState<any[]>([]);
     
@@ -17,8 +20,14 @@ export default function NuevoPostulantePage() {
         phone: '',
         city: '',
         linkedin: '',
-        vacancyId: ''
+        vacancyId: initialVacancyId
     });
+
+    useEffect(() => {
+        if (initialVacancyId) {
+            setFormData(prev => ({ ...prev, vacancyId: initialVacancyId }));
+        }
+    }, [initialVacancyId]);
 
     useEffect(() => {
         getVacancies().then(res => {
@@ -34,7 +43,11 @@ export default function NuevoPostulantePage() {
         try {
             const res = await createCandidate(formData);
             if (res.success) {
-                router.push('/rrhh/reclutamiento/postulantes');
+                if (formData.vacancyId) {
+                    router.push(`/rrhh/reclutamiento/vacantes/${formData.vacancyId}/pipeline`);
+                } else {
+                    router.push('/rrhh/reclutamiento/postulantes');
+                }
             } else {
                 alert('Error al crear postulante: ' + res.error);
             }
@@ -45,17 +58,25 @@ export default function NuevoPostulantePage() {
         }
     };
 
+    const handleCancel = () => {
+        if (initialVacancyId) {
+            router.push(`/rrhh/reclutamiento/vacantes/${initialVacancyId}/pipeline`);
+        } else {
+            router.push('/rrhh/reclutamiento/postulantes');
+        }
+    };
+
     return (
         <div className="w-full max-w-4xl mx-auto p-4 md:p-6 animate-in fade-in">
             <ModuleHeader
                 title="Nuevo Postulante"
-                description="Ingreso manual de candidato a la base de talentos"
+                description={initialVacancyId ? "Carga de postulante para vacante laboral" : "Ingreso manual de candidato a la base de talentos"}
                 actions={[
                     {
                         id: 'back',
                         label: 'Cancelar',
                         variant: 'outline',
-                        onClick: () => router.push('/rrhh/reclutamiento/postulantes')
+                        onClick: handleCancel
                     }
                 ]}
             />
@@ -147,3 +168,16 @@ export default function NuevoPostulantePage() {
         </div>
     );
 }
+
+export default function NuevoPostulantePage() {
+    return (
+        <Suspense fallback={
+            <div className="flex justify-center items-center min-h-[400px]">
+                <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+            </div>
+        }>
+            <NuevoPostulanteForm />
+        </Suspense>
+    );
+}
+

@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import { MoreVertical, Calendar, Mail, MessageCircle, Star, BrainCircuit } from 'lucide-react';
+import { MoreVertical, Calendar, Mail, MessageCircle, Star, BrainCircuit, UserPlus, Trash2, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import ModuleHeader from '@/components/ModuleHeader';
+import AddCandidateModal from '@/components/rrhh/AddCandidateModal';
+import ConfirmModal from '@/components/ConfirmModal';
 
 const initialStages = [
     { id: 'POSTULADO', title: 'Postulados' },
@@ -16,17 +18,34 @@ const initialStages = [
     { id: 'CONTRATADO', title: 'Contratado' },
 ];
 
-import { getPipelineCandidates, updateCandidateStage } from '@/app/rrhh/actions';
+import { getPipelineCandidates, updateCandidateStage, getVacancy, deleteVacancy } from '@/app/rrhh/actions';
 
 export default function PipelinePage({ params }: { params: { id: string } }) {
     const router = useRouter();
     const [columns, setColumns] = useState<{ [key: string]: any[] }>({});
     const [isClient, setIsClient] = useState(false);
+    const [vacancy, setVacancy] = useState<any>(null);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [addModalInitialStage, setAddModalInitialStage] = useState('POSTULADO');
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
         setIsClient(true);
+        loadVacancy();
         loadCandidates();
     }, [params.id]);
+
+    const loadVacancy = async () => {
+        try {
+            const res = await getVacancy(params.id);
+            if (res.success && res.data) {
+                setVacancy(res.data);
+            }
+        } catch (error) {
+            console.error("Error loading vacancy:", error);
+        }
+    };
 
     const loadCandidates = async () => {
         const res = await getPipelineCandidates(params.id);
@@ -47,6 +66,22 @@ export default function PipelinePage({ params }: { params: { id: string } }) {
                 });
             });
             setColumns(initialCols);
+        }
+    };
+
+    const handleDeleteVacancy = async () => {
+        setIsDeleting(true);
+        try {
+            const res = await deleteVacancy(params.id);
+            if (res.success) {
+                router.push('/rrhh/reclutamiento/vacantes');
+            } else {
+                alert('Error al eliminar vacante: ' + res.error);
+            }
+        } catch (err: any) {
+            alert('Error al eliminar: ' + err.message);
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -86,12 +121,35 @@ export default function PipelinePage({ params }: { params: { id: string } }) {
 
     if (!isClient) return null; // Avoid SSR hydration mismatch
 
+    const totalCandidatesCount = Object.values(columns).reduce((acc, col) => acc + (col?.length || 0), 0);
+
     return (
         <div className="w-full max-w-[1600px] mx-auto p-4 md:p-6 flex flex-col h-screen animate-in fade-in">
             <ModuleHeader
-                title="Pipeline de Reclutamiento"
-                description="Arrastra los candidatos entre las diferentes etapas"
+                title={vacancy ? `Pipeline: ${vacancy.title}` : "Pipeline de Reclutamiento"}
+                description={
+                    vacancy
+                        ? `${vacancy.branch ? `${vacancy.branch} • ` : ''}${totalCandidatesCount} postulante(s) en proceso`
+                        : "Arrastra los candidatos entre las diferentes etapas"
+                }
                 actions={[
+                    {
+                        id: 'add-candidate',
+                        label: 'Cargar Postulante',
+                        icon: <UserPlus className="w-4 h-4" />,
+                        onClick: () => {
+                            setAddModalInitialStage('POSTULADO');
+                            setIsAddModalOpen(true);
+                        },
+                        variant: 'primary'
+                    },
+                    {
+                        id: 'delete-vacancy',
+                        label: 'Eliminar Vacante',
+                        icon: <Trash2 className="w-4 h-4" />,
+                        onClick: () => setIsDeleteModalOpen(true),
+                        variant: 'danger'
+                    },
                     {
                         id: 'back',
                         label: 'Volver',
@@ -107,10 +165,23 @@ export default function PipelinePage({ params }: { params: { id: string } }) {
                         {initialStages.map(stage => (
                             <div key={stage.id} className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 min-w-[300px] w-[300px] flex flex-col border border-slate-200 dark:border-slate-700 shadow-sm flex-shrink-0">
                                 <div className="flex items-center justify-between mb-3 px-1">
-                                    <h3 className="font-bold text-sm text-slate-700 dark:text-slate-200 uppercase tracking-wider">{stage.title}</h3>
-                                    <span className="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold px-2 py-0.5 rounded-full">
-                                        {columns[stage.id]?.length || 0}
-                                    </span>
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="font-bold text-sm text-slate-700 dark:text-slate-200 uppercase tracking-wider">{stage.title}</h3>
+                                        <span className="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold px-2 py-0.5 rounded-full">
+                                            {columns[stage.id]?.length || 0}
+                                        </span>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setAddModalInitialStage(stage.id);
+                                            setIsAddModalOpen(true);
+                                        }}
+                                        className="p-1 rounded-md text-slate-400 hover:text-indigo-600 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                        title={`Cargar postulante en ${stage.title}`}
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                    </button>
                                 </div>
 
                                 <Droppable droppableId={stage.id}>
@@ -144,7 +215,7 @@ export default function PipelinePage({ params }: { params: { id: string } }) {
                                                             <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">{candidate.role}</p>
                                                             
                                                             <div className="flex flex-wrap gap-1 mb-3">
-                                                                {candidate.tags.map(tag => (
+                                                                {candidate.tags.map((tag: string) => (
                                                                     <span key={tag} className="text-[10px] uppercase font-bold px-1.5 py-0.5 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-700">
                                                                         {tag}
                                                                     </span>
@@ -180,6 +251,30 @@ export default function PipelinePage({ params }: { params: { id: string } }) {
                     </div>
                 </DragDropContext>
             </div>
+
+            {/* Modal para Cargar Postulante */}
+            <AddCandidateModal
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
+                vacancyId={params.id}
+                vacancyTitle={vacancy?.title}
+                initialStage={addModalInitialStage}
+                onCandidateAdded={() => {
+                    loadCandidates();
+                }}
+            />
+
+            {/* Modal de Confirmación para Eliminar Vacante */}
+            <ConfirmModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleDeleteVacancy}
+                title="¿Eliminar Vacante?"
+                message={`¿Estás seguro de que deseas eliminar la vacante "${vacancy?.title || 'esta vacante'}"? Se eliminarán todas las postulaciones asociadas a esta vacante en el pipeline. Los postulantes permanecerán en la Base de Talentos general.`}
+                confirmText={isDeleting ? "Eliminando..." : "Eliminar"}
+                cancelText="Cancelar"
+                isDestructive={true}
+            />
         </div>
     );
 }
