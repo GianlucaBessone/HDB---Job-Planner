@@ -133,7 +133,8 @@ export default function RootLayout({
         pathname.includes('/report') || 
         pathname.startsWith('/os/') || 
         pathname.startsWith('/ideas-sugerencias-reclamos') ||
-        pathname.startsWith('/public/')
+        pathname.startsWith('/public/') ||
+        pathname.startsWith('/portal-clientes')
     ) : false;
 
     const role = currentUser?.role?.toLowerCase() || 'operador';

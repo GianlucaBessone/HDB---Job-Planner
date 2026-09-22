@@ -56,6 +56,9 @@ model Project {
   documentChecklists      DocumentChecklist[]
   tareas                  Tarea[]
   technicalReports        TechnicalReport[]
+  ordenesTrabajo          OrdenTrabajo[]
+  responsablesCliente     ClientResponsableProyecto[]
+  sectoresCliente         ClientSector[]
 
   @@index([qrToken])
 }
@@ -177,6 +180,12 @@ model Operator {
   // EPP (Elementos de Protección Personal)
   eppDeliveries            EppDelivery[]
   eppRequests              EppRequest[]
+
+  // Órdenes de Trabajo
+  ordenesTrabajoCreadas     OrdenTrabajo[]      @relation("OtCreador")
+  ordenesTrabajoResponsable OrdenTrabajo[]      @relation("OtResponsable")
+  otCicloOperadores         OtCicloOperador[]
+  clientRates               ClientOperatorRate[]
 }
 
 model FavoriteBlock {
@@ -210,6 +219,13 @@ model HdbClient {
   createdAt        DateTime          @default(now())
   technicalReports TechnicalReport[]
   eppPublicShares  EppPublicShare[]
+
+  // Órdenes de Trabajo & Portal
+  ordenesTrabajo   OrdenTrabajo[]
+  configuracion    HdbClientConfig?
+  responsables     ClientResponsable[]
+  operatorRates    ClientOperatorRate[]
+  sectores         ClientSector[]
 }
 
 model TimeEntry {
@@ -2717,4 +2733,214 @@ model ProductoHistorial {
   @@index([tipo])
   @@index([createdAt])
 }
+
+// ==========================================
+// MÓDULO ÓRDENES DE TRABAJO (OT) & PORTAL
+// ==========================================
+
+model OtCounter {
+  year          Int @id
+  currentNumber Int @default(0)
+}
+
+model HdbClientConfig {
+  id                   String     @id @default(cuid())
+  clientId             String     @unique
+  client               HdbClient  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  porcentajeMateriales Float      @default(0) // % incremento/descuento sobre materiales de inventario
+  habilitadoOT         Boolean    @default(false) // Si el cliente está habilitado en el módulo de OT
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+}
+
+model ClientOperatorRate {
+  id         String    @id @default(cuid())
+  clientId   String
+  client     HdbClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  operatorId String
+  operator   Operator  @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  valorHora  Float     @default(0)
+  activo     Boolean   @default(true) // Permite soft-delete si tiene historial en OTs
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@unique([clientId, operatorId])
+  @@index([clientId])
+  @@index([operatorId])
+}
+
+model ClientSector {
+  id        String    @id @default(cuid())
+  clientId  String
+  client    HdbClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  projectId String?
+  project   Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  nombre    String
+  createdAt DateTime  @default(now())
+
+  @@index([clientId])
+  @@index([projectId])
+}
+
+model ClientResponsable {
+  id                 String                      @id @default(cuid())
+  clientId           String
+  client             HdbClient                   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  nombre             String
+  email              String?
+  cargo              String?
+  activo             Boolean                     @default(true)
+  portalHabilitado   Boolean                     @default(true)
+  passwordHash       String?
+  mustChangePassword Boolean                     @default(true)
+  proyectos          ClientResponsableProyecto[]
+  firmasCiclos       OtCiclo[]
+  createdAt          DateTime                    @default(now())
+  updatedAt          DateTime                    @updatedAt
+
+  @@index([clientId])
+}
+
+model ClientResponsableProyecto {
+  id            String            @id @default(cuid())
+  responsableId String
+  responsable   ClientResponsable @relation(fields: [responsableId], references: [id], onDelete: Cascade)
+  proyectoId    String
+  project       Project           @relation(fields: [proyectoId], references: [id], onDelete: Cascade)
+  createdAt     DateTime          @default(now())
+
+  @@unique([responsableId, proyectoId])
+  @@index([responsableId])
+  @@index([proyectoId])
+}
+
+model OrdenTrabajo {
+  id               String              @id @default(cuid())
+  numeroOT         String              @unique // ej: OT-2026-0001
+  numeroSecuencial Int
+  anio             Int
+  refCliente       String?             // Referencia manual aportada por el cliente (ej: OS-45872)
+  clienteId        String
+  cliente          HdbClient           @relation(fields: [clienteId], references: [id], onDelete: Restrict)
+  proyectoId       String
+  proyecto         Project             @relation(fields: [proyectoId], references: [id], onDelete: Restrict)
+  sector           String?
+  reporteTrabajo   String              @db.Text
+  creadorId        String
+  creador          Operator            @relation("OtCreador", fields: [creadorId], references: [id], onDelete: Restrict)
+  responsableId    String
+  responsable      Operator            @relation("OtResponsable", fields: [responsableId], references: [id], onDelete: Restrict)
+  estado           String              @default("ABIERTA") // ABIERTA | PAUSADA | PENDIENTE_FIRMA | CERRADA
+  tipoCierre       String?             // NORMAL | INCOMPLETO | PARCIAL
+  otPreviaId      String?
+  otPrevia         OrdenTrabajo?       @relation("OtContinuacion", fields: [otPreviaId], references: [id], onDelete: SetNull)
+  otSiguiente      OrdenTrabajo[]      @relation("OtContinuacion")
+  ciclos           OtCiclo[]
+  comentarios      OtComentario[]
+  historialEstados OtHistorialEstado[]
+  fechaCierre      DateTime?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  @@index([clienteId])
+  @@index([proyectoId])
+  @@index([responsableId])
+  @@index([creadorId])
+  @@index([estado])
+  @@index([refCliente])
+  @@index([anio, numeroSecuencial])
+}
+
+model OtCiclo {
+  id                   String              @id @default(cuid())
+  ordenTrabajoId       String
+  ordenTrabajo         OrdenTrabajo        @relation(fields: [ordenTrabajoId], references: [id], onDelete: Cascade)
+  numeroCiclo          Int                 @default(1)
+  periodo              String              // ej: "2026-09" o "Septiembre 2026"
+  estado               String              @default("ABIERTO") // ABIERTO | PENDIENTE_FIRMA | FIRMADO
+  operadores           OtCicloOperador[]
+  materiales           OtCicloMaterial[]
+  totalHoras           Float               @default(0)
+  totalManoObra        Float               @default(0)
+  totalMateriales      Float               @default(0)
+  totalGeneral         Float               @default(0)
+  
+  // Firma y sellado criptográfico
+  fechaFirma           DateTime?
+  responsableClienteId String?
+  responsableCliente   ClientResponsable?  @relation(fields: [responsableClienteId], references: [id], onDelete: SetNull)
+  firmanteNombre       String?
+  tipoCierre           String?             // NORMAL | INCOMPLETO | PARCIAL
+  esquemaVersion       String?             @default("1.0")
+  hashIntegridad       String?             // SHA-256 canónico de 64 caracteres hex
+  datosCanonicos       String?             @db.Text
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  @@unique([ordenTrabajoId, numeroCiclo])
+  @@index([ordenTrabajoId])
+  @@index([estado])
+}
+
+model OtCicloOperador {
+  id                 String   @id @default(cuid())
+  cicloId            String
+  ciclo              OtCiclo  @relation(fields: [cicloId], references: [id], onDelete: Cascade)
+  operadorId         String
+  operador           Operator @relation(fields: [operadorId], references: [id], onDelete: Restrict)
+  horas              Float    @default(0)
+  valorHoraSnapshot  Float    @default(0)
+  costoManoObra      Float    @default(0)
+  createdAt          DateTime @default(now())
+
+  @@index([cicloId])
+  @@index([operadorId])
+}
+
+model OtCicloMaterial {
+  id                         String   @id @default(cuid())
+  cicloId                    String
+  ciclo                      OtCiclo  @relation(fields: [cicloId], references: [id], onDelete: Cascade)
+  materialSource             String   @default("INVENTARIO") // INVENTARIO | MANUAL
+  materialCodigo             String   // SKU o código inventario, o "999999"
+  descripcion                String
+  cantidad                   Float    @default(1)
+  metros                     Float?
+  precioBaseSnapshot         Float    @default(0)
+  porcentajeClienteSnapshot  Float    @default(0) // 0 si materialSource == MANUAL
+  precioFinalSnapshot        Float    @default(0) // Precio final directo si es MANUAL
+  importeTotal               Float    @default(0)
+  createdAt                  DateTime @default(now())
+
+  @@index([cicloId])
+  @@index([materialCodigo])
+}
+
+model OtComentario {
+  id             String       @id @default(cuid())
+  ordenTrabajoId String
+  ordenTrabajo   OrdenTrabajo @relation(fields: [ordenTrabajoId], references: [id], onDelete: Cascade)
+  usuarioId      String?
+  usuarioNombre  String
+  usuarioRol     String       // operador | supervisor | admin | vendedor | cliente
+  texto          String       @db.Text
+  createdAt      DateTime     @default(now())
+
+  @@index([ordenTrabajoId])
+}
+
+model OtHistorialEstado {
+  id             String       @id @default(cuid())
+  ordenTrabajoId String
+  ordenTrabajo   OrdenTrabajo @relation(fields: [ordenTrabajoId], references: [id], onDelete: Cascade)
+  estadoAnterior String
+  estadoNuevo    String
+  usuarioId      String?
+  usuarioNombre  String
+  motivo         String?
+  createdAt      DateTime     @default(now())
+
+  @@index([ordenTrabajoId])
+}
+
 

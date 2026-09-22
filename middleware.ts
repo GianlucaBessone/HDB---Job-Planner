@@ -7,6 +7,7 @@ const PUBLIC_ROUTES = [
   '/api/sugerencias',
   '/api/cron',
   '/api/public',
+  '/api/portal-clientes',
 ];
 
 const PUBLIC_DYNAMIC_ROUTES = [

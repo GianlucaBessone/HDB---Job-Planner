@@ -1806,7 +1806,7 @@ export default function MyProjectsPage() {
                 </div>
             )}
 
-            <style jsx global>{`
+            <style>{`
                 @keyframes pulse-soft {
                     0%, 100% { opacity: 1; }
                     50% { opacity: 0.6; }
