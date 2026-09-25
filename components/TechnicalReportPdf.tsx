@@ -14,7 +14,7 @@ const S = StyleSheet.create({
     headDate: { fontSize: 9, color: '#94a3b8' },
 
     section: { marginBottom: 18 },
-    sectionTitle: { fontSize: 10, fontFamily: 'Helvetica-Bold', color: '#475569', textTransform: 'uppercase', letterSpacing: 0.8, borderBottomWidth: 1, borderBottomColor: '#e2e8f0', paddingBottom: 4, marginBottom: 10 },
+    sectionTitle: { fontSize: 10, fontFamily: 'Helvetica-Bold', color: '#475569', textTransform: 'uppercase', letterSpacing: 0.8, borderBottomWidth: 1, borderBottomColor: '#e2e8f0', paddingBottom: 4, marginBottom: 10, minPresenceAhead: 40 },
 
     grid3: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
     field: { width: '30%', marginBottom: 10 },
@@ -113,7 +113,7 @@ export function TechnicalReportPdf({ report, logoUrl, qrCodeUrl }: TechnicalRepo
 
                 {/* ── Secciones Dinámicas ── */}
                 {report.template?.schema?.sections?.map((section: any, idx: number) => (
-                    <View key={idx} style={S.section} wrap={false}>
+                    <View key={idx} style={S.section}>
                         <Text style={S.sectionTitle}>{section.title}</Text>
                         {section.fields?.map((field: any, fIdx: number) => {
                             const val = report.data?.[field.id];
