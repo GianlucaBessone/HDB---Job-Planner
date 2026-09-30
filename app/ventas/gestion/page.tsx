@@ -26,6 +26,7 @@ import {
   PackageX,
   AlertTriangle,
   Copy,
+  GripVertical,
 } from 'lucide-react';
 import VentasNavTabs from '@/components/ventas/VentasNavTabs';
 import ProductoFormModal from '@/components/ventas/ProductoFormModal';
@@ -37,6 +38,7 @@ import ConfigListasPreciosModal from '@/components/ventas/ConfigListasPreciosMod
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { showToast } from '@/components/Toast';
 import { formatARS } from '@/lib/formatCurrency';
+import { getColumnConfig, setColumnConfig, ColumnConfigItem } from '@/lib/viewPreferences';
 
 interface ProductoItem {
   id: string;
@@ -93,23 +95,54 @@ interface MetaData {
   }>;
 }
 
-const DEFAULT_COLUMNS = {
-  sku: true,
-  codigoBarras: true,
-  descripcion: true,
-  categoria: true,
-  marca: true,
-  familia: true,
-  subFamilia: true,
-  unidad: true,
-  proveedor: true,
-  costo: true,
-  iva: true,
-  rentabilidad: true,
-  precioBase: true,
-  almacen: true,
-  stock: true,
+const COLUMN_LABELS: Record<string, string> = {
+  sku: 'SKU',
+  skuProveedor: 'SKU Proveedor',
+  codigoBarras: 'Cód. Barras',
+  descripcion: 'Descripción',
+  categoria: 'Categoría',
+  marca: 'Marca',
+  familia: 'Familia',
+  subFamilia: 'SubFamilia',
+  unidad: 'Unidad',
+  proveedor: 'Proveedor',
+  costo: 'Costo',
+  iva: 'IVA',
+  rentabilidad: 'Margen',
+  precioBase: 'Precio Base',
+  almacen: 'Ubicación',
+  stock: 'Stock',
 };
+
+const DEFAULT_COLUMN_ORDER: ColumnConfigItem[] = [
+  { key: 'sku', visible: true },
+  { key: 'skuProveedor', visible: true },
+  { key: 'codigoBarras', visible: true },
+  { key: 'descripcion', visible: true },
+  { key: 'categoria', visible: true },
+  { key: 'marca', visible: true },
+  { key: 'familia', visible: true },
+  { key: 'subFamilia', visible: true },
+  { key: 'unidad', visible: true },
+  { key: 'proveedor', visible: true },
+  { key: 'costo', visible: true },
+  { key: 'iva', visible: true },
+  { key: 'rentabilidad', visible: true },
+  { key: 'precioBase', visible: true },
+  { key: 'almacen', visible: true },
+  { key: 'stock', visible: true },
+];
+
+function getUserId(): string {
+  try {
+    const stored = localStorage.getItem('currentUser');
+    if (stored) {
+      const user = JSON.parse(stored);
+      return user?.legajo || user?.id || 'default';
+    }
+  } catch {}
+  return 'default';
+}
 
 export default function VentasGestionPage() {
   const router = useRouter();
@@ -151,9 +184,19 @@ export default function VentasGestionPage() {
     return fam?.subfamilias || [];
   }, [selectedFamilia, meta.familias]);
 
-  // Configurable Columns
-  const [columns, setColumns] = useState(DEFAULT_COLUMNS);
+  // Configurable Columns (ordered array with visibility)
+  const [columnOrder, setColumnOrder] = useState<ColumnConfigItem[]>(DEFAULT_COLUMN_ORDER);
   const [isColumnPickerOpen, setIsColumnPickerOpen] = useState(false);
+  const [draggedColIdx, setDraggedColIdx] = useState<number | null>(null);
+
+  // Derived: visible columns in order (for rendering)
+  const visibleColumns = useMemo(() => columnOrder.filter(c => c.visible), [columnOrder]);
+  // Legacy compat: boolean map for quick lookup
+  const columns = useMemo(() => {
+    const map: Record<string, boolean> = {};
+    for (const c of columnOrder) map[c.key] = c.visible;
+    return map;
+  }, [columnOrder]);
 
   // Dropdown menus
   const [isPreciosMenuOpen, setIsPreciosMenuOpen] = useState(false);
@@ -211,11 +254,16 @@ export default function VentasGestionPage() {
   useEffect(() => {
     loadMeta();
 
-    const savedCols = localStorage.getItem('hdb_ventas_columns');
-    if (savedCols) {
-      try {
-        setColumns(JSON.parse(savedCols));
-      } catch {}
+    const uid = getUserId();
+    const savedConfig = getColumnConfig(uid, 'ventas_gestion');
+    if (savedConfig && Array.isArray(savedConfig) && savedConfig.length > 0) {
+      // Merge: if new columns were added in code, append them
+      const savedKeys = new Set(savedConfig.map(c => c.key));
+      const merged = [...savedConfig];
+      for (const def of DEFAULT_COLUMN_ORDER) {
+        if (!savedKeys.has(def.key)) merged.push(def);
+      }
+      setColumnOrder(merged);
     }
   }, [loadMeta]);
 
@@ -270,10 +318,38 @@ export default function VentasGestionPage() {
   }, [loadProductos]);
 
   // Handle column toggle
-  const toggleColumn = (col: keyof typeof DEFAULT_COLUMNS) => {
-    const updated = { ...columns, [col]: !columns[col] };
-    setColumns(updated);
-    localStorage.setItem('hdb_ventas_columns', JSON.stringify(updated));
+  const toggleColumn = (colKey: string) => {
+    const updated = columnOrder.map(c => c.key === colKey ? { ...c, visible: !c.visible } : c);
+    setColumnOrder(updated);
+    setColumnConfig(getUserId(), 'ventas_gestion', updated);
+  };
+
+  // Drag & Drop reorder handlers for column picker
+  const handleColDragStart = (idx: number) => {
+    setDraggedColIdx(idx);
+  };
+
+  const handleColDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    if (draggedColIdx === null || draggedColIdx === idx) return;
+    const reordered = [...columnOrder];
+    const [moved] = reordered.splice(draggedColIdx, 1);
+    reordered.splice(idx, 0, moved);
+    setColumnOrder(reordered);
+    setDraggedColIdx(idx);
+  };
+
+  const columnOrderRef = useRef(columnOrder);
+  columnOrderRef.current = columnOrder;
+
+  const handleColDragEnd = () => {
+    setDraggedColIdx(null);
+    setColumnConfig(getUserId(), 'ventas_gestion', columnOrderRef.current);
+  };
+
+  const handleResetColumns = () => {
+    setColumnOrder(DEFAULT_COLUMN_ORDER);
+    setColumnConfig(getUserId(), 'ventas_gestion', DEFAULT_COLUMN_ORDER);
   };
 
   // Inline Quick Price Change Handler (Direct base price)
@@ -559,26 +635,52 @@ export default function VentasGestionPage() {
               </button>
 
               {isColumnPickerOpen && (
-                <div className="absolute right-0 mt-1 w-56 bg-card border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 p-2.5 space-y-1.5 animate-in fade-in duration-150">
+                <div className="absolute right-0 mt-1 w-64 bg-card border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 p-2.5 space-y-1.5 animate-in fade-in duration-150">
                   <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800">
                     <span className="text-[11px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-                      Columnas Visibles
+                      Configurar Columnas
                     </span>
-                    <button onClick={() => setIsColumnPickerOpen(false)} className="text-slate-400 hover:text-slate-600">
-                      <X className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleResetColumns}
+                        className="text-[10px] text-primary hover:underline font-bold"
+                        title="Restablecer orden por defecto"
+                      >
+                        Restablecer
+                      </button>
+                      <button onClick={() => setIsColumnPickerOpen(false)} className="text-slate-400 hover:text-slate-600">
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
-                  <div className="max-h-60 overflow-y-auto space-y-1 text-xs">
-                    {Object.entries(columns).map(([key, isVisible]) => (
-                      <label key={key} className="flex items-center gap-2 cursor-pointer py-0.5">
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500 pb-1">Arrastre para reordenar</p>
+                  <div className="max-h-72 overflow-y-auto space-y-0.5 text-xs">
+                    {columnOrder.map((col, idx) => (
+                      <div
+                        key={col.key}
+                        draggable
+                        onDragStart={() => handleColDragStart(idx)}
+                        onDragOver={(e) => handleColDragOver(e, idx)}
+                        onDragEnd={handleColDragEnd}
+                        className={`flex items-center gap-1.5 py-1 px-1 rounded-lg cursor-grab active:cursor-grabbing select-none transition-colors ${
+                          draggedColIdx === idx
+                            ? 'bg-primary/10 border border-primary/30'
+                            : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'
+                        }`}
+                      >
+                        <GripVertical className="w-3 h-3 text-slate-300 dark:text-slate-600 shrink-0" />
                         <input
                           type="checkbox"
-                          checked={isVisible}
-                          onChange={() => toggleColumn(key as any)}
-                          className="rounded border-slate-300 text-primary h-3.5 w-3.5"
+                          checked={col.visible}
+                          onChange={() => toggleColumn(col.key)}
+                          onClick={(e) => e.stopPropagation()}
+                          className="rounded border-slate-300 text-primary h-3.5 w-3.5 shrink-0"
                         />
-                        <span className="capitalize text-xs font-medium text-slate-700 dark:text-slate-300">{key}</span>
-                      </label>
+                        <span className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">
+                          {COLUMN_LABELS[col.key] || col.key}
+                        </span>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -803,47 +905,25 @@ export default function VentasGestionPage() {
           <table className="w-full text-left text-xs border-collapse">
             <thead className="sticky top-0 z-20 bg-slate-100/95 dark:bg-slate-800/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px] tracking-wider whitespace-nowrap">
               <tr>
-                {columns.sku && (
-                  <th
-                    onClick={() => {
-                      setSortBy('sku');
-                      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-                    }}
-                    className="py-2 px-2.5 cursor-pointer hover:text-slate-800 dark:hover:text-slate-200"
-                  >
-                    <div className="flex items-center gap-1">
-                      SKU
-                      <ArrowUpDown className="w-3 h-3 opacity-60" />
-                    </div>
-                  </th>
-                )}
-                {columns.codigoBarras && <th className="py-2 px-2">Cód. Barras</th>}
-                {columns.descripcion && (
-                  <th
-                    onClick={() => {
-                      setSortBy('descripcion');
-                      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-                    }}
-                    className="py-2 px-2.5 cursor-pointer hover:text-slate-800 dark:hover:text-slate-200"
-                  >
-                    <div className="flex items-center gap-1">
-                      Descripción
-                      <ArrowUpDown className="w-3 h-3 opacity-60" />
-                    </div>
-                  </th>
-                )}
-                {columns.categoria && <th className="py-2 px-2">Categoría</th>}
-                {columns.marca && <th className="py-2 px-2">Marca</th>}
-                {columns.familia && <th className="py-2 px-2">Familia</th>}
-                {columns.subFamilia && <th className="py-2 px-2">SubFamilia</th>}
-                {columns.unidad && <th className="py-2 px-2 text-center">Unidad</th>}
-                {columns.proveedor && <th className="py-2 px-2">Proveedor</th>}
-                {columns.costo && <th className="py-2 px-2 text-right">Costo</th>}
-                {columns.iva && <th className="py-2 px-2 text-center">IVA</th>}
-                {columns.rentabilidad && <th className="py-2 px-2 text-center">Margen</th>}
-                {columns.precioBase && <th className="py-2 px-2 text-right">Precio Base (ARS)</th>}
-                {columns.almacen && <th className="py-2 px-2">Ubicación</th>}
-                {columns.stock && <th className="py-2 px-2 text-center">Stock</th>}
+                {visibleColumns.map((col) => {
+                  const sortable = col.key === 'sku' || col.key === 'descripcion';
+                  const align = ['costo', 'precioBase'].includes(col.key) ? 'text-right' : ['unidad', 'iva', 'rentabilidad', 'stock'].includes(col.key) ? 'text-center' : '';
+                  return (
+                    <th
+                      key={col.key}
+                      onClick={sortable ? () => {
+                        setSortBy(col.key);
+                        setSortOrder(sortBy === col.key && sortOrder === 'asc' ? 'desc' : 'asc');
+                      } : undefined}
+                      className={`py-2 px-2.5 ${sortable ? 'cursor-pointer hover:text-slate-800 dark:hover:text-slate-200' : ''} ${align}`}
+                    >
+                      <div className={`flex items-center gap-1 ${align === 'text-right' ? 'justify-end' : align === 'text-center' ? 'justify-center' : ''}`}>
+                        {col.key === 'precioBase' ? 'Precio Base (ARS)' : COLUMN_LABELS[col.key] || col.key}
+                        {sortable && <ArrowUpDown className="w-3 h-3 opacity-60" />}
+                      </div>
+                    </th>
+                  );
+                })}
                 <th className="py-2 px-2 text-center sticky right-0 bg-slate-100 dark:bg-slate-800 shadow-sm w-28">
                   Acciones
                 </th>
@@ -874,6 +954,138 @@ export default function VentasGestionPage() {
                 productos.map((prod) => {
                   const pending = pendingPriceChanges[prod.id];
 
+                  const renderCell = (colKey: string) => {
+                    switch (colKey) {
+                      case 'sku':
+                        return (
+                          <td key={colKey} className="py-1.5 px-2.5 font-mono font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                            {prod.sku}
+                          </td>
+                        );
+                      case 'skuProveedor':
+                        return (
+                          <td key={colKey} className="py-1.5 px-2 font-mono text-[11px] text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                            {prod.skuProveedor || <span className="text-slate-300 dark:text-slate-600">-</span>}
+                          </td>
+                        );
+                      case 'codigoBarras':
+                        return (
+                          <td key={colKey} className="py-1.5 px-2 font-mono text-[11px] text-slate-500 whitespace-nowrap">
+                            {prod.codigoBarras ? (
+                              <span className="flex items-center gap-1">
+                                <Barcode className="w-3 h-3 text-slate-400" />
+                                {prod.codigoBarras}
+                              </span>
+                            ) : (
+                              <span className="text-slate-300 dark:text-slate-600">-</span>
+                            )}
+                          </td>
+                        );
+                      case 'descripcion':
+                        return (
+                          <td key={colKey} className="py-1.5 px-2.5 max-w-[240px] truncate text-slate-800 dark:text-slate-200 font-semibold text-xs" title={prod.descripcion}>
+                            {prod.descripcion}
+                          </td>
+                        );
+                      case 'categoria':
+                        return (
+                          <td key={colKey} className="py-1.5 px-2 text-slate-600 dark:text-slate-400 whitespace-nowrap truncate max-w-[100px]" title={prod.categoria || ''}>
+                            {prod.categoria || '-'}
+                          </td>
+                        );
+                      case 'marca':
+                        return (
+                          <td key={colKey} className="py-1.5 px-2 text-slate-600 dark:text-slate-400 whitespace-nowrap truncate max-w-[100px]" title={prod.marca || ''}>
+                            {prod.marca || '-'}
+                          </td>
+                        );
+                      case 'familia':
+                        return (
+                          <td key={colKey} className="py-1.5 px-2 text-slate-600 dark:text-slate-400 whitespace-nowrap truncate max-w-[100px]" title={prod.familia || ''}>
+                            {prod.familia || '-'}
+                          </td>
+                        );
+                      case 'subFamilia':
+                        return (
+                          <td key={colKey} className="py-1.5 px-2 text-slate-600 dark:text-slate-400 whitespace-nowrap truncate max-w-[100px]" title={prod.subFamilia || ''}>
+                            {prod.subFamilia || '-'}
+                          </td>
+                        );
+                      case 'unidad':
+                        return (
+                          <td key={colKey} className="py-1.5 px-2 text-center text-slate-500 whitespace-nowrap text-[11px] font-mono">
+                            {prod.unidad || '-'}
+                          </td>
+                        );
+                      case 'proveedor':
+                        return (
+                          <td key={colKey} className="py-1.5 px-2 text-slate-600 dark:text-slate-400 whitespace-nowrap truncate max-w-[120px]" title={prod.proveedorNombre || ''}>
+                            {prod.proveedorNombre || '-'}
+                          </td>
+                        );
+                      case 'costo':
+                        return (
+                          <td key={colKey} className="py-1.5 px-2 text-right font-mono text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                            {prod.costo > 0 ? formatARS(prod.costo) : '-'}
+                          </td>
+                        );
+                      case 'iva':
+                        return (
+                          <td key={colKey} className="py-1.5 px-2 text-center whitespace-nowrap">
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                              {prod.iva}
+                            </span>
+                          </td>
+                        );
+                      case 'rentabilidad':
+                        return (
+                          <td key={colKey} className="py-1.5 px-2 text-center font-bold text-slate-500 whitespace-nowrap">
+                            {prod.rentabilidad > 0 ? `${prod.rentabilidad}%` : '-'}
+                          </td>
+                        );
+                      case 'precioBase':
+                        return (
+                          <td key={colKey} className="py-1.5 px-2 text-right whitespace-nowrap">
+                            {isQuickPriceMode ? (
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={pending !== undefined ? pending : prod.precioBase}
+                                onChange={(e) => handleQuickPriceChange(prod.id, parseFloat(e.target.value) || 0)}
+                                className={`w-24 h-6 px-1.5 text-right rounded font-mono font-bold text-xs bg-background border focus:outline-none focus:ring-1 focus:ring-primary ${
+                                  pending !== undefined
+                                    ? 'border-amber-500 text-amber-600 dark:text-amber-400'
+                                    : 'border-slate-300 dark:border-slate-700 text-emerald-600 dark:text-emerald-400'
+                                }`}
+                              />
+                            ) : (
+                              <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                                {formatARS(prod.precioBase)}
+                              </span>
+                            )}
+                          </td>
+                        );
+                      case 'almacen':
+                        return (
+                          <td key={colKey} className="py-1.5 px-2 whitespace-nowrap text-slate-500">
+                            <span className="font-medium text-slate-700 dark:text-slate-300">{prod.almacenNombre}</span>
+                            {prod.ubicacionCodigo && (
+                              <span className="ml-1 text-[10px] text-slate-400">({prod.ubicacionCodigo})</span>
+                            )}
+                          </td>
+                        );
+                      case 'stock':
+                        return (
+                          <td key={colKey} className="py-1.5 px-2 whitespace-nowrap text-center">
+                            {renderCompactStock(prod)}
+                          </td>
+                        );
+                      default:
+                        return null;
+                    }
+                  };
+
                   return (
                     <tr
                       key={prod.id}
@@ -881,142 +1093,7 @@ export default function VentasGestionPage() {
                         pending ? 'bg-amber-50/40 dark:bg-amber-950/20' : ''
                       }`}
                     >
-                      {/* SKU */}
-                      {columns.sku && (
-                        <td className="py-1.5 px-2.5 font-mono font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
-                          {prod.sku}
-                        </td>
-                      )}
-
-                      {/* Barcode */}
-                      {columns.codigoBarras && (
-                        <td className="py-1.5 px-2 font-mono text-[11px] text-slate-500 whitespace-nowrap">
-                          {prod.codigoBarras ? (
-                            <span className="flex items-center gap-1">
-                              <Barcode className="w-3 h-3 text-slate-400" />
-                              {prod.codigoBarras}
-                            </span>
-                          ) : (
-                            <span className="text-slate-300 dark:text-slate-600">-</span>
-                          )}
-                        </td>
-                      )}
-
-                      {/* Descripción */}
-                      {columns.descripcion && (
-                        <td
-                          className="py-1.5 px-2.5 max-w-[240px] truncate text-slate-800 dark:text-slate-200 font-semibold text-xs"
-                          title={prod.descripcion}
-                        >
-                          {prod.descripcion}
-                        </td>
-                      )}
-
-                      {/* Categoría */}
-                      {columns.categoria && (
-                        <td className="py-1.5 px-2 text-slate-600 dark:text-slate-400 whitespace-nowrap truncate max-w-[100px]" title={prod.categoria || ''}>
-                          {prod.categoria || '-'}
-                        </td>
-                      )}
-
-                      {/* Marca */}
-                      {columns.marca && (
-                        <td className="py-1.5 px-2 text-slate-600 dark:text-slate-400 whitespace-nowrap truncate max-w-[100px]" title={prod.marca || ''}>
-                          {prod.marca || '-'}
-                        </td>
-                      )}
-
-                      {/* Familia */}
-                      {columns.familia && (
-                        <td className="py-1.5 px-2 text-slate-600 dark:text-slate-400 whitespace-nowrap truncate max-w-[100px]" title={prod.familia || ''}>
-                          {prod.familia || '-'}
-                        </td>
-                      )}
-
-                      {/* SubFamilia */}
-                      {columns.subFamilia && (
-                        <td className="py-1.5 px-2 text-slate-600 dark:text-slate-400 whitespace-nowrap truncate max-w-[100px]" title={prod.subFamilia || ''}>
-                          {prod.subFamilia || '-'}
-                        </td>
-                      )}
-
-                      {/* Unidad */}
-                      {columns.unidad && (
-                        <td className="py-1.5 px-2 text-center text-slate-500 whitespace-nowrap text-[11px] font-mono">
-                          {prod.unidad || '-'}
-                        </td>
-                      )}
-
-                      {/* Proveedor */}
-                      {columns.proveedor && (
-                        <td className="py-1.5 px-2 text-slate-600 dark:text-slate-400 whitespace-nowrap truncate max-w-[120px]" title={prod.proveedorNombre || ''}>
-                          {prod.proveedorNombre || '-'}
-                        </td>
-                      )}
-
-                      {/* Costo */}
-                      {columns.costo && (
-                        <td className="py-1.5 px-2 text-right font-mono text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                          {prod.costo > 0 ? formatARS(prod.costo) : '-'}
-                        </td>
-                      )}
-
-                      {/* IVA */}
-                      {columns.iva && (
-                        <td className="py-1.5 px-2 text-center whitespace-nowrap">
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
-                            {prod.iva}
-                          </span>
-                        </td>
-                      )}
-
-                      {/* Rentabilidad */}
-                      {columns.rentabilidad && (
-                        <td className="py-1.5 px-2 text-center font-bold text-slate-500 whitespace-nowrap">
-                          {prod.rentabilidad > 0 ? `${prod.rentabilidad}%` : '-'}
-                        </td>
-                      )}
-
-                      {/* Precio Base de Venta (ARS) */}
-                      {columns.precioBase && (
-                        <td className="py-1.5 px-2 text-right whitespace-nowrap">
-                          {isQuickPriceMode ? (
-                            <input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              value={pending !== undefined ? pending : prod.precioBase}
-                              onChange={(e) => handleQuickPriceChange(prod.id, parseFloat(e.target.value) || 0)}
-                              className={`w-24 h-6 px-1.5 text-right rounded font-mono font-bold text-xs bg-background border focus:outline-none focus:ring-1 focus:ring-primary ${
-                                pending !== undefined
-                                  ? 'border-amber-500 text-amber-600 dark:text-amber-400'
-                                  : 'border-slate-300 dark:border-slate-700 text-emerald-600 dark:text-emerald-400'
-                              }`}
-                            />
-                          ) : (
-                            <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                              {formatARS(prod.precioBase)}
-                            </span>
-                          )}
-                        </td>
-                      )}
-
-                      {/* Almacén & Ubicación */}
-                      {columns.almacen && (
-                        <td className="py-1.5 px-2 whitespace-nowrap text-slate-500">
-                          <span className="font-medium text-slate-700 dark:text-slate-300">{prod.almacenNombre}</span>
-                          {prod.ubicacionCodigo && (
-                            <span className="ml-1 text-[10px] text-slate-400">({prod.ubicacionCodigo})</span>
-                          )}
-                        </td>
-                      )}
-
-                      {/* Compact Stock (Dot Indicator + Units) */}
-                      {columns.stock && (
-                        <td className="py-1.5 px-2 whitespace-nowrap text-center">
-                          {renderCompactStock(prod)}
-                        </td>
-                      )}
+                      {visibleColumns.map((col) => renderCell(col.key))}
 
                       {/* Acciones Directas */}
                       <td className="py-1.5 px-2 text-center whitespace-nowrap sticky right-0 bg-card shadow-sm">

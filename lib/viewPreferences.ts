@@ -80,3 +80,22 @@ export function getSidebarFavorites(userId: string): boolean {
 export function setSidebarFavorites(userId: string, enabled: boolean) {
     localStorage.setItem(`hdb_sidebar_fav_${userId}`, JSON.stringify(enabled));
 }
+
+// ── Column Configuration (order + visibility) ─────────────────────
+
+export interface ColumnConfigItem {
+    key: string;
+    visible: boolean;
+}
+
+export function getColumnConfig(userId: string, moduleKey: string): ColumnConfigItem[] | null {
+    try {
+        const stored = localStorage.getItem(`hdb_columns_${moduleKey}_${userId}`);
+        if (!stored) return null;
+        return JSON.parse(stored);
+    } catch { return null; }
+}
+
+export function setColumnConfig(userId: string, moduleKey: string, config: ColumnConfigItem[]) {
+    localStorage.setItem(`hdb_columns_${moduleKey}_${userId}`, JSON.stringify(config));
+}

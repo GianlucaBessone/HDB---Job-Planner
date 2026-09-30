@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { X, Upload, FileSpreadsheet, CheckCircle2, AlertTriangle, XCircle, ArrowRight, Loader2 } from 'lucide-react';
+import { X, Upload, FileSpreadsheet, CheckCircle2, AlertTriangle, XCircle, ArrowRight, Loader2, Download, ArrowLeft, Info } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { showToast } from '@/components/Toast';
 import { formatARS } from '@/lib/formatCurrency';
@@ -17,6 +17,64 @@ interface ImportarExcelModalProps {
   meta: MetaData;
 }
 
+// Expected template columns (fixed order)
+const TEMPLATE_COLUMNS = [
+  'SKU',
+  'SKU Proveedor',
+  'Costo',
+  'Precio Venta',
+  '% Ajuste sobre costo',
+  '% Ajuste sobre venta',
+];
+
+// Types for validation
+interface FilaParseada {
+  filaNumero: number;
+  sku: string;
+  skuProveedor: string;
+  costo: number | null;
+  precioVenta: number | null;
+  pctAjusteCosto: number | null;
+  pctAjusteVenta: number | null;
+}
+
+interface CambioPreview {
+  filaNumero: number;
+  sku: string;
+  skuProveedor: string;
+  descripcion: string;
+  cambios: Array<{
+    campo: string;
+    valorActual: string;
+    valorNuevo: string;
+  }>;
+}
+
+interface ValidationReport {
+  resumen: {
+    totalFilas: number;
+    productosEncontrados: number;
+    productosNoEncontrados: number;
+    filasConError: number;
+    cambiosPendientes: number;
+  };
+  errores: Array<{ filaNumero: number; sku: string; skuProveedor: string; motivo: string }>;
+  previsualizacion: CambioPreview[];
+}
+
+interface ImportResult {
+  success: boolean;
+  mensaje: string;
+  resumen: {
+    filasProcesadas?: number;
+    filasProcessadas?: number;
+    productosActualizados: number;
+    filasOmitidas: number;
+    errores: number;
+  };
+  errores: Array<{ filaNumero: number; sku: string; skuProveedor: string; motivo: string }>;
+}
+
 export default function ImportarExcelModal({
   isOpen,
   onClose,
@@ -25,42 +83,69 @@ export default function ImportarExcelModal({
 }: ImportarExcelModalProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [step, setStep] = useState<'upload' | 'mapping' | 'preview'>('upload');
+  const [step, setStep] = useState<'upload' | 'preview' | 'result'>('upload');
   const [fileName, setFileName] = useState<string>('');
-  const [columns, setColumns] = useState<string[]>([]);
   const [rawRows, setRawRows] = useState<any[]>([]);
-
-  // Mapping state
-  const [skuColumn, setSkuColumn] = useState<string>('');
-  const [porcentajeColumn, setPorcentajeColumn] = useState<string>('');
-  const [selectedListas, setSelectedListas] = useState<string[]>(['LISTA_1']);
+  const [parsedFilas, setParsedFilas] = useState<FilaParseada[]>([]);
 
   // Validation results
   const [isValidating, setIsValidating] = useState(false);
-  const [validationReport, setValidationReport] = useState<{
-    resumen: { totalFilas: number; correctos: number; noEncontrados: number; errores: number };
-    errores: Array<{ filaNumero: number; sku: string; motivo: string }>;
-    noEncontrados: Array<{ filaNumero: number; sku: string; motivo: string }>;
-    previsualizacion: Array<{
-      filaNumero: number;
-      sku: string;
-      descripcion: string;
-      porcentaje: number;
-      precios: Array<{ listaCodigo: string; listaNombre: string; precioActual: number; nuevoPrecio: number }>;
-    }>;
-  } | null>(null);
+  const [validationReport, setValidationReport] = useState<ValidationReport | null>(null);
 
+  // Apply
   const [isApplying, setIsApplying] = useState(false);
+  const [importResult, setImportResult] = useState<ImportResult | null>(null);
 
-  // File change handler
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Reset state when closing
+  const handleClose = () => {
+    setStep('upload');
+    setFileName('');
+    setRawRows([]);
+    setParsedFilas([]);
+    setValidationReport(null);
+    setImportResult(null);
+    setIsValidating(false);
+    setIsApplying(false);
+    onClose();
+  };
+
+  // ── Download template ────────────────────────────────────────────
+  const handleDownloadTemplate = () => {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([TEMPLATE_COLUMNS]);
+
+    // Set column widths
+    ws['!cols'] = [
+      { wch: 12 }, // SKU
+      { wch: 18 }, // SKU Proveedor
+      { wch: 14 }, // Costo
+      { wch: 14 }, // Precio Venta
+      { wch: 22 }, // % Ajuste sobre costo
+      { wch: 22 }, // % Ajuste sobre venta
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Plantilla');
+    XLSX.writeFile(wb, 'Plantilla_Importacion_Productos.xlsx');
+  };
+
+  // ── Parse numeric value (returns null if empty/invalid) ──────────
+  const parseNumericValue = (val: any): number | null => {
+    if (val === null || val === undefined || val === '') return null;
+    const str = String(val).replace('%', '').replace(',', '.').trim();
+    if (str === '') return null;
+    const num = parseFloat(str);
+    return isNaN(num) ? null : num;
+  };
+
+  // ── File change handler ──────────────────────────────────────────
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setFileName(file.name);
     const reader = new FileReader();
 
-    reader.onload = (evt) => {
+    reader.onload = async (evt) => {
       try {
         const bstr = evt.target?.result;
         const wb = XLSX.read(bstr, { type: 'binary' });
@@ -73,18 +158,36 @@ export default function ImportarExcelModal({
           return;
         }
 
-        const detectedCols = Object.keys(data[0] || {});
-        setColumns(detectedCols);
         setRawRows(data);
 
-        // Auto-detect matching column names
-        const autoSku = detectedCols.find((c) => /sku|codigo|art|item/i.test(c)) || detectedCols[0] || '';
-        const autoPorc = detectedCols.find((c) => /porc|%|ajuste|aumento|descuento|margen/i.test(c)) || detectedCols[1] || '';
+        // Parse rows using the fixed column names
+        const detectedCols = Object.keys(data[0] || {});
 
-        setSkuColumn(autoSku);
-        setPorcentajeColumn(autoPorc);
+        // Auto-detect columns by matching template headers (flexible)
+        const findCol = (patterns: RegExp[]) =>
+          detectedCols.find(c => patterns.some(p => p.test(c))) || '';
 
-        setStep('mapping');
+        const skuCol = findCol([/^sku$/i, /^codigo$/i, /^art[ií]culo$/i]);
+        const skuProvCol = findCol([/sku.?prov/i, /c[oó]d.?prov/i, /proveedor/i]);
+        const costoCol = findCol([/^costo$/i, /^cost$/i]);
+        const precioCol = findCol([/precio.?venta/i, /^precio$/i, /^pv$/i, /^pvta$/i]);
+        const pctCostoCol = findCol([/%.*ajuste.*costo/i, /ajuste.*costo/i, /^%\s*costo$/i]);
+        const pctVentaCol = findCol([/%.*ajuste.*venta/i, /ajuste.*venta/i, /^%\s*venta$/i]);
+
+        const filas: FilaParseada[] = data.map((r, i) => ({
+          filaNumero: i + 2, // Excel 1-based with header
+          sku: String(r[skuCol] || '').trim(),
+          skuProveedor: String(r[skuProvCol] || '').trim(),
+          costo: parseNumericValue(r[costoCol]),
+          precioVenta: parseNumericValue(r[precioCol]),
+          pctAjusteCosto: parseNumericValue(r[pctCostoCol]),
+          pctAjusteVenta: parseNumericValue(r[pctVentaCol]),
+        }));
+
+        setParsedFilas(filas);
+
+        // Auto-validate immediately
+        await validateFilas(filas, file.name);
       } catch (err: any) {
         showToast('Error al leer el archivo Excel: ' + err.message, 'error');
       }
@@ -93,41 +196,17 @@ export default function ImportarExcelModal({
     reader.readAsBinaryString(file);
   };
 
-  // Run validation
-  const handleValidateMapping = async () => {
-    if (!skuColumn) {
-      showToast('Seleccione la columna que contiene el SKU', 'info');
-      return;
-    }
-    if (!porcentajeColumn) {
-      showToast('Seleccione la columna que contiene el Porcentaje de Ajuste', 'info');
-      return;
-    }
-
+  // ── Validate rows via API ────────────────────────────────────────
+  const validateFilas = async (filas: FilaParseada[], nombre: string) => {
     setIsValidating(true);
     try {
-      // Transform raw rows into parsed objects
-      const parsedFilas = rawRows.map((r, i) => {
-        let rawPorc = String(r[porcentajeColumn] || '').replace('%', '').trim();
-        // Handle comma decimal separator: "10,5" -> 10.5
-        rawPorc = rawPorc.replace(',', '.');
-        const numPorc = parseFloat(rawPorc);
-
-        return {
-          filaNumero: i + 2, // Excel 1-based index with header
-          sku: String(r[skuColumn] || '').trim(),
-          porcentaje: isNaN(numPorc) ? 0 : numPorc,
-        };
-      });
-
       const res = await fetch('/api/ventas/precios/importar-excel', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          filas: parsedFilas,
-          listas: selectedListas,
+          filas,
           confirmar: false,
-          nombreArchivo: fileName,
+          nombreArchivo: nombre,
         }),
       });
 
@@ -143,33 +222,20 @@ export default function ImportarExcelModal({
     }
   };
 
-  // Confirm and Apply
+  // ── Confirm and Apply ────────────────────────────────────────────
   const handleConfirmImport = async () => {
-    if (!validationReport || validationReport.resumen.correctos === 0) {
-      showToast('No hay registros correctos para aplicar', 'error');
+    if (!validationReport || validationReport.resumen.cambiosPendientes === 0) {
+      showToast('No hay cambios válidos para aplicar', 'error');
       return;
     }
 
     setIsApplying(true);
     try {
-      const parsedFilas = rawRows.map((r, i) => {
-        let rawPorc = String(r[porcentajeColumn] || '').replace('%', '').trim();
-        rawPorc = rawPorc.replace(',', '.');
-        const numPorc = parseFloat(rawPorc);
-
-        return {
-          filaNumero: i + 2,
-          sku: String(r[skuColumn] || '').trim(),
-          porcentaje: isNaN(numPorc) ? 0 : numPorc,
-        };
-      });
-
       const res = await fetch('/api/ventas/precios/importar-excel', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           filas: parsedFilas,
-          listas: selectedListas,
           confirmar: true,
           nombreArchivo: fileName,
         }),
@@ -178,9 +244,9 @@ export default function ImportarExcelModal({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al aplicar cambios');
 
-      showToast(data.mensaje || 'Ajuste desde Excel aplicado correctamente', 'success');
+      setImportResult(data);
+      setStep('result');
       onSuccess();
-      onClose();
     } catch (err: any) {
       showToast(err.message || 'Error al procesar archivo', 'error');
     } finally {
@@ -188,11 +254,26 @@ export default function ImportarExcelModal({
     }
   };
 
+  // ── Download error report ────────────────────────────────────────
+  const handleDownloadErrors = (errores: Array<{ filaNumero: number; sku: string; skuProveedor: string; motivo: string }>) => {
+    const rows = errores.map(e => ({
+      'Fila': e.filaNumero,
+      'SKU': e.sku,
+      'SKU Proveedor': e.skuProveedor,
+      'Motivo': e.motivo,
+    }));
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws['!cols'] = [{ wch: 8 }, { wch: 15 }, { wch: 20 }, { wch: 60 }];
+    XLSX.utils.book_append_sheet(wb, ws, 'Errores');
+    XLSX.writeFile(wb, 'Reporte_Errores_Importacion.xlsx');
+  };
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-card border border-slate-200 dark:border-slate-800 w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+      <div className="bg-card border border-slate-200 dark:border-slate-800 w-full max-w-5xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/30">
           <div className="flex items-center gap-3">
@@ -201,17 +282,17 @@ export default function ImportarExcelModal({
             </div>
             <div>
               <h3 className="text-lg font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-                Importar Ajustes de Precios desde Excel
+                Importar Ajustes de Productos desde Excel
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 {step === 'upload' && 'Paso 1: Subir planilla de cálculo (.xlsx, .xls, .csv)'}
-                {step === 'mapping' && 'Paso 2: Mapear columnas de SKU y porcentaje'}
-                {step === 'preview' && 'Paso 3: Validar discrepancias, previsualizar y confirmar'}
+                {step === 'preview' && 'Paso 2: Validar y previsualizar cambios'}
+                {step === 'result' && 'Resultado de importación'}
               </p>
             </div>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
             <X className="w-5 h-5" />
@@ -220,176 +301,186 @@ export default function ImportarExcelModal({
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* STEP 1: UPLOAD */}
+          {/* ── STEP 1: UPLOAD ── */}
           {step === 'upload' && (
-            <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-12 text-center bg-slate-50/50 dark:bg-slate-900/30">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".xlsx,.xls,.csv"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-
-              <div className="w-16 h-16 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4">
-                <Upload className="w-8 h-8" />
-              </div>
-
-              <h4 className="text-sm font-black text-slate-800 dark:text-slate-200 mb-1">
-                Arrastre o seleccione su archivo Excel
-              </h4>
-              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mb-6 leading-relaxed">
-                El archivo debe incluir al menos una columna con el <strong>SKU</strong> de cada producto y otra con el <strong>% de ajuste</strong> (ej: 10, 15%, -5%).
-              </p>
-
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="px-6 py-2.5 rounded-xl bg-primary text-white text-xs font-bold shadow-md shadow-primary/25 hover:opacity-90 transition-opacity"
-              >
-                Elegir Archivo Excel
-              </button>
-            </div>
-          )}
-
-          {/* STEP 2: MAPPING */}
-          {step === 'mapping' && (
-            <div className="space-y-6">
-              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 flex items-center justify-between">
+            <div className="space-y-4">
+              {/* Download template link */}
+              <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/20 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{fileName}</span>
-                  <span className="text-[10px] text-slate-400">({rawRows.length} filas detectadas)</span>
+                  <Info className="w-4 h-4 text-primary shrink-0" />
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      Use la plantilla oficial para asegurar compatibilidad
+                    </span>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Columnas: SKU, SKU Proveedor, Costo, Precio Venta, % Ajuste sobre costo, % Ajuste sobre venta
+                    </p>
+                  </div>
                 </div>
                 <button
                   type="button"
-                  onClick={() => setStep('upload')}
+                  onClick={handleDownloadTemplate}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/30 bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition-colors shrink-0"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Descargar Plantilla
+                </button>
+              </div>
+
+              {/* File upload area */}
+              <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-12 text-center bg-slate-50/50 dark:bg-slate-900/30">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+
+                {isValidating ? (
+                  <>
+                    <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
+                    <h4 className="text-sm font-black text-slate-800 dark:text-slate-200 mb-1">
+                      Validando archivo...
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Verificando productos en base de datos y calculando cambios
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-16 h-16 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4">
+                      <Upload className="w-8 h-8" />
+                    </div>
+
+                    <h4 className="text-sm font-black text-slate-800 dark:text-slate-200 mb-1">
+                      Arrastre o seleccione su archivo Excel
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mb-6 leading-relaxed">
+                      Puede actualizar <strong>Costo</strong>, <strong>Precio Venta</strong>, <strong>SKU Proveedor</strong> y aplicar <strong>ajustes porcentuales</strong>. Los campos vacíos no modifican datos existentes.
+                    </p>
+
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-6 py-2.5 rounded-xl bg-primary text-white text-xs font-bold shadow-md shadow-primary/25 hover:opacity-90 transition-opacity"
+                    >
+                      Elegir Archivo Excel
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── STEP 2: PREVIEW & VALIDATION SUMMARY ── */}
+          {step === 'preview' && validationReport && (
+            <div className="space-y-5">
+              {/* File info */}
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{fileName}</span>
+                  <span className="text-[10px] text-slate-400">
+                    ({validationReport.resumen.totalFilas} filas)
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep('upload');
+                    setValidationReport(null);
+                  }}
                   className="text-xs font-bold text-primary hover:underline"
                 >
                   Cambiar archivo
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Columna con SKU del Producto <span className="text-rose-500">*</span>
-                  </label>
-                  <select
-                    value={skuColumn}
-                    onChange={(e) => setSkuColumn(e.target.value)}
-                    className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40"
-                  >
-                    <option value="">-- Seleccionar Columna --</option>
-                    {columns.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Columna con % de Ajuste <span className="text-rose-500">*</span>
-                  </label>
-                  <select
-                    value={porcentajeColumn}
-                    onChange={(e) => setPorcentajeColumn(e.target.value)}
-                    className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40"
-                  >
-                    <option value="">-- Seleccionar Columna --</option>
-                    {columns.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/20 flex items-center justify-between">
-                <div>
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                    Precio Afectado: Precio Base de Venta
-                  </span>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    El porcentaje del archivo modificará el Precio Base del SKU indicado. Las listas comerciales se sincronizan de forma dinámica.
-                  </p>
-                </div>
-                <span className="px-2.5 py-1 rounded-lg bg-primary text-white text-[10px] font-bold tracking-wider uppercase">
-                  PRECIO BASE
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 3: PREVIEW & VALIDATION SUMMARY */}
-          {step === 'preview' && validationReport && (
-            <div className="space-y-6">
               {/* Metric summary boxes */}
-              <div className="grid grid-cols-3 gap-4">
-                <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-emerald-600 text-white shrink-0">
-                    <CheckCircle2 className="w-5 h-5" />
+              <div className="grid grid-cols-4 gap-3">
+                <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-slate-600 text-white shrink-0">
+                    <FileSpreadsheet className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-xl font-black text-emerald-700 dark:text-emerald-300">
-                      {validationReport.resumen.correctos}
+                    <span className="text-lg font-black text-slate-700 dark:text-slate-200">
+                      {validationReport.resumen.totalFilas}
                     </span>
-                    <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">
-                      Correctos
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+                      Filas
                     </p>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40 flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-amber-600 text-white shrink-0">
-                    <AlertTriangle className="w-5 h-5" />
+                <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-emerald-600 text-white shrink-0">
+                    <CheckCircle2 className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-xl font-black text-amber-700 dark:text-amber-300">
-                      {validationReport.resumen.noEncontrados}
+                    <span className="text-lg font-black text-emerald-700 dark:text-emerald-300">
+                      {validationReport.resumen.productosEncontrados}
                     </span>
-                    <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide">
+                    <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">
+                      Encontrados
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40 flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-amber-600 text-white shrink-0">
+                    <AlertTriangle className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-lg font-black text-amber-700 dark:text-amber-300">
+                      {validationReport.resumen.productosNoEncontrados}
+                    </span>
+                    <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide">
                       No Encontrados
                     </p>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/40 flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-rose-600 text-white shrink-0">
-                    <XCircle className="w-5 h-5" />
+                <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/40 flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-rose-600 text-white shrink-0">
+                    <XCircle className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-xl font-black text-rose-700 dark:text-rose-300">
-                      {validationReport.resumen.errores}
+                    <span className="text-lg font-black text-rose-700 dark:text-rose-300">
+                      {validationReport.resumen.filasConError}
                     </span>
-                    <p className="text-[11px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wide">
-                      Con Errores
+                    <p className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wide">
+                      Errores
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Discrepancies details if any */}
-              {(validationReport.noEncontrados.length > 0 || validationReport.errores.length > 0) && (
+              {/* Error details */}
+              {validationReport.errores.length > 0 && (
                 <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs">
-                  <h4 className="font-bold text-slate-800 dark:text-slate-200 mb-2">
-                    Detalle de Filas Ignoradas por Discrepancia:
-                  </h4>
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-bold text-slate-800 dark:text-slate-200">
+                      Detalle de Errores ({validationReport.errores.length})
+                    </h4>
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadErrors(validationReport.errores)}
+                      className="flex items-center gap-1 px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    >
+                      <Download className="w-3 h-3" />
+                      Descargar Errores
+                    </button>
+                  </div>
                   <div className="max-h-32 overflow-y-auto space-y-1 font-mono text-[11px] text-slate-600 dark:text-slate-400">
-                    {validationReport.noEncontrados.map((ne, i) => (
-                      <div key={`ne-${i}`} className="flex items-center gap-2">
-                        <span className="text-amber-600 font-bold">Fila {ne.filaNumero}:</span>
-                        <span>SKU "{ne.sku}"</span>
-                        <span className="text-slate-400">— {ne.motivo}</span>
-                      </div>
-                    ))}
                     {validationReport.errores.map((err, i) => (
-                      <div key={`err-${i}`} className="flex items-center gap-2">
-                        <span className="text-rose-600 font-bold">Fila {err.filaNumero}:</span>
-                        <span>SKU "{err.sku}"</span>
+                      <div key={`err-${i}`} className="flex items-start gap-2">
+                        <span className="text-rose-600 font-bold shrink-0">Fila {err.filaNumero}:</span>
+                        <span className="text-slate-500">
+                          {err.sku && `SKU "${err.sku}"`}
+                          {err.sku && err.skuProveedor && ' / '}
+                          {err.skuProveedor && `SKU Prov. "${err.skuProveedor}"`}
+                        </span>
                         <span className="text-slate-400">— {err.motivo}</span>
                       </div>
                     ))}
@@ -397,46 +488,138 @@ export default function ImportarExcelModal({
                 </div>
               )}
 
-              {/* Preview Table */}
-              <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">
-                  Previsualización de Nuevos Precios Calculados
-                </h4>
-                <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden max-h-72 overflow-y-auto">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead className="sticky top-0 bg-slate-100 dark:bg-slate-800/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 text-slate-500 font-bold uppercase text-[10px]">
-                      <tr>
-                        <th className="py-2.5 px-3">Fila</th>
-                        <th className="py-2.5 px-3">SKU</th>
-                        <th className="py-2.5 px-3">Descripción</th>
-                        <th className="py-2.5 px-3 text-center">% Ajuste</th>
-                        <th className="py-2.5 px-3 text-right">Precio Actual</th>
-                        <th className="py-2.5 px-3 text-right">Nuevo Precio</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                      {validationReport.previsualizacion.map((item, idx) => (
-                        <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                          <td className="py-2 px-3 text-slate-400 font-mono text-[10px]">{item.filaNumero}</td>
-                          <td className="py-2 px-3 font-mono font-bold text-slate-900 dark:text-slate-100">
-                            {item.sku}
-                          </td>
-                          <td className="py-2 px-3 truncate max-w-xs">{item.descripcion}</td>
-                          <td className="py-2 px-3 text-center font-bold text-indigo-600 dark:text-indigo-400">
-                            {item.porcentaje > 0 ? `+${item.porcentaje}%` : `${item.porcentaje}%`}
-                          </td>
-                          <td className="py-2 px-3 text-right font-mono text-slate-500">
-                            {formatARS(item.precios[0]?.precioActual)}
-                          </td>
-                          <td className="py-2 px-3 text-right font-mono font-extrabold text-emerald-600 dark:text-emerald-400">
-                            {formatARS(item.precios[0]?.nuevoPrecio)}
-                          </td>
+              {/* Preview Table: shows actual field-level changes */}
+              {validationReport.previsualizacion.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">
+                    Vista Previa de Cambios ({validationReport.resumen.cambiosPendientes} modificaciones)
+                  </h4>
+                  <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden max-h-80 overflow-y-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead className="sticky top-0 bg-slate-100 dark:bg-slate-800/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 text-slate-500 font-bold uppercase text-[10px]">
+                        <tr>
+                          <th className="py-2.5 px-3">Fila</th>
+                          <th className="py-2.5 px-3">Producto (SKU)</th>
+                          <th className="py-2.5 px-3">Campo</th>
+                          <th className="py-2.5 px-3 text-right">Valor Actual</th>
+                          <th className="py-2.5 px-3 text-right">Nuevo Valor</th>
+                          <th className="py-2.5 px-3 text-center">Acción</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        {validationReport.previsualizacion.map((item, idx) =>
+                          item.cambios.map((cambio, cIdx) => (
+                            <tr key={`${idx}-${cIdx}`} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                              {cIdx === 0 ? (
+                                <>
+                                  <td className="py-2 px-3 text-slate-400 font-mono text-[10px]" rowSpan={item.cambios.length}>
+                                    {item.filaNumero}
+                                  </td>
+                                  <td className="py-2 px-3" rowSpan={item.cambios.length}>
+                                    <div>
+                                      <span className="font-mono font-bold text-slate-900 dark:text-slate-100">{item.sku}</span>
+                                      <p className="text-[10px] text-slate-400 truncate max-w-[180px]">{item.descripcion}</p>
+                                    </div>
+                                  </td>
+                                </>
+                              ) : null}
+                              <td className="py-2 px-3 text-slate-700 dark:text-slate-300 font-semibold">{cambio.campo}</td>
+                              <td className="py-2 px-3 text-right font-mono text-slate-500">{cambio.valorActual}</td>
+                              <td className="py-2 px-3 text-right font-mono font-extrabold text-emerald-600 dark:text-emerald-400">{cambio.valorNuevo}</td>
+                              <td className="py-2 px-3 text-center">
+                                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400">
+                                  Modificar
+                                </span>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {validationReport.previsualizacion.length === 0 && validationReport.errores.length > 0 && (
+                <div className="p-8 text-center text-slate-400">
+                  <XCircle className="w-8 h-8 mx-auto mb-2 text-rose-300 dark:text-rose-600" />
+                  <p className="text-sm font-bold text-slate-600 dark:text-slate-300">
+                    No hay cambios válidos para aplicar
+                  </p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Todas las filas contienen errores. Revise el detalle de errores arriba.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── STEP 3: RESULT ── */}
+          {step === 'result' && importResult && (
+            <div className="space-y-5">
+              {/* Success banner */}
+              <div className="p-6 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 text-center">
+                <CheckCircle2 className="w-10 h-10 text-emerald-600 dark:text-emerald-400 mx-auto mb-3" />
+                <h4 className="text-base font-black text-emerald-800 dark:text-emerald-200 mb-1">
+                  Importación Completada
+                </h4>
+                <p className="text-xs text-emerald-600 dark:text-emerald-400">
+                  {importResult.mensaje}
+                </p>
+              </div>
+
+              {/* Result metrics */}
+              <div className="grid grid-cols-4 gap-3">
+                <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 text-center">
+                  <span className="text-xl font-black text-slate-700 dark:text-slate-200">
+                    {importResult.resumen.filasProcesadas ?? importResult.resumen.filasProcessadas ?? 0}
+                  </span>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+                    Filas Procesadas
+                  </p>
+                </div>
+                <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 text-center">
+                  <span className="text-xl font-black text-emerald-700 dark:text-emerald-300">
+                    {importResult.resumen.productosActualizados}
+                  </span>
+                  <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">
+                    Actualizados
+                  </p>
+                </div>
+                <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40 text-center">
+                  <span className="text-xl font-black text-amber-700 dark:text-amber-300">
+                    {importResult.resumen.filasOmitidas}
+                  </span>
+                  <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide">
+                    Omitidas
+                  </p>
+                </div>
+                <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/40 text-center">
+                  <span className="text-xl font-black text-rose-700 dark:text-rose-300">
+                    {importResult.resumen.errores}
+                  </span>
+                  <p className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wide">
+                    Errores
+                  </p>
                 </div>
               </div>
+
+              {/* Error download if any */}
+              {importResult.errores && importResult.errores.length > 0 && (
+                <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {importResult.errores.length} filas con errores fueron omitidas
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadErrors(importResult.errores)}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Descargar Reporte de Errores
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -445,45 +628,28 @@ export default function ImportarExcelModal({
         <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/30">
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className="px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl"
           >
-            Cancelar
+            {step === 'result' ? 'Cerrar' : 'Cancelar'}
           </button>
 
-          {step === 'mapping' && (
-            <button
-              type="button"
-              disabled={isValidating}
-              onClick={handleValidateMapping}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-xs font-bold shadow-md shadow-primary/25 hover:opacity-90 transition-opacity disabled:opacity-50"
-            >
-              {isValidating ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Validando SKUs en Base de Datos...
-                </>
-              ) : (
-                <>
-                  Validar y Previsualizar
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          )}
-
-          {step === 'preview' && (
+          {step === 'preview' && validationReport && (
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setStep('mapping')}
-                className="px-4 py-2 text-xs font-bold border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800"
+                onClick={() => {
+                  setStep('upload');
+                  setValidationReport(null);
+                }}
+                className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800"
               >
-                Modificar Mapeo
+                <ArrowLeft className="w-3.5 h-3.5" />
+                Volver
               </button>
               <button
                 type="button"
-                disabled={isApplying || validationReport?.resumen.correctos === 0}
+                disabled={isApplying || validationReport.resumen.cambiosPendientes === 0}
                 onClick={handleConfirmImport}
                 className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow-md shadow-emerald-600/25 hover:bg-emerald-700 transition-colors disabled:opacity-50"
               >
@@ -495,7 +661,7 @@ export default function ImportarExcelModal({
                 ) : (
                   <>
                     <CheckCircle2 className="w-4 h-4" />
-                    Confirmar y Aplicar Cambios
+                    Confirmar y Aplicar ({validationReport.resumen.cambiosPendientes} cambios)
                   </>
                 )}
               </button>
