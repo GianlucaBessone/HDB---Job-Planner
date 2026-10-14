@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import VentasNavTabs from '@/components/ventas/VentasNavTabs';
 import {
   Search,
@@ -24,13 +25,15 @@ import {
   ChevronDown,
   Edit2,
   Loader2,
-  KeyRound,
   ShieldCheck,
+  ShieldAlert,
   Receipt,
   Building2,
   Maximize2,
   Minimize2,
   UserCheck,
+  Home,
+  ArrowLeft,
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 import ConfirmDialog from '@/components/ConfirmDialog';
@@ -38,7 +41,7 @@ import CobroModal from '@/components/ventas/pdv/CobroModal';
 import SeleccionarClienteModal from '@/components/ventas/pdv/SeleccionarClienteModal';
 import ComprobanteModal from '@/components/ventas/pdv/ComprobanteModal';
 import HistorialVentasModal from '@/components/ventas/pdv/HistorialVentasModal';
-import AutorizacionPrecioModal from '@/components/ventas/pdv/AutorizacionPrecioModal';
+import ModificarPrecioModal from '@/components/ventas/pdv/ModificarPrecioModal';
 import CambioRapidoVendedorModal from '@/components/ventas/pdv/CambioRapidoVendedorModal';
 
 interface ItemCarrito {
@@ -85,14 +88,18 @@ interface ListaPrecioItem {
   tipoAjuste: string;
   valorAjuste: number;
   esPredeterminada: boolean;
+  ivaDiscriminado?: boolean;
 }
 
 export default function PdvPage() {
-  // Operador / Vendedor logueado
+  const router = useRouter();
+
+  // Operador / Vendedor logueado y control de acceso
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
 
   // Pantalla Completa
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(true);
 
   // Listas de Precios disponibles
   const [listasPrecios, setListasPrecios] = useState<ListaPrecioItem[]>([]);
@@ -114,11 +121,16 @@ export default function PdvPage() {
   const [carrito, setCarrito] = useState<ItemCarrito[]>([]);
   const [descuentoGlobal, setDescuentoGlobal] = useState<number>(0);
 
-  // Búsqueda de productos
+  // Búsqueda de productos y catálogo
   const [searchQuery, setSearchQuery] = useState('');
   const [resultadosBusqueda, setResultadosBusqueda] = useState<ProductoBuscado[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
+
+  // Refs para control de concurrencia y carrera en búsqueda
+  const searchQueryRef = useRef<string>('');
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const searchRequestIdRef = useRef<number>(0);
   const searchCacheRef = useRef<Map<string, ProductoBuscado[]>>(new Map());
 
   // Modales
@@ -128,27 +140,52 @@ export default function PdvPage() {
   const [showCambioVendedorModal, setShowCambioVendedorModal] = useState(false);
   const [comprobanteVenta, setComprobanteVenta] = useState<any | null>(null);
   const [showConfirmLimpiar, setShowConfirmLimpiar] = useState(false);
-  const [itemParaEditarPrecio, setItemParaEditarPrecio] = useState<ItemCarrito | null>(null);
-  const [showAutorizacionModal, setShowAutorizacionModal] = useState(false);
+  const [itemParaModificarPrecio, setItemParaModificarPrecio] = useState<ItemCarrito | null>(null);
 
-  // Refs para control de teclado
+  // Refs de elementos de UI
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Cargar usuario actual y preferencia de pantalla completa desde localStorage
+  // Sincronizar ref de query actual
+  useEffect(() => {
+    searchQueryRef.current = searchQuery;
+  }, [searchQuery]);
+
+  // 1. Cargar usuario, validar acceso y configurar apertura automática en pantalla completa
   useEffect(() => {
     try {
       const stored = localStorage.getItem('currentUser');
       if (stored) {
-        setCurrentUser(JSON.parse(stored));
+        const user = JSON.parse(stored);
+        setCurrentUser(user);
+        const rol = (user.role || '').toLowerCase();
+        if (!['admin', 'administrador', 'supervisor', 'vendedor'].includes(rol)) {
+          showToast('Acceso denegado: sólo Vendedores, Supervisores o Administradores pueden ingresar al Punto de Venta.', 'error');
+          router.push('/');
+          return;
+        }
+      } else {
+        router.push('/');
+        return;
       }
+
       const fsPref = localStorage.getItem('pdv_fullscreen');
-      if (fsPref === 'true') {
+      if (fsPref === null || fsPref === 'true') {
         setIsFullscreen(true);
+        try {
+          localStorage.setItem('pdv_fullscreen', 'true');
+          if (typeof document !== 'undefined' && document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(() => {});
+          }
+        } catch (_) {}
+      } else {
+        setIsFullscreen(false);
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setIsAuthChecking(false);
     }
-  }, []);
+  }, [router]);
 
   // Manejo de cambio de pantalla completa
   const toggleFullscreen = () => {
@@ -185,7 +222,6 @@ export default function PdvPage() {
         const activas = Array.isArray(data) ? data.filter((l: any) => l.activo !== false) : [];
         setListasPrecios(activas);
 
-        // Seleccionar lista predeterminada o LISTA_1
         const pred = activas.find((l: any) => l.esPredeterminada) || activas[0];
         if (pred) {
           setListaSeleccionadaId(pred.id);
@@ -201,13 +237,111 @@ export default function PdvPage() {
     [listasPrecios, listaSeleccionadaId]
   );
 
-  // Búsqueda ultra-rápida de productos (40ms para números, 90ms para texto)
+  // Helper estricto de coincidencia exacta en frontend para prevenir anomalías visuales
+  const checkIsExactMatch = useCallback((prod: ProductoBuscado, q: string): boolean => {
+    const cleanQ = q.trim();
+    if (!cleanQ) return false;
+    const isNum = /^\d+$/.test(cleanQ);
+    if (isNum) {
+      const unpadded = cleanQ.replace(/^0+/, '') || '0';
+      const padded5 = unpadded.padStart(5, '0');
+      return (
+        prod.sku === unpadded ||
+        prod.sku === padded5 ||
+        prod.sku === cleanQ ||
+        prod.codigoBarras === cleanQ ||
+        prod.codigoBarras === padded5
+      );
+    }
+    return prod.sku.toUpperCase() === cleanQ.toUpperCase() || prod.codigoBarras === cleanQ;
+  }, []);
+
+  // Función principal de búsqueda y carga de catálogo
+  const ejecutarBusqueda = useCallback(async (q: string, listaId: string) => {
+    const trimmed = q.trim();
+
+    // Cancelar cualquier petición previa en vuelo
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    // Incrementar ID de secuencia
+    const currentRequestId = ++searchRequestIdRef.current;
+
+    // Verificar caché en memoria para búsquedas con término
+    const cacheKey = `${trimmed}__${listaId || 'def'}`;
+    if (trimmed && searchCacheRef.current.has(cacheKey)) {
+      const cached = searchCacheRef.current.get(cacheKey)!;
+      // Re-verificar coincidencia exacta con query actual
+      const verified = cached.map((p) => ({
+        ...p,
+        esCoincidenciaExacta: checkIsExactMatch(p, trimmed),
+      }));
+      setResultadosBusqueda(verified);
+      const exactIdx = verified.findIndex((p) => p.esCoincidenciaExacta);
+      setSelectedIndex(exactIdx >= 0 ? exactIdx : 0);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const params = new URLSearchParams({
+        q: trimmed,
+        limit: trimmed ? '25' : '30',
+      });
+      if (listaId) {
+        params.set('listaPrecioId', listaId);
+      }
+
+      const res = await fetch(`/api/ventas/pdv/buscar-productos?${params.toString()}`, {
+        signal: controller.signal,
+      });
+
+      if (!res.ok) throw new Error('Error al consultar productos');
+
+      const data = await res.json();
+
+      // Descartar si llegó desfasado o ya hay una búsqueda más reciente
+      if (currentRequestId !== searchRequestIdRef.current) return;
+      if (trimmed !== searchQueryRef.current.trim()) return;
+
+      const prods: ProductoBuscado[] = (data.productos || []).map((p: ProductoBuscado) => ({
+        ...p,
+        esCoincidenciaExacta: trimmed ? checkIsExactMatch(p, trimmed) : false,
+      }));
+
+      // Si hay término de búsqueda, guardar en caché
+      if (trimmed) {
+        searchCacheRef.current.set(cacheKey, prods);
+      }
+
+      setResultadosBusqueda(prods);
+
+      if (trimmed) {
+        const exactIdx = prods.findIndex((p) => p.esCoincidenciaExacta);
+        setSelectedIndex(exactIdx >= 0 ? exactIdx : prods.length > 0 ? 0 : -1);
+      } else {
+        setSelectedIndex(-1);
+      }
+    } catch (e: any) {
+      if (e.name !== 'AbortError') {
+        console.error('Error buscando productos:', e);
+      }
+    } finally {
+      if (currentRequestId === searchRequestIdRef.current) {
+        setIsSearching(false);
+      }
+    }
+  }, [checkIsExactMatch]);
+
+  // Disparar búsqueda con debounce (40ms para números, 90ms para texto, inmediato si vacío)
   useEffect(() => {
     const q = searchQuery.trim();
     if (!q) {
-      setResultadosBusqueda([]);
-      setIsSearching(false);
-      setSelectedIndex(-1);
+      ejecutarBusqueda('', listaSeleccionadaId);
       return;
     }
 
@@ -215,60 +349,15 @@ export default function PdvPage() {
     const delay = isNum ? 40 : 90;
 
     const timer = setTimeout(() => {
-      ejecutarBusqueda(q);
+      ejecutarBusqueda(q, listaSeleccionadaId);
     }, delay);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, listaSeleccionadaId]);
-
-  const ejecutarBusqueda = async (q: string) => {
-    // 1. Revisar caché local en memoria para velocidad instantánea (0ms)
-    const cacheKey = `${q}__${listaSeleccionadaId || 'def'}`;
-    if (searchCacheRef.current.has(cacheKey)) {
-      const cached = searchCacheRef.current.get(cacheKey)!;
-      setResultadosBusqueda(cached);
-      setSelectedIndex(cached.length > 0 ? 0 : -1);
-      return;
-    }
-
-    setIsSearching(true);
-    try {
-      const params = new URLSearchParams({
-        q,
-        limit: '20',
-      });
-      if (listaSeleccionadaId) {
-        params.set('listaPrecioId', listaSeleccionadaId);
-      }
-
-      const res = await fetch(`/api/ventas/pdv/buscar-productos?${params.toString()}`);
-      if (res.ok) {
-        const data = await res.json();
-        const prods: ProductoBuscado[] = data.productos || [];
-
-        // Guardar en caché
-        searchCacheRef.current.set(cacheKey, prods);
-
-        setResultadosBusqueda(prods);
-
-        // Si hay coincidencia exacta o escaneo inequívoco
-        if (prods.length > 0) {
-          setSelectedIndex(0); // Siempre preseleccionar la coincidencia exacta (que el backend coloca en posición 0)
-        } else {
-          setSelectedIndex(-1);
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsSearching(false);
-    }
-  };
+  }, [searchQuery, listaSeleccionadaId, ejecutarBusqueda]);
 
   // Manejo de teclado global (F2 foco búsqueda, F4 cobrar, F8 historial, F9 vendedor, F11 fullscreen)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Si hay algún modal abierto, no interceptar atajos principales
       if (
         showCobroModal ||
         showClienteModal ||
@@ -276,7 +365,7 @@ export default function PdvPage() {
         showCambioVendedorModal ||
         comprobanteVenta ||
         showConfirmLimpiar ||
-        showAutorizacionModal
+        itemParaModificarPrecio
       ) {
         return;
       }
@@ -321,12 +410,11 @@ export default function PdvPage() {
         return;
       }
 
-      // Escape: Limpiar búsqueda o cancelar
+      // Escape: Limpiar búsqueda o reiniciar venta
       if (e.key === 'Escape') {
         if (searchQuery) {
           e.preventDefault();
           setSearchQuery('');
-          setResultadosBusqueda([]);
         } else if (carrito.length > 0) {
           e.preventDefault();
           setShowConfirmLimpiar(true);
@@ -334,7 +422,7 @@ export default function PdvPage() {
         return;
       }
 
-      // Flechas en resultados de búsqueda
+      // Flechas y Enter en lista de productos
       if (document.activeElement === searchInputRef.current && resultadosBusqueda.length > 0) {
         if (e.key === 'ArrowDown') {
           e.preventDefault();
@@ -348,7 +436,6 @@ export default function PdvPage() {
           if (target) {
             agregarProductoAlCarrito(target);
             setSearchQuery('');
-            setResultadosBusqueda([]);
             setSelectedIndex(-1);
           }
         }
@@ -364,7 +451,7 @@ export default function PdvPage() {
     showCambioVendedorModal,
     comprobanteVenta,
     showConfirmLimpiar,
-    showAutorizacionModal,
+    itemParaModificarPrecio,
     carrito.length,
     resultadosBusqueda,
     selectedIndex,
@@ -376,7 +463,6 @@ export default function PdvPage() {
     setCarrito((prev) => {
       const idx = prev.findIndex((item) => item.productoId === prod.id);
       if (idx >= 0) {
-        // Incrementar cantidad si ya existe
         const updated = [...prev];
         const existing = updated[idx];
         const nuevaCantidad = existing.cantidad + 1;
@@ -391,7 +477,6 @@ export default function PdvPage() {
         };
         return updated;
       } else {
-        // Nuevo ítem en carrito
         const precio = prod.precioAplicado > 0 ? prod.precioAplicado : prod.precioBase;
         const nuevoItem: ItemCarrito = {
           id: `cart-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
@@ -415,7 +500,6 @@ export default function PdvPage() {
       }
     });
 
-    // Mantener foco en el buscador para escaneo continuo
     setTimeout(() => {
       searchInputRef.current?.focus();
     }, 50);
@@ -427,13 +511,14 @@ export default function PdvPage() {
       prev
         .map((item) => {
           if (item.id !== id) return item;
-          const nuevaCantidad = Math.max(0.01, Math.round((item.cantidad + delta) * 100) / 100);
+          const nuevaCantidad = Math.round((item.cantidad + delta) * 100) / 100;
+          if (nuevaCantidad <= 0) return null;
           const subtotal = Math.round(
             (nuevaCantidad * item.precioUnitario * (1 - item.descuentoPorcentaje / 100)) * 100
           ) / 100;
           return { ...item, cantidad: nuevaCantidad, subtotal };
         })
-        .filter((item) => item.cantidad > 0)
+        .filter((item): item is ItemCarrito => item !== null)
     );
   };
 
@@ -455,37 +540,17 @@ export default function PdvPage() {
     setCarrito((prev) => prev.filter((item) => item.id !== id));
   };
 
-  // Solicitar modificación de precio unitario
+  // Solicitar modificación de precio unitario vía modal estilizado
   const handleSolicitarEditarPrecio = (item: ItemCarrito) => {
-    const rol = (currentUser?.role || '').toLowerCase();
-    if (['admin', 'supervisor'].includes(rol)) {
-      aplicarNuevoPrecioPrompt(item);
-    } else {
-      setItemParaEditarPrecio(item);
-      setShowAutorizacionModal(true);
-    }
+    setItemParaModificarPrecio(item);
   };
 
-  const aplicarNuevoPrecioPrompt = (item: ItemCarrito) => {
-    const nuevoPrecioStr = window.prompt(
-      `Modificar precio unitario para ${item.sku}\nPrecio actual: $${item.precioUnitario}`,
-      String(item.precioUnitario)
-    );
-    if (nuevoPrecioStr === null) return;
-    const nuevoPrecio = parseFloat(nuevoPrecioStr);
-    if (isNaN(nuevoPrecio) || nuevoPrecio < 0) {
-      showToast('Precio inválido', 'error');
-      return;
-    }
-
-    const motivo = window.prompt(
-      'Ingrese el motivo de la modificación de precio:',
-      'Ajuste comercial autorizado'
-    );
-
+  const handlePrecioModificado = (nuevoPrecio: number, motivo: string) => {
+    if (!itemParaModificarPrecio) return;
+    const itemTarget = itemParaModificarPrecio;
     setCarrito((prev) =>
       prev.map((it) => {
-        if (it.id !== item.id) return it;
+        if (it.id !== itemTarget.id) return it;
         const subtotal = Math.round(
           (it.cantidad * nuevoPrecio * (1 - it.descuentoPorcentaje / 100)) * 100
         ) / 100;
@@ -493,15 +558,16 @@ export default function PdvPage() {
           ...it,
           precioUnitario: nuevoPrecio,
           precioModificado: true,
-          motivoModificacion: motivo || 'Ajuste manual de precio',
+          motivoModificacion: motivo,
           subtotal,
         };
       })
     );
-    showToast(`Precio modificado para ${item.sku}`, 'success');
+    showToast(`Precio modificado para ${itemTarget.sku}`, 'success');
+    setItemParaModificarPrecio(null);
   };
 
-  // Cambio de lista de precios con advertencia si hay ítems cargados
+  // Cambio de lista de precios con confirmación si hay ítems cargados
   const handleSolicitarCambioLista = (nuevaListaId: string) => {
     if (nuevaListaId === listaSeleccionadaId) return;
 
@@ -509,6 +575,7 @@ export default function PdvPage() {
       setListaCambioPendiente(nuevaListaId);
     } else {
       setListaSeleccionadaId(nuevaListaId);
+      searchCacheRef.current.clear();
     }
   };
 
@@ -517,6 +584,7 @@ export default function PdvPage() {
     const nuevaId = listaCambioPendiente;
     setListaCambioPendiente(null);
     setListaSeleccionadaId(nuevaId);
+    searchCacheRef.current.clear();
 
     try {
       const res = await fetch('/api/ventas/pdv/calcular', {
@@ -542,7 +610,9 @@ export default function PdvPage() {
     }
   };
 
-  // Totales calculados en el cliente
+  // Totales calculados en el cliente según IVA Discriminado
+  const esIvaDiscriminado = Boolean(listaActual?.ivaDiscriminado);
+
   const subtotalLineas = useMemo(
     () => Math.round(carrito.reduce((acc, it) => acc + (it.subtotal || 0), 0) * 100) / 100,
     [carrito]
@@ -553,7 +623,7 @@ export default function PdvPage() {
     [subtotalLineas, descuentoGlobal]
   );
 
-  const totalFinal = useMemo(
+  const subtotalConDescuento = useMemo(
     () => Math.max(0, Math.round((subtotalLineas - descuentoGlobalMonto) * 100) / 100),
     [subtotalLineas, descuentoGlobalMonto]
   );
@@ -562,20 +632,28 @@ export default function PdvPage() {
     return (
       Math.round(
         carrito.reduce((acc, it) => {
-          const neto = it.subtotal || 0;
-          const iva = it.ivaPorcentaje > 0 ? (neto * it.ivaPorcentaje) / 100 : 0;
+          const base = (it.subtotal || 0) * (1 - descuentoGlobal / 100);
+          const iva = it.ivaPorcentaje > 0 ? (base * it.ivaPorcentaje) / 100 : 0;
           return acc + iva;
         }, 0) * 100
       ) / 100
     );
-  }, [carrito]);
+  }, [carrito, descuentoGlobal]);
+
+  // Si la lista tiene ivaDiscriminado: total = subtotalNeto - desc + IVA.
+  // Si no tiene ivaDiscriminado: total = subtotal - desc (el precio ya incluye IVA y no se suma al final).
+  const totalFinal = useMemo(() => {
+    if (esIvaDiscriminado) {
+      return Math.max(0, Math.round((subtotalConDescuento + impuestosEstimados) * 100) / 100);
+    }
+    return subtotalConDescuento;
+  }, [esIvaDiscriminado, subtotalConDescuento, impuestosEstimados]);
 
   // Limpiar venta
   const handleLimpiarVenta = () => {
     setCarrito([]);
     setDescuentoGlobal(0);
     setSearchQuery('');
-    setResultadosBusqueda([]);
     setCliente({
       id: null,
       nombre: 'Consumidor Final',
@@ -630,10 +708,10 @@ export default function PdvPage() {
 
     showToast(`Venta ${data.venta.numero} registrada con éxito`, 'success');
 
-    // Mostrar comprobante para imprimir
+    // Mostrar comprobante
     setComprobanteVenta(data.venta);
 
-    // Reiniciar carrito para la siguiente venta
+    // Reiniciar venta
     setCarrito([]);
     setDescuentoGlobal(0);
     setSearchQuery('');
@@ -653,117 +731,153 @@ export default function PdvPage() {
       minimumFractionDigits: 2,
     }).format(val || 0);
 
+  if (isAuthChecking) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
+        <Loader2 className="w-7 h-7 animate-spin text-indigo-600" />
+        <p className="text-xs font-medium text-slate-500">Cargando Punto de Venta...</p>
+      </div>
+    );
+  }
+
+  const rolUsuario = (currentUser?.role || '').toLowerCase();
+  if (!['admin', 'administrador', 'supervisor', 'vendedor'].includes(rolUsuario)) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 text-center space-y-4">
+        <div className="w-14 h-14 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 flex items-center justify-center border border-red-200 dark:border-red-800">
+          <ShieldAlert className="w-7 h-7" />
+        </div>
+        <div>
+          <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Acceso Restringido</h2>
+          <p className="text-xs text-slate-500 max-w-md mt-1">
+            Esta vista está reservada exclusivamente para personal con rol Vendedor, Supervisor o Administrador.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => router.push('/')}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm transition-all"
+        >
+          <Home className="w-4 h-4" />
+          <span>Volver al Inicio</span>
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`transition-all duration-200 ${
         isFullscreen
-          ? 'fixed inset-0 z-50 bg-background overflow-y-auto p-2 sm:p-3 flex flex-col min-h-screen'
-          : 'space-y-3 pb-8'
+          ? 'fixed inset-0 z-[70] bg-slate-50 dark:bg-slate-950 flex flex-col h-screen w-screen overflow-hidden p-2 sm:p-2.5'
+          : 'space-y-2.5 pb-6'
       }`}
     >
-      {/* Pestañas de Navegación de Ventas (ocultas en pantalla completa para máximo espacio) */}
+      {/* Pestañas de Navegación (ocultas en pantalla completa) */}
       {!isFullscreen && <VentasNavTabs currentTab="pdv" />}
 
-      {/* Barra Superior de Estado y Controles del PDV */}
-      <div className="bg-card border border-slate-200 dark:border-slate-800 rounded-2xl p-2.5 sm:p-3 shadow-xs flex flex-wrap items-center justify-between gap-2.5">
-        {/* Izquierda: Cliente & Lista de Precios */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+      {/* Barra Superior Sobria y Profesional */}
+      <header className="bg-card border border-slate-200/90 dark:border-slate-800 rounded-xl px-3 py-2 shadow-xs flex flex-wrap items-center justify-between gap-2 shrink-0">
+        {/* Izquierda: Home, Cliente, Lista de Precios */}
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => router.push('/')}
+            className="h-8 w-8 rounded-lg border border-slate-200 dark:border-slate-800 bg-background hover:bg-muted text-slate-600 dark:text-slate-300 flex items-center justify-center transition-colors shrink-0"
+            title="Volver al Inicio"
+          >
+            <Home className="w-4 h-4" />
+          </button>
+
           {/* Selector de Cliente */}
-          <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-xl px-2.5 py-1.5">
-            <User className="w-4 h-4 text-indigo-500 shrink-0" />
-            <div className="text-xs">
-              <span className="text-[9px] uppercase font-bold text-slate-400 block leading-tight">
-                Cliente
-              </span>
-              <strong className="text-slate-900 dark:text-slate-100 font-bold truncate max-w-[130px] sm:max-w-[180px] inline-block">
+          <div className="h-8 flex items-center gap-2 bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-lg px-2.5">
+            <User className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+            <div className="flex items-center gap-1.5 text-xs">
+              <span className="text-[10px] text-slate-400 font-medium hidden sm:inline">Cliente:</span>
+              <strong className="text-slate-800 dark:text-slate-200 font-semibold truncate max-w-[120px] sm:max-w-[160px]">
                 {cliente.nombre}
               </strong>
             </div>
             <button
               type="button"
               onClick={() => setShowClienteModal(true)}
-              className="ml-1 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline px-1 py-0.5"
+              className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline px-1 py-0.5 ml-0.5"
             >
               Cambiar
             </button>
           </div>
 
-          {/* Selector de Lista de Precios */}
-          <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-xl px-2.5 py-1.5">
-            <Tag className="w-4 h-4 text-emerald-500 shrink-0" />
-            <div className="text-xs">
-              <span className="text-[9px] uppercase font-bold text-slate-400 block leading-tight">
-                Lista de Precios
+          {/* Selector de Lista de Precios con indicador de IVA */}
+          <div className="h-8 flex items-center gap-1.5 bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-lg px-2">
+            <Tag className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+            <select
+              value={listaSeleccionadaId}
+              onChange={(e) => handleSolicitarCambioLista(e.target.value)}
+              className="bg-transparent font-medium text-slate-800 dark:text-slate-200 focus:outline-hidden cursor-pointer text-xs"
+            >
+              {listasPrecios.map((l) => (
+                <option key={l.id} value={l.id} className="dark:bg-slate-900 text-xs">
+                  {l.nombre} {l.ivaDiscriminado ? '• IVA Disc.' : ''}
+                </option>
+              ))}
+            </select>
+            {esIvaDiscriminado && (
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300/40">
+                IVA Disc.
               </span>
-              <select
-                value={listaSeleccionadaId}
-                onChange={(e) => handleSolicitarCambioLista(e.target.value)}
-                className="bg-transparent font-bold text-slate-900 dark:text-slate-100 focus:outline-hidden cursor-pointer text-xs"
-              >
-                {listasPrecios.map((l) => (
-                  <option key={l.id} value={l.id} className="dark:bg-slate-900">
-                    {l.nombre} {l.tipoAjuste !== 'MANUAL' ? `(${l.tipoAjuste})` : ''}
-                  </option>
-                ))}
-              </select>
-            </div>
+            )}
           </div>
         </div>
 
-        {/* Derecha: Operador / Cambio Rápido Vendedor / Pantalla Completa / Acciones */}
-        <div className="flex items-center gap-2">
-          {/* Vendedor Activo & Botón de Cambio Rápido */}
-          <div className="flex items-center gap-1.5 bg-slate-100/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-xl px-2.5 py-1">
+        {/* Derecha: Vendedor, Pantalla Completa, Historial, Limpiar */}
+        <div className="flex items-center gap-1.5">
+          {/* Vendedor Activo */}
+          <div className="h-8 flex items-center gap-1.5 bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-lg px-2.5">
             <ShieldCheck className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
-            <div className="text-xs">
-              <span className="text-[9px] uppercase font-bold text-slate-400 block leading-tight">
-                Vendedor en Caja
-              </span>
-              <strong className="text-slate-800 dark:text-slate-200 font-bold max-w-[120px] sm:max-w-[150px] truncate inline-block">
-                {currentUser?.nombreCompleto || 'Cajero'}
-              </strong>
-            </div>
+            <span className="text-xs font-medium text-slate-800 dark:text-slate-200 max-w-[110px] sm:max-w-[140px] truncate">
+              {currentUser?.nombreCompleto || 'Cajero'}
+            </span>
             <button
               type="button"
               onClick={() => setShowCambioVendedorModal(true)}
-              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 text-indigo-600 dark:text-indigo-400 font-bold text-[10px] ml-1 transition-colors"
-              title="Cambiar operador vendedor (F9)"
+              className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline px-1 py-0.5 ml-1"
+              title="Cambiar vendedor [F9]"
             >
-              <UserCheck className="w-3 h-3" />
-              <span>Cambiar (F9)</span>
+              F9
             </button>
           </div>
 
-          {/* Botón de Pantalla Completa */}
+          {/* Botón Pantalla Completa */}
           <button
             type="button"
             onClick={toggleFullscreen}
-            className={`p-2 rounded-xl border transition-all ${
+            className={`h-8 w-8 rounded-lg border transition-all flex items-center justify-center ${
               isFullscreen
                 ? 'bg-indigo-600 text-white border-indigo-700 shadow-xs'
-                : 'bg-card border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                : 'bg-background border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-muted'
             }`}
             title={isFullscreen ? 'Salir de Pantalla Completa (F11)' : 'Pantalla Completa (F11)'}
           >
-            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
           </button>
 
           {/* Historial */}
           <button
             type="button"
             onClick={() => setShowHistorialModal(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-card hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-xs transition-colors"
-            title="Ver ventas históricas (F8)"
+            className="h-8 inline-flex items-center gap-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-background hover:bg-muted text-xs font-medium text-slate-700 dark:text-slate-300 shadow-xs transition-colors"
+            title="Historial de ventas (F8)"
           >
             <History className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-            <span className="hidden sm:inline">Historial (F8)</span>
+            <span className="hidden sm:inline">Historial</span>
+            <span className="text-[10px] text-slate-400 font-mono">F8</span>
           </button>
 
           {carrito.length > 0 && (
             <button
               type="button"
               onClick={() => setShowConfirmLimpiar(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-card hover:bg-red-50 dark:hover:bg-red-950/40 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 shadow-xs transition-colors"
+              className="h-8 inline-flex items-center gap-1 px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-background hover:bg-red-50 dark:hover:bg-red-950/30 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
               title="Limpiar carrito actual (Esc)"
             >
               <RotateCcw className="w-3.5 h-3.5" />
@@ -771,49 +885,50 @@ export default function PdvPage() {
             </button>
           )}
         </div>
-      </div>
+      </header>
 
-      {/* Grid Principal del PDV (Layout de Mostrador: Izquierda Búsqueda, Derecha Detalle) */}
-      <div className={`grid grid-cols-1 lg:grid-cols-12 gap-3 items-start ${isFullscreen ? 'flex-1' : ''}`}>
-        {/* PANEL IZQUIERDO: Búsqueda rápida y resultados de catálogo (5 cols en lg) */}
-        <div className="lg:col-span-5 bg-card border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 shadow-xs flex flex-col space-y-3 min-h-[500px]">
-          {/* Input de Búsqueda con foco inicial */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                <Barcode className="w-4 h-4 text-indigo-500" />
-                Buscar Producto o Escanear Código
+      {/* Grid Principal del PDV */}
+      <div className={`grid grid-cols-1 lg:grid-cols-12 gap-2.5 items-stretch ${isFullscreen ? 'flex-1 min-h-0 overflow-hidden' : 'items-start'}`}>
+        {/* PANEL IZQUIERDO: Catálogo y Búsqueda (5 columnas) */}
+        <section className={`lg:col-span-5 bg-card border border-slate-200/90 dark:border-slate-800 rounded-xl p-3 shadow-xs flex flex-col space-y-2.5 ${isFullscreen ? 'h-full min-h-0 overflow-hidden' : 'min-h-[500px]'}`}>
+          {/* Input de Búsqueda */}
+          <div className="shrink-0 space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <Search className="w-3.5 h-3.5 text-indigo-500" />
+                <span>Búsqueda de Artículos</span>
               </label>
-              <span className="text-[10px] text-slate-400 font-mono">Atajo [F2]</span>
+              <span className="text-[10px] text-slate-400 font-mono">F2 para enfocar</span>
             </div>
 
             <div className="relative">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 ref={searchInputRef}
                 type="text"
                 autoFocus
-                placeholder="Escribir SKU (ignora ceros: ej. 3 ó 0003), código o descripción..."
+                placeholder="SKU (ej: 3, 5001), código de barras o descripción..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-9 py-2.5 bg-slate-100/70 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100 placeholder:text-slate-400 placeholder:font-normal focus:outline-hidden focus:ring-2 focus:ring-indigo-500/30"
+                className="w-full h-9 pl-9 pr-8 bg-slate-100/60 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:bg-background focus:outline-hidden focus:ring-1 focus:ring-indigo-500 transition-all"
               />
               {isSearching && (
-                <Loader2 className="w-4 h-4 animate-spin text-indigo-500 absolute right-3 top-1/2 -translate-y-1/2" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-500 absolute right-2.5 top-1/2 -translate-y-1/2" />
               )}
             </div>
-            <div className="flex items-center justify-between mt-1 text-[10px] text-slate-400 px-1">
-              <span>Enter: agregar exacto / seleccionado</span>
-              <span>↑↓: navegar lista</span>
+
+            <div className="flex items-center justify-between text-[10px] text-slate-400 px-0.5">
+              <span>{searchQuery ? `Filtrando por "${searchQuery}"` : 'Catálogo activo (sin búsqueda)'}</span>
+              <span>Enter: agregar • ↑↓: navegar</span>
             </div>
           </div>
 
-          {/* Lista de Resultados de Búsqueda */}
-          <div className="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[540px]">
+          {/* Lista de Resultados de Catálogo */}
+          <div className={`space-y-1.5 pr-0.5 ${isFullscreen ? 'flex-1 min-h-0 overflow-y-auto' : 'overflow-y-auto max-h-[520px]'}`}>
             {isSearching && resultadosBusqueda.length === 0 ? (
               <div className="py-12 flex flex-col items-center justify-center text-slate-400 gap-2">
                 <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
-                <span className="text-xs">Buscando en catálogo...</span>
+                <span className="text-xs">Cargando catálogo...</span>
               </div>
             ) : resultadosBusqueda.length > 0 ? (
               resultadosBusqueda.map((prod, idx) => {
@@ -826,168 +941,160 @@ export default function PdvPage() {
                     onClick={() => {
                       agregarProductoAlCarrito(prod);
                       setSearchQuery('');
-                      setResultadosBusqueda([]);
                     }}
-                    className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                    className={`p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between gap-2.5 ${
                       isExact
-                        ? 'bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-400 dark:border-emerald-600 shadow-sm ring-2 ring-emerald-400/40'
+                        ? 'border-emerald-400/80 dark:border-emerald-600/80 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-xs ring-1 ring-emerald-400/30'
                         : isSelected
-                        ? 'bg-indigo-50/80 dark:bg-indigo-950/50 border-indigo-300 dark:border-indigo-700 shadow-xs ring-1 ring-indigo-400/30'
-                        : 'bg-slate-50/50 dark:bg-slate-900/30 border-slate-200/80 dark:border-slate-800 hover:border-indigo-200 dark:hover:border-indigo-800 hover:bg-slate-100/60 dark:hover:bg-slate-800/40'
+                        ? 'border-indigo-300 dark:border-indigo-700 bg-indigo-50/50 dark:bg-indigo-950/40 shadow-xs ring-1 ring-indigo-400/30'
+                        : 'border-slate-200/70 dark:border-slate-800 bg-background/60 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/80 dark:hover:bg-slate-900/40'
                     }`}
                   >
-                    <div className="space-y-1 flex-1 min-w-0">
+                    <div className="space-y-0.5 flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="font-mono text-xs font-black text-slate-900 dark:text-slate-100">
+                        <span className="font-mono text-xs font-bold text-slate-900 dark:text-slate-100">
                           {prod.sku}
                         </span>
 
                         {isExact && (
-                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-600 text-white font-black uppercase tracking-wider flex items-center gap-1 shadow-xs">
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-semibold border border-emerald-300/50 dark:border-emerald-700/50 flex items-center gap-1">
                             <CheckCircle2 className="w-2.5 h-2.5" />
-                            Coincidencia Exacta [Enter]
+                            Exacto [Enter]
                           </span>
                         )}
 
                         {prod.marca && (
-                          <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-200/70 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold truncate max-w-[100px]">
+                          <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium truncate max-w-[90px]">
                             {prod.marca}
                           </span>
                         )}
-
-                        {prod.esFallbackPrecio && (
-                          <span
-                            className="text-[9px] px-1 py-0.2 rounded bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 font-bold"
-                            title="Precio base aplicado (regla no definida o fallback)"
-                          >
-                            Base
-                          </span>
-                        )}
                       </div>
 
-                      <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                      <div className="text-xs font-medium text-slate-800 dark:text-slate-200 truncate">
                         {prod.descripcion}
                       </div>
 
-                      <div className="flex items-center gap-3 text-[10px] text-slate-400">
+                      <div className="flex items-center gap-2.5 text-[10px] text-slate-400">
                         {prod.codigoBarras && (
                           <span className="flex items-center gap-1">
                             <Barcode className="w-3 h-3 text-slate-400" />
                             {prod.codigoBarras}
                           </span>
                         )}
-                        <span>Stock: {prod.stockActual} {prod.unidad}</span>
+                        <span>Stock: <strong className="text-slate-600 dark:text-slate-300">{prod.stockActual}</strong> {prod.unidad}</span>
+                        {prod.esFallbackPrecio && (
+                          <span className="text-amber-600 dark:text-amber-400 font-medium">(Base)</span>
+                        )}
                       </div>
                     </div>
 
                     <div className="text-right shrink-0">
-                      <div className="text-sm font-black text-slate-900 dark:text-slate-100">
+                      <div className="text-xs font-bold text-slate-900 dark:text-slate-100">
                         {formatARS(prod.precioAplicado > 0 ? prod.precioAplicado : prod.precioBase)}
                       </div>
+                      {esIvaDiscriminado && (
+                        <div className="text-[9px] text-slate-400">Neto s/IVA</div>
+                      )}
                       <button
                         type="button"
-                        className={`mt-1 px-2.5 py-1 rounded-lg font-bold text-[11px] shadow-xs flex items-center gap-1 text-white ${
+                        className={`mt-1 h-6 px-2 rounded-md font-semibold text-[11px] flex items-center gap-1 transition-colors ${
                           isExact
-                            ? 'bg-emerald-600 hover:bg-emerald-700'
-                            : 'bg-indigo-600 hover:bg-indigo-700'
+                            ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                            : 'bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white text-slate-700 dark:text-slate-300'
                         }`}
                       >
                         <Plus className="w-3 h-3" />
-                        {isExact ? 'Agregar (Enter)' : 'Agregar'}
+                        <span>{isExact ? 'Agregar' : '+'}</span>
                       </button>
                     </div>
                   </div>
                 );
               })
-            ) : searchQuery ? (
-              <div className="py-12 text-center text-slate-400 text-xs">
-                No se encontraron productos para <strong>"{searchQuery}"</strong> en {listaActual?.nombre || 'catálogo'}.
-              </div>
             ) : (
-              <div className="py-12 text-center text-slate-400 text-xs space-y-2">
-                <Package className="w-8 h-8 text-slate-300 dark:text-slate-700 mx-auto" />
-                <p>Escriba el número de SKU (ej: 3, 25, 561), código de barras o descripción para comenzar la venta.</p>
+              <div className="py-12 text-center text-slate-400 text-xs space-y-1">
+                <Package className="w-7 h-7 text-slate-300 dark:text-slate-700 mx-auto" />
+                <p>No se encontraron productos para <strong>"{searchQuery}"</strong>.</p>
               </div>
             )}
           </div>
-        </div>
+        </section>
 
-        {/* PANEL DERECHO: Detalle de Venta / Carrito y Cobro (7 cols en lg) */}
-        <div className="lg:col-span-7 bg-card border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 shadow-xs flex flex-col justify-between min-h-[500px]">
+        {/* PANEL DERECHO: Detalle de Venta / Carrito y Totales (7 columnas) */}
+        <section className={`lg:col-span-7 bg-card border border-slate-200/90 dark:border-slate-800 rounded-xl p-3 shadow-xs flex flex-col justify-between ${isFullscreen ? 'h-full min-h-0 overflow-hidden' : 'min-h-[500px]'}`}>
           {/* Header del carrito */}
-          <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 mb-2">
+          <div className="flex items-center justify-between pb-2.5 border-b border-slate-200 dark:border-slate-800 mb-1.5 shrink-0">
             <div className="flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-              <h2 className="text-sm font-black text-slate-900 dark:text-slate-100 tracking-tight">
+              <ShoppingBag className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              <h2 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
                 Detalle de Venta
               </h2>
-              <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold">
-                {carrito.length} {carrito.length === 1 ? 'ítem' : 'ítems'}
+              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold">
+                {carrito.length} {carrito.length === 1 ? 'artículo' : 'artículos'}
               </span>
             </div>
 
-            <span className="text-xs font-mono font-bold text-slate-400">
-              F4: Cobrar venta
+            <span className="text-[11px] font-mono text-slate-400">
+              [F4] Cobrar
             </span>
           </div>
 
-          {/* Grilla editable de productos cargados */}
-          <div className="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[390px]">
+          {/* Grilla de productos cargados */}
+          <div className={`space-y-1.5 pr-0.5 ${isFullscreen ? 'flex-1 min-h-0 overflow-y-auto' : 'overflow-y-auto max-h-[380px]'}`}>
             {carrito.length === 0 ? (
               <div className="py-16 text-center text-slate-400 text-xs space-y-2">
-                <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-900/60 flex items-center justify-center mx-auto text-slate-400">
-                  <ShoppingBag className="w-6 h-6" />
+                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-900/60 flex items-center justify-center mx-auto text-slate-400">
+                  <ShoppingBag className="w-5 h-5" />
                 </div>
-                <p className="font-bold text-slate-600 dark:text-slate-400">El carrito de venta está vacío</p>
-                <p className="text-[11px]">Utilice el panel izquierdo para buscar y agregar artículos.</p>
+                <p className="font-semibold text-slate-600 dark:text-slate-400">El carrito de venta está vacío</p>
+                <p className="text-[11px]">Busque productos en el panel izquierdo para agregarlos a la venta.</p>
               </div>
             ) : (
               carrito.map((item) => (
                 <div
                   key={item.id}
-                  className="p-3 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-slate-50/40 dark:bg-slate-900/30 hover:border-slate-300 dark:hover:border-slate-700 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                  className="p-2 rounded-lg border border-slate-200/70 dark:border-slate-800 bg-background/50 hover:bg-slate-50/60 dark:hover:bg-slate-900/30 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs"
                 >
                   {/* Info producto */}
                   <div className="flex-1 min-w-0 space-y-0.5">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-black text-slate-900 dark:text-slate-100">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-mono text-xs font-bold text-slate-900 dark:text-slate-100">
                         {item.sku}
                       </span>
                       {item.precioModificado && (
-                        <span className="text-[9px] px-1 py-0.2 rounded bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 font-bold">
-                          Precio Modificado
+                        <span className="text-[9px] px-1 py-0.2 rounded bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 font-semibold">
+                          Modificado
                         </span>
                       )}
                     </div>
-                    <div className="font-semibold text-slate-800 dark:text-slate-200 truncate">
+                    <div className="font-medium text-slate-800 dark:text-slate-200 truncate">
                       {item.descripcion}
                     </div>
-                    <div className="text-[10px] text-slate-400 flex items-center gap-3">
+                    <div className="text-[10px] text-slate-400 flex items-center gap-2.5">
                       <span>P. Unit: {formatARS(item.precioUnitario)}</span>
                       {item.descuentoPorcentaje > 0 && (
-                        <span className="text-emerald-600 font-bold">
+                        <span className="text-emerald-600 font-semibold">
                           Desc: {item.descuentoPorcentaje}%
                         </span>
                       )}
                       <button
                         type="button"
                         onClick={() => handleSolicitarEditarPrecio(item)}
-                        className="text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-0.5"
+                        className="text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-0.5 font-medium"
                       >
                         <Edit2 className="w-2.5 h-2.5" />
-                        Modificar precio
+                        Editar precio
                       </button>
                     </div>
                   </div>
 
                   {/* Controles de Cantidad & Subtotal */}
-                  <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0">
-                    {/* Controles +/- */}
-                    <div className="flex items-center border border-slate-200 dark:border-slate-700 rounded-lg bg-card overflow-hidden">
+                  <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+                    {/* Stepper Cantidad */}
+                    <div className="flex items-center border border-slate-200 dark:border-slate-700 rounded-md bg-card overflow-hidden h-7">
                       <button
                         type="button"
                         onClick={() => handleCambiarCantidad(item.id, -1)}
-                        className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500"
+                        className="w-7 h-full flex items-center justify-center hover:bg-muted text-slate-500 transition-colors"
                         title="Restar 1"
                       >
                         <Minus className="w-3 h-3" />
@@ -1000,21 +1107,21 @@ export default function PdvPage() {
                         onChange={(e) =>
                           handleSetCantidadManual(item.id, parseFloat(e.target.value) || 0)
                         }
-                        className="w-12 text-center text-xs font-black text-slate-900 dark:text-slate-100 bg-transparent focus:outline-hidden py-1"
+                        className="w-10 text-center text-xs font-bold text-slate-900 dark:text-slate-100 bg-transparent focus:outline-hidden py-0.5"
                       />
                       <button
                         type="button"
                         onClick={() => handleCambiarCantidad(item.id, 1)}
-                        className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500"
+                        className="w-7 h-full flex items-center justify-center hover:bg-muted text-slate-500 transition-colors"
                         title="Sumar 1"
                       >
                         <Plus className="w-3 h-3" />
                       </button>
                     </div>
 
-                    {/* Subtotal */}
-                    <div className="text-right min-w-[90px]">
-                      <div className="text-sm font-black text-slate-900 dark:text-slate-100">
+                    {/* Subtotal fila */}
+                    <div className="text-right min-w-[80px]">
+                      <div className="text-xs font-bold text-slate-900 dark:text-slate-100">
                         {formatARS(item.subtotal)}
                       </div>
                     </div>
@@ -1023,10 +1130,10 @@ export default function PdvPage() {
                     <button
                       type="button"
                       onClick={() => handleEliminarItem(item.id)}
-                      className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
-                      title="Quitar producto"
+                      className="p-1 text-slate-400 hover:text-red-600 rounded-md hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                      title="Quitar artículo"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
@@ -1035,12 +1142,12 @@ export default function PdvPage() {
           </div>
 
           {/* Cuadro Inferior de Totales y Botón Cobrar */}
-          <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-3 mt-2">
-            {/* Resumen numérico */}
+          <div className="pt-2.5 border-t border-slate-200 dark:border-slate-800 space-y-2.5 mt-1 shrink-0">
+            {/* Desglose numérico */}
             <div className="space-y-1 text-xs">
               <div className="flex justify-between text-slate-500">
-                <span>Subtotal ({carrito.length} artículos):</span>
-                <span className="font-bold text-slate-800 dark:text-slate-200">
+                <span>{esIvaDiscriminado ? 'Subtotal Neto:' : 'Subtotal:'}</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200">
                   {formatARS(subtotalLineas)}
                 </span>
               </div>
@@ -1060,31 +1167,36 @@ export default function PdvPage() {
                       )
                     }
                     placeholder="0"
-                    className="w-12 px-1 py-0.5 text-center text-xs font-bold border border-slate-200 dark:border-slate-700 rounded bg-card ml-1"
+                    className="w-12 h-6 px-1 text-center text-xs font-semibold border border-slate-200 dark:border-slate-700 rounded bg-background ml-1 focus:outline-hidden focus:ring-1 focus:ring-indigo-500"
                   />
                 </span>
                 {descuentoGlobalMonto > 0 && (
-                  <span className="font-bold text-emerald-600">
+                  <span className="font-semibold text-emerald-600">
                     -{formatARS(descuentoGlobalMonto)}
                   </span>
                 )}
               </div>
 
+              {/* IVA: si es discriminado se suma al total; si no, es informativo */}
               {impuestosEstimados > 0 && (
-                <div className="flex justify-between text-[11px] text-slate-400">
-                  <span>IVA estimado incluido:</span>
-                  <span>{formatARS(impuestosEstimados)}</span>
+                <div className="flex justify-between text-slate-500">
+                  <span>
+                    {esIvaDiscriminado ? 'IVA Discriminado:' : 'IVA incluido estimado:'}
+                  </span>
+                  <span className={esIvaDiscriminado ? 'font-semibold text-indigo-600 dark:text-indigo-400' : 'text-slate-400'}>
+                    {esIvaDiscriminado ? `+${formatARS(impuestosEstimados)}` : formatARS(impuestosEstimados)}
+                  </span>
                 </div>
               )}
             </div>
 
-            {/* Total Final Destacado y Botón Cobrar */}
-            <div className="p-3.5 sm:p-4 rounded-xl bg-slate-900 text-white dark:bg-slate-950 dark:border dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+            {/* Total Final y Botón de Cobro */}
+            <div className="p-3 rounded-xl bg-slate-900 text-white dark:bg-slate-950 dark:border dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
               <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
                   Total Final a Cobrar
                 </span>
-                <span className="text-3xl font-black text-emerald-400 tracking-tight">
+                <span className="text-2xl font-black text-emerald-400 tracking-tight">
                   {formatARS(totalFinal)}
                 </span>
                 <div className="text-[10px] text-slate-400 mt-0.5">
@@ -1092,21 +1204,19 @@ export default function PdvPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  disabled={carrito.length === 0}
-                  onClick={() => setShowCobroModal(true)}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-sm shadow-lg shadow-emerald-500/25 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-                >
-                  <CreditCard className="w-5 h-5" />
-                  <span>Cobrar / Confirmar (F4)</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
+              <button
+                type="button"
+                disabled={carrito.length === 0}
+                onClick={() => setShowCobroModal(true)}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              >
+                <CreditCard className="w-4 h-4" />
+                <span>Cobrar / Confirmar (F4)</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
-        </div>
+        </section>
       </div>
 
       {/* Modal de Cambio Rápido de Vendedor */}
@@ -1133,7 +1243,7 @@ export default function PdvPage() {
         }}
       />
 
-      {/* Modal de Cobro y Pagos */}
+      {/* Modal de Cobro y Pagos (Soporta cambiar cliente directamente y discrimina IVA) */}
       <CobroModal
         isOpen={showCobroModal}
         onClose={() => setShowCobroModal(false)}
@@ -1144,6 +1254,14 @@ export default function PdvPage() {
         impuestosMonto={impuestosEstimados}
         itemsCount={carrito.length}
         listaPrecioNombre={listaActual?.nombre || 'General'}
+        ivaDiscriminado={esIvaDiscriminado}
+        onCambiarCliente={(nuevoCli) => {
+          setCliente(nuevoCli);
+          if (nuevoCli.listaPrecioId && nuevoCli.listaPrecioId !== listaSeleccionadaId) {
+            handleSolicitarCambioLista(nuevoCli.listaPrecioId);
+          }
+          showToast(`Cliente actualizado a: ${nuevoCli.nombre}`, 'info');
+        }}
         onConfirmarVenta={handleConfirmarVentaBackend}
       />
 
@@ -1165,19 +1283,13 @@ export default function PdvPage() {
         }}
       />
 
-      {/* Modal de Autorización por PIN para Modificación de Precios */}
-      <AutorizacionPrecioModal
-        isOpen={showAutorizacionModal}
-        onClose={() => {
-          setShowAutorizacionModal(false);
-          setItemParaEditarPrecio(null);
-        }}
-        onAutorizado={(supervisor) => {
-          if (itemParaEditarPrecio) {
-            aplicarNuevoPrecioPrompt(itemParaEditarPrecio);
-          }
-        }}
-        mensaje="La modificación manual de precios unitarios requiere autorización de un Supervisor o Administrador."
+      {/* Modal Nativo para Modificación de Precios */}
+      <ModificarPrecioModal
+        isOpen={!!itemParaModificarPrecio}
+        onClose={() => setItemParaModificarPrecio(null)}
+        item={itemParaModificarPrecio}
+        currentUser={currentUser}
+        onPrecioModificado={handlePrecioModificado}
       />
 
       {/* Dialog para Confirmar Limpieza de Venta */}

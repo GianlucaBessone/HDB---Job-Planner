@@ -15,6 +15,7 @@ const listaPrecioCreateSchema = z.object({
   familiaId: z.string().optional().nullable(),
   marcaId: z.string().optional().nullable(),
   orden: z.coerce.number().default(1),
+  ivaDiscriminado: z.boolean().default(false),
   sincronizarProductos: z.boolean().default(false),
 });
 
@@ -64,6 +65,7 @@ export async function POST(req: NextRequest) {
             aplicaA: data.aplicaA,
             familiaId: data.familiaId || null,
             marcaId: data.marcaId || null,
+            ivaDiscriminado: data.ivaDiscriminado ?? false,
           },
         });
         return NextResponse.json(reactivated);
@@ -86,6 +88,7 @@ export async function POST(req: NextRequest) {
         familiaId: data.aplicaA === 'FAMILIA' ? data.familiaId || null : null,
         marcaId: data.aplicaA === 'MARCA' ? data.marcaId || null : null,
         orden: data.orden,
+        ivaDiscriminado: data.ivaDiscriminado ?? false,
         activo: true,
       },
     });

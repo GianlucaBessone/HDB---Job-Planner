@@ -69,18 +69,37 @@ export default function CambioRapidoVendedorModal({
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data)) {
-          // Filtrar activos y roles comerciales/operativos
-          const activos = data.filter((o: any) => o.activo !== false);
-          setOperadores(activos);
+          // Filtrar estrictamente solo usuarios activos con rol VENDEDOR
+          const vendedores = data.filter(
+            (o: any) => o.activo !== false && (o.role || '').toLowerCase() === 'vendedor'
+          );
+          setOperadores(vendedores);
         }
       }
     } catch (e) {
       console.error('Error al cargar operadores:', e);
-      showToast('Error al cargar lista de operadores', 'error');
+      showToast('Error al cargar lista de vendedores', 'error');
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Tecla Escape para volver o cerrar
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (operadorSeleccionado) {
+          setOperadorSeleccionado(null);
+        } else {
+          onClose();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, operadorSeleccionado, onClose]);
 
   useEffect(() => {
     if (operadorSeleccionado) {
@@ -137,6 +156,13 @@ export default function CambioRapidoVendedorModal({
       }
 
       const userData = await res.json();
+
+      if ((userData.role || '').toLowerCase() !== 'vendedor') {
+        setErrorPin('El cambio en caja solo está permitido para usuarios con rol Vendedor.');
+        setPin('');
+        setIsValidating(false);
+        return;
+      }
 
       // Actualizar localStorage para persistencia de sesión
       localStorage.setItem('lastActiveUserId', userData.id);
@@ -196,6 +222,14 @@ export default function CambioRapidoVendedorModal({
       }
 
       const userData = await res.json();
+
+      if ((userData.role || '').toLowerCase() !== 'vendedor') {
+        setErrorPin('El cambio en caja solo está permitido para usuarios con rol Vendedor.');
+        setPin('');
+        setIsValidating(false);
+        return;
+      }
+
       localStorage.setItem('lastActiveUserId', userData.id);
       localStorage.setItem('currentUser', JSON.stringify(userData));
 
@@ -223,7 +257,7 @@ export default function CambioRapidoVendedorModal({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
       <div className="bg-card w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col max-h-[88vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
@@ -236,7 +270,7 @@ export default function CambioRapidoVendedorModal({
                 Cambio Rápido de Vendedor
               </h3>
               <p className="text-[11px] text-slate-400">
-                Seleccione el operador que atiende en caja
+                Seleccione el vendedor que atiende en caja (sólo vendedores)
               </p>
             </div>
           </div>

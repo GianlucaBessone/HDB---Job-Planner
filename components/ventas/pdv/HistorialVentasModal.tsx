@@ -144,10 +144,29 @@ export default function HistorialVentasModal({
       minimumFractionDigits: 2,
     }).format(val || 0);
 
+  // Atajo de teclado: Escape para cerrar submodales o el modal principal
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (ventaDetalle) {
+          setVentaDetalle(null);
+        } else if (ventaAAnular) {
+          setVentaAAnular(null);
+        } else {
+          onClose();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, ventaDetalle, ventaAAnular, onClose]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
       <div className="bg-card w-full max-w-5xl rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
@@ -378,7 +397,7 @@ export default function HistorialVentasModal({
 
         {/* Modal interno para Ver Detalle completo */}
         {ventaDetalle && (
-          <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="fixed inset-0 z-[85] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
             <div className="bg-card w-full max-w-2xl rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 flex flex-col max-h-[85vh] overflow-hidden animate-in fade-in zoom-in-95">
               <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 mb-4">
                 <div>
@@ -508,7 +527,7 @@ export default function HistorialVentasModal({
 
         {/* Modal interno para Confirmar Anulación */}
         {ventaAAnular && (
-          <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="fixed inset-0 z-[85] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
             <div className="bg-card w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 animate-in fade-in zoom-in-95">
               <div className="flex items-center gap-2 text-red-600 mb-2">
                 <Ban className="w-5 h-5" />

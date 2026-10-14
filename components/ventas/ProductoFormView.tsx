@@ -96,8 +96,8 @@ export default function ProductoFormView({
     // Inventario
     almacenId: '',
     ubicacionId: '',
-    stockMinimo: '5' as string | number,
-    stockMaximo: '100' as string | number,
+    stockMinimo: '' as string | number, // Vacío = sin límite configurado
+    stockMaximo: '' as string | number, // Vacío = sin límite configurado
     stockInicial: '' as string | number, // Solo para alta
     stockActual: 0, // Solo para lectura en edición
   });
@@ -178,8 +178,8 @@ export default function ProductoFormView({
 
               almacenId: primaryStock?.almacenId || defaultAlm,
               ubicacionId: primaryStock?.ubicacionId || '',
-              stockMinimo: primaryStock?.stockMinimo ?? 5,
-              stockMaximo: primaryStock?.stockMaximo ?? 100,
+              stockMinimo: primaryStock?.stockMinimo ? primaryStock.stockMinimo : '',
+              stockMaximo: primaryStock?.stockMaximo ? primaryStock.stockMaximo : '',
               stockInicial: '', // STRICT RULE: Stock starts clean (0)
               stockActual: 0,
             });

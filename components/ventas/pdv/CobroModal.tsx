@@ -14,8 +14,10 @@ import {
   Loader2,
   Coins,
   ShieldAlert,
+  User,
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
+import SeleccionarClienteModal from './SeleccionarClienteModal';
 
 export interface MetodoPagoRow {
   id: string;
@@ -41,6 +43,13 @@ interface CobroModalProps {
   impuestosMonto: number;
   itemsCount: number;
   listaPrecioNombre: string;
+  ivaDiscriminado?: boolean;
+  onCambiarCliente?: (cliente: {
+    id: string | null;
+    nombre: string;
+    identificacion?: string | null;
+    listaPrecioId?: string | null;
+  }) => void;
   onConfirmarVenta: (datosCobro: {
     pagos: Array<{
       metodo: string;
@@ -64,12 +73,15 @@ export default function CobroModal({
   impuestosMonto,
   itemsCount,
   listaPrecioNombre,
+  ivaDiscriminado = false,
+  onCambiarCliente,
   onConfirmarVenta,
 }: CobroModalProps) {
   const [pagos, setPagos] = useState<MetodoPagoRow[]>([]);
   const [observaciones, setObservaciones] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorValidacion, setErrorValidacion] = useState<string | null>(null);
+  const [showModalCambioCliente, setShowModalCambioCliente] = useState(false);
 
   // Inicializar pagos al abrir
   useEffect(() => {
@@ -236,13 +248,36 @@ export default function CobroModal({
     }
   };
 
+  // Atajos de teclado: Escape para cerrar, Enter / F4 para confirmar si está cuadrado
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !isSubmitting) {
+        e.preventDefault();
+        onClose();
+      } else if (e.key === 'Enter' && !isSubmitting) {
+        // Si no está escribiendo en observaciones y el saldo está cubierto
+        const target = e.target as HTMLElement;
+        if (target && target.tagName === 'INPUT' && (target as HTMLInputElement).type === 'text') {
+          // Permitir enter en el input
+        }
+        if (Math.abs(saldoRestante) <= 0.05) {
+          e.preventDefault();
+          handleConfirmar();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, isSubmitting, saldoRestante, handleConfirmar, onClose]);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-      <div className="bg-card w-full max-w-2xl rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+      <div className="bg-card w-full max-w-2xl rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100 dark:border-emerald-800">
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100 dark:border-emerald-800">
               <CreditCard className="w-4 h-4" />
             </div>
             <div>
@@ -250,7 +285,7 @@ export default function CobroModal({
                 Confirmar Venta y Cobro
               </h3>
               <p className="text-[11px] text-slate-400">
-                {itemsCount} {itemsCount === 1 ? 'artículo' : 'artículos'} • Lista: {listaPrecioNombre}
+                {itemsCount} {itemsCount === 1 ? 'artículo' : 'artículos'} • Lista: {listaPrecioNombre} {ivaDiscriminado ? '(IVA Discriminado)' : ''}
               </p>
             </div>
           </div>
@@ -274,19 +309,33 @@ export default function CobroModal({
               <span className="text-3xl font-black text-emerald-400 tracking-tight">
                 {formatARS(totalVenta)}
               </span>
-              <div className="text-[11px] text-slate-400 mt-0.5">
-                Cliente: <strong className="text-white">{cliente.nombre}</strong>
-                {cliente.identificacion ? ` (${cliente.identificacion})` : ''}
+              <div className="text-[11px] text-slate-400 mt-1 flex flex-wrap items-center gap-1.5">
+                <span>
+                  Cliente: <strong className="text-white">{cliente.nombre}</strong>
+                  {cliente.identificacion ? ` (${cliente.identificacion})` : ''}
+                </span>
+                {onCambiarCliente && (
+                  <button
+                    type="button"
+                    onClick={() => setShowModalCambioCliente(true)}
+                    className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-400 hover:text-indigo-300 bg-slate-800/80 hover:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-700 transition-colors ml-1"
+                  >
+                    <User className="w-2.5 h-2.5" />
+                    Cambiar cliente
+                  </button>
+                )}
               </div>
             </div>
 
             <div className="flex flex-wrap sm:flex-col items-start sm:items-end gap-1 text-[11px] text-slate-300 border-t sm:border-t-0 sm:border-l border-slate-800 pt-2 sm:pt-0 sm:pl-4">
-              <div>Subtotal: {formatARS(subtotal)}</div>
+              <div>Subtotal {ivaDiscriminado ? '(Neto)' : ''}: {formatARS(subtotal)}</div>
               {descuentoMonto > 0 && (
                 <div className="text-emerald-400">Desc: -{formatARS(descuentoMonto)}</div>
               )}
               {impuestosMonto > 0 && (
-                <div className="text-slate-400">IVA incl: {formatARS(impuestosMonto)}</div>
+                <div className={ivaDiscriminado ? 'text-amber-400 font-bold' : 'text-slate-400'}>
+                  {ivaDiscriminado ? 'IVA discriminado (+):' : 'IVA incl:'} {formatARS(impuestosMonto)}
+                </div>
               )}
             </div>
           </div>
@@ -592,6 +641,19 @@ export default function CobroModal({
           </button>
         </div>
       </div>
+
+      {/* Selector modal de cliente integrado */}
+      <SeleccionarClienteModal
+        isOpen={showModalCambioCliente}
+        onClose={() => setShowModalCambioCliente(false)}
+        clienteActual={cliente}
+        onSeleccionar={(nuevoCli) => {
+          if (onCambiarCliente) {
+            onCambiarCliente(nuevoCli);
+          }
+          setShowModalCambioCliente(false);
+        }}
+      />
     </div>
   );
 }

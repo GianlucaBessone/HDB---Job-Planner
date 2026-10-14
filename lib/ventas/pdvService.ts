@@ -54,52 +54,67 @@ export function resolverPrecioProducto(
     costo?: number;
     familiaId?: string | null;
     marcaId?: string | null;
+    ivaPorcentaje?: number;
   },
-  lista?: (ListaPrecioConfig & { tipoAjuste: string; valorAjuste: number; esPredeterminada?: boolean }) | null,
+  lista?: (ListaPrecioConfig & { tipoAjuste: string; valorAjuste: number; esPredeterminada?: boolean; ivaDiscriminado?: boolean }) | null,
   preciosMap: Record<string, number> = {}
 ): { precio: number; esFallback: boolean; detalleAjuste?: string } {
   const precioBase = Number(producto.precioBase) || 0;
 
+  let precioConIva = precioBase;
+  let esFallback = false;
+  let detalleAjuste = 'Precio Base / Manual';
+
   if (!lista || lista.tipoAjuste === 'MANUAL') {
     // Si la lista es manual y es base/predeterminada, precioBase es el precio
+    precioConIva = precioBase;
+    esFallback = false;
+    detalleAjuste = 'Precio Base / Manual';
+  } else {
+    // Si tiene regla dinámica (costo, margen, descuento, recargo)
+    const costo = Number(producto.costo) || 0;
+    const mapaCalculo = {
+      ...preciosMap,
+      ...(lista.listaBaseId ? { [lista.listaBaseId]: precioBase } : {}),
+      base: precioBase,
+    };
+
+    const precioSugerido = calculateSuggestedPrice(
+      lista,
+      {
+        costo,
+        familiaId: producto.familiaId,
+        marcaId: producto.marcaId,
+      },
+      mapaCalculo
+    );
+
+    if (precioSugerido !== null && precioSugerido > 0) {
+      precioConIva = precioSugerido;
+      esFallback = false;
+      detalleAjuste = `${lista.tipoAjuste} (${lista.valorAjuste}%)`;
+    } else {
+      // Fallback explícito a precio base si la regla no aplica o no pudo resolverse
+      precioConIva = precioBase;
+      esFallback = true;
+      detalleAjuste = 'Fallback a Precio Base (regla no aplicable o sin costo)';
+    }
+  }
+
+  if (lista?.ivaDiscriminado) {
+    const ivaPorc = producto.ivaPorcentaje !== undefined && producto.ivaPorcentaje !== null ? producto.ivaPorcentaje : 21;
+    const precioNeto = Math.round((precioConIva / (1 + (ivaPorc || 21) / 100)) * 100) / 100;
     return {
-      precio: precioBase,
-      esFallback: false,
-      detalleAjuste: 'Precio Base / Manual',
+      precio: precioNeto,
+      esFallback,
+      detalleAjuste: `${detalleAjuste} (Neto sin IVA)`,
     };
   }
 
-  // Si tiene regla dinámica (costo, margen, descuento, recargo)
-  const costo = Number(producto.costo) || 0;
-  const mapaCalculo = {
-    ...preciosMap,
-    ...(lista.listaBaseId ? { [lista.listaBaseId]: precioBase } : {}),
-    base: precioBase,
-  };
-
-  const precioSugerido = calculateSuggestedPrice(
-    lista,
-    {
-      costo,
-      familiaId: producto.familiaId,
-      marcaId: producto.marcaId,
-    },
-    mapaCalculo
-  );
-
-  if (precioSugerido !== null && precioSugerido > 0) {
-    return {
-      precio: precioSugerido,
-      esFallback: false,
-      detalleAjuste: `${lista.tipoAjuste} (${lista.valorAjuste}%)`,
-    };
-  }
-
-  // Fallback explícito a precio base si la regla no aplica o no pudo resolverse
   return {
-    precio: precioBase,
-    esFallback: true,
-    detalleAjuste: 'Fallback a Precio Base (regla no aplicable o sin costo)',
+    precio: precioConIva,
+    esFallback,
+    detalleAjuste,
   };
 }
 
@@ -109,7 +124,8 @@ export function resolverPrecioProducto(
 export function calcularTotalesVenta(
   items: ItemVentaInput[],
   descuentoGlobalPorcentaje: number = 0,
-  recargoGlobalPorcentaje: number = 0
+  recargoGlobalPorcentaje: number = 0,
+  options?: { ivaDiscriminado?: boolean }
 ) {
   let subtotalBruto = 0;
   let descuentoLineasTotal = 0;
@@ -157,7 +173,14 @@ export function calcularTotalesVenta(
   const recGlobPorc = Math.max(0, Number(recargoGlobalPorcentaje) || 0);
   const recGlobMonto = Math.round(((subtotalNetoLineas * recGlobPorc) / 100) * 100) / 100;
 
-  const total = Math.max(0, Math.round((subtotalNetoLineas - descGlobMonto + recGlobMonto) * 100) / 100);
+  const impuestosMonto = Math.round(impuestosTotal * 100) / 100;
+
+  let total: number;
+  if (options?.ivaDiscriminado) {
+    total = Math.max(0, Math.round((subtotalNetoLineas - descGlobMonto + recGlobMonto + impuestosMonto) * 100) / 100);
+  } else {
+    total = Math.max(0, Math.round((subtotalNetoLineas - descGlobMonto + recGlobMonto) * 100) / 100);
+  }
 
   return {
     items: itemsCalculados,
@@ -168,8 +191,9 @@ export function calcularTotalesVenta(
     descuentoMonto: descGlobMonto,
     recargoPorcentaje: recGlobPorc,
     recargoMonto: recGlobMonto,
-    impuestosMonto: Math.round(impuestosTotal * 100) / 100,
+    impuestosMonto,
     total,
+    ivaDiscriminado: Boolean(options?.ivaDiscriminado),
   };
 }
 
@@ -261,7 +285,8 @@ export async function confirmarVentaPDV(input: ConfirmarVentaInput, userId?: str
   const calculo = calcularTotalesVenta(
     input.items,
     input.descuentoPorcentaje || 0,
-    input.recargoPorcentaje || 0
+    input.recargoPorcentaje || 0,
+    { ivaDiscriminado: Boolean(listaDb?.ivaDiscriminado) }
   );
 
   const totalVenta = calculo.total;

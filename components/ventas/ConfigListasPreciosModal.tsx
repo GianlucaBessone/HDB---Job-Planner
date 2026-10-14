@@ -33,6 +33,7 @@ export interface ListaPrecioItem {
   familia?: { id: string; nombre: string } | null;
   marcaId?: string | null;
   marca?: { id: string; nombre: string } | null;
+  ivaDiscriminado?: boolean;
   activo?: boolean;
   _count?: { precios: number };
 }
@@ -77,6 +78,7 @@ export default function ConfigListasPreciosModal({
     familiaId: '',
     marcaId: '',
     orden: '' as string | number,
+    ivaDiscriminado: false,
     sincronizarProductos: true,
   });
 
@@ -115,6 +117,7 @@ export default function ConfigListasPreciosModal({
       familiaId: '',
       marcaId: '',
       orden: (listas.length + 1).toString(),
+      ivaDiscriminado: false,
       sincronizarProductos: true,
     });
   };
@@ -133,6 +136,7 @@ export default function ConfigListasPreciosModal({
       familiaId: lista.familiaId || '',
       marcaId: lista.marcaId || '',
       orden: lista.orden.toString(),
+      ivaDiscriminado: !!lista.ivaDiscriminado,
       sincronizarProductos: false,
     });
   };
@@ -173,6 +177,7 @@ export default function ConfigListasPreciosModal({
         familiaId: formData.aplicaA === 'FAMILIA' ? formData.familiaId || null : null,
         marcaId: formData.aplicaA === 'MARCA' ? formData.marcaId || null : null,
         orden: parseInt(String(formData.orden), 10) || listas.length + 1,
+        ivaDiscriminado: formData.ivaDiscriminado,
         sincronizarProductos: formData.sincronizarProductos,
       };
 
@@ -383,6 +388,13 @@ export default function ConfigListasPreciosModal({
                             ) : (
                               <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold">
                                 Solo Marca: {l.marca?.nombre || 'Definida'}
+                              </span>
+                            )}
+
+                            {/* IVA Discriminado Badge */}
+                            {l.ivaDiscriminado && (
+                              <span className="px-2 py-0.5 rounded-md bg-cyan-50 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300 text-[10px] font-bold border border-cyan-200 dark:border-cyan-800/40">
+                                IVA Disc.
                               </span>
                             )}
                           </div>
@@ -620,6 +632,28 @@ export default function ConfigListasPreciosModal({
                   </select>
                 </div>
               )}
+
+              {/* Checkbox IVA Discriminado */}
+              <div className="p-3 rounded-xl bg-slate-100/60 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700">
+                <label className="flex items-start gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.ivaDiscriminado}
+                    onChange={(e) =>
+                      setFormData({ ...formData, ivaDiscriminado: e.target.checked })
+                    }
+                    className="mt-0.5 h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
+                  />
+                  <div>
+                    <span className="block text-xs font-bold text-slate-800 dark:text-slate-200">
+                      IVA Discriminado
+                    </span>
+                    <span className="block text-[11px] text-slate-500 dark:text-slate-400 leading-tight mt-0.5">
+                      Precios se muestran netos sin IVA y el IVA se calcula al cobrar sobre el total.
+                    </span>
+                  </div>
+                </label>
+              </div>
 
               {/* Checkbox Sincronizar */}
               {formData.tipoAjuste !== 'MANUAL' && (

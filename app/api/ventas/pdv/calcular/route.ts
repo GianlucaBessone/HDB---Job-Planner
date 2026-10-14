@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
                 costo,
                 familiaId: prod.familiaId,
                 marcaId: prod.marcaId,
+                ivaPorcentaje: prod.iva?.porcentaje ?? 21,
               },
               lista
             );
@@ -50,7 +51,12 @@ export async function POST(req: NextRequest) {
       })
     );
 
-    const calculo = calcularTotalesVenta(itemsConPrecio, descuentoPorcentaje, recargoPorcentaje);
+    const calculo = calcularTotalesVenta(
+      itemsConPrecio,
+      descuentoPorcentaje,
+      recargoPorcentaje,
+      { ivaDiscriminado: Boolean(lista?.ivaDiscriminado) }
+    );
 
     return NextResponse.json(calculo);
   } catch (error: any) {

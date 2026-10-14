@@ -15,6 +15,7 @@ const listaPrecioUpdateSchema = z.object({
   familiaId: z.string().optional().nullable(),
   marcaId: z.string().optional().nullable(),
   orden: z.coerce.number().default(1),
+  ivaDiscriminado: z.boolean().default(false),
   sincronizarProductos: z.boolean().default(false),
 });
 
@@ -79,6 +80,7 @@ export async function PUT(
         familiaId: data.aplicaA === 'FAMILIA' ? data.familiaId || null : null,
         marcaId: data.aplicaA === 'MARCA' ? data.marcaId || null : null,
         orden: data.orden,
+        ivaDiscriminado: data.ivaDiscriminado ?? false,
       },
     });
 
@@ -92,8 +94,8 @@ export async function PUT(
       action: 'UPDATE',
       entity: 'VENTAS_LISTA_PRECIO',
       entityId: id,
-      oldValue: { nombre: existing.nombre, tipoAjuste: existing.tipoAjuste },
-      newValue: { nombre: updated.nombre, tipoAjuste: updated.tipoAjuste, sincronizados: sincronizadosCount },
+      oldValue: { nombre: existing.nombre, tipoAjuste: existing.tipoAjuste, ivaDiscriminado: existing.ivaDiscriminado },
+      newValue: { nombre: updated.nombre, tipoAjuste: updated.tipoAjuste, ivaDiscriminado: updated.ivaDiscriminado, sincronizados: sincronizadosCount },
     });
 
     return NextResponse.json({

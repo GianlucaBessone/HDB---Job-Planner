@@ -34,8 +34,8 @@ export default function VentasNavTabs({ currentTab }: VentasNavTabsProps) {
       label: 'Almacén y Stock',
       href: '/ventas/almacen',
       icon: Warehouse,
-      badge: 'Próx.',
-      isActive: currentTab === 'almacen' || pathname === '/ventas/almacen',
+      badge: null,
+      isActive: currentTab === 'almacen' || pathname?.startsWith('/ventas/almacen'),
     },
     {
       id: 'cuentas-corrientes',

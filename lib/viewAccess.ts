@@ -69,8 +69,8 @@ export const DEFAULT_VIEWS: ViewConfig[] = [
 
     // ─ Ventas y Comercial ─
     { key: '/ventas/gestion',            label: 'Gestión Comercial',        description: 'Maestro de productos y precios', roles: ['admin', 'supervisor', 'vendedor', 'qa'], access: 'ambos', section: 'ventas', iconName: 'Boxes', color: 'bg-emerald-600' },
-    { key: '/ventas/pdv',                label: 'Punto de Venta (PDV)',     description: 'Facturación rápida y mostrador', roles: ['admin', 'supervisor', 'vendedor', 'qa'], access: 'ambos', section: 'ventas', iconName: 'CreditCard', color: 'bg-emerald-600' },
-    { key: '/ventas/almacen',            label: 'Almacén y Stock',          description: 'Fase 2 — Próximamente', roles: ['admin', 'supervisor', 'vendedor', 'qa'], access: 'ambos', section: 'ventas', iconName: 'Warehouse', color: 'bg-slate-400' },
+    { key: '/ventas/pdv',                label: 'Punto de Venta (PDV)',     description: 'Facturación rápida y mostrador', roles: ['admin', 'supervisor', 'vendedor'], access: 'ambos', section: 'ventas', iconName: 'CreditCard', color: 'bg-emerald-600' },
+    { key: '/ventas/almacen',            label: 'Almacén y Stock',          description: 'Existencias, movimientos, ajustes y conteos', roles: ['admin', 'supervisor', 'vendedor', 'qa'], access: 'ambos', section: 'ventas', iconName: 'Warehouse', color: 'bg-indigo-600' },
     { key: '/ventas/cuentas-corrientes', label: 'Cuentas Corrientes',       description: 'Fase 4 — Próximamente', roles: ['admin', 'supervisor', 'vendedor', 'qa'], access: 'ambos', section: 'ventas', iconName: 'Receipt', color: 'bg-slate-400' },
 
     // ─ Logística y Materiales ─
