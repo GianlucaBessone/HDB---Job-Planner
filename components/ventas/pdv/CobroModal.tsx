@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useId } from 'react';
+import React, { useState, useEffect, useCallback, useId } from 'react';
 import {
   X,
   CreditCard,
@@ -200,7 +200,7 @@ export default function CobroModal({
     setErrorValidacion(null);
   };
 
-  const handleConfirmar = async () => {
+  const handleConfirmar = useCallback(async () => {
     setErrorValidacion(null);
 
     // Validar suma de montos
@@ -246,9 +246,19 @@ export default function CobroModal({
       setErrorValidacion(err.message || 'Error al confirmar la venta');
       setIsSubmitting(false);
     }
-  };
+  }, [
+    saldoRestante,
+    formatARS,
+    montoCuentaCorriente,
+    cliente,
+    pagoEfectivo,
+    onConfirmarVenta,
+    pagos,
+    observaciones,
+    onClose,
+  ]);
 
-  // Atajos de teclado: Escape para cerrar, Enter / F4 para confirmar si está cuadrado
+  // Atajos de teclado: Escape para cerrar, Enter para confirmar si el foco no está en un input y está cuadrado
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -256,10 +266,9 @@ export default function CobroModal({
         e.preventDefault();
         onClose();
       } else if (e.key === 'Enter' && !isSubmitting) {
-        // Si no está escribiendo en observaciones y el saldo está cubierto
         const target = e.target as HTMLElement;
-        if (target && target.tagName === 'INPUT' && (target as HTMLInputElement).type === 'text') {
-          // Permitir enter en el input
+        if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT')) {
+          return;
         }
         if (Math.abs(saldoRestante) <= 0.05) {
           e.preventDefault();
@@ -332,9 +341,9 @@ export default function CobroModal({
               {descuentoMonto > 0 && (
                 <div className="text-emerald-400">Desc: -{formatARS(descuentoMonto)}</div>
               )}
-              {impuestosMonto > 0 && (
-                <div className={ivaDiscriminado ? 'text-amber-400 font-bold' : 'text-slate-400'}>
-                  {ivaDiscriminado ? 'IVA discriminado (+):' : 'IVA incl:'} {formatARS(impuestosMonto)}
+              {ivaDiscriminado && impuestosMonto > 0 && (
+                <div className="text-amber-400 font-bold">
+                  IVA: +{formatARS(impuestosMonto)}
                 </div>
               )}
             </div>

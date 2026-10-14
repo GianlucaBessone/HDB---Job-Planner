@@ -98,8 +98,8 @@ export default function PdvPage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
 
-  // Pantalla Completa
-  const [isFullscreen, setIsFullscreen] = useState(true);
+  // Pantalla Completa / Vista Maximizada
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Listas de Precios disponibles
   const [listasPrecios, setListasPrecios] = useState<ListaPrecioItem[]>([]);
@@ -150,7 +150,7 @@ export default function PdvPage() {
     searchQueryRef.current = searchQuery;
   }, [searchQuery]);
 
-  // 1. Cargar usuario, validar acceso y configurar apertura automática en pantalla completa
+  // 1. Cargar usuario, validar acceso
   useEffect(() => {
     try {
       const stored = localStorage.getItem('currentUser');
@@ -169,14 +169,8 @@ export default function PdvPage() {
       }
 
       const fsPref = localStorage.getItem('pdv_fullscreen');
-      if (fsPref === null || fsPref === 'true') {
+      if (fsPref === 'true') {
         setIsFullscreen(true);
-        try {
-          localStorage.setItem('pdv_fullscreen', 'true');
-          if (typeof document !== 'undefined' && document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen().catch(() => {});
-          }
-        } catch (_) {}
       } else {
         setIsFullscreen(false);
       }
@@ -187,21 +181,12 @@ export default function PdvPage() {
     }
   }, [router]);
 
-  // Manejo de cambio de pantalla completa
+  // Manejo de cambio de pantalla completa / maximización in-app
   const toggleFullscreen = () => {
     setIsFullscreen((prev) => {
       const next = !prev;
       try {
         localStorage.setItem('pdv_fullscreen', String(next));
-        if (next) {
-          if (document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen().catch(() => {});
-          }
-        } else {
-          if (document.fullscreenElement && document.exitFullscreen) {
-            document.exitFullscreen().catch(() => {});
-          }
-        }
       } catch (e) {
         console.error('Fullscreen toggle error:', e);
       }
@@ -501,7 +486,7 @@ export default function PdvPage() {
     });
 
     setTimeout(() => {
-      searchInputRef.current?.focus();
+      searchInputRef.current?.focus({ preventScroll: true });
     }, 50);
   };
 
@@ -633,7 +618,7 @@ export default function PdvPage() {
       Math.round(
         carrito.reduce((acc, it) => {
           const base = (it.subtotal || 0) * (1 - descuentoGlobal / 100);
-          const iva = it.ivaPorcentaje > 0 ? (base * it.ivaPorcentaje) / 100 : 0;
+          const iva = it.ivaPorcentaje > 0 ? Math.round(((base * it.ivaPorcentaje) / 100) * 100) / 100 : 0;
           return acc + iva;
         }, 0) * 100
       ) / 100
@@ -770,7 +755,7 @@ export default function PdvPage() {
       className={`transition-all duration-200 ${
         isFullscreen
           ? 'fixed inset-0 z-[70] bg-slate-50 dark:bg-slate-950 flex flex-col h-screen w-screen overflow-hidden p-2 sm:p-2.5'
-          : 'space-y-2.5 pb-6'
+          : 'flex flex-col h-[calc(100vh-130px)] min-h-[640px] space-y-2 pb-2'
       }`}
     >
       {/* Pestañas de Navegación (ocultas en pantalla completa) */}
@@ -888,9 +873,9 @@ export default function PdvPage() {
       </header>
 
       {/* Grid Principal del PDV */}
-      <div className={`grid grid-cols-1 lg:grid-cols-12 gap-2.5 items-stretch ${isFullscreen ? 'flex-1 min-h-0 overflow-hidden' : 'items-start'}`}>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-2.5 items-stretch flex-1 min-h-0 overflow-hidden">
         {/* PANEL IZQUIERDO: Catálogo y Búsqueda (5 columnas) */}
-        <section className={`lg:col-span-5 bg-card border border-slate-200/90 dark:border-slate-800 rounded-xl p-3 shadow-xs flex flex-col space-y-2.5 ${isFullscreen ? 'h-full min-h-0 overflow-hidden' : 'min-h-[500px]'}`}>
+        <section className="lg:col-span-5 bg-card border border-slate-200/90 dark:border-slate-800 rounded-xl p-3 shadow-xs flex flex-col space-y-2.5 h-full min-h-0 overflow-hidden">
           {/* Input de Búsqueda */}
           <div className="shrink-0 space-y-1.5">
             <div className="flex items-center justify-between">
@@ -924,7 +909,7 @@ export default function PdvPage() {
           </div>
 
           {/* Lista de Resultados de Catálogo */}
-          <div className={`space-y-1.5 pr-0.5 ${isFullscreen ? 'flex-1 min-h-0 overflow-y-auto' : 'overflow-y-auto max-h-[520px]'}`}>
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1">
             {isSearching && resultadosBusqueda.length === 0 ? (
               <div className="py-12 flex flex-col items-center justify-center text-slate-400 gap-2">
                 <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
@@ -997,14 +982,14 @@ export default function PdvPage() {
                       )}
                       <button
                         type="button"
-                        className={`mt-1 h-6 px-2 rounded-md font-semibold text-[11px] flex items-center gap-1 transition-colors ${
+                        className={`mt-1 h-6 px-2.5 rounded-md font-semibold text-[11px] flex items-center gap-1 transition-colors ${
                           isExact
                             ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
                             : 'bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white text-slate-700 dark:text-slate-300'
                         }`}
                       >
                         <Plus className="w-3 h-3" />
-                        <span>{isExact ? 'Agregar' : '+'}</span>
+                        <span>Agregar</span>
                       </button>
                     </div>
                   </div>
@@ -1020,7 +1005,7 @@ export default function PdvPage() {
         </section>
 
         {/* PANEL DERECHO: Detalle de Venta / Carrito y Totales (7 columnas) */}
-        <section className={`lg:col-span-7 bg-card border border-slate-200/90 dark:border-slate-800 rounded-xl p-3 shadow-xs flex flex-col justify-between ${isFullscreen ? 'h-full min-h-0 overflow-hidden' : 'min-h-[500px]'}`}>
+        <section className="lg:col-span-7 bg-card border border-slate-200/90 dark:border-slate-800 rounded-xl p-3 shadow-xs flex flex-col justify-between h-full min-h-0 overflow-hidden">
           {/* Header del carrito */}
           <div className="flex items-center justify-between pb-2.5 border-b border-slate-200 dark:border-slate-800 mb-1.5 shrink-0">
             <div className="flex items-center gap-2">
@@ -1039,7 +1024,7 @@ export default function PdvPage() {
           </div>
 
           {/* Grilla de productos cargados */}
-          <div className={`space-y-1.5 pr-0.5 ${isFullscreen ? 'flex-1 min-h-0 overflow-y-auto' : 'overflow-y-auto max-h-[380px]'}`}>
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1">
             {carrito.length === 0 ? (
               <div className="py-16 text-center text-slate-400 text-xs space-y-2">
                 <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-900/60 flex items-center justify-center mx-auto text-slate-400">
@@ -1177,14 +1162,12 @@ export default function PdvPage() {
                 )}
               </div>
 
-              {/* IVA: si es discriminado se suma al total; si no, es informativo */}
-              {impuestosEstimados > 0 && (
+              {/* IVA: solo si la lista tiene IVA discriminado */}
+              {esIvaDiscriminado && impuestosEstimados > 0 && (
                 <div className="flex justify-between text-slate-500">
-                  <span>
-                    {esIvaDiscriminado ? 'IVA Discriminado:' : 'IVA incluido estimado:'}
-                  </span>
-                  <span className={esIvaDiscriminado ? 'font-semibold text-indigo-600 dark:text-indigo-400' : 'text-slate-400'}>
-                    {esIvaDiscriminado ? `+${formatARS(impuestosEstimados)}` : formatARS(impuestosEstimados)}
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">IVA:</span>
+                  <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+                    +{formatARS(impuestosEstimados)}
                   </span>
                 </div>
               )}

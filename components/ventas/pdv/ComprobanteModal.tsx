@@ -205,10 +205,17 @@ export default function ComprobanteModal({ isOpen, onClose, venta }: Comprobante
                   <span>-{formatARS(venta.descuentoMonto)}</span>
                 </div>
               )}
-              {venta.impuestosMonto > 0 && (
-                <div className="flex justify-between text-slate-500">
-                  <span>IVA ESTIMADO INCLUIDO:</span>
-                  <span>{formatARS(venta.impuestosMonto)}</span>
+              {Boolean(
+                venta.impuestosMonto > 0 &&
+                  (venta.listaPrecio?.ivaDiscriminado ||
+                    Math.abs(
+                      (venta.subtotal - (venta.descuentoMonto || 0) + (venta.recargoMonto || 0) + venta.impuestosMonto) -
+                        venta.total
+                    ) < 0.05)
+              ) && (
+                <div className="flex justify-between text-slate-500 font-semibold">
+                  <span>IVA:</span>
+                  <span>+{formatARS(venta.impuestosMonto)}</span>
                 </div>
               )}
               <div className="flex justify-between text-base font-black text-slate-900 dark:text-slate-100 pt-2 border-t border-slate-300 dark:border-slate-700">

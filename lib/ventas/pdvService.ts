@@ -173,7 +173,16 @@ export function calcularTotalesVenta(
   const recGlobPorc = Math.max(0, Number(recargoGlobalPorcentaje) || 0);
   const recGlobMonto = Math.round(((subtotalNetoLineas * recGlobPorc) / 100) * 100) / 100;
 
-  const impuestosMonto = Math.round(impuestosTotal * 100) / 100;
+  // Recalcular impuestos teniendo en cuenta el descuento global si aplica
+  let impuestosTotalAjustado = 0;
+  for (const it of itemsCalculados) {
+    if (it.ivaPorcentaje && it.ivaPorcentaje > 0) {
+      const baseLinea = it.subtotal * (1 - descGlobPorc / 100);
+      const iva = Math.round(((baseLinea * it.ivaPorcentaje) / 100) * 100) / 100;
+      impuestosTotalAjustado += iva;
+    }
+  }
+  const impuestosMonto = Math.round(impuestosTotalAjustado * 100) / 100;
 
   let total: number;
   if (options?.ivaDiscriminado) {
@@ -281,6 +290,24 @@ export async function confirmarVentaPDV(input: ConfirmarVentaInput, userId?: str
     }
   }
 
+  // Vendedor validado contra Operator para evitar errores de Foreign Key
+  let validVendedorId: string | null = null;
+  let vendedorNombre = input.vendedorNombre || null;
+  const candidateVendedorId = input.vendedorId || userId || null;
+
+  if (candidateVendedorId) {
+    const op = await prisma.operator.findUnique({
+      where: { id: candidateVendedorId },
+      select: { id: true, nombreCompleto: true },
+    });
+    if (op) {
+      validVendedorId = op.id;
+      if (!vendedorNombre) {
+        vendedorNombre = op.nombreCompleto;
+      }
+    }
+  }
+
   // 4. Calcular totales precisos
   const calculo = calcularTotalesVenta(
     input.items,
@@ -289,7 +316,7 @@ export async function confirmarVentaPDV(input: ConfirmarVentaInput, userId?: str
     { ivaDiscriminado: Boolean(listaDb?.ivaDiscriminado) }
   );
 
-  const totalVenta = calculo.total;
+  const totalCalculado = calculo.total;
 
   // 5. Validar Medios de Pago y Cuenta Corriente
   const pagos = input.pagos || [];
@@ -314,9 +341,13 @@ export async function confirmarVentaPDV(input: ConfirmarVentaInput, userId?: str
   imputadoCuentaCorriente = Math.round(imputadoCuentaCorriente * 100) / 100;
   const sumaMedios = Math.round((totalPagadoEfectivo + imputadoCuentaCorriente) * 100) / 100;
 
-  if (Math.abs(sumaMedios - totalVenta) > 0.05) {
+  let totalVenta = totalCalculado;
+  if (Math.abs(sumaMedios - totalCalculado) <= 0.50) {
+    // Absorber pequeñas diferencias de redondeo decimal entre cliente y servidor
+    totalVenta = sumaMedios;
+  } else {
     throw new Error(
-      `La suma de pagos ($${sumaMedios}) no coincide con el total de la venta ($${totalVenta})`
+      `La suma de pagos ($${sumaMedios}) no coincide con el total de la venta ($${totalCalculado})`
     );
   }
 
@@ -338,79 +369,85 @@ export async function confirmarVentaPDV(input: ConfirmarVentaInput, userId?: str
   }
 
   // 6. Transacción atómica en Base de Datos
-  const resultado = await prisma.$transaction(async (tx) => {
-    // Generar número correlativo
-    const numero = await generarNumeroVenta(tx);
+  const resultado = await prisma.$transaction(
+    async (tx) => {
+      // Generar número correlativo
+      const numero = await generarNumeroVenta(tx);
 
-    // Crear la venta cabecera
-    const venta = await tx.venta.create({
-      data: {
-        numero,
-        clienteId,
-        clienteNombre,
-        clienteIdentificacion,
-        clienteDireccion,
-        clienteTelefono,
-        clienteEmail,
-        listaPrecioId: input.listaPrecioId || null,
-        listaPrecioNombre,
-        vendedorId: input.vendedorId || userId || null,
-        vendedorNombre: input.vendedorNombre || null,
-        almacenId: input.almacenId || null,
-        almacenNombre,
-        subtotal: calculo.subtotal,
-        descuentoPorcentaje: calculo.descuentoPorcentaje,
-        descuentoMonto: calculo.descuentoMonto,
-        recargoPorcentaje: calculo.recargoPorcentaje,
-        recargoMonto: calculo.recargoMonto,
-        impuestosMonto: calculo.impuestosMonto,
-        total: totalVenta,
-        estado: 'CONFIRMADA',
-        estadoPago,
-        totalPagado: totalPagadoEfectivo,
-        saldoPendiente,
-        imputadoCuentaCorriente,
-        cuentaCorrienteConciliada: false,
-        stockDescontado: false, // Listo para futura integración con Almacén
-        observaciones: input.observaciones?.trim() || null,
-        items: {
-          create: calculo.items.map((it) => ({
-            productoId: it.productoId,
-            sku: it.sku,
-            descripcion: it.descripcion,
-            unidad: it.unidad || null,
-            cantidad: it.cantidad,
-            precioOriginal: it.precioOriginal,
-            precioUnitario: it.precioUnitario,
-            descuentoPorcentaje: it.descuentoPorcentaje,
-            descuentoMonto: it.descuentoMonto,
-            ivaPorcentaje: it.ivaPorcentaje,
-            subtotal: it.subtotal,
-            precioModificado: it.precioModificado || false,
-            motivoModificacion: it.motivoModificacion || null,
-          })),
-        },
-        pagos: {
-          create: pagos
-            .filter((p) => (Number(p.monto) || 0) > 0)
-            .map((p) => ({
-              metodo: p.metodo,
-              monto: Number(p.monto) || 0,
-              montoRecibido: p.montoRecibido ? Number(p.montoRecibido) : null,
-              vuelto: p.vuelto ? Number(p.vuelto) : null,
-              referencia: p.referencia?.trim() || null,
-              observaciones: p.observaciones?.trim() || null,
+      // Crear la venta cabecera
+      const venta = await tx.venta.create({
+        data: {
+          numero,
+          clienteId,
+          clienteNombre,
+          clienteIdentificacion,
+          clienteDireccion,
+          clienteTelefono,
+          clienteEmail,
+          listaPrecioId: input.listaPrecioId || null,
+          listaPrecioNombre,
+          vendedorId: validVendedorId,
+          vendedorNombre,
+          almacenId: input.almacenId || null,
+          almacenNombre,
+          subtotal: calculo.subtotal,
+          descuentoPorcentaje: calculo.descuentoPorcentaje,
+          descuentoMonto: calculo.descuentoMonto,
+          recargoPorcentaje: calculo.recargoPorcentaje,
+          recargoMonto: calculo.recargoMonto,
+          impuestosMonto: calculo.impuestosMonto,
+          total: totalVenta,
+          estado: 'CONFIRMADA',
+          estadoPago,
+          totalPagado: totalPagadoEfectivo,
+          saldoPendiente,
+          imputadoCuentaCorriente,
+          cuentaCorrienteConciliada: false,
+          stockDescontado: false, // Listo para futura integración con Almacén
+          observaciones: input.observaciones?.trim() || null,
+          items: {
+            create: calculo.items.map((it) => ({
+              productoId: it.productoId,
+              sku: it.sku,
+              descripcion: it.descripcion,
+              unidad: it.unidad || null,
+              cantidad: it.cantidad,
+              precioOriginal: it.precioOriginal,
+              precioUnitario: it.precioUnitario,
+              descuentoPorcentaje: it.descuentoPorcentaje,
+              descuentoMonto: it.descuentoMonto,
+              ivaPorcentaje: it.ivaPorcentaje,
+              subtotal: it.subtotal,
+              precioModificado: it.precioModificado || false,
+              motivoModificacion: it.motivoModificacion || null,
             })),
+          },
+          pagos: {
+            create: pagos
+              .filter((p) => (Number(p.monto) || 0) > 0)
+              .map((p) => ({
+                metodo: p.metodo,
+                monto: Number(p.monto) || 0,
+                montoRecibido: p.montoRecibido ? Number(p.montoRecibido) : null,
+                vuelto: p.vuelto ? Number(p.vuelto) : null,
+                referencia: p.referencia?.trim() || null,
+                observaciones: p.observaciones?.trim() || null,
+              })),
+          },
         },
-      },
-      include: {
-        items: true,
-        pagos: true,
-      },
-    });
+        include: {
+          items: true,
+          pagos: true,
+        },
+      });
 
-    return venta;
-  });
+      return venta;
+    },
+    {
+      maxWait: 15000,
+      timeout: 30000,
+    }
+  );
 
   // 7. Registro de auditoría
   await logAudit({
