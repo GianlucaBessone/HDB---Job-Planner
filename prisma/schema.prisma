@@ -40,6 +40,8 @@ model Project {
   logs                    ProjectLog[]
   generarOS               Boolean             @default(false)
   aprovisionamiento       Boolean             @default(false)
+  listaPrecioId           String?
+  listaPrecio             ListaPrecio?        @relation(fields: [listaPrecioId], references: [id], onDelete: SetNull)
   ordenesServicio         OrdenServicio[]
   encuestas               EncuestaServicio[]
   materialesProyecto      MaterialProyecto[]
@@ -186,6 +188,10 @@ model Operator {
   ordenesTrabajoResponsable OrdenTrabajo[]      @relation("OtResponsable")
   otCicloOperadores         OtCicloOperador[]
   clientRates               ClientOperatorRate[]
+
+  // Ventas (PDV)
+  ventasRealizadas          Venta[]             @relation("VentaVendedor")
+  ventasAnuladas            Venta[]             @relation("VentaAnulador")
 }
 
 model FavoriteBlock {
@@ -215,6 +221,8 @@ model HdbClient {
   telefono         String?
   direccion        String?
   activo           Boolean           @default(true)
+  listaPrecioId    String?
+  listaPrecio      ListaPrecio?      @relation(fields: [listaPrecioId], references: [id], onDelete: SetNull)
   projects         Project[]
   createdAt        DateTime          @default(now())
   technicalReports TechnicalReport[]
@@ -226,6 +234,11 @@ model HdbClient {
   responsables     ClientResponsable[]
   operatorRates    ClientOperatorRate[]
   sectores         ClientSector[]
+
+  // Ventas (PDV)
+  ventas           Venta[]
+
+  @@index([listaPrecioId])
 }
 
 model TimeEntry {
@@ -393,6 +406,8 @@ model OrdenServicio {
   encuesta      EncuestaServicio?
 
   // Cobro
+  listaPrecioId            String?
+  listaPrecio              ListaPrecio?            @relation(fields: [listaPrecioId], references: [id], onDelete: SetNull)
   cobroGenerado            Boolean   @default(false)
   cobroValorManoObra       Float?
   cobroDescuentoPorcentaje Float?
@@ -420,16 +435,22 @@ model OrdenServicioMaterial {
   id                 String            @id @default(cuid())
   ordenServicioId    String
   ordenServicio      OrdenServicio     @relation(fields: [ordenServicioId], references: [id], onDelete: Cascade)
+  productoId         String?
+  producto           Producto?         @relation(fields: [productoId], references: [id], onDelete: SetNull)
   material           String
-  codigo             String?
+  codigo             String?           // SKU o '999999'
+  skuProveedor       String?
   cantidad           Float
   unidadMedida       String
-  precioUnitario     Float?
+  costoUnitario      Float?            // Snapshot histórico de costo al momento de uso
+  precioUnitario     Float?            // Snapshot histórico de precio de venta/referencia
+  esManual           Boolean           @default(false)
   materialProyectoId String?           @map("material_proyecto_id")
   materialProyecto   MaterialProyecto? @relation(fields: [materialProyectoId], references: [id], onDelete: SetNull)
 
   @@index([ordenServicioId])
   @@index([codigo])
+  @@index([productoId])
 }
 
 model OrdenServicioOperador {
@@ -2561,6 +2582,10 @@ model ListaPrecio {
   activo           Boolean          @default(true)
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
+  projects         Project[]
+  ordenesServicio  OrdenServicio[]
+  clients          HdbClient[]
+  ventas           Venta[]
 
   @@index([tipoAjuste])
   @@index([aplicaA])
@@ -2624,6 +2649,8 @@ model Producto {
   stocks       ProductoStock[]
   movimientos  ProductoStockMovimiento[]
   historial    ProductoHistorial[]
+  ordenesServicioMateriales OrdenServicioMaterial[]
+  ventaItems   VentaItem[]
 
   @@index([sku])
   @@index([codigoBarras])
@@ -2942,5 +2969,128 @@ model OtHistorialEstado {
 
   @@index([ordenTrabajoId])
 }
+
+// ==========================================
+// MÓDULO PDV (PUNTO DE VENTA) - FASE 3
+// ==========================================
+
+model VentaCounter {
+  year          Int @id
+  currentNumber Int @default(0)
+}
+
+model Venta {
+  id                      String        @id @default(cuid())
+  numero                  String        @unique // Ej: "VTA-2026-000001"
+  fecha                   DateTime      @default(now())
+
+  // Cliente (Consumidor Final o HdbClient nominal)
+  clienteId               String?
+  cliente                 HdbClient?    @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  clienteNombre           String        // "Consumidor Final" o nombre del cliente nominal
+  clienteIdentificacion   String?       // CUIT, DNI o identificación fiscal
+  clienteDireccion        String?
+  clienteTelefono         String?
+  clienteEmail            String?
+
+  // Lista de precios aplicada
+  listaPrecioId           String?
+  listaPrecio             ListaPrecio?  @relation(fields: [listaPrecioId], references: [id], onDelete: SetNull)
+  listaPrecioNombre       String        // "Lista de Precio 1", etc.
+
+  // Vendedor / Operador
+  vendedorId              String?
+  vendedor                Operator?     @relation("VentaVendedor", fields: [vendedorId], references: [id], onDelete: SetNull)
+  vendedorNombre          String?
+
+  // Almacén de referencia para integración futura
+  almacenId               String?
+  almacenNombre           String?
+
+  // Importes y cálculos comerciales
+  subtotal                Float         @default(0)
+  descuentoPorcentaje     Float         @default(0)
+  descuentoMonto          Float         @default(0)
+  recargoPorcentaje       Float         @default(0)
+  recargoMonto            Float         @default(0)
+  impuestosMonto          Float         @default(0) // IVA total desglosado
+  total                   Float         @default(0)
+
+  // Estados
+  estado                  String        @default("CONFIRMADA") // "CONFIRMADA" | "ANULADA"
+  estadoPago              String        @default("PAGADO")     // "PAGADO" | "PARCIAL" | "PENDIENTE"
+
+  // Cobro y Cuenta Corriente
+  totalPagado             Float         @default(0) // Cobrado mediante medios efectivos (efectivo, transf, tarjeta)
+  saldoPendiente          Float         @default(0) // Pendiente de pago / a cuenta corriente
+  imputadoCuentaCorriente Float         @default(0) // Importe asignado a cuenta corriente
+  cuentaCorrienteConciliada Boolean     @default(false) // Bandera para cuando se habilite el módulo de CC
+
+  // Preparación para integración con Almacén / Stock
+  stockDescontado         Boolean       @default(false)
+  movimientoStockId       String?
+
+  // Anulación y trazabilidad
+  motivoAnulacion         String?
+  anuladoPorId            String?
+  anuladoPor              Operator?     @relation("VentaAnulador", fields: [anuladoPorId], references: [id], onDelete: SetNull)
+  anuladoEn               DateTime?
+
+  observaciones           String?
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  items                   VentaItem[]
+  pagos                   VentaPago[]
+
+  @@index([numero])
+  @@index([fecha])
+  @@index([clienteId])
+  @@index([vendedorId])
+  @@index([estado])
+  @@index([estadoPago])
+  @@index([listaPrecioId])
+}
+
+model VentaItem {
+  id                  String    @id @default(cuid())
+  ventaId             String
+  venta               Venta     @relation(fields: [ventaId], references: [id], onDelete: Cascade)
+  productoId          String?
+  producto            Producto? @relation(fields: [productoId], references: [id], onDelete: SetNull)
+  sku                 String    // Snapshot histórico
+  descripcion         String    // Snapshot histórico
+  unidad              String?   // Snapshot histórico
+  cantidad            Float     @default(1)
+  precioOriginal      Float     @default(0) // Precio lista antes de descuento o modificación
+  precioUnitario      Float     @default(0) // Precio unitario final aplicado
+  descuentoPorcentaje Float     @default(0)
+  descuentoMonto      Float     @default(0)
+  ivaPorcentaje       Float     @default(0)
+  subtotal            Float     @default(0) // (cantidad * precioUnitario) - descuentoMonto
+  precioModificado    Boolean   @default(false)
+  motivoModificacion  String?
+
+  @@index([ventaId])
+  @@index([productoId])
+  @@index([sku])
+}
+
+model VentaPago {
+  id            String    @id @default(cuid())
+  ventaId       String
+  venta         Venta     @relation(fields: [ventaId], references: [id], onDelete: Cascade)
+  metodo        String    // EFECTIVO | TRANSFERENCIA | TARJETA_DEBITO | TARJETA_CREDITO | CUENTA_CORRIENTE | CHEQUE
+  monto         Float     @default(0) // Monto imputado a la venta
+  montoRecibido Float?    // Solo para efectivo: importe entregado por cliente
+  vuelto        Float?    // Solo para efectivo: cambio entregado
+  referencia    String?   // Últimos 4 dígitos o comprobante de transferencia
+  observaciones String?
+  createdAt     DateTime  @default(now())
+
+  @@index([ventaId])
+  @@index([metodo])
+}
+
 
 

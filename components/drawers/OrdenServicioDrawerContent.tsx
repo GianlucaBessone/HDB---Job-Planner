@@ -425,14 +425,45 @@ export default function OrdenServicioDrawerContent({ id, onClose }: { id: string
                     
                     {os.materiales && os.materiales.length > 0 && (
                         <div className="space-y-2 sm:space-y-3">
-                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Materiales Utilizados</h4>
+                            <div className="flex items-center justify-between ml-1">
+                                <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Materiales Utilizados</h4>
+                                {os.listaPrecio?.nombre && (
+                                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">
+                                        {os.listaPrecio.nombre}
+                                    </span>
+                                )}
+                            </div>
                             <ul className="space-y-2">
-                                {os.materiales.map((m: any, i: number) => (
-                                    <li key={i} className="flex justify-between items-center text-sm font-bold text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-slate-800">
-                                        <span>{m.material || m.nombre || ''}</span>
-                                        <span className="bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-lg text-xs font-black">x{m.cantidad}</span>
-                                    </li>
-                                ))}
+                                {os.materiales.map((m: any, i: number) => {
+                                    const isManual = m.esManual || m.codigo === '999999';
+                                    return (
+                                        <li key={i} className="flex justify-between items-center text-sm font-bold text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-slate-800">
+                                            <div className="flex flex-col min-w-0 pr-2">
+                                                <div className="flex items-center gap-1.5 flex-wrap">
+                                                    {m.codigo && (
+                                                        <span className="font-mono text-[10px] font-black text-slate-500 bg-slate-200 dark:bg-slate-800 px-1.5 py-0.2 rounded">
+                                                            {m.codigo}
+                                                        </span>
+                                                    )}
+                                                    {m.skuProveedor && (
+                                                        <span className="font-mono text-[9px] text-slate-400">
+                                                            (Prov: {m.skuProveedor})
+                                                        </span>
+                                                    )}
+                                                    {isManual && (
+                                                        <span className="text-[9px] bg-amber-100 text-amber-800 px-1 rounded">
+                                                            Manual
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <span className="line-clamp-1 text-xs sm:text-sm">{m.material || m.nombre || ''}</span>
+                                            </div>
+                                            <span className="bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-lg text-xs font-black shrink-0">
+                                                {m.cantidad} {m.unidadMedida || ''}
+                                            </span>
+                                        </li>
+                                    );
+                                })}
                             </ul>
                         </div>
                     )}

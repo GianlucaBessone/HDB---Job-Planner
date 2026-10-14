@@ -8,20 +8,59 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const proyectoId = searchParams.get('proyectoId');
     
-    // Autocomplete by codigo
+    // Autocomplete by codigo - Gestión Comercial como fuente maestra
     const searchCodigo = searchParams.get('codigo');
     if (searchCodigo) {
-        const termNoZeros = searchCodigo.replace(/^0+/, '').toLowerCase();
+        const trimmed = searchCodigo.trim();
+        const termNoZeros = trimmed.replace(/^0+/, '').toLowerCase();
+        const upperTerm = trimmed.toUpperCase();
         
-        // Buscar candidatos que contengan el término
+        // 1. Buscar primero en Gestión Comercial -> Producto
+        const productoCandidato = await prisma.producto.findFirst({
+            where: {
+                activo: true,
+                OR: [
+                    { sku: { equals: upperTerm, mode: 'insensitive' } },
+                    { sku: { contains: termNoZeros, mode: 'insensitive' } },
+                    {
+                        proveedores: {
+                            some: { skuProveedor: { equals: upperTerm, mode: 'insensitive' } }
+                        }
+                    }
+                ]
+            },
+            include: {
+                unidad: { select: { codigo: true, nombre: true } },
+                proveedores: {
+                    where: { esPrincipal: true },
+                    take: 1
+                }
+            }
+        });
+
+        if (productoCandidato) {
+            return NextResponse.json({
+                id: productoCandidato.id,
+                codigo: productoCandidato.sku,
+                nombre: productoCandidato.descripcion,
+                unidad: productoCandidato.unidad?.codigo || productoCandidato.unidad?.nombre || 'Unidad',
+                precioVenta: productoCandidato.precioBase,
+                costo: productoCandidato.proveedores[0]?.costo || 0,
+                skuProveedor: productoCandidato.proveedores[0]?.skuProveedor || null,
+            }, {
+                headers: { 'Cache-Control': 'no-store, max-age=0' },
+            });
+        }
+
+        // 2. Fallback retrocompatible con MaterialMaestro
         const candidatos = await prisma.materialMaestro.findMany({
             where: { codigo: { contains: termNoZeros, mode: 'insensitive' } }
         });
         
-        // Encontrar coincidencia exacta ignorando ceros a la izquierda
         const maestro = candidatos.find(m => 
             m.codigo.replace(/^0+/, '').toLowerCase() === termNoZeros
         ) || null;
+
         return NextResponse.json(maestro, {
             headers: {
                 'Cache-Control': 'no-store, max-age=0',

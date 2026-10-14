@@ -11,7 +11,12 @@ const include = {
             }
         }
     },
-    materiales: true,
+    listaPrecio: { select: { id: true, codigo: true, nombre: true } },
+    materiales: {
+        include: {
+            producto: { select: { id: true, sku: true, descripcion: true } }
+        }
+    },
     operadores: { include: { operador: { select: { id: true, nombreCompleto: true } } } },
     firma: true,
     documentosRequeridos: {
@@ -261,15 +266,15 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         if (!os) return NextResponse.json({ error: 'Orden de servicio no encontrada' }, { status: 404 });
 
         const body = await req.json();
-        const { reporte, comentario, materiales, operadores, estado, notaInterna } = body;
+        const { reporte, comentario, materiales, operadores, estado, notaInterna, listaPrecioId } = body;
 
         // If it's a structural update and it's signed/billed, prevent it
-        if ((reporte || materiales || operadores) && (os.estado === 'firmada' || os.estado === 'cobrada' || os.estado === 'pagada')) {
+        if ((reporte || materiales || operadores || listaPrecioId !== undefined) && (os.estado === 'firmada' || os.estado === 'cobrada' || os.estado === 'pagada')) {
             return NextResponse.json({ error: 'No se puede modificar el contenido de una orden ya procesada' }, { status: 400 });
         }
 
         // If only updating non-structural fields (estado, notaInterna)
-        if (!reporte && !materiales && !operadores) {
+        if (!reporte && !materiales && !operadores && listaPrecioId === undefined) {
             const updateData: any = {};
             if (estado !== undefined) updateData.estado = estado;
             if (notaInterna !== undefined) updateData.notaInterna = notaInterna;
@@ -284,6 +289,70 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
             }
         }
 
+        // Validate products in batch (Section 18)
+        const rawMaterials = materiales || [];
+        const productoIds = rawMaterials
+            .map((m: any) => m.productoId)
+            .filter((pid: any): pid is string => typeof pid === 'string' && pid.trim().length > 0);
+
+        const dbProductos = productoIds.length > 0
+            ? await prisma.producto.findMany({
+                where: { id: { in: productoIds } },
+                include: {
+                    proveedores: {
+                        orderBy: [{ esPrincipal: 'desc' }, { orden: 'asc' }],
+                        take: 1
+                    }
+                }
+            })
+            : [];
+        const productosMap = new Map(dbProductos.map(p => [p.id, p]));
+
+        const processedMateriales = rawMaterials.map((m: any) => {
+            const isExplicitManual = m.codigo === '999999' || m.esManual === true;
+            if (isExplicitManual) {
+                return {
+                    material: m.material.trim(),
+                    codigo: '999999',
+                    skuProveedor: null,
+                    cantidad: parseFloat(m.cantidad),
+                    unidadMedida: m.unidadMedida || 'Unidad',
+                    costoUnitario: m.costoUnitario !== undefined && m.costoUnitario !== null ? Number(m.costoUnitario) : null,
+                    precioUnitario: m.precioUnitario !== undefined && m.precioUnitario !== null ? Number(m.precioUnitario) : null,
+                    esManual: true,
+                    productoId: null,
+                    materialProyectoId: m.materialProyectoId || null,
+                };
+            }
+
+            let matchedProduct = m.productoId ? productosMap.get(m.productoId) : null;
+            if (m.productoId && !matchedProduct) {
+                throw new Error(`El producto seleccionado (ID: ${m.productoId}) no existe en Gestión Comercial.`);
+            }
+
+            const primaryProv = matchedProduct?.proveedores?.[0];
+            const costoSnapshot = m.costoUnitario !== undefined && m.costoUnitario !== null
+                ? Number(m.costoUnitario)
+                : (primaryProv?.costo ?? null);
+
+            const precioSnapshot = m.precioUnitario !== undefined && m.precioUnitario !== null
+                ? Number(m.precioUnitario)
+                : (matchedProduct?.precioBase ?? null);
+
+            return {
+                material: m.material.trim(),
+                codigo: m.codigo ? String(m.codigo).trim() : (matchedProduct?.sku || null),
+                skuProveedor: m.skuProveedor || primaryProv?.skuProveedor || null,
+                cantidad: parseFloat(m.cantidad),
+                unidadMedida: m.unidadMedida || 'Unidad',
+                costoUnitario: costoSnapshot,
+                precioUnitario: precioSnapshot,
+                esManual: false,
+                productoId: matchedProduct?.id || m.productoId || null,
+                materialProyectoId: m.materialProyectoId || null,
+            };
+        });
+
         // Transaction to delete relationships and recreate + update root
         const updatedOs = await prisma.$transaction(async (tx: any) => {
             // Drop old relations
@@ -291,28 +360,26 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
             await tx.ordenServicioOperador.deleteMany({ where: { ordenServicioId: id } });
             await tx.materialUso.deleteMany({ where: { ordenServicioId: id } });
 
+            const osUpdateData: any = {
+                reporte,
+                comentario: comentario || null,
+                materiales: {
+                    create: processedMateriales
+                },
+                operadores: {
+                    create: (operadores || []).map((op: any) => ({
+                        operadorId: op.operadorId, horas: parseFloat(op.horas), isExtra: !!op.isExtra
+                    }))
+                }
+            };
+            if (listaPrecioId !== undefined) {
+                osUpdateData.listaPrecioId = listaPrecioId || null;
+            }
+
             // Create new ones & update reporter
             return await tx.ordenServicio.update({
                 where: { id },
-                data: {
-                    reporte,
-                    comentario: comentario || null,
-                    materiales: {
-                        create: materiales.map((m: any) => ({
-                            material: m.material, 
-                            codigo: m.codigo || null, 
-                            cantidad: parseFloat(m.cantidad), 
-                            unidadMedida: m.unidadMedida, 
-                            materialProyectoId: m.materialProyectoId || null,
-                            precioUnitario: m.precioUnitario || null
-                        }))
-                    },
-                    operadores: {
-                        create: operadores.map((op: any) => ({
-                            operadorId: op.operadorId, horas: parseFloat(op.horas), isExtra: !!op.isExtra
-                        }))
-                    }
-                },
+                data: osUpdateData,
                 include
             });
         });

@@ -122,6 +122,7 @@ export async function GET(request: Request) {
             },
             include: {
                 client: { select: { nombre: true } },
+                listaPrecio: { select: { id: true, codigo: true, nombre: true } },
                 responsableUser: { select: { nombreCompleto: true } },
                 materialesProyecto: {
                     include: {

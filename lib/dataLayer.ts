@@ -32,6 +32,7 @@ export const dataLayer = {
             where: { id },
             include: {
                 client: true,
+                listaPrecio: { select: { id: true, codigo: true, nombre: true } },
                 responsableUser: { select: { id: true, nombreCompleto: true, role: true } },
                 checklistItems: {
                     select: { id: true, completed: true, excluded: true, tag: true, description: true },
@@ -48,6 +49,7 @@ export const dataLayer = {
         return await prisma.project.findMany({
             include: {
                 client: true,
+                listaPrecio: { select: { id: true, codigo: true, nombre: true } },
                 responsableUser: { select: { id: true, nombreCompleto: true, role: true } },
                 checklistItems: {
                     select: { id: true, completed: true, excluded: true, tag: true },
@@ -79,6 +81,8 @@ export const dataLayer = {
         categoria?: string;
         tipoActividad?: string;
         generarOS?: boolean;
+        aprovisionamiento?: boolean;
+        listaPrecioId?: string | null;
         geofenceLat?: number;
         geofenceLng?: number;
         geofenceRadius?: number;
@@ -89,6 +93,7 @@ export const dataLayer = {
         const sanitizedData = { ...data };
         if (sanitizedData.clientId === "") delete sanitizedData.clientId;
         if (sanitizedData.responsableId === "") delete sanitizedData.responsableId;
+        if (sanitizedData.listaPrecioId === "") sanitizedData.listaPrecioId = null;
 
         // Generate publicToken if not provided
         if (!sanitizedData.publicToken) {
@@ -196,6 +201,8 @@ export const dataLayer = {
         categoria?: string;
         tipoActividad?: string;
         generarOS?: boolean;
+        aprovisionamiento?: boolean;
+        listaPrecioId?: string | null;
         geofenceLat?: number;
         geofenceLng?: number;
         geofenceRadius?: number;
@@ -206,6 +213,7 @@ export const dataLayer = {
         const sanitizedData = { ...data };
         if (sanitizedData.clientId === "") sanitizedData.clientId = null as any;
         if (sanitizedData.responsableId === "") sanitizedData.responsableId = null as any;
+        if (sanitizedData.listaPrecioId === "") sanitizedData.listaPrecioId = null as any;
         const oldProject = await prisma.project.findUnique({ where: { id } });
 
         // LOG QR HISTORY if changed
@@ -533,15 +541,35 @@ export const dataLayer = {
     // Clients
     async getClients() {
         return await prisma.hdbClient.findMany({
-            select: { id: true, nombre: true, email: true, telefono: true, direccion: true, activo: true },
+            select: {
+                id: true,
+                nombre: true,
+                email: true,
+                telefono: true,
+                direccion: true,
+                activo: true,
+                listaPrecioId: true,
+                listaPrecio: {
+                    select: {
+                        id: true,
+                        nombre: true,
+                        tipoAjuste: true,
+                        valorAjuste: true,
+                    }
+                }
+            },
             orderBy: { nombre: 'asc' }
         });
     },
-    async createClient(data: { nombre: string; email?: string; telefono?: string; direccion?: string; activo?: boolean }) {
-        return await prisma.hdbClient.create({ data });
+    async createClient(data: { nombre: string; email?: string; telefono?: string; direccion?: string; activo?: boolean; listaPrecioId?: string | null }) {
+        const cleanData = { ...data };
+        if (cleanData.listaPrecioId === '') cleanData.listaPrecioId = null;
+        return await prisma.hdbClient.create({ data: cleanData });
     },
-    async updateClient(id: string, data: { nombre?: string; email?: string; telefono?: string; direccion?: string; activo?: boolean }) {
-        return await prisma.hdbClient.update({ where: { id }, data });
+    async updateClient(id: string, data: { nombre?: string; email?: string; telefono?: string; direccion?: string; activo?: boolean; listaPrecioId?: string | null }) {
+        const cleanData = { ...data };
+        if (cleanData.listaPrecioId === '') cleanData.listaPrecioId = null;
+        return await prisma.hdbClient.update({ where: { id }, data: cleanData });
     },
     async deleteClient(id: string) {
         return await prisma.hdbClient.delete({ where: { id } });

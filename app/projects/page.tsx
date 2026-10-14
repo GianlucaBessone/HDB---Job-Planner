@@ -82,7 +82,8 @@ function ProjectsContent() {
     const searchParams = useSearchParams();
     const [projects, setProjects] = useState<Project[]>([]);
     const [operators, setOperators] = useState<{ id: string; nombreCompleto: string; role?: string }[]>([]);
-    const [clients, setClients] = useState<{ id: string; nombre: string }[]>([]);
+    const [clients, setClients] = useState<{ id: string; nombre: string; listaPrecioId?: string | null; listaPrecio?: any }[]>([]);
+    const [listasPrecios, setListasPrecios] = useState<any[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [viewType, setViewType] = useViewState<ViewType>(VIEW_STORAGE_KEY, 'card');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -141,18 +142,20 @@ function ProjectsContent() {
     const loadData = async (silent = false) => {
         if (!silent) setIsLoading(true);
         try {
-            const [projectsData, operatorsData, clientsData, configOptionsData, tagsData] = await Promise.all([
+            const [projectsData, operatorsData, clientsData, configOptionsData, tagsData, listasData] = await Promise.all([
                 safeApiRequest('/api/projects').then(res => res.json()),
                 safeApiRequest('/api/operators').then(res => res.json()),
                 safeApiRequest('/api/clients').then(res => res.json()),
                 safeApiRequest('/api/config/options').then(res => res.json()), // Fixed path
                 safeApiRequest('/api/config/tags').then(res => res.json()),
+                safeApiRequest('/api/ventas/listas-precios').then(res => res.json()).catch(() => []),
             ]);
             setProjects(projectsData);
             setOperators(operatorsData);
             setClients(clientsData);
             setConfigOptions(configOptionsData);
             setSystemTags(Array.isArray(tagsData) ? tagsData.filter((t: any) => t.active) : []);
+            setListasPrecios(Array.isArray(listasData) ? listasData : []);
         } catch (e) {
             console.error(e);
         } finally {
@@ -188,6 +191,7 @@ function ProjectsContent() {
             fechaFin: project.fechaFin || '',
             generarOS: (project as any).generarOS || false,
             aprovisionamiento: (project as any).aprovisionamiento || false,
+            listaPrecioId: (project as any).listaPrecioId || '',
             geofenceLat: project.geofenceLat || null,
             geofenceLng: project.geofenceLng || null,
             geofenceRadius: project.geofenceRadius || null,
@@ -562,6 +566,7 @@ function ProjectsContent() {
                     categoryOptions={categoryOptions}
                     activityOptions={activityOptions}
                     systemTags={systemTags}
+                    listasPrecios={listasPrecios}
                     onSubmit={handleSubmit}
                     onClose={() => setIsModalOpen(false)}
                 />
@@ -1068,6 +1073,7 @@ function ProjectModal({
     categoryOptions,
     activityOptions,
     systemTags,
+    listasPrecios = [],
     onSubmit,
     onClose,
 }: {
@@ -1075,10 +1081,11 @@ function ProjectModal({
     setFormData: React.Dispatch<React.SetStateAction<FormData>>;
     editingProject: Project | null;
     operators: { id: string; nombreCompleto: string }[];
-    clients: { id: string; nombre: string }[];
+    clients: { id: string; nombre: string; listaPrecioId?: string | null; listaPrecio?: any }[];
     categoryOptions: string[];
     activityOptions: string[];
     systemTags: any[];
+    listasPrecios?: any[];
     onSubmit: (e: React.FormEvent) => void;
     onClose: () => void;
 }) {
@@ -1195,12 +1202,20 @@ function ProjectModal({
                                     options={clients.map(c => ({ id: c.id, label: c.nombre }))}
                                     value={formData.clientId}
                                     onChange={(val) => {
-                                        const client = clients.find(c => c.id === val);
-                                        setFormData(prev => ({
-                                            ...prev,
-                                            clientId: val,
-                                            cliente: client ? client.nombre : ''
-                                        }));
+                                        const client = clients.find(c => c.id === val) as any;
+                                        setFormData(prev => {
+                                            const next = {
+                                                ...prev,
+                                                clientId: val,
+                                                cliente: client ? client.nombre : ''
+                                            };
+                                            // Si el cliente tiene una lista de precios predeterminada y el proyecto no tiene una seleccionada (o es nuevo proyecto):
+                                            if (client?.listaPrecioId && (!prev.listaPrecioId || !editingProject)) {
+                                                next.listaPrecioId = client.listaPrecioId;
+                                                next.aprovisionamiento = true;
+                                            }
+                                            return next;
+                                        });
                                     }}
                                     placeholder="Seleccionar cliente..."
                                     className="!space-y-0"
@@ -1362,15 +1377,51 @@ function ProjectModal({
                         </div>
 
                         {/* Aprovisionamiento Switch */}
-                        <div className="flex items-center justify-between bg-primary/5 border border-primary/20 rounded-2xl px-4 py-3.5">
-                            <div className="space-y-0.5">
-                                <p className="text-sm font-bold text-primary">Aprovisionamiento de Materiales</p>
-                                <p className="text-xs text-primary/70 font-medium">Habilita la gestión y trazabilidad de materiales para este proyecto</p>
+                        <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 space-y-3">
+                            <div className="flex items-center justify-between">
+                                <div className="space-y-0.5">
+                                    <p className="text-sm font-bold text-primary">Aprovisionamiento de Materiales</p>
+                                    <p className="text-xs text-primary/70 font-medium">Habilita la gestión y trazabilidad de materiales vinculados a Gestión Comercial</p>
+                                </div>
+                                <button type="button" onClick={() => set('aprovisionamiento', !(formData as any).aprovisionamiento)}
+                                    className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-300 focus:outline-none shrink-0 ${(formData as any).aprovisionamiento ? 'bg-primary' : 'bg-slate-200 dark:bg-slate-700'}`}>
+                                    <span className={`inline-block h-5 w-5 transform rounded-full bg-card text-card-foreground shadow-md transition-transform duration-300 ${(formData as any).aprovisionamiento ? 'translate-x-8' : 'translate-x-1'}`} />
+                                </button>
                             </div>
-                            <button type="button" onClick={() => set('aprovisionamiento', !(formData as any).aprovisionamiento)}
-                                className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-300 focus:outline-none shrink-0 ${(formData as any).aprovisionamiento ? 'bg-primary' : 'bg-slate-200 dark:bg-slate-700'}`}>
-                                <span className={`inline-block h-5 w-5 transform rounded-full bg-card text-card-foreground shadow-md transition-transform duration-300 ${(formData as any).aprovisionamiento ? 'translate-x-8' : 'translate-x-1'}`} />
-                            </button>
+
+                            {(formData as any).aprovisionamiento && (
+                                <div className="pt-3 border-t border-primary/10 space-y-1.5 animate-in fade-in duration-200">
+                                    <label className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
+                                        Lista de Precios Aplicable (Gestión Comercial)
+                                    </label>
+                                    <select
+                                        value={(formData as any).listaPrecioId || ''}
+                                        onChange={(e) => set('listaPrecioId', e.target.value)}
+                                        className="w-full bg-background border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-primary/20"
+                                    >
+                                        <option value="">Precio Base (Predeterminado de Gestión Comercial)</option>
+                                        {listasPrecios.filter((lp: any) => lp.activo).map((lp: any) => (
+                                            <option key={lp.id} value={lp.id}>
+                                                {lp.nombre} {lp.valorAjuste ? `(${lp.tipoAjuste?.includes('DESCUENTO') ? '-' : '+'}${lp.valorAjuste}%)` : ''}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                                        Aplica a los materiales de las órdenes de servicio generadas para este proyecto. Puede modificarse individualmente en cada OS.
+                                    </p>
+                                    {(() => {
+                                        const selectedClient = clients.find(c => c.id === formData.clientId) as any;
+                                        if (selectedClient?.listaPrecio) {
+                                            return (
+                                                <div className="flex items-center gap-1.5 text-[10px] text-primary/80 font-semibold bg-primary/5 px-2.5 py-1.5 rounded-lg border border-primary/10">
+                                                    <span>ℹ️ Lista predeterminada del cliente: <strong>{selectedClient.listaPrecio.nombre}</strong>. Este proyecto respeta la lista seleccionada aquí independientemente de la del cliente.</span>
+                                                </div>
+                                            );
+                                        }
+                                        return null;
+                                    })()}
+                                </div>
+                            )}
                         </div>
 
                         {/* Proyecto Fijo Switch */}

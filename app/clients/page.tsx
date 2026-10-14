@@ -28,6 +28,13 @@ interface Client {
     telefono?: string;
     direccion?: string;
     activo: boolean;
+    listaPrecioId?: string | null;
+    listaPrecio?: {
+        id: string;
+        nombre: string;
+        tipoAjuste?: string;
+        valorAjuste?: number;
+    } | null;
 }
 
 const EMPTY_FORM = {
@@ -36,6 +43,7 @@ const EMPTY_FORM = {
     telefono: '',
     direccion: '',
     activo: true,
+    listaPrecioId: '',
 };
 
 const normalize = (s: string) =>
@@ -43,6 +51,7 @@ const normalize = (s: string) =>
 
 export default function ClientsPage() {
     const [clients, setClients] = useState<Client[]>([]);
+    const [listasPrecios, setListasPrecios] = useState<any[]>([]);
     
     const [filters, setFilters] = useViewState('clients-filters', {
         searchTerm: ''
@@ -65,12 +74,18 @@ export default function ClientsPage() {
     const loadClients = async (silent = false) => {
         if (!silent) setIsLoading(true);
         try {
-            const data = await safeApiRequest('/api/clients').then(res => res.json());
+            const [data, listasData] = await Promise.all([
+                safeApiRequest('/api/clients').then(res => res.json()),
+                safeApiRequest('/api/ventas/listas-precios').then(res => res.json()).catch(() => []),
+            ]);
             if (Array.isArray(data)) {
                 setClients(data);
             } else {
                 console.error('API returned non-array data:', data);
                 setClients([]);
+            }
+            if (Array.isArray(listasData)) {
+                setListasPrecios(listasData);
             }
         } catch (e) {
             console.error(e);
@@ -94,6 +109,7 @@ export default function ClientsPage() {
             telefono: client.telefono || '',
             direccion: client.direccion || '',
             activo: client.activo,
+            listaPrecioId: client.listaPrecioId || '',
         });
         setIsModalOpen(true);
     };
@@ -225,6 +241,7 @@ export default function ClientsPage() {
                     formData={formData}
                     setFormData={setFormData}
                     editingClient={editingClient}
+                    listasPrecios={listasPrecios}
                     onSubmit={handleSubmit}
                     onClose={() => setIsModalOpen(false)}
                 />
@@ -301,6 +318,13 @@ function ClientCard({ client, onEdit, onDelete, onToggleStatus }: {
                         <span className="text-sm line-clamp-1">{client.direccion}</span>
                     </div>
                 )}
+                {client.listaPrecio && (
+                    <div className="pt-1">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-wider text-primary">
+                            🏷️ Lista: {client.listaPrecio.nombre}
+                        </span>
+                    </div>
+                )}
             </div>
 
             <div className="pt-4 mt-auto border-t border-slate-50 flex items-center justify-between">
@@ -324,7 +348,7 @@ function ClientCard({ client, onEdit, onDelete, onToggleStatus }: {
     );
 }
 
-function ClientModal({ formData, setFormData, editingClient, onSubmit, onClose }: any) {
+function ClientModal({ formData, setFormData, editingClient, listasPrecios = [], onSubmit, onClose }: any) {
     const setField = (field: string, value: any) => setFormData((prev: any) => ({ ...prev, [field]: value }));
 
     return (
@@ -387,6 +411,27 @@ function ClientModal({ formData, setFormData, editingClient, onSubmit, onClose }
                                 value={formData.direccion}
                                 onChange={e => setField('direccion', e.target.value)}
                             />
+                        </div>
+
+                        <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">
+                                Lista de Precios Predeterminada (Gestión Comercial)
+                            </label>
+                            <select
+                                value={formData.listaPrecioId || ''}
+                                onChange={e => setField('listaPrecioId', e.target.value)}
+                                className="w-full bg-background border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-semibold text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-primary/20"
+                            >
+                                <option value="">Sin lista predeterminada (Se definirá por proyecto o precio base)</option>
+                                {listasPrecios.filter((lp: any) => lp.activo).map((lp: any) => (
+                                    <option key={lp.id} value={lp.id}>
+                                        {lp.nombre} {lp.valorAjuste ? `(${lp.tipoAjuste?.includes('DESCUENTO') ? '-' : '+'}${lp.valorAjuste}%)` : ''}
+                                    </option>
+                                ))}
+                            </select>
+                            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium px-1">
+                                Los nuevos proyectos creados para este cliente heredarán esta lista por defecto. Cada proyecto puede modificarla libremente.
+                            </p>
                         </div>
 
                         <div className="flex gap-3 pt-4">

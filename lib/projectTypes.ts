@@ -47,6 +47,9 @@ export interface Project {
     fechaFin?: string;
     publicToken?: string;
     generarOS?: boolean;
+    aprovisionamiento?: boolean;
+    listaPrecioId?: string | null;
+    listaPrecio?: { id: string; codigo: string; nombre: string } | null;
     proyectoFijo?: boolean;
 }
 
@@ -69,6 +72,7 @@ export interface FormData {
     fechaFin: string;
     generarOS: boolean;
     aprovisionamiento: boolean;
+    listaPrecioId?: string;
     geofenceLat: number | null;
     geofenceLng: number | null;
     geofenceRadius: number | null;
@@ -122,6 +126,7 @@ export const EMPTY_FORM: FormData = {
     fechaFin: '',
     generarOS: false,
     aprovisionamiento: false,
+    listaPrecioId: '',
     geofenceLat: null,
     geofenceLng: null,
     geofenceRadius: null,

@@ -99,3 +99,17 @@ export function getColumnConfig(userId: string, moduleKey: string): ColumnConfig
 export function setColumnConfig(userId: string, moduleKey: string, config: ColumnConfigItem[]) {
     localStorage.setItem(`hdb_columns_${moduleKey}_${userId}`, JSON.stringify(config));
 }
+
+// ── Column Widths (resize persistence) ────────────────────────────
+
+export function getColumnWidths(userId: string, moduleKey: string): Record<string, number> | null {
+    try {
+        const stored = localStorage.getItem(`hdb_colwidths_${moduleKey}_${userId}`);
+        if (!stored) return null;
+        return JSON.parse(stored);
+    } catch { return null; }
+}
+
+export function setColumnWidths(userId: string, moduleKey: string, widths: Record<string, number>) {
+    localStorage.setItem(`hdb_colwidths_${moduleKey}_${userId}`, JSON.stringify(widths));
+}

@@ -26,7 +26,7 @@ export default function VentasNavTabs({ currentTab }: VentasNavTabsProps) {
       label: 'Punto de Venta (PDV)',
       href: '/ventas/pdv',
       icon: CreditCard,
-      badge: 'Próx.',
+      badge: null,
       isActive: currentTab === 'pdv' || pathname === '/ventas/pdv',
     },
     {

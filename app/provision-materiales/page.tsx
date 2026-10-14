@@ -73,6 +73,8 @@ type Proyecto = {
   codigoProyecto?: string;
   cliente: string | null;
   estado: string;
+  listaPrecioId?: string | null;
+  listaPrecio?: { id: string; codigo: string; nombre: string } | null;
   client: { nombre: string } | null;
   responsableUser: { nombreCompleto: string } | null;
   materialesProyecto: Material[];
@@ -1351,6 +1353,11 @@ function MaterialesTable({
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
               {proyecto.client?.nombre || proyecto.cliente || "—"} ·{" "}
               {materiales.length} material{materiales.length !== 1 ? "es" : ""}
+              {proyecto.listaPrecio?.nombre && (
+                <span className="ml-2 inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.2 rounded border border-primary/20">
+                  Lista: {proyecto.listaPrecio.nombre}
+                </span>
+              )}
               {hayPendientes && (
                 <span className="ml-2 text-amber-600 font-black">
                   ⚠ Pendiente devolución

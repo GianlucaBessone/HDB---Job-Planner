@@ -61,7 +61,7 @@ export interface OSPdfProps {
             client?: { nombre: string } | null;
             responsableUser?: { nombreCompleto: string } | null;
         };
-        materiales: { id: string; material: string; cantidad: number; unidadMedida: string }[];
+        materiales: { id: string; material: string; codigo?: string | null; skuProveedor?: string | null; cantidad: number; unidadMedida: string; esManual?: boolean }[];
         operadores: { id: string; horas: number; isExtra?: boolean; operador: { nombreCompleto: string } }[];
         firma?: {
             nombre: string;
@@ -170,7 +170,14 @@ export function OSPdf({ os, logoUrl }: OSPdfProps) {
                         </View>
                         {os.materiales.map((m) => (
                             <View key={m.id} style={S.tableRow} wrap={false}>
-                                <Text style={[S.tdCell, { flex: 4 }]}>{m.material}</Text>
+                                <View style={{ flex: 4 }}>
+                                    <Text style={S.tdCell}>{m.material}</Text>
+                                    {m.codigo && (
+                                        <Text style={[S.tdCell, { fontSize: 7, color: '#64748b' }]}>
+                                            {m.codigo === '999999' ? 'MATERIAL MANUAL' : `SKU: ${m.codigo}${m.skuProveedor ? ` | Prov: ${m.skuProveedor}` : ''}`}
+                                        </Text>
+                                    )}
+                                </View>
                                 <Text style={[S.tdCell, S.tdBold, { flex: 1, textAlign: 'right' }]}>{m.cantidad}</Text>
                                 <Text style={[S.tdCell, { flex: 2, textAlign: 'right' }]}>{m.unidadMedida}</Text>
                             </View>

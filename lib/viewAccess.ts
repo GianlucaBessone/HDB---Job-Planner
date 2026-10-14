@@ -69,7 +69,7 @@ export const DEFAULT_VIEWS: ViewConfig[] = [
 
     // ─ Ventas y Comercial ─
     { key: '/ventas/gestion',            label: 'Gestión Comercial',        description: 'Maestro de productos y precios', roles: ['admin', 'supervisor', 'vendedor', 'qa'], access: 'ambos', section: 'ventas', iconName: 'Boxes', color: 'bg-emerald-600' },
-    { key: '/ventas/pdv',                label: 'Punto de Venta (PDV)',     description: 'Fase 3 — Próximamente', roles: ['admin', 'supervisor', 'vendedor', 'qa'], access: 'ambos', section: 'ventas', iconName: 'CreditCard', color: 'bg-slate-400' },
+    { key: '/ventas/pdv',                label: 'Punto de Venta (PDV)',     description: 'Facturación rápida y mostrador', roles: ['admin', 'supervisor', 'vendedor', 'qa'], access: 'ambos', section: 'ventas', iconName: 'CreditCard', color: 'bg-emerald-600' },
     { key: '/ventas/almacen',            label: 'Almacén y Stock',          description: 'Fase 2 — Próximamente', roles: ['admin', 'supervisor', 'vendedor', 'qa'], access: 'ambos', section: 'ventas', iconName: 'Warehouse', color: 'bg-slate-400' },
     { key: '/ventas/cuentas-corrientes', label: 'Cuentas Corrientes',       description: 'Fase 4 — Próximamente', roles: ['admin', 'supervisor', 'vendedor', 'qa'], access: 'ambos', section: 'ventas', iconName: 'Receipt', color: 'bg-slate-400' },
 
@@ -115,12 +115,13 @@ export function getViewConfig(savedConfigs: ViewConfig[]): ViewConfig[] {
         .filter(v => defaultMap.has(v.key))
         .map(v => {
             const def = defaultMap.get(v.key)!;
+            const isOutdatedPdv = v.key === '/ventas/pdv' && (v.description?.includes('Próximamente') || v.color === 'bg-slate-400');
             return {
                 ...v,
-                description: v.description || def.description || '',
+                description: isOutdatedPdv ? def.description : (v.description || def.description || ''),
                 section:     v.section     || def.section     || 'administracion',
                 iconName:    v.iconName    || def.iconName    || 'ClipboardList',
-                color:       v.color       || def.color       || 'bg-slate-500',
+                color:       isOutdatedPdv ? def.color : (v.color || def.color || 'bg-slate-500'),
             };
         });
 

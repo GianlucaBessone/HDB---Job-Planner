@@ -33,7 +33,7 @@ interface OrdenServicio {
         responsableUser?: { nombreCompleto: string };
         documentChecklists?: any[];
     };
-    materiales: { id: string; material: string; cantidad: number; unidadMedida: string }[];
+    materiales: { id: string; material: string; codigo?: string | null; cantidad: number; unidadMedida: string; esManual?: boolean }[];
     operadores: { id: string; horas: number; isExtra?: boolean; operador: { id: string; nombreCompleto: string, idOperator?: string } }[];
     firma?: Firma;
     documentosRequeridos?: any[];
@@ -880,7 +880,23 @@ export default function OSPublicPage({ params }: { params: { token: string } }) 
                                 <tbody className="divide-y divide-slate-50">
                                     {os.materiales.map(m => (
                                         <tr key={m.id}>
-                                            <td className="px-6 py-3 font-medium text-slate-700 dark:text-slate-200">{m.material}</td>
+                                            <td className="px-6 py-3 font-medium text-slate-700 dark:text-slate-200">
+                                                <div className="flex flex-col">
+                                                    <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                                                        {m.codigo && (
+                                                            <span className="font-mono text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-1.5 py-0.2 rounded">
+                                                                {m.codigo}
+                                                            </span>
+                                                        )}
+                                                        {m.esManual && (
+                                                            <span className="text-[9px] font-bold bg-amber-100 text-amber-800 px-1 rounded">
+                                                                Manual
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <span>{m.material}</span>
+                                                </div>
+                                            </td>
                                             <td className="px-6 py-3 text-right font-bold text-slate-800 dark:text-slate-100">{m.cantidad}</td>
                                             <td className="px-6 py-3 text-right">
                                                 <span className="px-2 py-0.5 rounded-lg bg-amber-50 text-amber-700 text-[10px] font-black border border-amber-100 uppercase">{m.unidadMedida}</span>

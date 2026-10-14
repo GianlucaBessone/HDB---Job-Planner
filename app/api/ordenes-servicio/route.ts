@@ -13,7 +13,12 @@ export async function GET(req: Request) {
             where: projectId ? { projectId } : undefined,
             include: {
                 project: { select: { id: true, nombre: true, codigoProyecto: true, client: { select: { nombre: true } }, cliente: true } },
-                materiales: true,
+                listaPrecio: { select: { id: true, codigo: true, nombre: true } },
+                materiales: {
+                    include: {
+                        producto: { select: { id: true, sku: true, descripcion: true } }
+                    }
+                },
                 operadores: { include: { operador: { select: { id: true, nombreCompleto: true } } } },
                 firma: {
                     select: {
@@ -44,7 +49,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { projectId, reporte, materiales, operadores, comentario } = body;
+        const { projectId, reporte, materiales, operadores, comentario, listaPrecioId } = body;
 
         if (!projectId || !reporte) {
             return NextResponse.json({ error: 'projectId y reporte son obligatorios' }, { status: 400 });
@@ -67,7 +72,7 @@ export async function POST(req: Request) {
 
         // 1) Create OS and update project hours via service
         const { createOrdenServicio } = await import('@/lib/services/osService');
-        const os = await createOrdenServicio({ projectId, reporte, materiales, operadores, comentario });
+        const os = await createOrdenServicio({ projectId, reporte, materiales, operadores, comentario, listaPrecioId });
 
         // 2) Synchronize materials with the dynamic provisioning system
         const { syncInventoryForOS } = await import('@/lib/services/inventorySyncService');
@@ -78,8 +83,8 @@ export async function POST(req: Request) {
         await autoAssignQMSForOS(os);
 
         return NextResponse.json(os);
-    } catch (e) {
+    } catch (e: any) {
         console.error('POST ordenes-servicio error:', e);
-        return NextResponse.json({ error: 'Error al crear la orden de servicio', details: String(e) }, { status: 500 });
+        return NextResponse.json({ error: e.message || 'Error al crear la orden de servicio', details: String(e) }, { status: 500 });
     }
 }

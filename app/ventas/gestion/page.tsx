@@ -38,7 +38,7 @@ import ConfigListasPreciosModal from '@/components/ventas/ConfigListasPreciosMod
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { showToast } from '@/components/Toast';
 import { formatARS } from '@/lib/formatCurrency';
-import { getColumnConfig, setColumnConfig, ColumnConfigItem } from '@/lib/viewPreferences';
+import { getColumnConfig, setColumnConfig, getColumnWidths, setColumnWidths, ColumnConfigItem } from '@/lib/viewPreferences';
 
 interface ProductoItem {
   id: string;
@@ -110,6 +110,7 @@ const COLUMN_LABELS: Record<string, string> = {
   iva: 'IVA',
   rentabilidad: 'Margen',
   precioBase: 'Precio Base',
+  precioConIva: 'Precio + IVA',
   almacen: 'Ubicación',
   stock: 'Stock',
 };
@@ -129,9 +130,32 @@ const DEFAULT_COLUMN_ORDER: ColumnConfigItem[] = [
   { key: 'iva', visible: true },
   { key: 'rentabilidad', visible: true },
   { key: 'precioBase', visible: true },
+  { key: 'precioConIva', visible: true },
   { key: 'almacen', visible: true },
   { key: 'stock', visible: true },
 ];
+
+const DEFAULT_COLUMN_WIDTHS: Record<string, number> = {
+  sku: 100,
+  skuProveedor: 110,
+  codigoBarras: 130,
+  descripcion: 240,
+  categoria: 110,
+  marca: 110,
+  familia: 110,
+  subFamilia: 110,
+  unidad: 70,
+  proveedor: 130,
+  costo: 100,
+  iva: 70,
+  rentabilidad: 80,
+  precioBase: 120,
+  precioConIva: 130,
+  almacen: 130,
+  stock: 80,
+};
+
+const MIN_COL_WIDTH = 50;
 
 function getUserId(): string {
   try {
@@ -188,6 +212,13 @@ export default function VentasGestionPage() {
   const [columnOrder, setColumnOrder] = useState<ColumnConfigItem[]>(DEFAULT_COLUMN_ORDER);
   const [isColumnPickerOpen, setIsColumnPickerOpen] = useState(false);
   const [draggedColIdx, setDraggedColIdx] = useState<number | null>(null);
+
+  // Column Widths (resize)
+  const [columnWidths, setColumnWidthsState] = useState<Record<string, number>>(DEFAULT_COLUMN_WIDTHS);
+  const resizingRef = useRef<{ colKey: string; startX: number; startWidth: number } | null>(null);
+  const columnWidthsRef = useRef(columnWidths);
+  columnWidthsRef.current = columnWidths;
+  const tableRef = useRef<HTMLTableElement>(null);
 
   // Derived: visible columns in order (for rendering)
   const visibleColumns = useMemo(() => columnOrder.filter(c => c.visible), [columnOrder]);
@@ -264,6 +295,11 @@ export default function VentasGestionPage() {
         if (!savedKeys.has(def.key)) merged.push(def);
       }
       setColumnOrder(merged);
+    }
+    // Load saved column widths
+    const savedWidths = getColumnWidths(uid, 'ventas_gestion');
+    if (savedWidths && typeof savedWidths === 'object') {
+      setColumnWidthsState(prev => ({ ...prev, ...savedWidths }));
     }
   }, [loadMeta]);
 
@@ -350,7 +386,52 @@ export default function VentasGestionPage() {
   const handleResetColumns = () => {
     setColumnOrder(DEFAULT_COLUMN_ORDER);
     setColumnConfig(getUserId(), 'ventas_gestion', DEFAULT_COLUMN_ORDER);
+    setColumnWidthsState(DEFAULT_COLUMN_WIDTHS);
+    setColumnWidths(getUserId(), 'ventas_gestion', DEFAULT_COLUMN_WIDTHS);
   };
+
+  // ── Column Resize Handlers ──────────────────────────────────────
+  const handleResizeMouseDown = useCallback((e: React.MouseEvent, colKey: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const startX = e.clientX;
+    const startWidth = columnWidthsRef.current[colKey] || DEFAULT_COLUMN_WIDTHS[colKey] || 100;
+    resizingRef.current = { colKey, startX, startWidth };
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      if (!resizingRef.current) return;
+      const delta = moveEvent.clientX - resizingRef.current.startX;
+      const newWidth = Math.max(MIN_COL_WIDTH, resizingRef.current.startWidth + delta);
+      setColumnWidthsState(prev => ({ ...prev, [resizingRef.current!.colKey]: newWidth }));
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      if (resizingRef.current) {
+        // Persist widths
+        const finalWidths = { ...columnWidthsRef.current };
+        setColumnWidths(getUserId(), 'ventas_gestion', finalWidths);
+        resizingRef.current = null;
+      }
+    };
+
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }, []);
+
+  // Total table width based on visible columns
+  const totalTableWidth = useMemo(() => {
+    let total = 0;
+    for (const col of visibleColumns) {
+      total += columnWidths[col.key] || DEFAULT_COLUMN_WIDTHS[col.key] || 100;
+    }
+    return total + 112; // +112px for the sticky Acciones column
+  }, [visibleColumns, columnWidths]);
 
   // Inline Quick Price Change Handler (Direct base price)
   const handleQuickPriceChange = (prodId: string, value: number) => {
@@ -902,12 +983,22 @@ export default function VentasGestionPage() {
       <div className="flex-1 min-h-[480px] max-h-[calc(100vh-250px)] flex flex-col bg-card rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
         {/* Table Scroll Area */}
         <div className="overflow-x-auto overflow-y-auto flex-1 min-h-0">
-          <table className="w-full text-left text-xs border-collapse">
+          <table
+            ref={tableRef}
+            className="text-left text-xs border-collapse"
+            style={{ tableLayout: 'fixed', width: totalTableWidth }}
+          >
+            <colgroup>
+              {visibleColumns.map((col) => (
+                <col key={col.key} style={{ width: columnWidths[col.key] || DEFAULT_COLUMN_WIDTHS[col.key] || 100 }} />
+              ))}
+              <col style={{ width: 112 }} />
+            </colgroup>
             <thead className="sticky top-0 z-20 bg-slate-100/95 dark:bg-slate-800/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px] tracking-wider whitespace-nowrap">
               <tr>
                 {visibleColumns.map((col) => {
                   const sortable = col.key === 'sku' || col.key === 'descripcion';
-                  const align = ['costo', 'precioBase'].includes(col.key) ? 'text-right' : ['unidad', 'iva', 'rentabilidad', 'stock'].includes(col.key) ? 'text-center' : '';
+                  const align = ['costo', 'precioBase', 'precioConIva'].includes(col.key) ? 'text-right' : ['unidad', 'iva', 'rentabilidad', 'stock'].includes(col.key) ? 'text-center' : '';
                   return (
                     <th
                       key={col.key}
@@ -915,16 +1006,23 @@ export default function VentasGestionPage() {
                         setSortBy(col.key);
                         setSortOrder(sortBy === col.key && sortOrder === 'asc' ? 'desc' : 'asc');
                       } : undefined}
-                      className={`py-2 px-2.5 ${sortable ? 'cursor-pointer hover:text-slate-800 dark:hover:text-slate-200' : ''} ${align}`}
+                      className={`py-2 px-2.5 relative group/resize ${sortable ? 'cursor-pointer hover:text-slate-800 dark:hover:text-slate-200' : ''} ${align}`}
+                      style={{ width: columnWidths[col.key] || DEFAULT_COLUMN_WIDTHS[col.key] || 100, overflow: 'hidden' }}
                     >
-                      <div className={`flex items-center gap-1 ${align === 'text-right' ? 'justify-end' : align === 'text-center' ? 'justify-center' : ''}`}>
+                      <div className={`flex items-center gap-1 overflow-hidden text-ellipsis ${align === 'text-right' ? 'justify-end' : align === 'text-center' ? 'justify-center' : ''}`}>
                         {col.key === 'precioBase' ? 'Precio Base (ARS)' : COLUMN_LABELS[col.key] || col.key}
-                        {sortable && <ArrowUpDown className="w-3 h-3 opacity-60" />}
+                        {sortable && <ArrowUpDown className="w-3 h-3 opacity-60 shrink-0" />}
                       </div>
+                      {/* Resize Handle */}
+                      <div
+                        onMouseDown={(e) => handleResizeMouseDown(e, col.key)}
+                        className="absolute top-0 right-0 w-[5px] h-full cursor-col-resize z-30 group-hover/resize:bg-primary/30 hover:!bg-primary/60 transition-colors"
+                        title="Arrastrar para redimensionar"
+                      />
                     </th>
                   );
                 })}
-                <th className="py-2 px-2 text-center sticky right-0 bg-slate-100 dark:bg-slate-800 shadow-sm w-28">
+                <th className="py-2 px-2 text-center sticky right-0 bg-slate-100 dark:bg-slate-800 shadow-sm" style={{ width: 112 }}>
                   Acciones
                 </th>
               </tr>
@@ -1066,6 +1164,16 @@ export default function VentasGestionPage() {
                             )}
                           </td>
                         );
+                      case 'precioConIva': {
+                        const precioConIva = prod.precioBase * (1 + prod.ivaPorcentaje / 100);
+                        return (
+                          <td key={colKey} className="py-1.5 px-2 text-right whitespace-nowrap">
+                            <span className="font-mono font-bold text-blue-600 dark:text-blue-400">
+                              {formatARS(precioConIva)}
+                            </span>
+                          </td>
+                        );
+                      }
                       case 'almacen':
                         return (
                           <td key={colKey} className="py-1.5 px-2 whitespace-nowrap text-slate-500">
