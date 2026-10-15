@@ -723,11 +723,15 @@ export default function PdvPage() {
       className={`transition-all duration-200 ${
         isFullscreen
           ? 'fixed inset-0 z-[70] bg-slate-50 dark:bg-slate-950 flex flex-col h-screen w-screen overflow-hidden p-2 sm:p-2.5'
-          : 'flex flex-col h-full w-full min-h-0 overflow-hidden space-y-1.5'
+          : 'flex flex-col h-full w-full min-h-0 max-h-full overflow-hidden space-y-1.5'
       }`}
     >
       {/* Pestañas de Navegación (ocultas en pantalla completa) */}
-      {!isFullscreen && <VentasNavTabs currentTab="pdv" />}
+      {!isFullscreen && (
+        <div className="shrink-0">
+          <VentasNavTabs currentTab="pdv" className="mb-0" />
+        </div>
+      )}
 
       {/* Barra Superior Sobria y Profesional */}
       <header className="bg-card border border-slate-200/90 dark:border-slate-800 rounded-xl px-3 py-2 shadow-xs flex flex-wrap items-center justify-between gap-2 shrink-0">
@@ -840,10 +844,10 @@ export default function PdvPage() {
         </div>
       </header>
 
-      {/* Grid Principal del PDV */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-2.5 items-stretch flex-1 min-h-0 overflow-hidden">
-        {/* PANEL IZQUIERDO: Catálogo y Búsqueda (5 columnas) */}
-        <section className="lg:col-span-5 bg-card border border-slate-200/90 dark:border-slate-800 rounded-xl p-3 shadow-xs flex flex-col space-y-2.5 h-full min-h-0 overflow-hidden">
+      {/* Contenedor Principal Flexible del PDV (Altura Fija al 100% sin desborde) */}
+      <div className="flex flex-col lg:flex-row gap-2.5 items-stretch flex-1 min-h-0 h-full max-h-full overflow-hidden">
+        {/* PANEL IZQUIERDO: Catálogo y Búsqueda (42% de ancho en desktop, altura fija y scroll confinado) */}
+        <section className="w-full lg:w-[42%] xl:w-[40%] bg-card border border-slate-200/90 dark:border-slate-800 rounded-xl p-3 shadow-xs flex flex-col space-y-2 h-full min-h-0 max-h-full overflow-hidden shrink-0">
           {/* Input de Búsqueda */}
           <div className="shrink-0 space-y-1.5">
             <div className="flex items-center justify-between">
@@ -907,7 +911,7 @@ export default function PdvPage() {
                 setDisplayLimit((prev) => Math.min(prev + 50, resultadosBusqueda.length));
               }
             }}
-            className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1"
+            className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar"
           >
             {isLoadingCatalogo && rawCatalogo.length === 0 ? (
               <div className="py-12 flex flex-col items-center justify-center text-slate-400 gap-2">
@@ -1011,8 +1015,8 @@ export default function PdvPage() {
           </div>
         </section>
 
-        {/* PANEL DERECHO: Detalle de Venta / Carrito y Totales (7 columnas) */}
-        <section className="lg:col-span-7 bg-card border border-slate-200/90 dark:border-slate-800 rounded-xl p-3 shadow-xs flex flex-col justify-between h-full min-h-0 overflow-hidden">
+        {/* PANEL DERECHO: Detalle de Venta / Carrito y Totales (flex-1 para ocupar el resto del ancho, altura fija y botón de cobro anclado) */}
+        <section className="w-full lg:flex-1 bg-card border border-slate-200/90 dark:border-slate-800 rounded-xl p-3 shadow-xs flex flex-col justify-between h-full min-h-0 max-h-full overflow-hidden">
           {/* Header del carrito */}
           <div className="flex items-center justify-between pb-2.5 border-b border-slate-200 dark:border-slate-800 mb-1.5 shrink-0">
             <div className="flex items-center gap-2">
@@ -1030,8 +1034,8 @@ export default function PdvPage() {
             </span>
           </div>
 
-          {/* Grilla de productos cargados */}
-          <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1">
+          {/* Grilla de productos cargados con scroll independiente */}
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
             {carrito.length === 0 ? (
               <div className="py-16 text-center text-slate-400 text-xs space-y-2">
                 <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-900/60 flex items-center justify-center mx-auto text-slate-400">
@@ -1133,8 +1137,8 @@ export default function PdvPage() {
             )}
           </div>
 
-          {/* Cuadro Inferior de Totales y Botón Cobrar */}
-          <div className="pt-2.5 border-t border-slate-200 dark:border-slate-800 space-y-2.5 mt-1 shrink-0">
+          {/* Cuadro Inferior de Totales y Botón Cobrar (Fijo al Fondo) */}
+          <div className="pt-2.5 border-t border-slate-200 dark:border-slate-800 space-y-2.5 mt-auto shrink-0">
             {/* Desglose numérico */}
             <div className="space-y-1 text-xs">
               <div className="flex justify-between text-slate-500">

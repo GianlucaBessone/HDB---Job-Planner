@@ -137,7 +137,7 @@ export default function RootLayout({
         pathname.startsWith('/portal-clientes')
     ) : false;
 
-    const isPdvPage = pathname === '/ventas/pdv';
+    const isPdvPage = pathname ? (pathname === '/ventas/pdv' || pathname.startsWith('/ventas/pdv/')) : false;
 
     const role = currentUser?.role?.toLowerCase() || 'operador';
     const effectiveViews = viewConfig && viewConfig.length > 0 ? viewConfig : DEFAULT_VIEWS;
@@ -191,8 +191,8 @@ export default function RootLayout({
         );
     } else {
         content = (
-            <div className="flex flex-col min-h-[100dvh] overflow-x-hidden">
-                <header className="sticky top-0 z-[60] w-full border-b bg-background/80 backdrop-blur-md safe-area-top">
+            <div className={isPdvPage ? "flex flex-col h-[100dvh] max-h-[100dvh] overflow-hidden" : "flex flex-col min-h-[100dvh] overflow-x-hidden"}>
+                <header className="sticky top-0 z-[60] w-full shrink-0 border-b bg-background/80 backdrop-blur-md safe-area-top">
                     <div className="w-full px-4 md:px-6 h-14 md:h-16 flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <button
@@ -254,7 +254,7 @@ export default function RootLayout({
                     }}
                 />
 
-                <main className={isPdvPage ? "flex-1 w-full p-2 h-[calc(100dvh-4rem)] overflow-hidden flex flex-col min-h-0" : "flex-1 w-full px-4 md:px-6 py-6 md:py-8 pb-32 md:pb-8"}>
+                <main className={isPdvPage ? "flex-1 w-full p-2 h-full min-h-0 max-h-full overflow-hidden flex flex-col" : "flex-1 w-full px-4 md:px-6 py-6 md:py-8 pb-32 md:pb-8"}>
                     {!isPdvPage && <Breadcrumbs />}
                     {children}
                     <SpeedInsights />

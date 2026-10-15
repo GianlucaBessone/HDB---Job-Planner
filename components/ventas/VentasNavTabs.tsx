@@ -7,9 +7,10 @@ import { Boxes, CreditCard, Warehouse, Receipt } from 'lucide-react';
 
 interface VentasNavTabsProps {
   currentTab?: 'gestion' | 'pdv' | 'almacen' | 'cuentas-corrientes';
+  className?: string;
 }
 
-export default function VentasNavTabs({ currentTab }: VentasNavTabsProps) {
+export default function VentasNavTabs({ currentTab, className }: VentasNavTabsProps) {
   const pathname = usePathname();
 
   const tabs = [
@@ -48,7 +49,7 @@ export default function VentasNavTabs({ currentTab }: VentasNavTabsProps) {
   ];
 
   return (
-    <div className="flex items-center gap-1 p-1 bg-slate-100/70 dark:bg-slate-900/50 rounded-xl border border-slate-200/80 dark:border-slate-800 mb-2.5 overflow-x-auto hide-scrollbar w-fit max-w-full">
+    <div className={`flex items-center gap-1 p-1 bg-slate-100/70 dark:bg-slate-900/50 rounded-xl border border-slate-200/80 dark:border-slate-800 overflow-x-auto hide-scrollbar w-fit max-w-full ${className ?? 'mb-2.5'}`}>
       {tabs.map((tab) => {
         const Icon = tab.icon;
         return (
