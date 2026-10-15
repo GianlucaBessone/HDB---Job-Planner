@@ -184,60 +184,31 @@ export default function ResumenStockView({
 
   return (
     <div className="space-y-3">
-      {/* Barra de Filtros Compacta estilo ERP */}
-      <div className="bg-card border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-xs space-y-2.5">
-        <div className="flex flex-wrap items-center justify-between gap-2">
+      {/* Barra de Filtros Compacta estilo ERP (Todo en 1 fila) */}
+      <div className="bg-card border border-slate-200 dark:border-slate-800 rounded-xl px-2.5 py-1.5 shadow-xs">
+        <div className="flex flex-wrap items-center gap-1.5">
           {/* Buscador Rápido con soporte Lector de Código de Barras */}
-          <div className="relative flex-1 min-w-[280px] max-w-md">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               ref={searchInputRef}
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar por SKU, Barra o Descripción (lector compatible)..."
-              className="w-full pl-9 pr-8 h-9 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-background focus:outline-none focus:ring-2 focus:ring-primary/40 text-foreground"
+              placeholder="Buscar SKU, Barra o Descripción (lector compatible)..."
+              className="w-full pl-8 pr-7 h-8 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-background focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
             />
             {search && (
               <button
                 onClick={() => setSearch('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
               >
                 ✕
               </button>
             )}
           </div>
 
-          {/* Acciones Rápidas */}
-          <div className="flex items-center gap-1.5 ml-auto">
-            <button
-              onClick={() => onNavigateToAjuste && onNavigateToAjuste()}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-bold hover:opacity-90 shadow-xs transition-all"
-            >
-              <Sliders className="w-3.5 h-3.5" />
-              <span>Ajuste Rápido</span>
-            </button>
-            <button
-              onClick={handleExportCSV}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all"
-              title="Exportar reporte CSV"
-            >
-              <Download className="w-3.5 h-3.5 text-slate-500" />
-              <span className="hidden sm:inline">CSV</span>
-            </button>
-            <button
-              onClick={fetchStock}
-              disabled={loading}
-              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 disabled:opacity-50"
-              title="Refrescar existencias"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
-        </div>
-
-        {/* Fila 2: Selectores de Filtro en una sola línea compacta */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1 border-t border-slate-100 dark:border-slate-800/60">
+          {/* Selectores de Filtro Compactos en la misma fila */}
           <select
             value={selectedAlmacen}
             onChange={(e) => {
@@ -245,9 +216,9 @@ export default function ResumenStockView({
               setSelectedUbicacion('');
               setPage(1);
             }}
-            className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
+            className="h-8 px-2 min-w-[130px] rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
           >
-            <option value="">Todos los Almacenes</option>
+            <option value="">Todos Almacenes</option>
             {meta.almacenes.map((a) => (
               <option key={a.id} value={a.id}>
                 {a.nombre}
@@ -262,9 +233,9 @@ export default function ResumenStockView({
               setPage(1);
             }}
             disabled={!selectedAlmacen}
-            className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
+            className="h-8 px-2 min-w-[120px] rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
           >
-            <option value="">Todas Ubicaciones</option>
+            <option value="">Ubicaciones</option>
             {ubicacionesDisponibles.map((u) => (
               <option key={u.id} value={u.id}>
                 {u.codigo}
@@ -278,9 +249,9 @@ export default function ResumenStockView({
               setSelectedFamilia(e.target.value);
               setPage(1);
             }}
-            className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
+            className="h-8 px-2 min-w-[120px] rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
           >
-            <option value="">Todas Familias</option>
+            <option value="">Familias</option>
             {meta.familias.map((f) => (
               <option key={f.id} value={f.id}>
                 {f.nombre}
@@ -294,9 +265,9 @@ export default function ResumenStockView({
               setSelectedMarca(e.target.value);
               setPage(1);
             }}
-            className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
+            className="h-8 px-2 min-w-[110px] rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
           >
-            <option value="">Todas Marcas</option>
+            <option value="">Marcas</option>
             {meta.marcas.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.nombre}
@@ -310,15 +281,35 @@ export default function ResumenStockView({
               setSelectedEstado(e.target.value);
               setPage(1);
             }}
-            className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
+            className="h-8 px-2 min-w-[115px] rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
           >
-            <option value="">Todos los Estados</option>
+            <option value="">Estados</option>
             <option value="normal">Normal</option>
             <option value="bajo_minimo">Bajo Mínimo</option>
             <option value="sin_stock">Sin Stock</option>
             <option value="sobre_maximo">Sobre Máximo</option>
             <option value="no_configurado">Sin Límites</option>
           </select>
+
+          {/* Acciones Rápidas (CSV y Refrescar) */}
+          <div className="flex items-center gap-1 ml-auto shrink-0">
+            <button
+              onClick={handleExportCSV}
+              className="flex items-center gap-1 px-2.5 h-8 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all"
+              title="Exportar reporte CSV"
+            >
+              <Download className="w-3.5 h-3.5 text-slate-500" />
+              <span className="hidden sm:inline">CSV</span>
+            </button>
+            <button
+              onClick={fetchStock}
+              disabled={loading}
+              className="p-1.5 h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 disabled:opacity-50"
+              title="Refrescar existencias"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
         </div>
       </div>
 

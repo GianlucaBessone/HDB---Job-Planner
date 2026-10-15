@@ -2,7 +2,7 @@ export interface ListaPrecioConfig {
   id: string;
   codigo: string;
   nombre: string;
-  orden: number;
+  orden?: number | null;
   tipoAjuste?: string | null; // 'MANUAL' | 'PORCENTAJE_SOBRE_COSTO' | 'MARGEN_SOBRE_COSTO' | 'DESCUENTO_SOBRE_BASE' | 'RECARGO_SOBRE_BASE'
   valorAjuste?: number | null;
   listaBaseId?: string | null;
@@ -90,3 +90,74 @@ export function calculateSuggestedPrice(
       return null;
   }
 }
+
+/**
+ * Resuelve el precio unitario final aplicable a un producto según la lista seleccionada
+ */
+export function resolverPrecioProducto(
+  producto: {
+    precioBase: number;
+    costo?: number;
+    familiaId?: string | null;
+    marcaId?: string | null;
+    ivaPorcentaje?: number;
+  },
+  lista?: (Partial<ListaPrecioConfig> & { tipoAjuste?: string | null; valorAjuste?: number | null; esPredeterminada?: boolean; ivaDiscriminado?: boolean }) | null,
+  preciosMap: Record<string, number> = {}
+): { precio: number; esFallback: boolean; detalleAjuste?: string } {
+  const precioBase = Number(producto.precioBase) || 0;
+
+  let precioConIva = precioBase;
+  let esFallback = false;
+  let detalleAjuste = 'Precio Base / Manual';
+
+  if (!lista || !lista.tipoAjuste || lista.tipoAjuste === 'MANUAL') {
+    precioConIva = precioBase;
+    esFallback = false;
+    detalleAjuste = 'Precio Base / Manual';
+  } else {
+    const costo = Number(producto.costo) || 0;
+    const mapaCalculo = {
+      ...preciosMap,
+      ...(lista.listaBaseId ? { [lista.listaBaseId]: precioBase } : {}),
+      base: precioBase,
+    };
+
+    const precioSugerido = calculateSuggestedPrice(
+      lista as ListaPrecioConfig,
+      {
+        costo,
+        familiaId: producto.familiaId,
+        marcaId: producto.marcaId,
+      },
+      mapaCalculo
+    );
+
+    if (precioSugerido !== null && precioSugerido > 0) {
+      precioConIva = precioSugerido;
+      esFallback = false;
+      detalleAjuste = `${lista.tipoAjuste} (${lista.valorAjuste}%)`;
+    } else {
+      precioConIva = precioBase;
+      esFallback = true;
+      detalleAjuste = 'Fallback a Precio Base (regla no aplicable o sin costo)';
+    }
+  }
+
+  if (lista?.ivaDiscriminado) {
+    const ivaPorc = producto.ivaPorcentaje !== undefined && producto.ivaPorcentaje !== null ? producto.ivaPorcentaje : 21;
+    const precioNeto = Math.round((precioConIva / (1 + (ivaPorc || 21) / 100)) * 100) / 100;
+    return {
+      precio: precioNeto,
+      esFallback,
+      detalleAjuste: `${detalleAjuste} (Neto sin IVA)`,
+    };
+  }
+
+  return {
+    precio: precioConIva,
+    esFallback,
+    detalleAjuste,
+  };
+}
+

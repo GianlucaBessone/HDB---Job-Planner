@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
-import { calculateSuggestedPrice, ListaPrecioConfig } from '@/lib/ventas/priceRules';
+import { calculateSuggestedPrice, ListaPrecioConfig, resolverPrecioProducto } from '@/lib/ventas/priceRules';
 
 export interface ItemVentaInput {
   productoId: string;
@@ -48,75 +48,7 @@ export interface ConfirmarVentaInput {
 /**
  * Resuelve el precio de un producto según la lista de precio seleccionada
  */
-export function resolverPrecioProducto(
-  producto: {
-    precioBase: number;
-    costo?: number;
-    familiaId?: string | null;
-    marcaId?: string | null;
-    ivaPorcentaje?: number;
-  },
-  lista?: (ListaPrecioConfig & { tipoAjuste: string; valorAjuste: number; esPredeterminada?: boolean; ivaDiscriminado?: boolean }) | null,
-  preciosMap: Record<string, number> = {}
-): { precio: number; esFallback: boolean; detalleAjuste?: string } {
-  const precioBase = Number(producto.precioBase) || 0;
-
-  let precioConIva = precioBase;
-  let esFallback = false;
-  let detalleAjuste = 'Precio Base / Manual';
-
-  if (!lista || lista.tipoAjuste === 'MANUAL') {
-    // Si la lista es manual y es base/predeterminada, precioBase es el precio
-    precioConIva = precioBase;
-    esFallback = false;
-    detalleAjuste = 'Precio Base / Manual';
-  } else {
-    // Si tiene regla dinámica (costo, margen, descuento, recargo)
-    const costo = Number(producto.costo) || 0;
-    const mapaCalculo = {
-      ...preciosMap,
-      ...(lista.listaBaseId ? { [lista.listaBaseId]: precioBase } : {}),
-      base: precioBase,
-    };
-
-    const precioSugerido = calculateSuggestedPrice(
-      lista,
-      {
-        costo,
-        familiaId: producto.familiaId,
-        marcaId: producto.marcaId,
-      },
-      mapaCalculo
-    );
-
-    if (precioSugerido !== null && precioSugerido > 0) {
-      precioConIva = precioSugerido;
-      esFallback = false;
-      detalleAjuste = `${lista.tipoAjuste} (${lista.valorAjuste}%)`;
-    } else {
-      // Fallback explícito a precio base si la regla no aplica o no pudo resolverse
-      precioConIva = precioBase;
-      esFallback = true;
-      detalleAjuste = 'Fallback a Precio Base (regla no aplicable o sin costo)';
-    }
-  }
-
-  if (lista?.ivaDiscriminado) {
-    const ivaPorc = producto.ivaPorcentaje !== undefined && producto.ivaPorcentaje !== null ? producto.ivaPorcentaje : 21;
-    const precioNeto = Math.round((precioConIva / (1 + (ivaPorc || 21) / 100)) * 100) / 100;
-    return {
-      precio: precioNeto,
-      esFallback,
-      detalleAjuste: `${detalleAjuste} (Neto sin IVA)`,
-    };
-  }
-
-  return {
-    precio: precioConIva,
-    esFallback,
-    detalleAjuste,
-  };
-}
+export { resolverPrecioProducto };
 
 /**
  * Calcula y desglosa los totales de una venta de forma decimal precisa

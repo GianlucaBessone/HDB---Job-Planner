@@ -137,6 +137,8 @@ export default function RootLayout({
         pathname.startsWith('/portal-clientes')
     ) : false;
 
+    const isPdvPage = pathname === '/ventas/pdv';
+
     const role = currentUser?.role?.toLowerCase() || 'operador';
     const effectiveViews = viewConfig && viewConfig.length > 0 ? viewConfig : DEFAULT_VIEWS;
 
@@ -252,17 +254,19 @@ export default function RootLayout({
                     }}
                 />
 
-                <main className="flex-1 w-full px-4 md:px-6 py-6 md:py-8 pb-32 md:pb-8">
-                    <Breadcrumbs />
+                <main className={isPdvPage ? "flex-1 w-full p-2 h-[calc(100dvh-4rem)] overflow-hidden flex flex-col min-h-0" : "flex-1 w-full px-4 md:px-6 py-6 md:py-8 pb-32 md:pb-8"}>
+                    {!isPdvPage && <Breadcrumbs />}
                     {children}
                     <SpeedInsights />
                 </main>
 
-                <footer className="hidden md:block border-t bg-card text-card-foreground py-6">
-                    <div className="container mx-auto px-4 text-center text-sm text-slate-500 dark:text-slate-400">
-                        © 2026 HDB SGI - Sistema de Gestión Integral
-                    </div>
-                </footer>
+                {!isPdvPage && (
+                    <footer className="hidden md:block border-t bg-card text-card-foreground py-6">
+                        <div className="container mx-auto px-4 text-center text-sm text-slate-500 dark:text-slate-400">
+                            © 2026 HDB SGI - Sistema de Gestión Integral
+                        </div>
+                    </footer>
+                )}
 
                 <ToastContainer />
             </div>

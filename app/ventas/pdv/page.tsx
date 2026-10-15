@@ -34,7 +34,15 @@ import {
   UserCheck,
   Home,
   ArrowLeft,
+  RefreshCw,
 } from 'lucide-react';
+import {
+  buildCatalogIndex,
+  searchCatalog,
+  CatalogIndex,
+  ProductoPDV,
+} from '@/lib/ventas/pdvSearchEngine';
+import { resolverPrecioProducto } from '@/lib/ventas/priceRules';
 import { showToast } from '@/components/Toast';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import CobroModal from '@/components/ventas/pdv/CobroModal';
@@ -64,22 +72,7 @@ interface ItemCarrito {
   esFallbackPrecio?: boolean;
 }
 
-interface ProductoBuscado {
-  id: string;
-  sku: string;
-  codigoBarras?: string | null;
-  descripcion: string;
-  marca?: string | null;
-  unidad: string;
-  precioBase: number;
-  precioAplicado: number;
-  esFallbackPrecio: boolean;
-  detalleAjuste?: string;
-  ivaPorcentaje: number;
-  costo: number;
-  stockActual: number;
-  esCoincidenciaExacta?: boolean;
-}
+type ProductoBuscado = ProductoPDV;
 
 interface ListaPrecioItem {
   id: string;
@@ -89,6 +82,7 @@ interface ListaPrecioItem {
   valorAjuste: number;
   esPredeterminada: boolean;
   ivaDiscriminado?: boolean;
+  orden?: number | null;
 }
 
 export default function PdvPage() {
@@ -121,17 +115,18 @@ export default function PdvPage() {
   const [carrito, setCarrito] = useState<ItemCarrito[]>([]);
   const [descuentoGlobal, setDescuentoGlobal] = useState<number>(0);
 
+  // Catálogo completo e índice de búsqueda en memoria
+  const [rawCatalogo, setRawCatalogo] = useState<ProductoPDV[]>([]);
+  const [catalogIndex, setCatalogIndex] = useState<CatalogIndex | null>(null);
+  const [isLoadingCatalogo, setIsLoadingCatalogo] = useState<boolean>(true);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [displayLimit, setDisplayLimit] = useState<number>(50);
+  const [totalResultados, setTotalResultados] = useState<number>(0);
+
   // Búsqueda de productos y catálogo
   const [searchQuery, setSearchQuery] = useState('');
-  const [resultadosBusqueda, setResultadosBusqueda] = useState<ProductoBuscado[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const [resultadosBusqueda, setResultadosBusqueda] = useState<ProductoPDV[]>([]);
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
-
-  // Refs para control de concurrencia y carrera en búsqueda
-  const searchQueryRef = useRef<string>('');
-  const abortControllerRef = useRef<AbortController | null>(null);
-  const searchRequestIdRef = useRef<number>(0);
-  const searchCacheRef = useRef<Map<string, ProductoBuscado[]>>(new Map());
 
   // Modales
   const [showClienteModal, setShowClienteModal] = useState(false);
@@ -144,11 +139,6 @@ export default function PdvPage() {
 
   // Refs de elementos de UI
   const searchInputRef = useRef<HTMLInputElement>(null);
-
-  // Sincronizar ref de query actual
-  useEffect(() => {
-    searchQueryRef.current = searchQuery;
-  }, [searchQuery]);
 
   // 1. Cargar usuario, validar acceso
   useEffect(() => {
@@ -222,123 +212,100 @@ export default function PdvPage() {
     [listasPrecios, listaSeleccionadaId]
   );
 
-  // Helper estricto de coincidencia exacta en frontend para prevenir anomalías visuales
-  const checkIsExactMatch = useCallback((prod: ProductoBuscado, q: string): boolean => {
-    const cleanQ = q.trim();
-    if (!cleanQ) return false;
-    const isNum = /^\d+$/.test(cleanQ);
-    if (isNum) {
-      const unpadded = cleanQ.replace(/^0+/, '') || '0';
-      const padded5 = unpadded.padStart(5, '0');
-      return (
-        prod.sku === unpadded ||
-        prod.sku === padded5 ||
-        prod.sku === cleanQ ||
-        prod.codigoBarras === cleanQ ||
-        prod.codigoBarras === padded5
-      );
+  // 2. Cargar catálogo completo en memoria con soporte offline / sessionStorage
+  const cargarCatalogo = useCallback(async (forceRefresh = false) => {
+    try {
+      if (!forceRefresh) {
+        const cached = sessionStorage.getItem('pdv_catalog_cache_v1');
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            if (Array.isArray(parsed.productos) && parsed.productos.length > 0) {
+              setRawCatalogo(parsed.productos);
+              setIsLoadingCatalogo(false);
+            }
+          } catch (e) {
+            console.error('Error parseando catálogo de sessionStorage:', e);
+          }
+        }
+      }
+
+      const res = await fetch(`/api/ventas/pdv/catalogo?refresh=${forceRefresh ? 'true' : 'false'}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.productos)) {
+          setRawCatalogo(data.productos);
+          try {
+            sessionStorage.setItem(
+              'pdv_catalog_cache_v1',
+              JSON.stringify({
+                productos: data.productos,
+                timestamp: Date.now(),
+                version: data.version,
+              })
+            );
+          } catch (e) {
+            console.warn('No se pudo guardar catálogo en sessionStorage');
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error al cargar catálogo en memoria:', error);
+      showToast('Error cargando catálogo de artículos', 'error');
+    } finally {
+      setIsLoadingCatalogo(false);
+      setIsRefreshing(false);
     }
-    return prod.sku.toUpperCase() === cleanQ.toUpperCase() || prod.codigoBarras === cleanQ;
   }, []);
 
-  // Función principal de búsqueda y carga de catálogo
-  const ejecutarBusqueda = useCallback(async (q: string, listaId: string) => {
-    const trimmed = q.trim();
-
-    // Cancelar cualquier petición previa en vuelo
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    // Incrementar ID de secuencia
-    const currentRequestId = ++searchRequestIdRef.current;
-
-    // Verificar caché en memoria para búsquedas con término
-    const cacheKey = `${trimmed}__${listaId || 'def'}`;
-    if (trimmed && searchCacheRef.current.has(cacheKey)) {
-      const cached = searchCacheRef.current.get(cacheKey)!;
-      // Re-verificar coincidencia exacta con query actual
-      const verified = cached.map((p) => ({
-        ...p,
-        esCoincidenciaExacta: checkIsExactMatch(p, trimmed),
-      }));
-      setResultadosBusqueda(verified);
-      const exactIdx = verified.findIndex((p) => p.esCoincidenciaExacta);
-      setSelectedIndex(exactIdx >= 0 ? exactIdx : 0);
-      setIsSearching(false);
-      return;
-    }
-
-    setIsSearching(true);
-    try {
-      const params = new URLSearchParams({
-        q: trimmed,
-        limit: trimmed ? '25' : '30',
-      });
-      if (listaId) {
-        params.set('listaPrecioId', listaId);
-      }
-
-      const res = await fetch(`/api/ventas/pdv/buscar-productos?${params.toString()}`, {
-        signal: controller.signal,
-      });
-
-      if (!res.ok) throw new Error('Error al consultar productos');
-
-      const data = await res.json();
-
-      // Descartar si llegó desfasado o ya hay una búsqueda más reciente
-      if (currentRequestId !== searchRequestIdRef.current) return;
-      if (trimmed !== searchQueryRef.current.trim()) return;
-
-      const prods: ProductoBuscado[] = (data.productos || []).map((p: ProductoBuscado) => ({
-        ...p,
-        esCoincidenciaExacta: trimmed ? checkIsExactMatch(p, trimmed) : false,
-      }));
-
-      // Si hay término de búsqueda, guardar en caché
-      if (trimmed) {
-        searchCacheRef.current.set(cacheKey, prods);
-      }
-
-      setResultadosBusqueda(prods);
-
-      if (trimmed) {
-        const exactIdx = prods.findIndex((p) => p.esCoincidenciaExacta);
-        setSelectedIndex(exactIdx >= 0 ? exactIdx : prods.length > 0 ? 0 : -1);
-      } else {
-        setSelectedIndex(-1);
-      }
-    } catch (e: any) {
-      if (e.name !== 'AbortError') {
-        console.error('Error buscando productos:', e);
-      }
-    } finally {
-      if (currentRequestId === searchRequestIdRef.current) {
-        setIsSearching(false);
-      }
-    }
-  }, [checkIsExactMatch]);
-
-  // Disparar búsqueda con debounce (40ms para números, 90ms para texto, inmediato si vacío)
   useEffect(() => {
-    const q = searchQuery.trim();
-    if (!q) {
-      ejecutarBusqueda('', listaSeleccionadaId);
+    cargarCatalogo(false);
+  }, [cargarCatalogo]);
+
+  // 3. Indexar catálogo con precios dinámicos según lista de precios actual
+  useEffect(() => {
+    if (rawCatalogo.length === 0) return;
+
+    const productosConPrecios: ProductoPDV[] = rawCatalogo.map((prod) => {
+      const { precio, esFallback, detalleAjuste } = resolverPrecioProducto(prod, listaActual);
+      return {
+        ...prod,
+        precioAplicado: precio,
+        esFallbackPrecio: esFallback,
+        detalleAjuste,
+      };
+    });
+
+    const index = buildCatalogIndex(productosConPrecios);
+    setCatalogIndex(index);
+  }, [rawCatalogo, listaActual]);
+
+  // 4. Búsqueda instantánea sub-milisegundo en memoria
+  useEffect(() => {
+    if (!catalogIndex) {
+      setResultadosBusqueda([]);
+      setTotalResultados(0);
       return;
     }
 
-    const isNum = /^\d+$/.test(q);
-    const delay = isNum ? 40 : 90;
+    const { resultados, exactMatchId, totalEncontrados } = searchCatalog(searchQuery, catalogIndex);
+    setResultadosBusqueda(resultados);
+    setTotalResultados(totalEncontrados);
+    setDisplayLimit(50);
 
-    const timer = setTimeout(() => {
-      ejecutarBusqueda(q, listaSeleccionadaId);
-    }, delay);
+    if (searchQuery.trim()) {
+      const exactIdx = exactMatchId ? resultados.findIndex((p) => p.id === exactMatchId) : -1;
+      setSelectedIndex(exactIdx >= 0 ? exactIdx : resultados.length > 0 ? 0 : -1);
+    } else {
+      setSelectedIndex(-1);
+    }
+  }, [searchQuery, catalogIndex]);
 
-    return () => clearTimeout(timer);
-  }, [searchQuery, listaSeleccionadaId, ejecutarBusqueda]);
+  // Paginado progresivo de resultados para renderizado a 60 FPS
+  const resultadosVisibles = useMemo(
+    () => resultadosBusqueda.slice(0, displayLimit),
+    [resultadosBusqueda, displayLimit]
+  );
 
   // Manejo de teclado global (F2 foco búsqueda, F4 cobrar, F8 historial, F9 vendedor, F11 fullscreen)
   useEffect(() => {
@@ -560,39 +527,40 @@ export default function PdvPage() {
       setListaCambioPendiente(nuevaListaId);
     } else {
       setListaSeleccionadaId(nuevaListaId);
-      searchCacheRef.current.clear();
     }
   };
 
-  const confirmarCambioLista = async () => {
+  const confirmarCambioLista = () => {
     if (!listaCambioPendiente) return;
     const nuevaId = listaCambioPendiente;
     setListaCambioPendiente(null);
     setListaSeleccionadaId(nuevaId);
-    searchCacheRef.current.clear();
 
-    try {
-      const res = await fetch('/api/ventas/pdv/calcular', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: carrito,
-          listaPrecioId: nuevaId,
-          descuentoPorcentaje: descuentoGlobal,
-        }),
-      });
-
-      if (res.ok) {
-        const calculo = await res.json();
-        if (calculo.items) {
-          setCarrito(calculo.items);
-          showToast('Precios recalculados según la nueva lista', 'success');
-        }
-      }
-    } catch (e) {
-      console.error(e);
-      showToast('Error al recalcular precios', 'error');
-    }
+    const nuevaLista = listasPrecios.find((l) => l.id === nuevaId);
+    setCarrito((prev) =>
+      prev.map((item) => {
+        if (item.precioModificado) return item; // Mantener modificaciones manuales autorizadas
+        const rawProd = rawCatalogo.find((p) => p.id === item.productoId);
+        const { precio, esFallback } = resolverPrecioProducto(
+          rawProd || {
+            precioBase: item.precioOriginal,
+            costo: 0,
+            ivaPorcentaje: item.ivaPorcentaje,
+          },
+          nuevaLista
+        );
+        const subtotal =
+          Math.round((item.cantidad * precio * (1 - item.descuentoPorcentaje / 100)) * 100) / 100;
+        return {
+          ...item,
+          precioOriginal: precio,
+          precioUnitario: precio,
+          subtotal,
+          esFallbackPrecio: esFallback,
+        };
+      })
+    );
+    showToast('Precios recalculados según la nueva lista', 'success');
   };
 
   // Totales calculados en el cliente según IVA Discriminado
@@ -755,7 +723,7 @@ export default function PdvPage() {
       className={`transition-all duration-200 ${
         isFullscreen
           ? 'fixed inset-0 z-[70] bg-slate-50 dark:bg-slate-950 flex flex-col h-screen w-screen overflow-hidden p-2 sm:p-2.5'
-          : 'flex flex-col h-[calc(100vh-130px)] min-h-[640px] space-y-2 pb-2'
+          : 'flex flex-col h-full w-full min-h-0 overflow-hidden space-y-1.5'
       }`}
     >
       {/* Pestañas de Navegación (ocultas en pantalla completa) */}
@@ -882,8 +850,27 @@ export default function PdvPage() {
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                 <Search className="w-3.5 h-3.5 text-indigo-500" />
                 <span>Búsqueda de Artículos</span>
+                {totalResultados > 0 && (
+                  <span className="text-[10px] text-slate-400 font-normal">
+                    ({totalResultados.toLocaleString()} disp.)
+                  </span>
+                )}
               </label>
-              <span className="text-[10px] text-slate-400 font-mono">F2 para enfocar</span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsRefreshing(true);
+                    cargarCatalogo(true);
+                  }}
+                  disabled={isRefreshing || isLoadingCatalogo}
+                  className="p-1 text-slate-400 hover:text-indigo-600 rounded-md transition-colors"
+                  title="Actualizar catálogo de productos"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-indigo-600' : ''}`} />
+                </button>
+                <span className="text-[10px] text-slate-400 font-mono">F2 para enfocar</span>
+              </div>
             </div>
 
             <div className="relative">
@@ -897,104 +884,124 @@ export default function PdvPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full h-9 pl-9 pr-8 bg-slate-100/60 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:bg-background focus:outline-hidden focus:ring-1 focus:ring-indigo-500 transition-all"
               />
-              {isSearching && (
+              {isLoadingCatalogo && (
                 <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-500 absolute right-2.5 top-1/2 -translate-y-1/2" />
               )}
             </div>
 
             <div className="flex items-center justify-between text-[10px] text-slate-400 px-0.5">
-              <span>{searchQuery ? `Filtrando por "${searchQuery}"` : 'Catálogo activo (sin búsqueda)'}</span>
+              <span>
+                {searchQuery
+                  ? `Filtrando: ${totalResultados.toLocaleString()} de ${rawCatalogo.length.toLocaleString()}`
+                  : `Catálogo completo: ${totalResultados.toLocaleString()} artículos`}
+              </span>
               <span>Enter: agregar • ↑↓: navegar</span>
             </div>
           </div>
 
-          {/* Lista de Resultados de Catálogo */}
-          <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1">
-            {isSearching && resultadosBusqueda.length === 0 ? (
+          {/* Lista de Resultados de Catálogo con Scroll Progresivo de 4.000 artículos */}
+          <div
+            onScroll={(e) => {
+              const el = e.currentTarget;
+              if (el.scrollTop + el.clientHeight >= el.scrollHeight - 200) {
+                setDisplayLimit((prev) => Math.min(prev + 50, resultadosBusqueda.length));
+              }
+            }}
+            className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-1"
+          >
+            {isLoadingCatalogo && rawCatalogo.length === 0 ? (
               <div className="py-12 flex flex-col items-center justify-center text-slate-400 gap-2">
                 <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
-                <span className="text-xs">Cargando catálogo...</span>
+                <span className="text-xs">Cargando catálogo en memoria...</span>
               </div>
-            ) : resultadosBusqueda.length > 0 ? (
-              resultadosBusqueda.map((prod, idx) => {
-                const isSelected = selectedIndex === idx;
-                const isExact = prod.esCoincidenciaExacta;
+            ) : resultadosVisibles.length > 0 ? (
+              <>
+                {resultadosVisibles.map((prod, idx) => {
+                  const isSelected = selectedIndex === idx;
+                  const isExact = prod.esCoincidenciaExacta;
 
-                return (
-                  <div
-                    key={prod.id}
-                    onClick={() => {
-                      agregarProductoAlCarrito(prod);
-                      setSearchQuery('');
-                    }}
-                    className={`p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between gap-2.5 ${
-                      isExact
-                        ? 'border-emerald-400/80 dark:border-emerald-600/80 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-xs ring-1 ring-emerald-400/30'
-                        : isSelected
-                        ? 'border-indigo-300 dark:border-indigo-700 bg-indigo-50/50 dark:bg-indigo-950/40 shadow-xs ring-1 ring-indigo-400/30'
-                        : 'border-slate-200/70 dark:border-slate-800 bg-background/60 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/80 dark:hover:bg-slate-900/40'
-                    }`}
-                  >
-                    <div className="space-y-0.5 flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="font-mono text-xs font-bold text-slate-900 dark:text-slate-100">
-                          {prod.sku}
-                        </span>
-
-                        {isExact && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-semibold border border-emerald-300/50 dark:border-emerald-700/50 flex items-center gap-1">
-                            <CheckCircle2 className="w-2.5 h-2.5" />
-                            Exacto [Enter]
+                  return (
+                    <div
+                      key={prod.id}
+                      onClick={() => {
+                        agregarProductoAlCarrito(prod);
+                        setSearchQuery('');
+                      }}
+                      className={`p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between gap-2.5 ${
+                        isExact
+                          ? 'border-emerald-400/80 dark:border-emerald-600/80 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-xs ring-1 ring-emerald-400/30'
+                          : isSelected
+                          ? 'border-indigo-300 dark:border-indigo-700 bg-indigo-50/50 dark:bg-indigo-950/40 shadow-xs ring-1 ring-indigo-400/30'
+                          : 'border-slate-200/70 dark:border-slate-800 bg-background/60 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/80 dark:hover:bg-slate-900/40'
+                      }`}
+                    >
+                      <div className="space-y-0.5 flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="font-mono text-xs font-bold text-slate-900 dark:text-slate-100">
+                            {prod.sku}
                           </span>
-                        )}
 
-                        {prod.marca && (
-                          <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium truncate max-w-[90px]">
-                            {prod.marca}
-                          </span>
-                        )}
+                          {isExact && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-semibold border border-emerald-300/50 dark:border-emerald-700/50 flex items-center gap-1">
+                              <CheckCircle2 className="w-2.5 h-2.5" />
+                              Exacto [Enter]
+                            </span>
+                          )}
+
+                          {prod.marca && (
+                            <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium truncate max-w-[90px]">
+                              {prod.marca}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="text-xs font-medium text-slate-800 dark:text-slate-200 truncate">
+                          {prod.descripcion}
+                        </div>
+
+                        <div className="flex items-center gap-2.5 text-[10px] text-slate-400">
+                          {prod.codigoBarras && (
+                            <span className="flex items-center gap-1">
+                              <Barcode className="w-3 h-3 text-slate-400" />
+                              {prod.codigoBarras}
+                            </span>
+                          )}
+                          <span>Stock: <strong className="text-slate-600 dark:text-slate-300">{prod.stockActual}</strong> {prod.unidad}</span>
+                          {prod.esFallbackPrecio && (
+                            <span className="text-amber-600 dark:text-amber-400 font-medium">(Base)</span>
+                          )}
+                        </div>
                       </div>
 
-                      <div className="text-xs font-medium text-slate-800 dark:text-slate-200 truncate">
-                        {prod.descripcion}
-                      </div>
-
-                      <div className="flex items-center gap-2.5 text-[10px] text-slate-400">
-                        {prod.codigoBarras && (
-                          <span className="flex items-center gap-1">
-                            <Barcode className="w-3 h-3 text-slate-400" />
-                            {prod.codigoBarras}
-                          </span>
+                      <div className="text-right shrink-0">
+                        <div className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                          {formatARS(prod.precioAplicado > 0 ? prod.precioAplicado : prod.precioBase)}
+                        </div>
+                        {esIvaDiscriminado && (
+                          <div className="text-[9px] text-slate-400">Neto s/IVA</div>
                         )}
-                        <span>Stock: <strong className="text-slate-600 dark:text-slate-300">{prod.stockActual}</strong> {prod.unidad}</span>
-                        {prod.esFallbackPrecio && (
-                          <span className="text-amber-600 dark:text-amber-400 font-medium">(Base)</span>
-                        )}
+                        <button
+                          type="button"
+                          className={`mt-1 h-6 px-2.5 rounded-md font-semibold text-[11px] flex items-center gap-1 transition-colors ${
+                            isExact
+                              ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                              : 'bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white text-slate-700 dark:text-slate-300'
+                          }`}
+                        >
+                          <Plus className="w-3 h-3" />
+                          <span>Agregar</span>
+                        </button>
                       </div>
                     </div>
+                  );
+                })}
 
-                    <div className="text-right shrink-0">
-                      <div className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                        {formatARS(prod.precioAplicado > 0 ? prod.precioAplicado : prod.precioBase)}
-                      </div>
-                      {esIvaDiscriminado && (
-                        <div className="text-[9px] text-slate-400">Neto s/IVA</div>
-                      )}
-                      <button
-                        type="button"
-                        className={`mt-1 h-6 px-2.5 rounded-md font-semibold text-[11px] flex items-center gap-1 transition-colors ${
-                          isExact
-                            ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                            : 'bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white text-slate-700 dark:text-slate-300'
-                        }`}
-                      >
-                        <Plus className="w-3 h-3" />
-                        <span>Agregar</span>
-                      </button>
-                    </div>
+                {resultadosVisibles.length < totalResultados && (
+                  <div className="py-2.5 text-center text-[10px] text-slate-400">
+                    Mostrando {resultadosVisibles.length} de {totalResultados.toLocaleString()} productos. Desplácese hacia abajo para ver más...
                   </div>
-                );
-              })
+                )}
+              </>
             ) : (
               <div className="py-12 text-center text-slate-400 text-xs space-y-1">
                 <Package className="w-7 h-7 text-slate-300 dark:text-slate-700 mx-auto" />
