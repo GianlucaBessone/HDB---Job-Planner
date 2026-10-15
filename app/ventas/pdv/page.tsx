@@ -1238,26 +1238,28 @@ export default function PdvPage() {
       />
 
       {/* Modal de Cobro y Pagos (Soporta cambiar cliente directamente y discrimina IVA) */}
-      <CobroModal
-        isOpen={showCobroModal}
-        onClose={() => setShowCobroModal(false)}
-        cliente={cliente}
-        totalVenta={totalFinal}
-        subtotal={subtotalLineas}
-        descuentoMonto={descuentoGlobalMonto}
-        impuestosMonto={impuestosEstimados}
-        itemsCount={carrito.length}
-        listaPrecioNombre={listaActual?.nombre || 'General'}
-        ivaDiscriminado={esIvaDiscriminado}
-        onCambiarCliente={(nuevoCli) => {
-          setCliente(nuevoCli);
-          if (nuevoCli.listaPrecioId && nuevoCli.listaPrecioId !== listaSeleccionadaId) {
-            handleSolicitarCambioLista(nuevoCli.listaPrecioId);
-          }
-          showToast(`Cliente actualizado a: ${nuevoCli.nombre}`, 'info');
-        }}
-        onConfirmarVenta={handleConfirmarVentaBackend}
-      />
+      {showCobroModal && (
+        <CobroModal
+          isOpen={showCobroModal}
+          onClose={() => setShowCobroModal(false)}
+          cliente={cliente}
+          totalVenta={totalFinal}
+          subtotal={subtotalLineas}
+          descuentoMonto={descuentoGlobalMonto}
+          impuestosMonto={impuestosEstimados}
+          itemsCount={carrito.length}
+          listaPrecioNombre={listaActual?.nombre || 'General'}
+          ivaDiscriminado={esIvaDiscriminado}
+          onCambiarCliente={(nuevoCli) => {
+            setCliente(nuevoCli);
+            if (nuevoCli.listaPrecioId && nuevoCli.listaPrecioId !== listaSeleccionadaId) {
+              handleSolicitarCambioLista(nuevoCli.listaPrecioId);
+            }
+            showToast(`Cliente actualizado a: ${nuevoCli.nombre}`, 'info');
+          }}
+          onConfirmarVenta={handleConfirmarVentaBackend}
+        />
+      )}
 
       {/* Modal de Comprobante / Impresión */}
       <ComprobanteModal

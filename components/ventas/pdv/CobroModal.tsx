@@ -63,6 +63,13 @@ interface CobroModalProps {
   }) => Promise<any>;
 }
 
+const formatARS = (val: number) =>
+  new Intl.NumberFormat('es-AR', {
+    style: 'currency',
+    currency: 'ARS',
+    minimumFractionDigits: 2,
+  }).format(val || 0);
+
 export default function CobroModal({
   isOpen,
   onClose,
@@ -100,15 +107,6 @@ export default function CobroModal({
       setIsSubmitting(false);
     }
   }, [isOpen, totalVenta]);
-
-  if (!isOpen) return null;
-
-  const formatARS = (val: number) =>
-    new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: 'ARS',
-      minimumFractionDigits: 2,
-    }).format(val || 0);
 
   // Cálculos de pagos
   const totalPagos = Math.round(pagos.reduce((acc, p) => acc + (Number(p.monto) || 0), 0) * 100) / 100;
@@ -248,7 +246,6 @@ export default function CobroModal({
     }
   }, [
     saldoRestante,
-    formatARS,
     montoCuentaCorriente,
     cliente,
     pagoEfectivo,
@@ -279,6 +276,8 @@ export default function CobroModal({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, isSubmitting, saldoRestante, handleConfirmar, onClose]);
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
