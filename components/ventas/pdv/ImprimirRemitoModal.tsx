@@ -97,19 +97,21 @@ export default function ImprimirRemitoModal({
   const items = remito.items || [];
   const isVentaAnulada = remito.venta?.estado === 'ANULADA' || remito.estado === 'ANULADO';
 
-  // Calcular items pendientes si vienen en la venta asociada (sin romper si no están)
-  const itemsPendientes = (remito.venta?.items || [])
-    .map((it) => {
-      const cant = Number(it.cantidad) || 0;
-      const entregada = Number(it.cantidadEntregada) || 0;
-      const cancelada = Number(it.cantidadCancelada) || 0;
-      const pendiente = Math.max(0, cant - entregada - cancelada);
-      return {
-        ...it,
-        cantidadPendiente: Math.round(pendiente * 1000) / 1000,
-      };
-    })
-    .filter((it) => it.cantidadPendiente > 0);
+  // Calcular items pendientes si vienen en la venta asociada (sin romper si no están; omitir si la venta está anulada)
+  const itemsPendientes = isVentaAnulada
+    ? []
+    : (remito.venta?.items || [])
+        .map((it) => {
+          const cant = Number(it.cantidad) || 0;
+          const entregada = Number(it.cantidadEntregada) || 0;
+          const cancelada = Number(it.cantidadCancelada) || 0;
+          const pendiente = Math.max(0, cant - entregada - cancelada);
+          return {
+            ...it,
+            cantidadPendiente: Math.round(pendiente * 1000) / 1000,
+          };
+        })
+        .filter((it) => it.cantidadPendiente > 0);
 
   const clienteNombre = remito.clienteNombre || 'Consumidor Final';
   const vendedor = remito.vendedorNombre || 'Personal de Ventas';
@@ -122,6 +124,10 @@ export default function ImprimirRemitoModal({
         dangerouslySetInnerHTML={{
           __html: `
         @media print {
+          @page {
+            size: auto;
+            margin: 10mm;
+          }
           body * {
             visibility: hidden !important;
           }
@@ -129,12 +135,12 @@ export default function ImprimirRemitoModal({
             visibility: visible !important;
           }
           #remito-print-area {
-            position: fixed !important;
+            position: absolute !important;
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
             max-width: 100% !important;
-            padding: 12mm 15mm !important;
+            padding: 0 !important;
             margin: 0 !important;
             background: white !important;
             color: black !important;
@@ -208,7 +214,7 @@ export default function ImprimirRemitoModal({
                 </div>
 
                 {/* Letra 'R' formato oficial de remito */}
-                <div className="hidden sm:flex flex-col items-center justify-center border-2 border-slate-900 px-3 py-1 text-center shrink-0">
+                <div className="flex flex-col items-center justify-center border-2 border-slate-900 px-3 py-1 text-center shrink-0">
                   <span className="text-2xl font-black leading-none text-slate-900">R</span>
                   <span className="text-[8px] font-bold tracking-tight text-slate-600 uppercase mt-0.5">
                     CÓD. 091

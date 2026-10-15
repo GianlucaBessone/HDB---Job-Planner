@@ -50,6 +50,7 @@ export default function SeleccionarClienteModal({
     const el = itemRefs.current[index];
     if (el) {
       el.focus();
+      el.scrollIntoView?.({ block: 'nearest' });
       return;
     }
 
@@ -59,6 +60,7 @@ export default function SeleccionarClienteModal({
       if (items && items.length > 0) {
         const target = items[Math.min(index, items.length - 1)] || items[0];
         target?.focus();
+        target?.scrollIntoView?.({ block: 'nearest' });
       }
     }
   }, []);
@@ -143,6 +145,28 @@ export default function SeleccionarClienteModal({
                   e.preventDefault();
                   const targetIdx = search.trim().length > 0 && clientes.length > 0 ? 1 : 0;
                   focusItem(targetIdx);
+                } else if (e.key === 'Enter') {
+                  e.preventDefault();
+                  if (search.trim().length > 0 && clientes.length > 0) {
+                    const c = clientes[0];
+                    onSeleccionar({
+                      id: c.id,
+                      nombre: c.nombre,
+                      identificacion: c.telefono || c.email || null,
+                      listaPrecioId: c.listaPrecioId || null,
+                      listaPrecio: c.listaPrecio || null,
+                    });
+                    onClose();
+                  } else {
+                    onSeleccionar({
+                      id: null,
+                      nombre: 'Consumidor Final',
+                      identificacion: null,
+                      listaPrecioId: null,
+                      listaPrecio: null,
+                    });
+                    onClose();
+                  }
                 } else if (e.key === 'Escape') {
                   e.preventDefault();
                   onClose();
@@ -255,9 +279,11 @@ export default function SeleccionarClienteModal({
                       });
                       onClose();
                     } else if (e.key === 'ArrowDown' || (e.key === 'Tab' && !e.shiftKey)) {
+                      e.preventDefault();
                       if (refIndex < clientes.length) {
-                        e.preventDefault();
                         focusItem(refIndex + 1);
+                      } else {
+                        focusItem(0);
                       }
                     } else if (e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey)) {
                       e.preventDefault();

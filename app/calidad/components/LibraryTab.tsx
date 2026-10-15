@@ -25,7 +25,8 @@ import {
     FolderPlus,
     Filter,
     HelpCircle,
-    Download
+    Download,
+    Trash2
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 import DocumentDetailModal from './DocumentDetailModal';
@@ -36,13 +37,19 @@ import QuickUploadDocModal from './QuickUploadDocModal';
 let cachedLibraryDocs: any[] | null = null;
 let cachedAccessModules: any[] | null = null;
 
-export default function LibraryTab({ user }: { user: any }) {
+export default function LibraryTab({ user, initialDocId }: { user: any; initialDocId?: string | null }) {
     const [viewMode, setViewMode] = useState<'structured' | 'grid'>('structured');
     const [modules, setModules] = useState<any[]>([]);
     const [docs, setDocs] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
+    const [selectedDocId, setSelectedDocId] = useState<string | null>(initialDocId || null);
+
+    useEffect(() => {
+        if (initialDocId) {
+            setSelectedDocId(initialDocId);
+        }
+    }, [initialDocId]);
 
     // Filter controls
     const [selectedModuleFilter, setSelectedModuleFilter] = useState<string>('all');
@@ -174,6 +181,28 @@ export default function LibraryTab({ user }: { user: any }) {
         } catch (e) {
             console.error(e);
             showToast('Error de red al clasificar', 'error');
+        }
+    };
+
+    const handleDeleteDoc = async (docId: string, codigo: string, titulo: string) => {
+        const confirmMsg = `¿Está seguro de eliminar definitivamente el documento "${codigo}: ${titulo}" y TODO su historial de revisiones?\n\nEsta acción no dejará registros en el sistema.`;
+        if (!window.confirm(confirmMsg)) return;
+
+        try {
+            const res = await safeApiRequest(`/api/documentos/${docId}`, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                cachedLibraryDocs = null;
+                showToast(`Documento ${codigo} e historial eliminados correctamente`, 'success');
+                loadData();
+            } else {
+                const err = await res.json();
+                showToast(err.error || 'Error al eliminar documento', 'error');
+            }
+        } catch (e) {
+            console.error(e);
+            showToast('Error de red al eliminar documento', 'error');
         }
     };
 
@@ -534,13 +563,31 @@ export default function LibraryTab({ user }: { user: any }) {
                                                                                     </p>
                                                                                 </div>
 
-                                                                                <div className="flex items-center gap-1 shrink-0 text-slate-400 group-hover/item:text-primary">
+                                                                                <div className="flex items-center gap-1.5 shrink-0 text-slate-400">
                                                                                     {hasFile && (
-                                                                                        <span title="Archivo adjunto">
-                                                                                            <Download className="w-3.5 h-3.5 text-emerald-500" />
-                                                                                        </span>
+                                                                                        <button
+                                                                                            type="button"
+                                                                                            onClick={(e) => {
+                                                                                                e.stopPropagation();
+                                                                                                window.open(`/api/documentos/${doc.id}/view`, '_blank');
+                                                                                            }}
+                                                                                            className="p-1 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-lg transition-colors"
+                                                                                            title="Visualizar documento adjunto online"
+                                                                                        >
+                                                                                            <Eye className="w-3.5 h-3.5 text-emerald-500" />
+                                                                                        </button>
                                                                                     )}
-                                                                                    <Eye className="w-3.5 h-3.5" />
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        onClick={(e) => {
+                                                                                            e.stopPropagation();
+                                                                                            handleDeleteDoc(doc.id, doc.codigoDocumental, doc.titulo);
+                                                                                        }}
+                                                                                        className="opacity-0 group-hover/item:opacity-100 p-1 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition-all"
+                                                                                        title="Eliminar documento e historial sin registro"
+                                                                                    >
+                                                                                        <Trash2 className="w-3.5 h-3.5 text-slate-400 hover:text-rose-500" />
+                                                                                    </button>
                                                                                 </div>
                                                                             </div>
                                                                         );
@@ -641,7 +688,32 @@ export default function LibraryTab({ user }: { user: any }) {
                                                     {doc.titulo}
                                                 </p>
                                             </div>
-                                            <Eye className="w-4 h-4 text-slate-400 group-hover:text-primary shrink-0 mt-0.5" />
+                                            <div className="flex items-center gap-1 shrink-0 mt-0.5">
+                                                {doc.versions?.[0]?.files?.length > 0 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            window.open(`/api/documentos/${doc.id}/view`, '_blank');
+                                                        }}
+                                                        className="p-1 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-lg transition-colors"
+                                                        title="Visualizar documento online"
+                                                    >
+                                                        <Eye className="w-3.5 h-3.5 text-emerald-500" />
+                                                    </button>
+                                                )}
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeleteDoc(doc.id, doc.codigoDocumental, doc.titulo);
+                                                    }}
+                                                    className="p-1 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition-colors"
+                                                    title="Eliminar documento e historial sin registro"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
                                         </div>
 
                                         <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800/80" onClick={e => e.stopPropagation()}>
@@ -726,13 +798,34 @@ export default function LibraryTab({ user }: { user: any }) {
                                     <span className="text-xs font-bold text-slate-400">
                                         v{doc.versionActual || `${doc.versionMayor}.${doc.versionMenor}`}
                                     </span>
-                                    <button
-                                        onClick={() => setSelectedDocId(doc.id)}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-black text-primary hover:bg-primary/10 rounded-xl transition-colors"
-                                    >
-                                        <Eye className="w-3.5 h-3.5" />
-                                        <span>Ver Detalle</span>
-                                    </button>
+                                    <div className="flex items-center gap-1.5">
+                                        {doc.versions?.[0]?.files?.length > 0 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => window.open(`/api/documentos/${doc.id}/view`, '_blank')}
+                                                className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 rounded-xl transition-colors"
+                                                title="Visualizar documento online"
+                                            >
+                                                <Eye className="w-3.5 h-3.5 text-emerald-500" />
+                                                <span className="hidden sm:inline">Ver Online</span>
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={() => setSelectedDocId(doc.id)}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-black text-primary hover:bg-primary/10 rounded-xl transition-colors"
+                                        >
+                                            <Eye className="w-3.5 h-3.5" />
+                                            <span>Detalle</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleDeleteDoc(doc.id, doc.codigoDocumental, doc.titulo)}
+                                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl transition-colors"
+                                            title="Eliminar documento e historial sin registro"
+                                        >
+                                            <Trash2 className="w-4 h-4 hover:text-rose-500" />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         );

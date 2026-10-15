@@ -117,7 +117,7 @@ ${backupDocsText}
                     titulo: `Capacitación IA: ${doc.titulo}`,
                     estado: 'pendiente',
                     tipoContenido: 'cuestionario',
-                    urlContenido: `/calidad/documentos/${documentId}`,
+                    urlContenido: `/calidad?tab=library&docId=${documentId}`,
                     cuestionario: trainingContent.cuestionario as any,
                     observaciones: `Capacitación autogenerada para el procedimiento ${doc.codigoDocumental}.`
                 }

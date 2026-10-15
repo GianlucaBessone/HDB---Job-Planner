@@ -171,7 +171,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
                     userIds: notifiedUserIds,
                     title: "Revisión Documental Requerida",
                     message: `El documento "${doc.codigoDocumental}" ha sido modificado y requiere tu firma/revisión nuevamente.`,
-                    data: { route: `/calidad/documentos/${doc.id}` }
+                    data: { route: `/calidad?tab=library&docId=${doc.id}` }
                 }).catch(e => console.error("Error sending push notification to reviewers:", e));
 
                 for (const targetId of notifiedUserIds) {
@@ -209,33 +209,121 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
 export async function DELETE(req: Request, { params }: { params: { id: string } }) {
     try {
-        const doc = await prisma.controlledDocument.findUnique({ where: { id: params.id } });
+        const doc = await prisma.controlledDocument.findUnique({
+            where: { id: params.id },
+            include: { versions: { select: { id: true } } }
+        });
+
         if (!doc) {
             return NextResponse.json({ error: 'Documento no encontrado' }, { status: 404 });
         }
 
-        // Don't allow deleting vigente documents — must obsolete first
-        if (doc.estado === 'vigente') {
-            return NextResponse.json({ error: 'No se puede eliminar un documento vigente. Primero debe marcarlo como obsoleto.' }, { status: 400 });
-        }
+        const versionIds = doc.versions.map(v => v.id);
 
-        const { searchParams } = new URL(req.url);
-        const userId = searchParams.get('userId');
-        const userName = searchParams.get('userName');
+        await prisma.$transaction(async (tx) => {
+            // 1. Desvincular documentos que lo tengan como documentoReemplazadoId
+            await tx.controlledDocument.updateMany({
+                where: { documentoReemplazadoId: params.id },
+                data: { documentoReemplazadoId: null }
+            });
 
-        await prisma.controlledDocument.delete({ where: { id: params.id } });
+            // 2. Desvincular OSChecklists asociados a las versiones
+            if (versionIds.length > 0) {
+                await tx.oSChecklist.updateMany({
+                    where: { documentVersionId: { in: versionIds } },
+                    data: { documentVersionId: null }
+                });
+            }
 
-        await logAudit({
-            userId: userId || undefined,
-            userName: userName || undefined,
-            action: 'DELETE',
-            entity: 'CONTROLLED_DOCUMENT',
-            entityId: params.id,
-            oldValue: doc,
+            // 3. Eliminar asignaciones a Órdenes de Servicio
+            await tx.ordenServicioDocumento.deleteMany({
+                where: {
+                    OR: [
+                        { documentId: params.id },
+                        ...(versionIds.length > 0 ? [{ versionId: { in: versionIds } }] : [])
+                    ]
+                }
+            });
+
+            // 4. Eliminar capacitaciones y competencias asociadas
+            await tx.technicianTraining.deleteMany({
+                where: {
+                    OR: [
+                        { documentId: params.id },
+                        ...(versionIds.length > 0 ? [{ versionId: { in: versionIds } }] : [])
+                    ]
+                }
+            });
+
+            await tx.technicianCompetency.deleteMany({
+                where: { documentId: params.id }
+            });
+
+            // 5. Eliminar documentación afectada en NC / SGI
+            await tx.documentacionAfectada.deleteMany({
+                where: { documentoId: params.id }
+            });
+
+            // 6. Eliminar impresiones controladas
+            await tx.documentPrint.deleteMany({
+                where: {
+                    OR: [
+                        { documentId: params.id },
+                        ...(versionIds.length > 0 ? [{ versionId: { in: versionIds } }] : [])
+                    ]
+                }
+            });
+
+            // 7. Eliminar checklists de documentos
+            await tx.documentChecklist.deleteMany({
+                where: { documentId: params.id }
+            });
+
+            // 8. Eliminar reglas de aplicabilidad
+            await tx.documentApplicabilityRule.deleteMany({
+                where: { documentId: params.id }
+            });
+
+            // 9. Eliminar alertas
+            await tx.documentAlert.deleteMany({
+                where: { documentId: params.id }
+            });
+
+            // 10. Eliminar confirmaciones de lectura
+            await tx.documentReadConfirmation.deleteMany({
+                where: { documentId: params.id }
+            });
+
+            // 11. Eliminar archivos adjuntos de las versiones
+            if (versionIds.length > 0) {
+                await tx.documentFile.deleteMany({
+                    where: { versionId: { in: versionIds } }
+                });
+            }
+
+            // 12. Eliminar versiones completas (historial)
+            await tx.documentVersion.deleteMany({
+                where: { documentId: params.id }
+            });
+
+            // 13. Eliminar el documento controlado
+            await tx.controlledDocument.delete({
+                where: { id: params.id }
+            });
+
+            // 14. Purgar registros de auditoría y firmas ("sin registro")
+            await tx.documentSignatureAudit.deleteMany({
+                where: { DocumentID: params.id }
+            });
+
+            await tx.auditLog.deleteMany({
+                where: { entityId: params.id }
+            });
         });
 
-        return NextResponse.json({ ok: true });
+        return NextResponse.json({ ok: true, message: 'Documento e historial de versiones eliminados sin registro' });
     } catch (e: any) {
+        console.error('Error al eliminar documento:', e);
         return NextResponse.json({ error: 'Error al eliminar documento', details: e.message }, { status: 500 });
     }
 }

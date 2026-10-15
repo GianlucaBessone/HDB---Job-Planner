@@ -5,6 +5,9 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
     try {
+        const { searchParams } = new URL(req.url);
+        const isInline = searchParams.get('inline') === 'true';
+
         const doc = await prisma.controlledDocument.findUnique({
             where: { id: params.id },
             include: {
@@ -13,8 +16,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
                     take: 1,
                     include: {
                         files: {
-                            where: { esPrincipal: true },
-                            take: 1
+                            orderBy: { createdAt: 'desc' }
                         }
                     }
                 }
@@ -25,23 +27,32 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
             return NextResponse.json({ error: 'Archivo no encontrado' }, { status: 404 });
         }
 
-        const file = doc.versions[0].files[0];
-        let base64Data = file.url;
+        const file = doc.versions[0].files.find(f => f.esPrincipal) || doc.versions[0].files[0];
+        let base64Data = file.url || '';
+        let mimeType = file.tipoArchivo || 'application/octet-stream';
 
-        // If it starts with a data URI prefix, extract it
+        // Robust base64 extraction
         if (base64Data.startsWith('data:')) {
-            const matches = base64Data.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.*)$/);
-            if (matches && matches.length === 3) {
-                base64Data = matches[2];
+            const commaIndex = base64Data.indexOf(',');
+            if (commaIndex !== -1) {
+                const header = base64Data.slice(0, commaIndex);
+                base64Data = base64Data.slice(commaIndex + 1);
+                const mimeMatch = header.match(/^data:([^;]+)/);
+                if (mimeMatch) {
+                    mimeType = mimeMatch[1];
+                }
             }
         }
 
         const buffer = Buffer.from(base64Data, 'base64');
+        const disposition = isInline ? 'inline' : 'attachment';
 
         return new Response(buffer, {
             headers: {
-                'Content-Type': file.tipoArchivo,
-                'Content-Disposition': `attachment; filename="${file.nombreArchivo}"`
+                'Content-Type': mimeType,
+                'Content-Disposition': `${disposition}; filename="${encodeURIComponent(file.nombreArchivo)}"`,
+                'Content-Length': buffer.length.toString(),
+                'Cache-Control': isInline ? 'public, max-age=3600' : 'no-cache'
             }
         });
     } catch (e: any) {

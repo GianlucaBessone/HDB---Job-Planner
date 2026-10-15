@@ -14,11 +14,14 @@ export async function POST(req: Request) {
             fileContent,
             subAccessId,
             titulo,
-            tipoDocumento = 'DOC',
+            tipoDocumento = 'PG',
             area = 'GLB',
-            nivelCriticidad = 'media',
             observaciones,
             codigoDocumental,
+            revisadorId,
+            revisadorNombre,
+            aprobadorId,
+            aprobadorNombre,
             userId,
             userName
         } = body;
@@ -28,6 +31,25 @@ export async function POST(req: Request) {
         }
 
         const docTitle = (titulo || fileName.replace(/\.[^/.]+$/, '')).trim();
+
+        // Always resolve Hernán Bassignana as approver
+        const hernan = await prisma.operator.findFirst({
+            where: {
+                nombreCompleto: { contains: 'Bassignana', mode: 'insensitive' }
+            }
+        });
+
+        const finalAprobadorId = hernan?.id || aprobadorId || null;
+        const finalAprobadorNombre = hernan?.nombreCompleto || aprobadorNombre || 'Hernán Bassignana';
+
+        let finalRevisadorNombre = revisadorNombre || null;
+        if (revisadorId && !finalRevisadorNombre) {
+            const revOp = await prisma.operator.findUnique({
+                where: { id: revisadorId },
+                select: { nombreCompleto: true }
+            });
+            finalRevisadorNombre = revOp?.nombreCompleto || null;
+        }
 
         // Determine or generate code
         let generatedCode = codigoDocumental?.trim();
@@ -70,6 +92,8 @@ export async function POST(req: Request) {
             userPosition = operator?.posicion || '';
         }
 
+        const initialStatus = (revisadorId || finalAprobadorId) ? 'en_revision' : 'vigente';
+
         const workflowState = {
             creatorStatus: 'approved',
             creatorSignature: null,
@@ -77,9 +101,9 @@ export async function POST(req: Request) {
             creatorPosition: userPosition,
             editorName: userName || 'Usuario',
             editorPosition: userPosition,
-            revisadorStatus: 'none',
+            revisadorStatus: revisadorId ? 'pending' : 'none',
             revisadorComment: null,
-            aprobadorStatus: 'none',
+            aprobadorStatus: finalAprobadorId ? 'pending' : 'none',
             aprobadorComment: null,
             history: [
                 {
@@ -98,7 +122,7 @@ export async function POST(req: Request) {
                 titulo: docTitle,
                 tipoDocumento,
                 area,
-                estado: 'vigente',
+                estado: initialStatus,
                 subAccessId: subAccessId || null,
                 versionMayor: 1,
                 versionMenor: 0,
@@ -109,7 +133,11 @@ export async function POST(req: Request) {
                 }),
                 responsableId: userId || null,
                 responsableNombre: userName || null,
-                nivelCriticidad: nivelCriticidad || 'media',
+                revisadorId: revisadorId || null,
+                revisadorNombre: finalRevisadorNombre,
+                aprobadorId: finalAprobadorId,
+                aprobadorNombre: finalAprobadorNombre,
+                nivelCriticidad: 'media',
                 requiereConfirmacionLectura: false,
                 requiereCapacitacion: false,
                 tags: [],
@@ -128,16 +156,18 @@ export async function POST(req: Request) {
                 versionMayor: 1,
                 versionMenor: 0,
                 versionLabel: '1.0',
-                estado: 'vigente',
+                estado: initialStatus,
                 autorId: userId || null,
                 autorNombre: userName || null,
+                aprobadorId: finalAprobadorId,
+                aprobadorNombre: finalAprobadorNombre,
                 motivoCambio: 'Carga inicial de archivo',
                 documentSnapshot: {
                     titulo: docTitle,
                     codigoDocumental: generatedCode,
                     tipoDocumento,
                     area,
-                    estado: 'vigente',
+                    estado: initialStatus,
                     fechaEmision: new Date()
                 }
             }
@@ -162,15 +192,6 @@ export async function POST(req: Request) {
             data: { hashDocumental: file.hashArchivo }
         });
 
-        await logAudit({
-            userId,
-            userName,
-            action: 'CREATE',
-            entity: 'CONTROLLED_DOCUMENT',
-            entityId: doc.id,
-            newValue: { doc, fileId: file.id, fileName }
-        });
-
         return NextResponse.json({
             success: true,
             document: doc,
@@ -178,6 +199,7 @@ export async function POST(req: Request) {
             file
         });
     } catch (e: any) {
+        console.error('Error al subir archivo:', e);
         return NextResponse.json({ error: 'Error al procesar la subida del archivo', details: e.message }, { status: 500 });
     }
 }

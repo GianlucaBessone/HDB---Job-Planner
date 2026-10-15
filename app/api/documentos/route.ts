@@ -56,7 +56,19 @@ export async function GET(req: Request) {
                     orderBy: [{ versionMayor: 'desc' }, { versionMenor: 'desc' }],
                     take: 1,
                     include: {
-                        files: { where: { esPrincipal: true }, take: 1 }
+                        files: {
+                            where: { esPrincipal: true },
+                            take: 1,
+                            select: {
+                                id: true,
+                                nombreArchivo: true,
+                                tipoArchivo: true,
+                                tamanioBytes: true,
+                                esPrincipal: true,
+                                hashArchivo: true,
+                                createdAt: true
+                            }
+                        }
                     }
                 },
                 _count: {
@@ -172,10 +184,20 @@ export async function POST(req: Request) {
         });
         const userPosition = operator?.posicion || '';
 
+        // Ensure Hernan Bassignana is always the approver
+        const hernan = await prisma.operator.findFirst({
+            where: {
+                nombreCompleto: { contains: 'Bassignana', mode: 'insensitive' }
+            }
+        });
+
+        const finalAprobadorId = hernan?.id || aprobadorId || null;
+        const finalAprobadorNombre = hernan?.nombreCompleto || aprobadorNombre || 'Hernán Bassignana';
+
         // If there are reviewers/approvers, it must go to en_revision. 
         // If there are none AND the creator signed, it goes straight to vigente.
         let estadoInicial = 'borrador';
-        if (revisadorId || aprobadorId) {
+        if (revisadorId || finalAprobadorId) {
             estadoInicial = 'en_revision';
         } else if (creatorSignature) {
             estadoInicial = 'vigente';
@@ -192,7 +214,7 @@ export async function POST(req: Request) {
             revisadorComment: null,
             revisadorSignature: null,
             revisadorSignatureDate: null,
-            aprobadorStatus: aprobadorId ? 'pending' : 'none',
+            aprobadorStatus: finalAprobadorId ? 'pending' : 'none',
             aprobadorComment: null,
             aprobadorSignature: null,
             aprobadorSignatureDate: null,
@@ -223,8 +245,8 @@ export async function POST(req: Request) {
                 responsableNombre: responsableNombre || null,
                 revisadorId: revisadorId || null,
                 revisadorNombre: revisadorNombre || null,
-                aprobadorId: aprobadorId || null,
-                aprobadorNombre: aprobadorNombre || null,
+                aprobadorId: finalAprobadorId,
+                aprobadorNombre: finalAprobadorNombre,
                 requiereConfirmacionLectura: requiereConfirmacionLectura || false,
                 requiereCapacitacion: requiereCapacitacion || false,
                 nivelCriticidad: nivelCriticidad || 'media',
@@ -295,7 +317,7 @@ export async function POST(req: Request) {
                     userIds: notifiedUserIds,
                     title: "Revisión Documental Requerida",
                     message: `Se ha creado el documento "${doc.codigoDocumental}" y requiere tu firma/revisión.`,
-                    data: { route: `/calidad/documentos/${doc.id}` }
+                    data: { route: `/calidad?tab=library&docId=${doc.id}` }
                 }).catch(e => console.error("Error sending push notification to reviewers:", e));
             }
         }

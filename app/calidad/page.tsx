@@ -32,6 +32,7 @@ export default function CalidadPageWrapper() {
 function CalidadPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const docIdParam = searchParams.get('docId');
     const initialTab = (searchParams.get('tab') as TabId) || 'library';
 
     const [currentUser, setCurrentUser] = useState<any>(null);
@@ -112,7 +113,7 @@ function CalidadPage() {
                 )}
                 { visitedTabs['library'] && (
                     <div className={activeTab === 'library' ? '' : 'hidden'}>
-                        <LibraryTab user={currentUser} />
+                        <LibraryTab user={currentUser} initialDocId={docIdParam} />
                     </div>
                 )}
                 {visitedTabs['nc'] && (

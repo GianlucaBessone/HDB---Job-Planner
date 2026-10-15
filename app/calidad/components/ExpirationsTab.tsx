@@ -3,12 +3,14 @@ import { safeApiRequest } from '@/lib/offline';
 import { AlertTriangle, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import DocumentDetailModal from './DocumentDetailModal';
 
 let cachedExpirationsDocs: any[] | null = null;
 
 export default function ExpirationsTab({ user }: { user: any }) {
     const [docs, setDocs] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
 
     useEffect(() => {
         loadExpirations();
@@ -79,13 +81,29 @@ export default function ExpirationsTab({ user }: { user: any }) {
                                         </span>
                                     </td>
                                     <td className="p-4 text-right">
-                                        <button className="text-xs font-bold text-primary hover:underline">Revisar</button>
+                                        <button 
+                                            onClick={() => setSelectedDocId(doc.id)}
+                                            className="text-xs font-bold text-primary hover:underline px-2 py-1 rounded-md hover:bg-primary/10 transition-colors"
+                                        >
+                                            Revisar
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
+            )}
+
+            {selectedDocId && (
+                <DocumentDetailModal
+                    documentId={selectedDocId}
+                    user={user}
+                    onClose={() => {
+                        setSelectedDocId(null);
+                        loadExpirations();
+                    }}
+                />
             )}
         </div>
     );

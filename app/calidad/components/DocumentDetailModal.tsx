@@ -29,6 +29,7 @@ import {
   Loader2,
   FileCheck,
   GitCompare,
+  ExternalLink,
 } from "lucide-react";
 import { safeApiRequest } from "@/lib/offline";
 import { formatDateInline, formatDateTimeInline } from "@/lib/formatDate";
@@ -108,6 +109,16 @@ export default function DocumentDetailModal({
   user?: any;
 }) {
   useModalScroll(true);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
   const [doc, setDoc] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<
@@ -1340,6 +1351,37 @@ export default function DocumentDetailModal({
     }
   };
 
+  const [deletingDoc, setDeletingDoc] = useState(false);
+
+  const handleDeleteDocument = async () => {
+    const code = doc?.codigoDocumental || "";
+    const title = doc?.titulo || "";
+    const confirmMsg = `¿Está seguro de eliminar definitivamente el documento "${code}: ${title}" y TODO su historial de versiones?\n\nEsta acción es irreversible y se completará sin dejar registro.`;
+    if (!window.confirm(confirmMsg)) return;
+
+    setDeletingDoc(true);
+    try {
+      const res = await safeApiRequest(`/api/documentos/${documentId}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        delete cachedDocuments[documentId];
+        cachedAllDocs = null;
+        showToast("Documento y su historial eliminados correctamente", "success");
+        onClose();
+      } else {
+        const err = await res.json();
+        showToast(err.error || "Error al eliminar el documento", "error");
+      }
+    } catch (e) {
+      console.error(e);
+      showToast("Error de red al eliminar el documento", "error");
+    } finally {
+      setDeletingDoc(false);
+    }
+  };
+
   const handleSaveQuiz = () => {
     setPendingSaveType("quiz");
     setPendingSaveData(quizQuestions);
@@ -1646,10 +1688,18 @@ export default function DocumentDetailModal({
         </div>
       )}
 
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 sm:p-6 pt-20 sm:pt-24">
+      <div 
+        className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 sm:p-6 pt-20 sm:pt-24"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Detalle del documento ${doc.codigoDocumental}`}
+      >
         <div className="bg-card text-card-foreground rounded-3xl shadow-2xl w-full max-w-5xl max-h-[calc(100vh-8rem)] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
           {/* Header */}
-          <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-start bg-background text-foreground/50">
+          <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-start bg-background text-foreground">
             <div className="flex gap-4 items-start">
               <div className="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
                 <FileText className="w-6 h-6" />
@@ -1696,12 +1746,22 @@ export default function DocumentDetailModal({
                 </h2>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <button
+                type="button"
+                onClick={handleDeleteDocument}
+                disabled={deletingDoc}
+                className="px-3.5 py-2 text-xs font-bold text-rose-600 bg-rose-50 dark:bg-rose-950/20 hover:bg-rose-100 dark:hover:bg-rose-950/40 rounded-xl transition-colors flex items-center gap-1.5 border border-rose-200 dark:border-rose-800 disabled:opacity-50"
+                title="Eliminar documento e historial sin registro"
+              >
+                <Trash2 className="w-4 h-4 text-rose-500" />
+                <span className="hidden sm:inline">{deletingDoc ? "Eliminando..." : "Eliminar"}</span>
+              </button>
               <button
                 onClick={handleExportPDF}
                 className="px-4 py-2 text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 rounded-xl transition-colors flex items-center gap-2"
               >
-                <Download className="w-4 h-4" /> Imprimir
+                <Download className="w-4 h-4" /> <span className="hidden sm:inline">Imprimir</span>
               </button>
               <button
                 onClick={onClose}
@@ -1736,9 +1796,138 @@ export default function DocumentDetailModal({
           </div>
 
           {/* Body */}
-          <div className="flex-1 overflow-y-auto p-6 bg-background text-foreground/20">
+          <div className="flex-1 overflow-y-auto p-6 bg-background text-foreground">
             {tab === "info" && (
               <div className="space-y-6 max-w-3xl mx-auto">
+                {/* Visualizador Online de Documentos Subidos / Adjuntos */}
+                {doc.versions?.[0]?.files?.length > 0 && (() => {
+                  const mainFile = doc.versions[0].files.find((f: any) => f.esPrincipal) || doc.versions[0].files[0];
+                  const isPdf = mainFile.tipoArchivo?.includes('pdf') || mainFile.nombreArchivo?.toLowerCase().endsWith('.pdf');
+                  const isImage = mainFile.tipoArchivo?.startsWith('image/') || /\.(png|jpe?g|gif|webp|svg)$/i.test(mainFile.nombreArchivo);
+
+                  return (
+                    <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden animate-in fade-in duration-300">
+                      <div className="p-4 bg-muted/40 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center font-bold shrink-0">
+                            <FileText className="w-5 h-5" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h4 className="text-sm font-black text-slate-800 dark:text-slate-100">
+                                Visor de Documento Online
+                              </h4>
+                              <span className="text-[10px] font-mono font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300 px-2 py-0.5 rounded-lg border border-indigo-100 dark:border-indigo-800 truncate max-w-xs">
+                                {mainFile.nombreArchivo}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-400 font-bold mt-0.5">
+                              Visualiza el contenido directamente en línea sin necesidad de descargarlo
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <label
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-all cursor-pointer shadow-xs"
+                            title="Subir o reemplazar el archivo adjunto"
+                          >
+                            <Upload className="w-3.5 h-3.5" />
+                            <span>{uploading ? "Subiendo..." : "Reemplazar archivo"}</span>
+                            <input
+                              type="file"
+                              className="hidden"
+                              onChange={handleFileUpload}
+                              accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,image/*"
+                              disabled={uploading}
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => window.open(`/api/documentos/${doc.id}/view`, '_blank')}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-background border border-slate-200 dark:border-slate-700 hover:border-indigo-500 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all shadow-xs"
+                            title="Abrir documento en pestaña nueva a pantalla completa"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5 text-indigo-500" />
+                            <span>Abrir pestaña</span>
+                          </button>
+                          <a
+                            href={`/api/documentos/${doc.id}/download`}
+                            download
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold transition-all"
+                            title="Descargar archivo a tu equipo"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            <span>Descargar</span>
+                          </a>
+                        </div>
+                      </div>
+
+                      <div className="p-3 bg-slate-100/60 dark:bg-slate-900/60 flex items-center justify-center">
+                        {isPdf ? (
+                          <iframe
+                            src={`/api/documentos/${doc.id}/view`}
+                            title={mainFile.nombreArchivo}
+                            className="w-full h-[650px] rounded-2xl border border-slate-200 dark:border-slate-700 shadow-inner bg-white"
+                          />
+                        ) : isImage ? (
+                          <div className="flex justify-center p-2 bg-white dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 w-full">
+                            <img
+                              src={`/api/documentos/${doc.id}/view`}
+                              alt={mainFile.nombreArchivo}
+                              className="max-h-[650px] w-auto max-w-full rounded-xl object-contain"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-full py-12 flex flex-col items-center justify-center text-center space-y-3 bg-white dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
+                            <FileText className="w-12 h-12 text-indigo-500" />
+                            <div>
+                              <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                                {mainFile.nombreArchivo}
+                              </p>
+                              <p className="text-xs text-slate-400 mt-0.5">
+                                Formato: {mainFile.tipoArchivo || 'Documento'} • Tamaño: {Math.round((mainFile.tamanioBytes || 0) / 1024)} KB
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => window.open(`/api/documentos/${doc.id}/view`, '_blank')}
+                              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md inline-flex items-center gap-1.5 transition-all"
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                              <span>Visualizar online en el navegador</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Empty State / Cargador Directo si no tiene archivo adjunto */}
+                {(!doc.versions?.[0]?.files || doc.versions[0].files.length === 0) && (
+                  <div className="bg-card text-card-foreground rounded-3xl border border-dashed border-slate-300 dark:border-slate-700 p-8 text-center animate-in fade-in duration-300">
+                    <FileText className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+                    <h4 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-1">
+                      Sin archivo adjunto
+                    </h4>
+                    <p className="text-xs text-slate-500 max-w-sm mx-auto mb-4">
+                      Este documento no tiene un archivo digital vinculado. Puedes adjuntar un PDF, Word o planilla para habilitar la visualización online.
+                    </p>
+                    <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-black hover:opacity-90 transition-all cursor-pointer shadow-sm">
+                      <Upload className="w-4 h-4" />
+                      <span>{uploading ? "Subiendo archivo..." : "Adjuntar archivo"}</span>
+                      <input
+                        type="file"
+                        className="hidden"
+                        onChange={handleFileUpload}
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,image/*"
+                        disabled={uploading}
+                      />
+                    </label>
+                  </div>
+                )}
+
                 {/* Digital SOP Procedure Section */}
                 {(() => {
                   let isDigital = false;
@@ -2535,7 +2724,7 @@ export default function DocumentDetailModal({
                   );
                 })()}
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="bg-card text-card-foreground p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
                       Tipo de Documento
@@ -2550,27 +2739,6 @@ export default function DocumentDetailModal({
                     </p>
                     <p className="font-medium text-slate-700 dark:text-slate-200">
                       {doc.area}
-                    </p>
-                  </div>
-                  <div className="bg-card text-card-foreground p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
-                      Nivel de Criticidad
-                    </p>
-                    <p
-                      className={`font-bold text-sm ${
-                        doc.nivelCriticidad === "critico" ||
-                        doc.nivelCriticidad === "critica"
-                          ? "text-red-600"
-                          : doc.nivelCriticidad === "alto" ||
-                              doc.nivelCriticidad === "alta"
-                            ? "text-amber-600"
-                            : doc.nivelCriticidad === "medio" ||
-                                doc.nivelCriticidad === "media"
-                              ? "text-blue-600"
-                              : "text-slate-600"
-                      }`}
-                    >
-                      {doc.nivelCriticidad}
                     </p>
                   </div>
                   <div className="bg-card text-card-foreground p-4 rounded-2xl border border-slate-200 dark:border-slate-700">

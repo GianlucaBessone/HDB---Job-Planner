@@ -257,7 +257,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
                     userIds: [doc.createdBy],
                     title: "Documento Observado",
                     message: `El revisador/aprobador ${userName} ha dejado observaciones en tu documento "${doc.titulo}".`,
-                    data: { route: `/calidad/documentos/${doc.id}` }
+                    data: { route: `/calidad?tab=library&docId=${doc.id}` }
                 }).catch(e => console.error("Error sending push notification to creator:", e));
             }
 

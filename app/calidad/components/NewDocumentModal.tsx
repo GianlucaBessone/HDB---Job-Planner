@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { 
     X, FileText, Loader2, FileSignature, Check, ChevronRight, ChevronLeft, 
-    Plus, Trash2, Search, Link2, BookOpen, Play, AlertCircle, Sparkles, PlusCircle 
+    Plus, Trash2, Search, Link2, BookOpen, Play, AlertCircle, Sparkles, PlusCircle, Upload 
 } from 'lucide-react';
 import { safeApiRequest } from '@/lib/offline';
 import TechAssistantChat from '@/components/TechAssistantChat';
@@ -23,6 +23,16 @@ export default function NewDocumentModal({
     initialSubAccessId?: string | null;
 }) {
     useModalScroll(true);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                onClose();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [onClose]);
     const [loading, setLoading] = useState(false);
     const [operators, setOperators] = useState<any[]>([]);
     const [tagsList, setTagsList] = useState<any[]>([]);
@@ -78,6 +88,7 @@ export default function NewDocumentModal({
     
     // Toggle for digital vs traditional
     const [isDigital, setIsDigital] = useState(true);
+    const [traditionalFile, setTraditionalFile] = useState<{ file: File; base64: string } | null>(null);
 
     // Steps: general, content_1 (Objetivo/Alcance), content_2 (Desarrollo/Resp), content_3 (Glosario/Refs), signature
     const [activeStep, setActiveStep] = useState('general');
@@ -165,7 +176,19 @@ export default function NewDocumentModal({
             safeApiRequest('/api/documentos').then(res => res.json()),
             safeApiRequest('/api/documentos/accesos').then(res => res.json())
         ]).then(([opsData, tagsData, docsData, accesosData]) => {
-            if (Array.isArray(opsData)) setOperators(opsData);
+            if (Array.isArray(opsData)) {
+                setOperators(opsData);
+                const hernan = opsData.find((op: any) => 
+                    (op.nombreCompleto || '').toLowerCase().includes('bassignana') ||
+                    (op.nombre || '').toLowerCase().includes('bassignana')
+                );
+                if (hernan) {
+                    setFormData(prev => ({
+                        ...prev,
+                        aprobadorId: prev.aprobadorId || hernan.id
+                    }));
+                }
+            }
             if (Array.isArray(tagsData)) setTagsList(tagsData);
             if (Array.isArray(docsData)) setAllDocs(docsData);
             if (accesosData && Array.isArray(accesosData.modules)) setAccessModules(accesosData.modules);
@@ -266,10 +289,10 @@ export default function NewDocumentModal({
             const revisador = operators.find(o => o.id === formData.revisadorId);
             const aprobador = operators.find(o => o.id === formData.aprobadorId);
 
-            // Serialize structured content if digital, or save empty
+            // Serialize structured content if digital, or save note
             const finalDescription = isDigital 
                 ? JSON.stringify({ isDigital: true, ...digitalData })
-                : JSON.stringify({ isDigital: false, objetivo: 'Documento cargado de forma tradicional', desarrollo: '' });
+                : JSON.stringify({ isDigital: false, objetivo: 'Documento cargado de forma tradicional', desarrollo: digitalData.desarrollo || '' });
 
             const res = await safeApiRequest('/api/documentos', {
                 method: 'POST',
@@ -288,6 +311,24 @@ export default function NewDocumentModal({
             });
             if (res.ok) {
                 const data = await res.json();
+                // If a traditional file was attached, upload it directly to this document
+                if (!isDigital && traditionalFile) {
+                    try {
+                        await safeApiRequest(`/api/documentos/${data.id}/upload`, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                fileName: traditionalFile.file.name,
+                                fileType: traditionalFile.file.type,
+                                fileSize: traditionalFile.file.size,
+                                fileContent: traditionalFile.base64,
+                                userId: user?.id || 'admin',
+                                userName: user?.nombreCompleto || user?.nombre || 'Usuario'
+                            })
+                        });
+                    } catch (uploadErr) {
+                        console.error('Error attaching traditional file:', uploadErr);
+                    }
+                }
                 onSuccess(data.id);
             } else {
                 const err = await res.json();
@@ -309,10 +350,18 @@ export default function NewDocumentModal({
     );
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 pt-20 sm:pt-24 overflow-y-auto">
+        <div 
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 pt-20 sm:pt-24 overflow-y-auto"
+            onClick={(e) => {
+                if (e.target === e.currentTarget) onClose();
+            }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Nuevo Documento Controlado"
+        >
             <div className={`relative bg-card text-card-foreground rounded-3xl shadow-xl w-full max-h-[calc(100vh-8rem)] overflow-hidden my-4 animate-in zoom-in-95 duration-200 flex flex-col transition-all duration-300 ${showAiDrawer ? 'max-w-[95vw] sm:pr-[420px]' : 'max-w-6xl'}`}>
                 {/* Header */}
-                <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-background text-foreground/20">
+                <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-background text-foreground">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center dark:bg-indigo-900/30 dark:text-indigo-400">
                             <FileText className="w-5 h-5" />
@@ -659,15 +708,69 @@ export default function NewDocumentModal({
                                 </div>
 
                                 {!isDigital && (
-                                    <div className="space-y-1.5">
-                                        <label className="block text-xs font-bold text-slate-500 uppercase">Descripción / Nota</label>
-                                        <textarea
-                                            placeholder="Detalles sobre el alcance, manual de fabricante..."
-                                            value={digitalData.desarrollo}
-                                            onChange={e => setDigitalData({ ...digitalData, desarrollo: e.target.value })}
-                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 outline-none h-28 resize-none"
-                                        />
-                                    </div>
+                                    <>
+                                        <div className="space-y-1.5">
+                                            <label className="block text-xs font-bold text-slate-500 uppercase">Descripción / Nota</label>
+                                            <textarea
+                                                placeholder="Detalles sobre el alcance, manual de fabricante..."
+                                                value={digitalData.desarrollo}
+                                                onChange={e => setDigitalData({ ...digitalData, desarrollo: e.target.value })}
+                                                className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 outline-none h-20 resize-none"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-1.5">
+                                            <label className="block text-xs font-bold text-slate-500 uppercase">Archivo Adjunto (PDF, Word, Planilla)</label>
+                                            <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-center hover:border-indigo-400 transition-colors bg-muted/20">
+                                                {traditionalFile ? (
+                                                    <div className="flex items-center justify-between gap-3 bg-card p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                                                        <div className="flex items-center gap-2 truncate">
+                                                            <FileText className="w-5 h-5 text-indigo-500 shrink-0" />
+                                                            <div className="text-left truncate">
+                                                                <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">{traditionalFile.file.name}</p>
+                                                                <p className="text-[10px] text-slate-400">{(traditionalFile.file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                                                            </div>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setTraditionalFile(null)}
+                                                            className="text-xs font-bold text-red-500 hover:text-red-700 px-2 py-1 rounded"
+                                                        >
+                                                            Quitar
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <label className="cursor-pointer flex flex-col items-center gap-1.5 py-2">
+                                                        <Upload className="w-6 h-6 text-indigo-500" />
+                                                        <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                                                            Selecciona el archivo para adjuntar al documento
+                                                        </span>
+                                                        <span className="text-[10px] text-slate-400">
+                                                            PDF, Word (.docx), Excel (.xlsx) o Imágenes
+                                                        </span>
+                                                        <input
+                                                            type="file"
+                                                            className="hidden"
+                                                            accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,image/*"
+                                                            onChange={(e) => {
+                                                                const file = e.target.files?.[0];
+                                                                if (file) {
+                                                                    const reader = new FileReader();
+                                                                    reader.onload = (ev) => {
+                                                                        setTraditionalFile({
+                                                                            file,
+                                                                            base64: ev.target?.result as string
+                                                                        });
+                                                                    };
+                                                                    reader.readAsDataURL(file);
+                                                                }
+                                                            }}
+                                                        />
+                                                    </label>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </>
                                 )}
 
                                 <div className="flex justify-end pt-4">

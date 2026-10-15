@@ -41,8 +41,11 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             where: { id: params.id },
             include: {
                 versions: {
-                    where: { estado: 'vigente' },
-                    take: 1
+                    orderBy: [{ versionMayor: 'desc' }, { versionMenor: 'desc' }],
+                    take: 1,
+                    include: {
+                        files: true
+                    }
                 }
             }
         });
@@ -100,6 +103,24 @@ export async function POST(req: Request, { params }: { params: { id: string } })
                 documentSnapshot: documentSnapshot,
             }
         });
+
+        // Clone files from the previous version so the new version preserves attachments and online viewing
+        const previousFiles = doc.versions?.[0]?.files || [];
+        if (previousFiles.length > 0) {
+            for (const f of previousFiles) {
+                await prisma.documentFile.create({
+                    data: {
+                        versionId: version.id,
+                        nombreArchivo: f.nombreArchivo,
+                        tipoArchivo: f.tipoArchivo,
+                        tamanioBytes: f.tamanioBytes,
+                        url: f.url,
+                        esPrincipal: f.esPrincipal,
+                        hashArchivo: (f as any).hashArchivo || null,
+                    }
+                });
+            }
+        }
 
         // Update the document's version snapshot
         await prisma.controlledDocument.update({

@@ -574,7 +574,7 @@ export default function HistorialVentasModal({
                               {rem.numero}
                             </span>
                             <span className="text-[10px] text-slate-400 block">
-                              Fecha: {new Date(rem.fecha).toLocaleDateString('es-AR')} • Retirado por: {rem.receptorNombre || '—'}
+                              Fecha: {rem.fecha ? new Date(rem.fecha).toLocaleDateString('es-AR') : '—'} • Retirado por: {rem.receptorNombre || '—'}
                             </span>
                           </div>
                           <button

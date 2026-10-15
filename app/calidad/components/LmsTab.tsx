@@ -392,9 +392,11 @@ export default function LmsTab({ user }: { user: any }) {
       activeCourse.document?.versions?.[0]?.files?.find(
         (f: any) => f.esPrincipal,
       ) || activeCourse.document?.versions?.[0]?.files?.[0];
-    const documentUrl = pdfFile?.url || activeCourse.urlContenido;
+    const docId = activeCourse.document?.id || activeCourse.documentId;
+    const documentUrl = docId ? `/api/documentos/${docId}/view` : (pdfFile?.url || activeCourse.urlContenido);
     const hasDocumentFile =
       !!pdfFile ||
+      !!docId ||
       (!!activeCourse.urlContenido &&
         !activeCourse.urlContenido.includes("/download"));
 
