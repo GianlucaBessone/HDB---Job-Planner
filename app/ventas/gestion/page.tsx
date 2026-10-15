@@ -92,6 +92,7 @@ interface MetaData {
     aplicaA?: string | null;
     familiaId?: string | null;
     marcaId?: string | null;
+    ivaDiscriminado?: boolean;
   }>;
 }
 

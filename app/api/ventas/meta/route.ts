@@ -73,6 +73,7 @@ export async function GET(req: NextRequest) {
           aplicaA: true,
           familiaId: true,
           marcaId: true,
+          ivaDiscriminado: true,
           activo: true,
         },
         orderBy: { orden: 'asc' },

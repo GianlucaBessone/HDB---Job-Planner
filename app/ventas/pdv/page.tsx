@@ -35,6 +35,7 @@ import {
   Home,
   ArrowLeft,
   RefreshCw,
+  Settings2,
 } from 'lucide-react';
 import {
   buildCatalogIndex,
@@ -51,6 +52,7 @@ import ComprobanteModal from '@/components/ventas/pdv/ComprobanteModal';
 import HistorialVentasModal from '@/components/ventas/pdv/HistorialVentasModal';
 import ModificarPrecioModal from '@/components/ventas/pdv/ModificarPrecioModal';
 import CambioRapidoVendedorModal from '@/components/ventas/pdv/CambioRapidoVendedorModal';
+import ConfigListasPreciosModal from '@/components/ventas/ConfigListasPreciosModal';
 
 interface ItemCarrito {
   id: string; // id temporal en el carrito
@@ -136,6 +138,8 @@ export default function PdvPage() {
   const [comprobanteVenta, setComprobanteVenta] = useState<any | null>(null);
   const [showConfirmLimpiar, setShowConfirmLimpiar] = useState(false);
   const [itemParaModificarPrecio, setItemParaModificarPrecio] = useState<ItemCarrito | null>(null);
+  const [showConfigListasModal, setShowConfigListasModal] = useState(false);
+  const [metaListas, setMetaListas] = useState<{ marcas: any[]; familias: any[] }>({ marcas: [], familias: [] });
 
   // Refs de elementos de UI
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -185,10 +189,6 @@ export default function PdvPage() {
   };
 
   // Cargar listas de precios activas
-  useEffect(() => {
-    fetchListasPrecios();
-  }, []);
-
   const fetchListasPrecios = async () => {
     try {
       const res = await fetch('/api/ventas/listas-precios');
@@ -197,13 +197,39 @@ export default function PdvPage() {
         const activas = Array.isArray(data) ? data.filter((l: any) => l.activo !== false) : [];
         setListasPrecios(activas);
 
-        const pred = activas.find((l: any) => l.esPredeterminada) || activas[0];
-        if (pred) {
-          setListaSeleccionadaId(pred.id);
-        }
+        setListaSeleccionadaId((prev) => {
+          if (prev && activas.some((l: any) => l.id === prev)) {
+            return prev;
+          }
+          const pred = activas.find((l: any) => l.esPredeterminada) || activas[0];
+          return pred?.id || '';
+        });
       }
     } catch (e) {
       console.error('Error cargando listas de precios:', e);
+    }
+  };
+
+  useEffect(() => {
+    fetchListasPrecios();
+  }, []);
+
+  const handleAbrirConfigListas = async () => {
+    try {
+      if (metaListas.marcas.length === 0) {
+        const res = await fetch('/api/ventas/meta');
+        if (res.ok) {
+          const data = await res.json();
+          setMetaListas({
+            marcas: data.marcas || [],
+            familias: data.familias || [],
+          });
+        }
+      }
+      setShowConfigListasModal(true);
+    } catch (e) {
+      console.error('Error cargando meta para listas:', e);
+      setShowConfigListasModal(true);
     }
   };
 
@@ -520,47 +546,88 @@ export default function PdvPage() {
   };
 
   // Cambio de lista de precios con confirmación si hay ítems cargados
+  const aplicarCambioListaInmediato = (nuevaId: string, carritoBase?: ItemCarrito[]) => {
+    const nuevaLista = listasPrecios.find((l) => l.id === nuevaId);
+    if (!nuevaLista) return;
+    setListaSeleccionadaId(nuevaId);
+    setListaCambioPendiente(null);
+
+    const base = carritoBase ?? carrito;
+    if (base.length > 0) {
+      setCarrito(
+        base.map((item) => {
+          if (item.precioModificado) return item; // Mantener modificaciones manuales autorizadas
+          const rawProd = rawCatalogo.find((p) => p.id === item.productoId);
+          const { precio, esFallback } = resolverPrecioProducto(
+            rawProd || {
+              precioBase: item.precioOriginal,
+              costo: 0,
+              ivaPorcentaje: item.ivaPorcentaje,
+            },
+            nuevaLista
+          );
+          const subtotal =
+            Math.round((item.cantidad * precio * (1 - item.descuentoPorcentaje / 100)) * 100) / 100;
+          return {
+            ...item,
+            precioOriginal: precio,
+            precioUnitario: precio,
+            subtotal,
+            esFallbackPrecio: esFallback,
+          };
+        })
+      );
+    }
+  };
+
   const handleSolicitarCambioLista = (nuevaListaId: string) => {
     if (nuevaListaId === listaSeleccionadaId) return;
 
     if (carrito.length > 0) {
       setListaCambioPendiente(nuevaListaId);
     } else {
-      setListaSeleccionadaId(nuevaListaId);
+      aplicarCambioListaInmediato(nuevaListaId);
     }
   };
 
   const confirmarCambioLista = () => {
     if (!listaCambioPendiente) return;
-    const nuevaId = listaCambioPendiente;
-    setListaCambioPendiente(null);
-    setListaSeleccionadaId(nuevaId);
-
-    const nuevaLista = listasPrecios.find((l) => l.id === nuevaId);
-    setCarrito((prev) =>
-      prev.map((item) => {
-        if (item.precioModificado) return item; // Mantener modificaciones manuales autorizadas
-        const rawProd = rawCatalogo.find((p) => p.id === item.productoId);
-        const { precio, esFallback } = resolverPrecioProducto(
-          rawProd || {
-            precioBase: item.precioOriginal,
-            costo: 0,
-            ivaPorcentaje: item.ivaPorcentaje,
-          },
-          nuevaLista
-        );
-        const subtotal =
-          Math.round((item.cantidad * precio * (1 - item.descuentoPorcentaje / 100)) * 100) / 100;
-        return {
-          ...item,
-          precioOriginal: precio,
-          precioUnitario: precio,
-          subtotal,
-          esFallbackPrecio: esFallback,
-        };
-      })
-    );
+    aplicarCambioListaInmediato(listaCambioPendiente);
     showToast('Precios recalculados según la nueva lista', 'success');
+  };
+
+  // Manejo de cambio de cliente (desde barra superior o desde CobroModal)
+  const handleClienteSeleccionado = (nuevoCli: {
+    id: string | null;
+    nombre: string;
+    identificacion?: string | null;
+    listaPrecioId?: string | null;
+    listaPrecio?: { id: string; nombre: string; codigo: string; ivaDiscriminado?: boolean } | null;
+  }) => {
+    setCliente({
+      id: nuevoCli.id,
+      nombre: nuevoCli.nombre,
+      identificacion: nuevoCli.identificacion || null,
+    });
+
+    let targetListaId = nuevoCli.listaPrecioId;
+    if (!targetListaId) {
+      const pred = listasPrecios.find((l) => l.esPredeterminada) || listasPrecios[0];
+      targetListaId = pred?.id || null;
+    }
+
+    if (targetListaId && targetListaId !== listaSeleccionadaId) {
+      aplicarCambioListaInmediato(targetListaId);
+      const targetLista = listasPrecios.find((l) => l.id === targetListaId);
+      showToast(
+        `Cliente: ${nuevoCli.nombre} • Lista aplicada: ${targetLista?.nombre || 'General'}${
+          targetLista?.ivaDiscriminado ? ' (IVA Disc.)' : ''
+        }`,
+        'info'
+      );
+    } else {
+      showToast(`Cliente seleccionado: ${nuevoCli.nombre}`, 'info');
+    }
   };
 
   // Totales calculados en el cliente según IVA Discriminado
@@ -586,7 +653,8 @@ export default function PdvPage() {
       Math.round(
         carrito.reduce((acc, it) => {
           const base = (it.subtotal || 0) * (1 - descuentoGlobal / 100);
-          const iva = it.ivaPorcentaje > 0 ? Math.round(((base * it.ivaPorcentaje) / 100) * 100) / 100 : 0;
+          const ivaPorc = it.ivaPorcentaje ?? 21;
+          const iva = ivaPorc > 0 ? Math.round(((base * ivaPorc) / 100) * 100) / 100 : 0;
           return acc + iva;
         }, 0) * 100
       ) / 100
@@ -764,7 +832,7 @@ export default function PdvPage() {
             </button>
           </div>
 
-          {/* Selector de Lista de Precios con indicador de IVA */}
+          {/* Selector de Lista de Precios con indicador de IVA y Acceso a Configuración */}
           <div className="h-8 flex items-center gap-1.5 bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-lg px-2">
             <Tag className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
             <select
@@ -783,6 +851,14 @@ export default function PdvPage() {
                 IVA Disc.
               </span>
             )}
+            <button
+              type="button"
+              onClick={handleAbrirConfigListas}
+              className="p-1 rounded text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors ml-0.5"
+              title="Configurar Listas de Precios (IVA discriminado, márgenes, reglas)"
+            >
+              <Settings2 className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
 
@@ -1174,10 +1250,10 @@ export default function PdvPage() {
               </div>
 
               {/* IVA: solo si la lista tiene IVA discriminado */}
-              {esIvaDiscriminado && impuestosEstimados > 0 && (
-                <div className="flex justify-between text-slate-500">
+              {esIvaDiscriminado && (
+                <div className="flex justify-between text-slate-600 dark:text-slate-400">
                   <span className="font-semibold text-slate-700 dark:text-slate-300">IVA:</span>
-                  <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+                  <span className="font-bold text-indigo-600 dark:text-indigo-400">
                     +{formatARS(impuestosEstimados)}
                   </span>
                 </div>
@@ -1188,7 +1264,7 @@ export default function PdvPage() {
             <div className="p-3 rounded-xl bg-slate-900 text-white dark:bg-slate-950 dark:border dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
               <div>
                 <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
-                  Total Final a Cobrar
+                  Total Final a Cobrar {esIvaDiscriminado ? '(Neto + IVA)' : ''}
                 </span>
                 <span className="text-2xl font-black text-emerald-400 tracking-tight">
                   {formatARS(totalFinal)}
@@ -1228,13 +1304,7 @@ export default function PdvPage() {
         isOpen={showClienteModal}
         onClose={() => setShowClienteModal(false)}
         clienteActual={cliente}
-        onSeleccionar={(cli) => {
-          setCliente(cli);
-          if (cli.listaPrecioId && cli.listaPrecioId !== listaSeleccionadaId) {
-            handleSolicitarCambioLista(cli.listaPrecioId);
-          }
-          showToast(`Cliente seleccionado: ${cli.nombre}`, 'info');
-        }}
+        onSeleccionar={handleClienteSeleccionado}
       />
 
       {/* Modal de Cobro y Pagos (Soporta cambiar cliente directamente y discrimina IVA) */}
@@ -1250,13 +1320,7 @@ export default function PdvPage() {
           itemsCount={carrito.length}
           listaPrecioNombre={listaActual?.nombre || 'General'}
           ivaDiscriminado={esIvaDiscriminado}
-          onCambiarCliente={(nuevoCli) => {
-            setCliente(nuevoCli);
-            if (nuevoCli.listaPrecioId && nuevoCli.listaPrecioId !== listaSeleccionadaId) {
-              handleSolicitarCambioLista(nuevoCli.listaPrecioId);
-            }
-            showToast(`Cliente actualizado a: ${nuevoCli.nombre}`, 'info');
-          }}
+          onCambiarCliente={handleClienteSeleccionado}
           onConfirmarVenta={handleConfirmarVentaBackend}
         />
       )}
@@ -1310,6 +1374,18 @@ export default function PdvPage() {
         variant="warning"
         onConfirm={confirmarCambioLista}
         onCancel={() => setListaCambioPendiente(null)}
+      />
+      {/* Modal de Configuración de Listas de Precios */}
+      <ConfigListasPreciosModal
+        isOpen={showConfigListasModal}
+        onClose={() => setShowConfigListasModal(false)}
+        meta={metaListas}
+        onListasUpdated={async () => {
+          await fetchListasPrecios();
+          await cargarCatalogo(true);
+          aplicarCambioListaInmediato(listaSeleccionadaId);
+          showToast('Listas de precios actualizadas y sincronizadas', 'success');
+        }}
       />
     </div>
   );

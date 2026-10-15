@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
         direccion: true,
         listaPrecioId: true,
         listaPrecio: {
-          select: { id: true, nombre: true, codigo: true },
+          select: { id: true, nombre: true, codigo: true, ivaDiscriminado: true },
         },
       },
     });

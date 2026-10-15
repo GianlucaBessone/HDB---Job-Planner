@@ -555,6 +555,7 @@ export const dataLayer = {
                         nombre: true,
                         tipoAjuste: true,
                         valorAjuste: true,
+                        ivaDiscriminado: true,
                     }
                 }
             },

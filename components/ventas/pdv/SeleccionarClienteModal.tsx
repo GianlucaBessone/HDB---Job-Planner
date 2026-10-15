@@ -10,7 +10,7 @@ interface ClienteItem {
   telefono?: string | null;
   direccion?: string | null;
   listaPrecioId?: string | null;
-  listaPrecio?: { id: string; nombre: string; codigo: string } | null;
+  listaPrecio?: { id: string; nombre: string; codigo: string; ivaDiscriminado?: boolean } | null;
 }
 
 interface SeleccionarClienteModalProps {
@@ -26,6 +26,7 @@ interface SeleccionarClienteModalProps {
     nombre: string;
     identificacion?: string | null;
     listaPrecioId?: string | null;
+    listaPrecio?: { id: string; nombre: string; codigo: string; ivaDiscriminado?: boolean } | null;
   }) => void;
 }
 
@@ -123,6 +124,7 @@ export default function SeleccionarClienteModal({
                 nombre: 'Consumidor Final',
                 identificacion: null,
                 listaPrecioId: null,
+                listaPrecio: null,
               });
               onClose();
             }}
@@ -172,6 +174,7 @@ export default function SeleccionarClienteModal({
                       nombre: c.nombre,
                       identificacion: c.telefono || c.email || null,
                       listaPrecioId: c.listaPrecioId || null,
+                      listaPrecio: c.listaPrecio || null,
                     });
                     onClose();
                   }}
@@ -188,8 +191,13 @@ export default function SeleccionarClienteModal({
                         {c.nombre}
                       </span>
                       {c.listaPrecio && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 font-semibold">
-                          {c.listaPrecio.nombre}
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 font-semibold flex items-center gap-1">
+                          <span>{c.listaPrecio.nombre}</span>
+                          {c.listaPrecio.ivaDiscriminado && (
+                            <span className="text-[9px] px-1 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-bold border border-amber-300/40">
+                              IVA Disc.
+                            </span>
+                          )}
                         </span>
                       )}
                     </div>

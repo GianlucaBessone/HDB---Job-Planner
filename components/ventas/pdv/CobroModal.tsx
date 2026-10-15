@@ -49,6 +49,7 @@ interface CobroModalProps {
     nombre: string;
     identificacion?: string | null;
     listaPrecioId?: string | null;
+    listaPrecio?: { id: string; nombre: string; codigo: string; ivaDiscriminado?: boolean } | null;
   }) => void;
   onConfirmarVenta: (datosCobro: {
     pagos: Array<{
@@ -289,11 +290,18 @@ export default function CobroModal({
               <CreditCard className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-base font-black text-slate-900 dark:text-slate-100">
-                Confirmar Venta y Cobro
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-black text-slate-900 dark:text-slate-100">
+                  Confirmar Venta y Cobro
+                </h3>
+                {ivaDiscriminado && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300/40">
+                    IVA Discriminado
+                  </span>
+                )}
+              </div>
               <p className="text-[11px] text-slate-400">
-                {itemsCount} {itemsCount === 1 ? 'artículo' : 'artículos'} • Lista: {listaPrecioNombre} {ivaDiscriminado ? '(IVA Discriminado)' : ''}
+                {itemsCount} {itemsCount === 1 ? 'artículo' : 'artículos'} • Lista: {listaPrecioNombre}
               </p>
             </div>
           </div>
@@ -335,16 +343,29 @@ export default function CobroModal({
               </div>
             </div>
 
-            <div className="flex flex-wrap sm:flex-col items-start sm:items-end gap-1 text-[11px] text-slate-300 border-t sm:border-t-0 sm:border-l border-slate-800 pt-2 sm:pt-0 sm:pl-4">
-              <div>Subtotal {ivaDiscriminado ? '(Neto)' : ''}: {formatARS(subtotal)}</div>
+            <div className="flex flex-wrap sm:flex-col items-start sm:items-end gap-1.5 text-xs text-slate-300 border-t sm:border-t-0 sm:border-l border-slate-800 pt-3 sm:pt-0 sm:pl-5 min-w-[200px]">
+              <div className="flex justify-between w-full sm:justify-end gap-3 text-slate-400">
+                <span>{ivaDiscriminado ? 'Subtotal Neto:' : 'Subtotal:'}</span>
+                <span className="font-semibold text-slate-200">{formatARS(subtotal)}</span>
+              </div>
               {descuentoMonto > 0 && (
-                <div className="text-emerald-400">Desc: -{formatARS(descuentoMonto)}</div>
-              )}
-              {ivaDiscriminado && impuestosMonto > 0 && (
-                <div className="text-amber-400 font-bold">
-                  IVA: +{formatARS(impuestosMonto)}
+                <div className="flex justify-between w-full sm:justify-end gap-3 text-emerald-400 font-semibold">
+                  <span>Descuento:</span>
+                  <span>-{formatARS(descuentoMonto)}</span>
                 </div>
               )}
+              {ivaDiscriminado && (
+                <div className="flex justify-between w-full sm:justify-end gap-3 text-amber-400 font-bold">
+                  <span>IVA:</span>
+                  <span>+{formatARS(impuestosMonto)}</span>
+                </div>
+              )}
+              <div className="flex justify-between w-full sm:justify-end gap-3 text-slate-400 text-[10px] pt-0.5 border-t border-slate-800/80">
+                <span>Régimen:</span>
+                <span className={ivaDiscriminado ? 'text-amber-400 font-semibold' : 'text-slate-300'}>
+                  {ivaDiscriminado ? 'IVA Discriminado' : 'IVA Incluido'}
+                </span>
+              </div>
             </div>
           </div>
 

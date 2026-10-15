@@ -146,7 +146,8 @@ export function resolverPrecioProducto(
 
   if (lista?.ivaDiscriminado) {
     const ivaPorc = producto.ivaPorcentaje !== undefined && producto.ivaPorcentaje !== null ? producto.ivaPorcentaje : 21;
-    const precioNeto = Math.round((precioConIva / (1 + (ivaPorc || 21) / 100)) * 100) / 100;
+    const divisor = 1 + (ivaPorc / 100);
+    const precioNeto = divisor > 0 ? Math.round((precioConIva / divisor) * 100) / 100 : precioConIva;
     return {
       precio: precioNeto,
       esFallback,
