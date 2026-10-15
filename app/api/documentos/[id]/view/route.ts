@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { convertOfficeToPdf, isOfficeDocument } from '@/lib/officeToPdf';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,12 +42,29 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         }
 
         const buffer = Buffer.from(base64Data, 'base64');
+        let responseBuffer: Buffer = buffer;
+        let responseMimeType = mimeType;
+        let responseFileName = file.nombreArchivo;
 
-        return new Response(buffer, {
+        // If it's an Office document (PowerPoint, Word, Excel), convert to PDF for online viewing
+        if (isOfficeDocument(file.nombreArchivo)) {
+            try {
+                const converted = await convertOfficeToPdf(buffer, file.nombreArchivo, file.id);
+                if (converted && converted.pdfBuffer) {
+                    responseBuffer = Buffer.from(converted.pdfBuffer);
+                    responseMimeType = 'application/pdf';
+                    responseFileName = file.nombreArchivo.replace(/\.[^/.]+$/, '.pdf');
+                }
+            } catch (convErr) {
+                console.error('Office to PDF conversion error:', convErr);
+            }
+        }
+
+        return new Response(new Uint8Array(responseBuffer), {
             headers: {
-                'Content-Type': mimeType,
-                'Content-Disposition': `inline; filename="${encodeURIComponent(file.nombreArchivo)}"`,
-                'Content-Length': buffer.length.toString(),
+                'Content-Type': responseMimeType,
+                'Content-Disposition': `inline; filename="${encodeURIComponent(responseFileName)}"`,
+                'Content-Length': responseBuffer.length.toString(),
                 'Cache-Control': 'public, max-age=3600'
             }
         });

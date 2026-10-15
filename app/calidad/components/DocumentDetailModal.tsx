@@ -366,6 +366,14 @@ export default function DocumentDetailModal({
       }
     } catch (e) {}
 
+    // Si el documento es un archivo adjunto subido (Office, PDF, etc.), abrir el visor oficial
+    const hasAttachedFile = doc.versions?.[0]?.files && doc.versions[0].files.length > 0;
+    if (!digitalData?.isDigital && hasAttachedFile) {
+      showToast("Abriendo documento oficial para impresión y descarga...", "success");
+      window.open(`/api/documentos/${doc.id}/view`, '_blank');
+      return;
+    }
+
     // Llamada a la API para generar el token de impresión
     let printToken = "";
     try {
@@ -1262,13 +1270,22 @@ export default function DocumentDetailModal({
         cachedDocuments[documentId] = data;
         setDoc(data);
         setNewRevisadorId(data.revisadorId || "");
-        setNewAprobadorId(data.aprobadorId || "");
+        let initialAprobadorId = data.aprobadorId || "";
+        if (!initialAprobadorId && cachedOperators && cachedOperators.length > 0) {
+          const hernan = cachedOperators.find((op: any) =>
+            (op.nombreCompleto || '').toLowerCase().includes('bassignana') ||
+            (op.nombre || '').toLowerCase().includes('bassignana')
+          );
+          if (hernan) initialAprobadorId = hernan.id;
+        }
+        setNewAprobadorId(initialAprobadorId);
 
         if (data.descripcion && data.descripcion.trim().startsWith("{")) {
           try {
             const parsed = JSON.parse(data.descripcion);
+            const isBoilerplate = (parsed.objetivo || "").toLowerCase().includes("documento cargado como archivo adjunto");
             setEditedDigitalData({
-              objetivo: parsed.objetivo || "",
+              objetivo: isBoilerplate ? "" : (parsed.objetivo || ""),
               alcance: parsed.alcance || "",
               desarrollo: parsed.desarrollo || "",
               responsabilidades: parseLegacyResponsabilidades(parsed.responsabilidades),
@@ -1901,7 +1918,13 @@ export default function DocumentDetailModal({
                 {doc.versions?.[0]?.files?.length > 0 && (() => {
                   const mainFile = doc.versions[0].files.find((f: any) => f.esPrincipal) || doc.versions[0].files[0];
                   const isPdf = mainFile.tipoArchivo?.includes('pdf') || mainFile.nombreArchivo?.toLowerCase().endsWith('.pdf');
+                  const isOffice = /\.(docx?|pptx?|xlsx?)$/i.test(mainFile.nombreArchivo || '') ||
+                    mainFile.tipoArchivo?.includes('officedocument') ||
+                    mainFile.tipoArchivo?.includes('msword') ||
+                    mainFile.tipoArchivo?.includes('ms-excel') ||
+                    mainFile.tipoArchivo?.includes('ms-powerpoint');
                   const isImage = mainFile.tipoArchivo?.startsWith('image/') || /\.(png|jpe?g|gif|webp|svg)$/i.test(mainFile.nombreArchivo);
+                  const canRenderInline = isPdf || isOffice;
 
                   return (
                     <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden animate-in fade-in duration-300">
@@ -1918,6 +1941,11 @@ export default function DocumentDetailModal({
                               <span className="text-[10px] font-mono font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300 px-2 py-0.5 rounded-lg border border-indigo-100 dark:border-indigo-800 truncate max-w-xs">
                                 {mainFile.nombreArchivo}
                               </span>
+                              {isOffice && (
+                                <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 px-2 py-0.5 rounded-lg border border-emerald-200 dark:border-emerald-800 flex items-center gap-1 shadow-xs">
+                                  <Sparkles className="w-2.5 h-2.5 text-emerald-600" /> Visor PDF Interactivo
+                                </span>
+                              )}
                             </div>
                             <p className="text-[11px] text-slate-400 font-bold mt-0.5">
                               Visualiza el contenido directamente en línea sin necesidad de descargarlo
@@ -1936,7 +1964,7 @@ export default function DocumentDetailModal({
                               type="file"
                               className="hidden"
                               onChange={handleFileUpload}
-                              accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,image/*"
+                              accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,image/*"
                               disabled={uploading}
                             />
                           </label>
@@ -1962,7 +1990,7 @@ export default function DocumentDetailModal({
                       </div>
 
                       <div className="p-3 bg-slate-100/60 dark:bg-slate-900/60 flex items-center justify-center">
-                        {isPdf ? (
+                        {canRenderInline ? (
                           <iframe
                             src={`/api/documentos/${doc.id}/view`}
                             title={mainFile.nombreArchivo}
@@ -2019,7 +2047,7 @@ export default function DocumentDetailModal({
                         type="file"
                         className="hidden"
                         onChange={handleFileUpload}
-                        accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,image/*"
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,image/*"
                         disabled={uploading}
                       />
                     </label>
@@ -2781,26 +2809,91 @@ export default function DocumentDetailModal({
                     );
                   }
 
-                  // NON-DIGITAL (plain text description or empty)
+                  // NON-DIGITAL (plain text description or attachment notice)
+                  let displayDesc = "";
+                  let displayObjective = "";
+                  let isAttachedDocNotice = false;
+                  const hasAttachedFile = doc.versions?.[0]?.files && doc.versions[0].files.length > 0;
+                  const attachedFileName = hasAttachedFile ? doc.versions[0].files[0].nombreArchivo : "";
+
+                  if (doc.descripcion && doc.descripcion.trim()) {
+                    const trimmed = doc.descripcion.trim();
+                    if (trimmed.startsWith("{")) {
+                      try {
+                        const parsed = JSON.parse(trimmed);
+                        if (parsed.desarrollo && parsed.desarrollo.trim()) {
+                          displayDesc = parsed.desarrollo.trim();
+                        }
+                        if (parsed.objetivo && parsed.objetivo.trim()) {
+                          if (parsed.objetivo.toLowerCase().includes("documento cargado como archivo adjunto")) {
+                            isAttachedDocNotice = true;
+                          } else {
+                            displayObjective = parsed.objetivo.trim();
+                          }
+                        } else if (!parsed.desarrollo && !parsed.objetivo) {
+                          isAttachedDocNotice = true;
+                        }
+                      } catch (e) {
+                        displayDesc = trimmed;
+                      }
+                    } else {
+                      displayDesc = trimmed;
+                    }
+                  } else if (hasAttachedFile) {
+                    isAttachedDocNotice = true;
+                  }
+
                   return (
-                    <div className="space-y-3">
-                      {doc.descripcion ? (
-                        <div className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
+                    <div className="space-y-4">
+                      {isAttachedDocNotice && (
+                        <div className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm">📁</span>
+                              <p className="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider">
+                                Documento Controlado en Archivo Adjunto
+                              </p>
+                            </div>
+                            <span className="text-[10px] font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 px-2.5 py-0.5 rounded-full border border-indigo-100 dark:border-indigo-800">
+                              Archivo Maestro Oficial
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                            Este documento maestro se gestiona mediante archivo adjunto oficial{attachedFileName ? ` (${attachedFileName})` : ''}.
+                            El contenido, organigramas y diagramas interactivos se encuentran visualizables en el visor superior y en las copias controladas.
+                          </p>
+                        </div>
+                      )}
+
+                      {displayObjective && (
+                        <div className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
+                          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
+                            Objetivo del Documento
+                          </p>
+                          <p className="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">
+                            {displayObjective}
+                          </p>
+                        </div>
+                      )}
+
+                      {displayDesc && (
+                        <div className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
                           <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
                             Descripción General
                           </p>
                           <p className="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">
-                            {doc.descripcion}
+                            {displayDesc}
                           </p>
                         </div>
-                      ) : null}
+                      )}
+
                       {canEdit && (
                         <button
                           onClick={() => {
                             setEditedDigitalData({
-                              objetivo: "",
+                              objetivo: displayObjective || "",
                               alcance: "",
-                              desarrollo: "",
+                              desarrollo: displayDesc || "",
                               responsabilidades: [],
                               videoUrl: "",
                               definiciones: [],
