@@ -4,9 +4,6 @@ const withPWA = require("@ducanh2912/next-pwa").default({
   register: true,
   skipWaiting: true,
   customWorkerDir: "worker",
-  fallbacks: {
-    document: "/offline.html",
-  },
 });
 
 /** @type {import('next').NextConfig} */
