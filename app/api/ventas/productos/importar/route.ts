@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { parseExcelNumber } from '@/lib/formatCurrency';
 import { normalizeSku } from '@/lib/ventas/skuUtils';
+import { getNextInventarioNumero } from '@/lib/inventario/counter';
 
 export async function POST(req: NextRequest) {
   try {
@@ -512,15 +513,21 @@ export async function POST(req: NextRequest) {
                     });
 
                     if (stockInicial > 0) {
+                      const numMov = await getNextInventarioNumero(tx, 'MOV');
                       await tx.productoStockMovimiento.create({
                         data: {
+                          numero: numMov,
                           productoId: nuevoProd.id,
                           almacenId: warehouseId,
-                          tipo: 'AJUSTE',
+                          tipo: 'STOCK_INICIAL',
                           cantidad: stockInicial,
+                          variacion: stockInicial,
                           stockAnterior: 0,
                           stockPosterior: stockInicial,
                           motivo: 'Stock inicial por importación masiva',
+                          referenciaTipo: 'IMPORTACION',
+                          referencia: nombreArchivo,
+                          estado: 'CONFIRMADO',
                           usuarioId: userId,
                         },
                       });

@@ -369,6 +369,10 @@ model SystemSetting {
 
   // Configuración de Notificaciones
   daysWithoutHoursThreshold Int @default(5)
+
+  // Inventario (Fase 2 Almacén): stock negativo bloqueado por defecto.
+  // Solo se permite si este flag está activo Y el usuario tiene permiso explícito.
+  inventarioPermiteNegativo Boolean @default(false)
 }
 
 model AuditLog {
@@ -2510,6 +2514,7 @@ model UnidadMedida {
   id        String     @id @default(cuid())
   codigo    String     @unique // "UN", "M", "KG", "L", "ROLLO", "CAJA", etc.
   nombre    String     // "Unidad", "Metro", "Kilogramo", etc.
+  decimales Int        @default(3) // Decimales permitidos en cantidades de stock (0 = solo enteros)
   activo    Boolean    @default(true)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
@@ -2595,29 +2600,43 @@ model ListaPrecio {
 }
 
 model Almacen {
-  id               String                    @id @default(cuid())
-  codigo           String                    @unique // "ALM-CENTRAL"
-  nombre           String                    // "Almacén Central"
-  descripcion      String?
-  esPredeterminado Boolean                   @default(false)
-  activo           Boolean                   @default(true)
-  createdAt        DateTime                  @default(now())
-  updatedAt        DateTime                  @updatedAt
-  ubicaciones      AlmacenUbicacion[]
-  stocks           ProductoStock[]
-  movimientos      ProductoStockMovimiento[]
+  id                 String                    @id @default(cuid())
+  codigo             String                    @unique // "ALM-CENTRAL"
+  nombre             String                    // "Almacén Central"
+  descripcion        String?
+  direccion          String?                   // Dirección o referencia física
+  responsableId      String?                   // Operator.id (referencia lógica)
+  responsableNombre  String?
+  esPredeterminado   Boolean                   @default(false)
+  activo             Boolean                   @default(true)
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+  ubicaciones        AlmacenUbicacion[]
+  stocks             ProductoStock[]
+  movimientos        ProductoStockMovimiento[]
+  movimientosOrigen  ProductoStockMovimiento[] @relation("MovAlmacenOrigen")
+  movimientosDestino ProductoStockMovimiento[] @relation("MovAlmacenDestino")
+  operaciones        StockOperacion[]          @relation("OperacionAlmacen")
+  operacionesDestino StockOperacion[]          @relation("OperacionAlmacenDestino")
+  conteos            ConteoInventario[]
 }
 
 model AlmacenUbicacion {
-  id        String          @id @default(cuid())
-  almacenId String
-  almacen   Almacen         @relation(fields: [almacenId], references: [id], onDelete: Cascade)
-  codigo    String          // "ESTANTE-A1", "PASILLO-1"
-  nombre    String?
-  activo    Boolean         @default(true)
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-  stocks    ProductoStock[]
+  id                 String                    @id @default(cuid())
+  almacenId          String
+  almacen            Almacen                   @relation(fields: [almacenId], references: [id], onDelete: Cascade)
+  codigo             String                    // "ESTANTE-A1", "PASILLO-1"
+  nombre             String?
+  tipo               String?                   // ESTANTERIA | PASILLO | DEPOSITO | PISO | OTRO
+  activo             Boolean                   @default(true)
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+  stocks             ProductoStock[]
+  movimientos        ProductoStockMovimiento[] @relation("MovUbicacion")
+  movimientosOrigen  ProductoStockMovimiento[] @relation("MovUbicacionOrigen")
+  movimientosDestino ProductoStockMovimiento[] @relation("MovUbicacionDestino")
+  conteos            ConteoInventario[]
+  conteoDetalles     ConteoInventarioDetalle[]
 
   @@unique([almacenId, codigo])
   @@index([almacenId])
@@ -2652,6 +2671,7 @@ model Producto {
   historial    ProductoHistorial[]
   ordenesServicioMateriales OrdenServicioMaterial[]
   ventaItems   VentaItem[]
+  conteoDetalles ConteoInventarioDetalle[]
 
   @@index([sku])
   @@index([codigoBarras])
@@ -2705,42 +2725,188 @@ model ProductoProveedorVentas {
   @@index([skuProveedor])
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// MÓDULO VENTAS — FASE 2: ALMACÉN Y STOCK
+// Fuente de verdad: ProductoStockMovimiento (inmutable). ProductoStock es el saldo
+// materializado por producto + almacén y SOLO se modifica desde lib/inventario/stockService.
+// ═══════════════════════════════════════════════════════════════════════════════
+
 model ProductoStock {
-  id          String            @id @default(cuid())
-  productoId  String
-  producto    Producto          @relation(fields: [productoId], references: [id], onDelete: Cascade)
-  almacenId   String
-  almacen     Almacen           @relation(fields: [almacenId], references: [id], onDelete: Restrict)
-  ubicacionId String?
-  ubicacion   AlmacenUbicacion? @relation(fields: [ubicacionId], references: [id], onDelete: SetNull)
-  stockActual Float             @default(0)
-  stockMinimo Float             @default(0)
-  stockMaximo Float             @default(0)
-  updatedAt   DateTime          @updatedAt
+  id                 String            @id @default(cuid())
+  productoId         String
+  producto           Producto          @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  almacenId          String
+  almacen            Almacen           @relation(fields: [almacenId], references: [id], onDelete: Restrict)
+  ubicacionId        String?           // Ubicación asignada (principal) dentro del almacén
+  ubicacion          AlmacenUbicacion? @relation(fields: [ubicacionId], references: [id], onDelete: SetNull)
+  stockActual        Float             @default(0)
+  stockMinimo        Float             @default(0) // 0 = no configurado
+  stockMaximo        Float             @default(0) // 0 = no configurado
+  ultimoMovimientoAt DateTime?
+  updatedAt          DateTime          @updatedAt
 
   @@unique([productoId, almacenId])
   @@index([productoId])
   @@index([almacenId])
+  @@index([ubicacionId])
 }
 
 model ProductoStockMovimiento {
-  id             String   @id @default(cuid())
-  productoId     String
-  producto       Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
-  almacenId      String
-  almacen        Almacen  @relation(fields: [almacenId], references: [id], onDelete: Restrict)
-  tipo           String   // AJUSTE | CONTEO | ENTRADA | SALIDA | TRANSFERENCIA | CORRECCION
-  cantidad       Float
-  stockAnterior  Float
-  stockPosterior Float
-  motivo         String?
-  usuarioId      String?
-  usuarioNombre  String?
-  createdAt      DateTime @default(now())
+  id                 String                    @id @default(cuid())
+  numero             String?                   @unique // MOV-2026-000001 (null en movimientos legacy)
+  operacionId        String?
+  operacion          StockOperacion?           @relation(fields: [operacionId], references: [id], onDelete: Restrict)
+  productoId         String
+  producto           Producto                  @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  almacenId          String                    // Almacén cuyo saldo se ve afectado
+  almacen            Almacen                   @relation(fields: [almacenId], references: [id], onDelete: Restrict)
+  ubicacionId        String?
+  ubicacion          AlmacenUbicacion?         @relation("MovUbicacion", fields: [ubicacionId], references: [id], onDelete: Restrict)
+  almacenOrigenId    String?
+  almacenOrigen      Almacen?                  @relation("MovAlmacenOrigen", fields: [almacenOrigenId], references: [id], onDelete: Restrict)
+  ubicacionOrigenId  String?
+  ubicacionOrigen    AlmacenUbicacion?         @relation("MovUbicacionOrigen", fields: [ubicacionOrigenId], references: [id], onDelete: Restrict)
+  almacenDestinoId   String?
+  almacenDestino     Almacen?                  @relation("MovAlmacenDestino", fields: [almacenDestinoId], references: [id], onDelete: Restrict)
+  ubicacionDestinoId String?
+  ubicacionDestino   AlmacenUbicacion?         @relation("MovUbicacionDestino", fields: [ubicacionDestinoId], references: [id], onDelete: Restrict)
+  tipo               String                    // STOCK_INICIAL | ENTRADA | SALIDA | AJUSTE_POSITIVO | AJUSTE_NEGATIVO | TRANSFERENCIA_ENTRADA | TRANSFERENCIA_SALIDA | CONTEO | REVERSA
+  cantidad           Float                     // Siempre positiva
+  variacion          Float                     @default(0) // Efecto con signo sobre el saldo (+/-)
+  stockAnterior      Float
+  stockPosterior     Float
+  motivo             String?
+  observaciones      String?
+  referenciaTipo     String?                   // ALTA_PRODUCTO | IMPORTACION | AJUSTE | TRANSFERENCIA | CONTEO | VENTA | REVERSA | MANUAL
+  referenciaId       String?
+  referencia         String?                   // Texto legible: nº de conteo, remito, etc.
+  estado             String                    @default("CONFIRMADO")
+  reversaDeId        String?                   @unique // Un movimiento sólo puede revertirse una vez
+  reversaDe          ProductoStockMovimiento?  @relation("MovReversa", fields: [reversaDeId], references: [id], onDelete: Restrict)
+  reversadoPor       ProductoStockMovimiento?  @relation("MovReversa")
+  conteoDetalleId    String?                   @unique // Idempotencia de confirmación de conteos
+  conteoDetalle      ConteoInventarioDetalle?  @relation(fields: [conteoDetalleId], references: [id], onDelete: Restrict)
+  metadata           Json?
+  usuarioId          String?
+  usuarioNombre      String?
+  createdAt          DateTime                  @default(now())
 
   @@index([productoId])
   @@index([almacenId])
   @@index([createdAt])
+  @@index([tipo])
+  @@index([operacionId])
+  @@index([usuarioId])
+  @@index([referenciaId])
+  @@index([productoId, almacenId, createdAt])
+}
+
+/// Cabecera de una operación de inventario (ajuste múltiple, transferencia, conteo, alta, importación, reversa).
+/// La idempotencyKey es única y se inserta en la MISMA transacción que los movimientos:
+/// un reintento nunca duplica movimientos.
+model StockOperacion {
+  id               String                    @id @default(cuid())
+  numero           String                    @unique // OPI-2026-000001
+  tipo             String                    // AJUSTE | TRANSFERENCIA | ENTRADA | SALIDA | CONTEO | STOCK_INICIAL | REVERSA
+  estado           String                    @default("CONFIRMADA")
+  almacenId        String?
+  almacen          Almacen?                  @relation("OperacionAlmacen", fields: [almacenId], references: [id], onDelete: Restrict)
+  almacenDestinoId String?
+  almacenDestino   Almacen?                  @relation("OperacionAlmacenDestino", fields: [almacenDestinoId], references: [id], onDelete: Restrict)
+  modoAjuste       String?                   // DIFERENCIA | EXISTENCIA_REAL
+  motivo           String?
+  observaciones    String?
+  referenciaTipo   String?
+  referenciaId     String?
+  referencia       String?
+  idempotencyKey   String?                   @unique
+  totalLineas      Int                       @default(0)
+  usuarioId        String?
+  usuarioNombre    String?
+  createdAt        DateTime                  @default(now())
+  movimientos      ProductoStockMovimiento[]
+  conteo           ConteoInventario?
+
+  @@index([tipo])
+  @@index([createdAt])
+  @@index([referenciaId])
+}
+
+/// Numeradores por serie y año (MOV, OPI, CNT).
+model InventarioCounter {
+  serie         String
+  year          Int
+  currentNumber Int    @default(0)
+
+  @@id([serie, year])
+}
+
+model ConteoInventario {
+  id                  String                    @id @default(cuid())
+  numero              String                    @unique // CNT-2026-000001
+  almacenId           String
+  almacen             Almacen                   @relation(fields: [almacenId], references: [id], onDelete: Restrict)
+  ubicacionId         String?
+  ubicacion           AlmacenUbicacion?         @relation(fields: [ubicacionId], references: [id], onDelete: Restrict)
+  tipo                String                    // GENERAL | UBICACION | FAMILIA | SELECCION | CICLICO
+  estado              String                    @default("BORRADOR") // BORRADOR | EN_CONTEO | PENDIENTE_REVISION | CONFIRMADO | CANCELADO
+  alcance             Json?                     // Criterios de selección usados
+  observaciones       String?
+  acumularEscaneos    Boolean                   @default(true)
+  responsableId       String?
+  responsableNombre   String?
+  creadoPorId         String?
+  creadoPorNombre     String?
+  iniciadoEn          DateTime?
+  finalizadoEn        DateTime?                 // Fin de captura → pendiente de revisión
+  revisadoPorId       String?
+  revisadoPorNombre   String?
+  revisadoEn          DateTime?
+  confirmadoPorId     String?
+  confirmadoPorNombre String?
+  confirmadoEn        DateTime?
+  canceladoPorId      String?
+  canceladoEn         DateTime?
+  motivoCancelacion   String?
+  operacionId         String?                   @unique
+  operacion           StockOperacion?           @relation(fields: [operacionId], references: [id], onDelete: Restrict)
+  corrigeConteoId     String?                   // Conteo de corrección vinculado a uno confirmado
+  corrigeConteo       ConteoInventario?         @relation("ConteoCorreccion", fields: [corrigeConteoId], references: [id], onDelete: Restrict)
+  correcciones        ConteoInventario[]        @relation("ConteoCorreccion")
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+  detalles            ConteoInventarioDetalle[]
+
+  @@index([almacenId])
+  @@index([estado])
+  @@index([createdAt])
+}
+
+model ConteoInventarioDetalle {
+  id                 String                   @id @default(cuid())
+  conteoId           String
+  conteo             ConteoInventario         @relation(fields: [conteoId], references: [id], onDelete: Cascade)
+  productoId         String
+  producto           Producto                 @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  ubicacionId        String?
+  ubicacion          AlmacenUbicacion?        @relation(fields: [ubicacionId], references: [id], onDelete: SetNull)
+  stockTeorico       Float                    @default(0) // Snapshot al iniciar el conteo
+  cantidadContada    Float?
+  diferencia         Float?
+  segundaCantidad    Float?                   // Segunda revisión (según permisos)
+  segundoConteoPorId String?
+  segundoConteoEn    DateTime?
+  estado             String                   @default("PENDIENTE") // PENDIENTE | CONTADO | REVISADO
+  observaciones      String?
+  contadoPorId       String?
+  contadoEn          DateTime?
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+  movimiento         ProductoStockMovimiento?
+
+  @@unique([conteoId, productoId])
+  @@index([conteoId])
+  @@index([productoId])
 }
 
 model ProductoHistorial {

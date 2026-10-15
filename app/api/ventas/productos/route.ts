@@ -5,6 +5,7 @@ import { logAudit } from '@/lib/audit';
 
 import { calculateSuggestedPrice } from '@/lib/ventas/priceRules';
 import { normalizeSku, buildProductSearchWhere } from '@/lib/ventas/skuUtils';
+import { getNextInventarioNumero } from '@/lib/inventario/counter';
 
 const productoCreateSchema = z.object({
   sku: z.string().min(1, 'El SKU es obligatorio'),
@@ -385,17 +386,23 @@ export async function POST(req: NextRequest) {
           },
         });
 
-        // If initial stock was given, record movement
+        // If initial stock was given, record atomic opening movement
         if (data.stockInicial > 0) {
+          const numMov = await getNextInventarioNumero(tx, 'MOV');
           await tx.productoStockMovimiento.create({
             data: {
+              numero: numMov,
               productoId: prod.id,
               almacenId: targetAlmacenId,
-              tipo: 'AJUSTE',
+              tipo: 'STOCK_INICIAL',
               cantidad: data.stockInicial,
+              variacion: data.stockInicial,
               stockAnterior: 0,
               stockPosterior: data.stockInicial,
               motivo: 'Stock inicial por alta de producto',
+              referenciaTipo: 'ALTA_PRODUCTO',
+              referencia: prod.sku,
+              estado: 'CONFIRMADO',
               usuarioId: userId,
             },
           });
