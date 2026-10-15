@@ -10,6 +10,22 @@ interface ComprobanteModalProps {
   onGenerarRemito?: (venta: any) => void;
 }
 
+function safeFormatDateTime(val: any): string {
+  try {
+    const d = new Date(val || Date.now());
+    if (isNaN(d.getTime())) return new Date().toLocaleString('es-AR');
+    return d.toLocaleString('es-AR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch {
+    return new Date().toLocaleString('es-AR');
+  }
+}
+
 export default function ComprobanteModal({
   isOpen,
   onClose,
@@ -29,15 +45,9 @@ export default function ComprobanteModal({
       style: 'currency',
       currency: 'ARS',
       minimumFractionDigits: 2,
-    }).format(val || 0);
+    }).format(Number(val) || 0);
 
-  const fechaFormateada = new Date(venta.fecha || venta.createdAt || Date.now()).toLocaleString('es-AR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const fechaFormateada = safeFormatDateTime(venta.fecha || venta.createdAt);
 
   // Atajos de teclado: Escape para cerrar, Enter / Ctrl+P para imprimir
   React.useEffect(() => {
@@ -131,7 +141,7 @@ export default function ComprobanteModal({
             {/* Membrete comercial */}
             <div className="text-center pb-3 border-b border-dashed border-slate-300 dark:border-slate-700">
               <h2 className="text-lg font-black tracking-tight text-slate-900 dark:text-slate-100">
-                HDB ELECTRICIDAD INDUSTRIAL
+                HDB - Materiales Eléctricos
               </h2>
               <p className="text-[11px] text-slate-500">SISTEMA INTEGRADO DE GESTIÓN (SGI)</p>
               <div className="mt-2 inline-block px-2.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50 text-[10px] font-bold uppercase tracking-wider">
@@ -255,27 +265,27 @@ export default function ComprobanteModal({
               {venta.pagos?.map((p: any, idx: number) => (
                 <div key={p.id || idx} className="flex justify-between">
                   <span className="capitalize">
-                    • {p.metodo.replace(/_/g, ' ')}
+                    • {String(p?.metodo || 'PAGO').replace(/_/g, ' ')}
                     {p.referencia ? ` (Ref: ${p.referencia})` : ''}
                   </span>
-                  <span className="font-bold">{formatARS(p.monto)}</span>
+                  <span className="font-bold">{formatARS(p?.monto || 0)}</span>
                 </div>
               ))}
 
               {/* Vuelto en efectivo si existió */}
-              {venta.pagos?.some((p: any) => p.vuelto && p.vuelto > 0) && (
+              {Array.isArray(venta.pagos) && venta.pagos.some((p: any) => p.vuelto && p.vuelto > 0) && (
                 <div className="flex justify-between text-slate-500 text-[10px] pt-1">
                   <span>CAMBIO / VUELTO ENTREGADO:</span>
                   <span>
                     {formatARS(
-                      venta.pagos.reduce((acc: number, p: any) => acc + (p.vuelto || 0), 0)
+                      venta.pagos.reduce((acc: number, p: any) => acc + (Number(p.vuelto) || 0), 0)
                     )}
                   </span>
                 </div>
               )}
 
               {/* Imputación a Cuenta Corriente */}
-              {venta.imputadoCuentaCorriente > 0 && (
+              {Number(venta.imputadoCuentaCorriente) > 0 && (
                 <div className="p-2 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40 text-amber-900 dark:text-amber-300 mt-2 text-[10px]">
                   <div className="flex justify-between font-bold">
                     <span>IMPUTADO A CUENTA CORRIENTE:</span>
@@ -291,7 +301,7 @@ export default function ComprobanteModal({
             {/* Pie de comprobante */}
             <div className="text-center pt-4 border-t border-dashed border-slate-300 dark:border-slate-700 text-[10px] text-slate-400">
               <p>¡Gracias por su compra!</p>
-              <p>HDB Electricidad Industrial — Trazabilidad interna ID: {venta.id}</p>
+              <p>HDB - Materiales Eléctricos — Trazabilidad interna ID: {venta.id}</p>
             </div>
           </div>
         </div>

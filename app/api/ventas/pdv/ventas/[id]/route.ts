@@ -20,6 +20,11 @@ export async function GET(
         remitos: {
           include: {
             items: true,
+            venta: {
+              include: {
+                items: true,
+              },
+            },
           },
           orderBy: {
             createdAt: 'desc',

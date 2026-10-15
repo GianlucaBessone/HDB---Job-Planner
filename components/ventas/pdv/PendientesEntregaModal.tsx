@@ -225,7 +225,7 @@ export default function PendientesEntregaModal({
                         <span>•</span>
                         <span>
                           <strong className="text-slate-800 dark:text-slate-200">Vendedor:</strong>{' '}
-                          {v.vendedorNombre || '—'}
+                          {v.vendedorNombre || v.vendedor?.nombreCompleto || 'Ventas HDB'}
                         </span>
                       </div>
                     </div>
@@ -245,7 +245,7 @@ export default function PendientesEntregaModal({
                           setVentaACancelar(v);
                           setMotivoCancelacion('');
                         }}
-                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 font-bold text-xs border border-red-200 dark:border-red-800 transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 font-bold text-xs border border-red-200 dark:border-red-800 transition-colors"
                       >
                         <Ban className="w-3.5 h-3.5" />
                         <span>Cancelar Pendientes</span>
@@ -262,7 +262,22 @@ export default function PendientesEntregaModal({
                         {v.remitos.map((rem: any) => (
                           <button
                             key={rem.id}
-                            onClick={() => onVerRemito(rem)}
+                            onClick={() =>
+                              onVerRemito({
+                                ...rem,
+                                items: rem.items || [],
+                                venta: rem.venta || v,
+                                clienteNombre: rem.clienteNombre || v.clienteNombre,
+                                clienteIdentificacion: rem.clienteIdentificacion || v.clienteIdentificacion,
+                                clienteDireccion: rem.clienteDireccion || v.clienteDireccion,
+                                clienteTelefono: rem.clienteTelefono || v.clienteTelefono,
+                                vendedorNombre:
+                                  rem.vendedorNombre ||
+                                  v.vendedorNombre ||
+                                  v.vendedor?.nombreCompleto ||
+                                  'Ventas HDB',
+                              })
+                            }
                             className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-mono text-[10px] font-bold border border-indigo-200 hover:bg-indigo-100 transition-colors"
                             title="Ver e imprimir remito"
                           >

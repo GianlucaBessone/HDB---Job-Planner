@@ -58,6 +58,7 @@ import ConfigListasPreciosModal from '@/components/ventas/ConfigListasPreciosMod
 import GenerarRemitoModal from '@/components/ventas/pdv/GenerarRemitoModal';
 import ImprimirRemitoModal from '@/components/ventas/pdv/ImprimirRemitoModal';
 import PendientesEntregaModal from '@/components/ventas/pdv/PendientesEntregaModal';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 interface ItemCarrito {
   id: string; // id temporal en el carrito
@@ -697,13 +698,16 @@ export default function PdvPage() {
 
   // Confirmar venta desde CobroModal
   const handleConfirmarVentaBackend = async (datosCobro: any) => {
+    const activeVendorName =
+      currentUser?.nombreCompleto || currentUser?.name || currentUser?.nombre || 'Ventas HDB';
+
     const payload = {
       clienteId: cliente.id,
       clienteNombre: cliente.nombre,
       clienteIdentificacion: cliente.identificacion,
       listaPrecioId: listaSeleccionadaId || null,
       vendedorId: currentUser?.id || undefined,
-      vendedorNombre: currentUser?.nombreCompleto || undefined,
+      vendedorNombre: activeVendorName,
       descuentoPorcentaje: descuentoGlobal,
       items: carrito.map((it) => ({
         productoId: it.productoId,
@@ -728,6 +732,9 @@ export default function PdvPage() {
       headers: {
         'Content-Type': 'application/json',
         'X-Idempotency-Key': datosCobro.idempotencyKey,
+        'x-user-id': currentUser?.id || '',
+        'x-user-name': activeVendorName,
+        'x-user-role': currentUser?.role || '',
       },
       body: JSON.stringify(payload),
     });
@@ -739,7 +746,8 @@ export default function PdvPage() {
 
     showToast(`Venta ${data.venta.numero} registrada con éxito`, 'success');
 
-    // Mostrar comprobante
+    // Cerrar modal de cobro y mostrar comprobante de forma segura
+    setShowCobroModal(false);
     setComprobanteVenta(data.venta);
 
     // Reiniciar venta
@@ -1346,62 +1354,74 @@ export default function PdvPage() {
         />
       )}
 
-      {/* Modal de Comprobante / Impresión */}
-      <ComprobanteModal
-        isOpen={!!comprobanteVenta}
-        onClose={() => setComprobanteVenta(null)}
-        venta={comprobanteVenta}
-        onGenerarRemito={(v) => {
-          setVentaParaRemito(v);
+      {/* Modales de Comprobantes, Remitos e Historial protegidos por ErrorBoundary */}
+      <ErrorBoundary
+        fallbackTitle="Error en el módulo de comprobantes o remitos"
+        onReset={() => {
+          setComprobanteVenta(null);
+          setVentaParaRemito(null);
+          setRemitoParaImprimir(null);
+          setShowPendientesModal(false);
         }}
-      />
-
-      {/* Modal para Generar Remito */}
-      {ventaParaRemito && (
-        <GenerarRemitoModal
-          isOpen={!!ventaParaRemito}
-          onClose={() => setVentaParaRemito(null)}
-          venta={ventaParaRemito}
-          onRemitoGenerado={(nuevoRemito) => {
-            setRemitoParaImprimir(nuevoRemito);
-          }}
-        />
-      )}
-
-      {/* Modal para Imprimir Remito */}
-      {remitoParaImprimir && (
-        <ImprimirRemitoModal
-          isOpen={!!remitoParaImprimir}
-          onClose={() => setRemitoParaImprimir(null)}
-          remito={remitoParaImprimir}
-        />
-      )}
-
-      {/* Modal de Pendientes de Entrega */}
-      {showPendientesModal && (
-        <PendientesEntregaModal
-          isOpen={showPendientesModal}
-          onClose={() => setShowPendientesModal(false)}
-          onEntregar={(v) => {
-            setShowPendientesModal(false);
+      >
+        {/* Modal de Comprobante / Impresión */}
+        <ComprobanteModal
+          isOpen={!!comprobanteVenta}
+          onClose={() => setComprobanteVenta(null)}
+          venta={comprobanteVenta}
+          onGenerarRemito={(v) => {
+            setComprobanteVenta(null);
             setVentaParaRemito(v);
           }}
-          onVerRemito={(rem) => {
-            setRemitoParaImprimir(rem);
+        />
+
+        {/* Modal para Generar Remito */}
+        {ventaParaRemito && (
+          <GenerarRemitoModal
+            isOpen={!!ventaParaRemito}
+            onClose={() => setVentaParaRemito(null)}
+            venta={ventaParaRemito}
+            onRemitoGenerado={(nuevoRemito) => {
+              setRemitoParaImprimir(nuevoRemito);
+            }}
+          />
+        )}
+
+        {/* Modal para Imprimir Remito */}
+        {remitoParaImprimir && (
+          <ImprimirRemitoModal
+            isOpen={!!remitoParaImprimir}
+            onClose={() => setRemitoParaImprimir(null)}
+            remito={remitoParaImprimir}
+          />
+        )}
+
+        {/* Modal de Pendientes de Entrega */}
+        {showPendientesModal && (
+          <PendientesEntregaModal
+            isOpen={showPendientesModal}
+            onClose={() => setShowPendientesModal(false)}
+            onEntregar={(v) => {
+              setShowPendientesModal(false);
+              setVentaParaRemito(v);
+            }}
+            onVerRemito={(rem) => {
+              setRemitoParaImprimir(rem);
+            }}
+          />
+        )}
+
+        {/* Modal de Historial de Ventas */}
+        <HistorialVentasModal
+          isOpen={showHistorialModal}
+          onClose={() => setShowHistorialModal(false)}
+          currentUserRole={currentUser?.role}
+          currentUserId={currentUser?.id}
+          onVerComprobante={(v) => {
+            setComprobanteVenta(v);
           }}
         />
-      )}
-
-      {/* Modal de Historial de Ventas */}
-      <HistorialVentasModal
-        isOpen={showHistorialModal}
-        onClose={() => setShowHistorialModal(false)}
-        currentUserRole={currentUser?.role}
-        currentUserId={currentUser?.id}
-        onVerComprobante={(v) => {
-          setComprobanteVenta(v);
-        }}
-      />
+      </ErrorBoundary>
 
       {/* Modal Nativo para Modificación de Precios */}
       <ModificarPrecioModal

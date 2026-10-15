@@ -164,8 +164,17 @@ export default function GenerarRemitoModal({
 
     setIsSubmitting(true);
     try {
+      let currentUser: any = null;
+      try {
+        const stored = localStorage.getItem('currentUser');
+        if (stored) currentUser = JSON.parse(stored);
+      } catch {}
+
+      const vendedorNombre = currentUser?.nombreCompleto || currentUser?.name || currentUser?.nombre || undefined;
+
       const payload = {
         ventaId: venta.id,
+        vendedorNombre,
         receptorNombre: receptorNombre.trim() || undefined,
         receptorDni: receptorDni.trim() || undefined,
         observaciones: observaciones.trim() || undefined,
@@ -177,7 +186,11 @@ export default function GenerarRemitoModal({
 
       const res = await fetch('/api/ventas/pdv/remitos', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': currentUser?.id || '',
+          'x-user-name': vendedorNombre || '',
+        },
         body: JSON.stringify(payload),
       });
 

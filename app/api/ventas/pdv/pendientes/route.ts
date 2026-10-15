@@ -42,6 +42,11 @@ export async function GET(req: NextRequest) {
         remitos: {
           include: {
             items: true,
+            venta: {
+              include: {
+                items: true,
+              },
+            },
           },
           orderBy: {
             createdAt: 'desc',
@@ -49,6 +54,12 @@ export async function GET(req: NextRequest) {
         },
         pagos: true,
         cliente: true,
+        vendedor: {
+          select: {
+            id: true,
+            nombreCompleto: true,
+          },
+        },
       },
       orderBy: {
         fecha: 'desc',
@@ -73,6 +84,7 @@ export async function GET(req: NextRequest) {
 
         return {
           ...venta,
+          vendedorNombre: venta.vendedorNombre || (venta as any).vendedor?.nombreCompleto || 'Ventas HDB',
           itemsPendientes: itemsConPendiente,
           totalItemsPendientes: itemsConPendiente.length,
         };

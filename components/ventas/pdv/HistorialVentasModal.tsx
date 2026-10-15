@@ -434,7 +434,17 @@ export default function HistorialVentasModal({
                                   return it.cantidad - e - c > 0;
                                 });
                                 if (!pend && v.remitos && v.remitos.length > 0) {
-                                  setRemitoParaImprimir(v.remitos[0]);
+                                  const rem0 = v.remitos[0];
+                                  setRemitoParaImprimir({
+                                    ...rem0,
+                                    items: rem0.items || [],
+                                    venta: rem0.venta || v,
+                                    clienteNombre: rem0.clienteNombre || v.clienteNombre,
+                                    clienteIdentificacion: rem0.clienteIdentificacion || v.clienteIdentificacion,
+                                    clienteDireccion: rem0.clienteDireccion || v.clienteDireccion,
+                                    clienteTelefono: rem0.clienteTelefono || v.clienteTelefono,
+                                    vendedorNombre: rem0.vendedorNombre || v.vendedorNombre || v.vendedor?.nombreCompleto,
+                                  });
                                 } else {
                                   setVentaParaRemito(v);
                                 }
@@ -570,7 +580,22 @@ export default function HistorialVentasModal({
                           <button
                             type="button"
                             onClick={() => {
-                              setRemitoParaImprimir(rem);
+                              setRemitoParaImprimir({
+                                ...rem,
+                                items: rem.items || [],
+                                venta: rem.venta || {
+                                  id: ventaDetalle.id,
+                                  numero: ventaDetalle.numero,
+                                  fecha: ventaDetalle.fecha,
+                                  estado: ventaDetalle.estado,
+                                  items: ventaDetalle.items || [],
+                                },
+                                clienteNombre: rem.clienteNombre || ventaDetalle.clienteNombre || 'Consumidor Final',
+                                clienteIdentificacion: rem.clienteIdentificacion || ventaDetalle.clienteIdentificacion,
+                                clienteDireccion: rem.clienteDireccion || ventaDetalle.clienteDireccion,
+                                clienteTelefono: rem.clienteTelefono || ventaDetalle.clienteTelefono,
+                                vendedorNombre: rem.vendedorNombre || ventaDetalle.vendedorNombre || ventaDetalle.vendedor?.nombreCompleto,
+                              });
                             }}
                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 text-xs font-bold hover:bg-indigo-100 transition-colors"
                           >

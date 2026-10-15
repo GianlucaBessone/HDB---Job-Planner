@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useId } from 'react';
+import React, { useState, useEffect, useCallback, useId, useRef } from 'react';
 import {
   X,
   CreditCard,
@@ -91,9 +91,11 @@ export default function CobroModal({
   const [errorValidacion, setErrorValidacion] = useState<string | null>(null);
   const [showModalCambioCliente, setShowModalCambioCliente] = useState(false);
 
+  const prevIsOpenRef = useRef(false);
+
   // Inicializar pagos al abrir
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !prevIsOpenRef.current) {
       setPagos([
         {
           id: 'pago-1',
@@ -107,6 +109,7 @@ export default function CobroModal({
       setErrorValidacion(null);
       setIsSubmitting(false);
     }
+    prevIsOpenRef.current = isOpen;
   }, [isOpen, totalVenta]);
 
   // Cálculos de pagos

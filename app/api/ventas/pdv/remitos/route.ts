@@ -10,6 +10,7 @@ const itemRemitoSchema = z.object({
 
 const crearRemitoSchema = z.object({
   ventaId: z.string().min(1, 'El ID de la venta es obligatorio'),
+  vendedorNombre: z.string().optional().nullable(),
   receptorNombre: z.string().optional().nullable(),
   receptorDni: z.string().optional().nullable(),
   observaciones: z.string().optional().nullable(),
@@ -61,7 +62,10 @@ export async function POST(req: NextRequest) {
     const userNameHeader = req.headers.get('x-user-name');
 
     const remito = await crearRemitoEntrega(
-      parsed,
+      {
+        ...parsed,
+        vendedorNombre: parsed.vendedorNombre || userNameHeader || undefined,
+      },
       userIdHeader || undefined,
       userNameHeader || undefined
     );

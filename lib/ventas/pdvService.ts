@@ -240,6 +240,10 @@ export async function confirmarVentaPDV(input: ConfirmarVentaInput, userId?: str
     }
   }
 
+  if (!vendedorNombre) {
+    vendedorNombre = 'Ventas HDB';
+  }
+
   // 4. Calcular totales precisos
   const calculo = calcularTotalesVenta(
     input.items,
@@ -488,6 +492,7 @@ export async function generarNumeroRemito(tx: any, year?: number): Promise<strin
 
 export interface CrearRemitoInput {
   ventaId: string;
+  vendedorNombre?: string | null;
   receptorNombre?: string | null;
   receptorDni?: string | null;
   observaciones?: string | null;
@@ -575,7 +580,7 @@ export async function crearRemitoEntrega(
         clienteIdentificacion: venta.clienteIdentificacion,
         clienteDireccion: venta.clienteDireccion,
         clienteTelefono: venta.clienteTelefono,
-        vendedorNombre: usuarioNombre || venta.vendedorNombre,
+        vendedorNombre: input.vendedorNombre || usuarioNombre || venta.vendedorNombre || 'Ventas HDB',
         receptorNombre: receptorNombre?.trim() || venta.clienteNombre,
         receptorDni: receptorDni?.trim() || venta.clienteIdentificacion,
         observaciones: observaciones?.trim() || null,

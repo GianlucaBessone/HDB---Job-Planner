@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { X, Search, User, Check, Building2, Phone, MapPin, Loader2 } from 'lucide-react';
 
 interface ClienteItem {
@@ -41,12 +41,27 @@ export default function SeleccionarClienteModal({
   const [isLoading, setIsLoading] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const listContainerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Limpiar referencias al cambiar clientes o cerrar
-  useEffect(() => {
-    itemRefs.current = [];
-  }, [clientes, isOpen]);
+  // Función robusta para enfocar un elemento de la lista por índice
+  const focusItem = useCallback((index: number) => {
+    // 1. Intentar por ref directo
+    const el = itemRefs.current[index];
+    if (el) {
+      el.focus();
+      return;
+    }
+
+    // 2. Fallback: buscar botones interactivos dentro del contenedor de lista
+    if (listContainerRef.current) {
+      const items = listContainerRef.current.querySelectorAll<HTMLElement>('[role="button"][tabindex="0"]');
+      if (items && items.length > 0) {
+        const target = items[Math.min(index, items.length - 1)] || items[0];
+        target?.focus();
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -115,13 +130,19 @@ export default function SeleccionarClienteModal({
               ref={searchInputRef}
               type="text"
               autoFocus
-              placeholder="Buscar por nombre, email, teléfono o dirección... (Presione TAB o Flecha Abajo para ir a la lista)"
+              placeholder="Buscar por nombre, email, teléfono o dirección... [TAB / ↓]"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Tab' || e.key === 'ArrowDown') {
+                if (e.key === 'Tab' && !e.shiftKey) {
                   e.preventDefault();
-                  itemRefs.current[0]?.focus();
+                  // Si hay búsqueda y resultados, enfocar el primer resultado encontrado (índice 1); si no, Consumidor Final (índice 0)
+                  const targetIdx = search.trim().length > 0 && clientes.length > 0 ? 1 : 0;
+                  focusItem(targetIdx);
+                } else if (e.key === 'ArrowDown') {
+                  e.preventDefault();
+                  const targetIdx = search.trim().length > 0 && clientes.length > 0 ? 1 : 0;
+                  focusItem(targetIdx);
                 } else if (e.key === 'Escape') {
                   e.preventDefault();
                   onClose();
@@ -132,9 +153,12 @@ export default function SeleccionarClienteModal({
           </div>
         </div>
 
-        {/* Lista de clientes */}
-        <div className="p-4 overflow-y-auto space-y-2 flex-1 divide-y divide-slate-100 dark:divide-slate-800/60">
-          {/* Opción rápida: Consumidor Final */}
+        {/* Lista de clientes con contenedor referenciado */}
+        <div
+          ref={listContainerRef}
+          className="p-4 overflow-y-auto space-y-2 flex-1 divide-y divide-slate-100 dark:divide-slate-800/60"
+        >
+          {/* Opción rápida: Consumidor Final (Índice 0) */}
           <div
             ref={(el) => {
               itemRefs.current[0] = el;
@@ -152,10 +176,10 @@ export default function SeleccionarClienteModal({
                   listaPrecio: null,
                 });
                 onClose();
-              } else if (e.key === 'ArrowDown') {
+              } else if (e.key === 'ArrowDown' || (e.key === 'Tab' && !e.shiftKey)) {
                 e.preventDefault();
-                itemRefs.current[1]?.focus();
-              } else if (e.key === 'ArrowUp') {
+                focusItem(1);
+              } else if (e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey)) {
                 e.preventDefault();
                 searchInputRef.current?.focus();
               } else if (e.key === 'Escape') {
@@ -230,12 +254,18 @@ export default function SeleccionarClienteModal({
                         listaPrecio: c.listaPrecio || null,
                       });
                       onClose();
-                    } else if (e.key === 'ArrowDown') {
+                    } else if (e.key === 'ArrowDown' || (e.key === 'Tab' && !e.shiftKey)) {
+                      if (refIndex < clientes.length) {
+                        e.preventDefault();
+                        focusItem(refIndex + 1);
+                      }
+                    } else if (e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey)) {
                       e.preventDefault();
-                      itemRefs.current[refIndex + 1]?.focus();
-                    } else if (e.key === 'ArrowUp') {
-                      e.preventDefault();
-                      itemRefs.current[refIndex - 1]?.focus();
+                      if (refIndex > 1) {
+                        focusItem(refIndex - 1);
+                      } else {
+                        focusItem(0);
+                      }
                     } else if (e.key === 'Escape') {
                       e.preventDefault();
                       onClose();
