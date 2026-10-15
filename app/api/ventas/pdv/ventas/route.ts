@@ -52,6 +52,14 @@ export async function GET(req: NextRequest) {
         include: {
           items: true,
           pagos: true,
+          remitos: {
+            include: {
+              items: true,
+            },
+            orderBy: {
+              createdAt: 'desc',
+            },
+          },
           cliente: {
             select: { id: true, nombre: true, email: true, telefono: true, direccion: true },
           },

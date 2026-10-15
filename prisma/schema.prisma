@@ -3193,6 +3193,10 @@ model Venta {
   imputadoCuentaCorriente Float         @default(0) // Importe asignado a cuenta corriente
   cuentaCorrienteConciliada Boolean     @default(false) // Bandera para cuando se habilite el módulo de CC
 
+  // Remitos y entrega física de materiales
+  estadoEntrega           String        @default("PENDIENTE") // "PENDIENTE" | "PARCIAL" | "ENTREGADO" | "CANCELADO"
+  remitos                 RemitoEntrega[]
+
   // Preparación para integración con Almacén / Stock
   stockDescontado         Boolean       @default(false)
   movimientoStockId       String?
@@ -3216,6 +3220,7 @@ model Venta {
   @@index([vendedorId])
   @@index([estado])
   @@index([estadoPago])
+  @@index([estadoEntrega])
   @@index([listaPrecioId])
 }
 
@@ -3238,6 +3243,11 @@ model VentaItem {
   precioModificado    Boolean   @default(false)
   motivoModificacion  String?
 
+  // Control de entrega física
+  cantidadEntregada   Float     @default(0)
+  cantidadCancelada   Float     @default(0)
+  remitoItems         RemitoEntregaItem[]
+
   @@index([ventaId])
   @@index([productoId])
   @@index([sku])
@@ -3258,6 +3268,52 @@ model VentaPago {
   @@index([ventaId])
   @@index([metodo])
 }
+
+model RemitoEntregaCounter {
+  year          Int @id
+  currentNumber Int @default(0)
+}
+
+model RemitoEntrega {
+  id                    String              @id @default(cuid())
+  numero                String              @unique // Ej: "REM-2026-000001"
+  fecha                 DateTime            @default(now())
+  ventaId               String
+  venta                 Venta               @relation(fields: [ventaId], references: [id], onDelete: Cascade)
+  clienteNombre         String
+  clienteIdentificacion String?
+  clienteDireccion      String?
+  clienteTelefono       String?
+  vendedorNombre        String?
+  receptorNombre        String?             // Quien retira físicamente
+  receptorDni           String?             // DNI de quien retira
+  observaciones         String?
+  estado                String              @default("CONFORME") // "CONFORME" | "ANULADO"
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  items                 RemitoEntregaItem[]
+
+  @@index([ventaId])
+  @@index([numero])
+  @@index([fecha])
+}
+
+model RemitoEntregaItem {
+  id             String        @id @default(cuid())
+  remitoId       String
+  remito         RemitoEntrega @relation(fields: [remitoId], references: [id], onDelete: Cascade)
+  ventaItemId    String
+  ventaItem      VentaItem     @relation(fields: [ventaItemId], references: [id], onDelete: Cascade)
+  sku            String
+  descripcion    String
+  unidad         String?
+  cantidad       Float         @default(1) // Cantidad entregada en este remito
+
+  @@index([remitoId])
+  @@index([ventaItemId])
+}
+
 
 
 

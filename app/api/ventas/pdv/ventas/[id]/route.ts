@@ -17,6 +17,14 @@ export async function GET(
         pagos: {
           orderBy: { createdAt: 'asc' },
         },
+        remitos: {
+          include: {
+            items: true,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
         cliente: true,
         listaPrecio: true,
         vendedor: {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Search, User, Check, Building2, Phone, MapPin, Loader2 } from 'lucide-react';
 
 interface ClienteItem {
@@ -40,6 +40,14 @@ export default function SeleccionarClienteModal({
   const [clientes, setClientes] = useState<ClienteItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Limpiar referencias al cambiar clientes o cerrar
+  useEffect(() => {
+    itemRefs.current = [];
+  }, [clientes, isOpen]);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -65,7 +73,7 @@ export default function SeleccionarClienteModal({
     }
   };
 
-  // Atajo de teclado: Escape para cerrar
+  // Atajo de teclado global: Escape para cerrar cancelando
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -104,11 +112,21 @@ export default function SeleccionarClienteModal({
           <div className="relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
+              ref={searchInputRef}
               type="text"
               autoFocus
-              placeholder="Buscar por nombre, email, teléfono o dirección..."
+              placeholder="Buscar por nombre, email, teléfono o dirección... (Presione TAB o Flecha Abajo para ir a la lista)"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Tab' || e.key === 'ArrowDown') {
+                  e.preventDefault();
+                  itemRefs.current[0]?.focus();
+                } else if (e.key === 'Escape') {
+                  e.preventDefault();
+                  onClose();
+                }
+              }}
               className="w-full pl-10 pr-4 py-2.5 bg-slate-100/70 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/30"
             />
           </div>
@@ -118,6 +136,33 @@ export default function SeleccionarClienteModal({
         <div className="p-4 overflow-y-auto space-y-2 flex-1 divide-y divide-slate-100 dark:divide-slate-800/60">
           {/* Opción rápida: Consumidor Final */}
           <div
+            ref={(el) => {
+              itemRefs.current[0] = el;
+            }}
+            tabIndex={0}
+            role="button"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onSeleccionar({
+                  id: null,
+                  nombre: 'Consumidor Final',
+                  identificacion: null,
+                  listaPrecioId: null,
+                  listaPrecio: null,
+                });
+                onClose();
+              } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                itemRefs.current[1]?.focus();
+              } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                searchInputRef.current?.focus();
+              } else if (e.key === 'Escape') {
+                e.preventDefault();
+                onClose();
+              }
+            }}
             onClick={() => {
               onSeleccionar({
                 id: null,
@@ -128,7 +173,7 @@ export default function SeleccionarClienteModal({
               });
               onClose();
             }}
-            className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
+            className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-indigo-400 ${
               clienteActual.id === null
                 ? 'bg-indigo-50/70 dark:bg-indigo-950/40 border-indigo-200 dark:border-indigo-800 shadow-xs'
                 : 'hover:bg-slate-50 dark:hover:bg-slate-800/50 border-slate-200 dark:border-slate-800'
@@ -163,11 +208,39 @@ export default function SeleccionarClienteModal({
               No se encontraron clientes registrados con "{search}"
             </div>
           ) : (
-            clientes.map((c) => {
+            clientes.map((c, idx) => {
               const isSelected = clienteActual.id === c.id;
+              const refIndex = idx + 1;
               return (
                 <div
                   key={c.id}
+                  ref={(el) => {
+                    itemRefs.current[refIndex] = el;
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onSeleccionar({
+                        id: c.id,
+                        nombre: c.nombre,
+                        identificacion: c.telefono || c.email || null,
+                        listaPrecioId: c.listaPrecioId || null,
+                        listaPrecio: c.listaPrecio || null,
+                      });
+                      onClose();
+                    } else if (e.key === 'ArrowDown') {
+                      e.preventDefault();
+                      itemRefs.current[refIndex + 1]?.focus();
+                    } else if (e.key === 'ArrowUp') {
+                      e.preventDefault();
+                      itemRefs.current[refIndex - 1]?.focus();
+                    } else if (e.key === 'Escape') {
+                      e.preventDefault();
+                      onClose();
+                    }
+                  }}
                   onClick={() => {
                     onSeleccionar({
                       id: c.id,
@@ -178,7 +251,7 @@ export default function SeleccionarClienteModal({
                     });
                     onClose();
                   }}
-                  className={`pt-2 p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
+                  className={`pt-2 p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-indigo-400 ${
                     isSelected
                       ? 'bg-indigo-50/70 dark:bg-indigo-950/40 border-indigo-200 dark:border-indigo-800 shadow-xs'
                       : 'hover:bg-slate-50 dark:hover:bg-slate-800/50 border-transparent hover:border-slate-200 dark:hover:border-slate-800'

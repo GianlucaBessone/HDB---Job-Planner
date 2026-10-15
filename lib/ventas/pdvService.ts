@@ -469,3 +469,256 @@ export async function anularVentaPDV(
 
   return updatedVenta;
 }
+
+/**
+ * Genera el siguiente número secuencial de remito de entrega (ej: REM-2026-000001)
+ */
+export async function generarNumeroRemito(tx: any, year?: number): Promise<string> {
+  const currentYear = year || new Date().getFullYear();
+
+  const counter = await tx.remitoEntregaCounter.upsert({
+    where: { year: currentYear },
+    update: { currentNumber: { increment: 1 } },
+    create: { year: currentYear, currentNumber: 1 },
+  });
+
+  const seq = String(counter.currentNumber).padStart(6, '0');
+  return `REM-${currentYear}-${seq}`;
+}
+
+export interface CrearRemitoInput {
+  ventaId: string;
+  receptorNombre?: string | null;
+  receptorDni?: string | null;
+  observaciones?: string | null;
+  items: {
+    ventaItemId: string;
+    cantidad: number;
+  }[];
+}
+
+/**
+ * Crea un Remito de Entrega con los materiales seleccionados, actualiza cantidades entregadas y estado de la venta
+ */
+export async function crearRemitoEntrega(
+  input: CrearRemitoInput,
+  usuarioId?: string,
+  usuarioNombre?: string
+) {
+  const { ventaId, items, receptorNombre, receptorDni, observaciones } = input;
+
+  if (!items || items.length === 0) {
+    throw new Error('Debe seleccionar al menos un producto para generar el remito de entrega');
+  }
+
+  const venta = await prisma.venta.findUnique({
+    where: { id: ventaId },
+    include: {
+      items: true,
+      cliente: true,
+    },
+  });
+
+  if (!venta) {
+    throw new Error('Venta no encontrada');
+  }
+
+  if (venta.estado === 'ANULADA') {
+    throw new Error('No se pueden generar remitos para una venta anulada');
+  }
+
+  // Validar cantidades a entregar
+  const itemsMap = new Map(venta.items.map((i) => [i.id, i]));
+  const itemsParaEntregar: {
+    ventaItem: typeof venta.items[0];
+    cantidadAEntregar: number;
+  }[] = [];
+
+  for (const it of items) {
+    const vItem = itemsMap.get(it.ventaItemId);
+    if (!vItem) {
+      throw new Error(`El ítem ${it.ventaItemId} no pertenece a esta venta`);
+    }
+
+    const cantPendiente = Math.max(0, vItem.cantidad - (vItem.cantidadEntregada || 0) - (vItem.cantidadCancelada || 0));
+    const cantAEntregar = Math.round(Number(it.cantidad) * 1000) / 1000;
+
+    if (cantAEntregar <= 0) {
+      continue;
+    }
+
+    if (cantAEntregar > cantPendiente + 0.001) {
+      throw new Error(
+        `La cantidad a entregar (${cantAEntregar}) para "${vItem.descripcion}" supera la cantidad pendiente (${cantPendiente})`
+      );
+    }
+
+    itemsParaEntregar.push({
+      ventaItem: vItem,
+      cantidadAEntregar: cantAEntregar,
+    });
+  }
+
+  if (itemsParaEntregar.length === 0) {
+    throw new Error('No se seleccionaron cantidades válidas para entregar');
+  }
+
+  // Ejecutar transacción
+  const remitoCreado = await prisma.$transaction(async (tx) => {
+    const numero = await generarNumeroRemito(tx);
+
+    const remito = await tx.remitoEntrega.create({
+      data: {
+        numero,
+        ventaId: venta.id,
+        clienteNombre: venta.clienteNombre,
+        clienteIdentificacion: venta.clienteIdentificacion,
+        clienteDireccion: venta.clienteDireccion,
+        clienteTelefono: venta.clienteTelefono,
+        vendedorNombre: usuarioNombre || venta.vendedorNombre,
+        receptorNombre: receptorNombre?.trim() || venta.clienteNombre,
+        receptorDni: receptorDni?.trim() || venta.clienteIdentificacion,
+        observaciones: observaciones?.trim() || null,
+        items: {
+          create: itemsParaEntregar.map((it) => ({
+            ventaItemId: it.ventaItem.id,
+            sku: it.ventaItem.sku,
+            descripcion: it.ventaItem.descripcion,
+            unidad: it.ventaItem.unidad,
+            cantidad: it.cantidadAEntregar,
+          })),
+        },
+      },
+      include: {
+        items: true,
+        venta: {
+          include: {
+            items: true,
+          },
+        },
+      },
+    });
+
+    // Actualizar cantidadEntregada en cada VentaItem
+    for (const it of itemsParaEntregar) {
+      await tx.ventaItem.update({
+        where: { id: it.ventaItem.id },
+        data: {
+          cantidadEntregada: {
+            increment: it.cantidadAEntregar,
+          },
+        },
+      });
+    }
+
+    // Recalcular estadoEntrega de la Venta
+    const allItemsUpdated = await tx.ventaItem.findMany({
+      where: { ventaId: venta.id },
+    });
+
+    let totalPendiente = 0;
+    let totalEntregado = 0;
+
+    for (const i of allItemsUpdated) {
+      const pendiente = Math.max(0, i.cantidad - (i.cantidadEntregada || 0) - (i.cantidadCancelada || 0));
+      totalPendiente += pendiente;
+      totalEntregado += (i.cantidadEntregada || 0);
+    }
+
+    let nuevoEstadoEntrega = 'PENDIENTE';
+    if (totalPendiente <= 0.001) {
+      nuevoEstadoEntrega = 'ENTREGADO';
+    } else if (totalEntregado > 0) {
+      nuevoEstadoEntrega = 'PARCIAL';
+    }
+
+    await tx.venta.update({
+      where: { id: venta.id },
+      data: {
+        estadoEntrega: nuevoEstadoEntrega,
+      },
+    });
+
+    return remito;
+  });
+
+  return remitoCreado;
+}
+
+/**
+ * Cancela ítems pendientes de entrega de una venta
+ */
+export async function cancelarPendientesVenta(
+  ventaId: string,
+  itemsParaCancelar?: { ventaItemId: string; cantidadACancelar?: number }[],
+  motivo?: string
+) {
+  const venta = await prisma.venta.findUnique({
+    where: { id: ventaId },
+    include: { items: true },
+  });
+
+  if (!venta) {
+    throw new Error('Venta no encontrada');
+  }
+
+  if (venta.estado === 'ANULADA') {
+    throw new Error('La venta ya se encuentra anulada');
+  }
+
+  await prisma.$transaction(async (tx) => {
+    for (const item of venta.items) {
+      const match = itemsParaCancelar?.find((p) => p.ventaItemId === item.id);
+      const pendiente = Math.max(0, item.cantidad - (item.cantidadEntregada || 0) - (item.cantidadCancelada || 0));
+
+      if (pendiente <= 0) continue;
+
+      let aCancelar = pendiente;
+      if (match && typeof match.cantidadACancelar === 'number' && match.cantidadACancelar > 0) {
+        aCancelar = Math.min(pendiente, match.cantidadACancelar);
+      } else if (itemsParaCancelar && itemsParaCancelar.length > 0 && !match) {
+        continue;
+      }
+
+      await tx.ventaItem.update({
+        where: { id: item.id },
+        data: {
+          cantidadCancelada: {
+            increment: aCancelar,
+          },
+        },
+      });
+    }
+
+    // Recalcular estadoEntrega
+    const allItems = await tx.ventaItem.findMany({
+      where: { ventaId: venta.id },
+    });
+
+    let totalPendiente = 0;
+    let totalEntregado = 0;
+    for (const i of allItems) {
+      const rem = Math.max(0, i.cantidad - (i.cantidadEntregada || 0) - (i.cantidadCancelada || 0));
+      totalPendiente += rem;
+      totalEntregado += (i.cantidadEntregada || 0);
+    }
+
+    let nuevoEstado = 'PENDIENTE';
+    if (totalPendiente <= 0.001) {
+      nuevoEstado = totalEntregado > 0 ? 'ENTREGADO' : 'CANCELADO';
+    } else if (totalEntregado > 0) {
+      nuevoEstado = 'PARCIAL';
+    }
+
+    await tx.venta.update({
+      where: { id: venta.id },
+      data: { estadoEntrega: nuevoEstado },
+    });
+  });
+
+  return prisma.venta.findUnique({
+    where: { id: ventaId },
+    include: { items: true, remitos: { include: { items: true } } },
+  });
+}
+

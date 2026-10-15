@@ -1,15 +1,21 @@
 'use client';
 
 import React, { useRef } from 'react';
-import { X, Printer, CheckCircle2, AlertTriangle, FileText } from 'lucide-react';
+import { X, Printer, CheckCircle2, AlertTriangle, FileText, PackageCheck } from 'lucide-react';
 
 interface ComprobanteModalProps {
   isOpen: boolean;
   onClose: () => void;
   venta: any;
+  onGenerarRemito?: (venta: any) => void;
 }
 
-export default function ComprobanteModal({ isOpen, onClose, venta }: ComprobanteModalProps) {
+export default function ComprobanteModal({
+  isOpen,
+  onClose,
+  venta,
+  onGenerarRemito,
+}: ComprobanteModalProps) {
   const printRef = useRef<HTMLDivElement>(null);
 
   if (!isOpen || !venta) return null;
@@ -83,6 +89,23 @@ export default function ComprobanteModal({ isOpen, onClose, venta }: Comprobante
             </h3>
           </div>
           <div className="flex items-center gap-2">
+            {onGenerarRemito && (
+              <button
+                type="button"
+                onClick={() => {
+                  onGenerarRemito(venta);
+                  onClose();
+                }}
+                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold shadow-xs transition-colors ${
+                  venta.imputadoCuentaCorriente > 0
+                    ? 'bg-amber-600 hover:bg-amber-700 text-white'
+                    : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                }`}
+              >
+                <PackageCheck className="w-3.5 h-3.5" />
+                <span>Generar Remito de Entrega</span>
+              </button>
+            )}
             <button
               onClick={handlePrint}
               className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition-colors"
@@ -274,7 +297,22 @@ export default function ComprobanteModal({ isOpen, onClose, venta }: Comprobante
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end px-6 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 print:hidden">
+        <div className="flex items-center justify-between px-6 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 print:hidden">
+          <div>
+            {onGenerarRemito && (
+              <button
+                type="button"
+                onClick={() => {
+                  onGenerarRemito(venta);
+                  onClose();
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-bold text-xs border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 transition-colors"
+              >
+                <PackageCheck className="w-3.5 h-3.5" />
+                <span>Emitir Remito de Retiro</span>
+              </button>
+            )}
+          </div>
           <button
             onClick={onClose}
             className="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800 font-bold text-xs transition-colors"

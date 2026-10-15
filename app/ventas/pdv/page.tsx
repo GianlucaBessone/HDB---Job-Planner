@@ -36,6 +36,8 @@ import {
   ArrowLeft,
   RefreshCw,
   Settings2,
+  Truck,
+  PackageCheck,
 } from 'lucide-react';
 import {
   buildCatalogIndex,
@@ -53,6 +55,9 @@ import HistorialVentasModal from '@/components/ventas/pdv/HistorialVentasModal';
 import ModificarPrecioModal from '@/components/ventas/pdv/ModificarPrecioModal';
 import CambioRapidoVendedorModal from '@/components/ventas/pdv/CambioRapidoVendedorModal';
 import ConfigListasPreciosModal from '@/components/ventas/ConfigListasPreciosModal';
+import GenerarRemitoModal from '@/components/ventas/pdv/GenerarRemitoModal';
+import ImprimirRemitoModal from '@/components/ventas/pdv/ImprimirRemitoModal';
+import PendientesEntregaModal from '@/components/ventas/pdv/PendientesEntregaModal';
 
 interface ItemCarrito {
   id: string; // id temporal en el carrito
@@ -140,6 +145,11 @@ export default function PdvPage() {
   const [itemParaModificarPrecio, setItemParaModificarPrecio] = useState<ItemCarrito | null>(null);
   const [showConfigListasModal, setShowConfigListasModal] = useState(false);
   const [metaListas, setMetaListas] = useState<{ marcas: any[]; familias: any[] }>({ marcas: [], familias: [] });
+
+  // Remitos y Pendientes
+  const [ventaParaRemito, setVentaParaRemito] = useState<any | null>(null);
+  const [remitoParaImprimir, setRemitoParaImprimir] = useState<any | null>(null);
+  const [showPendientesModal, setShowPendientesModal] = useState(false);
 
   // Refs de elementos de UI
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -894,6 +904,17 @@ export default function PdvPage() {
             {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
           </button>
 
+          {/* Pendientes de Entrega */}
+          <button
+            type="button"
+            onClick={() => setShowPendientesModal(true)}
+            className="h-8 inline-flex items-center gap-1.5 px-2.5 rounded-lg border border-amber-300/60 dark:border-amber-800/60 bg-amber-50/50 dark:bg-amber-950/30 hover:bg-amber-100/70 text-xs font-semibold text-amber-800 dark:text-amber-300 shadow-xs transition-colors"
+            title="Pendientes de Entrega de Materiales"
+          >
+            <Truck className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+            <span className="hidden sm:inline">Pendientes</span>
+          </button>
+
           {/* Historial */}
           <button
             type="button"
@@ -1330,7 +1351,46 @@ export default function PdvPage() {
         isOpen={!!comprobanteVenta}
         onClose={() => setComprobanteVenta(null)}
         venta={comprobanteVenta}
+        onGenerarRemito={(v) => {
+          setVentaParaRemito(v);
+        }}
       />
+
+      {/* Modal para Generar Remito */}
+      {ventaParaRemito && (
+        <GenerarRemitoModal
+          isOpen={!!ventaParaRemito}
+          onClose={() => setVentaParaRemito(null)}
+          venta={ventaParaRemito}
+          onRemitoGenerado={(nuevoRemito) => {
+            setRemitoParaImprimir(nuevoRemito);
+          }}
+        />
+      )}
+
+      {/* Modal para Imprimir Remito */}
+      {remitoParaImprimir && (
+        <ImprimirRemitoModal
+          isOpen={!!remitoParaImprimir}
+          onClose={() => setRemitoParaImprimir(null)}
+          remito={remitoParaImprimir}
+        />
+      )}
+
+      {/* Modal de Pendientes de Entrega */}
+      {showPendientesModal && (
+        <PendientesEntregaModal
+          isOpen={showPendientesModal}
+          onClose={() => setShowPendientesModal(false)}
+          onEntregar={(v) => {
+            setShowPendientesModal(false);
+            setVentaParaRemito(v);
+          }}
+          onVerRemito={(rem) => {
+            setRemitoParaImprimir(rem);
+          }}
+        />
+      )}
 
       {/* Modal de Historial de Ventas */}
       <HistorialVentasModal

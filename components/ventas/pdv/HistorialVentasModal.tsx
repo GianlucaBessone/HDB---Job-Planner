@@ -18,9 +18,14 @@ import {
   User,
   Clock,
   RotateCcw,
+  Truck,
+  PackageCheck,
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import GenerarRemitoModal from '@/components/ventas/pdv/GenerarRemitoModal';
+import ImprimirRemitoModal from '@/components/ventas/pdv/ImprimirRemitoModal';
+import PendientesEntregaModal from '@/components/ventas/pdv/PendientesEntregaModal';
 
 interface HistorialVentasModalProps {
   isOpen: boolean;
@@ -49,6 +54,11 @@ export default function HistorialVentasModal({
 
   // Venta seleccionada para ver detalle
   const [ventaDetalle, setVentaDetalle] = useState<any | null>(null);
+
+  // Remitos y Pendientes
+  const [ventaParaRemito, setVentaParaRemito] = useState<any | null>(null);
+  const [remitoParaImprimir, setRemitoParaImprimir] = useState<any | null>(null);
+  const [showPendientesModal, setShowPendientesModal] = useState(false);
 
   // Anulación
   const [ventaAAnular, setVentaAAnular] = useState<any | null>(null);
@@ -150,7 +160,13 @@ export default function HistorialVentasModal({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
-        if (ventaDetalle) {
+        if (remitoParaImprimir) {
+          setRemitoParaImprimir(null);
+        } else if (ventaParaRemito) {
+          setVentaParaRemito(null);
+        } else if (showPendientesModal) {
+          setShowPendientesModal(false);
+        } else if (ventaDetalle) {
           setVentaDetalle(null);
         } else if (ventaAAnular) {
           setVentaAAnular(null);
@@ -161,13 +177,21 @@ export default function HistorialVentasModal({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, ventaDetalle, ventaAAnular, onClose]);
+  }, [
+    isOpen,
+    remitoParaImprimir,
+    ventaParaRemito,
+    showPendientesModal,
+    ventaDetalle,
+    ventaAAnular,
+    onClose,
+  ]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-      <div className="bg-card w-full max-w-5xl rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center p-2 sm:p-3 bg-slate-900/60 backdrop-blur-xs">
+      <div className="bg-card w-[98vw] max-w-none h-[96vh] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
           <div className="flex items-center gap-2.5">
@@ -247,6 +271,15 @@ export default function HistorialVentasModal({
             />
           </div>
 
+          <button
+            type="button"
+            onClick={() => setShowPendientesModal(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 font-bold text-xs border border-amber-300/40 transition-colors shrink-0"
+          >
+            <Truck className="w-3.5 h-3.5" />
+            <span>Pendientes de Entrega</span>
+          </button>
+
           {(search || filtroEstado || filtroEstadoPago || fechaDesde || fechaHasta) && (
             <button
               onClick={() => {
@@ -277,8 +310,8 @@ export default function HistorialVentasModal({
               No se encontraron ventas registradas con los filtros aplicados.
             </div>
           ) : (
-            <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-xs">
-              <table className="w-full text-left text-xs">
+            <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-x-auto shadow-xs">
+              <table className="w-full text-left text-xs min-w-[900px]">
                 <thead className="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
                   <tr>
                     <th className="py-2.5 px-3">Número</th>
@@ -288,6 +321,7 @@ export default function HistorialVentasModal({
                     <th className="py-2.5 px-3 text-center">Items</th>
                     <th className="py-2.5 px-3 text-right">Total</th>
                     <th className="py-2.5 px-3 text-center">Pago</th>
+                    <th className="py-2.5 px-3 text-center">Entrega</th>
                     <th className="py-2.5 px-3 text-center">Estado</th>
                     <th className="py-2.5 px-3 text-right">Acciones</th>
                   </tr>
@@ -347,6 +381,25 @@ export default function HistorialVentasModal({
                           )}
                         </td>
                         <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                          {v.estadoEntrega === 'ENTREGADO' ? (
+                            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                              Entregado
+                            </span>
+                          ) : v.estadoEntrega === 'PARCIAL' ? (
+                            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                              Parcial
+                            </span>
+                          ) : v.estadoEntrega === 'CANCELADO' ? (
+                            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                              Cancelado
+                            </span>
+                          ) : (
+                            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                              Pendiente
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-2.5 px-3 text-center whitespace-nowrap">
                           <span
                             className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
                               v.estado === 'ANULADA'
@@ -372,6 +425,26 @@ export default function HistorialVentasModal({
                           >
                             <Printer className="w-4 h-4" />
                           </button>
+                          {v.estado !== 'ANULADA' && (
+                            <button
+                              onClick={() => {
+                                const pend = (v.items || []).some((it: any) => {
+                                  const e = it.cantidadEntregada || 0;
+                                  const c = it.cantidadCancelada || 0;
+                                  return it.cantidad - e - c > 0;
+                                });
+                                if (!pend && v.remitos && v.remitos.length > 0) {
+                                  setRemitoParaImprimir(v.remitos[0]);
+                                } else {
+                                  setVentaParaRemito(v);
+                                }
+                              }}
+                              className="p-1.5 rounded-lg text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 transition-colors"
+                              title="Remito de Entrega (Conteo y Firma)"
+                            >
+                              <PackageCheck className="w-4 h-4" />
+                            </button>
+                          )}
                           {v.estado !== 'ANULADA' && (
                             <button
                               onClick={() => {
@@ -417,7 +490,7 @@ export default function HistorialVentasModal({
               </div>
 
               <div className="overflow-y-auto space-y-4 flex-1 text-xs">
-                {/* Tabla de ítems con precios congelados */}
+                {/* Tabla de ítems con cantidades entregadas */}
                 <div>
                   <h5 className="text-[11px] font-black uppercase text-slate-500 mb-2">
                     Productos Registrados
@@ -429,6 +502,7 @@ export default function HistorialVentasModal({
                           <th className="p-2">SKU</th>
                           <th className="p-2">Descripción</th>
                           <th className="p-2 text-center">Cant</th>
+                          <th className="p-2 text-center">Entregado</th>
                           <th className="p-2 text-right">P. Unit</th>
                           <th className="p-2 text-right">Subtotal</th>
                         </tr>
@@ -438,7 +512,12 @@ export default function HistorialVentasModal({
                           <tr key={it.id}>
                             <td className="p-2 font-mono text-slate-500">{it.sku}</td>
                             <td className="p-2 font-medium">{it.descripcion}</td>
-                            <td className="p-2 text-center font-bold">{it.cantidad} {it.unidad || ''}</td>
+                            <td className="p-2 text-center font-bold">
+                              {it.cantidad} {it.unidad || ''}
+                            </td>
+                            <td className="p-2 text-center text-emerald-600 font-bold">
+                              {it.cantidadEntregada || 0} {it.unidad || ''}
+                            </td>
                             <td className="p-2 text-right">{formatARS(it.precioUnitario)}</td>
                             <td className="p-2 text-right font-black">{formatARS(it.subtotal)}</td>
                           </tr>
@@ -446,6 +525,62 @@ export default function HistorialVentasModal({
                       </tbody>
                     </table>
                   </div>
+                </div>
+
+                {/* Remitos de Entrega emitidos */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <h5 className="text-[11px] font-black uppercase text-slate-500">
+                      Remitos de Entrega de Materiales
+                    </h5>
+                    {ventaDetalle.estado !== 'ANULADA' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setVentaParaRemito(ventaDetalle);
+                          setVentaDetalle(null);
+                        }}
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
+                      >
+                        <PackageCheck className="w-3.5 h-3.5" />
+                        <span>Generar Nuevo Remito</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {!ventaDetalle.remitos || ventaDetalle.remitos.length === 0 ? (
+                    <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 text-[11px] text-slate-400">
+                      No se han emitido remitos de entrega física para esta venta aún.
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {ventaDetalle.remitos.map((rem: any) => (
+                        <div
+                          key={rem.id}
+                          className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 flex justify-between items-center text-xs"
+                        >
+                          <div>
+                            <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                              {rem.numero}
+                            </span>
+                            <span className="text-[10px] text-slate-400 block">
+                              Fecha: {new Date(rem.fecha).toLocaleDateString('es-AR')} • Retirado por: {rem.receptorNombre || '—'}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setRemitoParaImprimir(rem);
+                            }}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 text-xs font-bold hover:bg-indigo-100 transition-colors"
+                          >
+                            <Printer className="w-3.5 h-3.5" />
+                            <span>Imprimir Remito</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Pagos */}
@@ -608,6 +743,43 @@ export default function HistorialVentasModal({
           </button>
         </div>
       </div>
+
+      {/* Modal para Generar Remito */}
+      {ventaParaRemito && (
+        <GenerarRemitoModal
+          isOpen={!!ventaParaRemito}
+          onClose={() => setVentaParaRemito(null)}
+          venta={ventaParaRemito}
+          onRemitoGenerado={(nuevoRemito) => {
+            setRemitoParaImprimir(nuevoRemito);
+            fetchVentas();
+          }}
+        />
+      )}
+
+      {/* Modal para Imprimir Remito */}
+      {remitoParaImprimir && (
+        <ImprimirRemitoModal
+          isOpen={!!remitoParaImprimir}
+          onClose={() => setRemitoParaImprimir(null)}
+          remito={remitoParaImprimir}
+        />
+      )}
+
+      {/* Modal de Pendientes de Entrega */}
+      {showPendientesModal && (
+        <PendientesEntregaModal
+          isOpen={showPendientesModal}
+          onClose={() => setShowPendientesModal(false)}
+          onEntregar={(v) => {
+            setShowPendientesModal(false);
+            setVentaParaRemito(v);
+          }}
+          onVerRemito={(rem) => {
+            setRemitoParaImprimir(rem);
+          }}
+        />
+      )}
     </div>
   );
 }
