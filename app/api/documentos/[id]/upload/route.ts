@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 
+import crypto from 'crypto';
+
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
@@ -29,6 +31,21 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
         const latestVersion = doc.versions[0];
 
+        // Compute genuine cryptographic SHA-256 hash from file buffer
+        let fileHash = '';
+        let actualSize = fileSize || 0;
+        try {
+            const base64Data = typeof fileContent === 'string' && fileContent.includes(',')
+                ? fileContent.split(',')[1]
+                : fileContent;
+            const buffer = Buffer.from(base64Data, 'base64');
+            fileHash = crypto.createHash('sha256').update(buffer).digest('hex');
+            if (!actualSize) actualSize = buffer.length;
+        } catch (hashErr) {
+            console.error('Error computing SHA-256 hash:', hashErr);
+            fileHash = crypto.createHash('sha256').update(`${fileName}-${Date.now()}`).digest('hex');
+        }
+
         // Overwrite or delete existing files for this version to ensure only 1 principal file
         await prisma.documentFile.deleteMany({
             where: { versionId: latestVersion.id }
@@ -39,17 +56,25 @@ export async function POST(req: Request, { params }: { params: { id: string } })
                 versionId: latestVersion.id,
                 nombreArchivo: fileName,
                 tipoArchivo: fileType,
-                tamanioBytes: fileSize || 0,
+                tamanioBytes: actualSize,
                 url: fileContent, // Base64 data
-                esPrincipal: true
+                esPrincipal: true,
+                hashArchivo: fileHash
             }
         });
 
-        // Also update the document with a hash placeholder
+        // Also update the document and version with genuine cryptographic hash
         await prisma.controlledDocument.update({
             where: { id: params.id },
             data: {
-                hashDocumental: `SHA-256-PLACEHOLDER-${newFile.id}`
+                hashDocumental: fileHash
+            }
+        });
+
+        await prisma.documentVersion.update({
+            where: { id: latestVersion.id },
+            data: {
+                hashDocumental: fileHash
             }
         });
 

@@ -247,7 +247,7 @@ export default function LmsTab({ user }: { user: any }) {
         : JSON.parse(activeCourse.cuestionario as string)
       : [];
     if (quiz.length > 0 && Object.keys(answers).length < quiz.length) {
-      alert("Por favor, responde todas las preguntas del cuestionario.");
+      showToast("Por favor, responde todas las preguntas del cuestionario.", "error");
       return;
     }
 
@@ -267,10 +267,11 @@ export default function LmsTab({ user }: { user: any }) {
         setQuizResult(data);
         loadTrainings();
       } else {
-        alert("Error al enviar la evaluación.");
+        showToast("Error al enviar la evaluación.", "error");
       }
     } catch (e) {
       console.error(e);
+      showToast("Error de red al enviar la evaluación.", "error");
     }
   };
 

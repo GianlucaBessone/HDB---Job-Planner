@@ -1,8 +1,8 @@
 "use client";
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Save } from 'lucide-react';
 import { useModalScroll } from '@/lib/useModalScroll';
+import { showToast } from '@/components/Toast';
 
 interface VerificacionEficaciaModalProps {
     isOpen: boolean;
@@ -23,6 +23,18 @@ export function VerificacionEficaciaModal({ isOpen, onClose, ncId, accionMejoraI
         fechaVerificacion: new Date().toISOString().split('T')[0]
     });
 
+    useEffect(() => {
+        if (!isOpen) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                onClose();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, onClose]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -40,11 +52,12 @@ export function VerificacionEficaciaModal({ isOpen, onClose, ncId, accionMejoraI
 
             if (!res.ok) throw new Error('Error al registrar verificación');
             
+            showToast('Verificación de eficacia registrada exitosamente', 'success');
             onSuccess();
             onClose();
         } catch (error) {
             console.error(error);
-            alert('Error al registrar verificación');
+            showToast('Error al registrar verificación', 'error');
         } finally {
             setLoading(false);
         }
@@ -53,14 +66,22 @@ export function VerificacionEficaciaModal({ isOpen, onClose, ncId, accionMejoraI
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+        <div 
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in"
+            onClick={(e) => {
+                if (e.target === e.currentTarget) onClose();
+            }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="verif-eficacia-title"
+        >
             <div className="bg-card w-full max-w-xl rounded-xl shadow-xl flex flex-col max-h-[90vh]">
                 <div className="flex justify-between items-center p-4 border-b">
                     <div>
-                        <h2 className="text-lg font-bold">Registrar Verificación de Eficacia</h2>
+                        <h2 id="verif-eficacia-title" className="text-lg font-bold">Registrar Verificación de Eficacia</h2>
                         <p className="text-sm text-muted-foreground">Evalúe si las acciones tomadas han sido eficaces para resolver la causa raíz.</p>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-muted rounded-full">
+                    <button onClick={onClose} className="p-2 hover:bg-muted rounded-full" aria-label="Cerrar modal">
                         <X className="w-5 h-5" />
                     </button>
                 </div>

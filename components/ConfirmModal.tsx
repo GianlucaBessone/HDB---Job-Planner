@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { X, AlertTriangle } from 'lucide-react';
 import { useModalScroll } from '@/lib/useModalScroll';
 
@@ -24,25 +25,49 @@ export default function ConfirmModal({
 }: ConfirmModalProps) {
     useModalScroll(isOpen);
 
+    useEffect(() => {
+        if (!isOpen) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                e.stopPropagation();
+                onClose();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, onClose]);
+
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-            <div className="bg-card w-full max-w-sm rounded-xl shadow-xl flex flex-col overflow-hidden">
+        <div 
+            className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in"
+            onClick={(e) => {
+                if (e.target === e.currentTarget) onClose();
+            }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="confirm-modal-title"
+        >
+            <div className="bg-card w-full max-w-sm rounded-xl shadow-xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-150">
                 <div className="flex items-start justify-between p-4 border-b bg-muted/30">
                     <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-full ${isDestructive ? 'bg-red-100 text-red-600' : 'bg-primary/10 text-primary'}`}>
+                        <div className={`p-2 rounded-full ${isDestructive ? 'bg-red-100 text-red-600 dark:bg-red-950/50 dark:text-red-400' : 'bg-primary/10 text-primary'}`}>
                             <AlertTriangle className="w-5 h-5" />
                         </div>
-                        <h2 className="text-lg font-semibold leading-tight">{title}</h2>
+                        <h2 id="confirm-modal-title" className="text-lg font-semibold leading-tight">{title}</h2>
                     </div>
-                    <button onClick={onClose} className="p-1 hover:bg-muted rounded-full transition-colors text-muted-foreground shrink-0">
+                    <button 
+                        onClick={onClose} 
+                        className="p-1 hover:bg-muted rounded-full transition-colors text-muted-foreground shrink-0"
+                        aria-label="Cerrar confirmación"
+                    >
                         <X className="w-5 h-5" />
                     </button>
                 </div>
                 
                 <div className="p-5">
-                    <p className="text-sm text-muted-foreground">{message}</p>
+                    <p className="text-sm text-muted-foreground whitespace-pre-line leading-relaxed">{message}</p>
                 </div>
 
                 <div className="flex items-center justify-end gap-3 p-4 border-t bg-muted/20">

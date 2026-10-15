@@ -12,6 +12,7 @@ import {
   Save,
   FileBox,
   AlertCircle,
+  AlertTriangle,
   FileSignature,
   ThumbsUp,
   ThumbsDown,
@@ -37,6 +38,7 @@ import { showToast } from "@/components/Toast";
 import VersionComparisonModal from "./VersionComparisonModal";
 import SignatureButton from "@/components/SignatureButton";
 import SignatureDetailModal from "@/components/SignatureDetailModal";
+import ConfirmModal from "@/components/ConfirmModal";
 import { useModalScroll } from "@/lib/useModalScroll";
 import { QRCodeSVG } from "qrcode.react";
 import { renderToString } from "react-dom/server";
@@ -202,6 +204,72 @@ export default function DocumentDetailModal({
   const [pendingCreatorSignature, setPendingCreatorSignature] = useState<any>(null);
   const [pendingWorkflowSignature, setPendingWorkflowSignature] = useState<any>(null);
   const [viewSignatureId, setViewSignatureId] = useState<string | null>(null);
+
+  // Read Confirmations State
+  const [readConfirmations, setReadConfirmations] = useState<any[]>([]);
+  const [loadingReadings, setLoadingReadings] = useState(false);
+  const [confirmingRead, setConfirmingRead] = useState(false);
+  const [showReadingsList, setShowReadingsList] = useState(false);
+
+  // Delete Document Modal State
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const loadReadConfirmations = async () => {
+    if (!documentId) return;
+    setLoadingReadings(true);
+    try {
+      const res = await safeApiRequest(`/api/documentos/${documentId}/confirm-read`);
+      if (res.ok) {
+        const data = await res.json();
+        setReadConfirmations(Array.isArray(data) ? data : []);
+      }
+    } catch (err) {
+      console.error("Error cargando confirmaciones de lectura:", err);
+    } finally {
+      setLoadingReadings(false);
+    }
+  };
+
+  const getActiveUser = () => {
+    if (user?.id) return user;
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("currentUser");
+        if (stored) return JSON.parse(stored);
+      } catch (e) {}
+    }
+    return null;
+  };
+
+  const handleConfirmRead = async () => {
+    const activeUser = getActiveUser();
+    if (!activeUser?.id) {
+      showToast("Debes iniciar sesión para confirmar la lectura", "error");
+      return;
+    }
+    setConfirmingRead(true);
+    try {
+      const res = await safeApiRequest(`/api/documentos/${documentId}/confirm-read`, {
+        method: "POST",
+        body: JSON.stringify({
+          operatorId: activeUser.id,
+          operatorNombre: activeUser.nombreCompleto || activeUser.nombre || "Usuario",
+        }),
+      });
+      if (res.ok) {
+        showToast("Confirmación de lectura registrada exitosamente", "success");
+        await loadReadConfirmations();
+      } else {
+        const err = await res.json();
+        showToast(err.error || "Error al confirmar lectura", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Error de red al confirmar lectura", "error");
+    } finally {
+      setConfirmingRead(false);
+    }
+  };
 
   const [isOnline, setIsOnline] = useState(
     typeof navigator !== "undefined" ? navigator.onLine : true,
@@ -988,8 +1056,9 @@ export default function DocumentDetailModal({
       signatureData = pendingWorkflowSignature.SignatureID;
     } else {
       if (!comments.trim()) {
-        alert(
+        showToast(
           "Debe proporcionar una recomendación de cambios o modificaciones cuando está en desacuerdo",
+          "error"
         );
         return;
       }
@@ -1044,11 +1113,11 @@ export default function DocumentDetailModal({
         loadDocument(true);
       } else {
         const err = await res.json();
-        alert(err.error || "Error al procesar firma");
+        showToast(err.error || "Error al procesar firma", "error");
       }
     } catch (err) {
       console.error(err);
-      alert("Error de red");
+      showToast("Error de red al procesar firma", "error");
     } finally {
       setSubmittingWorkflow(false);
     }
@@ -1243,6 +1312,7 @@ export default function DocumentDetailModal({
       console.error(e);
     } finally {
       setLoading(false);
+      loadReadConfirmations();
     }
   };
 
@@ -1353,12 +1423,11 @@ export default function DocumentDetailModal({
 
   const [deletingDoc, setDeletingDoc] = useState(false);
 
-  const handleDeleteDocument = async () => {
-    const code = doc?.codigoDocumental || "";
-    const title = doc?.titulo || "";
-    const confirmMsg = `¿Está seguro de eliminar definitivamente el documento "${code}: ${title}" y TODO su historial de versiones?\n\nEsta acción es irreversible y se completará sin dejar registro.`;
-    if (!window.confirm(confirmMsg)) return;
+  const handleDeleteDocument = () => {
+    setShowDeleteConfirm(true);
+  };
 
+  const executeDeleteDocument = async () => {
     setDeletingDoc(true);
     try {
       const res = await safeApiRequest(`/api/documentos/${documentId}`, {
@@ -1369,6 +1438,7 @@ export default function DocumentDetailModal({
         delete cachedDocuments[documentId];
         cachedAllDocs = null;
         showToast("Documento y su historial eliminados correctamente", "success");
+        setShowDeleteConfirm(false);
         onClose();
       } else {
         const err = await res.json();
@@ -1570,6 +1640,20 @@ export default function DocumentDetailModal({
                   </div>
                 </label>
               </div>
+
+              {versionAction === "mayor" && (
+                <div className="p-3.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700/60 rounded-xl flex items-start gap-3 text-amber-900 dark:text-amber-200 animate-in fade-in slide-in-from-top-1 duration-200 shadow-xs">
+                  <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                  <div className="text-xs space-y-1">
+                    <p className="font-black text-amber-800 dark:text-amber-300">
+                      Impacto Normativo de Versión Mayor (ISO 9001:2015):
+                    </p>
+                    <p className="leading-relaxed text-amber-700 dark:text-amber-400">
+                      Al emitir una versión mayor (+1.0), el sistema <strong>resetea el estado de capacitación técnica</strong> de los técnicos y <strong>exige una re-confirmación obligatoria de lectura</strong> a todo el personal afectado.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
@@ -1773,7 +1857,11 @@ export default function DocumentDetailModal({
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-slate-100 dark:border-slate-700 bg-card text-card-foreground px-6 gap-6 pt-2">
+          <div 
+            className="flex border-b border-slate-100 dark:border-slate-700 bg-card text-card-foreground px-6 gap-6 pt-2"
+            role="tablist"
+            aria-label="Pestañas de detalle del documento"
+          >
             {[
               { id: "info", label: "Información General" },
               { id: "lms", label: "LMS & Capacitación" },
@@ -1783,6 +1871,11 @@ export default function DocumentDetailModal({
             ].map((t) => (
               <button
                 key={t.id}
+                id={`modal-tab-${t.id}`}
+                role="tab"
+                aria-selected={tab === t.id}
+                aria-controls={`modal-tabpanel-${t.id}`}
+                tabIndex={tab === t.id ? 0 : -1}
                 onClick={() => setTab(t.id as any)}
                 className={`py-3 text-sm font-bold border-b-2 transition-colors ${
                   tab === t.id
@@ -1796,7 +1889,12 @@ export default function DocumentDetailModal({
           </div>
 
           {/* Body */}
-          <div className="flex-1 overflow-y-auto p-6 bg-background text-foreground">
+          <div 
+            className="flex-1 overflow-y-auto p-6 bg-background text-foreground"
+            role="tabpanel"
+            id={`modal-tabpanel-${tab}`}
+            aria-labelledby={`modal-tab-${tab}`}
+          >
             {tab === "info" && (
               <div className="space-y-6 max-w-3xl mx-auto">
                 {/* Visualizador Online de Documentos Subidos / Adjuntos */}
@@ -3051,6 +3149,160 @@ export default function DocumentDetailModal({
                     </div>
                   )}
                 </div>
+
+                {/* Centralized Reading Confirmation Section (ISO 9001:2015 Clause 7.5) */}
+                {doc.requiereConfirmacionLectura && (
+                  <div className="bg-card text-card-foreground p-6 rounded-2xl border border-indigo-100 dark:border-indigo-900/50 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                          <BookOpen className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-black text-slate-800 dark:text-slate-100">
+                            Confirmación de Lectura Obligatoria
+                          </h4>
+                          <p className="text-[11px] text-slate-400">
+                            Control de lectura y difusión de información documentada (ISO 9001:2015)
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-mono font-bold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 px-2.5 py-1 rounded-full border border-indigo-200/50">
+                        Versión Vigente: v{doc.versionMayor}.{doc.versionMenor}
+                      </span>
+                    </div>
+
+                    {/* Current User Status Banner */}
+                    {(() => {
+                      const activeUser = getActiveUser();
+                      const currentUserId = activeUser?.id;
+                      const currentVerStr = `${doc.versionMayor}.${doc.versionMenor}`;
+                      const myReading = readConfirmations.find(
+                        (r) => r.operatorId === currentUserId && r.versionAlMomento === currentVerStr
+                      );
+                      const myOldReading = readConfirmations.find(
+                        (r) => r.operatorId === currentUserId && r.versionAlMomento !== currentVerStr
+                      );
+
+                      if (myReading) {
+                        return (
+                          <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 rounded-xl flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                              <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                              <div>
+                                <p className="text-xs font-bold text-emerald-800 dark:text-emerald-200">
+                                  Lectura confirmada por ti para la versión v{currentVerStr}
+                                </p>
+                                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5">
+                                  Registrado el {formatDateTimeInline(myReading.confirmadoAt)}
+                                </p>
+                              </div>
+                            </div>
+                            <span className="text-[10px] uppercase font-black text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/50 px-2.5 py-1 rounded-full">
+                              Al Día
+                            </span>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div className="p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div className="flex items-start sm:items-center gap-3">
+                            <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5 sm:mt-0" />
+                            <div>
+                              <p className="text-xs font-bold text-amber-900 dark:text-amber-200">
+                                Tienes pendiente la confirmación de lectura de este documento
+                              </p>
+                              <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-0.5">
+                                {myOldReading 
+                                  ? `Habías leído la versión v${myOldReading.versionAlMomento}. Se requiere confirmar la versión vigente v${currentVerStr}.`
+                                  : `Se requiere confirmar que has leído y comprendido la versión vigente v${currentVerStr}.`}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleConfirmRead}
+                            disabled={confirmingRead}
+                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm shrink-0 disabled:opacity-50"
+                          >
+                            {confirmingRead ? (
+                              <>
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                <span>Registrando...</span>
+                              </>
+                            ) : (
+                              <>
+                                <BookOpen className="w-3.5 h-3.5" />
+                                <span>Confirmar Lectura de Documento</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Progress / Status metrics */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 text-xs text-slate-500">
+                      <div>
+                        <span className="font-bold text-slate-700 dark:text-slate-300">
+                          {readConfirmations.length} confirmaciones registradas
+                        </span>
+                        {doc.operatorIds && Array.isArray(doc.operatorIds) && doc.operatorIds.length > 0 && (
+                          <span className="ml-1 text-slate-400">
+                            (Afecta a {doc.operatorIds.length} operadores)
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowReadingsList(!showReadingsList)}
+                        className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
+                      >
+                        {showReadingsList ? "Ocultar listado de confirmaciones" : `Ver listado completo (${readConfirmations.length})`}
+                      </button>
+                    </div>
+
+                    {/* Confirmations List */}
+                    {showReadingsList && (
+                      <div className="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden text-xs animate-in fade-in duration-200">
+                        {readConfirmations.length === 0 ? (
+                          <div className="p-4 text-center text-slate-400">
+                            No se registran confirmaciones de lectura para este documento aún.
+                          </div>
+                        ) : (
+                          <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-56 overflow-y-auto">
+                            {readConfirmations.map((r) => {
+                              const isCurrent = r.versionAlMomento === `${doc.versionMayor}.${doc.versionMenor}`;
+                              return (
+                                <div key={r.id} className="p-2.5 flex items-center justify-between gap-2 hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <UserCheck className={`w-4 h-4 shrink-0 ${isCurrent ? 'text-emerald-500' : 'text-slate-400'}`} />
+                                    <span className="font-bold text-slate-700 dark:text-slate-200 truncate">
+                                      {r.operatorNombre}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2 shrink-0">
+                                    <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                                      isCurrent 
+                                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/50' 
+                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                                    }`}>
+                                      v{r.versionAlMomento}
+                                    </span>
+                                    <span className="text-[11px] text-slate-400">
+                                      {formatDateInline(r.confirmadoAt)}
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Workflow de Firmas y Aprobaciones */}
                 {doc.workflowState && (
@@ -4413,6 +4665,17 @@ export default function DocumentDetailModal({
           onClose={() => setViewSignatureId(null)}
         />
       )}
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={executeDeleteDocument}
+        title="Eliminar Documento Controlado"
+        message={`¿Está seguro de eliminar definitivamente el documento "${doc?.codigoDocumental}: ${doc?.titulo}" y TODO su historial de versiones?\n\nEsta acción es irreversible y se completará sin dejar registro.`}
+        confirmText="Eliminar Definitivamente"
+        cancelText="Cancelar"
+        isDestructive={true}
+      />
     </>
   );
 }

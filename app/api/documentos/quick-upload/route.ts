@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
+import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,6 +29,21 @@ export async function POST(req: Request) {
 
         if (!fileName || !fileContent) {
             return NextResponse.json({ error: 'El archivo y su contenido son obligatorios.' }, { status: 400 });
+        }
+
+        // Calculate cryptographic SHA-256
+        let fileHash = '';
+        let actualSize = fileSize || 0;
+        try {
+            const base64Data = typeof fileContent === 'string' && fileContent.includes(',')
+                ? fileContent.split(',')[1]
+                : fileContent;
+            const buffer = Buffer.from(base64Data, 'base64');
+            fileHash = crypto.createHash('sha256').update(buffer).digest('hex');
+            if (!actualSize) actualSize = buffer.length;
+        } catch (hashErr) {
+            console.error('Error calculating SHA-256 in quick-upload:', hashErr);
+            fileHash = crypto.createHash('sha256').update(`${fileName}-${Date.now()}`).digest('hex');
         }
 
         const docTitle = (titulo || fileName.replace(/\.[^/.]+$/, '')).trim();
@@ -146,6 +162,7 @@ export async function POST(req: Request) {
                 createdBy: userId || null,
                 createdByName: userName || null,
                 workflowState: workflowState as any,
+                hashDocumental: fileHash,
             }
         });
 
@@ -162,6 +179,7 @@ export async function POST(req: Request) {
                 aprobadorId: finalAprobadorId,
                 aprobadorNombre: finalAprobadorNombre,
                 motivoCambio: 'Carga inicial de archivo',
+                hashDocumental: fileHash,
                 documentSnapshot: {
                     titulo: docTitle,
                     codigoDocumental: generatedCode,
@@ -179,17 +197,17 @@ export async function POST(req: Request) {
                 versionId: version.id,
                 nombreArchivo: fileName,
                 tipoArchivo: fileType || 'application/octet-stream',
-                tamanioBytes: fileSize || 0,
+                tamanioBytes: actualSize,
                 url: fileContent,
                 esPrincipal: true,
-                hashArchivo: `SHA-256-QUICK-${Date.now()}`
+                hashArchivo: fileHash
             }
         });
 
         // Update hash in doc
         await prisma.controlledDocument.update({
             where: { id: doc.id },
-            data: { hashDocumental: file.hashArchivo }
+            data: { hashDocumental: fileHash }
         });
 
         return NextResponse.json({

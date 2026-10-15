@@ -127,13 +127,20 @@ export default function ModuleHeader({
 
             {/* Bottom row: Sub-Header Contextual Tabs */}
             {tabs && tabs.length > 0 && (
-                <div className="w-full overflow-x-auto overflow-y-hidden custom-scrollbar border-b border-slate-200 dark:border-slate-700">
+                <div 
+                    className="w-full overflow-x-auto overflow-y-hidden custom-scrollbar border-b border-slate-200 dark:border-slate-700"
+                    role="tablist"
+                    aria-label="Navegación contextual del módulo"
+                >
                     <div className="flex items-center gap-1 min-w-max px-0.5">
                         {tabs.map((tab) => {
                             const isActive = activeTabId === tab.id;
                             return (
                                 <button
                                     key={tab.id}
+                                    role="tab"
+                                    aria-selected={isActive}
+                                    tabIndex={isActive ? 0 : -1}
                                     onClick={() => onTabChange && onTabChange(tab.id)}
                                     className={`
                                         flex items-center gap-1.5 h-[40px] px-4 font-bold text-[13px] border-b-2 transition-all whitespace-nowrap outline-none

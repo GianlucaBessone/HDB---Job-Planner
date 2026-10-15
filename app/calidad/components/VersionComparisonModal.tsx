@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, GitCompare, ChevronRight, FileText, Sparkles, User, Calendar, CheckCircle2, AlertCircle } from 'lucide-react';
 import { formatDateInline } from '@/lib/formatDate';
 import { useModalScroll } from '@/lib/useModalScroll';
+import { diffWords, diffLines, DiffPart } from '@/lib/diffUtils';
 
 interface VersionComparisonModalProps {
     currentDoc: any;
@@ -14,16 +15,31 @@ export default function VersionComparisonModal({ currentDoc, selectedVersion, on
     const [loading, setLoading] = useState(true);
     const [diffData, setDiffData] = useState<any>(null);
 
+    // Keyboard support: Close on Escape
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                e.stopPropagation();
+                onClose();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [onClose]);
+
     useEffect(() => {
         // Analizamos las diferencias reales si el snapshot existe, de lo contrario usamos un fallback de "Datos no registrados"
         const timer = setTimeout(() => {
             // Find the correct snapshot for selectedVersion
-            let oldSnapshot = selectedVersion.documentSnapshot || {};
+            const oldSnapshot = selectedVersion.documentSnapshot || {};
+            const hasSnapshot = Boolean(oldSnapshot && Object.keys(oldSnapshot).length > 0);
             
             // Helpers
             const getStatus = (oldVal: any, newVal: any) => {
-                if (oldVal === undefined) return 'unchanged'; // Si no hay snapshot histórico, no podemos decir que cambió
-                return oldVal !== newVal ? 'modified' : 'unchanged';
+                if (!hasSnapshot && oldVal === undefined) return 'unchanged';
+                const normOld = oldVal === undefined || oldVal === null ? '' : String(oldVal).trim();
+                const normNew = newVal === undefined || newVal === null ? '' : String(newVal).trim();
+                return normOld !== normNew ? 'modified' : 'unchanged';
             };
 
             // 1. General
@@ -50,16 +66,24 @@ export default function VersionComparisonModal({ currentDoc, selectedVersion, on
                 oldDigitalData = { texto: oldSnapshot.descripcion };
             }
 
+            const oldObj = oldDigitalData.objetivo || '';
+            const newObj = currentDigitalData.objetivo || '';
+            const oldDes = oldDigitalData.desarrollo || oldDigitalData.texto || '';
+            const newDes = currentDigitalData.desarrollo || currentDigitalData.texto || '';
+
             const contenido = {
                 objetivo: { 
                     status: getStatus(oldDigitalData.objetivo, currentDigitalData.objetivo), 
                     old: oldDigitalData.objetivo || 'No registrado',
-                    new: currentDigitalData.objetivo || 'Sin especificar' 
+                    new: currentDigitalData.objetivo || 'Sin especificar',
+                    wordDiff: diffWords(oldObj, newObj)
                 },
                 desarrollo: { 
                     status: getStatus(oldDigitalData.desarrollo || oldDigitalData.texto, currentDigitalData.desarrollo || currentDigitalData.texto), 
                     old: oldDigitalData.desarrollo || oldDigitalData.texto || 'No registrado en esta versión.',
-                    new: currentDigitalData.desarrollo || currentDigitalData.texto || 'Sin contenido.'
+                    new: currentDigitalData.desarrollo || currentDigitalData.texto || 'Sin contenido.',
+                    lineDiff: diffLines(oldDes, newDes),
+                    wordDiff: diffWords(oldDes, newDes)
                 }
             };
 
@@ -117,7 +141,15 @@ export default function VersionComparisonModal({ currentDoc, selectedVersion, on
     }, [currentDoc, selectedVersion]);
 
     return (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-4 sm:p-6 pt-20 sm:pt-24 animate-in fade-in duration-200">
+        <div 
+            className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-4 sm:p-6 pt-20 sm:pt-24 animate-in fade-in duration-200"
+            onClick={(e) => {
+                if (e.target === e.currentTarget) onClose();
+            }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Comparación de Versiones"
+        >
             <div className="bg-card text-card-foreground rounded-3xl shadow-2xl w-full max-w-6xl h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300 border border-slate-200 dark:border-slate-800">
                 
                 {/* Header */}
@@ -245,40 +277,68 @@ export default function VersionComparisonModal({ currentDoc, selectedVersion, on
                                     </div>
                                     )}
 
-                                    {/* Objetivo */}
+                                    {/* Objetivo (Diff Palabra por Palabra) */}
                                     {diffData.contenido.objetivo.status === 'modified' && (
-                                    <div className="bg-card text-card-foreground rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                                        <div className="bg-background text-foreground/50 px-4 py-2 border-b border-slate-200 dark:border-slate-700">
+                                    <div className="bg-card text-card-foreground rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-xs">
+                                        <div className="bg-background text-foreground/50 px-4 py-2 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
                                             <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Objetivo del Documento</span>
+                                            <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-200/50">Diff Granular Palabra por Palabra</span>
                                         </div>
-                                        <div className="divide-y divide-slate-100 dark:divide-slate-800 font-mono text-xs sm:text-sm">
-                                            <div className="bg-red-50 dark:bg-red-950/20 text-red-800 dark:text-red-300 p-3 flex gap-4 overflow-x-auto whitespace-pre-wrap">
-                                                <span className="font-bold select-none opacity-50">-</span>
-                                                <div className="flex-1">{diffData.contenido.objetivo.old}</div>
-                                            </div>
-                                            <div className="bg-emerald-50 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-300 p-3 flex gap-4 overflow-x-auto whitespace-pre-wrap">
-                                                <span className="font-bold select-none opacity-50">+</span>
-                                                <div className="flex-1">{diffData.contenido.objetivo.new}</div>
-                                            </div>
+                                        <div className="p-4 font-mono text-xs sm:text-sm leading-relaxed bg-background/50">
+                                            {diffData.contenido.objetivo.wordDiff && diffData.contenido.objetivo.wordDiff.length > 0 ? (
+                                                diffData.contenido.objetivo.wordDiff.map((part: DiffPart, idx: number) => {
+                                                    if (part.added) {
+                                                        return (
+                                                            <ins key={idx} className="bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 no-underline px-1 py-0.5 rounded font-bold">
+                                                                {part.value}
+                                                            </ins>
+                                                        );
+                                                    }
+                                                    if (part.removed) {
+                                                        return (
+                                                            <del key={idx} className="bg-red-100 dark:bg-red-950/60 text-red-900 dark:text-red-300 line-through px-1 py-0.5 rounded opacity-75">
+                                                                {part.value}
+                                                            </del>
+                                                        );
+                                                    }
+                                                    return <span key={idx}>{part.value}</span>;
+                                                })
+                                            ) : (
+                                                <span>{diffData.contenido.objetivo.new}</span>
+                                            )}
                                         </div>
                                     </div>
                                     )}
 
-                                    {/* Desarrollo */}
+                                    {/* Desarrollo (Diff Granular Línea por Línea) */}
                                     {diffData.contenido.desarrollo.status === 'modified' && (
-                                    <div className="bg-card text-card-foreground rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                                        <div className="bg-background text-foreground/50 px-4 py-2 border-b border-slate-200 dark:border-slate-700">
+                                    <div className="bg-card text-card-foreground rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-xs">
+                                        <div className="bg-background text-foreground/50 px-4 py-2 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
                                             <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Contenido del Documento / Desarrollo</span>
+                                            <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-200/50">Diff Granular Línea por Línea</span>
                                         </div>
-                                        <div className="divide-y divide-slate-100 dark:divide-slate-800 font-mono text-xs sm:text-sm">
-                                            <div className="bg-red-50 dark:bg-red-950/20 text-red-800 dark:text-red-300 p-3 flex gap-4 overflow-x-auto whitespace-pre-wrap">
-                                                <span className="font-bold select-none opacity-50">-</span>
-                                                <div className="flex-1">{diffData.contenido.desarrollo.old}</div>
-                                            </div>
-                                            <div className="bg-emerald-50 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-300 p-3 flex gap-4 overflow-x-auto whitespace-pre-wrap">
-                                                <span className="font-bold select-none opacity-50">+</span>
-                                                <div className="flex-1">{diffData.contenido.desarrollo.new}</div>
-                                            </div>
+                                        <div className="divide-y divide-slate-100 dark:divide-slate-800 font-mono text-xs sm:text-sm bg-background/50 max-h-96 overflow-y-auto">
+                                            {diffData.contenido.desarrollo.lineDiff && diffData.contenido.desarrollo.lineDiff.length > 0 ? (
+                                                diffData.contenido.desarrollo.lineDiff.map((line: DiffPart, idx: number) => (
+                                                    <div 
+                                                        key={idx}
+                                                        className={`flex items-start gap-3 px-3 py-1.5 ${
+                                                            line.added 
+                                                                ? 'bg-emerald-50/70 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-200 border-l-4 border-emerald-500' 
+                                                                : line.removed 
+                                                                ? 'bg-red-50/70 dark:bg-red-950/30 text-red-800 dark:text-red-300 border-l-4 border-red-500' 
+                                                                : 'text-slate-700 dark:text-slate-300 border-l-4 border-transparent'
+                                                        }`}
+                                                    >
+                                                        <span className="w-5 text-right font-bold select-none opacity-40 shrink-0">
+                                                            {line.added ? '+' : line.removed ? '-' : ' '}
+                                                        </span>
+                                                        <div className="flex-1 whitespace-pre-wrap break-words leading-relaxed">{line.value || ' '}</div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="p-3 text-slate-500">Sin diferencias disponibles</div>
+                                            )}
                                         </div>
                                     </div>
                                     )}

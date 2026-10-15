@@ -100,6 +100,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
                 motivoCambio: motivoCambio || null,
                 notas: notas || null,
                 checklistTemplate: checklistTemplate || null,
+                hashDocumental: (doc.versions?.[0] as any)?.hashDocumental || doc.hashDocumental || null,
                 documentSnapshot: documentSnapshot,
             }
         });

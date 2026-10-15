@@ -3,12 +3,14 @@ import { safeApiRequest } from '@/lib/offline';
 import { Search, Plus, FileText, CheckCircle2, ShieldAlert, Trash2, Edit3, Save, X, PlusCircle, CheckSquare, Camera, Award, RefreshCw, AlertTriangle, FileSignature, Check, Sparkles, Loader2 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 import SignatureButton from '@/components/SignatureButton';
+import ConfirmModal from '@/components/ConfirmModal';
 
 export default function TemplatesTab({ user }: { user: any }) {
     const [templates, setTemplates] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [allTags, setAllTags] = useState<any[]>([]);
+    const [templateToDelete, setTemplateToDelete] = useState<{ id: string; name: string } | null>(null);
 
     // AI checklist generator modal state
     const [isAiModalOpen, setIsAiModalOpen] = useState(false);
@@ -182,10 +184,10 @@ export default function TemplatesTab({ user }: { user: any }) {
         setIsModalOpen(true);
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm('¿Está seguro de que desea eliminar esta plantilla de checklist?')) return;
+    const confirmDeleteTemplate = async () => {
+        if (!templateToDelete) return;
         try {
-            const res = await safeApiRequest(`/api/checklist-templates?id=${id}`, {
+            const res = await safeApiRequest(`/api/checklist-templates?id=${templateToDelete.id}`, {
                 method: 'DELETE'
             });
             if (res.ok) {
@@ -197,6 +199,8 @@ export default function TemplatesTab({ user }: { user: any }) {
         } catch (e) {
             console.error(e);
             showToast('Error al eliminar plantilla', 'error');
+        } finally {
+            setTemplateToDelete(null);
         }
     };
 
@@ -405,8 +409,9 @@ export default function TemplatesTab({ user }: { user: any }) {
                                         <Edit3 className="w-4 h-4" />
                                     </button>
                                     <button 
-                                        onClick={() => handleDelete(template.id)}
+                                        onClick={() => setTemplateToDelete({ id: template.id, name: template.name })}
                                         className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors"
+                                        aria-label={`Eliminar plantilla ${template.name}`}
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>
@@ -852,6 +857,17 @@ export default function TemplatesTab({ user }: { user: any }) {
                     </div>
                 </div>
             )}
+
+            {/* Confirm Template Deletion Modal */}
+            <ConfirmModal
+                isOpen={!!templateToDelete}
+                onClose={() => setTemplateToDelete(null)}
+                onConfirm={confirmDeleteTemplate}
+                title="Eliminar Plantilla de Checklist"
+                message={`¿Está seguro de que desea eliminar la plantilla "${templateToDelete?.name}"? Esta acción no se puede deshacer.`}
+                confirmText="Eliminar Plantilla"
+                isDestructive={true}
+            />
         </div>
     );
 }

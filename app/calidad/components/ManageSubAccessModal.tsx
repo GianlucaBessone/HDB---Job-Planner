@@ -40,6 +40,7 @@ import {
 import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
 import { useModalScroll } from '@/lib/useModalScroll';
+import ConfirmModal from '@/components/ConfirmModal';
 
 // Icon Map helper
 export const SUB_ACCESS_ICONS: Record<string, any> = {
@@ -121,6 +122,7 @@ export default function ManageSubAccessModal({
     const [selectedModuleTab, setSelectedModuleTab] = useState<string>('all');
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+    const [subToDelete, setSubToDelete] = useState<SubAccessItem | null>(null);
 
     const isEditing = Boolean(editingSubAccess);
 
@@ -231,28 +233,27 @@ export default function ManageSubAccessModal({
         }
     };
 
-    const handleDelete = async (sub: SubAccessItem) => {
-        const docCount = sub._count?.documentos || 0;
-        let confirmMsg = `¿Deseas eliminar el sub-acceso "${sub.codigo} - ${sub.nombre}"?`;
-        if (docCount > 0) {
-            confirmMsg += `\n\nAtención: Tiene ${docCount} documento(s) asociado(s). Los documentos no se borrarán, quedarán en estado 'Sin Asignar'.`;
-        }
-        if (!window.confirm(confirmMsg)) return;
+    const handleDelete = (sub: SubAccessItem) => {
+        setSubToDelete(sub);
+    };
 
-        setDeletingId(sub.id);
+    const executeDeleteSub = async () => {
+        if (!subToDelete) return;
+        setDeletingId(subToDelete.id);
         try {
             const params = new URLSearchParams({
                 userId: user?.id || '',
                 userName: user?.nombreCompleto || user?.nombre || ''
             });
-            const res = await safeApiRequest(`/api/documentos/accesos/${sub.id}?${params}`, {
+            const res = await safeApiRequest(`/api/documentos/accesos/${subToDelete.id}?${params}`, {
                 method: 'DELETE'
             });
             if (res.ok) {
                 showToast('Sub-acceso eliminado', 'success');
-                if (editingSubAccess?.id === sub.id) {
+                if (editingSubAccess?.id === subToDelete.id) {
                     handleResetForm();
                 }
+                setSubToDelete(null);
                 onRefresh();
             } else {
                 const err = await res.json();
@@ -753,6 +754,21 @@ export default function ManageSubAccessModal({
                     </button>
                 </div>
             </div>
+
+            <ConfirmModal
+                isOpen={Boolean(subToDelete)}
+                onClose={() => setSubToDelete(null)}
+                onConfirm={executeDeleteSub}
+                title="Eliminar Sub-acceso"
+                message={`¿Deseas eliminar el sub-acceso "${subToDelete?.codigo} - ${subToDelete?.nombre}"?${
+                    (subToDelete?._count?.documentos || 0) > 0 
+                        ? `\n\nAtención: Tiene ${subToDelete?._count?.documentos} documento(s) asociado(s). Los documentos no se borrarán, quedarán en estado 'Sin Asignar'.` 
+                        : ''
+                }`}
+                confirmText="Eliminar Sub-acceso"
+                cancelText="Cancelar"
+                isDestructive={true}
+            />
         </div>
     );
 }

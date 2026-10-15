@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { showToast } from '@/components/Toast';
 
 let cachedCompetenciesData: { competencies: any[]; operators: any[]; documents: any[] } | null = null;
 
@@ -112,11 +113,13 @@ export default function CompetenciesTab({ user }: { user: any }) {
             if (res.ok) {
                 setSelectedCell(null);
                 loadData();
+                showToast('Acreditación guardada exitosamente.', 'success');
             } else {
-                alert('Error al guardar la acreditación.');
+                showToast('Error al guardar la acreditación.', 'error');
             }
         } catch (e) {
             console.error(e);
+            showToast('Error al guardar la acreditación.', 'error');
         }
     };
 

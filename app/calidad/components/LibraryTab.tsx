@@ -26,19 +26,27 @@ import {
     Filter,
     HelpCircle,
     Download,
-    Trash2
+    Trash2,
+    Table,
+    ArrowUpDown,
+    ArrowUp,
+    ArrowDown
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 import DocumentDetailModal from './DocumentDetailModal';
 import NewDocumentModal from './NewDocumentModal';
 import ManageSubAccessModal, { getSubAccessIcon } from './ManageSubAccessModal';
 import QuickUploadDocModal from './QuickUploadDocModal';
+import ConfirmModal from '@/components/ConfirmModal';
 
 let cachedLibraryDocs: any[] | null = null;
 let cachedAccessModules: any[] | null = null;
 
 export default function LibraryTab({ user, initialDocId }: { user: any; initialDocId?: string | null }) {
-    const [viewMode, setViewMode] = useState<'structured' | 'grid'>('structured');
+    const [viewMode, setViewMode] = useState<'structured' | 'grid' | 'table'>('structured');
+    const [sortColumn, setSortColumn] = useState<'codigo' | 'titulo' | 'version' | 'tipo' | 'estado' | 'vencimiento'>('codigo');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+    const [docToDelete, setDocToDelete] = useState<{ id: string; codigo: string; titulo: string } | null>(null);
     const [modules, setModules] = useState<any[]>([]);
     const [docs, setDocs] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -184,17 +192,20 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
         }
     };
 
-    const handleDeleteDoc = async (docId: string, codigo: string, titulo: string) => {
-        const confirmMsg = `¿Está seguro de eliminar definitivamente el documento "${codigo}: ${titulo}" y TODO su historial de revisiones?\n\nEsta acción no dejará registros en el sistema.`;
-        if (!window.confirm(confirmMsg)) return;
+    const handleDeleteDoc = (docId: string, codigo: string, titulo: string) => {
+        setDocToDelete({ id: docId, codigo, titulo });
+    };
 
+    const executeDeleteDoc = async () => {
+        if (!docToDelete) return;
         try {
-            const res = await safeApiRequest(`/api/documentos/${docId}`, {
+            const res = await safeApiRequest(`/api/documentos/${docToDelete.id}`, {
                 method: 'DELETE'
             });
             if (res.ok) {
                 cachedLibraryDocs = null;
-                showToast(`Documento ${codigo} e historial eliminados correctamente`, 'success');
+                showToast(`Documento ${docToDelete.codigo} e historial eliminados correctamente`, 'success');
+                setDocToDelete(null);
                 loadData();
             } else {
                 const err = await res.json();
@@ -203,6 +214,15 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
         } catch (e) {
             console.error(e);
             showToast('Error de red al eliminar documento', 'error');
+        }
+    };
+
+    const handleSort = (col: 'codigo' | 'titulo' | 'version' | 'tipo' | 'estado' | 'vencimiento') => {
+        if (sortColumn === col) {
+            setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortColumn(col);
+            setSortDirection('asc');
         }
     };
 
@@ -237,6 +257,46 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
             return true;
         });
     }, [docs, selectedModuleFilter, statusFilter, searchQuery]);
+
+    // Sorted documents for dense auditor table view
+    const sortedTableDocs = useMemo(() => {
+        return [...filteredDocs].sort((a, b) => {
+            let valA: any = '';
+            let valB: any = '';
+            switch (sortColumn) {
+                case 'codigo':
+                    valA = a.codigoDocumental || '';
+                    valB = b.codigoDocumental || '';
+                    break;
+                case 'titulo':
+                    valA = (a.titulo || '').toLowerCase();
+                    valB = (b.titulo || '').toLowerCase();
+                    break;
+                case 'version':
+                    valA = (a.versionMayor || 0) * 1000 + (a.versionMenor || 0);
+                    valB = (b.versionMayor || 0) * 1000 + (b.versionMenor || 0);
+                    break;
+                case 'tipo':
+                    valA = (a.tipoDocumento || '') + (a.area || '');
+                    valB = (b.tipoDocumento || '') + (b.area || '');
+                    break;
+                case 'estado':
+                    valA = a.estado || '';
+                    valB = b.estado || '';
+                    break;
+                case 'vencimiento':
+                    valA = a.proximaRevision ? new Date(a.proximaRevision).getTime() : 0;
+                    valB = b.proximaRevision ? new Date(b.proximaRevision).getTime() : 0;
+                    break;
+                default:
+                    valA = a.codigoDocumental || '';
+                    valB = b.codigoDocumental || '';
+            }
+            if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+            if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }, [filteredDocs, sortColumn, sortDirection]);
 
     // Unassigned documents (filtered & total)
     const unassignedDocs = useMemo(() => {
@@ -339,8 +399,15 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                 {/* Filter and View Toggles Bar */}
                 <div className="flex flex-col md:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
                     {/* View Switcher */}
-                    <div className="flex items-center bg-slate-100 dark:bg-slate-800/80 p-1 rounded-2xl w-full md:w-auto">
+                    <div 
+                        className="flex items-center bg-slate-100 dark:bg-slate-800/80 p-1 rounded-2xl w-full md:w-auto"
+                        role="tablist"
+                        aria-label="Modo de visualización de biblioteca"
+                    >
                         <button
+                            role="tab"
+                            aria-selected={viewMode === 'structured'}
+                            tabIndex={viewMode === 'structured' ? 0 : -1}
                             onClick={() => setViewMode('structured')}
                             className={`flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
                                 viewMode === 'structured'
@@ -352,6 +419,9 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                             <span>Vista Procesos y Accesos</span>
                         </button>
                         <button
+                            role="tab"
+                            aria-selected={viewMode === 'grid'}
+                            tabIndex={viewMode === 'grid' ? 0 : -1}
                             onClick={() => setViewMode('grid')}
                             className={`flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
                                 viewMode === 'grid'
@@ -360,7 +430,21 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                             }`}
                         >
                             <LayoutGrid className="w-4 h-4" />
-                            <span>Catálogo General ({filteredDocs.length})</span>
+                            <span>Catálogo ({filteredDocs.length})</span>
+                        </button>
+                        <button
+                            role="tab"
+                            aria-selected={viewMode === 'table'}
+                            tabIndex={viewMode === 'table' ? 0 : -1}
+                            onClick={() => setViewMode('table')}
+                            className={`flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+                                viewMode === 'table'
+                                    ? 'bg-card text-card-foreground text-primary shadow-xs'
+                                    : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                            }`}
+                        >
+                            <Table className="w-4 h-4" />
+                            <span>Auditoría / Tabla ({filteredDocs.length})</span>
                         </button>
                     </div>
 
@@ -420,8 +504,18 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                             >
                                 {/* Module Banner Header */}
                                 <div
-                                    className={`px-6 py-4 bg-gradient-to-r ${theme.bgGradient} flex items-center justify-between gap-4 cursor-pointer select-none border-b border-slate-100 dark:border-slate-800/80`}
+                                    className={`px-6 py-4 bg-gradient-to-r ${theme.bgGradient} flex items-center justify-between gap-4 cursor-pointer select-none border-b border-slate-100 dark:border-slate-800/80 outline-none focus-visible:ring-2 focus-visible:ring-primary`}
                                     onClick={() => toggleModuleExpand(mod.codigo)}
+                                    role="button"
+                                    tabIndex={0}
+                                    aria-expanded={isExpanded}
+                                    aria-controls={`module-panel-${mod.codigo}`}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            toggleModuleExpand(mod.codigo);
+                                        }
+                                    }}
                                 >
                                     <div className="flex items-center gap-3.5 min-w-0">
                                         <div className={`w-11 h-11 rounded-2xl ${theme.iconBg} flex items-center justify-center font-black shrink-0 shadow-xs`}>
@@ -455,22 +549,22 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                                                     : `${modTotalDocs.length} documentos`}
                                             </p>
                                         </div>
-                                        <button
-                                            type="button"
-                                            className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                        <div
+                                            className="p-2 rounded-xl text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                            aria-hidden="true"
                                         >
                                             {isExpanded ? (
                                                 <ChevronDown className="w-5 h-5" />
                                             ) : (
                                                 <ChevronRight className="w-5 h-5" />
                                             )}
-                                        </button>
+                                        </div>
                                     </div>
                                 </div>
 
                                 {/* Sub-accesses Grid */}
                                 {isExpanded && (
-                                    <div className="p-6 bg-slate-50/50 dark:bg-slate-900/30 space-y-4">
+                                    <div id={`module-panel-${mod.codigo}`} className="p-6 bg-slate-50/50 dark:bg-slate-900/30 space-y-4">
                                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                                             {mod.subAccesses.map((sub: any) => {
                                                 const SubIcon = getSubAccessIcon(sub.icon);
@@ -698,6 +792,7 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                                                         }}
                                                         className="p-1 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-lg transition-colors"
                                                         title="Visualizar documento online"
+                                                        aria-label={`Visualizar documento online: ${doc.codigoDocumental}`}
                                                     >
                                                         <Eye className="w-3.5 h-3.5 text-emerald-500" />
                                                     </button>
@@ -710,6 +805,7 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                                                     }}
                                                     className="p-1 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition-colors"
                                                     title="Eliminar documento e historial sin registro"
+                                                    aria-label={`Eliminar documento ${doc.codigoDocumental} e historial sin registro`}
                                                 >
                                                     <Trash2 className="w-3.5 h-3.5" />
                                                 </button>
@@ -746,6 +842,199 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                             </div>
                         </div>
                     )}
+                </div>
+            ) : viewMode === 'table' ? (
+                /* ════════════════════════════════════════════════════════════════════════
+                   DENSE AUDIT TABLE VIEW (FOR QMS AUDITORS & MANAGERS)
+                   ════════════════════════════════════════════════════════════════════════ */
+                <div className="bg-card text-card-foreground rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden animate-in fade-in duration-200">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 font-black text-slate-500 uppercase tracking-wider text-[11px] select-none">
+                                    <th 
+                                        className="py-3 px-4 cursor-pointer hover:text-primary transition-colors"
+                                        onClick={() => handleSort('codigo')}
+                                    >
+                                        <div className="flex items-center gap-1.5">
+                                            <span>Código</span>
+                                            {sortColumn === 'codigo' ? (
+                                                sortDirection === 'asc' ? <ArrowUp className="w-3.5 h-3.5 text-primary" /> : <ArrowDown className="w-3.5 h-3.5 text-primary" />
+                                            ) : <ArrowUpDown className="w-3.5 h-3.5 opacity-40" />}
+                                        </div>
+                                    </th>
+                                    <th 
+                                        className="py-3 px-4 cursor-pointer hover:text-primary transition-colors"
+                                        onClick={() => handleSort('titulo')}
+                                    >
+                                        <div className="flex items-center gap-1.5">
+                                            <span>Título del Documento</span>
+                                            {sortColumn === 'titulo' ? (
+                                                sortDirection === 'asc' ? <ArrowUp className="w-3.5 h-3.5 text-primary" /> : <ArrowDown className="w-3.5 h-3.5 text-primary" />
+                                            ) : <ArrowUpDown className="w-3.5 h-3.5 opacity-40" />}
+                                        </div>
+                                    </th>
+                                    <th 
+                                        className="py-3 px-3 cursor-pointer hover:text-primary transition-colors text-center"
+                                        onClick={() => handleSort('version')}
+                                    >
+                                        <div className="flex items-center justify-center gap-1.5">
+                                            <span>Versión</span>
+                                            {sortColumn === 'version' ? (
+                                                sortDirection === 'asc' ? <ArrowUp className="w-3.5 h-3.5 text-primary" /> : <ArrowDown className="w-3.5 h-3.5 text-primary" />
+                                            ) : <ArrowUpDown className="w-3.5 h-3.5 opacity-40" />}
+                                        </div>
+                                    </th>
+                                    <th 
+                                        className="py-3 px-3 cursor-pointer hover:text-primary transition-colors text-center"
+                                        onClick={() => handleSort('tipo')}
+                                    >
+                                        <div className="flex items-center justify-center gap-1.5">
+                                            <span>Tipo / Área</span>
+                                            {sortColumn === 'tipo' ? (
+                                                sortDirection === 'asc' ? <ArrowUp className="w-3.5 h-3.5 text-primary" /> : <ArrowDown className="w-3.5 h-3.5 text-primary" />
+                                            ) : <ArrowUpDown className="w-3.5 h-3.5 opacity-40" />}
+                                        </div>
+                                    </th>
+                                    <th className="py-3 px-3">
+                                        <span>Proceso / Sub-acceso</span>
+                                    </th>
+                                    <th 
+                                        className="py-3 px-3 cursor-pointer hover:text-primary transition-colors text-center"
+                                        onClick={() => handleSort('estado')}
+                                    >
+                                        <div className="flex items-center justify-center gap-1.5">
+                                            <span>Estado</span>
+                                            {sortColumn === 'estado' ? (
+                                                sortDirection === 'asc' ? <ArrowUp className="w-3.5 h-3.5 text-primary" /> : <ArrowDown className="w-3.5 h-3.5 text-primary" />
+                                            ) : <ArrowUpDown className="w-3.5 h-3.5 opacity-40" />}
+                                        </div>
+                                    </th>
+                                    <th 
+                                        className="py-3 px-3 cursor-pointer hover:text-primary transition-colors"
+                                        onClick={() => handleSort('vencimiento')}
+                                    >
+                                        <div className="flex items-center gap-1.5">
+                                            <span>Próxima Revisión</span>
+                                            {sortColumn === 'vencimiento' ? (
+                                                sortDirection === 'asc' ? <ArrowUp className="w-3.5 h-3.5 text-primary" /> : <ArrowDown className="w-3.5 h-3.5 text-primary" />
+                                            ) : <ArrowUpDown className="w-3.5 h-3.5 opacity-40" />}
+                                        </div>
+                                    </th>
+                                    <th className="py-3 px-4 text-right">
+                                        <span>Acciones</span>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                {sortedTableDocs.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={8} className="py-12 text-center text-slate-400">
+                                            No se encontraron documentos con los filtros seleccionados.
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    sortedTableDocs.map((doc) => {
+                                        const isVigente = doc.estado === 'vigente';
+                                        const hasFile = doc.versions?.[0]?.files?.length > 0;
+                                        return (
+                                            <tr 
+                                                key={doc.id}
+                                                className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group cursor-pointer"
+                                                onClick={() => setSelectedDocId(doc.id)}
+                                            >
+                                                <td className="py-3 px-4 font-mono font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                                                    <span className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-[11px]">
+                                                        {doc.codigoDocumental}
+                                                    </span>
+                                                </td>
+                                                <td className="py-3 px-4 min-w-[240px]">
+                                                    <div className="font-bold text-slate-800 dark:text-slate-100 text-[13px] group-hover:text-primary transition-colors">
+                                                        {doc.titulo}
+                                                    </div>
+                                                    {doc.requiereConfirmacionLectura && (
+                                                        <span className="inline-block mt-0.5 text-[9px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-1.5 py-0.2 rounded border border-indigo-200/50">
+                                                            Lectura obligatoria
+                                                        </span>
+                                                    )}
+                                                </td>
+                                                <td className="py-3 px-3 text-center whitespace-nowrap">
+                                                    <span className="font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-[11px]">
+                                                        v{doc.versionMayor}.{doc.versionMenor}
+                                                    </span>
+                                                </td>
+                                                <td className="py-3 px-3 text-center whitespace-nowrap">
+                                                    <span className="text-[11px] font-semibold text-slate-500">
+                                                        {doc.tipoDocumento} / {doc.area}
+                                                    </span>
+                                                </td>
+                                                <td className="py-3 px-3 text-[11px] text-slate-600 dark:text-slate-400 max-w-[180px] truncate">
+                                                    {doc.subAccess ? (
+                                                        <span className="font-medium text-primary">
+                                                            {doc.subAccess.codigo} {doc.subAccess.nombre}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-amber-600 dark:text-amber-400 italic">
+                                                            Sin Asignar
+                                                        </span>
+                                                    )}
+                                                </td>
+                                                <td className="py-3 px-3 text-center whitespace-nowrap">
+                                                    <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${
+                                                        isVigente
+                                                            ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400'
+                                                            : doc.estado === 'borrador'
+                                                            ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                                                            : 'bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400'
+                                                    }`}>
+                                                        {doc.estado}
+                                                    </span>
+                                                </td>
+                                                <td className="py-3 px-3 text-slate-500 whitespace-nowrap text-[11px]">
+                                                    {doc.proximaRevision 
+                                                        ? new Date(doc.proximaRevision).toLocaleDateString() 
+                                                        : 'No programada'}
+                                                </td>
+                                                <td className="py-3 px-4 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                                                    <div className="flex items-center justify-end gap-1.5">
+                                                        {hasFile && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => window.open(`/api/documentos/${doc.id}/view`, '_blank')}
+                                                                className="p-1.5 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-lg transition-colors"
+                                                                title="Visualizar archivo"
+                                                                aria-label={`Visualizar archivo de ${doc.codigoDocumental}`}
+                                                            >
+                                                                <Eye className="w-4 h-4" />
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setSelectedDocId(doc.id)}
+                                                            className="p-1.5 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-lg transition-colors"
+                                                            title="Ver Detalle"
+                                                            aria-label={`Ver detalle del documento ${doc.codigoDocumental}`}
+                                                        >
+                                                            <Edit2 className="w-4 h-4" />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleDeleteDoc(doc.id, doc.codigoDocumental, doc.titulo)}
+                                                            className="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors"
+                                                            title="Eliminar documento"
+                                                            aria-label={`Eliminar documento ${doc.codigoDocumental}`}
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             ) : (
                 /* ════════════════════════════════════════════════════════════════════════
@@ -899,6 +1188,17 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                     }}
                 />
             )}
+
+            <ConfirmModal
+                isOpen={Boolean(docToDelete)}
+                onClose={() => setDocToDelete(null)}
+                onConfirm={executeDeleteDoc}
+                title="Eliminar Documento Controlado"
+                message={`¿Está seguro de eliminar definitivamente el documento "${docToDelete?.codigo}: ${docToDelete?.titulo}" y TODO su historial de revisiones?\n\nEsta acción no dejará registros en el sistema.`}
+                confirmText="Eliminar Definitivamente"
+                cancelText="Cancelar"
+                isDestructive={true}
+            />
         </div>
     );
 }
