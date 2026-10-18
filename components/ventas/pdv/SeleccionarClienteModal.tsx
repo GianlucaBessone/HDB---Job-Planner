@@ -25,6 +25,9 @@ interface SeleccionarClienteModalProps {
     id: string | null;
     nombre: string;
     identificacion?: string | null;
+    telefono?: string | null;
+    email?: string | null;
+    direccion?: string | null;
     listaPrecioId?: string | null;
     listaPrecio?: { id: string; nombre: string; codigo: string; ivaDiscriminado?: boolean } | null;
   }) => void;
@@ -153,6 +156,9 @@ export default function SeleccionarClienteModal({
                       id: c.id,
                       nombre: c.nombre,
                       identificacion: c.telefono || c.email || null,
+                      telefono: c.telefono || null,
+                      email: c.email || null,
+                      direccion: c.direccion || null,
                       listaPrecioId: c.listaPrecioId || null,
                       listaPrecio: c.listaPrecio || null,
                     });
@@ -162,6 +168,9 @@ export default function SeleccionarClienteModal({
                       id: null,
                       nombre: 'Consumidor Final',
                       identificacion: null,
+                      telefono: null,
+                      email: null,
+                      direccion: null,
                       listaPrecioId: null,
                       listaPrecio: null,
                     });
@@ -196,6 +205,9 @@ export default function SeleccionarClienteModal({
                   id: null,
                   nombre: 'Consumidor Final',
                   identificacion: null,
+                  telefono: null,
+                  email: null,
+                  direccion: null,
                   listaPrecioId: null,
                   listaPrecio: null,
                 });
@@ -216,6 +228,9 @@ export default function SeleccionarClienteModal({
                 id: null,
                 nombre: 'Consumidor Final',
                 identificacion: null,
+                telefono: null,
+                email: null,
+                direccion: null,
                 listaPrecioId: null,
                 listaPrecio: null,
               });
@@ -274,6 +289,9 @@ export default function SeleccionarClienteModal({
                         id: c.id,
                         nombre: c.nombre,
                         identificacion: c.telefono || c.email || null,
+                        telefono: c.telefono || null,
+                        email: c.email || null,
+                        direccion: c.direccion || null,
                         listaPrecioId: c.listaPrecioId || null,
                         listaPrecio: c.listaPrecio || null,
                       });
@@ -302,6 +320,9 @@ export default function SeleccionarClienteModal({
                       id: c.id,
                       nombre: c.nombre,
                       identificacion: c.telefono || c.email || null,
+                      telefono: c.telefono || null,
+                      email: c.email || null,
+                      direccion: c.direccion || null,
                       listaPrecioId: c.listaPrecioId || null,
                       listaPrecio: c.listaPrecio || null,
                     });

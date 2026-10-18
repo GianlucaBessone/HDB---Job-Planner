@@ -189,9 +189,10 @@ model Operator {
   otCicloOperadores         OtCicloOperador[]
   clientRates               ClientOperatorRate[]
 
-  // Ventas (PDV)
-  ventasRealizadas          Venta[]             @relation("VentaVendedor")
-  ventasAnuladas            Venta[]             @relation("VentaAnulador")
+  // Ventas (PDV), Cuentas Corrientes y Cotizaciones
+  ventasRealizadas          Venta[]                     @relation("VentaVendedor")
+  ventasAnuladas            Venta[]                     @relation("VentaAnulador")
+  cotizacionesRealizadas    Cotizacion[]                @relation("CotizacionVendedor")
 }
 
 model FavoriteBlock {
@@ -215,28 +216,31 @@ model Planning {
 }
 
 model HdbClient {
-  id               String            @id @default(cuid())
-  nombre           String
-  email            String?
-  telefono         String?
-  direccion        String?
-  activo           Boolean           @default(true)
-  listaPrecioId    String?
-  listaPrecio      ListaPrecio?      @relation(fields: [listaPrecioId], references: [id], onDelete: SetNull)
-  projects         Project[]
-  createdAt        DateTime          @default(now())
-  technicalReports TechnicalReport[]
-  eppPublicShares  EppPublicShare[]
+  id                        String                      @id @default(cuid())
+  nombre                    String
+  email                     String?
+  telefono                  String?
+  direccion                 String?
+  activo                    Boolean                     @default(true)
+  listaPrecioId             String?
+  listaPrecio               ListaPrecio?                @relation(fields: [listaPrecioId], references: [id], onDelete: SetNull)
+  projects                  Project[]
+  createdAt                 DateTime                    @default(now())
+  technicalReports          TechnicalReport[]
+  eppPublicShares           EppPublicShare[]
 
   // Órdenes de Trabajo & Portal
-  ordenesTrabajo   OrdenTrabajo[]
-  configuracion    HdbClientConfig?
-  responsables     ClientResponsable[]
-  operatorRates    ClientOperatorRate[]
-  sectores         ClientSector[]
+  ordenesTrabajo            OrdenTrabajo[]
+  configuracion             HdbClientConfig?
+  responsables              ClientResponsable[]
+  operatorRates             ClientOperatorRate[]
+  sectores                  ClientSector[]
 
-  // Ventas (PDV)
-  ventas           Venta[]
+  // Ventas (PDV), Cuentas Corrientes y Cotizaciones
+  ventas                    Venta[]
+  cuentaCorrienteConfig     CuentaCorrienteConfig?
+  cuentaCorrienteMovs       CuentaCorrienteMovimiento[]
+  cotizaciones              Cotizacion[]
 
   @@index([listaPrecioId])
 }
@@ -2592,6 +2596,7 @@ model ListaPrecio {
   ordenesServicio  OrdenServicio[]
   clients          HdbClient[]
   ventas           Venta[]
+  cotizaciones     Cotizacion[]
 
   @@index([tipoAjuste])
   @@index([aplicaA])
@@ -2665,13 +2670,14 @@ model Producto {
   createdAt    DateTime                  @default(now())
   updatedAt    DateTime                  @updatedAt
 
-  proveedores  ProductoProveedorVentas[]
-  stocks       ProductoStock[]
-  movimientos  ProductoStockMovimiento[]
-  historial    ProductoHistorial[]
+  proveedores               ProductoProveedorVentas[]
+  stocks                    ProductoStock[]
+  movimientos               ProductoStockMovimiento[]
+  historial                 ProductoHistorial[]
   ordenesServicioMateriales OrdenServicioMaterial[]
-  ventaItems   VentaItem[]
-  conteoDetalles ConteoInventarioDetalle[]
+  ventaItems                VentaItem[]
+  cotizacionItems           CotizacionItem[]
+  conteoDetalles            ConteoInventarioDetalle[]
 
   @@index([sku])
   @@index([codigoBarras])
@@ -3314,6 +3320,158 @@ model RemitoEntregaItem {
   @@index([ventaItemId])
 }
 
+// ==========================================
+// MÓDULO CUENTAS CORRIENTES - FASE 4
+// ==========================================
 
+model CuentaCorrienteCounter {
+  serie         String // "REC" | "ND" | "NC"
+  year          Int
+  currentNumber Int    @default(0)
 
+  @@id([serie, year])
+}
 
+model CuentaCorrienteConfig {
+  id            String    @id @default(cuid())
+  clienteId     String    @unique
+  cliente       HdbClient @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  limiteCredito Float     @default(0) // 0 = sin límite establecido
+  plazoDias     Int       @default(30) // días de plazo comercial por defecto
+  estadoCredito String    @default("ACTIVO") // "ACTIVO" | "OBSERVADO" | "SUSPENDIDO"
+  observaciones String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([clienteId])
+  @@index([estadoCredito])
+}
+
+model CuentaCorrienteMovimiento {
+  id                  String    @id @default(cuid())
+  numero              String    @unique // Ej: "REC-2026-000001", "ND-2026-000001", "NC-2026-000001"
+  clienteId           String
+  cliente             HdbClient @relation(fields: [clienteId], references: [id], onDelete: Restrict)
+  fecha               DateTime  @default(now())
+  tipo                String    // "RECIBO_PAGO" | "CARGO_MANUAL" | "SALDO_INICIAL" | "NOTA_CREDITO"
+  concepto            String
+  debe                Float     @default(0) // Aumenta deuda del cliente (CARGO_MANUAL, SALDO_INICIAL)
+  haber               Float     @default(0) // Disminuye deuda del cliente (RECIBO_PAGO, NOTA_CREDITO)
+  saldoPendienteCargo Float     @default(0) // Para CARGO_MANUAL / SALDO_INICIAL: saldo aún no cubierto por recibos
+  fechaVencimiento    DateTime? // Para CARGO_MANUAL / SALDO_INICIAL
+  mediosPago          Json?     // [{ metodo, monto, referencia, observaciones }]
+  imputaciones        Json?     // [{ destinoTipo: 'VENTA'|'CARGO', destinoId, numero, montoImputado, saldoAnterior, saldoPosterior }]
+  ventaId             String?
+  estado              String    @default("CONFIRMADO") // "CONFIRMADO" | "ANULADO"
+  operadorId          String?
+  operadorNombre      String?
+  observaciones       String?
+  motivoAnulacion     String?
+  anuladoEn           DateTime?
+  anuladoPorNombre    String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([clienteId])
+  @@index([fecha])
+  @@index([tipo])
+  @@index([estado])
+  @@index([numero])
+}
+
+// ==========================================
+// MÓDULO COTIZACIONES - FASE 5
+// ==========================================
+
+model CotizacionCounter {
+  year          Int @id
+  currentNumber Int @default(0)
+}
+
+model Cotizacion {
+  id                    String           @id @default(cuid())
+  numero                String           @unique // Ej: "COT-2026-000001"
+  fecha                 DateTime         @default(now())
+  validezDias           Int              @default(15)
+  fechaVencimiento      DateTime?
+
+  // Cliente (Registrado o Eventual)
+  clienteId             String?
+  cliente               HdbClient?       @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  clienteNombre         String
+  clienteIdentificacion String?
+  clienteDireccion      String?
+  clienteTelefono       String?
+  clienteEmail          String?
+
+  // Lista de precios y régimen fiscal
+  listaPrecioId         String?
+  listaPrecio           ListaPrecio?     @relation(fields: [listaPrecioId], references: [id], onDelete: SetNull)
+  listaPrecioNombre     String           @default("Lista General")
+  ivaDiscriminado       Boolean          @default(false)
+
+  // Vendedor
+  vendedorId            String?
+  vendedor              Operator?        @relation("CotizacionVendedor", fields: [vendedorId], references: [id], onDelete: SetNull)
+  vendedorNombre        String?
+
+  // Condiciones comerciales
+  condicionPago         String?          // Ej: "Contado", "Transferencia", "Cuenta Corriente 30 días"
+  plazoEntrega          String?          // Ej: "Inmediata", "48-72 hs hábiles"
+  referenciaObra        String?          // Obra, proyecto o referencia del cliente
+
+  // Totales
+  subtotal              Float            @default(0)
+  descuentoPorcentaje   Float            @default(0)
+  descuentoMonto        Float            @default(0)
+  recargoPorcentaje     Float            @default(0)
+  recargoMonto          Float            @default(0)
+  impuestosMonto        Float            @default(0)
+  total                 Float            @default(0)
+
+  // Estado y trazabilidad
+  estado                String           @default("VIGENTE") // "VIGENTE" | "APROBADA" | "RECHAZADA" | "CONVERTIDA" | "VENCIDA" | "ANULADA"
+  ventaId               String?          // ID de la Venta si se convirtió en PDV
+  ventaNumero           String?          // Número de la Venta asociada
+  observaciones         String?          @db.Text
+  notasInternas         String?          @db.Text
+  motivoAnulacion       String?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  items                 CotizacionItem[]
+
+  @@index([numero])
+  @@index([fecha])
+  @@index([clienteId])
+  @@index([vendedorId])
+  @@index([estado])
+  @@index([listaPrecioId])
+}
+
+model CotizacionItem {
+  id                  String     @id @default(cuid())
+  cotizacionId        String
+  cotizacion          Cotizacion @relation(fields: [cotizacionId], references: [id], onDelete: Cascade)
+  productoId          String?
+  producto            Producto?  @relation(fields: [productoId], references: [id], onDelete: SetNull)
+  sku                 String
+  descripcion         String
+  marca               String?
+  unidad              String?
+  cantidad            Float      @default(1)
+  precioOriginal      Float      @default(0)
+  precioUnitario      Float      @default(0)
+  descuentoPorcentaje Float      @default(0)
+  descuentoMonto      Float      @default(0)
+  ivaPorcentaje       Float      @default(21)
+  subtotal            Float      @default(0)
+  precioModificado    Boolean    @default(false)
+  motivoModificacion  String?
+  esManual            Boolean    @default(false)
+  orden               Int        @default(0)
+
+  @@index([cotizacionId])
+  @@index([productoId])
+  @@index([sku])
+}

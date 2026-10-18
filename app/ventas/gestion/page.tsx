@@ -18,6 +18,9 @@ import {
   Trash2,
   Barcode,
   ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  ClipboardList,
   Check,
   RotateCcw,
   Loader2,
@@ -677,13 +680,11 @@ export default function VentasGestionPage() {
                     Ajuste Rápido de Stock
                   </button>
                   <button
-                    onClick={() => showToast('Conteo físico disponible en Fase 2 — Almacén', 'info')}
-                    className="w-full flex items-center justify-between px-2.5 py-1.5 text-xs font-semibold rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-left text-slate-400"
+                    onClick={() => router.push('/ventas/almacen?tab=conteos')}
+                    className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs font-semibold rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-left text-slate-700 dark:text-slate-200"
                   >
+                    <ClipboardList className="w-3.5 h-3.5 text-indigo-500" />
                     <span>Conteo de Stock</span>
-                    <span className="text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/40 text-amber-600">
-                      Fase 2
-                    </span>
                   </button>
                   <button
                     onClick={() => {
@@ -709,10 +710,10 @@ export default function VentasGestionPage() {
                   setIsPreciosMenuOpen(false);
                   setIsStockMenuOpen(false);
                 }}
-                className="flex items-center gap-1 h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm"
+                className="flex items-center gap-1 h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm whitespace-nowrap"
                 title="Configurar columnas visibles"
               >
-                <Settings2 className="w-3.5 h-3.5 text-slate-500" />
+                <Settings2 className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                 <span className="hidden sm:inline">Columnas</span>
               </button>
 
@@ -772,19 +773,19 @@ export default function VentasGestionPage() {
             {/* Importar Productos (Pantalla Completa) */}
             <button
               onClick={() => router.push('/ventas/gestion/productos/importar')}
-              className="flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm"
+              className="flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm whitespace-nowrap"
               title="Importar productos masivamente desde Excel"
             >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>Importar Productos</span>
             </button>
 
             {/* Nuevo Producto (Pantalla Completa) */}
             <button
               onClick={() => router.push('/ventas/gestion/productos/nuevo')}
-              className="flex items-center gap-1 h-8 px-3 rounded-lg bg-primary text-white text-xs font-bold shadow-sm shadow-primary/25 hover:opacity-90 transition-opacity"
+              className="flex items-center gap-1 h-8 px-3 rounded-lg bg-primary text-white text-xs font-bold shadow-sm shadow-primary/25 hover:opacity-90 transition-opacity whitespace-nowrap"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="w-3.5 h-3.5 shrink-0" />
               <span>Nuevo Producto</span>
             </button>
           </div>
@@ -998,25 +999,42 @@ export default function VentasGestionPage() {
             <thead className="sticky top-0 z-20 bg-slate-100/95 dark:bg-slate-800/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px] tracking-wider whitespace-nowrap">
               <tr>
                 {visibleColumns.map((col) => {
-                  const sortable = col.key === 'sku' || col.key === 'descripcion';
+                  const isSorted = sortBy === col.key;
                   const align = ['costo', 'precioBase', 'precioConIva'].includes(col.key) ? 'text-right' : ['unidad', 'iva', 'rentabilidad', 'stock'].includes(col.key) ? 'text-center' : '';
                   return (
                     <th
                       key={col.key}
-                      onClick={sortable ? () => {
-                        setSortBy(col.key);
-                        setSortOrder(sortBy === col.key && sortOrder === 'asc' ? 'desc' : 'asc');
-                      } : undefined}
-                      className={`py-2 px-2.5 relative group/resize ${sortable ? 'cursor-pointer hover:text-slate-800 dark:hover:text-slate-200' : ''} ${align}`}
+                      onClick={() => {
+                        if (sortBy === col.key) {
+                          setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                        } else {
+                          setSortBy(col.key);
+                          setSortOrder('asc');
+                        }
+                        setPage(1);
+                      }}
+                      className={`py-2 px-2.5 relative group/resize cursor-pointer select-none hover:text-slate-800 dark:hover:text-slate-200 transition-colors ${
+                        isSorted ? 'text-primary dark:text-primary bg-primary/[0.04]' : ''
+                      } ${align}`}
                       style={{ width: columnWidths[col.key] || DEFAULT_COLUMN_WIDTHS[col.key] || 100, overflow: 'hidden' }}
+                      title={`Ordenar por ${COLUMN_LABELS[col.key] || col.key}`}
                     >
                       <div className={`flex items-center gap-1 overflow-hidden text-ellipsis ${align === 'text-right' ? 'justify-end' : align === 'text-center' ? 'justify-center' : ''}`}>
-                        {col.key === 'precioBase' ? 'Precio Base (ARS)' : COLUMN_LABELS[col.key] || col.key}
-                        {sortable && <ArrowUpDown className="w-3 h-3 opacity-60 shrink-0" />}
+                        <span className="truncate">{col.key === 'precioBase' ? 'Precio Base (ARS)' : COLUMN_LABELS[col.key] || col.key}</span>
+                        {isSorted ? (
+                          sortOrder === 'asc' ? (
+                            <ArrowUp className="w-3 h-3 text-primary shrink-0" />
+                          ) : (
+                            <ArrowDown className="w-3 h-3 text-primary shrink-0" />
+                          )
+                        ) : (
+                          <ArrowUpDown className="w-3 h-3 opacity-35 group-hover/resize:opacity-70 shrink-0" />
+                        )}
                       </div>
                       {/* Resize Handle */}
                       <div
                         onMouseDown={(e) => handleResizeMouseDown(e, col.key)}
+                        onClick={(e) => e.stopPropagation()}
                         className="absolute top-0 right-0 w-[5px] h-full cursor-col-resize z-30 group-hover/resize:bg-primary/30 hover:!bg-primary/60 transition-colors"
                         title="Arrastrar para redimensionar"
                       />

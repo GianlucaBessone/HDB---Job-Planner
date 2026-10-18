@@ -3,10 +3,10 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Boxes, CreditCard, Warehouse, Receipt } from 'lucide-react';
+import { Boxes, CreditCard, Warehouse, Receipt, FileSignature } from 'lucide-react';
 
 interface VentasNavTabsProps {
-  currentTab?: 'gestion' | 'pdv' | 'almacen' | 'cuentas-corrientes';
+  currentTab?: 'gestion' | 'pdv' | 'cotizaciones' | 'almacen' | 'cuentas-corrientes';
   className?: string;
 }
 
@@ -31,6 +31,14 @@ export default function VentasNavTabs({ currentTab, className }: VentasNavTabsPr
       isActive: currentTab === 'pdv' || pathname === '/ventas/pdv',
     },
     {
+      id: 'cotizaciones',
+      label: 'Cotizaciones',
+      href: '/ventas/cotizaciones',
+      icon: FileSignature,
+      badge: null,
+      isActive: currentTab === 'cotizaciones' || pathname?.startsWith('/ventas/cotizaciones'),
+    },
+    {
       id: 'almacen',
       label: 'Almacén y Stock',
       href: '/ventas/almacen',
@@ -43,8 +51,9 @@ export default function VentasNavTabs({ currentTab, className }: VentasNavTabsPr
       label: 'Cuentas Corrientes',
       href: '/ventas/cuentas-corrientes',
       icon: Receipt,
-      badge: 'Próx.',
-      isActive: currentTab === 'cuentas-corrientes' || pathname === '/ventas/cuentas-corrientes',
+      badge: null,
+      isActive:
+        currentTab === 'cuentas-corrientes' || pathname?.startsWith('/ventas/cuentas-corrientes'),
     },
   ];
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import bcrypt from 'bcryptjs';
 import { anularVentaPDV } from '@/lib/ventas/pdvService';
 
 const anularSchema = z.object({
@@ -26,12 +27,20 @@ export async function POST(
 
     if (supervisorPin) {
       const { prisma } = await import('@/lib/prisma');
-      const supervisor = await prisma.operator.findFirst({
+      const candidates = await prisma.operator.findMany({
         where: {
-          pin: supervisorPin,
-          role: { in: ['admin', 'supervisor'] },
           activo: true,
         },
+      });
+      const pinClean = supervisorPin.trim();
+      const supervisor = candidates.find((op) => {
+        const opRole = (op.role || '').toLowerCase();
+        if (!['admin', 'administrador', 'supervisor'].includes(opRole)) return false;
+        if (!op.pin) return false;
+        if (op.pin.startsWith('$2')) {
+          return bcrypt.compareSync(pinClean, op.pin);
+        }
+        return op.pin === pinClean;
       });
 
       if (!supervisor) {

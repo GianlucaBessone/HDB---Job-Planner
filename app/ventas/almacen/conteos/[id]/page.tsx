@@ -18,6 +18,9 @@ import {
   Lock,
   XCircle,
   HelpCircle,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 import ConfirmDialog from '@/components/ConfirmDialog';
@@ -256,6 +259,46 @@ export default function ConteoTerminalPage({ params }: { params: { id: string } 
     }
   };
 
+  // Filtrado y Ordenamiento de la grilla de conteo
+  const [sortBy, setSortBy] = useState<'sku' | 'descripcion' | 'ubicacionCodigo' | 'stockTeorico' | 'cantidadContada' | 'diferencia' | 'estado'>('sku');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  const itemsFiltrados = items
+    .filter((it) => {
+      if (filtroSoloDiferencias && (it.diferencia === null || it.diferencia === 0)) {
+        return false;
+      }
+      if (filtroTexto.trim()) {
+        const q = filtroTexto.toLowerCase();
+        return (
+          it.sku.toLowerCase().includes(q) ||
+          it.descripcion.toLowerCase().includes(q) ||
+          (it.codigoBarras && it.codigoBarras.toLowerCase().includes(q))
+        );
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      const dir = sortOrder === 'desc' ? -1 : 1;
+      switch (sortBy) {
+        case 'descripcion':
+          return a.descripcion.localeCompare(b.descripcion) * dir;
+        case 'ubicacionCodigo':
+          return (a.ubicacionCodigo || '').localeCompare(b.ubicacionCodigo || '') * dir;
+        case 'stockTeorico':
+          return (a.stockTeorico - b.stockTeorico) * dir;
+        case 'cantidadContada':
+          return ((a.cantidadContada ?? -1) - (b.cantidadContada ?? -1)) * dir;
+        case 'diferencia':
+          return ((a.diferencia ?? 0) - (b.diferencia ?? 0)) * dir;
+        case 'estado':
+          return a.estado.localeCompare(b.estado) * dir;
+        case 'sku':
+        default:
+          return a.sku.localeCompare(b.sku) * dir;
+      }
+    });
+
   if (loading || !conteo) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-slate-400">
@@ -267,22 +310,6 @@ export default function ConteoTerminalPage({ params }: { params: { id: string } 
 
   const esBloqueado = conteo.estado === 'CONFIRMADO' || conteo.estado === 'CANCELADO';
   const esRevision = conteo.estado === 'PENDIENTE_REVISION';
-
-  // Filtrado de la grilla de conteo
-  const itemsFiltrados = items.filter((it) => {
-    if (filtroSoloDiferencias && (it.diferencia === null || it.diferencia === 0)) {
-      return false;
-    }
-    if (filtroTexto.trim()) {
-      const q = filtroTexto.toLowerCase();
-      return (
-        it.sku.toLowerCase().includes(q) ||
-        it.descripcion.toLowerCase().includes(q) ||
-        (it.codigoBarras && it.codigoBarras.toLowerCase().includes(q))
-      );
-    }
-    return true;
-  });
 
   return (
     <div className="space-y-4 max-w-7xl mx-auto pb-12">
@@ -334,7 +361,7 @@ export default function ConteoTerminalPage({ params }: { params: { id: string } 
                   type="button"
                   onClick={handleGuardarProgreso}
                   disabled={savingProgress}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 disabled:opacity-50"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 disabled:opacity-50 whitespace-nowrap"
                 >
                   {savingProgress ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                   <span>Guardar Progreso</span>
@@ -344,7 +371,7 @@ export default function ConteoTerminalPage({ params }: { params: { id: string } 
                   <button
                     type="button"
                     onClick={handleFinalizarCaptura}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-xs transition-all"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-xs transition-all whitespace-nowrap"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     <span>Finalizar Captura</span>
@@ -353,7 +380,7 @@ export default function ConteoTerminalPage({ params }: { params: { id: string } 
                   <button
                     type="button"
                     onClick={() => setIsConfirmModalOpen(true)}
-                    className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-primary text-white text-xs font-bold shadow-md shadow-primary/20 hover:opacity-90 transition-all"
+                    className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-primary text-white text-xs font-bold shadow-md shadow-primary/20 hover:opacity-90 transition-all whitespace-nowrap"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     <span>Confirmar y Ajustar Stock</span>
@@ -363,7 +390,7 @@ export default function ConteoTerminalPage({ params }: { params: { id: string } 
                 <button
                   type="button"
                   onClick={() => setIsCancelModalOpen(true)}
-                  className="px-2.5 py-1.5 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                  className="px-2.5 py-1.5 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 whitespace-nowrap"
                 >
                   Cancelar Conteo
                 </button>
@@ -371,7 +398,7 @@ export default function ConteoTerminalPage({ params }: { params: { id: string } 
             )}
 
             {conteo.estado === 'CONFIRMADO' && (
-              <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800 whitespace-nowrap">
                 <Lock className="w-4 h-4" />
                 <span>Sesión Confirmada e Inmutable</span>
               </div>
@@ -447,7 +474,7 @@ export default function ConteoTerminalPage({ params }: { params: { id: string } 
 
             <button
               type="submit"
-              className="px-4 py-2 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-bold hover:opacity-90"
+              className="px-4 py-2 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-bold hover:opacity-90 whitespace-nowrap"
             >
               Registrar Scan
             </button>
@@ -464,6 +491,9 @@ export default function ConteoTerminalPage({ params }: { params: { id: string } 
               type="text"
               value={filtroTexto}
               onChange={(e) => setFiltroTexto(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape' && filtroTexto) setFiltroTexto('');
+              }}
               placeholder="Filtrar en esta lista..."
               className="h-8 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-xs"
             />
@@ -486,15 +516,77 @@ export default function ConteoTerminalPage({ params }: { params: { id: string } 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[11px] font-black text-slate-500 uppercase tracking-wider select-none">
-                <th className="py-2.5 px-3 w-32">SKU</th>
-                <th className="py-2.5 px-3">Producto</th>
-                <th className="py-2.5 px-3 w-28">Ubicación</th>
-                <th className="py-2.5 px-3 text-right w-28">Stock Teórico</th>
-                <th className="py-2.5 px-3 text-center w-36">Cantidad Contada</th>
-                <th className="py-2.5 px-3 text-right w-28">Diferencia</th>
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[11px] font-black text-slate-500 uppercase tracking-wider select-none whitespace-nowrap">
+                {[
+                  { key: 'sku', label: 'SKU', className: 'py-2.5 px-3 w-32', align: 'left' },
+                  { key: 'descripcion', label: 'Producto', className: 'py-2.5 px-3', align: 'left' },
+                  { key: 'ubicacionCodigo', label: 'Ubicación', className: 'py-2.5 px-3 w-28', align: 'left' },
+                  { key: 'stockTeorico', label: 'Stock Teórico', className: 'py-2.5 px-3 text-right w-28', align: 'right' },
+                  { key: 'cantidadContada', label: 'Cantidad Contada', className: 'py-2.5 px-3 text-center w-36', align: 'center' },
+                  { key: 'diferencia', label: 'Diferencia', className: 'py-2.5 px-3 text-right w-28', align: 'right' },
+                ].map((col) => {
+                  const isSorted = sortBy === col.key;
+                  return (
+                    <th
+                      key={col.key}
+                      onClick={() => {
+                        if (sortBy === col.key) {
+                          setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                        } else {
+                          setSortBy(col.key as any);
+                          setSortOrder('asc');
+                        }
+                      }}
+                      className={`${col.className} cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors ${
+                        isSorted ? 'text-primary dark:text-primary bg-primary/[0.04]' : ''
+                      }`}
+                    >
+                      <div
+                        className={`inline-flex items-center gap-1 ${
+                          col.align === 'right' ? 'justify-end w-full' : col.align === 'center' ? 'justify-center w-full' : ''
+                        }`}
+                      >
+                        <span>{col.label}</span>
+                        {isSorted ? (
+                          sortOrder === 'asc' ? (
+                            <ArrowUp className="w-3 h-3 text-primary shrink-0" />
+                          ) : (
+                            <ArrowDown className="w-3 h-3 text-primary shrink-0" />
+                          )
+                        ) : (
+                          <ArrowUpDown className="w-3 h-3 opacity-35 shrink-0" />
+                        )}
+                      </div>
+                    </th>
+                  );
+                })}
                 <th className="py-2.5 px-2 text-center w-14">Unid</th>
-                <th className="py-2.5 px-3 text-center w-24">Estado</th>
+                <th
+                  onClick={() => {
+                    if (sortBy === 'estado') {
+                      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                    } else {
+                      setSortBy('estado');
+                      setSortOrder('asc');
+                    }
+                  }}
+                  className={`py-2.5 px-3 text-center w-24 cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors ${
+                    sortBy === 'estado' ? 'text-primary dark:text-primary bg-primary/[0.04]' : ''
+                  }`}
+                >
+                  <div className="inline-flex items-center justify-center gap-1">
+                    <span>Estado</span>
+                    {sortBy === 'estado' ? (
+                      sortOrder === 'asc' ? (
+                        <ArrowUp className="w-3 h-3 text-primary shrink-0" />
+                      ) : (
+                        <ArrowDown className="w-3 h-3 text-primary shrink-0" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 opacity-35 shrink-0" />
+                    )}
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">

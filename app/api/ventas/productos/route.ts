@@ -94,9 +94,27 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    // Determinar si necesitamos ordenar o filtrar en memoria (para campos calculados o estadoStock)
+    const dbOrderByMap: Record<string, any> = {
+      sku: { sku: sortOrder },
+      codigoBarras: { codigoBarras: sortOrder },
+      descripcion: { descripcion: sortOrder },
+      categoria: { categoria: { nombre: sortOrder } },
+      marca: { marca: { nombre: sortOrder } },
+      familia: { familia: { nombre: sortOrder } },
+      subFamilia: { subFamilia: { nombre: sortOrder } },
+      unidad: { unidad: { nombre: sortOrder } },
+      iva: { iva: { porcentaje: sortOrder } },
+      rentabilidad: { rentabilidad: sortOrder },
+      precioBase: { precioBase: sortOrder },
+    };
+
+    const requiresInMemoryProcessing = Boolean(estadoStock) || !dbOrderByMap[sortBy];
+    const prismaOrderBy = dbOrderByMap[sortBy] || { sku: sortOrder };
+
     // Query DB
-    const [total, rawProductos] = await Promise.all([
-      prisma.producto.count({ where }),
+    const [dbTotal, rawProductos] = await Promise.all([
+      requiresInMemoryProcessing ? Promise.resolve(0) : prisma.producto.count({ where }),
       prisma.producto.findMany({
         where,
         include: {
@@ -122,36 +140,21 @@ export async function GET(req: NextRequest) {
             },
           },
         },
-        orderBy: sortBy === 'marca'
-          ? { marca: { nombre: sortOrder } }
-          : sortBy === 'descripcion'
-          ? { descripcion: sortOrder }
-          : { sku: sortOrder },
-        skip: (page - 1) * limit,
-        take: limit,
+        orderBy: prismaOrderBy,
+        ...(requiresInMemoryProcessing ? {} : { skip: (page - 1) * limit, take: limit }),
       }),
     ]);
-
-    // Prioritize exact SKU match at the top of results on page 1
-    if (page === 1 && search) {
-      const targetSku = /^\d+$/.test(search.trim()) && search.trim().length <= 5
-        ? search.trim().padStart(5, '0')
-        : search.trim().toUpperCase();
-
-      const exactIndex = rawProductos.findIndex((p) => p.sku === targetSku);
-      if (exactIndex > 0) {
-        const [exactMatch] = rawProductos.splice(exactIndex, 1);
-        rawProductos.unshift(exactMatch);
-      }
-    }
 
     // Format and calculate stock states
     const productos = rawProductos.map((p) => {
       // Primary supplier
       const provPrincipal = p.proveedores[0] || null;
 
-      // Primary stock (first warehouse or central)
-      const stockItem = p.stocks[0] || null;
+      // Primary stock (matching filtered almacenId if present, else first warehouse)
+      const stockItem =
+        (almacenId ? p.stocks.find((s) => s.almacenId === almacenId) : p.stocks[0]) ||
+        p.stocks[0] ||
+        null;
       const stockActual = stockItem ? stockItem.stockActual : 0;
       const stockMinimo = stockItem ? stockItem.stockMinimo : 0;
       const stockMaximo = stockItem ? stockItem.stockMaximo : 0;
@@ -165,6 +168,9 @@ export async function GET(req: NextRequest) {
       } else if (stockMaximo > 0 && stockActual > stockMaximo) {
         estadoStockCalc = 'sobre_stock';
       }
+
+      const ivaPorcentaje = p.iva?.porcentaje ?? 0;
+      const precioConIva = p.precioBase * (1 + ivaPorcentaje / 100);
 
       return {
         id: p.id,
@@ -183,7 +189,7 @@ export async function GET(req: NextRequest) {
         unidadCodigo: p.unidad?.codigo || null,
         unidadId: p.unidadId,
         iva: p.iva ? `${p.iva.porcentaje}%` : '0%',
-        ivaPorcentaje: p.iva?.porcentaje ?? 0,
+        ivaPorcentaje,
         ivaId: p.ivaId,
         rentabilidad: p.rentabilidad,
 
@@ -195,6 +201,7 @@ export async function GET(req: NextRequest) {
 
         // Precio Base de Venta (campo único del producto)
         precioBase: p.precioBase,
+        precioConIva,
         p1: p.precioBase,
         p2: 0,
         p3: 0,
@@ -213,17 +220,56 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    // Client-side filter for stock status if requested
-    let finalProductos = productos;
-    if (estadoStock) {
-      finalProductos = productos.filter((p) => p.estadoStock === estadoStock);
+    // Filter by estadoStock if requested
+    let filteredProductos = estadoStock
+      ? productos.filter((p) => p.estadoStock === estadoStock)
+      : productos;
+
+    // Sort in-memory if sortBy is a computed/related field not in dbOrderByMap
+    if (!dbOrderByMap[sortBy]) {
+      const dir = sortOrder === 'desc' ? -1 : 1;
+      filteredProductos = [...filteredProductos].sort((a, b) => {
+        switch (sortBy) {
+          case 'proveedor':
+            return (a.proveedorNombre || '').localeCompare(b.proveedorNombre || '') * dir;
+          case 'costo':
+            return ((a.costo || 0) - (b.costo || 0)) * dir;
+          case 'precioConIva':
+            return ((a.precioConIva || 0) - (b.precioConIva || 0)) * dir;
+          case 'almacen':
+            return (a.almacenNombre || '').localeCompare(b.almacenNombre || '') * dir;
+          case 'stock':
+          case 'stockActual':
+            return ((a.stockActual || 0) - (b.stockActual || 0)) * dir;
+          default:
+            return a.sku.localeCompare(b.sku) * dir;
+        }
+      });
+    }
+
+    const total = requiresInMemoryProcessing ? filteredProductos.length : dbTotal;
+    const paginatedProductos = requiresInMemoryProcessing
+      ? filteredProductos.slice((page - 1) * limit, page * limit)
+      : filteredProductos;
+
+    // Prioritize exact SKU match at the top of results on page 1 when using default SKU sort
+    if (page === 1 && search && sortBy === 'sku' && sortOrder === 'asc') {
+      const targetSku = /^\d+$/.test(search.trim()) && search.trim().length <= 5
+        ? search.trim().padStart(5, '0')
+        : search.trim().toUpperCase();
+
+      const exactIndex = paginatedProductos.findIndex((p) => p.sku === targetSku);
+      if (exactIndex > 0) {
+        const [exactMatch] = paginatedProductos.splice(exactIndex, 1);
+        paginatedProductos.unshift(exactMatch);
+      }
     }
 
     return NextResponse.json({
-      productos: finalProductos,
+      productos: paginatedProductos,
       total,
       page,
-      totalPages: Math.ceil(total / limit),
+      totalPages: Math.max(1, Math.ceil(total / limit)),
     });
   } catch (error: any) {
     console.error('Error fetching productos:', error);

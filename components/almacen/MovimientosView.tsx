@@ -16,6 +16,9 @@ import {
   X,
   ShieldCheck,
   CheckCircle2,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 import ConfirmDialog from '@/components/ConfirmDialog';
@@ -69,11 +72,14 @@ export default function MovimientosView({ meta, initialSku }: MovimientosViewPro
 
   // Filtros
   const [skuSearch, setSkuSearch] = useState(initialSku || '');
+  const [debouncedSkuSearch, setDebouncedSkuSearch] = useState(initialSku || '');
   const [selectedTipo, setSelectedTipo] = useState('');
   const [selectedAlmacen, setSelectedAlmacen] = useState('');
   const [fechaDesde, setFechaDesde] = useState('');
   const [fechaHasta, setFechaHasta] = useState('');
   const [motivoSearch, setMotivoSearch] = useState('');
+  const [sortBy, setSortBy] = useState('fecha');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   // Detalle & Reversión
   const [selectedMov, setSelectedMov] = useState<MovimientoItem | null>(null);
@@ -82,11 +88,19 @@ export default function MovimientosView({ meta, initialSku }: MovimientosViewPro
   const [motivoReversa, setMotivoReversa] = useState('');
   const [isReverting, setIsReverting] = useState(false);
 
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedSkuSearch(skuSearch);
+      setPage(1);
+    }, 250);
+    return () => clearTimeout(t);
+  }, [skuSearch]);
+
   const fetchMovimientos = async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (skuSearch.trim()) params.set('sku', skuSearch.trim());
+      if (debouncedSkuSearch.trim()) params.set('sku', debouncedSkuSearch.trim());
       if (selectedTipo) params.set('tipo', selectedTipo);
       if (selectedAlmacen) params.set('almacenId', selectedAlmacen);
       if (fechaDesde) params.set('fechaDesde', fechaDesde);
@@ -94,6 +108,8 @@ export default function MovimientosView({ meta, initialSku }: MovimientosViewPro
       if (motivoSearch.trim()) params.set('motivo', motivoSearch.trim());
       params.set('page', String(page));
       params.set('limit', '50');
+      params.set('sortBy', sortBy);
+      params.set('sortOrder', sortOrder);
 
       const res = await fetch(`/api/almacen/movimientos?${params.toString()}`);
       const data = await res.json();
@@ -111,12 +127,12 @@ export default function MovimientosView({ meta, initialSku }: MovimientosViewPro
 
   useEffect(() => {
     fetchMovimientos();
-  }, [page, selectedTipo, selectedAlmacen, fechaDesde, fechaHasta]);
+  }, [page, debouncedSkuSearch, selectedTipo, selectedAlmacen, fechaDesde, fechaHasta, sortBy, sortOrder]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setDebouncedSkuSearch(skuSearch);
     setPage(1);
-    fetchMovimientos();
   };
 
   // Reversión
@@ -208,16 +224,30 @@ export default function MovimientosView({ meta, initialSku }: MovimientosViewPro
       {/* Filtros Compactos */}
       <form onSubmit={handleSearchSubmit} className="bg-card border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-xs space-y-2">
         <div className="grid grid-cols-1 sm:grid-cols-6 gap-2">
-          {/* Búsqueda por SKU o Producto */}
+          {/* Búsqueda por SKU, Producto o Comprobante */}
           <div className="sm:col-span-2 relative">
             <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               value={skuSearch}
               onChange={(e) => setSkuSearch(e.target.value)}
-              placeholder="Filtrar por SKU o Producto..."
-              className="w-full pl-8 pr-3 h-8 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-background focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
+              onKeyDown={(e) => {
+                if (e.key === 'Escape' && skuSearch) {
+                  setSkuSearch('');
+                }
+              }}
+              placeholder="Filtrar por SKU, Producto o N° Comprobante..."
+              className="w-full pl-8 pr-7 h-8 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-background focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
             />
+            {skuSearch && (
+              <button
+                type="button"
+                onClick={() => setSkuSearch('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+              >
+                ✕
+              </button>
+            )}
           </div>
 
           {/* Tipo de Movimiento */}
@@ -289,7 +319,7 @@ export default function MovimientosView({ meta, initialSku }: MovimientosViewPro
             <button
               type="button"
               onClick={handleExportCSV}
-              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300"
+              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 shrink-0"
               title="Exportar CSV"
             >
               <Download className="w-3.5 h-3.5" />
@@ -297,7 +327,7 @@ export default function MovimientosView({ meta, initialSku }: MovimientosViewPro
             <button
               type="button"
               onClick={fetchMovimientos}
-              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300"
+              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 shrink-0"
               title="Refrescar"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
@@ -311,18 +341,56 @@ export default function MovimientosView({ meta, initialSku }: MovimientosViewPro
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[11px] font-black text-slate-500 uppercase tracking-wider select-none">
-                <th className="py-2.5 px-3">Fecha y Hora</th>
-                <th className="py-2.5 px-2.5">Comprobante</th>
-                <th className="py-2.5 px-2.5">SKU</th>
-                <th className="py-2.5 px-3">Producto</th>
-                <th className="py-2.5 px-2.5 text-center">Tipo</th>
-                <th className="py-2.5 px-2.5">Almacén</th>
-                <th className="py-2.5 px-2 text-right">Variación</th>
-                <th className="py-2.5 px-2 text-right hidden sm:table-cell">Ant.</th>
-                <th className="py-2.5 px-2 text-right">Nuevo</th>
-                <th className="py-2.5 px-2.5 hidden md:table-cell">Usuario</th>
-                <th className="py-2.5 px-2.5 hidden lg:table-cell">Motivo</th>
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[11px] font-black text-slate-500 uppercase tracking-wider select-none whitespace-nowrap">
+                {[
+                  { key: 'fecha', label: 'Fecha y Hora', className: 'py-2.5 px-3', align: 'left' },
+                  { key: 'numero', label: 'Comprobante', className: 'py-2.5 px-2.5', align: 'left' },
+                  { key: 'sku', label: 'SKU', className: 'py-2.5 px-2.5', align: 'left' },
+                  { key: 'descripcion', label: 'Producto', className: 'py-2.5 px-3', align: 'left' },
+                  { key: 'tipo', label: 'Tipo', className: 'py-2.5 px-2.5 text-center', align: 'center' },
+                  { key: 'almacen', label: 'Almacén', className: 'py-2.5 px-2.5', align: 'left' },
+                  { key: 'variacion', label: 'Variación', className: 'py-2.5 px-2 text-right', align: 'right' },
+                  { key: 'stockAnterior', label: 'Ant.', className: 'py-2.5 px-2 text-right hidden sm:table-cell', align: 'right' },
+                  { key: 'stockPosterior', label: 'Nuevo', className: 'py-2.5 px-2 text-right', align: 'right' },
+                  { key: 'usuarioNombre', label: 'Usuario', className: 'py-2.5 px-2.5 hidden md:table-cell', align: 'left' },
+                  { key: 'motivo', label: 'Motivo', className: 'py-2.5 px-2.5 hidden lg:table-cell', align: 'left' },
+                ].map((col) => {
+                  const isSorted = sortBy === col.key;
+                  return (
+                    <th
+                      key={col.key}
+                      onClick={() => {
+                        if (sortBy === col.key) {
+                          setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                        } else {
+                          setSortBy(col.key);
+                          setSortOrder(col.key === 'fecha' ? 'desc' : 'asc');
+                        }
+                        setPage(1);
+                      }}
+                      className={`${col.className} cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors ${
+                        isSorted ? 'text-primary dark:text-primary bg-primary/[0.04]' : ''
+                      }`}
+                    >
+                      <div
+                        className={`inline-flex items-center gap-1 ${
+                          col.align === 'right' ? 'justify-end w-full' : col.align === 'center' ? 'justify-center w-full' : ''
+                        }`}
+                      >
+                        <span>{col.label}</span>
+                        {isSorted ? (
+                          sortOrder === 'asc' ? (
+                            <ArrowUp className="w-3 h-3 text-primary shrink-0" />
+                          ) : (
+                            <ArrowDown className="w-3 h-3 text-primary shrink-0" />
+                          )
+                        ) : (
+                          <ArrowUpDown className="w-3 h-3 opacity-35 shrink-0" />
+                        )}
+                      </div>
+                    </th>
+                  );
+                })}
                 <th className="py-2.5 px-2 text-right w-16">Acción</th>
               </tr>
             </thead>

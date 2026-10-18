@@ -3,7 +3,8 @@ import { logAudit } from '@/lib/audit';
 import { calculateSuggestedPrice, ListaPrecioConfig, resolverPrecioProducto } from '@/lib/ventas/priceRules';
 
 export interface ItemVentaInput {
-  productoId: string;
+  productoId?: string | null;
+  esManual?: boolean;
   sku: string;
   descripcion: string;
   unidad?: string | null;
@@ -43,6 +44,7 @@ export interface ConfirmarVentaInput {
   descuentoPorcentaje?: number;
   recargoPorcentaje?: number;
   observaciones?: string | null;
+  cotizacionId?: string | null;
 }
 
 /**
@@ -71,7 +73,7 @@ export function calcularTotalesVenta(
 
     const brutoLinea = Math.round(cantidad * precioUnitario * 100) / 100;
     let descLineaMonto = Number(it.descuentoMonto) || 0;
-    if (descPorc > 0 && descLineaMonto === 0) {
+    if (descPorc > 0) {
       descLineaMonto = Math.round(((brutoLinea * descPorc) / 100) * 100) / 100;
     }
     descLineaMonto = Math.min(brutoLinea, Math.max(0, descLineaMonto));
@@ -162,25 +164,31 @@ export async function confirmarVentaPDV(input: ConfirmarVentaInput, userId?: str
     throw new Error('La venta debe contener al menos un producto');
   }
 
-  // 1. Validar productos en base de datos
-  const productoIds = input.items.map((i) => i.productoId).filter(Boolean);
-  const productosDb = await prisma.producto.findMany({
-    where: {
-      id: { in: productoIds },
-      activo: true,
-    },
-    include: {
-      iva: true,
-      proveedores: {
-        where: { esPrincipal: true },
-        take: 1,
-      },
-    },
-  });
+  // 1. Validar productos de catálogo en base de datos (permitiendo ítems manuales sin productoId)
+  const productoIds = input.items
+    .map((i) => i.productoId)
+    .filter((id): id is string => Boolean(id && !id.startsWith('manual-')));
+  const productosDb =
+    productoIds.length > 0
+      ? await prisma.producto.findMany({
+          where: {
+            id: { in: productoIds },
+            activo: true,
+          },
+          include: {
+            iva: true,
+            proveedores: {
+              where: { esPrincipal: true },
+              take: 1,
+            },
+          },
+        })
+      : [];
 
   const productosMap = new Map(productosDb.map((p) => [p.id, p]));
   for (const item of input.items) {
-    if (!productosMap.has(item.productoId)) {
+    const esItemManual = Boolean(item.esManual || !item.productoId || item.productoId.startsWith('manual-'));
+    if (!esItemManual && item.productoId && !productosMap.has(item.productoId)) {
       throw new Error(`El producto con SKU ${item.sku} no existe o no está habilitado para la venta`);
     }
     if (item.cantidad <= 0) {
@@ -277,6 +285,65 @@ export async function confirmarVentaPDV(input: ConfirmarVentaInput, userId?: str
   imputadoCuentaCorriente = Math.round(imputadoCuentaCorriente * 100) / 100;
   const sumaMedios = Math.round((totalPagadoEfectivo + imputadoCuentaCorriente) * 100) / 100;
 
+  // Validar estado crediticio y límite en Cuenta Corriente si corresponde
+  if (imputadoCuentaCorriente > 0 && clienteId) {
+    try {
+      const ccConfig = await prisma.cuentaCorrienteConfig.findUnique({
+        where: { clienteId },
+      });
+      if (ccConfig) {
+        if (ccConfig.estadoCredito === 'SUSPENDIDO') {
+          throw new Error(
+            `La Cuenta Corriente del cliente "${clienteNombre}" se encuentra SUSPENDIDA. No es posible imputar nuevas ventas a crédito.`
+          );
+        }
+        if (ccConfig.limiteCredito > 0) {
+          const [ventasPrevias, movsPrevios] = await Promise.all([
+            prisma.venta.findMany({
+              where: {
+                clienteId,
+                estado: 'CONFIRMADA',
+                OR: [{ imputadoCuentaCorriente: { gt: 0 } }, { saldoPendiente: { gt: 0 } }],
+              },
+              select: { imputadoCuentaCorriente: true, saldoPendiente: true },
+            }),
+            prisma.cuentaCorrienteMovimiento.findMany({
+              where: { clienteId, estado: 'CONFIRMADO' },
+              select: { debe: true, haber: true },
+            }),
+          ]);
+          const debePrevio =
+            ventasPrevias.reduce(
+              (acc, v) => acc + (v.imputadoCuentaCorriente > 0 ? v.imputadoCuentaCorriente : v.saldoPendiente),
+              0
+            ) + movsPrevios.reduce((acc, m) => acc + (m.debe || 0), 0);
+          const haberPrevio = movsPrevios.reduce((acc, m) => acc + (m.haber || 0), 0);
+          const saldoActualCC = Math.round((debePrevio - haberPrevio) * 100) / 100;
+          const nuevoSaldoProyectado = Math.round((saldoActualCC + imputadoCuentaCorriente) * 100) / 100;
+          const rolVendedor = (input.vendedorRol || '').toLowerCase();
+
+          if (
+            nuevoSaldoProyectado > ccConfig.limiteCredito + 0.05 &&
+            !['admin', 'administrador', 'supervisor'].includes(rolVendedor)
+          ) {
+            const disponible = Math.max(0, Math.round((ccConfig.limiteCredito - saldoActualCC) * 100) / 100);
+            throw new Error(
+              `El monto a imputar ($${imputadoCuentaCorriente.toLocaleString('es-AR')}) supera el margen de crédito disponible del cliente ($${disponible.toLocaleString('es-AR')} sobre un límite de $${ccConfig.limiteCredito.toLocaleString('es-AR')}). Requiere autorización de Supervisor o Administrador.`
+            );
+          }
+        }
+      }
+    } catch (ccErr: any) {
+      if (
+        ccErr.message?.includes('SUSPENDIDA') ||
+        ccErr.message?.includes('margen de crédito disponible')
+      ) {
+        throw ccErr;
+      }
+      // Si la tabla aún no fue inicializada, continuar sin bloquear
+    }
+  }
+
   let totalVenta = totalCalculado;
   if (Math.abs(sumaMedios - totalCalculado) <= 0.50) {
     // Absorber pequeñas diferencias de redondeo decimal entre cliente y servidor
@@ -343,7 +410,7 @@ export async function confirmarVentaPDV(input: ConfirmarVentaInput, userId?: str
           observaciones: input.observaciones?.trim() || null,
           items: {
             create: calculo.items.map((it) => ({
-              productoId: it.productoId,
+              productoId: it.productoId && productosMap.has(it.productoId) ? it.productoId : null,
               sku: it.sku,
               descripcion: it.descripcion,
               unidad: it.unidad || null,
@@ -377,6 +444,22 @@ export async function confirmarVentaPDV(input: ConfirmarVentaInput, userId?: str
         },
       });
 
+      // Si proviene de una cotización, marcarla como CONVERTIDA
+      if (input.cotizacionId) {
+        try {
+          await tx.cotizacion.update({
+            where: { id: input.cotizacionId },
+            data: {
+              estado: 'CONVERTIDA',
+              ventaId: venta.id,
+              ventaNumero: venta.numero,
+            },
+          });
+        } catch {
+          // Ignorar si la cotización no existe
+        }
+      }
+
       return venta;
     },
     {
@@ -403,6 +486,7 @@ export async function confirmarVentaPDV(input: ConfirmarVentaInput, userId?: str
     metadata: {
       listaPrecio: resultado.listaPrecioNombre,
       cuentaCorriente: resultado.imputadoCuentaCorriente > 0,
+      cotizacionId: input.cotizacionId || null,
     },
   });
 
@@ -436,24 +520,53 @@ export async function anularVentaPDV(
     throw new Error('Esta venta ya se encuentra anulada');
   }
 
-  // Comprobar rol permitido (admin o supervisor)
+  // Comprobar rol permitido (admin, administrador o supervisor)
   const rol = (usuarioRol || '').toLowerCase();
-  if (rol && !['admin', 'supervisor'].includes(rol)) {
+  if (rol && !['admin', 'administrador', 'supervisor'].includes(rol)) {
     throw new Error('Solo usuarios con rol Administrador o Supervisor pueden anular ventas');
   }
 
-  const updatedVenta = await prisma.venta.update({
-    where: { id: ventaId },
-    data: {
-      estado: 'ANULADA',
-      motivoAnulacion: motivo.trim(),
-      anuladoPorId: usuarioId || null,
-      anuladoEn: new Date(),
-    },
-    include: {
-      items: true,
-      pagos: true,
-    },
+  // Si la venta fue imputada a Cuenta Corriente y ya posee cobros/recibos aplicados sobre ese saldo, impedir anular sin revertir antes el recibo
+  if (
+    venta.imputadoCuentaCorriente > 0 &&
+    venta.saldoPendiente < venta.imputadoCuentaCorriente - 0.01
+  ) {
+    throw new Error(
+      'No se puede anular una venta que ya posee recibos de cobro imputados en Cuenta Corriente. Anule primero el recibo de cobranza en Cuentas Corrientes.'
+    );
+  }
+
+  const updatedVenta = await prisma.$transaction(async (tx) => {
+    const v = await tx.venta.update({
+      where: { id: ventaId },
+      data: {
+        estado: 'ANULADA',
+        saldoPendiente: 0,
+        motivoAnulacion: motivo.trim(),
+        anuladoPorId: usuarioId || null,
+        anuladoEn: new Date(),
+      },
+      include: {
+        items: true,
+        pagos: true,
+      },
+    });
+
+    // Si la venta provenía de una cotización convertida, liberar la cotización a estado APROBADA
+    try {
+      await tx.cotizacion.updateMany({
+        where: { ventaId: ventaId, estado: 'CONVERTIDA' },
+        data: {
+          estado: 'APROBADA',
+          ventaId: null,
+          ventaNumero: null,
+        },
+      });
+    } catch {
+      // Ignorar si la tabla aún no fue inicializada
+    }
+
+    return v;
   });
 
   await logAudit({

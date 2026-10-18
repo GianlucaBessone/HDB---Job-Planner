@@ -4,7 +4,8 @@ import { withIdempotency } from '@/lib/idempotency';
 import { confirmarVentaPDV } from '@/lib/ventas/pdvService';
 
 const itemSchema = z.object({
-  productoId: z.string().min(1, 'El productoId es obligatorio'),
+  productoId: z.string().optional().nullable(),
+  esManual: z.boolean().optional().default(false),
   sku: z.string().min(1, 'El SKU es obligatorio'),
   descripcion: z.string().min(1, 'La descripción es obligatoria'),
   unidad: z.string().optional().nullable(),
@@ -48,6 +49,7 @@ const confirmarVentaSchema = z.object({
   descuentoPorcentaje: z.coerce.number().min(0).max(100).default(0),
   recargoPorcentaje: z.coerce.number().min(0).default(0),
   observaciones: z.string().optional().nullable(),
+  cotizacionId: z.string().optional().nullable(),
   items: z.array(itemSchema).min(1, 'Debe incluir al menos un producto'),
   pagos: z.array(pagoSchema).min(1, 'Debe registrar al menos un medio de pago'),
 });
@@ -65,8 +67,12 @@ export async function POST(req: NextRequest) {
       const hayPreciosModificados = parsed.items.some((i) => i.precioModificado);
       if (hayPreciosModificados && userRoleHeader) {
         const rol = userRoleHeader.toLowerCase();
-        // Si no es admin ni supervisor, se requiere que la venta venga autorizada
-        if (!['admin', 'supervisor'].includes(rol) && !body.autorizadoPorSupervisor) {
+        // Si no es admin ni supervisor, se requiere que la venta venga autorizada o provenga de una cotización formal
+        if (
+          !['admin', 'administrador', 'supervisor'].includes(rol) &&
+          !body.autorizadoPorSupervisor &&
+          !parsed.cotizacionId
+        ) {
           return NextResponse.json(
             {
               error:

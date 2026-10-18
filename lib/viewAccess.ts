@@ -70,8 +70,9 @@ export const DEFAULT_VIEWS: ViewConfig[] = [
     // ─ Ventas y Comercial ─
     { key: '/ventas/gestion',            label: 'Gestión Comercial',        description: 'Maestro de productos y precios', roles: ['admin', 'supervisor', 'vendedor', 'qa'], access: 'ambos', section: 'ventas', iconName: 'Boxes', color: 'bg-emerald-600' },
     { key: '/ventas/pdv',                label: 'Punto de Venta (PDV)',     description: 'Facturación rápida y mostrador', roles: ['admin', 'supervisor', 'vendedor'], access: 'ambos', section: 'ventas', iconName: 'CreditCard', color: 'bg-emerald-600' },
+    { key: '/ventas/cotizaciones',       label: 'Cotizaciones',             description: 'Presupuestos comerciales rápidos e impresión', roles: ['admin', 'supervisor', 'vendedor', 'qa'], access: 'ambos', section: 'ventas', iconName: 'FileSignature', color: 'bg-violet-600' },
     { key: '/ventas/almacen',            label: 'Almacén y Stock',          description: 'Existencias, movimientos, ajustes y conteos', roles: ['admin', 'supervisor', 'vendedor', 'qa'], access: 'ambos', section: 'ventas', iconName: 'Warehouse', color: 'bg-indigo-600' },
-    { key: '/ventas/cuentas-corrientes', label: 'Cuentas Corrientes',       description: 'Fase 4 — Próximamente', roles: ['admin', 'supervisor', 'vendedor', 'qa'], access: 'ambos', section: 'ventas', iconName: 'Receipt', color: 'bg-slate-400' },
+    { key: '/ventas/cuentas-corrientes', label: 'Cuentas Corrientes',       description: 'Saldos comerciales, cobranzas y estados de cuenta', roles: ['admin', 'supervisor', 'vendedor', 'qa'], access: 'ambos', section: 'ventas', iconName: 'Receipt', color: 'bg-cyan-600' },
 
     // ─ Logística y Materiales ─
     { key: '/inventario',           label: 'Inventario de Materiales',  description: 'Stock y movimientos',                roles: ['admin', 'qa', 'vendedor'],                      access: 'ambos', section: 'logistica', iconName: 'PackageSearch', color: 'bg-amber-600' },
@@ -115,13 +116,15 @@ export function getViewConfig(savedConfigs: ViewConfig[]): ViewConfig[] {
         .filter(v => defaultMap.has(v.key))
         .map(v => {
             const def = defaultMap.get(v.key)!;
-            const isOutdatedPdv = v.key === '/ventas/pdv' && (v.description?.includes('Próximamente') || v.color === 'bg-slate-400');
+            const isOutdatedPlaceholder =
+                (v.key === '/ventas/pdv' || v.key === '/ventas/cuentas-corrientes') &&
+                (v.description?.includes('Próximamente') || v.color === 'bg-slate-400');
             return {
                 ...v,
-                description: isOutdatedPdv ? def.description : (v.description || def.description || ''),
+                description: isOutdatedPlaceholder ? def.description : (v.description || def.description || ''),
                 section:     v.section     || def.section     || 'administracion',
                 iconName:    v.iconName    || def.iconName    || 'ClipboardList',
-                color:       isOutdatedPdv ? def.color : (v.color || def.color || 'bg-slate-500'),
+                color:       isOutdatedPlaceholder ? def.color : (v.color || def.color || 'bg-slate-500'),
             };
         });
 

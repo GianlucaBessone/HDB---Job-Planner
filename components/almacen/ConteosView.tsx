@@ -17,6 +17,9 @@ import {
   ArrowRight,
   Warehouse,
   Eye,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 
@@ -48,8 +51,11 @@ interface ConteosViewProps {
 export default function ConteosView({ meta }: ConteosViewProps) {
   const [conteos, setConteos] = useState<ConteoSession[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
   const [selectedEstado, setSelectedEstado] = useState('');
   const [selectedAlmacen, setSelectedAlmacen] = useState('');
+  const [sortBy, setSortBy] = useState<'numero' | 'almacen' | 'tipo' | 'items' | 'estado' | 'responsable' | 'fecha'>('fecha');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   // Modal Crear Conteo
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -140,11 +146,69 @@ export default function ConteosView({ meta }: ConteosViewProps) {
   const ubicacionesDelAlmacen =
     meta.almacenes.find((a) => a.id === nuevoAlmacenId)?.ubicaciones || [];
 
+  const conteosFiltradosYOrdenados = React.useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const filtered = q
+      ? conteos.filter(
+          (c) =>
+            c.numero.toLowerCase().includes(q) ||
+            c.almacen.nombre.toLowerCase().includes(q) ||
+            (c.ubicacion?.codigo || '').toLowerCase().includes(q) ||
+            (c.creadoPorNombre || '').toLowerCase().includes(q) ||
+            c.tipo.toLowerCase().includes(q)
+        )
+      : [...conteos];
+
+    const dir = sortOrder === 'desc' ? -1 : 1;
+    return filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'numero':
+          return a.numero.localeCompare(b.numero) * dir;
+        case 'almacen':
+          return a.almacen.nombre.localeCompare(b.almacen.nombre) * dir;
+        case 'tipo':
+          return a.tipo.localeCompare(b.tipo) * dir;
+        case 'items':
+          return ((a._count?.detalles || 0) - (b._count?.detalles || 0)) * dir;
+        case 'estado':
+          return a.estado.localeCompare(b.estado) * dir;
+        case 'responsable':
+          return (a.creadoPorNombre || 'Sistema').localeCompare(b.creadoPorNombre || 'Sistema') * dir;
+        case 'fecha':
+        default:
+          return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * dir;
+      }
+    });
+  }, [conteos, search, sortBy, sortOrder]);
+
   return (
     <div className="space-y-3">
       {/* Barra de Controles */}
       <div className="bg-card border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-xs flex flex-wrap items-center justify-between gap-2.5">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 flex-1">
+          <div className="relative min-w-[200px] max-w-xs flex-1">
+            <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape' && search) setSearch('');
+              }}
+              placeholder="Buscar conteo, almacén o responsable..."
+              className="w-full pl-8 pr-7 h-8 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
           <select
             value={selectedEstado}
             onChange={(e) => setSelectedEstado(e.target.value)}
@@ -175,9 +239,9 @@ export default function ConteosView({ meta }: ConteosViewProps) {
         <button
           type="button"
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-bold shadow-xs hover:opacity-90 transition-all ml-auto"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-bold shadow-xs hover:opacity-90 transition-all ml-auto whitespace-nowrap"
         >
-          <Plus className="w-3.5 h-3.5" />
+          <Plus className="w-3.5 h-3.5 shrink-0" />
           <span>Nueva Sesión de Conteo</span>
         </button>
       </div>
@@ -187,14 +251,47 @@ export default function ConteosView({ meta }: ConteosViewProps) {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[11px] font-black text-slate-500 uppercase tracking-wider select-none">
-                <th className="py-2.5 px-3">Número Conteo</th>
-                <th className="py-2.5 px-3">Almacén / Ubicación</th>
-                <th className="py-2.5 px-3">Tipo</th>
-                <th className="py-2.5 px-3 text-center">Items</th>
-                <th className="py-2.5 px-3 text-center">Estado</th>
-                <th className="py-2.5 px-3">Responsable</th>
-                <th className="py-2.5 px-3">Fecha Creación</th>
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[11px] font-black text-slate-500 uppercase tracking-wider select-none whitespace-nowrap">
+                {[
+                  { key: 'numero', label: 'Número Conteo', align: 'left' },
+                  { key: 'almacen', label: 'Almacén / Ubicación', align: 'left' },
+                  { key: 'tipo', label: 'Tipo', align: 'left' },
+                  { key: 'items', label: 'Items', align: 'center' },
+                  { key: 'estado', label: 'Estado', align: 'center' },
+                  { key: 'responsable', label: 'Responsable', align: 'left' },
+                  { key: 'fecha', label: 'Fecha Creación', align: 'left' },
+                ].map((col) => {
+                  const isSorted = sortBy === col.key;
+                  return (
+                    <th
+                      key={col.key}
+                      onClick={() => {
+                        if (sortBy === col.key) {
+                          setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                        } else {
+                          setSortBy(col.key as any);
+                          setSortOrder(col.key === 'fecha' ? 'desc' : 'asc');
+                        }
+                      }}
+                      className={`py-2.5 px-3 cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors ${
+                        col.align === 'center' ? 'text-center' : ''
+                      } ${isSorted ? 'text-primary dark:text-primary bg-primary/[0.04]' : ''}`}
+                    >
+                      <div className={`inline-flex items-center gap-1 ${col.align === 'center' ? 'justify-center w-full' : ''}`}>
+                        <span>{col.label}</span>
+                        {isSorted ? (
+                          sortOrder === 'asc' ? (
+                            <ArrowUp className="w-3 h-3 text-primary shrink-0" />
+                          ) : (
+                            <ArrowDown className="w-3 h-3 text-primary shrink-0" />
+                          )
+                        ) : (
+                          <ArrowUpDown className="w-3 h-3 opacity-35 shrink-0" />
+                        )}
+                      </div>
+                    </th>
+                  );
+                })}
                 <th className="py-2.5 px-3 text-right">Acción</th>
               </tr>
             </thead>
@@ -206,7 +303,7 @@ export default function ConteosView({ meta }: ConteosViewProps) {
                     <span>Cargando sesiones de conteo...</span>
                   </td>
                 </tr>
-              ) : conteos.length === 0 ? (
+              ) : conteosFiltradosYOrdenados.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-10 text-center text-slate-400">
                     <ClipboardCheck className="w-7 h-7 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
@@ -215,7 +312,7 @@ export default function ConteosView({ meta }: ConteosViewProps) {
                   </td>
                 </tr>
               ) : (
-                conteos.map((cnt) => (
+                conteosFiltradosYOrdenados.map((cnt) => (
                   <tr key={cnt.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="py-2.5 px-3 font-mono font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
                       {cnt.numero}

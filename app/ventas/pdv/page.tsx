@@ -62,7 +62,8 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 
 interface ItemCarrito {
   id: string; // id temporal en el carrito
-  productoId: string;
+  productoId: string | null;
+  esManual?: boolean;
   sku: string;
   codigoBarras?: string | null;
   descripcion: string;
@@ -122,6 +123,7 @@ export default function PdvPage() {
   // Carrito / Detalle de venta
   const [carrito, setCarrito] = useState<ItemCarrito[]>([]);
   const [descuentoGlobal, setDescuentoGlobal] = useState<number>(0);
+  const [cotizacionOrigen, setCotizacionOrigen] = useState<{ id: string; numero: string } | null>(null);
 
   // Catálogo completo e índice de búsqueda en memoria
   const [rawCatalogo, setRawCatalogo] = useState<ProductoPDV[]>([]);
@@ -455,13 +457,15 @@ export default function PdvPage() {
         const updated = [...prev];
         const existing = updated[idx];
         const nuevaCantidad = existing.cantidad + 1;
-        const subtotal = Math.round(
-          (nuevaCantidad * existing.precioUnitario * (1 - existing.descuentoPorcentaje / 100)) * 100
-        ) / 100;
+        const bruto = nuevaCantidad * existing.precioUnitario;
+        const descuentoMonto =
+          Math.round(((bruto * existing.descuentoPorcentaje) / 100) * 100) / 100;
+        const subtotal = Math.round((bruto - descuentoMonto) * 100) / 100;
 
         updated[idx] = {
           ...existing,
           cantidad: nuevaCantidad,
+          descuentoMonto,
           subtotal,
         };
         return updated;
@@ -470,6 +474,7 @@ export default function PdvPage() {
         const nuevoItem: ItemCarrito = {
           id: `cart-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
           productoId: prod.id,
+          esManual: false,
           sku: prod.sku,
           codigoBarras: prod.codigoBarras,
           descripcion: prod.descripcion,
@@ -502,10 +507,11 @@ export default function PdvPage() {
           if (item.id !== id) return item;
           const nuevaCantidad = Math.round((item.cantidad + delta) * 100) / 100;
           if (nuevaCantidad <= 0) return null;
-          const subtotal = Math.round(
-            (nuevaCantidad * item.precioUnitario * (1 - item.descuentoPorcentaje / 100)) * 100
-          ) / 100;
-          return { ...item, cantidad: nuevaCantidad, subtotal };
+          const bruto = nuevaCantidad * item.precioUnitario;
+          const descuentoMonto =
+            Math.round(((bruto * item.descuentoPorcentaje) / 100) * 100) / 100;
+          const subtotal = Math.round((bruto - descuentoMonto) * 100) / 100;
+          return { ...item, cantidad: nuevaCantidad, descuentoMonto, subtotal };
         })
         .filter((item): item is ItemCarrito => item !== null)
     );
@@ -516,10 +522,11 @@ export default function PdvPage() {
     setCarrito((prev) =>
       prev.map((item) => {
         if (item.id !== id) return item;
-        const subtotal = Math.round(
-          (cantidad * item.precioUnitario * (1 - item.descuentoPorcentaje / 100)) * 100
-        ) / 100;
-        return { ...item, cantidad, subtotal };
+        const bruto = cantidad * item.precioUnitario;
+        const descuentoMonto =
+          Math.round(((bruto * item.descuentoPorcentaje) / 100) * 100) / 100;
+        const subtotal = Math.round((bruto - descuentoMonto) * 100) / 100;
+        return { ...item, cantidad, descuentoMonto, subtotal };
       })
     );
   };
@@ -540,14 +547,16 @@ export default function PdvPage() {
     setCarrito((prev) =>
       prev.map((it) => {
         if (it.id !== itemTarget.id) return it;
-        const subtotal = Math.round(
-          (it.cantidad * nuevoPrecio * (1 - it.descuentoPorcentaje / 100)) * 100
-        ) / 100;
+        const bruto = it.cantidad * nuevoPrecio;
+        const descuentoMonto =
+          Math.round(((bruto * it.descuentoPorcentaje) / 100) * 100) / 100;
+        const subtotal = Math.round((bruto - descuentoMonto) * 100) / 100;
         return {
           ...it,
           precioUnitario: nuevoPrecio,
           precioModificado: true,
           motivoModificacion: motivo,
+          descuentoMonto,
           subtotal,
         };
       })
@@ -567,7 +576,7 @@ export default function PdvPage() {
     if (base.length > 0) {
       setCarrito(
         base.map((item) => {
-          if (item.precioModificado) return item; // Mantener modificaciones manuales autorizadas
+          if (item.precioModificado || item.esManual || !item.productoId) return item; // Mantener modificaciones manuales autorizadas e ítems libres
           const rawProd = rawCatalogo.find((p) => p.id === item.productoId);
           const { precio, esFallback } = resolverPrecioProducto(
             rawProd || {
@@ -577,12 +586,15 @@ export default function PdvPage() {
             },
             nuevaLista
           );
-          const subtotal =
-            Math.round((item.cantidad * precio * (1 - item.descuentoPorcentaje / 100)) * 100) / 100;
+          const bruto = item.cantidad * precio;
+          const descuentoMonto =
+            Math.round(((bruto * item.descuentoPorcentaje) / 100) * 100) / 100;
+          const subtotal = Math.round((bruto - descuentoMonto) * 100) / 100;
           return {
             ...item,
             precioOriginal: precio,
             precioUnitario: precio,
+            descuentoMonto,
             subtotal,
             esFallbackPrecio: esFallback,
           };
@@ -681,10 +693,69 @@ export default function PdvPage() {
     return subtotalConDescuento;
   }, [esIvaDiscriminado, subtotalConDescuento, impuestosEstimados]);
 
+  // Cargar cotización si viene ?cotizacionId=... en la URL
+  useEffect(() => {
+    if (typeof window === 'undefined' || isLoadingCatalogo) return;
+    const params = new URLSearchParams(window.location.search);
+    const cotId = params.get('cotizacionId');
+    if (!cotId || cotizacionOrigen?.id === cotId) return;
+
+    (async () => {
+      try {
+        const res = await fetch(`/api/ventas/cotizaciones/${cotId}`);
+        if (!res.ok) return;
+        const cot = await res.json();
+        setCotizacionOrigen({ id: cot.id, numero: cot.numero });
+        setCliente({
+          id: cot.clienteId || null,
+          nombre: cot.clienteNombre || 'Consumidor Final',
+          identificacion: cot.clienteIdentificacion || cot.clienteCuit || null,
+        });
+        if (cot.listaPrecioId) {
+          setListaSeleccionadaId(cot.listaPrecioId);
+        }
+        setDescuentoGlobal(cot.descuentoPorcentaje || cot.descuentoGlobalPct || 0);
+
+        const itemsCargados: ItemCarrito[] = [];
+        for (const it of cot.items || []) {
+          const prod = it.productoId ? rawCatalogo.find((p) => p.id === it.productoId) : undefined;
+          const esManual = Boolean(it.esManual || !it.productoId);
+          itemsCargados.push({
+            id: `cot-it-${it.id}`,
+            productoId: it.productoId || null,
+            esManual,
+            sku: it.sku || it.codigo || prod?.sku || 'MANUAL',
+            codigoBarras: prod?.codigoBarras || null,
+            descripcion: it.descripcion || it.nombre,
+            unidad: it.unidad || prod?.unidad || 'u',
+            cantidad: it.cantidad,
+            precioOriginal: it.precioOriginal || it.precioUnitario,
+            precioUnitario: it.precioUnitario,
+            descuentoPorcentaje: it.descuentoPorcentaje || it.descuentoPct || 0,
+            descuentoMonto: it.descuentoMonto || 0,
+            ivaPorcentaje: it.ivaPorcentaje ?? it.alicuotaIva ?? 21,
+            subtotal: it.subtotal,
+            precioModificado:
+              esManual || Math.abs((it.precioOriginal || it.precioUnitario) - it.precioUnitario) > 0.01,
+            motivoModificacion: `Precio de Cotización ${cot.numero}`,
+            stockActual: prod?.stockActual ?? 999999,
+          });
+        }
+        setCarrito(itemsCargados);
+        // Limpiar el parámetro de la URL para evitar recargas al finalizar o limpiar la venta
+        window.history.replaceState({}, '', window.location.pathname);
+        showToast(`Cotización ${cot.numero} cargada lista para facturar`, 'success');
+      } catch (err) {
+        console.error('Error al cargar cotización en PDV:', err);
+      }
+    })();
+  }, [rawCatalogo, isLoadingCatalogo, cotizacionOrigen?.id]);
+
   // Limpiar venta
   const handleLimpiarVenta = () => {
     setCarrito([]);
     setDescuentoGlobal(0);
+    setCotizacionOrigen(null);
     setSearchQuery('');
     setCliente({
       id: null,
@@ -702,6 +773,8 @@ export default function PdvPage() {
       currentUser?.nombreCompleto || currentUser?.name || currentUser?.nombre || 'Ventas HDB';
 
     const payload = {
+      cotizacionId: cotizacionOrigen?.id || null,
+      autorizadoPorSupervisor: true,
       clienteId: cliente.id,
       clienteNombre: cliente.nombre,
       clienteIdentificacion: cliente.identificacion,
@@ -710,7 +783,8 @@ export default function PdvPage() {
       vendedorNombre: activeVendorName,
       descuentoPorcentaje: descuentoGlobal,
       items: carrito.map((it) => ({
-        productoId: it.productoId,
+        productoId: it.productoId || null,
+        esManual: Boolean(it.esManual || !it.productoId),
         sku: it.sku,
         descripcion: it.descripcion,
         unidad: it.unidad,
@@ -753,6 +827,7 @@ export default function PdvPage() {
     // Reiniciar venta
     setCarrito([]);
     setDescuentoGlobal(0);
+    setCotizacionOrigen(null);
     setSearchQuery('');
     setCliente({
       id: null,

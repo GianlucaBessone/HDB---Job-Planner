@@ -20,6 +20,8 @@ export async function GET(req: NextRequest) {
     const referencia = searchParams.get('referencia') || undefined;
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || '50', 10);
+    const sortBy = searchParams.get('sortBy') || 'fecha';
+    const sortOrder = (searchParams.get('sortOrder') || 'desc') as 'asc' | 'desc';
 
     const result = await StockService.consultarMovimientos({
       fechaDesde,
@@ -33,6 +35,8 @@ export async function GET(req: NextRequest) {
       referencia,
       page,
       limit,
+      sortBy,
+      sortOrder,
     });
 
     return NextResponse.json(result);

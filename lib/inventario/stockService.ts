@@ -10,6 +10,7 @@ import {
   EstadoStock,
 } from './types';
 import { logAudit } from '@/lib/audit';
+import { buildProductSearchWhere } from '@/lib/ventas/skuUtils';
 
 export interface AjusteItemInput {
   productoId: string;
@@ -663,7 +664,7 @@ export class StockService {
     marcaId?: string;
     familiaId?: string;
     subFamiliaId?: string;
-    estadoStock?: EstadoStock | '';
+    estadoStock?: EstadoStock | '' | 'necesitan_reposicion';
     proveedorId?: string;
     page?: number;
     limit?: number;
@@ -673,6 +674,8 @@ export class StockService {
     const page = Math.max(1, filters.page || 1);
     const limit = Math.min(500, Math.max(1, filters.limit || 25));
     const skip = (page - 1) * limit;
+    const sortBy = filters.sortBy || 'sku';
+    const sortOrder = filters.sortOrder === 'desc' ? 'desc' : 'asc';
 
     const where: any = { activo: true };
 
@@ -688,12 +691,12 @@ export class StockService {
     }
 
     if (filters.q && filters.q.trim()) {
-      const term = filters.q.trim();
-      where.OR = [
-        { sku: { contains: term, mode: 'insensitive' } },
-        { codigoBarras: { contains: term, mode: 'insensitive' } },
-        { descripcion: { contains: term, mode: 'insensitive' } },
-      ];
+      const searchWhere = buildProductSearchWhere(filters.q.trim());
+      if (searchWhere.AND) {
+        where.AND = searchWhere.AND;
+      } else if (searchWhere.OR) {
+        where.OR = searchWhere.OR;
+      }
     }
 
     // Almacén / Ubicación
@@ -705,8 +708,21 @@ export class StockService {
       where.stocks = { some: stockWhere };
     }
 
-    const [total, rawProductos] = await Promise.all([
-      prisma.producto.count({ where }),
+    const dbOrderByMap: Record<string, any> = {
+      sku: { sku: sortOrder },
+      codigoBarras: { codigoBarras: sortOrder },
+      descripcion: { descripcion: sortOrder },
+      marca: { marca: { nombre: sortOrder } },
+      familia: { familia: { nombre: sortOrder } },
+      subFamilia: { subFamilia: { nombre: sortOrder } },
+      categoria: { categoria: { nombre: sortOrder } },
+    };
+
+    const requiresInMemoryProcessing = Boolean(filters.estadoStock) || !dbOrderByMap[sortBy];
+    const prismaOrderBy = dbOrderByMap[sortBy] || { sku: sortOrder };
+
+    const [dbTotal, rawProductos] = await Promise.all([
+      requiresInMemoryProcessing ? Promise.resolve(0) : prisma.producto.count({ where }),
       prisma.producto.findMany({
         where,
         include: {
@@ -730,17 +746,13 @@ export class StockService {
             },
           },
         },
-        orderBy:
-          filters.sortBy === 'descripcion'
-            ? { descripcion: filters.sortOrder || 'asc' }
-            : { sku: filters.sortOrder || 'asc' },
-        skip,
-        take: limit,
+        orderBy: prismaOrderBy,
+        ...(requiresInMemoryProcessing ? {} : { skip, take: limit }),
       }),
     ]);
 
     // Aplanar y derivar estados
-    const items = [];
+    let items: any[] = [];
     for (const prod of rawProductos) {
       const prov = prod.proveedores[0] || null;
       const stocksList = prod.stocks.length > 0 ? prod.stocks : [null];
@@ -752,8 +764,14 @@ export class StockService {
         const statusInfo = calcularEstadoStock(stockActual, stockMinimo, stockMaximo);
 
         // Filtro por estado
-        if (filters.estadoStock && statusInfo.estado !== filters.estadoStock) {
-          continue;
+        if (filters.estadoStock) {
+          if (filters.estadoStock === 'necesitan_reposicion') {
+            if (statusInfo.estado !== 'sin_stock' && statusInfo.estado !== 'bajo_minimo') {
+              continue;
+            }
+          } else if (statusInfo.estado !== filters.estadoStock) {
+            continue;
+          }
         }
 
         items.push({
@@ -787,11 +805,57 @@ export class StockService {
       }
     }
 
+    if (!dbOrderByMap[sortBy]) {
+      const dir = sortOrder === 'desc' ? -1 : 1;
+      const estadoRank: Record<string, number> = {
+        sin_stock: 1,
+        bajo_minimo: 2,
+        normal: 3,
+        sobre_maximo: 4,
+        no_configurado: 5,
+      };
+      items.sort((a, b) => {
+        switch (sortBy) {
+          case 'proveedor':
+            return (a.proveedorNombre || '').localeCompare(b.proveedorNombre || '') * dir;
+          case 'almacen':
+            return (a.almacenNombre || '').localeCompare(b.almacenNombre || '') * dir;
+          case 'ubicacion':
+            return (a.ubicacionCodigo || '').localeCompare(b.ubicacionCodigo || '') * dir;
+          case 'stockActual':
+            return (a.stockActual - b.stockActual) * dir;
+          case 'stockMinimo':
+            return (a.stockMinimo - b.stockMinimo) * dir;
+          case 'stockMaximo':
+            return (a.stockMaximo - b.stockMaximo) * dir;
+          case 'cantidadSugeridaReposicion':
+            return (a.cantidadSugeridaReposicion - b.cantidadSugeridaReposicion) * dir;
+          case 'estadoStock':
+            return ((estadoRank[a.estadoStock] || 99) - (estadoRank[b.estadoStock] || 99)) * dir;
+          default:
+            return a.sku.localeCompare(b.sku) * dir;
+        }
+      });
+    }
+
+    const total = requiresInMemoryProcessing ? items.length : dbTotal;
+    const paginatedItems = requiresInMemoryProcessing ? items.slice(skip, skip + limit) : items;
+
+    if (page === 1 && filters.q && sortBy === 'sku' && sortOrder === 'asc') {
+      const qTrim = filters.q.trim();
+      const targetSku = /^\d+$/.test(qTrim) && qTrim.length <= 5 ? qTrim.padStart(5, '0') : qTrim.toUpperCase();
+      const exactIdx = paginatedItems.findIndex((it) => it.sku === targetSku);
+      if (exactIdx > 0) {
+        const [exact] = paginatedItems.splice(exactIdx, 1);
+        paginatedItems.unshift(exact);
+      }
+    }
+
     return {
-      items,
+      items: paginatedItems,
       total,
       page,
-      totalPages: Math.ceil(total / limit),
+      totalPages: Math.max(1, Math.ceil(total / limit)),
     };
   }
 
@@ -810,20 +874,33 @@ export class StockService {
     referencia?: string;
     page?: number;
     limit?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
   }) {
     const page = Math.max(1, filters.page || 1);
     const limit = Math.min(500, Math.max(1, filters.limit || 50));
     const skip = (page - 1) * limit;
+    const sortBy = filters.sortBy || 'fecha';
+    const sortOrder = filters.sortOrder === 'asc' ? 'asc' : 'desc';
 
     const where: Prisma.ProductoStockMovimientoWhereInput = {};
+    const andConditions: Prisma.ProductoStockMovimientoWhereInput[] = [];
 
     if (filters.productoId) where.productoId = filters.productoId;
     if (filters.tipo) where.tipo = filters.tipo;
     if (filters.almacenId) where.almacenId = filters.almacenId;
     if (filters.usuarioId) where.usuarioId = filters.usuarioId;
 
-    if (filters.sku) {
-      where.producto = { sku: { contains: filters.sku.trim(), mode: 'insensitive' } };
+    if (filters.sku && filters.sku.trim()) {
+      const q = filters.sku.trim();
+      const prodSearch = buildProductSearchWhere(q);
+      andConditions.push({
+        OR: [
+          { producto: prodSearch },
+          { numero: { contains: q, mode: 'insensitive' } },
+          { referencia: { contains: q, mode: 'insensitive' } },
+        ],
+      });
     }
 
     if (filters.motivo) {
@@ -831,10 +908,16 @@ export class StockService {
     }
 
     if (filters.referencia) {
-      where.OR = [
-        { numero: { contains: filters.referencia.trim(), mode: 'insensitive' } },
-        { referencia: { contains: filters.referencia.trim(), mode: 'insensitive' } },
-      ];
+      andConditions.push({
+        OR: [
+          { numero: { contains: filters.referencia.trim(), mode: 'insensitive' } },
+          { referencia: { contains: filters.referencia.trim(), mode: 'insensitive' } },
+        ],
+      });
+    }
+
+    if (andConditions.length > 0) {
+      where.AND = andConditions;
     }
 
     if (filters.fechaDesde || filters.fechaHasta) {
@@ -846,6 +929,22 @@ export class StockService {
         where.createdAt.lte = hasta;
       }
     }
+
+    const orderByMap: Record<string, any> = {
+      fecha: { createdAt: sortOrder },
+      numero: { numero: sortOrder },
+      tipo: { tipo: sortOrder },
+      sku: { producto: { sku: sortOrder } },
+      descripcion: { producto: { descripcion: sortOrder } },
+      almacen: { almacen: { nombre: sortOrder } },
+      variacion: { variacion: sortOrder },
+      cantidad: { cantidad: sortOrder },
+      stockAnterior: { stockAnterior: sortOrder },
+      stockPosterior: { stockPosterior: sortOrder },
+      motivo: { motivo: sortOrder },
+      usuarioNombre: { usuarioNombre: sortOrder },
+      estado: { estado: sortOrder },
+    };
 
     const [total, movimientos] = await Promise.all([
       prisma.productoStockMovimiento.count({ where }),
@@ -868,7 +967,7 @@ export class StockService {
           reversaDe: { select: { id: true, numero: true } },
           reversadoPor: { select: { id: true, numero: true } },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: orderByMap[sortBy] || { createdAt: 'desc' },
         skip,
         take: limit,
       }),
@@ -907,7 +1006,7 @@ export class StockService {
       })),
       total,
       page,
-      totalPages: Math.ceil(total / limit),
+      totalPages: Math.max(1, Math.ceil(total / limit)),
     };
   }
 

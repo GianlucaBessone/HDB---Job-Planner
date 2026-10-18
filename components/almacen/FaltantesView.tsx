@@ -12,6 +12,9 @@ import {
   Package,
   Loader2,
   Info,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 
@@ -51,18 +54,30 @@ export default function FaltantesView({ meta, onAdjustProduct }: FaltantesViewPr
 
   // Filtros
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedAlmacen, setSelectedAlmacen] = useState('');
   const [selectedFamilia, setSelectedFamilia] = useState('');
   const [condicion, setCondicion] = useState<string>('necesitan_reposicion');
+  const [sortBy, setSortBy] = useState('sku');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 250);
+    return () => clearTimeout(t);
+  }, [search]);
 
   const fetchFaltantes = async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (search.trim()) params.set('q', search.trim());
+      if (debouncedSearch.trim()) params.set('q', debouncedSearch.trim());
       if (selectedAlmacen) params.set('almacenId', selectedAlmacen);
       if (selectedFamilia) params.set('familiaId', selectedFamilia);
       params.set('condicion', condicion);
+      params.set('sortBy', sortBy);
+      params.set('sortOrder', sortOrder);
 
       const res = await fetch(`/api/almacen/faltantes?${params.toString()}`);
       const data = await res.json();
@@ -78,11 +93,11 @@ export default function FaltantesView({ meta, onAdjustProduct }: FaltantesViewPr
 
   useEffect(() => {
     fetchFaltantes();
-  }, [selectedAlmacen, selectedFamilia, condicion]);
+  }, [debouncedSearch, selectedAlmacen, selectedFamilia, condicion, sortBy, sortOrder]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchFaltantes();
+    setDebouncedSearch(search);
   };
 
   const handleExportCSV = () => {
@@ -181,25 +196,39 @@ export default function FaltantesView({ meta, onAdjustProduct }: FaltantesViewPr
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar SKU o descripción..."
-              className="w-full pl-8 pr-3 h-8 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              onKeyDown={(e) => {
+                if (e.key === 'Escape' && search) {
+                  setSearch('');
+                }
+              }}
+              placeholder="Buscar SKU, barra o descripción..."
+              className="w-full pl-8 pr-7 h-8 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+              >
+                ✕
+              </button>
+            )}
           </div>
 
           <div className="flex items-center gap-1.5 ml-auto">
             <button
               type="button"
               onClick={handleExportCSV}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap"
               title="Exportar reporte CSV"
             >
-              <Download className="w-3.5 h-3.5 text-slate-500" />
+              <Download className="w-3.5 h-3.5 text-slate-500 shrink-0" />
               <span className="hidden sm:inline">CSV</span>
             </button>
             <button
               type="button"
               onClick={fetchFaltantes}
-              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500"
+              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 shrink-0"
               title="Refrescar"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
@@ -255,18 +284,101 @@ export default function FaltantesView({ meta, onAdjustProduct }: FaltantesViewPr
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[11px] font-black text-slate-500 uppercase tracking-wider select-none">
-                <th className="py-2.5 px-3 w-28">SKU</th>
-                <th className="py-2.5 px-3">Descripción</th>
-                <th className="py-2.5 px-2.5 hidden md:table-cell">Marca</th>
-                <th className="py-2.5 px-2.5">Almacén</th>
-                <th className="py-2.5 px-3 text-right w-24">Actual</th>
-                <th className="py-2.5 px-2.5 text-right w-20">Mín</th>
-                <th className="py-2.5 px-2.5 text-right w-20">Máx</th>
-                <th className="py-2.5 px-3 text-right w-32">Sugerido Reponer</th>
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[11px] font-black text-slate-500 uppercase tracking-wider select-none whitespace-nowrap">
+                {[
+                  { key: 'sku', label: 'SKU', className: 'py-2.5 px-3 w-28', align: 'left' },
+                  { key: 'descripcion', label: 'Descripción', className: 'py-2.5 px-3', align: 'left' },
+                  { key: 'marca', label: 'Marca', className: 'py-2.5 px-2.5 hidden md:table-cell', align: 'left' },
+                  { key: 'almacen', label: 'Almacén', className: 'py-2.5 px-2.5', align: 'left' },
+                  { key: 'stockActual', label: 'Actual', className: 'py-2.5 px-3 text-right w-24', align: 'right' },
+                  { key: 'stockMinimo', label: 'Mín', className: 'py-2.5 px-2.5 text-right w-20', align: 'right' },
+                  { key: 'stockMaximo', label: 'Máx', className: 'py-2.5 px-2.5 text-right w-20', align: 'right' },
+                  { key: 'cantidadSugeridaReposicion', label: 'Sugerido Reponer', className: 'py-2.5 px-3 text-right w-32', align: 'right' },
+                ].map((col) => {
+                  const isSorted = sortBy === col.key;
+                  return (
+                    <th
+                      key={col.key}
+                      onClick={() => {
+                        if (sortBy === col.key) {
+                          setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                        } else {
+                          setSortBy(col.key);
+                          setSortOrder('asc');
+                        }
+                      }}
+                      className={`${col.className} cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors ${
+                        isSorted ? 'text-primary dark:text-primary bg-primary/[0.04]' : ''
+                      }`}
+                    >
+                      <div className={`inline-flex items-center gap-1 ${col.align === 'right' ? 'justify-end w-full' : ''}`}>
+                        <span>{col.label}</span>
+                        {isSorted ? (
+                          sortOrder === 'asc' ? (
+                            <ArrowUp className="w-3 h-3 text-primary shrink-0" />
+                          ) : (
+                            <ArrowDown className="w-3 h-3 text-primary shrink-0" />
+                          )
+                        ) : (
+                          <ArrowUpDown className="w-3 h-3 opacity-35 shrink-0" />
+                        )}
+                      </div>
+                    </th>
+                  );
+                })}
                 <th className="py-2.5 px-2 text-center w-14">Unid</th>
-                <th className="py-2.5 px-2.5 text-center">Estado</th>
-                <th className="py-2.5 px-3 hidden lg:table-cell">Proveedor Habitual</th>
+                <th
+                  onClick={() => {
+                    if (sortBy === 'estadoStock') {
+                      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                    } else {
+                      setSortBy('estadoStock');
+                      setSortOrder('asc');
+                    }
+                  }}
+                  className={`py-2.5 px-2.5 text-center cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors ${
+                    sortBy === 'estadoStock' ? 'text-primary dark:text-primary bg-primary/[0.04]' : ''
+                  }`}
+                >
+                  <div className="inline-flex items-center justify-center gap-1">
+                    <span>Estado</span>
+                    {sortBy === 'estadoStock' ? (
+                      sortOrder === 'asc' ? (
+                        <ArrowUp className="w-3 h-3 text-primary shrink-0" />
+                      ) : (
+                        <ArrowDown className="w-3 h-3 text-primary shrink-0" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 opacity-35 shrink-0" />
+                    )}
+                  </div>
+                </th>
+                <th
+                  onClick={() => {
+                    if (sortBy === 'proveedor') {
+                      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                    } else {
+                      setSortBy('proveedor');
+                      setSortOrder('asc');
+                    }
+                  }}
+                  className={`py-2.5 px-3 hidden lg:table-cell cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors ${
+                    sortBy === 'proveedor' ? 'text-primary dark:text-primary bg-primary/[0.04]' : ''
+                  }`}
+                >
+                  <div className="inline-flex items-center gap-1">
+                    <span>Proveedor Habitual</span>
+                    {sortBy === 'proveedor' ? (
+                      sortOrder === 'asc' ? (
+                        <ArrowUp className="w-3 h-3 text-primary shrink-0" />
+                      ) : (
+                        <ArrowDown className="w-3 h-3 text-primary shrink-0" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 opacity-35 shrink-0" />
+                    )}
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   X,
   Search,
@@ -20,6 +20,9 @@ import {
   RotateCcw,
   Truck,
   PackageCheck,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 import ConfirmDialog from '@/components/ConfirmDialog';
@@ -51,6 +54,10 @@ export default function HistorialVentasModal({
   const [fechaHasta, setFechaHasta] = useState<string>('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  // Ordenamiento de columnas
+  const [sortBy, setSortBy] = useState<string>('fecha');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   // Venta seleccionada para ver detalle
   const [ventaDetalle, setVentaDetalle] = useState<any | null>(null);
@@ -154,6 +161,52 @@ export default function HistorialVentasModal({
       minimumFractionDigits: 2,
     }).format(val || 0);
 
+  const handleSort = (col: string) => {
+    if (sortBy === col) {
+      setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortBy(col);
+      setSortOrder(['fecha', 'total', 'items'].includes(col) ? 'desc' : 'asc');
+    }
+  };
+
+  const renderSortIcon = (col: string) => {
+    if (sortBy !== col) return <ArrowUpDown className="w-3 h-3 opacity-30 shrink-0" />;
+    return sortOrder === 'asc' ? (
+      <ArrowUp className="w-3 h-3 text-indigo-600 dark:text-indigo-400 shrink-0" />
+    ) : (
+      <ArrowDown className="w-3 h-3 text-indigo-600 dark:text-indigo-400 shrink-0" />
+    );
+  };
+
+  const sortedVentas = useMemo(() => {
+    const dir = sortOrder === 'asc' ? 1 : -1;
+    return [...ventas].sort((a, b) => {
+      switch (sortBy) {
+        case 'numero':
+          return (a.numero || '').localeCompare(b.numero || '', 'es', { numeric: true }) * dir;
+        case 'fecha':
+          return (new Date(a.fecha || a.createdAt || 0).getTime() - new Date(b.fecha || b.createdAt || 0).getTime()) * dir;
+        case 'clienteNombre':
+          return (a.clienteNombre || '').localeCompare(b.clienteNombre || '', 'es', { sensitivity: 'base' }) * dir;
+        case 'vendedorNombre':
+          return (a.vendedorNombre || '').localeCompare(b.vendedorNombre || '', 'es', { sensitivity: 'base' }) * dir;
+        case 'items':
+          return ((a.items?.length || 0) - (b.items?.length || 0)) * dir;
+        case 'total':
+          return ((a.total || 0) - (b.total || 0)) * dir;
+        case 'estadoPago':
+          return (a.estadoPago || '').localeCompare(b.estadoPago || '', 'es') * dir;
+        case 'estadoEntrega':
+          return (a.estadoEntrega || '').localeCompare(b.estadoEntrega || '', 'es') * dir;
+        case 'estado':
+          return (a.estado || '').localeCompare(b.estado || '', 'es') * dir;
+        default:
+          return 0;
+      }
+    });
+  }, [ventas, sortBy, sortOrder]);
+
   // Atajo de teclado: Escape para cerrar submodales o el modal principal
   useEffect(() => {
     if (!isOpen) return;
@@ -224,8 +277,24 @@ export default function HistorialVentasModal({
               placeholder="Buscar por número, cliente, vendedor o SKU..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 bg-card border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/30"
+              onKeyDown={(e) => {
+                if (e.key === 'Escape' && search) {
+                  e.stopPropagation();
+                  setSearch('');
+                }
+              }}
+              className="w-full pl-9 pr-8 py-1.5 bg-card border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/30"
             />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 rounded"
+                title="Limpiar búsqueda"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
 
           <div className="w-36">
@@ -274,7 +343,7 @@ export default function HistorialVentasModal({
           <button
             type="button"
             onClick={() => setShowPendientesModal(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 font-bold text-xs border border-amber-300/40 transition-colors shrink-0"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 font-bold text-xs border border-amber-300/40 transition-colors shrink-0 whitespace-nowrap"
           >
             <Truck className="w-3.5 h-3.5" />
             <span>Pendientes de Entrega</span>
@@ -305,29 +374,101 @@ export default function HistorialVentasModal({
               <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
               <span className="text-xs font-semibold">Cargando ventas...</span>
             </div>
-          ) : ventas.length === 0 ? (
+          ) : sortedVentas.length === 0 ? (
             <div className="py-16 text-center text-slate-400 text-xs">
               No se encontraron ventas registradas con los filtros aplicados.
             </div>
           ) : (
             <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-x-auto shadow-xs">
               <table className="w-full text-left text-xs min-w-[900px]">
-                <thead className="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                <thead className="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-bold uppercase tracking-wider text-[10px] select-none">
                   <tr>
-                    <th className="py-2.5 px-3">Número</th>
-                    <th className="py-2.5 px-3">Fecha y Hora</th>
-                    <th className="py-2.5 px-3">Cliente</th>
-                    <th className="py-2.5 px-3">Vendedor</th>
-                    <th className="py-2.5 px-3 text-center">Items</th>
-                    <th className="py-2.5 px-3 text-right">Total</th>
-                    <th className="py-2.5 px-3 text-center">Pago</th>
-                    <th className="py-2.5 px-3 text-center">Entrega</th>
-                    <th className="py-2.5 px-3 text-center">Estado</th>
-                    <th className="py-2.5 px-3 text-right">Acciones</th>
+                    <th
+                      onClick={() => handleSort('numero')}
+                      className="py-2.5 px-3 cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 whitespace-nowrap"
+                    >
+                      <div className="inline-flex items-center gap-1">
+                        <span>Número</span>
+                        {renderSortIcon('numero')}
+                      </div>
+                    </th>
+                    <th
+                      onClick={() => handleSort('fecha')}
+                      className="py-2.5 px-3 cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 whitespace-nowrap"
+                    >
+                      <div className="inline-flex items-center gap-1">
+                        <span>Fecha y Hora</span>
+                        {renderSortIcon('fecha')}
+                      </div>
+                    </th>
+                    <th
+                      onClick={() => handleSort('clienteNombre')}
+                      className="py-2.5 px-3 cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 whitespace-nowrap"
+                    >
+                      <div className="inline-flex items-center gap-1">
+                        <span>Cliente</span>
+                        {renderSortIcon('clienteNombre')}
+                      </div>
+                    </th>
+                    <th
+                      onClick={() => handleSort('vendedorNombre')}
+                      className="py-2.5 px-3 cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 whitespace-nowrap"
+                    >
+                      <div className="inline-flex items-center gap-1">
+                        <span>Vendedor</span>
+                        {renderSortIcon('vendedorNombre')}
+                      </div>
+                    </th>
+                    <th
+                      onClick={() => handleSort('items')}
+                      className="py-2.5 px-3 text-center cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 whitespace-nowrap"
+                    >
+                      <div className="inline-flex items-center justify-center gap-1">
+                        <span>Items</span>
+                        {renderSortIcon('items')}
+                      </div>
+                    </th>
+                    <th
+                      onClick={() => handleSort('total')}
+                      className="py-2.5 px-3 text-right cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 whitespace-nowrap"
+                    >
+                      <div className="inline-flex items-center justify-end gap-1">
+                        <span>Total</span>
+                        {renderSortIcon('total')}
+                      </div>
+                    </th>
+                    <th
+                      onClick={() => handleSort('estadoPago')}
+                      className="py-2.5 px-3 text-center cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 whitespace-nowrap"
+                    >
+                      <div className="inline-flex items-center justify-center gap-1">
+                        <span>Pago</span>
+                        {renderSortIcon('estadoPago')}
+                      </div>
+                    </th>
+                    <th
+                      onClick={() => handleSort('estadoEntrega')}
+                      className="py-2.5 px-3 text-center cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 whitespace-nowrap"
+                    >
+                      <div className="inline-flex items-center justify-center gap-1">
+                        <span>Entrega</span>
+                        {renderSortIcon('estadoEntrega')}
+                      </div>
+                    </th>
+                    <th
+                      onClick={() => handleSort('estado')}
+                      className="py-2.5 px-3 text-center cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 whitespace-nowrap"
+                    >
+                      <div className="inline-flex items-center justify-center gap-1">
+                        <span>Estado</span>
+                        {renderSortIcon('estado')}
+                      </div>
+                    </th>
+                    <th className="py-2.5 px-3 text-right whitespace-nowrap">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                  {ventas.map((v) => {
+                  {sortedVentas.map((v) => {
                     const fechaObj = new Date(v.fecha || v.createdAt);
                     return (
                       <tr

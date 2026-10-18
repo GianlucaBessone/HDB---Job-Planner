@@ -16,11 +16,14 @@ export async function GET(req: NextRequest) {
     const proveedorId = searchParams.get('proveedorId') || undefined;
     const filtroCondicion = searchParams.get('condicion') || 'necesitan_reposicion'; // 'necesitan_reposicion' | 'sin_stock' | 'bajo_minimo' | 'sobre_maximo' | 'sin_limites' | 'todos'
     const page = parseInt(searchParams.get('page') || '1', 10);
-    const limit = parseInt(searchParams.get('limit') || '50', 10);
+    const limit = parseInt(searchParams.get('limit') || '100', 10);
+    const sortBy = searchParams.get('sortBy') || 'sku';
+    const sortOrder = (searchParams.get('sortOrder') || 'asc') as 'asc' | 'desc';
 
     // Mapear condición a EstadoStock
-    let estadoStock: EstadoStock | '' = '';
-    if (filtroCondicion === 'sin_stock') estadoStock = 'sin_stock';
+    let estadoStock: EstadoStock | '' | 'necesitan_reposicion' = '';
+    if (filtroCondicion === 'necesitan_reposicion') estadoStock = 'necesitan_reposicion';
+    else if (filtroCondicion === 'sin_stock') estadoStock = 'sin_stock';
     else if (filtroCondicion === 'bajo_minimo') estadoStock = 'bajo_minimo';
     else if (filtroCondicion === 'sobre_maximo') estadoStock = 'sobre_maximo';
     else if (filtroCondicion === 'sin_limites') estadoStock = 'no_configurado';
@@ -32,22 +35,16 @@ export async function GET(req: NextRequest) {
       proveedorId,
       estadoStock: estadoStock || undefined,
       page,
-      limit: filtroCondicion === 'necesitan_reposicion' ? 200 : limit,
-      sortBy: 'sku',
+      limit,
+      sortBy,
+      sortOrder,
     });
 
-    let items = result.items;
-    if (filtroCondicion === 'necesitan_reposicion') {
-      // Artículos sin stock o bajo mínimo que tengan cantidad sugerida o stock <= 0
-      items = items.filter(
-        (it) => it.estadoStock === 'sin_stock' || it.estadoStock === 'bajo_minimo'
-      );
-    }
-
     return NextResponse.json({
-      items,
-      total: items.length,
-      page,
+      items: result.items,
+      total: result.total,
+      page: result.page,
+      totalPages: result.totalPages,
       condicion: filtroCondicion,
       aviso: 'La cantidad sugerida es una recomendación operativa basada en límites configurados, no constituye una orden de compra automática.',
     });

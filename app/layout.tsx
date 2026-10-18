@@ -137,7 +137,12 @@ export default function RootLayout({
         pathname.startsWith('/portal-clientes')
     ) : false;
 
-    const isPdvPage = pathname ? (pathname === '/ventas/pdv' || pathname.startsWith('/ventas/pdv/')) : false;
+    const isPdvPage = pathname ? (
+        pathname === '/ventas/pdv' ||
+        pathname.startsWith('/ventas/pdv/') ||
+        pathname === '/ventas/cotizaciones' ||
+        pathname.startsWith('/ventas/cotizaciones/')
+    ) : false;
 
     const role = currentUser?.role?.toLowerCase() || 'operador';
     const effectiveViews = viewConfig && viewConfig.length > 0 ? viewConfig : DEFAULT_VIEWS;

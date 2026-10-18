@@ -7,6 +7,8 @@ import {
   Download,
   PackagePlus,
   ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
   History,
   Barcode,
   Loader2,
@@ -195,6 +197,11 @@ export default function ResumenStockView({
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape' && search) {
+                  setSearch('');
+                }
+              }}
               placeholder="Buscar SKU, Barra o Descripción (lector compatible)..."
               className="w-full pl-8 pr-7 h-8 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-background focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
             />
@@ -295,10 +302,10 @@ export default function ResumenStockView({
           <div className="flex items-center gap-1 ml-auto shrink-0">
             <button
               onClick={handleExportCSV}
-              className="flex items-center gap-1 px-2.5 h-8 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all"
+              className="flex items-center gap-1 px-2.5 h-8 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all whitespace-nowrap"
               title="Exportar reporte CSV"
             >
-              <Download className="w-3.5 h-3.5 text-slate-500" />
+              <Download className="w-3.5 h-3.5 text-slate-500 shrink-0" />
               <span className="hidden sm:inline">CSV</span>
             </button>
             <button
@@ -318,19 +325,79 @@ export default function ResumenStockView({
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[11px] font-black text-slate-500 uppercase tracking-wider select-none">
-                <th className="py-2.5 px-3 w-28">SKU</th>
-                <th className="py-2.5 px-2 w-32 hidden md:table-cell">Código Barras</th>
-                <th className="py-2.5 px-3">Descripción</th>
-                <th className="py-2.5 px-2 hidden lg:table-cell">Marca</th>
-                <th className="py-2.5 px-2 hidden xl:table-cell">Familia</th>
-                <th className="py-2.5 px-2.5">Almacén</th>
-                <th className="py-2.5 px-2.5">Ubicación</th>
-                <th className="py-2.5 px-3 text-right">Disponible</th>
-                <th className="py-2.5 px-2 text-right hidden sm:table-cell">Mín</th>
-                <th className="py-2.5 px-2 text-right hidden sm:table-cell">Máx</th>
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[11px] font-black text-slate-500 uppercase tracking-wider select-none whitespace-nowrap">
+                {[
+                  { key: 'sku', label: 'SKU', className: 'py-2.5 px-3 w-28', align: 'left' },
+                  { key: 'codigoBarras', label: 'Código Barras', className: 'py-2.5 px-2 w-32 hidden md:table-cell', align: 'left' },
+                  { key: 'descripcion', label: 'Descripción', className: 'py-2.5 px-3', align: 'left' },
+                  { key: 'marca', label: 'Marca', className: 'py-2.5 px-2 hidden lg:table-cell', align: 'left' },
+                  { key: 'familia', label: 'Familia', className: 'py-2.5 px-2 hidden xl:table-cell', align: 'left' },
+                  { key: 'almacen', label: 'Almacén', className: 'py-2.5 px-2.5', align: 'left' },
+                  { key: 'ubicacion', label: 'Ubicación', className: 'py-2.5 px-2.5', align: 'left' },
+                  { key: 'stockActual', label: 'Disponible', className: 'py-2.5 px-3 text-right', align: 'right' },
+                  { key: 'stockMinimo', label: 'Mín', className: 'py-2.5 px-2 text-right hidden sm:table-cell', align: 'right' },
+                  { key: 'stockMaximo', label: 'Máx', className: 'py-2.5 px-2 text-right hidden sm:table-cell', align: 'right' },
+                ].map((col) => {
+                  const isSorted = sortBy === col.key;
+                  return (
+                    <th
+                      key={col.key}
+                      onClick={() => {
+                        if (sortBy === col.key) {
+                          setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                        } else {
+                          setSortBy(col.key);
+                          setSortOrder('asc');
+                        }
+                        setPage(1);
+                      }}
+                      className={`${col.className} cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors ${
+                        isSorted ? 'text-primary dark:text-primary bg-primary/[0.04]' : ''
+                      }`}
+                    >
+                      <div className={`inline-flex items-center gap-1 ${col.align === 'right' ? 'justify-end w-full' : ''}`}>
+                        <span>{col.label}</span>
+                        {isSorted ? (
+                          sortOrder === 'asc' ? (
+                            <ArrowUp className="w-3 h-3 text-primary shrink-0" />
+                          ) : (
+                            <ArrowDown className="w-3 h-3 text-primary shrink-0" />
+                          )
+                        ) : (
+                          <ArrowUpDown className="w-3 h-3 opacity-35 shrink-0" />
+                        )}
+                      </div>
+                    </th>
+                  );
+                })}
                 <th className="py-2.5 px-2 text-center w-14">Unid</th>
-                <th className="py-2.5 px-2.5 text-center">Estado</th>
+                <th
+                  onClick={() => {
+                    if (sortBy === 'estadoStock') {
+                      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                    } else {
+                      setSortBy('estadoStock');
+                      setSortOrder('asc');
+                    }
+                    setPage(1);
+                  }}
+                  className={`py-2.5 px-2.5 text-center cursor-pointer hover:text-slate-800 dark:hover:text-slate-200 transition-colors ${
+                    sortBy === 'estadoStock' ? 'text-primary dark:text-primary bg-primary/[0.04]' : ''
+                  }`}
+                >
+                  <div className="inline-flex items-center justify-center gap-1">
+                    <span>Estado</span>
+                    {sortBy === 'estadoStock' ? (
+                      sortOrder === 'asc' ? (
+                        <ArrowUp className="w-3 h-3 text-primary shrink-0" />
+                      ) : (
+                        <ArrowDown className="w-3 h-3 text-primary shrink-0" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 opacity-35 shrink-0" />
+                    )}
+                  </div>
+                </th>
                 <th className="py-2.5 px-2.5 text-right w-24">Acciones</th>
               </tr>
             </thead>
