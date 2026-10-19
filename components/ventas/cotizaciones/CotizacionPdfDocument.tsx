@@ -3,8 +3,8 @@ import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/render
 
 const S = StyleSheet.create({
     page: {
-        paddingTop: 24,
-        paddingBottom: 28,
+        paddingTop: 20,
+        paddingBottom: 34,
         paddingHorizontal: 28,
         backgroundColor: '#FFFFFF',
         fontFamily: 'Helvetica',
@@ -16,43 +16,43 @@ const S = StyleSheet.create({
     // Header superior
     headerContainer: {
         flexDirection: 'row',
-        borderWidth: 1.5,
+        borderWidth: 1,
         borderColor: '#0f172a',
         borderRadius: 4,
-        marginBottom: 10,
+        marginBottom: 8,
     },
     headerLeft: {
         width: '45%',
-        padding: 8,
+        padding: 6,
         flexDirection: 'column',
         justifyContent: 'space-between',
-        borderRightWidth: 1.5,
+        borderRightWidth: 1,
         borderRightColor: '#0f172a',
     },
     logo: {
-        width: 130,
-        height: 38,
+        width: 120,
+        height: 34,
         objectFit: 'contain',
-        marginBottom: 4,
+        marginBottom: 3,
     },
     companyName: {
-        fontSize: 11,
+        fontSize: 10.5,
         fontFamily: 'Helvetica-Bold',
         color: '#0f172a',
         textTransform: 'uppercase',
         letterSpacing: 0.5,
     },
     companyTagline: {
-        fontSize: 7.5,
+        fontSize: 7,
         fontFamily: 'Helvetica-Bold',
         color: '#0284c7',
         marginTop: 1,
     },
     companyFiscal: {
-        fontSize: 7,
+        fontSize: 6.5,
         color: '#475569',
-        marginTop: 3,
-        lineHeight: 1.3,
+        marginTop: 2,
+        lineHeight: 1.25,
     },
 
     // Letra Central "P"
@@ -62,13 +62,13 @@ const S = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: '#f8fafc',
-        borderRightWidth: 1.5,
+        borderRightWidth: 1,
         borderRightColor: '#0f172a',
     },
     letterBox: {
-        width: 28,
-        height: 28,
-        borderWidth: 1.5,
+        width: 26,
+        height: 26,
+        borderWidth: 1,
         borderColor: '#0f172a',
         borderRadius: 4,
         alignItems: 'center',
@@ -76,44 +76,44 @@ const S = StyleSheet.create({
         backgroundColor: '#ffffff',
     },
     letterText: {
-        fontSize: 16,
+        fontSize: 15,
         fontFamily: 'Helvetica-Bold',
         color: '#0f172a',
     },
     letterSub: {
-        fontSize: 5.5,
+        fontSize: 5,
         fontFamily: 'Helvetica-Bold',
         color: '#64748b',
         textAlign: 'center',
-        marginTop: 3,
+        marginTop: 2,
         textTransform: 'uppercase',
     },
 
     // Header Derecho
     headerRight: {
         width: '43%',
-        padding: 8,
+        padding: 6,
         flexDirection: 'column',
         justifyContent: 'space-between',
     },
     docTypeTitle: {
-        fontSize: 10,
+        fontSize: 9.5,
         fontFamily: 'Helvetica-Bold',
         color: '#0369a1',
         textTransform: 'uppercase',
         letterSpacing: 0.8,
     },
     docNumber: {
-        fontSize: 12,
+        fontSize: 11.5,
         fontFamily: 'Helvetica-Bold',
         color: '#0f172a',
         marginTop: 2,
     },
     docDates: {
-        marginTop: 4,
-        fontSize: 7.5,
+        marginTop: 3,
+        fontSize: 7,
         color: '#334155',
-        lineHeight: 1.35,
+        lineHeight: 1.3,
     },
 
     // Bloque 2 columnas: Cliente y Condiciones
@@ -122,19 +122,19 @@ const S = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#cbd5e1',
         borderRadius: 4,
-        marginBottom: 10,
+        marginBottom: 8,
         backgroundColor: '#f8fafc',
     },
     metadataCol: {
         width: '50%',
-        padding: 8,
+        padding: 6,
     },
     metadataColDivider: {
         borderRightWidth: 1,
         borderRightColor: '#cbd5e1',
     },
     metaTitle: {
-        fontSize: 7.5,
+        fontSize: 7,
         fontFamily: 'Helvetica-Bold',
         color: '#0369a1',
         textTransform: 'uppercase',
@@ -142,22 +142,22 @@ const S = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#e2e8f0',
         paddingBottom: 2,
-        marginBottom: 4,
+        marginBottom: 3,
     },
     metaRow: {
         flexDirection: 'row',
-        marginBottom: 2,
+        marginBottom: 1.5,
     },
     metaLabel: {
         width: '32%',
-        fontSize: 7,
+        fontSize: 6.8,
         fontFamily: 'Helvetica-Bold',
         color: '#64748b',
         textTransform: 'uppercase',
     },
     metaValue: {
         width: '68%',
-        fontSize: 7.5,
+        fontSize: 7.2,
         color: '#0f172a',
         fontFamily: 'Helvetica',
     },
@@ -170,28 +170,28 @@ const S = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#cbd5e1',
         borderRadius: 4,
-        marginBottom: 10,
+        marginBottom: 6,
         overflow: 'hidden',
     },
     tableHeader: {
         flexDirection: 'row',
         backgroundColor: '#0f172a',
-        paddingVertical: 5,
+        paddingVertical: 4.5,
         paddingHorizontal: 6,
         alignItems: 'center',
     },
     thText: {
-        fontSize: 7,
+        fontSize: 6.8,
         fontFamily: 'Helvetica-Bold',
         color: '#ffffff',
         textTransform: 'uppercase',
-        letterSpacing: 0.5,
+        letterSpacing: 0.4,
     },
     tableRow: {
         flexDirection: 'row',
         borderTopWidth: 1,
         borderTopColor: '#f1f5f9',
-        paddingVertical: 4.5,
+        paddingVertical: 3.5,
         paddingHorizontal: 6,
         alignItems: 'flex-start',
     },
@@ -202,7 +202,7 @@ const S = StyleSheet.create({
         backgroundColor: '#f8fafc',
     },
     tdText: {
-        fontSize: 7.5,
+        fontSize: 7.2,
         color: '#334155',
     },
     tdBold: {
@@ -216,7 +216,7 @@ const S = StyleSheet.create({
         textAlign: 'center',
     },
     itemNote: {
-        fontSize: 6.5,
+        fontSize: 6.2,
         color: '#64748b',
         fontFamily: 'Helvetica-Oblique',
         marginTop: 1,
@@ -225,63 +225,77 @@ const S = StyleSheet.create({
     // Anchos de columnas
     colIdx: { width: '4%' },
     colSku: { width: '13%' },
-    colDesc: { width: '42%' },
-    colCant: { width: '10%' },
-    colPrice: { width: '15%' },
+    colDesc: { width: '41%' },
+    colCant: { width: '9%' },
+    colPrice: { width: '16%', paddingRight: 6 },
     colDisc: { width: '6%' },
-    colSub: { width: '10%' },
+    colSub: { width: '11%', paddingRight: 3 },
+
+    // Espaciador flexible para anclar el bloque de cierre al pie de la página
+    spacer: {
+        flexGrow: 1,
+        minHeight: 6,
+    },
+
+    // Contenedor integral de cierre (Observaciones + Resumen + Firmas)
+    closingSection: {
+        marginTop: 'auto',
+    },
 
     // Bloque inferior (Observaciones + Resumen)
     bottomContainer: {
         flexDirection: 'row',
         gap: 10,
-        marginBottom: 12,
+        marginBottom: 0,
     },
     observacionesBox: {
         width: '58%',
         borderWidth: 1,
         borderColor: '#cbd5e1',
         borderRadius: 4,
-        padding: 8,
+        padding: 7,
         backgroundColor: '#f8fafc',
         justifyContent: 'space-between',
     },
     obsTitle: {
-        fontSize: 7.5,
+        fontSize: 7.2,
         fontFamily: 'Helvetica-Bold',
         color: '#475569',
         textTransform: 'uppercase',
         letterSpacing: 0.5,
-        marginBottom: 4,
+        marginBottom: 3,
     },
     obsText: {
-        fontSize: 7,
+        fontSize: 6.8,
         color: '#334155',
-        lineHeight: 1.4,
+        lineHeight: 1.35,
     },
     termsText: {
-        fontSize: 6.5,
+        fontSize: 6.2,
         color: '#64748b',
-        lineHeight: 1.3,
+        lineHeight: 1.25,
         borderTopWidth: 1,
         borderTopColor: '#e2e8f0',
-        paddingTop: 4,
-        marginTop: 6,
+        paddingTop: 3,
+        marginTop: 5,
     },
 
     totalesBox: {
         width: '42%',
-        borderWidth: 1.5,
-        borderColor: '#0f172a',
+        borderWidth: 1,
+        borderColor: '#cbd5e1',
         borderRadius: 4,
-        padding: 8,
-        backgroundColor: '#ffffff',
+        padding: 7,
+        backgroundColor: '#f8fafc',
+        justifyContent: 'space-between',
+    },
+    totalesBody: {
+        gap: 2,
     },
     totRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 3,
-        fontSize: 7.5,
+        fontSize: 7.2,
     },
     totLabel: {
         color: '#475569',
@@ -294,31 +308,34 @@ const S = StyleSheet.create({
         fontFamily: 'Helvetica-Bold',
         color: '#16a34a',
     },
-    totalFinalBox: {
-        borderTopWidth: 1.5,
-        borderTopColor: '#0f172a',
-        paddingTop: 5,
+    totalFinalContainer: {
+        borderTopWidth: 1,
+        borderTopColor: '#cbd5e1',
+        paddingTop: 4,
         marginTop: 4,
+    },
+    totalFinalBox: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'baseline',
     },
     totalFinalLabel: {
-        fontSize: 9,
+        fontSize: 8.5,
         fontFamily: 'Helvetica-Bold',
         color: '#0f172a',
         textTransform: 'uppercase',
+        letterSpacing: 0.5,
     },
     totalFinalValue: {
-        fontSize: 13,
+        fontSize: 12.5,
         fontFamily: 'Helvetica-Bold',
         color: '#0f172a',
     },
     totalCurrencyNote: {
-        fontSize: 6.5,
+        fontSize: 6.2,
         color: '#64748b',
         textAlign: 'right',
-        marginTop: 1,
+        marginTop: 5,
     },
 
     // Bloque de Firmas
@@ -326,23 +343,23 @@ const S = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         gap: 30,
-        marginTop: 16,
-        marginBottom: 10,
+        marginTop: 10,
+        marginBottom: 2,
     },
     signatureBlock: {
         width: '45%',
         borderTopWidth: 1,
         borderTopColor: '#94a3b8',
-        paddingTop: 4,
+        paddingTop: 3,
         alignItems: 'center',
     },
     signatureTitle: {
-        fontSize: 7.5,
+        fontSize: 7.2,
         fontFamily: 'Helvetica-Bold',
         color: '#334155',
     },
     signatureSub: {
-        fontSize: 6.5,
+        fontSize: 6.2,
         color: '#64748b',
         marginTop: 1,
     },
@@ -350,15 +367,15 @@ const S = StyleSheet.create({
     // Footer fijo en cada página
     footer: {
         position: 'absolute',
-        bottom: 12,
+        bottom: 10,
         left: 28,
         right: 28,
         flexDirection: 'row',
         justifyContent: 'space-between',
         borderTopWidth: 1,
         borderTopColor: '#cbd5e1',
-        paddingTop: 5,
-        fontSize: 6.5,
+        paddingTop: 4,
+        fontSize: 6.2,
         color: '#64748b',
     },
 });
@@ -413,11 +430,7 @@ export function CotizacionPdfDocument({ cotizacion, logoBase64 }: CotizacionPdfD
                 <View style={S.headerContainer}>
                     {/* Left: Emisor */}
                     <View style={S.headerLeft}>
-                        {logoBase64 ? (
-                            <Image style={S.logo} src={logoBase64} />
-                        ) : (
-                            <Text style={S.companyName}>HDB Servicios Eléctricos</Text>
-                        )}
+                        {logoBase64 ? <Image style={S.logo} src={logoBase64} /> : null}
                         <View>
                             <Text style={S.companyName}>HDB SERVICIOS ELÉCTRICOS</Text>
                             <Text style={S.companyTagline}>
@@ -532,7 +545,7 @@ export function CotizacionPdfDocument({ cotizacion, logoBase64 }: CotizacionPdfD
 
                 {/* ── Tabla de Artículos y Servicios Cotizados ── */}
                 <View style={S.table}>
-                    <View style={S.tableHeader}>
+                    <View style={S.tableHeader} fixed>
                         <Text style={[S.thText, S.colIdx]}>#</Text>
                         <Text style={[S.thText, S.colSku]}>Código</Text>
                         <Text style={[S.thText, S.colDesc]}>Descripción del Material / Servicio</Text>
@@ -590,77 +603,106 @@ export function CotizacionPdfDocument({ cotizacion, logoBase64 }: CotizacionPdfD
                     })}
                 </View>
 
-                {/* ── Bloque Inferior: Observaciones y Totales ── */}
-                <View style={S.bottomContainer} wrap={false}>
-                    {/* Observaciones y Términos */}
-                    <View style={S.observacionesBox}>
-                        <View>
-                            <Text style={S.obsTitle}>Observaciones y Alcance de la Oferta</Text>
-                            <Text style={S.obsText}>
-                                {cotizacion?.observaciones ||
-                                    'Presupuesto formal sujeto a verificación de stock y variación de listas de fábrica. Precios expresados en Pesos Argentinos (ARS). Los plazos de entrega comienzan a computarse a partir de la confirmación formal del pedido.'}
-                            </Text>
-                        </View>
-                        <Text style={S.termsText}>
-                            Validez sujeta a los días indicados en este documento. La aceptación de este presupuesto autoriza la preparación y reserva de los materiales detallados.
-                        </Text>
-                    </View>
+                {/* ── Espaciador flexible para anclar el bloque de cierre al pie de página ── */}
+                <View style={S.spacer} />
 
-                    {/* Resumen Económico */}
-                    <View style={S.totalesBox}>
-                        <View style={S.totRow}>
-                            <Text style={S.totLabel}>Subtotal ({items.length} ítems):</Text>
-                            <Text style={S.totValue}>
-                                {fmtARS(
-                                    Number(cotizacion?.subtotal) ||
-                                        items.reduce((a, b) => a + (Number(b.subtotal) || 0), 0)
-                                )}
-                            </Text>
-                        </View>
-
-                        {totalDescuentos > 0 && (
-                            <View style={S.totRow}>
-                                <Text style={S.totLabel}>
-                                    Descuentos / Bonif.
-                                    {Number(cotizacion.descuentoPorcentaje) > 0
-                                        ? ` (${cotizacion.descuentoPorcentaje}%)`
-                                        : ''}
-                                    :
+                {/* ── Bloque Integral de Cierre: Observaciones, Totales y Firmas ── */}
+                <View style={S.closingSection} wrap={false}>
+                    <View style={S.bottomContainer}>
+                        {/* Observaciones y Términos */}
+                        <View style={S.observacionesBox}>
+                            <View>
+                                <Text style={S.obsTitle}>Observaciones y Alcance de la Oferta</Text>
+                                <Text style={S.obsText}>
+                                    {cotizacion?.observaciones ||
+                                        'Presupuesto formal sujeto a verificación de stock y variación de listas de fábrica. Precios expresados en Pesos Argentinos (ARS). Los plazos de entrega comienzan a computarse a partir de la confirmación formal del pedido.'}
                                 </Text>
-                                <Text style={S.totDiscountValue}>- {fmtARS(totalDescuentos)}</Text>
                             </View>
-                        )}
-
-                        {Number(cotizacion?.recargoMonto) > 0 && (
-                            <View style={S.totRow}>
-                                <Text style={S.totLabel}>Recargos financieros:</Text>
-                                <Text style={S.totValue}>{fmtARS(cotizacion.recargoMonto)}</Text>
-                            </View>
-                        )}
-
-                        <View style={S.totalFinalBox}>
-                            <Text style={S.totalFinalLabel}>TOTAL COTIZADO</Text>
-                            <Text style={S.totalFinalValue}>{fmtARS(cotizacion?.total)}</Text>
+                            <Text style={S.termsText}>
+                                Validez sujeta a los días indicados en este documento. La aceptación de este presupuesto autoriza la preparación y reserva de los materiales detallados.
+                            </Text>
                         </View>
-                        <Text style={S.totalCurrencyNote}>
-                            {cotizacion?.ivaDiscriminado
-                                ? 'IVA Discriminado s/Condición Fiscal'
-                                : 'Precios finales (IVA incluido) — Moneda: ARS'}
-                        </Text>
-                    </View>
-                </View>
 
-                {/* ── Firmas de Conformidad ── */}
-                <View style={S.signaturesContainer} wrap={false}>
-                    <View style={S.signatureBlock}>
-                        <Text style={S.signatureTitle}>HDB SERVICIOS ELÉCTRICOS</Text>
-                        <Text style={S.signatureSub}>Firma y Sello Autorizado</Text>
+                        {/* Resumen Económico */}
+                        <View style={S.totalesBox}>
+                            <View style={S.totalesBody}>
+                                <View style={S.totRow}>
+                                    <Text style={S.totLabel}>Subtotal ({items.length} ítems):</Text>
+                                    <Text style={S.totValue}>
+                                        {fmtARS(
+                                            Number(cotizacion?.subtotal) ||
+                                                items.reduce((a, b) => a + (Number(b.subtotal) || 0), 0)
+                                        )}
+                                    </Text>
+                                </View>
+
+                                {totalDescuentos > 0 && (
+                                    <View style={S.totRow}>
+                                        <Text style={S.totLabel}>
+                                            Descuentos / Bonif.
+                                            {Number(cotizacion.descuentoPorcentaje) > 0
+                                                ? ` (${cotizacion.descuentoPorcentaje}%)`
+                                                : ''}
+                                            :
+                                        </Text>
+                                        <Text style={S.totDiscountValue}>- {fmtARS(totalDescuentos)}</Text>
+                                    </View>
+                                )}
+
+                                {Number(cotizacion?.recargoMonto) > 0 && (
+                                    <View style={S.totRow}>
+                                        <Text style={S.totLabel}>Recargos financieros:</Text>
+                                        <Text style={S.totValue}>{fmtARS(cotizacion.recargoMonto)}</Text>
+                                    </View>
+                                )}
+
+                                {cotizacion?.ivaDiscriminado && (
+                                    <>
+                                        <View style={S.totRow}>
+                                            <Text style={S.totLabel}>Subtotal Neto Gravado:</Text>
+                                            <Text style={S.totValue}>
+                                                {fmtARS(
+                                                    (Number(cotizacion?.subtotal) || 0) -
+                                                        (Number(cotizacion?.descuentoMonto) || 0)
+                                                )}
+                                            </Text>
+                                        </View>
+                                        <View style={S.totRow}>
+                                            <Text style={S.totLabel}>IVA Discriminado:</Text>
+                                            <Text style={S.totValue}>
+                                                {fmtARS(Number(cotizacion?.impuestosMonto) || 0)}
+                                            </Text>
+                                        </View>
+                                    </>
+                                )}
+                            </View>
+
+                            <View style={S.totalFinalContainer}>
+                                <View style={S.totalFinalBox}>
+                                    <Text style={S.totalFinalLabel}>TOTAL COTIZADO</Text>
+                                    <Text style={S.totalFinalValue}>{fmtARS(cotizacion?.total)}</Text>
+                                </View>
+                                <Text style={S.totalCurrencyNote}>
+                                    {cotizacion?.ivaDiscriminado
+                                        ? 'Precios con IVA discriminado incluido en el Total'
+                                        : 'Precios finales (IVA incluido) — Moneda: ARS'}
+                                </Text>
+                            </View>
+                        </View>
                     </View>
-                    <View style={S.signatureBlock}>
-                        <Text style={S.signatureTitle}>
-                            {cotizacion?.clienteNombre || 'CONFORMIDAD DEL CLIENTE'}
-                        </Text>
-                        <Text style={S.signatureSub}>Firma, Aclaración y DNI/CUIT</Text>
+
+                    {/* ── Firmas de Conformidad ── */}
+                    <View style={S.signaturesContainer}>
+                        <View style={S.signatureBlock}>
+                            <Text style={S.signatureTitle}>HDB SERVICIOS ELÉCTRICOS</Text>
+                            <Text style={S.signatureSub}>Firma y Sello Autorizado</Text>
+                        </View>
+                        <View style={S.signatureBlock}>
+                            <Text style={S.signatureTitle}>
+                                {cotizacion?.clienteNombre || 'CONFORMIDAD DEL CLIENTE'}
+                            </Text>
+                            <Text style={S.signatureSub}>Firma, Aclaración y DNI/CUIT</Text>
+                        </View>
                     </View>
                 </View>
 

@@ -180,7 +180,7 @@ export default function ImprimirCotizacionModal({
                 {/* Hoja A4 Imprimible Corporativa */}
                 <div
                     id="cotizacion-imprimible"
-                    className="p-8 overflow-y-auto flex-1 print:p-0 print:overflow-visible text-slate-900 bg-white"
+                    className="p-8 overflow-y-auto flex-1 print:p-0 print:overflow-visible text-slate-900 bg-white flex flex-col min-h-full"
                 >
                     {/* Encabezado Corporativo Oficial */}
                     <div className="border-2 border-slate-900 rounded-xl overflow-hidden mb-5">
@@ -403,7 +403,7 @@ export default function ImprimirCotizacionModal({
                     </div>
 
                     {/* Pie de Cotización: Observaciones + Totales en ARS */}
-                    <div className="grid grid-cols-12 gap-5 items-start mb-6">
+                    <div className="grid grid-cols-12 gap-5 items-start mt-auto pt-6 mb-6">
                         <div className="col-span-7 space-y-3">
                             <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
                                 <div className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1">
@@ -431,53 +431,66 @@ export default function ImprimirCotizacionModal({
                             </div>
                         </div>
 
-                        <div className="col-span-5 bg-slate-50 rounded-xl border-2 border-slate-900 p-4 space-y-2 text-xs">
-                            <div className="flex justify-between text-slate-600">
-                                <span>Subtotal ({items.length} ítems):</span>
-                                <span className="font-mono font-semibold">$ {fmt(cotizacion.subtotal)}</span>
+                        <div className="col-span-5 bg-slate-50/80 rounded-xl border border-slate-200 p-4 space-y-2 text-xs flex flex-col justify-between">
+                            <div className="space-y-2">
+                                <div className="flex justify-between text-slate-600">
+                                    <span>Subtotal ({items.length} ítems):</span>
+                                    <span className="font-mono font-semibold">$ {fmt(cotizacion.subtotal)}</span>
+                                </div>
+
+                                {(cotizacion.descuentoMonto || 0) > 0 && (
+                                    <div className="flex justify-between text-emerald-700">
+                                        <span>
+                                            Descuento Global ({cotizacion.descuentoPorcentaje || 0}%):
+                                        </span>
+                                        <span className="font-mono font-semibold">
+                                            -$ {fmt(cotizacion.descuentoMonto)}
+                                        </span>
+                                    </div>
+                                )}
+
+                                {(cotizacion.recargoMonto || 0) > 0 && (
+                                    <div className="flex justify-between text-slate-700">
+                                        <span>Recargos financieros:</span>
+                                        <span className="font-mono font-semibold">
+                                            +$ {fmt(cotizacion.recargoMonto)}
+                                        </span>
+                                    </div>
+                                )}
+
+                                {cotizacion.ivaDiscriminado && (
+                                    <>
+                                        <div className="flex justify-between text-slate-700 pt-1 border-t border-slate-200">
+                                            <span>Subtotal Neto Gravado:</span>
+                                            <span className="font-mono font-semibold">
+                                                $ {fmt((cotizacion.subtotal || 0) - (cotizacion.descuentoMonto || 0))}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between text-slate-700">
+                                            <span>IVA Discriminado:</span>
+                                            <span className="font-mono font-semibold">
+                                                $ {fmt(cotizacion.impuestosMonto || 0)}
+                                            </span>
+                                        </div>
+                                    </>
+                                )}
                             </div>
 
-                            {(cotizacion.descuentoMonto || 0) > 0 && (
-                                <div className="flex justify-between text-emerald-700">
-                                    <span>
-                                        Descuento Global ({cotizacion.descuentoPorcentaje || 0}%):
+                            <div className="pt-3 mt-1">
+                                <div className="pt-3 border-t border-slate-200 flex items-baseline justify-between">
+                                    <span className="text-sm font-bold uppercase tracking-wider text-slate-900">
+                                        Total Cotizado
                                     </span>
-                                    <span className="font-mono font-semibold">
-                                        -$ {fmt(cotizacion.descuentoMonto)}
+                                    <span className="text-2xl font-black font-mono text-slate-950">
+                                        $ {fmt(cotizacion.total)}{' '}
+                                        <span className="text-xs font-sans font-bold text-slate-500">ARS</span>
                                     </span>
                                 </div>
-                            )}
-
-                            {cotizacion.ivaDiscriminado && (
-                                <>
-                                    <div className="flex justify-between text-slate-700 pt-1 border-t border-slate-200">
-                                        <span>Subtotal Neto Gravado:</span>
-                                        <span className="font-mono font-semibold">
-                                            $ {fmt((cotizacion.subtotal || 0) - (cotizacion.descuentoMonto || 0))}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between text-slate-700">
-                                        <span>IVA Discriminado:</span>
-                                        <span className="font-mono font-semibold">
-                                            $ {fmt(cotizacion.impuestosMonto || 0)}
-                                        </span>
-                                    </div>
-                                </>
-                            )}
-
-                            <div className="pt-2.5 border-t-2 border-slate-900 flex items-baseline justify-between">
-                                <span className="text-sm font-black uppercase tracking-wider text-slate-950">
-                                    Total Cotizado
-                                </span>
-                                <span className="text-2xl font-black font-mono text-slate-950">
-                                    $ {fmt(cotizacion.total)}{' '}
-                                    <span className="text-xs font-sans font-bold text-slate-500">ARS</span>
-                                </span>
-                            </div>
-                            <div className="text-[10px] text-right font-medium text-slate-600">
-                                {cotizacion.ivaDiscriminado
-                                    ? 'Precios con IVA discriminado incluido en el Total'
-                                    : 'Precios finales (IVA incluido) — Moneda: ARS'}
+                                <div className="text-[10px] text-right font-medium text-slate-500 pt-2 mt-1">
+                                    {cotizacion.ivaDiscriminado
+                                        ? 'Precios con IVA discriminado incluido en el Total'
+                                        : 'Precios finales (IVA incluido) — Moneda: ARS'}
+                                </div>
                             </div>
                         </div>
                     </div>
