@@ -34,24 +34,13 @@ export default function ComprobanteModal({
 }: ComprobanteModalProps) {
   const printRef = useRef<HTMLDivElement>(null);
 
-  if (!isOpen || !venta) return null;
-
   const handlePrint = () => {
     window.print();
   };
 
-  const formatARS = (val: number) =>
-    new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: 'ARS',
-      minimumFractionDigits: 2,
-    }).format(Number(val) || 0);
-
-  const fechaFormateada = safeFormatDateTime(venta.fecha || venta.createdAt);
-
   // Atajos de teclado: Escape para cerrar, Enter / Ctrl+P para imprimir
   React.useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !venta) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
@@ -63,7 +52,18 @@ export default function ComprobanteModal({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, venta, onClose]);
+
+  if (!isOpen || !venta) return null;
+
+  const formatARS = (val: number) =>
+    new Intl.NumberFormat('es-AR', {
+      style: 'currency',
+      currency: 'ARS',
+      minimumFractionDigits: 2,
+    }).format(Number(val) || 0);
+
+  const fechaFormateada = safeFormatDateTime(venta.fecha || venta.createdAt);
 
   return (
     <div className="fixed inset-0 z-[95] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
@@ -239,11 +239,11 @@ export default function ComprobanteModal({
                 </div>
               )}
               {Boolean(
-                venta.impuestosMonto > 0 &&
+                (Number(venta.impuestosMonto) || 0) > 0 &&
                   (venta.listaPrecio?.ivaDiscriminado ||
                     Math.abs(
-                      (venta.subtotal - (venta.descuentoMonto || 0) + (venta.recargoMonto || 0) + venta.impuestosMonto) -
-                        venta.total
+                      ((Number(venta.subtotal) || 0) - (Number(venta.descuentoMonto) || 0) + (Number(venta.recargoMonto) || 0) + (Number(venta.impuestosMonto) || 0)) -
+                        (Number(venta.total) || 0)
                     ) < 0.05)
               ) && (
                 <div className="flex justify-between text-slate-500 font-semibold">

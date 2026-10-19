@@ -441,6 +441,7 @@ export async function confirmarVentaPDV(input: ConfirmarVentaInput, userId?: str
         include: {
           items: true,
           pagos: true,
+          listaPrecio: true,
         },
       });
 
@@ -549,6 +550,7 @@ export async function anularVentaPDV(
       include: {
         items: true,
         pagos: true,
+        listaPrecio: true,
       },
     });
 

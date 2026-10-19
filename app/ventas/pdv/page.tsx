@@ -1440,15 +1440,17 @@ export default function PdvPage() {
         }}
       >
         {/* Modal de Comprobante / Impresión */}
-        <ComprobanteModal
-          isOpen={!!comprobanteVenta}
-          onClose={() => setComprobanteVenta(null)}
-          venta={comprobanteVenta}
-          onGenerarRemito={(v) => {
-            setComprobanteVenta(null);
-            setVentaParaRemito(v);
-          }}
-        />
+        {comprobanteVenta && (
+          <ComprobanteModal
+            isOpen={!!comprobanteVenta}
+            onClose={() => setComprobanteVenta(null)}
+            venta={comprobanteVenta}
+            onGenerarRemito={(v) => {
+              setComprobanteVenta(null);
+              setVentaParaRemito(v);
+            }}
+          />
+        )}
 
         {/* Modal para Generar Remito */}
         {ventaParaRemito && (
@@ -1457,6 +1459,7 @@ export default function PdvPage() {
             onClose={() => setVentaParaRemito(null)}
             venta={ventaParaRemito}
             onRemitoGenerado={(nuevoRemito) => {
+              setVentaParaRemito(null);
               setRemitoParaImprimir(nuevoRemito);
             }}
           />
@@ -1481,21 +1484,24 @@ export default function PdvPage() {
               setVentaParaRemito(v);
             }}
             onVerRemito={(rem) => {
+              setShowPendientesModal(false);
               setRemitoParaImprimir(rem);
             }}
           />
         )}
 
         {/* Modal de Historial de Ventas */}
-        <HistorialVentasModal
-          isOpen={showHistorialModal}
-          onClose={() => setShowHistorialModal(false)}
-          currentUserRole={currentUser?.role}
-          currentUserId={currentUser?.id}
-          onVerComprobante={(v) => {
-            setComprobanteVenta(v);
-          }}
-        />
+        {showHistorialModal && (
+          <HistorialVentasModal
+            isOpen={showHistorialModal}
+            onClose={() => setShowHistorialModal(false)}
+            currentUserRole={currentUser?.role}
+            currentUserId={currentUser?.id}
+            onVerComprobante={(v) => {
+              setComprobanteVenta(v);
+            }}
+          />
+        )}
       </ErrorBoundary>
 
       {/* Modal Nativo para Modificación de Precios */}

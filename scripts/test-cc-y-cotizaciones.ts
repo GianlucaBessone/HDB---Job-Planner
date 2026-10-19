@@ -29,6 +29,7 @@ async function main() {
     let testProductId = '';
     const createdVentaIds: string[] = [];
     const createdCotizacionIds: string[] = [];
+    const initialCounters = await prisma.cuentaCorrienteCounter.findMany();
 
     try {
         // 1. Crear cliente y producto de prueba
@@ -442,6 +443,7 @@ async function main() {
                 });
             }
             for (const cotId of createdCotizacionIds) {
+                await prisma.cotizacionItem.deleteMany({ where: { cotizacionId: cotId } }).catch(() => {});
                 await prisma.cotizacion.deleteMany({ where: { id: cotId } });
             }
             for (const vId of createdVentaIds) {
@@ -453,9 +455,32 @@ async function main() {
                 await prisma.producto.deleteMany({ where: { id: testProductId } });
             }
             if (testClientId) {
+                await prisma.auditLog.deleteMany({
+                    where: {
+                        OR: [
+                            { entityId: testClientId },
+                            { entityId: { in: createdVentaIds } },
+                            { entityId: { in: createdCotizacionIds } },
+                        ],
+                    },
+                }).catch(() => {});
                 await prisma.hdbClient.deleteMany({ where: { id: testClientId } });
             }
-            console.log('✓ Limpieza de registros temporales de prueba completada.');
+            // Restaurar contadores iniciales de Cuenta Corriente
+            const totalRealMovs = await prisma.cuentaCorrienteMovimiento.count();
+            if (totalRealMovs === 0) {
+                await prisma.cuentaCorrienteCounter.updateMany({
+                    data: { currentNumber: 0 },
+                });
+            } else {
+                for (const ic of initialCounters) {
+                    await prisma.cuentaCorrienteCounter.update({
+                        where: { serie_year: { serie: ic.serie, year: ic.year } },
+                        data: { currentNumber: ic.currentNumber },
+                    });
+                }
+            }
+            console.log('✓ Limpieza exhaustiva de registros temporales de prueba completada.');
         } catch (cleanupErr) {
             console.error('Advertencia en limpieza:', cleanupErr);
         }

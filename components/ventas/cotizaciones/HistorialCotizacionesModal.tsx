@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     X, Search, FileText, Printer, Edit3, Copy, ShoppingCart,
-    CheckCircle2, Ban, RefreshCw, ArrowUpDown, ArrowUp, ArrowDown, Download
+    CheckCircle2, Ban, RefreshCw, ArrowUpDown, ArrowUp, ArrowDown, Download, Loader2
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 
@@ -97,13 +97,11 @@ export default function HistorialCotizacionesModal({
         });
     }, [cotizaciones, sortBy, sortOrder]);
 
-    const handleCambiarEstado = async (cotId: string, nuevoEstado: string) => {
-        let motivo: string | undefined;
-        if (nuevoEstado === 'ANULADA') {
-            const inputMotivo = window.prompt('Ingrese el motivo de anulación de la cotización:', 'Desestimada por el cliente');
-            if (!inputMotivo || inputMotivo.trim().length < 3) return;
-            motivo = inputMotivo.trim();
-        }
+    const [cotizacionADesestimar, setCotizacionADesestimar] = useState<any | null>(null);
+    const [motivoDesestimacion, setMotivoDesestimacion] = useState('Desestimada por el cliente');
+    const [desestimando, setDesestimando] = useState(false);
+
+    const handleCambiarEstado = async (cotId: string, nuevoEstado: string, motivo?: string) => {
         try {
             const res = await fetch(`/api/ventas/cotizaciones/${cotId}`, {
                 method: 'PATCH',
@@ -120,6 +118,39 @@ export default function HistorialCotizacionesModal({
         } catch (err) {
             console.error(err);
             showToast('Error al actualizar estado de la cotización', 'error');
+        }
+    };
+
+    const handleConfirmarDesestimacion = async () => {
+        if (!cotizacionADesestimar) return;
+        const motivoLimpio = motivoDesestimacion.trim();
+        if (motivoLimpio.length < 3) {
+            showToast('Debe ingresar un motivo de al menos 3 caracteres', 'error');
+            return;
+        }
+        setDesestimando(true);
+        try {
+            const res = await fetch(`/api/ventas/cotizaciones/${cotizacionADesestimar.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    estado: 'ANULADA',
+                    motivo: motivoLimpio,
+                }),
+            });
+            if (res.ok) {
+                showToast(`Cotización ${cotizacionADesestimar.numero} desestimada correctamente`, 'success');
+                setCotizacionADesestimar(null);
+                await cargar();
+            } else {
+                const d = await res.json();
+                showToast(d.error || 'No se pudo desestimar la cotización', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Error al desestimar la cotización', 'error');
+        } finally {
+            setDesestimando(false);
         }
     };
 
@@ -310,6 +341,14 @@ export default function HistorialCotizacionesModal({
                                                 >
                                                     {est}
                                                 </span>
+                                                {cot.motivoAnulacion && (est === 'ANULADA' || est === 'RECHAZADA') && (
+                                                    <div
+                                                        className="text-[9.5px] text-red-600 dark:text-red-400 font-medium truncate max-w-[130px] mx-auto mt-0.5"
+                                                        title={`Motivo: ${cot.motivoAnulacion}`}
+                                                    >
+                                                        {cot.motivoAnulacion}
+                                                    </div>
+                                                )}
                                             </td>
                                             <td className="py-3 px-3 text-right whitespace-nowrap">
                                                 <div className="inline-flex items-center gap-1">
@@ -371,9 +410,12 @@ export default function HistorialCotizacionesModal({
 
                                                     {cot.estado !== 'CONVERTIDA' && cot.estado !== 'ANULADA' && (
                                                         <button
-                                                            onClick={() => handleCambiarEstado(cot.id, 'ANULADA')}
-                                                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50"
-                                                            title="Anular cotización"
+                                                            onClick={() => {
+                                                                setCotizacionADesestimar(cot);
+                                                                setMotivoDesestimacion('Desestimada por el cliente');
+                                                            }}
+                                                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                                                            title="Desestimar / Anular cotización"
                                                         >
                                                             <Ban className="w-4 h-4" />
                                                         </button>
@@ -388,6 +430,123 @@ export default function HistorialCotizacionesModal({
                     )}
                 </div>
             </div>
+
+            {/* Modal Nativo de la App: Desestimar / Anular Cotización */}
+            {cotizacionADesestimar && (
+                <div className="fixed inset-0 z-[60] bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
+                    <div className="bg-card text-card-foreground rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-150">
+                        {/* Header */}
+                        <div className="p-4 bg-red-600 text-white flex items-center justify-between">
+                            <div className="flex items-center gap-2.5">
+                                <div className="p-1.5 rounded-lg bg-red-700/80">
+                                    <Ban className="w-4 h-4 text-white" />
+                                </div>
+                                <div>
+                                    <h4 className="font-black text-sm">Desestimar Cotización</h4>
+                                    <p className="text-[11px] text-red-100 font-mono">
+                                        {cotizacionADesestimar.numero} • {cotizacionADesestimar.clienteNombre}
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                disabled={desestimando}
+                                onClick={() => setCotizacionADesestimar(null)}
+                                className="p-1 rounded-lg text-red-200 hover:text-white hover:bg-red-700/80 transition-colors"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div className="p-5 space-y-4">
+                            <p className="text-xs text-slate-600 dark:text-slate-300">
+                                Al desestimar esta cotización quedará archivada con estado{' '}
+                                <strong className="text-red-600 dark:text-red-400">ANULADA</strong>.
+                                Por favor seleccione o detalle el motivo:
+                            </p>
+
+                            {/* Chips de motivos frecuentes */}
+                            <div className="space-y-1.5">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                    Motivos rápidos:
+                                </span>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {[
+                                        'Desestimada por el cliente',
+                                        'Presupuesto vencido',
+                                        'Precios desactualizados',
+                                        'No aceptó condiciones de pago',
+                                        'Proyecto cancelado / postergado',
+                                        'Optó por otra propuesta',
+                                    ].map((m) => (
+                                        <button
+                                            key={m}
+                                            type="button"
+                                            onClick={() => setMotivoDesestimacion(m)}
+                                            className={`text-[11px] px-2.5 py-1 rounded-lg border transition-colors ${
+                                                motivoDesestimacion === m
+                                                    ? 'bg-red-50 dark:bg-red-950/50 border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 font-bold'
+                                                    : 'bg-muted/50 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-muted'
+                                            }`}
+                                        >
+                                            {m}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Textarea */}
+                            <div>
+                                <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                                    Motivo registrado en auditoría *
+                                </label>
+                                <textarea
+                                    rows={3}
+                                    value={motivoDesestimacion}
+                                    onChange={(e) => setMotivoDesestimacion(e.target.value)}
+                                    placeholder="Ingrese el motivo de desestimación..."
+                                    className="w-full p-2.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    autoFocus
+                                />
+                                <div className="flex justify-between items-center text-[10px] text-slate-400 mt-1">
+                                    <span>Mínimo 3 caracteres requeridos</span>
+                                    <span>{motivoDesestimacion.trim().length} chars</span>
+                                </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                                <button
+                                    type="button"
+                                    disabled={desestimando}
+                                    onClick={() => setCotizacionADesestimar(null)}
+                                    className="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="button"
+                                    disabled={desestimando || motivoDesestimacion.trim().length < 3}
+                                    onClick={handleConfirmarDesestimacion}
+                                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-red-600 hover:bg-red-700 text-white disabled:opacity-50 transition-colors shadow-sm"
+                                >
+                                    {desestimando ? (
+                                        <>
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            <span>Desestimando...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Ban className="w-3.5 h-3.5" />
+                                            <span>Desestimar Cotización</span>
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

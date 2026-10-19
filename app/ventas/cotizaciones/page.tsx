@@ -6,7 +6,7 @@ import VentasNavTabs from '@/components/ventas/VentasNavTabs';
 import {
     Search, FileText, User, History, Trash2, Plus, Printer,
     RotateCcw, Package, Edit3, Loader2, Wrench, ShoppingCart, RefreshCw,
-    ArrowUpDown, ArrowUp, ArrowDown, X
+    ArrowUpDown, ArrowUp, ArrowDown, X, FileCheck2, Save
 } from 'lucide-react';
 import {
     buildCatalogIndex,
@@ -16,6 +16,7 @@ import {
 } from '@/lib/ventas/pdvSearchEngine';
 import { resolverPrecioProducto } from '@/lib/ventas/priceRules';
 import { showToast } from '@/components/Toast';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import SeleccionarClienteModal from '@/components/ventas/pdv/SeleccionarClienteModal';
 import ImprimirCotizacionModal from '@/components/ventas/cotizaciones/ImprimirCotizacionModal';
 import AgregarItemManualModal, { ItemManualOutput } from '@/components/ventas/cotizaciones/AgregarItemManualModal';
@@ -99,6 +100,7 @@ export default function CotizacionesPage() {
     const [showItemManualModal, setShowItemManualModal] = useState(false);
     const [showHistorialModal, setShowHistorialModal] = useState(false);
     const [cotizacionImprimir, setCotizacionImprimir] = useState<any | null>(null);
+    const [showConfirmReiniciar, setShowConfirmReiniciar] = useState(false);
 
     const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -304,15 +306,21 @@ export default function CotizacionesPage() {
             prev.map((it) => {
                 if (it.id !== id) return it;
                 const updated = { ...it, [field]: value };
-                const cant = Math.max(0.01, Number(updated.cantidad) || 0);
-                const precio = Math.max(0, Number(updated.precioUnitario) || 0);
-                const desc = Math.min(100, Math.max(0, Number(updated.descuentoPct) || 0));
-                const sub = Math.round(cant * precio * (1 - desc / 100) * 100) / 100;
+                const rawCant = updated.cantidad;
+                const rawPrecio = updated.precioUnitario;
+                const rawDesc = updated.descuentoPct;
+                const cant = typeof rawCant === 'number' ? Math.max(0, rawCant) : (rawCant === '' ? '' : Math.max(0, parseFloat(rawCant) || 0));
+                const precio = typeof rawPrecio === 'number' ? Math.max(0, rawPrecio) : (rawPrecio === '' ? '' : Math.max(0, parseFloat(rawPrecio) || 0));
+                const desc = typeof rawDesc === 'number' ? Math.min(100, Math.max(0, rawDesc)) : (rawDesc === '' ? '' : Math.min(100, Math.max(0, parseFloat(rawDesc) || 0)));
+                const calcCant = typeof cant === 'number' ? cant : 0;
+                const calcPrecio = typeof precio === 'number' ? precio : 0;
+                const calcDesc = typeof desc === 'number' ? desc : 0;
+                const sub = Math.round(calcCant * calcPrecio * (1 - calcDesc / 100) * 100) / 100;
                 return {
                     ...updated,
-                    cantidad: cant,
-                    precioUnitario: precio,
-                    descuentoPct: desc,
+                    cantidad: cant as any,
+                    precioUnitario: precio as any,
+                    descuentoPct: desc as any,
                     subtotal: sub,
                 };
             })
@@ -395,10 +403,24 @@ export default function CotizacionesPage() {
         searchInputRef.current?.focus();
     }, []);
 
+    const handleSolicitarReiniciar = () => {
+        if (items.length > 0) {
+            setShowConfirmReiniciar(true);
+        } else {
+            handleLimpiarCotizador();
+        }
+    };
+
     // Guardar cotización (y opcionalmente imprimir o enviar a PDV)
-    const handleGuardarCotizacion = async (accionPosterior: 'IMPRIMIR' | 'ENVIAR_PDV') => {
+    const handleGuardarCotizacion = async (accionPosterior: 'IMPRIMIR' | 'ENVIAR_PDV' | 'SOLO_GUARDAR') => {
         if (items.length === 0) {
-            showToast('Agregue al menos un ítem para registrar la cotización', 'error');
+            showToast('Agregue al menos un ítem para generar la cotización', 'error');
+            return;
+        }
+
+        const itemInvalido = items.find((it) => !it.nombre?.trim() || Number(it.cantidad) <= 0);
+        if (itemInvalido) {
+            showToast('Todos los artículos deben tener descripción y cantidad mayor a 0', 'error');
             return;
         }
 
@@ -435,11 +457,11 @@ export default function CotizacionesPage() {
                     descripcion: it.nombre,
                     marca: it.marca || null,
                     unidad: it.unidad,
-                    cantidad: it.cantidad,
-                    precioOriginal: it.precioOriginal,
-                    precioUnitario: it.precioUnitario,
+                    cantidad: Number(it.cantidad) || 1,
+                    precioOriginal: Number(it.precioOriginal) || 0,
+                    precioUnitario: Number(it.precioUnitario) || 0,
                     ivaPorcentaje: it.alicuotaIva,
-                    descuentoPorcentaje: it.descuentoPct,
+                    descuentoPorcentaje: Number(it.descuentoPct) || 0,
                     precioModificado: Math.abs(it.precioOriginal - it.precioUnitario) > 0.01,
                     motivoModificacion: it.observacion || null,
                 })),
@@ -470,17 +492,18 @@ export default function CotizacionesPage() {
 
             showToast(
                 isUpdate
-                    ? `Cotización ${cotGuardada.numero} actualizada`
-                    : `Cotización ${cotGuardada.numero} registrada con éxito`,
+                    ? `Cotización ${cotGuardada.numero} actualizada con éxito`
+                    : `Cotización ${cotGuardada.numero} generada con éxito`,
                 'success'
             );
 
+            setCotizacionEditandoId(cotGuardada.id);
+            setCotizacionEditandoNumero(cotGuardada.numero);
+
             if (accionPosterior === 'ENVIAR_PDV') {
                 router.push(`/ventas/pdv?cotizacionId=${cotGuardada.id}`);
-            } else {
+            } else if (accionPosterior === 'IMPRIMIR') {
                 setCotizacionImprimir(cotGuardada);
-                setCotizacionEditandoId(cotGuardada.id);
-                setCotizacionEditandoNumero(cotGuardada.numero);
             }
         } catch (err: any) {
             showToast(err.message || 'Error al registrar cotización', 'error');
@@ -498,6 +521,9 @@ export default function CotizacionesPage() {
         setClienteTelefono(cot.clienteTelefono || '');
         setClienteEmail(cot.clienteEmail || '');
         setClienteDireccion(cot.clienteDireccion || '');
+        if (cot.clienteIdentificacion || cot.clienteTelefono || cot.clienteEmail || cot.clienteDireccion) {
+            setMostrarDatosProspecto(true);
+        }
         if (cot.listaPrecioId) setListaSeleccionadaId(cot.listaPrecioId);
         setValidezDias(cot.validezDias || 15);
         setCondicionPago(cot.condicionPago || 'Contado / Transferencia');
@@ -544,7 +570,9 @@ export default function CotizacionesPage() {
                 setShowClienteModal(true);
             } else if (e.key === 'F4') {
                 e.preventDefault();
-                if (items.length > 0 && !guardando) {
+                if (items.length === 0) {
+                    showToast('Agregue al menos un ítem para generar la cotización', 'info');
+                } else if (!guardando) {
                     handleGuardarCotizacion('IMPRIMIR');
                 }
             } else if (e.key === 'F6') {
@@ -560,7 +588,7 @@ export default function CotizacionesPage() {
     });
 
     return (
-        <div className="min-h-[calc(100vh-1rem)] lg:h-[calc(100vh-1rem)] flex flex-col gap-2.5 lg:overflow-hidden">
+        <div className="flex flex-col h-full w-full min-h-0 max-h-full overflow-hidden gap-2">
             {/* Barra superior de navegación + Estado del Cotizador */}
             <div className="flex flex-wrap items-center justify-between gap-2 shrink-0">
                 <VentasNavTabs currentTab="cotizaciones" />
@@ -570,7 +598,7 @@ export default function CotizacionesPage() {
                         <div className="px-3 py-1.5 rounded-xl bg-amber-100 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs font-black flex items-center gap-2 whitespace-nowrap">
                             <span>Editando {cotizacionEditandoNumero}</span>
                             <button
-                                onClick={handleLimpiarCotizador}
+                                onClick={handleSolicitarReiniciar}
                                 className="text-[10px] underline hover:text-amber-950 dark:hover:text-white"
                             >
                                 Salir / Nueva
@@ -597,9 +625,9 @@ export default function CotizacionesPage() {
             </div>
 
             {/* Cuerpo Split-Pane estilo PDV */}
-            <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 min-h-0 lg:overflow-hidden">
+            <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-2.5 overflow-y-auto lg:overflow-hidden">
                 {/* Panel Izquierdo: Buscador de Catálogo Ultra-Rápido (5 cols) */}
-                <div className="lg:col-span-5 bg-card rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs flex flex-col min-h-[380px] lg:min-h-0 overflow-hidden">
+                <div className="lg:col-span-5 bg-card rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs flex flex-col min-h-[350px] lg:min-h-0 h-full overflow-hidden">
                     <div className="p-3.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 space-y-2.5 shrink-0">
                         <div className="flex items-center justify-between">
                             <span className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
@@ -749,7 +777,7 @@ export default function CotizacionesPage() {
                 </div>
 
                 {/* Panel Derecho: Armador de Cotización Profesional (7 cols) */}
-                <div className="lg:col-span-7 bg-card rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs flex flex-col min-h-[460px] lg:min-h-0 overflow-hidden">
+                <div className="lg:col-span-7 bg-card rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs flex flex-col min-h-[450px] lg:min-h-0 h-full overflow-hidden">
                     {/* Cabecera Comercial: Cliente + Lista + Validez + Condiciones */}
                     <div className="p-3.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/40 space-y-2.5 shrink-0">
                         <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
@@ -1164,7 +1192,7 @@ export default function CotizacionesPage() {
                         <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800">
                             <button
                                 type="button"
-                                onClick={handleLimpiarCotizador}
+                                onClick={handleSolicitarReiniciar}
                                 className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
                             >
                                 <RotateCcw className="w-3.5 h-3.5" />
@@ -1176,7 +1204,7 @@ export default function CotizacionesPage() {
                                     type="button"
                                     disabled={guardando || items.length === 0}
                                     onClick={() => handleGuardarCotizacion('ENVIAR_PDV')}
-                                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 disabled:opacity-40 transition-all"
+                                    className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 disabled:opacity-40 transition-all shadow-xs"
                                     title="Guardar cotización y pasarla inmediatamente al Punto de Venta para cobrar"
                                 >
                                     <ShoppingCart className="w-4 h-4" />
@@ -1186,15 +1214,27 @@ export default function CotizacionesPage() {
                                 <button
                                     type="button"
                                     disabled={guardando || items.length === 0}
-                                    onClick={() => handleGuardarCotizacion('IMPRIMIR')}
-                                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/20 disabled:opacity-40 transition-all"
+                                    onClick={() => handleGuardarCotizacion('SOLO_GUARDAR')}
+                                    className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 disabled:opacity-40 transition-all"
+                                    title="Guardar cotización sin abrir el visor de impresión"
                                 >
-                                    <Printer className="w-4 h-4" />
+                                    <Save className="w-4 h-4" />
+                                    {cotizacionEditandoId ? 'Guardar Cambios' : 'Guardar'}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    disabled={guardando || items.length === 0}
+                                    onClick={() => handleGuardarCotizacion('IMPRIMIR')}
+                                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/25 disabled:opacity-40 transition-all"
+                                    title="Generar la cotización oficial y ver opciones de impresión o PDF"
+                                >
+                                    <FileCheck2 className="w-4 h-4" />
                                     {guardando
-                                        ? 'Guardando...'
+                                        ? 'Generando...'
                                         : cotizacionEditandoId
-                                        ? '[F4] Actualizar e Imprimir Cotización'
-                                        : '[F4] Registrar e Imprimir Cotización'}
+                                        ? '[F4] Actualizar Cotización'
+                                        : '[F4] Generar Cotización'}
                                 </button>
                             </div>
                         </div>
@@ -1259,6 +1299,20 @@ export default function CotizacionesPage() {
                     setCotizacionImprimir(null);
                     router.push(`/ventas/pdv?cotizacionId=${cot.id}`);
                 }}
+            />
+
+            <ConfirmDialog
+                isOpen={showConfirmReiniciar}
+                title="¿Reiniciar cotización?"
+                message="Se descartarán los artículos y datos cargados en el cotizador actual. Esta acción no se puede deshacer."
+                confirmLabel="Sí, reiniciar"
+                cancelLabel="Continuar editando"
+                variant="danger"
+                onConfirm={() => {
+                    handleLimpiarCotizador();
+                    setShowConfirmReiniciar(false);
+                }}
+                onCancel={() => setShowConfirmReiniciar(false)}
             />
         </div>
     );

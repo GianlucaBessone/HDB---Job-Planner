@@ -296,6 +296,20 @@ export default function CuentasCorrientesPage() {
         });
     }, [clientes, filtro, busqueda, ordenCartera]);
 
+    // Mantener coherencia de selección de cliente cuando se aplican filtros (KPI cards o chips)
+    useEffect(() => {
+        if (!loadingCartera && clientes.length > 0) {
+            if (clientesFiltrados.length > 0) {
+                const exists = clientesFiltrados.some((c) => c.id === selectedClienteId);
+                if (!exists) {
+                    setSelectedClienteId(clientesFiltrados[0].id);
+                }
+            } else if (selectedClienteId) {
+                setSelectedClienteId(null);
+            }
+        }
+    }, [clientesFiltrados, selectedClienteId, loadingCartera, clientes.length]);
+
     const handlePendientesSort = (col: string) => {
         if (pendientesSortBy === col) {
             setPendientesSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
@@ -416,9 +430,16 @@ export default function CuentasCorrientesPage() {
 
             {/* Barra de KPIs Globales */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                <div className="bg-card rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-2xs flex items-center justify-between">
+                <div
+                    onClick={() => setFiltro(filtro === 'CON_DEUDA' ? 'TODOS' : 'CON_DEUDA')}
+                    className={`rounded-2xl border p-4 shadow-2xs flex items-center justify-between cursor-pointer transition-all ${
+                        filtro === 'CON_DEUDA'
+                            ? 'bg-indigo-50 dark:bg-indigo-950/30 border-indigo-400 ring-2 ring-indigo-400/20'
+                            : 'bg-card border-slate-200 dark:border-slate-800 hover:border-indigo-300'
+                    }`}
+                >
                     <div>
-                        <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                        <div className="text-[11px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400">
                             Deuda Activa en Calle
                         </div>
                         <div className="text-2xl font-black font-mono text-slate-900 dark:text-slate-100 mt-0.5">
@@ -427,6 +448,9 @@ export default function CuentasCorrientesPage() {
                         <div className="text-xs text-slate-500 mt-1">
                             <span className="font-bold text-slate-700 dark:text-slate-300">{kpis.clientesConDeuda}</span> clientes con saldo •{' '}
                             <span className="font-bold text-slate-700 dark:text-slate-300">{kpis.comprobantesPendientesTotal}</span> comp.
+                        </div>
+                        <div className="text-xs text-indigo-700/80 dark:text-indigo-400/80 mt-1">
+                            Click para filtrar clientes con deuda
                         </div>
                     </div>
                     <div className="w-11 h-11 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
@@ -484,7 +508,7 @@ export default function CuentasCorrientesPage() {
                     }`}
                 >
                     <div>
-                        <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                        <div className="text-[11px] font-bold uppercase tracking-wider text-red-700 dark:text-red-400">
                             Alertas de Límite / Saldos a Favor
                         </div>
                         <div className="text-lg font-black font-mono text-slate-900 dark:text-slate-100 mt-0.5 flex items-center gap-2">
@@ -494,8 +518,8 @@ export default function CuentasCorrientesPage() {
                             <span className="text-slate-300 dark:text-slate-700">|</span>
                             <span className="text-emerald-600 dark:text-emerald-400 text-sm">${fmt(kpis.saldoAFavorTotal)} a favor</span>
                         </div>
-                        <div className="text-xs text-slate-500 mt-1">
-                            Control de riesgo crediticio en PDV
+                        <div className="text-xs text-red-700/80 dark:text-red-400/80 mt-1">
+                            Click para filtrar clientes excedidos
                         </div>
                     </div>
                     <div className="w-11 h-11 rounded-2xl bg-red-50 dark:bg-red-950/50 border border-red-100 dark:border-red-900 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
