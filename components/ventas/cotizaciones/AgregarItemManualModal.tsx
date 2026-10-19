@@ -125,33 +125,39 @@ export default function AgregarItemManualModal({ isOpen, onClose, onAdd }: Props
                                 required
                                 value={cantidad}
                                 onChange={(e) => setCantidad(e.target.value)}
-                                className="w-full px-2.5 py-2 text-xs font-mono font-bold rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full px-2.5 py-2 text-xs font-mono font-bold rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
                         </div>
                         <div>
-                            <label className="block text-[11px] font-bold text-slate-700 mb-1">Precio Unit. ($) *</label>
-                            <input
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                required
-                                placeholder="0.00"
-                                value={precioUnitario}
-                                onChange={(e) => setPrecioUnitario(e.target.value)}
-                                className="w-full px-2.5 py-2 text-xs font-mono font-bold rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            />
+                            <label className="block text-[11px] font-bold text-slate-700 mb-1">Precio Unit. (ARS) *</label>
+                            <div className="relative flex items-center">
+                                <span className="absolute left-2.5 text-xs font-bold text-slate-400 select-none">$</span>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    required
+                                    placeholder="0.00"
+                                    value={precioUnitario}
+                                    onChange={(e) => setPrecioUnitario(e.target.value)}
+                                    className="w-full pl-6 pr-2.5 py-2 text-xs font-mono font-bold rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                />
+                            </div>
                         </div>
                         <div>
                             <label className="block text-[11px] font-bold text-slate-700 mb-1">Bonif. (%)</label>
-                            <input
-                                type="number"
-                                step="0.5"
-                                min="0"
-                                max="100"
-                                value={descuentoPct}
-                                onChange={(e) => setDescuentoPct(e.target.value)}
-                                className="w-full px-2.5 py-2 text-xs font-mono rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            />
+                            <div className="relative flex items-center">
+                                <input
+                                    type="number"
+                                    step="0.5"
+                                    min="0"
+                                    max="100"
+                                    value={descuentoPct}
+                                    onChange={(e) => setDescuentoPct(e.target.value)}
+                                    className="w-full pl-2.5 pr-6 py-2 text-xs font-mono rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                />
+                                <span className="absolute right-2.5 text-xs font-bold text-slate-400 select-none">%</span>
+                            </div>
                         </div>
                     </div>
 
@@ -180,6 +186,21 @@ export default function AgregarItemManualModal({ isOpen, onClose, onAdd }: Props
                             />
                         </div>
                     </div>
+
+                    {(() => {
+                        const cant = parseFloat(cantidad) || 0;
+                        const prec = parseFloat(precioUnitario) || 0;
+                        const desc = Math.min(100, Math.max(0, parseFloat(descuentoPct) || 0));
+                        const sub = Math.round(cant * prec * (1 - desc / 100) * 100) / 100;
+                        return (
+                            <div className="bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between text-xs">
+                                <span className="text-slate-500 font-medium">Subtotal estimado:</span>
+                                <span className="font-mono font-black text-slate-900 dark:text-slate-100">
+                                    $ {sub.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span className="text-[10px] text-slate-400 font-sans font-bold">ARS</span>
+                                </span>
+                            </div>
+                        );
+                    })()}
 
                     <div className="pt-3 border-t border-slate-200 flex justify-end gap-2">
                         <button

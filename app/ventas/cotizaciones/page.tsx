@@ -734,7 +734,8 @@ export default function CotizacionesPage() {
 
                                         <div className="text-right shrink-0">
                                             <div className="text-sm font-black font-mono text-slate-900 dark:text-slate-100">
-                                                ${fmt(precio)}
+                                                $ {fmt(precio)}{' '}
+                                                <span className="text-[10px] font-sans font-bold text-slate-400">ARS</span>
                                             </div>
                                             <div className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold">
                                                 + Agregar
@@ -899,9 +900,9 @@ export default function CotizacionesPage() {
                                         {[
                                             { key: 'nombre', label: 'Material / Concepto', align: 'left', className: 'py-2 px-3 text-left' },
                                             { key: 'cantidad', label: 'Cant.', align: 'center', className: 'py-2 px-2 text-center w-24' },
-                                            { key: 'precioUnitario', label: 'Precio Unit.', align: 'right', className: 'py-2 px-2 text-right w-28' },
-                                            { key: 'descuentoPct', label: 'Bonif %', align: 'right', className: 'py-2 px-2 text-right w-20' },
-                                            { key: 'subtotal', label: 'Subtotal', align: 'right', className: 'py-2 px-3 text-right w-28' },
+                                            { key: 'precioUnitario', label: 'Precio Unit. (ARS)', align: 'right', className: 'py-2 px-2 text-right w-36' },
+                                            { key: 'descuentoPct', label: 'Bonif %', align: 'right', className: 'py-2 px-2 text-right w-24' },
+                                            { key: 'subtotal', label: 'Subtotal (ARS)', align: 'right', className: 'py-2 px-3 text-right w-32' },
                                         ].map((col) => {
                                             const isSorted = itemSortBy === col.key;
                                             return (
@@ -1000,7 +1001,7 @@ export default function CotizacionesPage() {
                                                                 e.target.value
                                                             )
                                                         }
-                                                        className="w-12 text-center font-mono font-bold text-xs bg-transparent text-foreground focus:outline-none"
+                                                        className="w-12 text-center font-mono font-bold text-xs bg-transparent text-foreground focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                                     />
                                                     <button
                                                         type="button"
@@ -1019,38 +1020,44 @@ export default function CotizacionesPage() {
                                             </td>
 
                                             <td className="py-2.5 px-2 text-right">
-                                                <input
-                                                    type="number"
-                                                    step="0.01"
-                                                    min="0"
-                                                    value={it.precioUnitario}
-                                                    onChange={(e) =>
-                                                        handleActualizarItem(
-                                                            it.id,
-                                                            'precioUnitario',
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    className="w-24 px-2 py-1 text-right font-mono font-bold text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                                />
+                                                <div className="inline-flex items-center justify-end">
+                                                    <span className="text-xs font-bold text-slate-400 mr-1 select-none">$</span>
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        min="0"
+                                                        value={it.precioUnitario}
+                                                        onChange={(e) =>
+                                                            handleActualizarItem(
+                                                                it.id,
+                                                                'precioUnitario',
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        className="w-28 px-2 py-1 text-right font-mono font-bold text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                                    />
+                                                </div>
                                             </td>
 
                                             <td className="py-2.5 px-2 text-right">
-                                                <input
-                                                    type="number"
-                                                    step="0.5"
-                                                    min="0"
-                                                    max="100"
-                                                    value={it.descuentoPct}
-                                                    onChange={(e) =>
-                                                        handleActualizarItem(
-                                                            it.id,
-                                                            'descuentoPct',
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    className="w-16 px-2 py-1 text-right font-mono text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                                />
+                                                <div className="inline-flex items-center justify-end">
+                                                    <input
+                                                        type="number"
+                                                        step="0.5"
+                                                        min="0"
+                                                        max="100"
+                                                        value={it.descuentoPct}
+                                                        onChange={(e) =>
+                                                            handleActualizarItem(
+                                                                it.id,
+                                                                'descuentoPct',
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        className="w-14 px-2 py-1 text-right font-mono text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                                    />
+                                                    <span className="text-[11px] font-bold text-slate-400 ml-1 select-none">%</span>
+                                                </div>
                                             </td>
 
                                             <td className="py-2.5 px-3 text-right font-mono font-black text-slate-900 dark:text-slate-100">
@@ -1086,32 +1093,40 @@ export default function CotizacionesPage() {
                                 />
                                 <div className="flex items-center gap-3 text-xs text-slate-300">
                                     <label className="flex items-center gap-1.5">
-                                        <span>Desc. Global (%):</span>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            max="100"
-                                            step="0.5"
-                                            value={descuentoGlobalPct}
-                                            onChange={(e) =>
-                                                setDescuentoGlobalPct(
-                                                    Math.min(
-                                                        100,
-                                                        Math.max(0, parseFloat(e.target.value) || 0)
-                                                    )
-                                                )
-                                            }
-                                            className="w-16 px-2 py-0.5 text-right font-mono font-bold rounded bg-slate-800 border border-slate-700 text-white"
-                                        />
+                                        <span>Desc. Global:</span>
+                                        <div className="relative inline-flex items-center">
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max="100"
+                                                step="0.5"
+                                                value={descuentoGlobalPct === 0 ? '' : descuentoGlobalPct}
+                                                placeholder="0"
+                                                onChange={(e) => {
+                                                    const raw = e.target.value;
+                                                    if (raw === '') {
+                                                        setDescuentoGlobalPct(0);
+                                                    } else {
+                                                        const parsed = parseFloat(raw);
+                                                        setDescuentoGlobalPct(
+                                                            isNaN(parsed)
+                                                                ? 0
+                                                                : Math.min(100, Math.max(0, parsed))
+                                                        );
+                                                    }
+                                                }}
+                                                className="w-16 px-2 py-0.5 text-right font-mono font-bold rounded bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-indigo-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                            />
+                                            <span className="text-xs font-bold text-slate-400 ml-1 select-none">%</span>
+                                        </div>
                                     </label>
                                     {totales.descuentoLineasMonto + totales.descuentoGlobalMonto >
                                         0 && (
                                         <span className="text-emerald-400 font-mono">
-                                            Ahorro: -$
-                                            {fmt(
+                                            Ahorro: -$ {fmt(
                                                 totales.descuentoLineasMonto +
                                                     totales.descuentoGlobalMonto
-                                            )}
+                                            )} ARS
                                         </span>
                                     )}
                                 </div>
@@ -1123,13 +1138,13 @@ export default function CotizacionesPage() {
                                         <div>
                                             Neto:{' '}
                                             <span className="font-mono text-slate-200">
-                                                ${fmt(totales.baseImponible)}
+                                                $ {fmt(totales.baseImponible)}
                                             </span>
                                         </div>
                                         <div>
                                             IVA:{' '}
                                             <span className="font-mono text-slate-200">
-                                                ${fmt(totales.montoIvaTotal)}
+                                                $ {fmt(totales.montoIvaTotal)}
                                             </span>
                                         </div>
                                     </div>
@@ -1139,7 +1154,8 @@ export default function CotizacionesPage() {
                                         Total Cotizado ({items.length} ítems)
                                     </div>
                                     <div className="text-2xl font-black font-mono text-white">
-                                        ${fmt(totales.totalFinal)}
+                                        $ {fmt(totales.totalFinal)}{' '}
+                                        <span className="text-xs font-sans font-bold text-slate-400">ARS</span>
                                     </div>
                                 </div>
                             </div>

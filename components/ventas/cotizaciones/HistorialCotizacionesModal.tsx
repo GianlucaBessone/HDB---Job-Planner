@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     X, Search, FileText, Printer, Edit3, Copy, ShoppingCart,
-    CheckCircle2, Ban, RefreshCw, ArrowUpDown, ArrowUp, ArrowDown
+    CheckCircle2, Ban, RefreshCw, ArrowUpDown, ArrowUp, ArrowDown, Download
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 
@@ -211,7 +211,7 @@ export default function HistorialCotizacionesModal({
                                         { key: 'clienteNombre', label: 'Cliente / Destinatario', align: 'left' },
                                         { key: 'obra', label: 'Obra / Condición', align: 'left' },
                                         { key: 'items', label: 'Ítems', align: 'center' },
-                                        { key: 'total', label: 'Total', align: 'right' },
+                                        { key: 'total', label: 'Total (ARS)', align: 'right' },
                                         { key: 'estado', label: 'Estado', align: 'center' },
                                     ].map((col) => {
                                         const isSorted = sortBy === col.key;
@@ -291,7 +291,8 @@ export default function HistorialCotizacionesModal({
                                                 {(cot.items || []).length}
                                             </td>
                                             <td className="py-3 px-3 text-right font-mono font-black text-slate-900 dark:text-slate-100 text-sm whitespace-nowrap">
-                                                ${fmt(cot.total)}
+                                                $ {fmt(cot.total)}{' '}
+                                                <span className="text-[10px] text-slate-400 font-sans font-bold">ARS</span>
                                             </td>
                                             <td className="py-3 px-3 text-center whitespace-nowrap">
                                                 <span
@@ -312,6 +313,15 @@ export default function HistorialCotizacionesModal({
                                             </td>
                                             <td className="py-3 px-3 text-right whitespace-nowrap">
                                                 <div className="inline-flex items-center gap-1">
+                                                    <a
+                                                        href={`/api/ventas/cotizaciones/${cot.id}/pdf?download=true`}
+                                                        className="p-1.5 rounded-lg text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                                                        title="Descargar PDF Corporativo Oficial"
+                                                        download={`Cotizacion_${cot.numero}.pdf`}
+                                                    >
+                                                        <Download className="w-4 h-4" />
+                                                    </a>
+
                                                     <button
                                                         onClick={() => onImprimir(cot)}
                                                         className="p-1.5 rounded-lg text-slate-600 hover:text-indigo-600 hover:bg-indigo-50"
