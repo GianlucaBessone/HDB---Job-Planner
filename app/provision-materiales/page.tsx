@@ -36,6 +36,7 @@ import { showToast } from "@/components/Toast";
 import { ViewConfig, isViewAllowed } from "@/lib/viewAccess";
 import { useViewState } from "@/lib/hooks/useViewState";
 import { useCommandStore } from "@/lib/store/useCommandStore";
+import { formatARS } from "@/lib/formatCurrency";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 type MaterialUso = {
@@ -64,6 +65,7 @@ type Material = {
   cantidadDisponible: number;
   cantidadEntregada: number;
   estado: string;
+  precioVenta?: number | null;
   usos: MaterialUso[];
   devoluciones: MaterialDevolucion[];
 };
@@ -217,12 +219,16 @@ const UNIDADES = [
   "Par",
 ];
 
-// ─── Add Material Form ─────────────────────────────────────────────────────────
+// ─── Add Material Form (Integrado con Gestión Comercial & PDV Search) ────────
 function AddMaterialForm({
   proyectoId,
+  listaPrecioId,
+  listaPrecioNombre,
   onAdded,
 }: {
   proyectoId: string;
+  listaPrecioId?: string | null;
+  listaPrecioNombre?: string | null;
   onAdded: () => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -237,34 +243,163 @@ function AddMaterialForm({
     precioVenta: "",
   });
   const [manualPrice, setManualPrice] = useState(false);
-  const codeInputRef = useRef<HTMLInputElement>(null);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  const [activeSearchField, setActiveSearchField] = useState<"codigo" | "nombre" | null>(null);
 
-  // Autocomplete por código
+  const containerRef = useRef<HTMLDivElement>(null);
+  const codeInputRef = useRef<HTMLInputElement>(null);
+  const nombreInputRef = useRef<HTMLInputElement>(null);
+  const solicitadaInputRef = useRef<HTMLInputElement>(null);
+
+  // Cerrar sugerencias al hacer click fuera
   useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Búsqueda inteligente por código (Algoritmo Gestión Comercial / PDV)
+  useEffect(() => {
+    if (manualPrice || activeSearchField !== "codigo") return;
+    const trimmed = form.codigo.trim();
+    if (!trimmed) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
     const timeout = setTimeout(async () => {
-      const searchCode = form.codigo.replace(/^0+/, "");
-      if (searchCode && searchCode.length >= 1) {
-        const res = await fetch(
-          `/api/materiales-proyecto?codigo=${searchCode}`,
-        );
+      setLoadingSuggestions(true);
+      try {
+        const queryParams = new URLSearchParams({
+          codigo: trimmed,
+          proyectoId,
+          all: "true",
+          limit: "15",
+        });
+        if (listaPrecioId) queryParams.set("listaPrecioId", listaPrecioId);
+
+        const res = await fetch(`/api/materiales-proyecto?${queryParams.toString()}`);
         if (res.ok) {
           const data = await res.json();
-          if (data && data.nombre) {
+          const items = Array.isArray(data.productos)
+            ? data.productos
+            : Array.isArray(data.candidatos)
+            ? data.candidatos
+            : data && data.nombre
+            ? [data]
+            : [];
+          setSuggestions(items);
+          setShowSuggestions(items.length > 0);
+
+          // Si hay coincidencia exacta rigurosa
+          const exact = items.find((it: any) => it.esCoincidenciaExacta) ||
+            (items.length === 1 && items[0].codigo?.toLowerCase() === trimmed.toLowerCase() ? items[0] : null);
+          const exactIdx = exact ? items.findIndex((it: any) => it.id === exact.id) : -1;
+          setSelectedIndex(exactIdx >= 0 ? exactIdx : items.length > 0 ? 0 : -1);
+
+          if (exact) {
+            setSelectedProduct(exact);
             setForm((p) => ({
               ...p,
-              nombre: data.nombre,
-              unidad: data.unidad || p.unidad,
-              precioVenta:
-                data.precioVenta !== null && data.precioVenta !== undefined
-                  ? String(data.precioVenta)
-                  : p.precioVenta,
+              nombre: exact.nombre || exact.descripcion,
+              unidad: exact.unidad || p.unidad,
+              precioVenta: exact.precioVenta != null ? String(exact.precioVenta) : p.precioVenta,
             }));
           }
         }
+      } catch (e) {
+        console.error("Error buscando por código:", e);
+      } finally {
+        setLoadingSuggestions(false);
       }
-    }, 500);
+    }, 250);
+
     return () => clearTimeout(timeout);
-  }, [form.codigo]);
+  }, [form.codigo, manualPrice, activeSearchField, proyectoId, listaPrecioId]);
+
+  // Búsqueda multi-token por descripción (Algoritmo fuzzy PDV)
+  useEffect(() => {
+    if (manualPrice || activeSearchField !== "nombre") return;
+    const trimmed = form.nombre.trim();
+    if (trimmed.length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      setLoadingSuggestions(true);
+      try {
+        const queryParams = new URLSearchParams({
+          q: trimmed,
+          proyectoId,
+          limit: "15",
+        });
+        if (listaPrecioId) queryParams.set("listaPrecioId", listaPrecioId);
+
+        const res = await fetch(`/api/materiales-proyecto?${queryParams.toString()}`);
+        if (res.ok) {
+          const data = await res.json();
+          const items = Array.isArray(data.productos)
+            ? data.productos
+            : Array.isArray(data.candidatos)
+            ? data.candidatos
+            : [];
+          setSuggestions(items);
+          setShowSuggestions(items.length > 0);
+          setSelectedIndex(items.length > 0 ? 0 : -1);
+        }
+      } catch (e) {
+        console.error("Error buscando por nombre:", e);
+      } finally {
+        setLoadingSuggestions(false);
+      }
+    }, 250);
+
+    return () => clearTimeout(timeout);
+  }, [form.nombre, manualPrice, activeSearchField, proyectoId, listaPrecioId]);
+
+  const selectProduct = (prod: any) => {
+    setSelectedProduct(prod);
+    setForm((p) => ({
+      ...p,
+      codigo: prod.codigo || prod.sku || "",
+      nombre: prod.nombre || prod.descripcion || "",
+      unidad: prod.unidad || p.unidad,
+      precioVenta: prod.precioVenta != null ? String(prod.precioVenta) : (prod.precioAplicado != null ? String(prod.precioAplicado) : ""),
+    }));
+    setShowSuggestions(false);
+    setActiveSearchField(null);
+    setTimeout(() => solicitadaInputRef.current?.focus(), 50);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!showSuggestions || suggestions.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev < suggestions.length - 1 ? prev + 1 : 0));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev > 0 ? prev - 1 : suggestions.length - 1));
+    } else if (e.key === "Enter" || e.key === "Tab") {
+      const target = selectedIndex >= 0 && suggestions[selectedIndex] ? suggestions[selectedIndex] : suggestions[0];
+      if (target) {
+        e.preventDefault();
+        selectProduct(target);
+      }
+    } else if (e.key === "Escape") {
+      setShowSuggestions(false);
+    }
+  };
 
   const parseNum = (str: string) => {
     if (!str) return "";
@@ -304,6 +439,9 @@ function AddMaterialForm({
       cantidadEntregada: "",
       precioVenta: "",
     });
+    setSelectedProduct(null);
+    setSuggestions([]);
+    setShowSuggestions(false);
     onAdded();
     setTimeout(() => codeInputRef.current?.focus(), 50);
   };
@@ -328,121 +466,257 @@ function AddMaterialForm({
     "border border-slate-200 dark:border-slate-700 rounded-xl px-1.5 py-2 text-sm font-bold outline-none focus:border-primary text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
 
   return (
-    <div className="bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 flex flex-wrap md:flex-nowrap items-center gap-2 relative">
-      {!manualPrice && (
-        <input
-          ref={codeInputRef}
-          autoFocus
-          placeholder="Código"
-          title="Código interno del material"
-          value={form.codigo}
-          onChange={(e) =>
-            setForm((p) => ({ ...p, codigo: e.target.value.toUpperCase() }))
-          }
-          className="w-24 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2 text-xs font-bold outline-none focus:border-primary uppercase"
-        />
-      )}
-      <input
-        placeholder="Nombre del material *"
-        value={form.nombre}
-        onChange={(e) => setForm((p) => ({ ...p, nombre: e.target.value }))}
-        className="flex-1 min-w-[150px] border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-medium outline-none focus:border-primary"
-      />
-      <select
-        value={form.unidad}
-        onChange={(e) => setForm((p) => ({ ...p, unidad: e.target.value }))}
-        className="w-24 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2 text-sm font-bold outline-none focus:border-primary bg-card text-card-foreground text-slate-700 dark:text-slate-200 cursor-pointer"
-      >
-        {UNIDADES.map((u) => (
-          <option key={u} value={u}>
-            {u}
-          </option>
-        ))}
-      </select>
+    <div
+      ref={containerRef}
+      className="bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 flex flex-col gap-2 relative shadow-lg"
+    >
+      <div className="flex flex-wrap md:flex-nowrap items-center gap-2 w-full">
+        {!manualPrice && (
+          <div className="relative">
+            <input
+              ref={codeInputRef}
+              autoFocus
+              placeholder="Código"
+              title="Buscar por código de material en Gestión Comercial"
+              value={form.codigo}
+              onFocus={() => {
+                setActiveSearchField("codigo");
+                if (suggestions.length > 0) setShowSuggestions(true);
+              }}
+              onKeyDown={handleKeyDown}
+              onChange={(e) => {
+                setActiveSearchField("codigo");
+                setForm((p) => ({ ...p, codigo: e.target.value.toUpperCase() }));
+              }}
+              className="w-24 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2 text-xs font-bold outline-none focus:border-primary uppercase"
+            />
+            {loadingSuggestions && activeSearchField === "codigo" && (
+              <Loader2 className="w-3.5 h-3.5 animate-spin absolute right-2 top-1/2 -translate-y-1/2 text-primary" />
+            )}
+          </div>
+        )}
 
-      <input
-        type="text"
-        inputMode="numeric"
-        pattern="[0-9.,]*"
-        placeholder="Sol."
-        title="Solicitada"
-        value={form.cantidadSolicitada}
-        onChange={handleQty("cantidadSolicitada")}
-        className={`${qtyClass} w-16`}
-      />
-      <input
-        type="text"
-        inputMode="numeric"
-        pattern="[0-9.,]*"
-        placeholder="Disp."
-        title="Disponible"
-        value={form.cantidadDisponible}
-        onChange={handleQty("cantidadDisponible")}
-        className={`${qtyClass} w-16`}
-      />
-      <input
-        type="text"
-        inputMode="numeric"
-        pattern="[0-9.,]*"
-        placeholder="Entr."
-        title="Entregada"
-        value={form.cantidadEntregada}
-        onChange={handleQty("cantidadEntregada")}
-        className={`${qtyClass} w-16`}
-      />
-
-      {manualPrice && (
-        <div className="relative w-28 shrink-0">
-          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400">
-            $
-          </span>
+        <div className="flex-1 min-w-[160px] relative">
           <input
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9.,]*"
-            placeholder="Precio"
-            value={form.precioVenta}
-            onChange={handleQty("precioVenta")}
-            className="w-full border border-emerald-200 dark:border-emerald-900/50 rounded-xl pl-5 pr-2 py-2 text-xs font-black text-emerald-700 dark:text-emerald-400 outline-none focus:border-emerald-500 bg-emerald-50/30"
+            ref={nombreInputRef}
+            placeholder="Nombre del material *"
+            title="Nombre o búsqueda en Gestión Comercial"
+            value={form.nombre}
+            onFocus={() => {
+              setActiveSearchField("nombre");
+              if (suggestions.length > 0 && !manualPrice) setShowSuggestions(true);
+            }}
+            onKeyDown={handleKeyDown}
+            onChange={(e) => {
+              setActiveSearchField("nombre");
+              setForm((p) => ({ ...p, nombre: e.target.value }));
+            }}
+            className="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-medium outline-none focus:border-primary"
           />
+          {loadingSuggestions && activeSearchField === "nombre" && (
+            <Loader2 className="w-3.5 h-3.5 animate-spin absolute right-3 top-1/2 -translate-y-1/2 text-primary" />
+          )}
+        </div>
+
+        <select
+          value={form.unidad}
+          onChange={(e) => setForm((p) => ({ ...p, unidad: e.target.value }))}
+          className="w-24 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2 text-sm font-bold outline-none focus:border-primary bg-card text-card-foreground text-slate-700 dark:text-slate-200 cursor-pointer"
+        >
+          {UNIDADES.map((u) => (
+            <option key={u} value={u}>
+              {u}
+            </option>
+          ))}
+        </select>
+
+        <input
+          ref={solicitadaInputRef}
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9.,]*"
+          placeholder="Sol."
+          title="Cantidad Solicitada (Enter para guardar)"
+          value={form.cantidadSolicitada}
+          onChange={handleQty("cantidadSolicitada")}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && form.nombre) {
+              e.preventDefault();
+              handleSubmit();
+            }
+          }}
+          className={`${qtyClass} w-16`}
+        />
+        <input
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9.,]*"
+          placeholder="Disp."
+          title="Cantidad Disponible"
+          value={form.cantidadDisponible}
+          onChange={handleQty("cantidadDisponible")}
+          className={`${qtyClass} w-16`}
+        />
+        <input
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9.,]*"
+          placeholder="Entr."
+          title="Cantidad Entregada"
+          value={form.cantidadEntregada}
+          onChange={handleQty("cantidadEntregada")}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSubmit();
+          }}
+          className={`${qtyClass} w-16`}
+        />
+
+        {manualPrice ? (
+          <div className="relative w-28 shrink-0">
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400">
+              $
+            </span>
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9.,]*"
+              placeholder="Precio"
+              value={form.precioVenta}
+              onChange={handleQty("precioVenta")}
+              className="w-full border border-emerald-200 dark:border-emerald-900/50 rounded-xl pl-5 pr-2 py-2 text-xs font-black text-emerald-700 dark:text-emerald-400 outline-none focus:border-emerald-500 bg-emerald-50/30"
+            />
+          </div>
+        ) : (
+          <div className="shrink-0 px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-right min-w-[90px]" title="Precio resuelto desde Gestión Comercial">
+            <span className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 block leading-tight">
+              Precio {listaPrecioNombre ? `(${listaPrecioNombre})` : 'Base'}
+            </span>
+            <span className="text-xs font-black text-emerald-700 dark:text-emerald-300">
+              {form.precioVenta ? formatARS(parseFloat(form.precioVenta)) : '$ 0,00'}
+            </span>
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={() => {
+            setManualPrice(!manualPrice);
+            if (!manualPrice) {
+              setForm((p) => ({ ...p, codigo: "" }));
+              setShowSuggestions(false);
+            }
+          }}
+          title={
+            manualPrice
+              ? "Volver a catálogo Gestión Comercial"
+              : "Modo manual: Ingresar precio o material no catalogado"
+          }
+          className={`p-2 rounded-xl transition-all border shrink-0 ${manualPrice ? "bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/20" : "bg-muted text-muted-foreground text-slate-400 border-slate-200 dark:border-slate-700 hover:text-emerald-600"}`}
+        >
+          <Calculator className="w-4 h-4" />
+        </button>
+
+        <div className="flex gap-1 ml-auto shrink-0 border-l border-slate-200 dark:border-slate-700 pl-2">
+          <button
+            onClick={() => {
+              setOpen(false);
+              setShowSuggestions(false);
+            }}
+            className="p-2 bg-card text-card-foreground text-slate-400 dark:text-slate-500 rounded-xl hover:bg-slate-200 hover:text-slate-600 border border-slate-200 dark:border-slate-700 transition-colors shadow-sm"
+          >
+            <X className="w-4 h-4" />
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={saving || !form.nombre}
+            className="p-2 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 shadow-sm shadow-primary/20"
+          >
+            {saving ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Check className="w-4 h-4" />
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Dropdown de Sugerencias de Gestión Comercial */}
+      {showSuggestions && suggestions.length > 0 && !manualPrice && (
+        <div className="absolute left-0 top-full mt-1.5 w-full md:w-[500px] bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+          <div className="p-2.5 bg-muted/70 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between text-[11px] font-bold text-slate-500">
+            <span className="flex items-center gap-1.5">
+              <Package className="w-3.5 h-3.5 text-primary" />
+              Gestión Comercial ({suggestions.length} resultados)
+            </span>
+            {listaPrecioNombre && (
+              <span className="text-primary font-black">
+                Lista: {listaPrecioNombre}
+              </span>
+            )}
+          </div>
+          <div className="max-h-60 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+            {suggestions.map((item, idx) => (
+              <button
+                key={item.id || idx}
+                type="button"
+                onClick={() => selectProduct(item)}
+                className={`w-full text-left px-3.5 py-2.5 flex items-center justify-between gap-3 transition-colors ${
+                  idx === selectedIndex
+                    ? "bg-primary/10 text-primary dark:text-primary-foreground"
+                    : "hover:bg-slate-50 dark:hover:bg-slate-800/60"
+                }`}
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono text-xs font-black text-slate-800 dark:text-slate-100 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+                      {item.codigo || item.sku}
+                    </span>
+                    {item.marca && (
+                      <span className="text-[10px] uppercase font-bold text-slate-400">
+                        {item.marca}
+                      </span>
+                    )}
+                    {item.esCoincidenciaExacta && (
+                      <span className="text-[9px] uppercase font-black tracking-widest text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-1 rounded">
+                        Exacto
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate mt-0.5">
+                    {item.nombre || item.descripcion}
+                  </p>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="text-xs font-black text-emerald-600 dark:text-emerald-400">
+                    {formatARS(item.precioVenta ?? item.precioAplicado ?? 0)}
+                  </div>
+                  <div className="text-[10px] text-slate-400 font-medium">
+                    {item.unidad || 'Unid.'} {item.stockActual !== undefined ? `· Stock: ${item.stockActual}` : ''}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={() => {
-          setManualPrice(!manualPrice);
-          if (!manualPrice) setForm((p) => ({ ...p, codigo: "" }));
-        }}
-        title={
-          manualPrice
-            ? "Usar código de material"
-            : "Cargar sin código / Precio manual"
-        }
-        className={`p-2 rounded-xl transition-all border ${manualPrice ? "bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/20" : "bg-muted text-muted-foreground text-slate-400 border-slate-200 dark:border-slate-700 hover:text-emerald-600"}`}
-      >
-        <Calculator className="w-4 h-4" />
-      </button>
-
-      <div className="flex gap-1 ml-auto shrink-0 border-l border-slate-200 dark:border-slate-700 pl-2">
-        <button
-          onClick={() => setOpen(false)}
-          className="p-2 bg-card text-card-foreground text-slate-400 dark:text-slate-500 rounded-xl hover:bg-slate-200 hover:text-slate-600 border border-slate-200 dark:border-slate-700 transition-colors shadow-sm"
-        >
-          <X className="w-4 h-4" />
-        </button>
-        <button
-          onClick={handleSubmit}
-          disabled={saving || !form.nombre}
-          className="p-2 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 shadow-sm shadow-primary/20"
-        >
-          {saving ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Check className="w-4 h-4" />
+      {/* Indicador de vinculación con Gestión Comercial */}
+      {!manualPrice && form.codigo && form.precioVenta && (
+        <div className="flex items-center gap-2 px-1 text-[11px] text-emerald-700 dark:text-emerald-400 font-bold">
+          <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+          <span>Gestión Comercial: {formatARS(parseFloat(form.precioVenta))}</span>
+          {listaPrecioNombre && (
+            <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 font-black">
+              Lista: {listaPrecioNombre}
+            </span>
           )}
-        </button>
-      </div>
+          {selectedProduct?.stockActual !== undefined && (
+            <span className="text-slate-400 font-normal">
+              (Stock en almacén: {selectedProduct.stockActual} {form.unidad})
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -703,10 +977,16 @@ function DevolucionModal({
 // ─── Edit Material Modal ───────────────────────────────────────────────────────
 function EditMaterialModal({
   material,
+  proyectoId,
+  listaPrecioId,
+  listaPrecioNombre,
   onClose,
   onDone,
 }: {
   material: Material;
+  proyectoId?: string;
+  listaPrecioId?: string | null;
+  listaPrecioNombre?: string | null;
   onClose: () => void;
   onDone: () => void;
 }) {
@@ -714,15 +994,52 @@ function EditMaterialModal({
     nombre: material.nombre,
     unidad: material.unidad,
     codigo: material.codigo || "",
+    precioVenta: material.precioVenta != null ? String(material.precioVenta) : "",
   });
   const [saving, setSaving] = useState(false);
 
+  // Sincronizar con Gestión Comercial si se cambia el código
+  useEffect(() => {
+    const trimmed = form.codigo.trim();
+    if (!trimmed || trimmed === (material.codigo || "").trim()) return;
+    const timeout = setTimeout(async () => {
+      try {
+        const queryParams = new URLSearchParams({
+          codigo: trimmed,
+          ...(proyectoId ? { proyectoId } : {}),
+          ...(listaPrecioId ? { listaPrecioId } : {}),
+        });
+        const res = await fetch(`/api/materiales-proyecto?${queryParams.toString()}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.nombre) {
+            setForm((p) => ({
+              ...p,
+              nombre: data.nombre,
+              unidad: data.unidad || p.unidad,
+              precioVenta: data.precioVenta != null ? String(data.precioVenta) : (data.precioAplicado != null ? String(data.precioAplicado) : p.precioVenta),
+            }));
+          }
+        }
+      } catch (e) {
+        // silencioso
+      }
+    }, 350);
+    return () => clearTimeout(timeout);
+  }, [form.codigo, material.codigo, proyectoId, listaPrecioId]);
+
   const handleSave = async () => {
     setSaving(true);
+    const payload = {
+      nombre: form.nombre,
+      unidad: form.unidad,
+      codigo: form.codigo,
+      precioVenta: form.precioVenta ? parseFloat(form.precioVenta) : null,
+    };
     await fetch(`/api/materiales-proyecto/${material.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify(payload),
     });
     setSaving(false);
     onDone();
@@ -790,6 +1107,20 @@ function EditMaterialModal({
               ))}
             </select>
           </div>
+
+          {form.precioVenta && (
+            <div className="flex items-center justify-between p-2.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs">
+              <span className="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                Gestión Comercial: {formatARS(parseFloat(form.precioVenta))}
+              </span>
+              {listaPrecioNombre && (
+                <span className="text-[10px] bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 px-1.5 py-0.5 rounded font-black">
+                  {listaPrecioNombre}
+                </span>
+              )}
+            </div>
+          )}
         </div>
         <button
           onClick={handleSave}
@@ -1649,7 +1980,12 @@ function MaterialesTable({
 
           <div className="flex items-center gap-2 flex-wrap">
             {isVendedor && (
-              <AddMaterialForm proyectoId={proyecto.id} onAdded={onRefresh} />
+              <AddMaterialForm
+                proyectoId={proyecto.id}
+                listaPrecioId={proyecto.listaPrecioId}
+                listaPrecioNombre={proyecto.listaPrecio?.nombre}
+                onAdded={onRefresh}
+              />
             )}
             <button
               onClick={handleExportarExcel}
@@ -1680,6 +2016,9 @@ function MaterialesTable({
       {editTarget && (
         <EditMaterialModal
           material={editTarget}
+          proyectoId={proyecto.id}
+          listaPrecioId={proyecto.listaPrecioId}
+          listaPrecioNombre={proyecto.listaPrecio?.nombre}
           onClose={() => setEditTarget(null)}
           onDone={onRefresh}
         />

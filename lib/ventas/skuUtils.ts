@@ -40,6 +40,7 @@ export function getWordVariants(word: string): string[] {
 
   const withAccents = unaccented
     .replace(/termomagnet/g, 'termomagnét')
+    .replace(/termic/g, 'térmic')
     .replace(/electric/g, 'eléctric')
     .replace(/modul/g, 'módul')
     .replace(/medicion/g, 'medición')
@@ -53,7 +54,13 @@ export function getWordVariants(word: string): string[] {
     .replace(/rele/g, 'relé')
     .replace(/automatic/g, 'automátic')
     .replace(/trifasic/g, 'trifásic')
-    .replace(/monofasic/g, 'monofásic');
+    .replace(/monofasic/g, 'monofásic')
+    .replace(/marron/g, 'marrón')
+    .replace(/lampar/g, 'lámpar')
+    .replace(/bateria/g, 'batería')
+    .replace(/boton/g, 'botón')
+    .replace(/camar/g, 'cámar')
+    .replace(/linea/g, 'línea');
   variants.add(withAccents);
 
   // Reducción de terminaciones de adjetivos técnicos (ico/ica/icos/icas) a la raíz común

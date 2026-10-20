@@ -75,7 +75,7 @@ export const DEFAULT_VIEWS: ViewConfig[] = [
     { key: '/ventas/cuentas-corrientes', label: 'Cuentas Corrientes',       description: 'Saldos comerciales, cobranzas y estados de cuenta', roles: ['admin', 'supervisor', 'vendedor', 'qa'], access: 'ambos', section: 'ventas', iconName: 'Receipt', color: 'bg-cyan-600' },
 
     // ─ Logística y Materiales ─
-    { key: '/inventario',           label: 'Inventario de Materiales',  description: 'Stock y movimientos',                roles: ['admin', 'qa', 'vendedor'],                      access: 'ambos', section: 'logistica', iconName: 'PackageSearch', color: 'bg-amber-600' },
+    { key: '/inventario',           label: 'Inventario de Materiales (Desactivada)', description: 'Vista desactivada temporalmente (usar Gestión Comercial)', roles: [], access: 'ambos', section: 'logistica', iconName: 'PackageSearch', color: 'bg-slate-400' },
     { key: '/provision-materiales', label: 'Provisión de Materiales',   description: 'Gestión de suministros',             roles: ['vendedor', 'supervisor', 'admin', 'qa'],         access: 'ambos', section: 'logistica', iconName: 'Package',       color: 'bg-orange-500' },
     { key: '/herramientas',         label: 'Herramientas y Carros',     description: 'Retiro, devolución y verificación',  roles: ['operador', 'supervisor', 'admin', 'qa'],         access: 'ambos', section: 'logistica', iconName: 'Wrench',        color: 'bg-slate-600' },
 
@@ -121,10 +121,11 @@ export function getViewConfig(savedConfigs: ViewConfig[]): ViewConfig[] {
                 (v.description?.includes('Próximamente') || v.color === 'bg-slate-400');
             return {
                 ...v,
-                description: isOutdatedPlaceholder ? def.description : (v.description || def.description || ''),
+                roles:       v.key === '/inventario' ? [] : (v.roles || def.roles || []),
+                description: isOutdatedPlaceholder ? def.description : (v.key === '/inventario' ? def.description : (v.description || def.description || '')),
                 section:     v.section     || def.section     || 'administracion',
                 iconName:    v.iconName    || def.iconName    || 'ClipboardList',
-                color:       isOutdatedPlaceholder ? def.color : (v.color || def.color || 'bg-slate-500'),
+                color:       isOutdatedPlaceholder ? def.color : (v.key === '/inventario' ? def.color : (v.color || def.color || 'bg-slate-500')),
             };
         });
 

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { resolverPrecioProducto } from '@/lib/ventas/priceRules';
 
 // PUT /api/materiales-proyecto/[id] — actualizar material
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
@@ -17,26 +18,89 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     if (estado !== undefined) dataToUpdate.estado = estado;
     if (precioVenta !== undefined) dataToUpdate.precioVenta = precioVenta ? parseFloat(precioVenta) : null;
 
+    // Si el código cambió y no se envió un precio explícito, auto-resolver desde Gestión Comercial
+    if (codigo && precioVenta === undefined) {
+        try {
+            const current = await prisma.materialProyecto.findUnique({
+                where: { id },
+                select: { codigo: true, proyectoId: true, precioVenta: true }
+            });
+            if (current && (current.codigo !== codigo || current.precioVenta === null)) {
+                const trimmedCode = String(codigo).trim();
+                const upperCode = trimmedCode.toUpperCase();
+                const unpadded = trimmedCode.replace(/^0+/, '') || '0';
+                const padded5 = unpadded.padStart(5, '0');
+
+                const prod = await prisma.producto.findFirst({
+                    where: {
+                        activo: true,
+                        OR: [
+                            { sku: upperCode },
+                            { sku: padded5 },
+                            { sku: unpadded },
+                            { codigoBarras: trimmedCode }
+                        ]
+                    },
+                    include: {
+                        iva: { select: { porcentaje: true } },
+                        proveedores: { where: { esPrincipal: true }, take: 1, select: { costo: true } }
+                    }
+                });
+
+                if (prod) {
+                    let lp: any = null;
+                    const prj = await prisma.project.findUnique({
+                        where: { id: current.proyectoId },
+                        select: { listaPrecio: true, client: { select: { listaPrecioId: true } } }
+                    });
+                    if (prj?.listaPrecio) lp = prj.listaPrecio;
+                    else if (prj?.client?.listaPrecioId) {
+                        lp = await prisma.listaPrecio.findUnique({ where: { id: prj.client.listaPrecioId, activo: true } });
+                    }
+                    if (!lp) {
+                        lp = await prisma.listaPrecio.findFirst({ where: { esPredeterminada: true, activo: true } });
+                    }
+                    const costo = prod.proveedores[0]?.costo ? Number(prod.proveedores[0].costo) : 0;
+                    const calculated = resolverPrecioProducto({
+                        precioBase: prod.precioBase,
+                        costo,
+                        rentabilidad: prod.rentabilidad,
+                        familiaId: prod.familiaId,
+                        marcaId: prod.marcaId,
+                        ivaPorcentaje: prod.iva?.porcentaje ?? 21,
+                    }, lp);
+                    dataToUpdate.precioVenta = calculated.precio;
+                }
+            }
+        } catch (e) {
+            console.error('Error auto-resolving price on PUT:', e);
+        }
+    }
+
     let material = await prisma.materialProyecto.update({
         where: { id },
         data: dataToUpdate,
         include: { usos: true, devoluciones: true },
     });
 
-    // Actualizar MaterialMaestro si se usó un código en la actualización
+    // Actualizar MaterialMaestro si se usó un código en la actualización (en try/catch retrocompatible)
     if (material.codigo && (nombre || unidad)) {
-        await prisma.materialMaestro.upsert({
-            where: { codigo: material.codigo },
-            update: { 
-                nombre: nombre || material.nombre, 
-                unidad: unidad || material.unidad 
-            },
-            create: { 
-                codigo: material.codigo, 
-                nombre: nombre || material.nombre, 
-                unidad: unidad || material.unidad 
-            },
-        });
+        try {
+            await prisma.materialMaestro.upsert({
+                where: { codigo: material.codigo },
+                update: { 
+                    nombre: nombre || material.nombre, 
+                    unidad: unidad || material.unidad 
+                },
+                create: { 
+                    codigo: material.codigo, 
+                    nombre: nombre || material.nombre, 
+                    unidad: unidad || material.unidad 
+                },
+            });
+        } catch (e) {
+            console.warn('Fallback legacy MaterialMaestro update ignored:', e);
+        }
     }
 
     // Auto-calculate implicit states unless we explicitly set a closed state

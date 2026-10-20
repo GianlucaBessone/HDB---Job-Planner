@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { resolverPrecioProducto } from '@/lib/ventas/priceRules';
 
 export async function POST(req: Request) {
     try {
@@ -12,13 +13,22 @@ export async function POST(req: Request) {
 
         const results = [];
 
+        // Lista de precios por defecto del sistema
+        const defaultListaPrecio = await prisma.listaPrecio.findFirst({
+            where: { esPredeterminada: true, activo: true }
+        });
+
         for (const sheet of sheets) {
             const { codigoProyecto, rows } = sheet;
             if (!codigoProyecto || !Array.isArray(rows)) continue;
 
             const project = await prisma.project.findUnique({
                 where: { codigoProyecto },
-                include: { materialesProyecto: true }
+                include: {
+                    materialesProyecto: true,
+                    listaPrecio: true,
+                    client: { select: { listaPrecioId: true } }
+                }
             });
 
             if (!project) {
@@ -31,6 +41,17 @@ export async function POST(req: Request) {
                     message: 'Proyecto no encontrado'
                 });
                 continue;
+            }
+
+            // Resolver lista de precios para este proyecto
+            let effectiveListaPrecio = project.listaPrecio;
+            if (!effectiveListaPrecio && project.client?.listaPrecioId) {
+                effectiveListaPrecio = await prisma.listaPrecio.findUnique({
+                    where: { id: project.client.listaPrecioId, activo: true }
+                });
+            }
+            if (!effectiveListaPrecio) {
+                effectiveListaPrecio = defaultListaPrecio;
             }
 
             let processedRows = 0;
@@ -54,6 +75,53 @@ export async function POST(req: Request) {
                 );
 
                 try {
+                    // Buscar producto en Gestión Comercial para obtener unidad y precio dinámico
+                    let resolvedUnit = 'Unid.';
+                    let resolvedPrecio: number | null = null;
+
+                    if (codigoMaterial || nombreMaterial) {
+                        const trimmedCode = codigoMaterial ? codigoMaterial.trim() : '';
+                        const unpadded = trimmedCode ? trimmedCode.replace(/^0+/, '') : '';
+                        const padded5 = unpadded ? unpadded.padStart(5, '0') : '';
+
+                        const prodConditions: any[] = [];
+                        if (trimmedCode) {
+                            prodConditions.push({ sku: trimmedCode.toUpperCase() });
+                            if (unpadded) prodConditions.push({ sku: unpadded });
+                            if (padded5) prodConditions.push({ sku: padded5 });
+                            prodConditions.push({ codigoBarras: trimmedCode });
+                        }
+                        if (nombreMaterial) {
+                            prodConditions.push({ descripcion: { equals: nombreMaterial, mode: 'insensitive' } });
+                        }
+
+                        const prod = await prisma.producto.findFirst({
+                            where: {
+                                activo: true,
+                                OR: prodConditions
+                            },
+                            include: {
+                                unidad: { select: { codigo: true, nombre: true } },
+                                iva: { select: { porcentaje: true } },
+                                proveedores: { where: { esPrincipal: true }, take: 1, select: { costo: true } }
+                            }
+                        });
+
+                        if (prod) {
+                            resolvedUnit = prod.unidad?.codigo || prod.unidad?.nombre || 'Unid.';
+                            const costo = prod.proveedores[0]?.costo ? Number(prod.proveedores[0].costo) : 0;
+                            const calc = resolverPrecioProducto({
+                                precioBase: prod.precioBase,
+                                costo,
+                                rentabilidad: prod.rentabilidad,
+                                familiaId: prod.familiaId,
+                                marcaId: prod.marcaId,
+                                ivaPorcentaje: prod.iva?.porcentaje ?? 21,
+                            }, effectiveListaPrecio);
+                            resolvedPrecio = calc.precio;
+                        }
+                    }
+
                     if (existingMaterial) {
                         const newSolicitada = mode === 'sumar' ? existingMaterial.cantidadSolicitada + numSolicitado : numSolicitado;
                         const newDisponible = mode === 'sumar' ? existingMaterial.cantidadDisponible + numDisponible : numDisponible;
@@ -87,7 +155,9 @@ export async function POST(req: Request) {
                                 cantidadDisponible: newDisponible,
                                 cantidadEntregada: newEntregada,
                                 estado: nuevoEstado,
-                                codigo: codigoMaterial || existingMaterial.codigo
+                                codigo: codigoMaterial || existingMaterial.codigo,
+                                unidad: existingMaterial.unidad || resolvedUnit,
+                                precioVenta: existingMaterial.precioVenta ?? resolvedPrecio ?? undefined
                             }
                         });
                         processedRows++;
@@ -104,23 +174,28 @@ export async function POST(req: Request) {
                                 proyectoId: project.id,
                                 nombre: nombreMaterial,
                                 codigo: codigoMaterial,
-                                unidad: 'Unid.', // Default unit
+                                unidad: resolvedUnit,
                                 cantidadSolicitada: numSolicitado,
                                 cantidadDisponible: numDisponible,
                                 cantidadEntregada: numEntregada,
+                                precioVenta: resolvedPrecio,
                                 estado: nuevoEstado
                             }
                         });
                         processedRows++;
                     }
 
-                    // Upsert MaterialMaestro
+                    // Upsert MaterialMaestro en try/catch para retrocompatibilidad
                     if (codigoMaterial && nombreMaterial) {
-                        await prisma.materialMaestro.upsert({
-                            where: { codigo: codigoMaterial },
-                            update: { nombre: nombreMaterial },
-                            create: { codigo: codigoMaterial, nombre: nombreMaterial, unidad: 'Unid.' }
-                        });
+                        try {
+                            await prisma.materialMaestro.upsert({
+                                where: { codigo: codigoMaterial },
+                                update: { nombre: nombreMaterial, unidad: resolvedUnit },
+                                create: { codigo: codigoMaterial, nombre: nombreMaterial, unidad: resolvedUnit, precioVenta: resolvedPrecio }
+                            });
+                        } catch (e) {
+                            // Ignorar error en tabla legacy
+                        }
                     }
                 } catch (e) {
                     console.error('Error importing row:', e);
