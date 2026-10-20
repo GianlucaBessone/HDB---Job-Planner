@@ -20,7 +20,8 @@ const ajusteLotesSchema = z.object({
   }),
   listas: z.array(z.string()).optional().default([]),
   porcentaje: z.coerce.number().optional().default(0),
-  tipoAjuste: z.enum(['PRECIO_BASE', 'COSTO']).default('PRECIO_BASE'),
+  tipoAjuste: z.enum(['PRECIO_BASE', 'COSTO', 'RENTABILIDAD']).default('PRECIO_BASE'),
+  margenRentabilidad: z.coerce.number().optional().nullable(),
   preview: z.boolean().default(true),
   countOnly: z.boolean().default(false),
 });
@@ -28,7 +29,7 @@ const ajusteLotesSchema = z.object({
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { filtros, porcentaje, tipoAjuste, preview, countOnly } = ajusteLotesSchema.parse(body);
+    const { filtros, porcentaje, tipoAjuste, margenRentabilidad, preview, countOnly } = ajusteLotesSchema.parse(body);
 
     const userId = req.headers.get('x-user-id') || undefined;
 
@@ -171,9 +172,10 @@ export async function POST(req: NextRequest) {
       productoId: string;
       sku: string;
       descripcion: string;
-      tipoAjuste: 'PRECIO_BASE' | 'COSTO';
+      tipoAjuste: 'PRECIO_BASE' | 'COSTO' | 'RENTABILIDAD';
       costoActual: number;
       nuevoCosto: number;
+      rentabilidadActual: number;
       rentabilidad: number;
       precioActual: number;
       porcentaje: number;
@@ -186,16 +188,34 @@ export async function POST(req: NextRequest) {
     for (const p of filteredProductos) {
       const costoActual = p.proveedores[0]?.costo ?? 0;
       const precioActual = p.precioBase ?? 0;
-      const rentabilidad = p.rentabilidad > 0 ? p.rentabilidad : 41.5;
+      let rentabilidadActual = p.rentabilidad ?? 0;
+
+      // Si el producto no tiene rentabilidad explícita registrada (> 0) pero tiene costo y precio > costo,
+      // calculamos su margen real actual para preservarlo y no resetear el precio al costo.
+      if (rentabilidadActual <= 0 && costoActual > 0 && precioActual > costoActual) {
+        rentabilidadActual = Math.round(((precioActual - costoActual) / costoActual) * 10000) / 100;
+      }
 
       let nuevoCosto = costoActual;
       let nuevoPrecio = precioActual;
+      let nuevaRentabilidad = rentabilidadActual;
 
-      if (tipoAjuste === 'COSTO') {
+      if (tipoAjuste === 'RENTABILIDAD') {
+        nuevaRentabilidad = porcentaje;
+        nuevoPrecio = costoActual > 0
+          ? Math.round(costoActual * (1 + nuevaRentabilidad / 100) * 100) / 100
+          : precioActual;
+      } else if (tipoAjuste === 'COSTO') {
         nuevoCosto = Math.round(costoActual * factor * 100) / 100;
-        nuevoPrecio = Math.round(nuevoCosto * (1 + rentabilidad / 100) * 100) / 100;
+        nuevaRentabilidad = (margenRentabilidad !== undefined && margenRentabilidad !== null)
+          ? margenRentabilidad
+          : rentabilidadActual;
+        nuevoPrecio = Math.round(nuevoCosto * (1 + nuevaRentabilidad / 100) * 100) / 100;
       } else {
         nuevoPrecio = Math.max(0, Math.round(precioActual * factor * 100) / 100);
+        if (costoActual > 0) {
+          nuevaRentabilidad = Math.round(((nuevoPrecio - costoActual) / costoActual) * 10000) / 100;
+        }
       }
 
       previsualizacion.push({
@@ -205,7 +225,8 @@ export async function POST(req: NextRequest) {
         tipoAjuste,
         costoActual,
         nuevoCosto,
-        rentabilidad,
+        rentabilidadActual,
+        rentabilidad: nuevaRentabilidad,
         precioActual,
         porcentaje,
         nuevoPrecio,
@@ -235,7 +256,42 @@ export async function POST(req: NextRequest) {
       }
 
       for (const item of previsualizacion) {
-        if (tipoAjuste === 'COSTO') {
+        if (tipoAjuste === 'RENTABILIDAD') {
+          // Actualizar Producto con nuevo margen de rentabilidad y precio base
+          await tx.producto.update({
+            where: { id: item.productoId },
+            data: {
+              precioBase: item.nuevoPrecio,
+              rentabilidad: item.rentabilidad,
+            },
+          });
+
+          // Historial doble: CAMBIO_RENTABILIDAD y AJUSTE_MASIVO precioBase
+          await tx.productoHistorial.createMany({
+            data: [
+              {
+                productoId: item.productoId,
+                tipo: 'CAMBIO_RENTABILIDAD',
+                campo: 'rentabilidad',
+                valorAnterior: String(item.rentabilidadActual),
+                valorNuevo: String(item.rentabilidad),
+                origen: 'AJUSTE_LOTES',
+                detalles: { nuevoMargen: item.rentabilidad, tipoAjuste: 'RENTABILIDAD' },
+                usuarioId: userId,
+              },
+              {
+                productoId: item.productoId,
+                tipo: 'AJUSTE_MASIVO',
+                campo: 'precioBase',
+                valorAnterior: String(item.precioActual),
+                valorNuevo: String(item.nuevoPrecio),
+                origen: 'AJUSTE_LOTES',
+                detalles: { margenAplicado: item.rentabilidad, tipoAjuste: 'RENTABILIDAD' },
+                usuarioId: userId,
+              },
+            ],
+          });
+        } else if (tipoAjuste === 'COSTO') {
           // 1. Actualizar o crear registro de costo en proveedor
           if (item.productoProveedorId) {
             await tx.productoProveedorVentas.update({
@@ -254,7 +310,7 @@ export async function POST(req: NextRequest) {
             });
           }
 
-          // 2. Actualizar Producto con nuevo precio base y rentabilidad 41.5%
+          // 2. Actualizar Producto con nuevo precio base y rentabilidad
           await tx.producto.update({
             where: { id: item.productoId },
             data: {
@@ -292,7 +348,10 @@ export async function POST(req: NextRequest) {
           // PRECIO_BASE mode
           await tx.producto.update({
             where: { id: item.productoId },
-            data: { precioBase: item.nuevoPrecio },
+            data: {
+              precioBase: item.nuevoPrecio,
+              ...(item.costoActual > 0 ? { rentabilidad: item.rentabilidad } : {}),
+            },
           });
 
           await tx.productoHistorial.create({
@@ -313,6 +372,9 @@ export async function POST(req: NextRequest) {
       }
 
       return count;
+    }, {
+      maxWait: 15000,
+      timeout: 120000,
     });
 
     await logAudit({
@@ -322,6 +384,7 @@ export async function POST(req: NextRequest) {
       metadata: {
         tipoAjuste,
         porcentaje,
+        margenRentabilidad,
         productosAfectados: filteredProductos.length,
         preciosActualizados: totalActualizados,
         filtros,
@@ -331,8 +394,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       tipoAjuste,
-      mensaje: tipoAjuste === 'COSTO'
-        ? `Ajuste completado: se actualizaron costos y se recalcularon precios base (41.5% margen) sobre ${filteredProductos.length} productos.`
+      mensaje: tipoAjuste === 'RENTABILIDAD'
+        ? `Ajuste completado: se actualizó el margen de ganancia a ${porcentaje}% y se recalcularon precios base sobre ${filteredProductos.length} productos.`
+        : tipoAjuste === 'COSTO'
+        ? `Ajuste completado: se actualizaron costos y se recalcularon precios base sobre ${filteredProductos.length} productos.`
         : `Ajuste masivo completado: se actualizaron ${totalActualizados} precios sobre ${filteredProductos.length} productos.`,
       productosAfectados: filteredProductos.length,
       preciosActualizados: totalActualizados,

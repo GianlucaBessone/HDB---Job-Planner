@@ -12,6 +12,7 @@ interface ProductoCatalogoRaw {
   unidad: string;
   precioBase: number;
   costo: number;
+  rentabilidad?: number;
   stockActual: number;
   ivaPorcentaje: number;
 }
@@ -34,6 +35,7 @@ async function fetchCatalogoFromDb(): Promise<ProductoCatalogoRaw[]> {
       codigoBarras: true,
       descripcion: true,
       precioBase: true,
+      rentabilidad: true,
       familiaId: true,
       marcaId: true,
       marca: { select: { nombre: true } },
@@ -66,6 +68,7 @@ async function fetchCatalogoFromDb(): Promise<ProductoCatalogoRaw[]> {
       unidad: p.unidad?.codigo || p.unidad?.nombre || 'UNID',
       precioBase: p.precioBase || 0,
       costo: prov ? Number(prov.costo) || 0 : 0,
+      rentabilidad: Number(p.rentabilidad) || 0,
       stockActual: stock ? Number(stock.stockActual) || 0 : 0,
       ivaPorcentaje: p.iva?.porcentaje ?? 21,
     };

@@ -3,7 +3,8 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('--- Sincronizando Costos desde MaterialMaestro y aplicando Rentabilidad 41.5% ---');
+  const marginArg = process.argv[2] ? parseFloat(process.argv[2]) : (process.env.RENTABILIDAD_OBJETIVO ? parseFloat(process.env.RENTABILIDAD_OBJETIVO) : 30);
+  console.log(`--- Sincronizando Costos desde MaterialMaestro y aplicando Rentabilidad ${marginArg}% ---`);
 
   // 1. Obtener el proveedor principal predeterminado
   let prov = await prisma.proveedorVentas.findFirst({
@@ -63,8 +64,8 @@ async function main() {
   let actualizadosRentabilidad = 0;
   let actualizadosPrecio = 0;
 
-  const RENTABILIDAD_OBJETIVO = 41.5;
-  const FACTOR_MARGEN = 1 + RENTABILIDAD_OBJETIVO / 100; // 1.415
+  const RENTABILIDAD_OBJETIVO = marginArg;
+  const FACTOR_MARGEN = 1 + RENTABILIDAD_OBJETIVO / 100;
 
   const BATCH_SIZE = 100;
   for (let i = 0; i < productos.length; i += BATCH_SIZE) {
@@ -110,7 +111,7 @@ async function main() {
           actualizadosCosto++;
         }
 
-        // 2. Actualizar Producto con rentabilidad 41.5% y precio base si corresponde
+        // 2. Actualizar Producto con rentabilidad y precio base si corresponde
         await prisma.producto.update({
           where: { id: p.id },
           data: {
@@ -127,8 +128,8 @@ async function main() {
 
   console.log(`\nResumen de actualización:`);
   console.log(`- Costos asignados/actualizados: ${actualizadosCosto} productos`);
-  console.log(`- Rentabilidad fijada en 41.5%: ${actualizadosRentabilidad} productos`);
-  console.log(`- Precios base recalculados (Costo * 1.415): ${actualizadosPrecio} productos`);
+  console.log(`- Rentabilidad fijada en ${RENTABILIDAD_OBJETIVO}%: ${actualizadosRentabilidad} productos`);
+  console.log(`- Precios base recalculados (Costo * ${FACTOR_MARGEN.toFixed(4)}): ${actualizadosPrecio} productos`);
 }
 
 main().catch(console.error).finally(() => prisma.$disconnect());

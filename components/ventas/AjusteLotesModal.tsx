@@ -41,8 +41,9 @@ export default function AjusteLotesModal({
 
   // Adjustment config
   const [selectedListas, setSelectedListas] = useState<string[]>(['LISTA_1']);
-  const [porcentaje, setPorcentaje] = useState<string | number>('10');
-  const [tipoAjuste, setTipoAjuste] = useState<'COSTO' | 'PRECIO_BASE'>('COSTO');
+  const [porcentaje, setPorcentaje] = useState<string | number>('35');
+  const [tipoAjuste, setTipoAjuste] = useState<'COSTO' | 'PRECIO_BASE' | 'RENTABILIDAD'>('RENTABILIDAD');
+  const [margenRentabilidad, setMargenRentabilidad] = useState<string>('');
 
   // Live match counter
   const [matchingCount, setMatchingCount] = useState<number | null>(null);
@@ -52,16 +53,17 @@ export default function AjusteLotesModal({
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [previewData, setPreviewData] = useState<{
     modo: string;
-    tipoAjuste: 'PRECIO_BASE' | 'COSTO';
+    tipoAjuste: 'PRECIO_BASE' | 'COSTO' | 'RENTABILIDAD';
     cantidadProductos: number;
     cantidadAjustes: number;
     previsualizacion: Array<{
       productoId: string;
       sku: string;
       descripcion: string;
-      tipoAjuste: 'PRECIO_BASE' | 'COSTO';
+      tipoAjuste: 'PRECIO_BASE' | 'COSTO' | 'RENTABILIDAD';
       costoActual: number;
       nuevoCosto: number;
+      rentabilidadActual?: number;
       rentabilidad: number;
       precioActual: number;
       porcentaje: number;
@@ -142,9 +144,22 @@ export default function AjusteLotesModal({
 
   // Run Preview
   const handleFetchPreview = async () => {
-    const numPorcentaje = parseFloat(String(porcentaje)) || 0;
-    if (numPorcentaje === 0) {
+    const rawVal = String(porcentaje).trim();
+    if (rawVal === '') {
+      showToast('Por favor ingrese un porcentaje o margen', 'info');
+      return;
+    }
+    const numPorcentaje = parseFloat(rawVal);
+    if (isNaN(numPorcentaje)) {
+      showToast('Por favor ingrese un valor numérico válido', 'info');
+      return;
+    }
+    if (tipoAjuste !== 'RENTABILIDAD' && numPorcentaje === 0) {
       showToast('El porcentaje de ajuste no puede ser 0%', 'info');
+      return;
+    }
+    if (tipoAjuste === 'RENTABILIDAD' && numPorcentaje < -90) {
+      showToast('El margen no puede ser inferior a -90%', 'info');
       return;
     }
 
@@ -157,6 +172,7 @@ export default function AjusteLotesModal({
           filtros: filters,
           porcentaje: numPorcentaje,
           tipoAjuste,
+          margenRentabilidad: margenRentabilidad !== '' ? parseFloat(String(margenRentabilidad)) : undefined,
           preview: true,
         }),
       });
@@ -180,8 +196,22 @@ export default function AjusteLotesModal({
 
   // Confirm and Apply Adjustment
   const handleApplyAdjustment = async () => {
+    const rawVal = String(porcentaje).trim();
+    const numPorcentaje = parseFloat(rawVal);
+    if (isNaN(numPorcentaje)) {
+      showToast('Por favor ingrese un valor numérico válido', 'info');
+      return;
+    }
+    if (tipoAjuste !== 'RENTABILIDAD' && numPorcentaje === 0) {
+      showToast('El porcentaje de ajuste no puede ser 0%', 'info');
+      return;
+    }
+    if (tipoAjuste === 'RENTABILIDAD' && numPorcentaje < -90) {
+      showToast('El margen no puede ser inferior a -90%', 'info');
+      return;
+    }
+
     setIsApplying(true);
-    const numPorcentaje = parseFloat(String(porcentaje)) || 0;
     try {
       const res = await fetch('/api/ventas/precios/ajuste-lotes', {
         method: 'POST',
@@ -190,6 +220,7 @@ export default function AjusteLotesModal({
           filtros: filters,
           porcentaje: numPorcentaje,
           tipoAjuste,
+          margenRentabilidad: margenRentabilidad !== '' ? parseFloat(String(margenRentabilidad)) : undefined,
           preview: false,
         }),
       });
@@ -464,12 +495,49 @@ export default function AjusteLotesModal({
                     2. ¿Qué deseas ajustar?
                   </h4>
                   <span className="text-[11px] font-semibold text-slate-400">
-                    Margen estándar de rentabilidad: <strong className="text-primary font-bold">41.5%</strong>
+                    Rentabilidad y precios 100% configurables
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {/* Opción 1: Costo de Adquisición */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {/* Opción 1: Margen de Ganancia / Rentabilidad */}
+                  <div
+                    onClick={() => {
+                      setTipoAjuste('RENTABILIDAD');
+                      if (porcentaje === '10' || porcentaje === 10) setPorcentaje('35');
+                    }}
+                    className={`p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
+                      tipoAjuste === 'RENTABILIDAD'
+                        ? 'bg-primary/5 border-primary ring-1 ring-primary shadow-sm'
+                        : 'bg-background border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name="tipoAjuste"
+                          checked={tipoAjuste === 'RENTABILIDAD'}
+                          onChange={() => {
+                            setTipoAjuste('RENTABILIDAD');
+                            if (porcentaje === '10' || porcentaje === 10) setPorcentaje('35');
+                          }}
+                          className="text-primary h-4 w-4"
+                        />
+                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                          Margen de Ganancia
+                        </span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-extrabold tracking-wide uppercase bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40">
+                        Rentabilidad
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                      Modifica masivamente el <strong>margen de rentabilidad (%)</strong> de los productos y recalcula automáticamente su <strong>Precio Base</strong> sobre el costo (<code>Costo × (1 + Margen)</code>).
+                    </p>
+                  </div>
+
+                  {/* Opción 2: Costo de Adquisición */}
                   <div
                     onClick={() => setTipoAjuste('COSTO')}
                     className={`p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
@@ -491,16 +559,16 @@ export default function AjusteLotesModal({
                           Costo de Adquisición
                         </span>
                       </div>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-extrabold tracking-wide uppercase bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40">
-                        + Margen 41.5%
+                      <span className="px-2 py-0.5 rounded text-[10px] font-extrabold tracking-wide uppercase bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/40">
+                        Costo
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                      Se actualiza el costo del producto y su <strong>Precio Base de Venta</strong> se recalcula automáticamente sumando el <strong>41.5% de margen</strong> sobre el nuevo costo (<code>Nuevo Costo × 1.415</code>).
+                      Ajusta el costo del producto por un % y recalcula su <strong>Precio Base</strong> manteniendo el margen de cada producto o aplicando el que definas.
                     </p>
                   </div>
 
-                  {/* Opción 2: Precio Base de Venta */}
+                  {/* Opción 3: Precio Base de Venta */}
                   <div
                     onClick={() => setTipoAjuste('PRECIO_BASE')}
                     className={`p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
@@ -527,16 +595,20 @@ export default function AjusteLotesModal({
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                      El porcentaje modifica directamente el <strong>Precio Base</strong> de venta de los productos seleccionados sin alterar su costo de adquisición cargado en la base de datos.
+                      El porcentaje modifica directamente el <strong>Precio Base</strong> de venta de los productos seleccionados sin alterar su costo de adquisición.
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Step 3: Porcentaje */}
+              {/* Step 3: Porcentaje o Margen */}
               <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">
-                  3. Porcentaje de Ajuste {tipoAjuste === 'COSTO' ? 'sobre el Costo' : 'sobre el Precio Base'}
+                  {tipoAjuste === 'RENTABILIDAD'
+                    ? '3. Margen de Ganancia Objetivo (%) sobre el Costo'
+                    : tipoAjuste === 'COSTO'
+                    ? '3. Porcentaje de Ajuste sobre el Costo de Adquisición'
+                    : '3. Porcentaje de Ajuste sobre el Precio Base'}
                 </h4>
 
                 <div className="flex flex-wrap items-center gap-4">
@@ -546,15 +618,18 @@ export default function AjusteLotesModal({
                       step="0.1"
                       value={porcentaje}
                       onChange={(e) => setPorcentaje(e.target.value)}
-                      placeholder="10"
+                      placeholder={tipoAjuste === 'RENTABILIDAD' ? '35' : '10'}
                       className="w-full h-11 px-4 pr-9 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-base font-black focus:outline-none focus:ring-2 focus:ring-primary/40"
                     />
                     <span className="absolute right-3.5 top-3 text-slate-400 font-bold">%</span>
                   </div>
 
                   {/* Quick percentage chips */}
-                  <div className="flex items-center gap-2">
-                    {[5, 10, 15, 20, -5, -10].map((val) => (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {(tipoAjuste === 'RENTABILIDAD'
+                      ? [0, 15, 20, 25, 30, 35, 40, 50]
+                      : [5, 10, 15, 20, -5, -10]
+                    ).map((val) => (
                       <button
                         key={val}
                         type="button"
@@ -565,14 +640,48 @@ export default function AjusteLotesModal({
                             : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-200'
                         }`}
                       >
-                        {val > 0 ? `+${val}%` : `${val}%`}
+                        {tipoAjuste === 'RENTABILIDAD' ? (val === 0 ? '0% (Costo)' : `${val}%`) : val > 0 ? `+${val}%` : `${val}%`}
                       </button>
                     ))}
                   </div>
                 </div>
-                <p className="text-[11px] text-slate-400 mt-2">
-                  Use valores positivos para incrementos (ej. <code>+10%</code>) y negativos para reducciones o descuentos (ej. <code>-5%</code>).
-                </p>
+
+                {tipoAjuste === 'RENTABILIDAD' ? (
+                  <p className="text-[11px] text-slate-400 mt-2">
+                    Se fijará este margen de rentabilidad para todos los productos seleccionados y se recalculará su precio base (<code>Nuevo Precio = Costo × (1 + {porcentaje || 0}%)</code>).
+                  </p>
+                ) : tipoAjuste === 'COSTO' ? (
+                  <>
+                    <p className="text-[11px] text-slate-400 mt-2">
+                      Use valores positivos para incrementos en costo (ej. <code>+10%</code>) y negativos para reducciones (ej. <code>-5%</code>).
+                    </p>
+                    <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center gap-3">
+                      <div className="space-y-0.5">
+                        <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                          Margen de Ganancia para recalcular el Precio Base (%)
+                        </label>
+                        <p className="text-[11px] text-slate-400">
+                          Opcional: Dejar vacío para respetar el margen individual de cada producto, o ingrese un % para aplicar a todos.
+                        </p>
+                      </div>
+                      <div className="relative w-36 shrink-0">
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={margenRentabilidad}
+                          onChange={(e) => setMargenRentabilidad(e.target.value)}
+                          placeholder="Conservar actual"
+                          className="w-full h-9 px-3 pr-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary/40"
+                        />
+                        <span className="absolute right-2.5 top-2 text-slate-400 font-bold text-xs">%</span>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-[11px] text-slate-400 mt-2">
+                    Use valores positivos para incrementos (ej. <code>+10%</code>) y negativos para reducciones o descuentos (ej. <code>-5%</code>).
+                  </p>
+                )}
               </div>
             </div>
           ) : (
@@ -585,11 +694,19 @@ export default function AjusteLotesModal({
                   </div>
                   <div>
                     <h4 className="text-sm font-black text-indigo-900 dark:text-indigo-200">
-                      Previsualización del Ajuste {previewData?.tipoAjuste === 'COSTO' ? 'de Costos (+ Margen 41.5%)' : 'de Precios Base'}: {Number(porcentaje) > 0 ? `+${porcentaje}%` : `${porcentaje}%`}
+                      Previsualización del Ajuste {
+                        previewData?.tipoAjuste === 'COSTO'
+                          ? 'de Costos'
+                          : previewData?.tipoAjuste === 'RENTABILIDAD'
+                          ? 'de Margen de Ganancia'
+                          : 'de Precios Base'
+                      }: {tipoAjuste === 'RENTABILIDAD' ? `${porcentaje}% margen` : Number(porcentaje) > 0 ? `+${porcentaje}%` : `${porcentaje}%`}
                     </h4>
                     <p className="text-xs text-indigo-700 dark:text-indigo-400">
-                      {previewData?.tipoAjuste === 'COSTO'
-                        ? `Se recalcularán ${previewData?.cantidadAjustes} costos y precios base con 41.5% de margen sobre ${previewData?.cantidadProductos} productos seleccionados.`
+                      {previewData?.tipoAjuste === 'RENTABILIDAD'
+                        ? `Se actualizará el margen de ganancia a ${porcentaje}% y se recalcularán ${previewData?.cantidadAjustes} precios base sobre ${previewData?.cantidadProductos} productos seleccionados.`
+                        : previewData?.tipoAjuste === 'COSTO'
+                        ? `Se recalcularán ${previewData?.cantidadAjustes} costos y precios base sobre ${previewData?.cantidadProductos} productos seleccionados.`
                         : `Se modificarán ${previewData?.cantidadAjustes} precios en ${previewData?.cantidadProductos} productos seleccionados.`}
                     </p>
                   </div>
@@ -607,7 +724,17 @@ export default function AjusteLotesModal({
               <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden max-h-96 overflow-y-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead className="sticky top-0 bg-slate-100 dark:bg-slate-800/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 text-slate-500 font-bold uppercase text-[10px]">
-                    {previewData?.tipoAjuste === 'COSTO' ? (
+                    {previewData?.tipoAjuste === 'RENTABILIDAD' ? (
+                      <tr>
+                        <th className="py-2.5 px-3">SKU</th>
+                        <th className="py-2.5 px-3">Descripción</th>
+                        <th className="py-2.5 px-3 text-right">Costo Actual</th>
+                        <th className="py-2.5 px-3 text-center">Margen Anterior</th>
+                        <th className="py-2.5 px-3 text-center">Nuevo Margen</th>
+                        <th className="py-2.5 px-3 text-right">Precio Base Actual</th>
+                        <th className="py-2.5 px-3 text-right">Nuevo Precio Base (ARS)</th>
+                      </tr>
+                    ) : previewData?.tipoAjuste === 'COSTO' ? (
                       <tr>
                         <th className="py-2.5 px-3">SKU</th>
                         <th className="py-2.5 px-3">Descripción</th>
@@ -634,7 +761,31 @@ export default function AjusteLotesModal({
                           {item.sku}
                         </td>
                         <td className="py-2 px-3 truncate max-w-xs">{item.descripcion}</td>
-                        {previewData?.tipoAjuste === 'COSTO' ? (
+                        {previewData?.tipoAjuste === 'RENTABILIDAD' ? (
+                          <>
+                            <td className="py-2 px-3 text-right font-mono text-slate-500">
+                              {item.costoActual > 0 ? (
+                                formatARS(item.costoActual)
+                              ) : (
+                                <span className="text-[10px] text-amber-500 dark:text-amber-400 font-normal">
+                                  $0 (Sin costo)
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-2 px-3 text-center font-bold text-slate-500">
+                              {item.rentabilidadActual ?? 0}%
+                            </td>
+                            <td className="py-2 px-3 text-center font-bold text-emerald-600 dark:text-emerald-400">
+                              {item.rentabilidad}%
+                            </td>
+                            <td className="py-2 px-3 text-right font-mono text-slate-500">
+                              {formatARS(item.precioActual)}
+                            </td>
+                            <td className="py-2 px-3 text-right font-mono font-extrabold text-emerald-600 dark:text-emerald-400">
+                              {formatARS(item.nuevoPrecio)}
+                            </td>
+                          </>
+                        ) : previewData?.tipoAjuste === 'COSTO' ? (
                           <>
                             <td className="py-2 px-3 text-right font-mono text-slate-500">
                               {formatARS(item.costoActual)}

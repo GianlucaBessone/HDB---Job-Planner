@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
               {
                 precioBase: prod.precioBase,
                 costo,
+                rentabilidad: prod.rentabilidad,
                 familiaId: prod.familiaId,
                 marcaId: prod.marcaId,
                 ivaPorcentaje: prod.iva?.porcentaje ?? 21,

@@ -38,6 +38,7 @@ import {
   Settings2,
   Truck,
   PackageCheck,
+  Star,
 } from 'lucide-react';
 import {
   buildCatalogIndex,
@@ -202,7 +203,7 @@ export default function PdvPage() {
   };
 
   // Cargar listas de precios activas
-  const fetchListasPrecios = async () => {
+  const fetchListasPrecios = async (preferDefault = false) => {
     try {
       const res = await fetch('/api/ventas/listas-precios');
       if (res.ok) {
@@ -210,13 +211,18 @@ export default function PdvPage() {
         const activas = Array.isArray(data) ? data.filter((l: any) => l.activo !== false) : [];
         setListasPrecios(activas);
 
+        const pred = activas.find((l: any) => l.esPredeterminada) || activas[0];
+
         setListaSeleccionadaId((prev) => {
-          if (prev && activas.some((l: any) => l.id === prev)) {
+          if (!preferDefault && prev && activas.some((l: any) => l.id === prev)) {
             return prev;
           }
-          const pred = activas.find((l: any) => l.esPredeterminada) || activas[0];
-          return pred?.id || '';
+          return pred?.id || prev || '';
         });
+
+        if (preferDefault && pred && (!cliente.id || cliente.nombre === 'Consumidor Final')) {
+          aplicarCambioListaInmediato(pred.id);
+        }
       }
     } catch (e) {
       console.error('Error cargando listas de precios:', e);
@@ -243,6 +249,24 @@ export default function PdvPage() {
     } catch (e) {
       console.error('Error cargando meta para listas:', e);
       setShowConfigListasModal(true);
+    }
+  };
+
+  const handleEstablecerListaActualComoPredeterminada = async () => {
+    if (!listaSeleccionadaId) return;
+    try {
+      const res = await fetch(`/api/ventas/listas-precios/${listaSeleccionadaId}/predeterminada`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al cambiar lista predeterminada');
+      showToast(
+        data.mensaje || `"${listaActual?.nombre}" establecida como lista por defecto para Consumidor Final y PDV`,
+        'success'
+      );
+      await fetchListasPrecios();
+    } catch (e: any) {
+      showToast(e.message || 'Error al establecer lista predeterminada', 'error');
     }
   };
 
@@ -634,7 +658,7 @@ export default function PdvPage() {
     });
 
     let targetListaId = nuevoCli.listaPrecioId;
-    if (!targetListaId) {
+    if (!targetListaId || !nuevoCli.id || nuevoCli.nombre === 'Consumidor Final') {
       const pred = listasPrecios.find((l) => l.esPredeterminada) || listasPrecios[0];
       targetListaId = pred?.id || null;
     }
@@ -769,6 +793,10 @@ export default function PdvPage() {
       nombre: 'Consumidor Final',
       identificacion: null,
     });
+    const pred = listasPrecios.find((l) => l.esPredeterminada) || listasPrecios[0];
+    if (pred && listaSeleccionadaId !== pred.id) {
+      aplicarCambioListaInmediato(pred.id, []);
+    }
     setShowConfirmLimpiar(false);
     showToast('Venta reiniciada', 'info');
     searchInputRef.current?.focus();
@@ -841,6 +869,10 @@ export default function PdvPage() {
       nombre: 'Consumidor Final',
       identificacion: null,
     });
+    const pred = listasPrecios.find((l) => l.esPredeterminada) || listasPrecios[0];
+    if (pred && listaSeleccionadaId !== pred.id) {
+      aplicarCambioListaInmediato(pred.id, []);
+    }
 
     return data.venta;
   };
@@ -942,7 +974,7 @@ export default function PdvPage() {
             >
               {listasPrecios.map((l) => (
                 <option key={l.id} value={l.id} className="dark:bg-slate-900 text-xs">
-                  {l.nombre} {l.ivaDiscriminado ? '• IVA Disc.' : ''}
+                  {l.nombre} {l.esPredeterminada ? '★ (Defecto)' : ''} {l.ivaDiscriminado ? '• IVA Disc.' : ''}
                 </option>
               ))}
             </select>
@@ -950,6 +982,23 @@ export default function PdvPage() {
               <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300/40">
                 IVA Disc.
               </span>
+            )}
+            {listaActual?.esPredeterminada ? (
+              <span
+                className="p-1 text-amber-500 cursor-default"
+                title="Lista por defecto actual para Consumidor Final y PDV"
+              >
+                <Star className="w-3.5 h-3.5 fill-amber-500" />
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={handleEstablecerListaActualComoPredeterminada}
+                className="p-1 rounded text-slate-400 hover:text-amber-500 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors"
+                title="Establecer esta lista como predeterminada para Consumidor Final y PDV"
+              >
+                <Star className="w-3.5 h-3.5" />
+              </button>
             )}
             <button
               type="button"
@@ -1554,9 +1603,8 @@ export default function PdvPage() {
         onClose={() => setShowConfigListasModal(false)}
         meta={metaListas}
         onListasUpdated={async () => {
-          await fetchListasPrecios();
+          await fetchListasPrecios(true);
           await cargarCatalogo(true);
-          aplicarCambioListaInmediato(listaSeleccionadaId);
           showToast('Listas de precios actualizadas y sincronizadas', 'success');
         }}
       />

@@ -22,15 +22,12 @@ async function testAjusteLotes() {
   });
 
   // Verify calculation:
-  // costoActual = 599
-  // +10% => nuevoCosto = 658.9
-  // rentabilidad = 41.5% => nuevoPrecio = 658.9 * 1.415 = 932.34
   if (dataPreview.previsualizacion?.[0]) {
     const item = dataPreview.previsualizacion[0];
     console.log(`Costo: ${item.costoActual} -> ${item.nuevoCosto}`);
     console.log(`Rentabilidad: ${item.rentabilidad}%`);
     console.log(`Precio: ${item.precioActual} -> ${item.nuevoPrecio}`);
-    console.log(`Expected nuevoPrecio: ${Math.round(item.nuevoCosto * 1.415 * 100) / 100}`);
+    console.log(`Expected nuevoPrecio: ${Math.round(item.nuevoCosto * (1 + item.rentabilidad / 100) * 100) / 100}`);
   }
 }
 

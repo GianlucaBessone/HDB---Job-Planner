@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { logAudit } from '@/lib/audit';
 
+export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
+
 // ── Schema ────────────────────────────────────────────────────────
 
 const filaSchema = z.object({
@@ -50,8 +53,25 @@ interface ProductoValidado {
   descripcion: string;
   productoId: string;
   proveedorRelId: string | null; // ProductoProveedorVentas.id
+  currentCosto: number;
+  currentPrecioBase: number;
+  currentSkuProveedor: string;
+  currentRentabilidad: number;
   cambios: CambioItem[];
 }
+
+type ProductoWithProv = {
+  id: string;
+  sku: string;
+  descripcion: string;
+  precioBase: number;
+  rentabilidad: number;
+  proveedores: Array<{
+    id: string;
+    skuProveedor: string | null;
+    costo: number;
+  }>;
+};
 
 // ── Helper: format currency string for display ────────────────────
 
@@ -121,32 +141,35 @@ export async function POST(req: NextRequest) {
 
     // Collect SKUs and SKU Proveedores for batch fetch
     const skusFromInput = Array.from(new Set(filasValidas.map(f => f.sku).filter(Boolean)));
-    const skuProvsFromInput = Array.from(new Set(filasValidas.map(f => f.skuProveedor).filter(Boolean)));
+    const CHUNK_SIZE = 1000;
 
-    // Fetch products by SKU
-    const dbProductosBySku = skusFromInput.length > 0
-      ? await prisma.producto.findMany({
-          where: { sku: { in: skusFromInput, mode: 'insensitive' }, activo: true },
-          select: {
-            id: true,
-            sku: true,
-            descripcion: true,
-            precioBase: true,
-            proveedores: {
-              orderBy: [{ esPrincipal: 'desc' }, { orden: 'asc' }],
-              select: {
-                id: true,
-                skuProveedor: true,
-                costo: true,
-              },
-              take: 1,
+    const dbProductosBySku: ProductoWithProv[] = [];
+    for (let i = 0; i < skusFromInput.length; i += CHUNK_SIZE) {
+      const chunk = skusFromInput.slice(i, i + CHUNK_SIZE);
+      const res = await prisma.producto.findMany({
+        where: { sku: { in: chunk, mode: 'insensitive' }, activo: true },
+        select: {
+          id: true,
+          sku: true,
+          descripcion: true,
+          precioBase: true,
+          rentabilidad: true,
+          proveedores: {
+            orderBy: [{ esPrincipal: 'desc' }, { orden: 'asc' }],
+            select: {
+              id: true,
+              skuProveedor: true,
+              costo: true,
             },
+            take: 1,
           },
-        })
-      : [];
+        },
+      });
+      dbProductosBySku.push(...res);
+    }
 
     // Build SKU->Product map
-    const skuMap = new Map<string, typeof dbProductosBySku[0]>();
+    const skuMap = new Map<string, ProductoWithProv>();
     for (const p of dbProductosBySku) {
       skuMap.set(p.sku.toLowerCase(), p);
     }
@@ -157,46 +180,55 @@ export async function POST(req: NextRequest) {
       .map(f => f.skuProveedor);
 
     const uniqueSkuProvs = Array.from(new Set(skuProvsToLookup));
-
-    type ProductoWithProv = typeof dbProductosBySku[0];
     const skuProvMap = new Map<string, ProductoWithProv[]>();
 
     if (uniqueSkuProvs.length > 0) {
-      const dbBySkuProv = await prisma.productoProveedorVentas.findMany({
-        where: {
-          skuProveedor: { in: uniqueSkuProvs, mode: 'insensitive' },
-          producto: { activo: true },
-        },
-        select: {
-          id: true,
-          skuProveedor: true,
-          costo: true,
-          producto: {
-            select: {
-              id: true,
-              sku: true,
-              descripcion: true,
-              precioBase: true,
+      for (let i = 0; i < uniqueSkuProvs.length; i += CHUNK_SIZE) {
+        const chunk = uniqueSkuProvs.slice(i, i + CHUNK_SIZE);
+        const dbBySkuProv = await prisma.productoProveedorVentas.findMany({
+          where: {
+            skuProveedor: { in: chunk, mode: 'insensitive' },
+            producto: { activo: true },
+          },
+          select: {
+            id: true,
+            skuProveedor: true,
+            costo: true,
+            producto: {
+              select: {
+                id: true,
+                sku: true,
+                descripcion: true,
+                precioBase: true,
+                rentabilidad: true,
+              },
             },
           },
-        },
-      });
-
-      for (const ppv of dbBySkuProv) {
-        const key = (ppv.skuProveedor || '').toLowerCase();
-        const existing = skuProvMap.get(key) || [];
-        existing.push({
-          id: ppv.producto.id,
-          sku: ppv.producto.sku,
-          descripcion: ppv.producto.descripcion,
-          precioBase: ppv.producto.precioBase,
-          proveedores: [{
-            id: ppv.id,
-            skuProveedor: ppv.skuProveedor,
-            costo: ppv.costo,
-          }],
         });
-        skuProvMap.set(key, existing);
+
+        for (const ppv of dbBySkuProv) {
+          const key = (ppv.skuProveedor || '').toLowerCase();
+          const existing = skuProvMap.get(key) || [];
+          const itemProd: ProductoWithProv = {
+            id: ppv.producto.id,
+            sku: ppv.producto.sku,
+            descripcion: ppv.producto.descripcion,
+            precioBase: ppv.producto.precioBase,
+            rentabilidad: ppv.producto.rentabilidad,
+            proveedores: [{
+              id: ppv.id,
+              skuProveedor: ppv.skuProveedor,
+              costo: ppv.costo,
+            }],
+          };
+          existing.push(itemProd);
+          skuProvMap.set(key, existing);
+
+          // Also populate skuMap so product is accessible by its SKU
+          if (ppv.producto.sku && !skuMap.has(ppv.producto.sku.toLowerCase())) {
+            skuMap.set(ppv.producto.sku.toLowerCase(), itemProd);
+          }
+        }
       }
     }
 
@@ -250,10 +282,11 @@ export async function POST(req: NextRequest) {
       const currentCosto = provRel?.costo ?? 0;
       const currentPrecio = prod.precioBase ?? 0;
       const currentSkuProv = provRel?.skuProveedor || '';
+      const currentRentabilidad = prod.rentabilidad ?? 0;
 
       const cambios: CambioItem[] = [];
 
-      // SKU Proveedor update (Caso A: update if provided)
+      // SKU Proveedor update (Caso A: update if provided and different)
       if (f.skuProveedor && f.skuProveedor !== currentSkuProv) {
         cambios.push({
           campo: 'SKU Proveedor',
@@ -331,6 +364,10 @@ export async function POST(req: NextRequest) {
           descripcion: prod.descripcion,
           productoId: prod.id,
           proveedorRelId: provRel?.id || null,
+          currentCosto,
+          currentPrecioBase: currentPrecio,
+          currentSkuProveedor: currentSkuProv,
+          currentRentabilidad,
           cambios,
         });
       }
@@ -381,85 +418,316 @@ export async function POST(req: NextRequest) {
 
     let totalProductosActualizados = 0;
 
-    await prisma.$transaction(async (tx) => {
-      // Find fallback provider if needed
-      let defaultProvId: string | null = null;
-      const defaultProv = await tx.proveedorVentas.findFirst({ where: { activo: true }, orderBy: { createdAt: 'asc' } });
-      defaultProvId = defaultProv?.id || null;
+    // Find fallback provider once if needed
+    let defaultProvId: string | null = null;
+    const defaultProv = await prisma.proveedorVentas.findFirst({
+      where: { activo: true },
+      orderBy: { createdAt: 'asc' },
+    });
+    defaultProvId = defaultProv?.id || null;
 
-      for (const item of productosValidados) {
-        const productoUpdate: Record<string, any> = {};
-        let costoUpdate: { id?: string | null; costo?: number; skuProveedor?: string } | null = null;
+    // Build deduplicated maps for PostgreSQL vectorized execution
+    // Later rows in the Excel file cleanly override earlier duplicates
+    const prodUpdatesMap = new Map<string, { precio: number; rentabilidad: number | null }>();
+    const provUpdatesMap = new Map<string, { costo: number; skuProveedor: string }>();
+    const newProvRelationsMap = new Map<string, {
+      productoId: string;
+      proveedorId: string;
+      costo: number;
+      skuProveedor: string | null;
+      esPrincipal: boolean;
+      orden: number;
+    }>();
 
-        for (const cambio of item.cambios) {
-          switch (cambio._field) {
-            case 'precioBase':
-              productoUpdate.precioBase = cambio._numericNew;
-              break;
-            case 'costo':
-              if (!costoUpdate) costoUpdate = { id: item.proveedorRelId };
-              costoUpdate.costo = cambio._numericNew;
-              break;
-            case 'skuProveedor':
-              if (!costoUpdate) costoUpdate = { id: item.proveedorRelId };
-              costoUpdate.skuProveedor = cambio._stringNew!;
-              break;
+    const allHistorial: Array<{
+      productoId: string;
+      tipo: string;
+      campo: string;
+      valorAnterior: string;
+      valorNuevo: string;
+      origen: string;
+      detalles: any;
+      usuarioId?: string;
+    }> = [];
+
+    for (const item of productosValidados) {
+      let newPriceVal: number | null = null;
+      let newCostoVal: number | null = null;
+      let newSkuProvVal: string | null = null;
+
+      for (const cambio of item.cambios) {
+        switch (cambio._field) {
+          case 'precioBase':
+            newPriceVal = cambio._numericNew;
+            break;
+          case 'costo':
+            newCostoVal = cambio._numericNew;
+            break;
+          case 'skuProveedor':
+            newSkuProvVal = cambio._stringNew!;
+            break;
+        }
+
+        allHistorial.push({
+          productoId: item.productoId,
+          tipo: 'IMPORTACION_EXCEL',
+          campo: cambio._field,
+          valorAnterior: String(cambio._numericOld ?? cambio.valorActual),
+          valorNuevo: String(cambio._numericNew ?? cambio._stringNew ?? cambio.valorNuevo),
+          origen: 'IMPORTACION_EXCEL',
+          detalles: {
+            archivo: nombreArchivo || 'importacion.xlsx',
+            filaNumero: item.filaNumero,
+            campo: cambio.campo,
+          },
+          usuarioId: userId,
+        });
+      }
+
+      // Compute final synchronized values
+      const finalPrice = newPriceVal !== null ? newPriceVal : item.currentPrecioBase;
+      const finalCosto = newCostoVal !== null ? newCostoVal : item.currentCosto;
+      const finalSkuProv = newSkuProvVal !== null ? newSkuProvVal : item.currentSkuProveedor;
+
+      // Recalculate profit margin if price or cost changed
+      let finalRentabilidad: number | null = null;
+      if (finalCosto > 0 && finalPrice > 0) {
+        finalRentabilidad = Math.round(((finalPrice - finalCosto) / finalCosto) * 10000) / 100;
+      }
+
+      // 1. Queue Producto update
+      if (newPriceVal !== null || finalRentabilidad !== null) {
+        prodUpdatesMap.set(item.productoId, {
+          precio: finalPrice,
+          rentabilidad: finalRentabilidad,
+        });
+      }
+
+      // 2. Queue ProductoProveedorVentas update
+      if (newCostoVal !== null || newSkuProvVal !== null) {
+        if (item.proveedorRelId) {
+          provUpdatesMap.set(item.proveedorRelId, {
+            costo: finalCosto,
+            skuProveedor: finalSkuProv,
+          });
+        } else if (defaultProvId) {
+          const relKey = `${item.productoId}_${defaultProvId}`;
+          newProvRelationsMap.set(relKey, {
+            productoId: item.productoId,
+            proveedorId: defaultProvId,
+            costo: finalCosto,
+            skuProveedor: finalSkuProv || null,
+            esPrincipal: true,
+            orden: 1,
+          });
+        }
+      }
+    }
+
+    try {
+      await prisma.$transaction(
+        async (tx) => {
+          // 1. Bulk update Producto.precioBase and rentabilidad via PostgreSQL unnest
+          const prodIds = Array.from(prodUpdatesMap.keys());
+          if (prodIds.length > 0) {
+            const CHUNK_UPDATE = 2000;
+            for (let i = 0; i < prodIds.length; i += CHUNK_UPDATE) {
+              const idsChunk = prodIds.slice(i, i + CHUNK_UPDATE);
+              const preciosChunk = idsChunk.map(id => prodUpdatesMap.get(id)!.precio);
+              const rentabilidadesChunk = idsChunk.map(id => prodUpdatesMap.get(id)!.rentabilidad);
+
+              await tx.$executeRawUnsafe(
+                `UPDATE "Producto"
+                 SET "precioBase" = data_table.precio,
+                     "rentabilidad" = COALESCE(data_table.rentabilidad, "Producto"."rentabilidad"),
+                     "updatedAt" = NOW()
+                 FROM (
+                   SELECT unnest($1::text[]) AS id,
+                          unnest($2::double precision[]) AS precio,
+                          unnest($3::double precision[]) AS rentabilidad
+                 ) AS data_table
+                 WHERE "Producto".id = data_table.id;`,
+                idsChunk,
+                preciosChunk,
+                rentabilidadesChunk
+              );
+            }
           }
 
-          // Log history for each change
-          await tx.productoHistorial.create({
-            data: {
-              productoId: item.productoId,
-              tipo: 'IMPORTACION_EXCEL',
-              campo: cambio._field,
-              valorAnterior: String(cambio._numericOld || cambio.valorActual),
-              valorNuevo: String(cambio._numericNew || cambio._stringNew || cambio.valorNuevo),
-              origen: 'IMPORTACION_EXCEL',
-              detalles: {
-                archivo: nombreArchivo || 'importacion.xlsx',
-                filaNumero: item.filaNumero,
-                campo: cambio.campo,
-              },
-              usuarioId: userId,
-            },
-          });
-        }
+          // 2. Bulk update ProductoProveedorVentas via PostgreSQL unnest
+          const provIds = Array.from(provUpdatesMap.keys());
+          if (provIds.length > 0) {
+            const CHUNK_UPDATE = 2000;
+            for (let i = 0; i < provIds.length; i += CHUNK_UPDATE) {
+              const idsChunk = provIds.slice(i, i + CHUNK_UPDATE);
+              const costosChunk = idsChunk.map(id => provUpdatesMap.get(id)!.costo);
+              const skusChunk = idsChunk.map(id => provUpdatesMap.get(id)!.skuProveedor);
 
-        // Apply Producto update (precioBase)
-        if (Object.keys(productoUpdate).length > 0) {
-          await tx.producto.update({
-            where: { id: item.productoId },
-            data: productoUpdate,
-          });
-        }
+              await tx.$executeRawUnsafe(
+                `UPDATE "ProductoProveedorVentas"
+                 SET "costo" = data_table.costo,
+                     "skuProveedor" = NULLIF(data_table.sku_prov, ''),
+                     "updatedAt" = NOW()
+                 FROM (
+                   SELECT unnest($1::text[]) AS id,
+                          unnest($2::double precision[]) AS costo,
+                          unnest($3::text[]) AS sku_prov
+                 ) AS data_table
+                 WHERE "ProductoProveedorVentas".id = data_table.id;`,
+                idsChunk,
+                costosChunk,
+                skusChunk
+              );
+            }
+          }
 
-        // Apply ProductoProveedorVentas update (costo, skuProveedor)
-        if (costoUpdate) {
-          if (costoUpdate.id) {
-            const { id, ...updateData } = costoUpdate;
-            if (Object.keys(updateData).length > 0) {
-              await tx.productoProveedorVentas.update({
-                where: { id },
-                data: updateData,
+          // 3. Bulk insert new provider relationships (with duplicate skip protection)
+          const newProvList = Array.from(newProvRelationsMap.values());
+          if (newProvList.length > 0) {
+            const CHUNK_CREATE = 1000;
+            for (let i = 0; i < newProvList.length; i += CHUNK_CREATE) {
+              const chunk = newProvList.slice(i, i + CHUNK_CREATE);
+              await tx.productoProveedorVentas.createMany({
+                data: chunk,
+                skipDuplicates: true,
               });
             }
-          } else if (defaultProvId) {
-            await tx.productoProveedorVentas.create({
-              data: {
-                productoId: item.productoId,
-                proveedorId: defaultProvId,
-                costo: costoUpdate.costo ?? 0,
-                skuProveedor: costoUpdate.skuProveedor || null,
-                esPrincipal: true,
-                orden: 1,
-              },
+          }
+
+          // 4. Bulk insert ProductoHistorial in chunks of 1000
+          if (allHistorial.length > 0) {
+            const CHUNK_HIST = 1000;
+            for (let i = 0; i < allHistorial.length; i += CHUNK_HIST) {
+              const chunk = allHistorial.slice(i, i + CHUNK_HIST);
+              await tx.productoHistorial.createMany({
+                data: chunk,
+              });
+            }
+          }
+        },
+        {
+          maxWait: 20000,
+          timeout: 90000,
+        }
+      );
+
+      totalProductosActualizados = productosValidados.length;
+    } catch (bulkError: any) {
+      console.error('Error en actualización masiva ultrarrápida, ejecutando fallback por lotes:', bulkError);
+
+      // Resilient Fallback: chunk by 100 products per transaction to prevent WAN roundtrip timeout
+      const BATCH_SIZE = 100;
+      for (let i = 0; i < productosValidados.length; i += BATCH_SIZE) {
+        const batch = productosValidados.slice(i, i + BATCH_SIZE);
+        try {
+          await prisma.$transaction(
+            async (tx) => {
+              for (const item of batch) {
+                const productoUpdate: Record<string, any> = {};
+                let costoUpdate: { id?: string | null; costo?: number; skuProveedor?: string } | null = null;
+                const itemHistorial: any[] = [];
+
+                for (const cambio of item.cambios) {
+                  switch (cambio._field) {
+                    case 'precioBase':
+                      productoUpdate.precioBase = cambio._numericNew;
+                      break;
+                    case 'costo':
+                      if (!costoUpdate) costoUpdate = { id: item.proveedorRelId };
+                      costoUpdate.costo = cambio._numericNew;
+                      break;
+                    case 'skuProveedor':
+                      if (!costoUpdate) costoUpdate = { id: item.proveedorRelId };
+                      costoUpdate.skuProveedor = cambio._stringNew!;
+                      break;
+                  }
+
+                  itemHistorial.push({
+                    productoId: item.productoId,
+                    tipo: 'IMPORTACION_EXCEL',
+                    campo: cambio._field,
+                    valorAnterior: String(cambio._numericOld ?? cambio.valorActual),
+                    valorNuevo: String(cambio._numericNew ?? cambio._stringNew ?? cambio.valorNuevo),
+                    origen: 'IMPORTACION_EXCEL',
+                    detalles: {
+                      archivo: nombreArchivo || 'importacion.xlsx',
+                      filaNumero: item.filaNumero,
+                      campo: cambio.campo,
+                    },
+                    usuarioId: userId,
+                  });
+                }
+
+                // If cost and price are both known, keep rentabilidad synchronized
+                const finalP = productoUpdate.precioBase ?? item.currentPrecioBase;
+                const finalC = costoUpdate?.costo ?? item.currentCosto;
+                if (finalC > 0 && finalP > 0) {
+                  productoUpdate.rentabilidad = Math.round(((finalP - finalC) / finalC) * 10000) / 100;
+                }
+
+                if (Object.keys(productoUpdate).length > 0) {
+                  await tx.producto.update({
+                    where: { id: item.productoId },
+                    data: productoUpdate,
+                  });
+                }
+
+                if (costoUpdate) {
+                  if (costoUpdate.id) {
+                    const { id, ...updateData } = costoUpdate;
+                    if (Object.keys(updateData).length > 0) {
+                      await tx.productoProveedorVentas.update({
+                        where: { id },
+                        data: updateData,
+                      });
+                    }
+                  } else if (defaultProvId) {
+                    await tx.productoProveedorVentas.upsert({
+                      where: {
+                        productoId_proveedorId: {
+                          productoId: item.productoId,
+                          proveedorId: defaultProvId,
+                        },
+                      },
+                      update: {
+                        costo: costoUpdate.costo ?? 0,
+                        skuProveedor: costoUpdate.skuProveedor || null,
+                      },
+                      create: {
+                        productoId: item.productoId,
+                        proveedorId: defaultProvId,
+                        costo: costoUpdate.costo ?? 0,
+                        skuProveedor: costoUpdate.skuProveedor || null,
+                        esPrincipal: true,
+                        orden: 1,
+                      },
+                    });
+                  }
+                }
+
+                if (itemHistorial.length > 0) {
+                  await tx.productoHistorial.createMany({
+                    data: itemHistorial,
+                  });
+                }
+              }
+            },
+            { maxWait: 15000, timeout: 30000 }
+          );
+
+          totalProductosActualizados += batch.length;
+        } catch (batchError: any) {
+          for (const item of batch) {
+            errores.push({
+              filaNumero: item.filaNumero,
+              sku: item.sku,
+              skuProveedor: item.skuProveedor,
+              motivo: `Error al aplicar lote: ${batchError.message || 'Error en base de datos'}`,
             });
           }
         }
-
-        totalProductosActualizados++;
       }
-    });
+    }
 
     await logAudit({
       userId,
@@ -480,7 +748,7 @@ export async function POST(req: NextRequest) {
         filasProcesadas: filas.length,
         filasProcessadas: filas.length,
         productosActualizados: totalProductosActualizados,
-        filasOmitidas: filas.length - productosValidados.length,
+        filasOmitidas: Math.max(0, filas.length - totalProductosActualizados),
         errores: errores.length,
       },
       errores,

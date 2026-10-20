@@ -14,6 +14,7 @@ import {
   Sparkles,
   ArrowRight,
   Settings2,
+  Star,
 } from 'lucide-react';
 import { showToast } from '@/components/Toast';
 import ConfirmDialog from '@/components/ConfirmDialog';
@@ -33,6 +34,7 @@ export interface ListaPrecioItem {
   familia?: { id: string; nombre: string } | null;
   marcaId?: string | null;
   marca?: { id: string; nombre: string } | null;
+  esPredeterminada?: boolean;
   ivaDiscriminado?: boolean;
   activo?: boolean;
   _count?: { precios: number };
@@ -78,6 +80,7 @@ export default function ConfigListasPreciosModal({
     familiaId: '',
     marcaId: '',
     orden: '' as string | number,
+    esPredeterminada: false,
     ivaDiscriminado: false,
     sincronizarProductos: true,
   });
@@ -117,6 +120,7 @@ export default function ConfigListasPreciosModal({
       familiaId: '',
       marcaId: '',
       orden: (listas.length + 1).toString(),
+      esPredeterminada: false,
       ivaDiscriminado: false,
       sincronizarProductos: true,
     });
@@ -136,6 +140,7 @@ export default function ConfigListasPreciosModal({
       familiaId: lista.familiaId || '',
       marcaId: lista.marcaId || '',
       orden: lista.orden.toString(),
+      esPredeterminada: Boolean(lista.esPredeterminada),
       ivaDiscriminado: !!lista.ivaDiscriminado,
       sincronizarProductos: false,
     });
@@ -177,6 +182,7 @@ export default function ConfigListasPreciosModal({
         familiaId: formData.aplicaA === 'FAMILIA' ? formData.familiaId || null : null,
         marcaId: formData.aplicaA === 'MARCA' ? formData.marcaId || null : null,
         orden: parseInt(String(formData.orden), 10) || listas.length + 1,
+        esPredeterminada: formData.esPredeterminada,
         ivaDiscriminado: formData.ivaDiscriminado,
         sincronizarProductos: formData.sincronizarProductos,
       };
@@ -211,6 +217,21 @@ export default function ConfigListasPreciosModal({
       showToast(err.message || 'Error en la operación', 'error');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSetPredeterminada = async (listaId: string) => {
+    try {
+      const res = await fetch(`/api/ventas/listas-precios/${listaId}/predeterminada`, {
+        method: 'POST',
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Error al cambiar lista predeterminada');
+      showToast(json.mensaje || 'Lista establecida como predeterminada para PDV y Consumidor Final', 'success');
+      fetchListas();
+      onListasUpdated();
+    } catch (err: any) {
+      showToast(err.message || 'Error al establecer lista predeterminada', 'error');
     }
   };
 
@@ -352,6 +373,12 @@ export default function ConfigListasPreciosModal({
                             <span className="text-[11px] font-mono text-slate-400">
                               ({l.codigo})
                             </span>
+                            {l.esPredeterminada && (
+                              <span className="px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 text-[10px] font-extrabold flex items-center gap-1 border border-amber-300 dark:border-amber-700/60">
+                                <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                                Predeterminada PDV
+                              </span>
+                            )}
                           </div>
 
                           {/* Rule Badge */}
@@ -415,6 +442,17 @@ export default function ConfigListasPreciosModal({
                                   recalculatingId === l.id ? 'animate-spin text-primary' : ''
                                 }`}
                               />
+                            </button>
+                          )}
+                          {!l.esPredeterminada && (
+                            <button
+                              type="button"
+                              onClick={() => handleSetPredeterminada(l.id)}
+                              title="Establecer como lista predeterminada para PDV y Consumidor Final"
+                              className="px-2 py-1 rounded-lg text-[10px] font-bold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 border border-amber-300 dark:border-amber-700/60 flex items-center gap-1 transition-colors"
+                            >
+                              <Star className="w-3 h-3 text-amber-500" />
+                              <span className="hidden sm:inline">Hacer Defecto</span>
                             </button>
                           )}
                           <button
@@ -632,6 +670,29 @@ export default function ConfigListasPreciosModal({
                   </select>
                 </div>
               )}
+
+              {/* Checkbox Lista Predeterminada (PDV y Consumidor Final) */}
+              <div className="p-3 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50">
+                <label className="flex items-start gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.esPredeterminada}
+                    onChange={(e) =>
+                      setFormData({ ...formData, esPredeterminada: e.target.checked })
+                    }
+                    className="mt-0.5 h-4 w-4 rounded border-amber-400 text-amber-600 focus:ring-amber-500"
+                  />
+                  <div>
+                    <span className="block text-xs font-bold text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
+                      <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                      Lista Predeterminada (PDV y Consumidor Final)
+                    </span>
+                    <span className="block text-[11px] text-amber-700 dark:text-amber-400 leading-tight mt-0.5">
+                      Al abrir el Punto de Venta o atender a un Consumidor Final, esta lista se seleccionará automáticamente por defecto.
+                    </span>
+                  </div>
+                </label>
+              </div>
 
               {/* Checkbox IVA Discriminado */}
               <div className="p-3 rounded-xl bg-slate-100/60 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700">

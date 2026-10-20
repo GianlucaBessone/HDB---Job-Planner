@@ -17,6 +17,7 @@ export interface ProductoPDV {
   precioBase: number;
   precioAplicado: number;
   costo: number;
+  rentabilidad?: number;
   stockActual: number;
   ivaPorcentaje: number;
   esFallbackPrecio?: boolean;

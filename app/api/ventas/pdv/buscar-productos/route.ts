@@ -52,6 +52,7 @@ export async function GET(req: NextRequest) {
           {
             precioBase: p.precioBase,
             costo,
+            rentabilidad: p.rentabilidad,
             familiaId: p.familiaId,
             marcaId: p.marcaId,
             ivaPorcentaje,
@@ -197,6 +198,7 @@ export async function GET(req: NextRequest) {
         {
           precioBase: p.precioBase,
           costo,
+          rentabilidad: p.rentabilidad,
           familiaId: p.familiaId,
           marcaId: p.marcaId,
           ivaPorcentaje,

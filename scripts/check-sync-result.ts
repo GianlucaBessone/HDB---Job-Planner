@@ -12,7 +12,8 @@ async function main() {
     const costo = p.proveedores[0]?.costo ?? 0;
     const precioBase = p.precioBase;
     const rent = p.rentabilidad;
-    const esperado = Math.round(costo * 1.415 * 100) / 100;
+    const factor = rent > 0 ? (1 + rent / 100) : 1;
+    const esperado = Math.round(costo * factor * 100) / 100;
     console.log({
       sku: p.sku,
       costo,
@@ -25,12 +26,12 @@ async function main() {
 
   const totalProds = await prisma.producto.count();
   const conCosto = await prisma.productoProveedorVentas.count();
-  const con41_5 = await prisma.producto.count({ where: { rentabilidad: 41.5 } });
+  const conRentabilidadConfigurada = await prisma.producto.count({ where: { rentabilidad: { gt: 0 } } });
 
   console.log({
     totalProds,
     conCosto,
-    con41_5
+    conRentabilidadConfigurada
   });
 }
 

@@ -15,6 +15,7 @@ const listaPrecioUpdateSchema = z.object({
   familiaId: z.string().optional().nullable(),
   marcaId: z.string().optional().nullable(),
   orden: z.coerce.number().default(1),
+  esPredeterminada: z.boolean().optional(),
   ivaDiscriminado: z.boolean().default(false),
   sincronizarProductos: z.boolean().default(false),
 });
@@ -67,6 +68,25 @@ export async function PUT(
       }
     }
 
+    if (data.esPredeterminada === true) {
+      await prisma.listaPrecio.updateMany({
+        where: { id: { not: id } },
+        data: { esPredeterminada: false },
+      });
+    } else if (data.esPredeterminada === false && existing.esPredeterminada) {
+      // Si se desmarca la lista que era predeterminada, asegurar que otra lista activa tome el rol por defecto
+      const nextDefault = await prisma.listaPrecio.findFirst({
+        where: { id: { not: id }, activo: true },
+        orderBy: { orden: 'asc' },
+      });
+      if (nextDefault) {
+        await prisma.listaPrecio.update({
+          where: { id: nextDefault.id },
+          data: { esPredeterminada: true },
+        });
+      }
+    }
+
     const updated = await prisma.listaPrecio.update({
       where: { id },
       data: {
@@ -80,6 +100,7 @@ export async function PUT(
         familiaId: data.aplicaA === 'FAMILIA' ? data.familiaId || null : null,
         marcaId: data.aplicaA === 'MARCA' ? data.marcaId || null : null,
         orden: data.orden,
+        ...(data.esPredeterminada !== undefined ? { esPredeterminada: data.esPredeterminada } : {}),
         ivaDiscriminado: data.ivaDiscriminado ?? false,
       },
     });
@@ -123,8 +144,21 @@ export async function DELETE(
 
     await prisma.listaPrecio.update({
       where: { id },
-      data: { activo: false },
+      data: { activo: false, esPredeterminada: false },
     });
+
+    if (existing.esPredeterminada) {
+      const nextDefault = await prisma.listaPrecio.findFirst({
+        where: { id: { not: id }, activo: true },
+        orderBy: { orden: 'asc' },
+      });
+      if (nextDefault) {
+        await prisma.listaPrecio.update({
+          where: { id: nextDefault.id },
+          data: { esPredeterminada: true },
+        });
+      }
+    }
 
     await logAudit({
       userId,

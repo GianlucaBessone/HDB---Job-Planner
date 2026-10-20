@@ -192,15 +192,27 @@ export async function guardarCotizacion(input: GuardarCotizacionInput, userId?: 
   // Lista de precios
   let listaPrecioNombre = 'Lista General';
   let ivaDiscriminado = Boolean(input.ivaDiscriminado);
+  let listaDb = null;
   if (input.listaPrecioId) {
-    const listaDb = await prisma.listaPrecio.findUnique({
+    listaDb = await prisma.listaPrecio.findUnique({
       where: { id: input.listaPrecioId },
     });
-    if (listaDb) {
-      listaPrecioNombre = listaDb.nombre;
-      if (input.ivaDiscriminado === undefined) {
-        ivaDiscriminado = Boolean(listaDb.ivaDiscriminado);
-      }
+  }
+  if (!listaDb) {
+    listaDb = await prisma.listaPrecio.findFirst({
+      where: { esPredeterminada: true, activo: true },
+    });
+  }
+  if (!listaDb) {
+    listaDb = await prisma.listaPrecio.findFirst({
+      where: { activo: true },
+      orderBy: { orden: 'asc' },
+    });
+  }
+  if (listaDb) {
+    listaPrecioNombre = listaDb.nombre;
+    if (input.ivaDiscriminado === undefined) {
+      ivaDiscriminado = Boolean(listaDb.ivaDiscriminado);
     }
   }
 
@@ -319,8 +331,8 @@ export async function guardarCotizacion(input: GuardarCotizacionInput, userId?: 
             clienteDireccion,
             clienteTelefono,
             clienteEmail,
-            listaPrecioId: input.listaPrecioId || null,
-            listaPrecioNombre,
+            listaPrecioId: listaDb?.id || input.listaPrecioId || null,
+            listaPrecioNombre: listaDb?.nombre || listaPrecioNombre,
             ivaDiscriminado,
             vendedorId: validVendedorId,
             vendedorNombre,
@@ -391,8 +403,8 @@ export async function guardarCotizacion(input: GuardarCotizacionInput, userId?: 
           clienteDireccion,
           clienteTelefono,
           clienteEmail,
-          listaPrecioId: input.listaPrecioId || null,
-          listaPrecioNombre,
+          listaPrecioId: listaDb?.id || input.listaPrecioId || null,
+          listaPrecioNombre: listaDb?.nombre || listaPrecioNombre,
           ivaDiscriminado,
           vendedorId: validVendedorId,
           vendedorNombre,

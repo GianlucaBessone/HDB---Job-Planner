@@ -15,6 +15,7 @@ const listaPrecioCreateSchema = z.object({
   familiaId: z.string().optional().nullable(),
   marcaId: z.string().optional().nullable(),
   orden: z.coerce.number().default(1),
+  esPredeterminada: z.boolean().optional().default(false),
   ivaDiscriminado: z.boolean().default(false),
   sincronizarProductos: z.boolean().default(false),
 });
@@ -28,7 +29,7 @@ export async function GET() {
         familia: { select: { id: true, nombre: true } },
         marca: { select: { id: true, nombre: true } },
       },
-      orderBy: { orden: 'asc' },
+      orderBy: [{ esPredeterminada: 'desc' }, { orden: 'asc' }],
     });
 
     return NextResponse.json(listas);
@@ -53,6 +54,12 @@ export async function POST(req: NextRequest) {
     if (existing) {
       if (!existing.activo) {
         // Reactivate soft-deleted list
+        if (data.esPredeterminada) {
+          await prisma.listaPrecio.updateMany({
+            where: { id: { not: existing.id } },
+            data: { esPredeterminada: false },
+          });
+        }
         const reactivated = await prisma.listaPrecio.update({
           where: { id: existing.id },
           data: {
@@ -65,6 +72,7 @@ export async function POST(req: NextRequest) {
             aplicaA: data.aplicaA,
             familiaId: data.familiaId || null,
             marcaId: data.marcaId || null,
+            esPredeterminada: data.esPredeterminada ?? false,
             ivaDiscriminado: data.ivaDiscriminado ?? false,
           },
         });
@@ -74,6 +82,22 @@ export async function POST(req: NextRequest) {
         { error: `Ya existe una lista de precios con el código "${cleanCodigo}"` },
         { status: 400 }
       );
+    }
+
+    let esPredeterminadaFinal = Boolean(data.esPredeterminada);
+    if (!esPredeterminadaFinal) {
+      const anyDefault = await prisma.listaPrecio.findFirst({
+        where: { esPredeterminada: true, activo: true },
+      });
+      if (!anyDefault) {
+        esPredeterminadaFinal = true;
+      }
+    }
+
+    if (esPredeterminadaFinal) {
+      await prisma.listaPrecio.updateMany({
+        data: { esPredeterminada: false },
+      });
     }
 
     const nuevaLista = await prisma.listaPrecio.create({
@@ -88,6 +112,7 @@ export async function POST(req: NextRequest) {
         familiaId: data.aplicaA === 'FAMILIA' ? data.familiaId || null : null,
         marcaId: data.aplicaA === 'MARCA' ? data.marcaId || null : null,
         orden: data.orden,
+        esPredeterminada: esPredeterminadaFinal,
         ivaDiscriminado: data.ivaDiscriminado ?? false,
         activo: true,
       },

@@ -98,6 +98,7 @@ export function resolverPrecioProducto(
   producto: {
     precioBase: number;
     costo?: number;
+    rentabilidad?: number;
     familiaId?: string | null;
     marcaId?: string | null;
     ivaPorcentaje?: number;
@@ -107,8 +108,12 @@ export function resolverPrecioProducto(
 ): { precio: number; esFallback: boolean; detalleAjuste?: string } {
   const precioBase = Number(producto.precioBase) || 0;
   const costo = Number(producto.costo) || 0;
-  // Si el producto no tiene precioBase registrado pero tiene costo, calcula precio base con margen estándar 41.5%
-  const effectiveBasePrice = precioBase > 0 ? precioBase : (costo > 0 ? Math.round(costo * 1.415 * 100) / 100 : 0);
+  const rentabilidad = typeof producto.rentabilidad === 'number' && !isNaN(producto.rentabilidad)
+    ? producto.rentabilidad
+    : 0;
+  // Si el producto no tiene precioBase registrado pero tiene costo, calcula precio base con el margen/rentabilidad del producto
+  const factorMargen = Math.max(0.01, 1 + rentabilidad / 100);
+  const effectiveBasePrice = precioBase > 0 ? precioBase : (costo > 0 ? Math.round(costo * factorMargen * 100) / 100 : 0);
 
   let precioNeto = effectiveBasePrice;
   let esFallback = false;

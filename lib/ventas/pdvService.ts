@@ -212,16 +212,27 @@ export async function confirmarVentaPDV(input: ConfirmarVentaInput, userId?: str
     }
   }
 
-  // 2. Obtener lista de precios si se especificó
+  // 2. Obtener lista de precios si se especificó (o tomar la predeterminada activa)
   let listaPrecioNombre = 'Lista General';
   let listaDb = null;
   if (input.listaPrecioId) {
     listaDb = await prisma.listaPrecio.findUnique({
       where: { id: input.listaPrecioId, activo: true },
     });
-    if (listaDb) {
-      listaPrecioNombre = listaDb.nombre;
-    }
+  }
+  if (!listaDb) {
+    listaDb = await prisma.listaPrecio.findFirst({
+      where: { esPredeterminada: true, activo: true },
+    });
+  }
+  if (!listaDb) {
+    listaDb = await prisma.listaPrecio.findFirst({
+      where: { activo: true },
+      orderBy: { orden: 'asc' },
+    });
+  }
+  if (listaDb) {
+    listaPrecioNombre = listaDb.nombre;
   }
 
   // 3. Cliente: nominal o Consumidor Final
@@ -403,8 +414,8 @@ export async function confirmarVentaPDV(input: ConfirmarVentaInput, userId?: str
           clienteDireccion,
           clienteTelefono,
           clienteEmail,
-          listaPrecioId: input.listaPrecioId || null,
-          listaPrecioNombre,
+          listaPrecioId: listaDb?.id || input.listaPrecioId || null,
+          listaPrecioNombre: listaDb?.nombre || listaPrecioNombre,
           vendedorId: validVendedorId,
           vendedorNombre,
           almacenId: input.almacenId || null,
