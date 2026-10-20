@@ -245,12 +245,17 @@ export default function ComprobanteModal({
                       ((Number(venta.subtotal) || 0) - (Number(venta.descuentoMonto) || 0) + (Number(venta.recargoMonto) || 0) + (Number(venta.impuestosMonto) || 0)) -
                         (Number(venta.total) || 0)
                     ) < 0.05)
-              ) && (
+              ) ? (
                 <div className="flex justify-between text-slate-500 font-semibold">
                   <span>IVA:</span>
                   <span>+{formatARS(venta.impuestosMonto)}</span>
                 </div>
-              )}
+              ) : (Number(venta.impuestosMonto) || 0) > 0 ? (
+                <div className="flex justify-between text-slate-400 text-[10px]">
+                  <span>(IVA estimado incluido):</span>
+                  <span>{formatARS(venta.impuestosMonto)}</span>
+                </div>
+              ) : null}
               <div className="flex justify-between text-base font-black text-slate-900 dark:text-slate-100 pt-2 border-t border-slate-300 dark:border-slate-700">
                 <span>TOTAL OPERACIÓN:</span>
                 <span>{formatARS(venta.total)}</span>

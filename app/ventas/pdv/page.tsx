@@ -677,12 +677,19 @@ export default function PdvPage() {
         carrito.reduce((acc, it) => {
           const base = (it.subtotal || 0) * (1 - descuentoGlobal / 100);
           const ivaPorc = it.ivaPorcentaje ?? 21;
-          const iva = ivaPorc > 0 ? Math.round(((base * ivaPorc) / 100) * 100) / 100 : 0;
-          return acc + iva;
+          if (esIvaDiscriminado) {
+            const iva = ivaPorc > 0 ? Math.round(((base * ivaPorc) / 100) * 100) / 100 : 0;
+            return acc + iva;
+          } else {
+            const divisor = 1 + ivaPorc / 100;
+            const netoSinIva = divisor > 0 ? base / divisor : base;
+            const iva = Math.round((base - netoSinIva) * 100) / 100;
+            return acc + iva;
+          }
         }, 0) * 100
       ) / 100
     );
-  }, [carrito, descuentoGlobal]);
+  }, [carrito, descuentoGlobal, esIvaDiscriminado]);
 
   // Si la lista tiene ivaDiscriminado: total = subtotalNeto - desc + IVA.
   // Si no tiene ivaDiscriminado: total = subtotal - desc (el precio ya incluye IVA y no se suma al final).
@@ -1376,6 +1383,11 @@ export default function PdvPage() {
                 <div className="text-[10px] text-slate-400 mt-0.5">
                   Cliente: <strong className="text-white">{cliente.nombre}</strong>
                 </div>
+                {!esIvaDiscriminado && impuestosEstimados > 0 && (
+                  <div className="text-[10px] text-slate-400 mt-0.5">
+                    (Incluye IVA estimado: {formatARS(impuestosEstimados)})
+                  </div>
+                )}
               </div>
 
               <button

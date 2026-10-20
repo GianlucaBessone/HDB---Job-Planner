@@ -74,15 +74,15 @@ export function calculateSuggestedPrice(
     }
     case 'DESCUENTO_BASE':
     case 'DESCUENTO_SOBRE_BASE': {
-      if (!lista.listaBaseId) return null;
-      const basePrice = preciosMap[lista.listaBaseId] || 0;
+      const basePrice = (lista.listaBaseId ? preciosMap[lista.listaBaseId] : undefined) ?? preciosMap['base'] ?? 0;
+      if (basePrice <= 0) return null;
       const res = basePrice * (1 - valor / 100);
       return Math.round(Math.max(0, res) * 100) / 100;
     }
     case 'RECARGO_BASE':
     case 'RECARGO_SOBRE_BASE': {
-      if (!lista.listaBaseId) return null;
-      const basePrice = preciosMap[lista.listaBaseId] || 0;
+      const basePrice = (lista.listaBaseId ? preciosMap[lista.listaBaseId] : undefined) ?? preciosMap['base'] ?? 0;
+      if (basePrice <= 0) return null;
       const res = basePrice * (1 + valor / 100);
       return Math.round(res * 100) / 100;
     }
@@ -106,21 +106,23 @@ export function resolverPrecioProducto(
   preciosMap: Record<string, number> = {}
 ): { precio: number; esFallback: boolean; detalleAjuste?: string } {
   const precioBase = Number(producto.precioBase) || 0;
+  const costo = Number(producto.costo) || 0;
+  // Si el producto no tiene precioBase registrado pero tiene costo, calcula precio base con margen estándar 41.5%
+  const effectiveBasePrice = precioBase > 0 ? precioBase : (costo > 0 ? Math.round(costo * 1.415 * 100) / 100 : 0);
 
-  let precioConIva = precioBase;
+  let precioNeto = effectiveBasePrice;
   let esFallback = false;
   let detalleAjuste = 'Precio Base / Manual';
 
   if (!lista || !lista.tipoAjuste || lista.tipoAjuste === 'MANUAL') {
-    precioConIva = precioBase;
+    precioNeto = effectiveBasePrice;
     esFallback = false;
     detalleAjuste = 'Precio Base / Manual';
   } else {
-    const costo = Number(producto.costo) || 0;
-    const mapaCalculo = {
+    const mapaCalculo: Record<string, number> = {
+      base: effectiveBasePrice,
+      ...(lista.listaBaseId ? { [lista.listaBaseId]: effectiveBasePrice } : {}),
       ...preciosMap,
-      ...(lista.listaBaseId ? { [lista.listaBaseId]: precioBase } : {}),
-      base: precioBase,
     };
 
     const precioSugerido = calculateSuggestedPrice(
@@ -134,31 +136,35 @@ export function resolverPrecioProducto(
     );
 
     if (precioSugerido !== null && precioSugerido > 0) {
-      precioConIva = precioSugerido;
+      precioNeto = precioSugerido;
       esFallback = false;
       detalleAjuste = `${lista.tipoAjuste} (${lista.valorAjuste}%)`;
     } else {
-      precioConIva = precioBase;
+      precioNeto = effectiveBasePrice;
       esFallback = true;
       detalleAjuste = 'Fallback a Precio Base (regla no aplicable o sin costo)';
     }
   }
 
-  if (lista?.ivaDiscriminado) {
+  // IVA Discriminado: el precio que maneja el catálogo y el carrito es NETO sin IVA.
+  // (El IVA se calculará y sumará al subtotal al momento del cobro).
+  // IVA NO Discriminado (IVA Incluido / Mostrador / Consumidor Final): el precio unitario
+  // debe incluir el IVA, ya que el PDV no sumará IVA al total al momento del cobro.
+  if (lista && !lista.ivaDiscriminado) {
     const ivaPorc = producto.ivaPorcentaje !== undefined && producto.ivaPorcentaje !== null ? producto.ivaPorcentaje : 21;
-    const divisor = 1 + (ivaPorc / 100);
-    const precioNeto = divisor > 0 ? Math.round((precioConIva / divisor) * 100) / 100 : precioConIva;
+    const multiplicador = 1 + (ivaPorc / 100);
+    const precioConIva = multiplicador > 0 ? Math.round((precioNeto * multiplicador) * 100) / 100 : precioNeto;
     return {
-      precio: precioNeto,
+      precio: precioConIva,
       esFallback,
-      detalleAjuste: `${detalleAjuste} (Neto sin IVA)`,
+      detalleAjuste: `${detalleAjuste} (IVA Inc.)`,
     };
   }
 
   return {
-    precio: precioConIva,
+    precio: precioNeto,
     esFallback,
-    detalleAjuste,
+    detalleAjuste: `${detalleAjuste} (Neto s/IVA)`,
   };
 }
 

@@ -79,7 +79,16 @@ export function calcularTotalesVenta(
     descLineaMonto = Math.min(brutoLinea, Math.max(0, descLineaMonto));
 
     const netoLinea = Math.round((brutoLinea - descLineaMonto) * 100) / 100;
-    const ivaLinea = ivaPorc > 0 ? Math.round(((netoLinea * ivaPorc) / 100) * 100) / 100 : 0;
+    let ivaLinea = 0;
+    if (ivaPorc > 0) {
+      if (options?.ivaDiscriminado) {
+        ivaLinea = Math.round(((netoLinea * ivaPorc) / 100) * 100) / 100;
+      } else {
+        const divisor = 1 + ivaPorc / 100;
+        const netoSinIva = divisor > 0 ? netoLinea / divisor : netoLinea;
+        ivaLinea = Math.round((netoLinea - netoSinIva) * 100) / 100;
+      }
+    }
 
     subtotalBruto += brutoLinea;
     descuentoLineasTotal += descLineaMonto;
@@ -112,8 +121,15 @@ export function calcularTotalesVenta(
   for (const it of itemsCalculados) {
     if (it.ivaPorcentaje && it.ivaPorcentaje > 0) {
       const baseLinea = it.subtotal * (1 - descGlobPorc / 100);
-      const iva = Math.round(((baseLinea * it.ivaPorcentaje) / 100) * 100) / 100;
-      impuestosTotalAjustado += iva;
+      if (options?.ivaDiscriminado) {
+        const iva = Math.round(((baseLinea * it.ivaPorcentaje) / 100) * 100) / 100;
+        impuestosTotalAjustado += iva;
+      } else {
+        const divisor = 1 + it.ivaPorcentaje / 100;
+        const netoSinIva = divisor > 0 ? baseLinea / divisor : baseLinea;
+        const iva = Math.round((baseLinea - netoSinIva) * 100) / 100;
+        impuestosTotalAjustado += iva;
+      }
     }
   }
   const impuestosMonto = Math.round(impuestosTotalAjustado * 100) / 100;
