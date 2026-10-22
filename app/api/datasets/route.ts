@@ -85,8 +85,8 @@ export async function POST(req: NextRequest) {
                 horaEjecucion: body.horaEjecucion || null,
                 zonaHoraria: body.zonaHoraria || 'America/Argentina/Buenos_Aires',
                 proximaEjecucion,
-                timeoutSegundos: body.timeoutSegundos || 30,
-                limiteRegistros: body.limiteRegistros || 10000,
+                timeoutSegundos: Number(body.timeoutSegundos) || 30,
+                limiteRegistros: Number(body.limiteRegistros) || 10000,
                 usuarioCreacionId: auth.user.id,
             },
             include: {
@@ -103,8 +103,11 @@ export async function POST(req: NextRequest) {
         });
 
         return NextResponse.json(dataset, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error creating dataset:', error);
-        return NextResponse.json({ error: 'Error del servidor al crear dataset' }, { status: 500 });
+        return NextResponse.json({ 
+            error: 'Error del servidor al crear dataset',
+            detalles: error?.message ? [error.message] : undefined,
+        }, { status: 500 });
     }
 }

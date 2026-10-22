@@ -51,12 +51,16 @@ export default function DatasetsCliente({ user }: { user: any }) {
             if (res.ok) {
                 setShowFormModal(false);
                 setEditingDataset(null);
+                showToast(editingDataset ? 'Dataset actualizado correctamente.' : 'Dataset creado correctamente.', 'success');
                 fetchData();
             } else {
-                const err = await res.json();
-                showToast(`Error: ${err.error}${err.detalles ? `\n${err.detalles.join('\n')}` : ''}`, 'error');
+                const err = await res.json().catch(() => ({ error: 'Error inesperado del servidor' }));
+                showToast(`Error: ${err.error || 'Error del servidor'}${err.detalles ? `\n${err.detalles.join('\n')}` : ''}`, 'error');
             }
-        } catch (err) { console.error(err); }
+        } catch (err: any) {
+            console.error(err);
+            showToast(`Error de conexión: ${err.message || 'Error de red'}`, 'error');
+        }
     };
 
     const handleExecute = async (datasetId: string) => {

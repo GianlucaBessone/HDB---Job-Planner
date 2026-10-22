@@ -91,8 +91,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 horaEjecucion,
                 zonaHoraria: body.zonaHoraria ?? existing.zonaHoraria,
                 proximaEjecucion,
-                timeoutSegundos: body.timeoutSegundos ?? existing.timeoutSegundos,
-                limiteRegistros: body.limiteRegistros ?? existing.limiteRegistros,
+                timeoutSegundos: body.timeoutSegundos !== undefined ? (Number(body.timeoutSegundos) || 30) : existing.timeoutSegundos,
+                limiteRegistros: body.limiteRegistros !== undefined ? (Number(body.limiteRegistros) || 10000) : existing.limiteRegistros,
             },
             include: {
                 responsable: { select: { id: true, nombreCompleto: true } },
@@ -109,9 +109,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         });
 
         return NextResponse.json(dataset);
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error updating dataset:', error);
-        return NextResponse.json({ error: 'Error del servidor al actualizar dataset' }, { status: 500 });
+        return NextResponse.json({ 
+            error: 'Error del servidor al actualizar dataset',
+            detalles: error?.message ? [error.message] : undefined,
+        }, { status: 500 });
     }
 }
 

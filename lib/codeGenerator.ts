@@ -6,36 +6,47 @@ import { prisma } from '@/lib/prisma';
  */
 async function generateCode(prefix: 'PR' | 'OS'): Promise<string> {
     const year = new Date().getFullYear();
-
-    // Find the latest code for this prefix+year
     const pattern = `${prefix}-${year}-`;
+    const standardRegex = new RegExp(`^${prefix}-${year}-(\\d+)$`);
 
-    let lastNumber = 0;
-
+    let allCodes: (string | null)[] = [];
     if (prefix === 'PR') {
-        const last = await prisma.project.findFirst({
+        const records = await prisma.project.findMany({
             where: { codigoProyecto: { startsWith: pattern } },
-            orderBy: { codigoProyecto: 'desc' },
             select: { codigoProyecto: true },
         });
-        if (last?.codigoProyecto) {
-            const parts = last.codigoProyecto.split('-');
-            lastNumber = parseInt(parts[parts.length - 1], 10) || 0;
-        }
+        allCodes = records.map(r => r.codigoProyecto);
     } else {
-        const last = await prisma.ordenServicio.findFirst({
+        const records = await prisma.ordenServicio.findMany({
             where: { codigoOS: { startsWith: pattern } },
-            orderBy: { codigoOS: 'desc' },
             select: { codigoOS: true },
         });
-        if (last?.codigoOS) {
-            const parts = last.codigoOS.split('-');
-            lastNumber = parseInt(parts[parts.length - 1], 10) || 0;
-        }
+        allCodes = records.map(r => r.codigoOS);
     }
 
-    const nextNumber = String(lastNumber + 1).padStart(4, '0');
-    return `${prefix}-${year}-${nextNumber}`;
+    const existingSet = new Set(allCodes.filter((c): c is string => Boolean(c)));
+    let maxNumber = 0;
+
+    allCodes.forEach(code => {
+        if (!code) return;
+        const match = code.match(standardRegex);
+        if (match) {
+            const num = parseInt(match[1], 10);
+            if (!isNaN(num) && num > maxNumber) {
+                maxNumber = num;
+            }
+        }
+    });
+
+    let nextNumber = maxNumber + 1;
+    let candidate = `${prefix}-${year}-${String(nextNumber).padStart(4, '0')}`;
+
+    while (existingSet.has(candidate)) {
+        nextNumber++;
+        candidate = `${prefix}-${year}-${String(nextNumber).padStart(4, '0')}`;
+    }
+
+    return candidate;
 }
 
 export async function generateCodigoProyecto(): Promise<string> {
@@ -84,58 +95,53 @@ export async function generateToolIds(count: number): Promise<string[]> {
 // ── OKR / KPI / Gráfico Code Generators ───────────────────────────────
 
 /**
- * Generates a sequential code like OKR-001, KPI-001, GRF-001.
+ * Generates a sequential code like OKR-001, KPI-001, GRF-001, DS-001.
  * Global sequence (no year reset). Padding = 3 digits.
+ * Guaranteed unique and safely parses non-standard prefixed codes.
  */
 async function generateSimpleCode(
     prefix: 'OKR' | 'KPI' | 'GRF' | 'DS',
 ): Promise<string> {
-    let lastNumber = 0;
+    let allCodes: (string | null)[] = [];
 
     if (prefix === 'OKR') {
-        const last = await prisma.okr.findFirst({
-            where: { codigoOkr: { startsWith: `${prefix}-` } },
-            orderBy: { codigoOkr: 'desc' },
-            select: { codigoOkr: true },
-        });
-        if (last?.codigoOkr) {
-            const parts = last.codigoOkr.split('-');
-            lastNumber = parseInt(parts[parts.length - 1], 10) || 0;
-        }
+        const records = await prisma.okr.findMany({ select: { codigoOkr: true } });
+        allCodes = records.map(r => r.codigoOkr);
     } else if (prefix === 'KPI') {
-        const last = await prisma.kpi.findFirst({
-            where: { codigoKpi: { startsWith: `${prefix}-` } },
-            orderBy: { codigoKpi: 'desc' },
-            select: { codigoKpi: true },
-        });
-        if (last?.codigoKpi) {
-            const parts = last.codigoKpi.split('-');
-            lastNumber = parseInt(parts[parts.length - 1], 10) || 0;
-        }
+        const records = await prisma.kpi.findMany({ select: { codigoKpi: true } });
+        allCodes = records.map(r => r.codigoKpi);
     } else if (prefix === 'GRF') {
-        const last = await prisma.graficoConfig.findFirst({
-            where: { codigoGrafico: { startsWith: `${prefix}-` } },
-            orderBy: { codigoGrafico: 'desc' },
-            select: { codigoGrafico: true },
-        });
-        if (last?.codigoGrafico) {
-            const parts = last.codigoGrafico.split('-');
-            lastNumber = parseInt(parts[parts.length - 1], 10) || 0;
-        }
+        const records = await prisma.graficoConfig.findMany({ select: { codigoGrafico: true } });
+        allCodes = records.map(r => r.codigoGrafico);
     } else if (prefix === 'DS') {
-        const last = await prisma.dataset.findFirst({
-            where: { codigoDataset: { startsWith: `${prefix}-` } },
-            orderBy: { codigoDataset: 'desc' },
-            select: { codigoDataset: true },
-        });
-        if (last?.codigoDataset) {
-            const parts = last.codigoDataset.split('-');
-            lastNumber = parseInt(parts[parts.length - 1], 10) || 0;
-        }
+        const records = await prisma.dataset.findMany({ select: { codigoDataset: true } });
+        allCodes = records.map(r => r.codigoDataset);
     }
 
-    const nextNumber = String(lastNumber + 1).padStart(3, '0');
-    return `${prefix}-${nextNumber}`;
+    const existingSet = new Set(allCodes.filter((c): c is string => Boolean(c)));
+    const standardRegex = new RegExp(`^${prefix}-(\\d+)$`);
+    let maxNumber = 0;
+
+    allCodes.forEach(code => {
+        if (!code) return;
+        const match = code.match(standardRegex);
+        if (match) {
+            const num = parseInt(match[1], 10);
+            if (!isNaN(num) && num > maxNumber) {
+                maxNumber = num;
+            }
+        }
+    });
+
+    let nextNumber = maxNumber + 1;
+    let candidate = `${prefix}-${String(nextNumber).padStart(3, '0')}`;
+
+    while (existingSet.has(candidate)) {
+        nextNumber++;
+        candidate = `${prefix}-${String(nextNumber).padStart(3, '0')}`;
+    }
+
+    return candidate;
 }
 
 export async function generateCodigoOkr(): Promise<string> {
