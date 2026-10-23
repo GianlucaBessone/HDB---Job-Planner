@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireSGIRole } from '@/lib/sgiAuth';
 import { logAudit } from '@/lib/audit';
-import { validarSQL, calcularProximaEjecucion } from '@/lib/datasetEngine';
+import { validarSQL, calcularProximaEjecucion, construirSQLDesdeVisual, DefinicionVisual } from '@/lib/datasetEngine';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,9 +50,27 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             return NextResponse.json({ error: 'Dataset no encontrado' }, { status: 404 });
         }
 
+        let consultaSQL = body.consultaSQL !== undefined ? body.consultaSQL : existing.consultaSQL;
+
+        // Compilar si está en modo visual
+        const modoConsulta = body.modoConsulta ?? existing.modoConsulta;
+        const definicionVisual = body.definicionVisual !== undefined ? body.definicionVisual : existing.definicionVisual;
+
+        if (modoConsulta === 'Visual' && definicionVisual) {
+            try {
+                if (definicionVisual.tablas?.length > 0 && definicionVisual.campos?.length > 0) {
+                    consultaSQL = construirSQLDesdeVisual(definicionVisual as DefinicionVisual);
+                }
+            } catch (err: any) {
+                return NextResponse.json({
+                    error: `Error al generar SQL visual: ${err.message}`,
+                }, { status: 400 });
+            }
+        }
+
         // Validar SQL si se proporciona
-        if (body.consultaSQL !== undefined && body.consultaSQL) {
-            const validacion = validarSQL(body.consultaSQL);
+        if (consultaSQL) {
+            const validacion = validarSQL(consultaSQL);
             if (!validacion.valido) {
                 return NextResponse.json({
                     error: 'SQL inválido',
@@ -82,7 +100,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
                 estado: body.estado ?? existing.estado,
                 habilitado: body.habilitado !== undefined ? body.habilitado : existing.habilitado,
                 modoConsulta: body.modoConsulta ?? existing.modoConsulta,
-                consultaSQL: body.consultaSQL !== undefined ? body.consultaSQL : existing.consultaSQL,
+                consultaSQL: consultaSQL,
                 definicionVisual: body.definicionVisual !== undefined ? body.definicionVisual : existing.definicionVisual,
                 variables: body.variables !== undefined ? body.variables : existing.variables,
                 tipoEjecucion,
@@ -125,20 +143,23 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     try {
         const existing = await prisma.dataset.findUnique({
             where: { id: params.id },
-            include: { _count: { select: { kpisAsociados: true } } },
+            include: { _count: { select: { kpisAsociados: true, graficosAsociados: true } } },
         });
 
         if (!existing) {
             return NextResponse.json({ error: 'Dataset no encontrado' }, { status: 404 });
         }
 
-        if (existing._count.kpisAsociados > 0) {
-            // Soft delete: desactivar
+        if (existing._count.kpisAsociados > 0 || existing._count.graficosAsociados > 0) {
+            // Soft delete: desactivar para proteger integridad referencial de KPIs y gráficos
             await prisma.dataset.update({
                 where: { id: params.id },
                 data: { habilitado: false, estado: 'Inactivo' },
             });
-            return NextResponse.json({ success: true, message: 'Dataset desactivado (tiene KPIs asociados)' });
+            return NextResponse.json({ 
+                success: true, 
+                message: 'Dataset desactivado (tiene KPIs o Gráficos asociados vinculados)' 
+            });
         }
 
         await prisma.dataset.delete({ where: { id: params.id } });

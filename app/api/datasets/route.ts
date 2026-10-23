@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireSGIRole } from '@/lib/sgiAuth';
 import { logAudit } from '@/lib/audit';
 import { generateCodigoDataset } from '@/lib/codeGenerator';
-import { validarSQL, calcularProximaEjecucion } from '@/lib/datasetEngine';
+import { validarSQL, calcularProximaEjecucion, construirSQLDesdeVisual, DefinicionVisual } from '@/lib/datasetEngine';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,9 +49,24 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'El nombre es obligatorio' }, { status: 400 });
         }
 
+        let consultaSQL = body.consultaSQL || null;
+
+        // Si es visual y hay definición, compilar el SQL
+        if (body.modoConsulta === 'Visual' && body.definicionVisual) {
+            try {
+                if (body.definicionVisual.tablas?.length > 0 && body.definicionVisual.campos?.length > 0) {
+                    consultaSQL = construirSQLDesdeVisual(body.definicionVisual as DefinicionVisual);
+                }
+            } catch (err: any) {
+                return NextResponse.json({
+                    error: `Error al generar SQL visual: ${err.message}`,
+                }, { status: 400 });
+            }
+        }
+
         // Validar SQL si se proporciona
-        if (body.modoConsulta === 'SQL' && body.consultaSQL) {
-            const validacion = validarSQL(body.consultaSQL);
+        if (consultaSQL) {
+            const validacion = validarSQL(consultaSQL);
             if (!validacion.valido) {
                 return NextResponse.json({
                     error: 'SQL inválido',
@@ -76,7 +91,7 @@ export async function POST(req: NextRequest) {
                 responsableId: body.responsableId || null,
                 habilitado: body.habilitado !== false,
                 modoConsulta: body.modoConsulta || 'SQL',
-                consultaSQL: body.consultaSQL || null,
+                consultaSQL: consultaSQL,
                 definicionVisual: body.definicionVisual || null,
                 variables: body.variables || [],
                 tipoEjecucion: body.tipoEjecucion || 'Manual',
