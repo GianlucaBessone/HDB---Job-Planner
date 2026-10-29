@@ -4,83 +4,116 @@ import { useEffect, useRef } from 'react';
 import OneSignal from 'react-onesignal';
 
 export default function OneSignalInit({ appId, user }: { appId: string, user?: any }) {
-    const initializedRef = useRef(false);
     const lastUserIdRef = useRef<string | null>(null);
+    const listenersAddedRef = useRef(false);
+    const initFailedRef = useRef(false);
 
     useEffect(() => {
-        async function syncOneSignal() {
+        const initOneSignal = async () => {
             if (typeof window === 'undefined') return;
 
-            // 1. Initialize if needed
-            if (!(window as any).__ONESIGNAL_INITIALIZED__) {
-                // Skip on localhost or local network IPs — OneSignal is bound to the production domain
-                const isLocal = window.location.hostname === 'localhost' || 
+            // If init already failed (e.g. IndexedDB corrupted), don't retry endlessly
+            if (initFailedRef.current) return;
+
+            // Skip on localhost or local network IPs — OneSignal is bound to the production domain
+            const isLocal = window.location.hostname === 'localhost' || 
                               window.location.hostname === '127.0.0.1' || 
-                              window.location.hostname.startsWith('192.168.') ||
+                              window.location.hostname.startsWith('192.168.') || 
                               window.location.hostname.endsWith('.local');
 
-                if (isLocal) {
-                    (window as any).__ONESIGNAL_INITIALIZED__ = true;
-                    return;
-                }
+            if (isLocal) {
+                (window as any).__ONESIGNAL_INITIALIZED__ = true;
+                return;
+            }
 
-                try {
-                    console.log("🔔 OneSignal: Initializing...");
+            try {
+                // Initialize if not already done
+                if (!(window as any).__ONESIGNAL_INITIALIZED__) {
+                    console.log("OneSignal: Initializing...");
                     await OneSignal.init({
                         appId: appId,
-                        notifyButton: { enable: false } as any,
                         allowLocalhostAsSecureOrigin: true,
+                        serviceWorkerPath: 'sw.js',
                     });
                     (window as any).__ONESIGNAL_INITIALIZED__ = true;
-                    console.log("✅ OneSignal initialized");
-                } catch (error: any) {
-                    const errMsg = (error?.message || String(error)).toLowerCase();
-                    if (errMsg.includes('already initialized')) {
-                        (window as any).__ONESIGNAL_INITIALIZED__ = true;
-                        console.log("ℹ️ OneSignal already initialized, skipping.");
-                    } else {
-                        console.error("❌ OneSignal init error:", error);
-                    }
-                    return;
+                    console.log("OneSignal: Initialized successfully");
                 }
-            }
 
-            // 2. Handle Authentication State changes
-            const currentUserId = user?.id || null;
+                const currentUserId = user?.id || null;
 
-            if (currentUserId !== lastUserIdRef.current) {
-                try {
-                    if (currentUserId) {
-                        console.log("👤 OneSignal: Identifying user (External ID):", currentUserId);
-                        await OneSignal.login(currentUserId);
-                        
-                        // Sync Metadata Tags for segmentation
-                        if (user.nombreCompleto) {
-                            await OneSignal.User.addTag("name", user.nombreCompleto);
-                        }
-                        if (user.role) {
-                            await OneSignal.User.addTag("role", user.role);
-                        }
-                        
-                        console.log("✅ OneSignal: Login and tags synced");
-                    } else {
-                        console.log("🚪 OneSignal: User logged out, clearing session");
-                        await OneSignal.logout();
-                    }
+                // Handle Login / Logout logic
+                if (currentUserId && currentUserId !== lastUserIdRef.current) {
+                    console.log("👤 [ONESIGNAL_LOGIN] Logging with external ID:", currentUserId);
+                    await OneSignal.login(currentUserId);
                     lastUserIdRef.current = currentUserId;
-                } catch (error) {
-                    console.error("❌ OneSignal identity error:", error);
+
+                    if (user.nombreCompleto) {
+                        console.log("OneSignal: Updating user tags");
+                        await OneSignal.User.addTag("name", user.nombreCompleto);
+                        await OneSignal.User.addTag("role", user.role);
+                    }
+
+                    // Log permission and subscription status
+                    const permission = OneSignal.Notifications.permission;
+                    console.log("🔐 [ONESIGNAL_PERMISSION]:", permission);
+
+                    const isSubscribed = OneSignal.User?.PushSubscription?.optedIn;
+                    const subId = OneSignal.User?.PushSubscription?.id;
+                    console.log("📲 [ONESIGNAL_SUBSCRIBED]:", isSubscribed);
+                    console.log("🆔 [ONESIGNAL_EXTERNAL_ID]:", currentUserId);
+                    console.log("📡 [ONESIGNAL_SUB_ID]:", subId || "Aún sin token asignado");
+
+                    // Add foreground and click listeners (only once)
+                    if (!listenersAddedRef.current) {
+                        OneSignal.Notifications.addEventListener("foregroundWillDisplay", (event) => {
+                            console.log("📩 [PUSH_RECEIVED_FOREGROUND]:", event);
+                        });
+
+                        OneSignal.Notifications.addEventListener("click", (event) => {
+                            console.log("🖱️ [PUSH_CLICKED]:", event);
+                        });
+                        listenersAddedRef.current = true;
+                    }
+
+                    const hasPrompted = localStorage.getItem('onesignal_prompted');
+                    const perm = permission as boolean | string;
+
+                    if (perm === false || perm === 'denied') {
+                        console.log("OneSignal: Notifications blocked by user");
+                    } else if (perm !== true && perm !== 'granted' && !hasPrompted) {
+                        setTimeout(async () => {
+                            try {
+                                console.log("OneSignal: Prompting for push subscription");
+                                await OneSignal.Slidedown.promptPush();
+                                localStorage.setItem('onesignal_prompted', 'true');
+                            } catch (e) {
+                                console.warn("OneSignal: Prompt error (non-fatal)", e);
+                            }
+                        }, 5000);
+                    }
+                } else if (!currentUserId && lastUserIdRef.current) {
+                    console.log("OneSignal: Logging out user");
+                    await OneSignal.logout();
+                    lastUserIdRef.current = null;
+                }
+            } catch (error: any) {
+                const errorMsg = error?.message || String(error);
+
+                // IndexedDB corruption - mark as failed to prevent infinite retry loop
+                if (errorMsg.includes('indexedDB') || errorMsg.includes('backing store')) {
+                    console.error(
+                        "❌ [ONESIGNAL_INIT_FAILED] IndexedDB is corrupted. " +
+                        "Push notifications will not work until the user clears site data. " +
+                        "Error:", errorMsg
+                    );
+                    initFailedRef.current = true;
+                } else {
+                    console.error('OneSignal: Integration error', error);
                 }
             }
+        };
 
-            // 3. Optional Debug Logs (only on identity change)
-            if (currentUserId !== lastUserIdRef.current) {
-                console.log("🔐 Push permission:", OneSignal.Notifications.permission);
-                console.log("📲 Push subscription:", OneSignal.User.PushSubscription);
-            }
-        }
-
-        syncOneSignal();
+        initOneSignal();
     }, [appId, user?.id, user?.nombreCompleto]);
 
     return null;
