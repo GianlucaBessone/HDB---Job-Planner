@@ -87,7 +87,9 @@ const BENEFICIOS_OPCIONES = [
     'Menor impacto ambiental'
 ];
 
-const FILE_SIZE_LIMIT = 10 * 1024 * 1024; // 10MB
+// Mismos límites que /api/sugerencias (el formulario viaja en un solo request, máx. 4,5 MB en Vercel).
+const FILE_SIZE_LIMIT = 3 * 1024 * 1024; // 3MB
+const TOTAL_FILES_LIMIT = 4 * 1024 * 1024; // 4MB
 const MAX_FILES = 5;
 
 function decodeEntities(str: string | null | undefined): string {
@@ -286,9 +288,14 @@ export default function IdeasSugerenciasReclamosPage() {
             // Validate sizes
             for (const file of filesArray) {
                 if (file.size > FILE_SIZE_LIMIT) {
-                    setErrorMessage(`El archivo "${file.name}" supera el límite de 10MB.`);
+                    setErrorMessage(`El archivo "${file.name}" supera el límite de 3MB.`);
                     return;
                 }
+            }
+            const total = [...selectedFiles, ...filesArray].reduce((acc, f) => acc + f.size, 0);
+            if (total > TOTAL_FILES_LIMIT) {
+                setErrorMessage('Los adjuntos no pueden superar los 4MB en total.');
+                return;
             }
 
             setErrorMessage('');
@@ -996,7 +1003,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                                 Haz clic para seleccionar o arrastra archivos aquí
                                             </span>
                                             <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 mt-1 block">
-                                                Tamaño máximo por archivo: 10MB.
+                                                Hasta 3MB por archivo y 4MB en total.
                                             </span>
                                         </div>
 
