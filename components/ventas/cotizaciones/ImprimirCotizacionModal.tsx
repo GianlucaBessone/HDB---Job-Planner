@@ -52,7 +52,7 @@ export default function ImprimirCotizacionModal({
     return (
         <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 print:p-0 print:bg-white print:static print:inset-auto">
             {/* Reglas CSS para impresión limpia sin capturas de pantalla ni elementos de UI */}
-            <style jsx global>{`
+            <style>{`
                 @media print {
                     @page {
                         size: A4 portrait;
