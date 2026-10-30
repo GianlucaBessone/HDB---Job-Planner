@@ -1,5 +1,4 @@
 import 'dotenv/config';
-import fetch from 'node-fetch';
 import { encrypt } from '../lib/auth';
 
 async function testVentasEndpoints() {
