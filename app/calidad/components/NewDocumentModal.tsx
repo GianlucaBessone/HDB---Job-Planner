@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
     X, FileText, Loader2, FileSignature, Check, ChevronRight, ChevronLeft, 
     Plus, Trash2, Search, Link2, BookOpen, Play, AlertCircle, Sparkles, PlusCircle, Upload 
@@ -357,9 +358,10 @@ export default function NewDocumentModal({
         normalize(d.titulo).includes(normalize(refSearch))
     );
 
-    return (
-        <div 
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 pt-20 sm:pt-24 overflow-y-auto"
+    // En document.body para cubrir también el encabezado de la app a pantalla completa.
+    return createPortal(
+        <div
+            className="fixed inset-0 z-[70] flex bg-slate-900/50 backdrop-blur-sm p-2 sm:p-4"
             onClick={(e) => {
                 if (e.target === e.currentTarget) onClose();
             }}
@@ -367,7 +369,7 @@ export default function NewDocumentModal({
             aria-modal="true"
             aria-label="Nuevo Documento Controlado"
         >
-            <div className={`relative bg-card text-card-foreground rounded-3xl shadow-xl w-full max-h-[calc(100vh-8rem)] overflow-hidden my-4 animate-in zoom-in-95 duration-200 flex flex-col transition-all duration-300 ${showAiDrawer ? 'max-w-[95vw] sm:pr-[420px]' : 'max-w-6xl'}`}>
+            <div className={`relative bg-card text-card-foreground rounded-2xl sm:rounded-3xl shadow-xl w-full h-full overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col transition-all duration-300 ${showAiDrawer ? 'sm:pr-[420px]' : ''}`}>
                 {/* Header */}
                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-background text-foreground">
                     <div className="flex items-center gap-3">
@@ -854,7 +856,7 @@ export default function NewDocumentModal({
                                         placeholder="Escriba los pasos secuenciales..."
                                         value={digitalData.desarrollo}
                                         onChange={e => setDigitalData({ ...digitalData, desarrollo: e.target.value })}
-                                        className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 outline-none h-48"
+                                        className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 outline-none h-48 sm:h-80 resize-y"
                                     />
                                 </div>
 
@@ -897,8 +899,8 @@ export default function NewDocumentModal({
                                         </div>
                                     )}
 
-                                    <div className="flex gap-2 items-end">
-                                        <div className="flex-shrink-0 w-40">
+                                    <div className="flex flex-col sm:flex-row gap-2 sm:items-start">
+                                        <div className="sm:flex-shrink-0 sm:w-48">
                                             <label className="text-[9px] font-bold text-slate-400 uppercase">Rol / Responsable</label>
                                             <input
                                                 value={newRol}
@@ -931,7 +933,7 @@ export default function NewDocumentModal({
                                                 setNewRol('');
                                                 setNewResp('');
                                             }}
-                                            className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 disabled:opacity-50 flex-shrink-0 flex items-center gap-1"
+                                            className="sm:mt-[18px] self-end sm:self-start px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 disabled:opacity-50 flex-shrink-0 flex items-center gap-1"
                                         >
                                             <Plus className="w-3.5 h-3.5" /> Agregar
                                         </button>
@@ -1370,6 +1372,7 @@ export default function NewDocumentModal({
             </div>
             {/* QMS floating virtual assistant chat */}
             <TechAssistantChat user={user} />
-        </div>
+        </div>,
+        document.body
     );
 }
