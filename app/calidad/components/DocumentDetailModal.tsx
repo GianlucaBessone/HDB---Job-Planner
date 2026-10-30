@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { parseResponsabilidades } from "@/lib/documentoResponsabilidades";
 import {
   X,
   FileText,
@@ -49,57 +50,6 @@ let cachedAllDocs: any[] | null = null;
 let cachedActivityOptions: string[] | null = null;
 let cachedProjectTags: string[] | null = null;
 const cachedDocuments: Record<string, any> = {};
-
-const parseLegacyResponsabilidades = (text: any) => {
-  if (Array.isArray(text)) return text;
-  if (!text || typeof text !== "string") return [];
-  
-  const lines = text.split('\n');
-  const result = [];
-  
-  // Single short string fallback
-  if (lines.length === 1 && lines[0].length < 150 && !lines[0].includes(':')) {
-    return [{ rol: "General", responsabilidad: lines[0].trim() }];
-  }
-
-  let currentRol = "General";
-  let currentResp: string[] = [];
-
-  const saveCurrent = () => {
-    if (currentResp.length > 0) {
-      result.push({ rol: currentRol, responsabilidad: currentResp.join('\n').trim() });
-    }
-  };
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (!line) continue;
-
-    const isHeaderWithColon = line.endsWith(':') && line.length < 60;
-    const isHeaderWithoutColon = line.length < 60 && !line.startsWith('-') && !line.match(/^\d+\./) && i + 1 < lines.length && lines[i+1].trim().startsWith('-');
-    const inlineColonMatch = line.match(/^([^:]+):\s*(.+)$/);
-
-    if (isHeaderWithColon || isHeaderWithoutColon) {
-      saveCurrent();
-      currentRol = line.replace(/:$/, '').trim();
-      currentResp = [];
-    } else if (inlineColonMatch && inlineColonMatch[1].length < 40 && !inlineColonMatch[1].startsWith('-')) {
-      saveCurrent();
-      currentRol = inlineColonMatch[1].trim();
-      currentResp = [inlineColonMatch[2].trim()];
-    } else {
-      currentResp.push(line);
-    }
-  }
-  
-  saveCurrent();
-
-  if (result.length === 0 && text.trim()) {
-      return [{ rol: "General", responsabilidad: text.trim() }];
-  }
-
-  return result;
-};
 
 export default function DocumentDetailModal({
   documentId,
@@ -361,7 +311,7 @@ export default function DocumentDetailModal({
       if (doc.descripcion && doc.descripcion.trim().startsWith("{")) {
         digitalData = JSON.parse(doc.descripcion);
         if (digitalData) {
-          digitalData.responsabilidades = parseLegacyResponsabilidades(digitalData.responsabilidades);
+          digitalData.responsabilidades = parseResponsabilidades(digitalData.responsabilidades);
         }
       }
     } catch (e) {}
@@ -1157,7 +1107,7 @@ export default function DocumentDetailModal({
             objetivo: parsed.objetivo || "",
             alcance: parsed.alcance || "",
             desarrollo: parsed.desarrollo || "",
-            responsabilidades: parseLegacyResponsabilidades(parsed.responsabilidades),
+            responsabilidades: parseResponsabilidades(parsed.responsabilidades),
             videoUrl: parsed.videoUrl || "",
             definiciones: parsed.definiciones || [],
             referencias: parsed.referencias || [],
@@ -1288,7 +1238,7 @@ export default function DocumentDetailModal({
               objetivo: isBoilerplate ? "" : (parsed.objetivo || ""),
               alcance: parsed.alcance || "",
               desarrollo: parsed.desarrollo || "",
-              responsabilidades: parseLegacyResponsabilidades(parsed.responsabilidades),
+              responsabilidades: parseResponsabilidades(parsed.responsabilidades),
               videoUrl: parsed.videoUrl || "",
               definiciones: parsed.definiciones || [],
               referencias: parsed.referencias || [],
@@ -2067,7 +2017,7 @@ export default function DocumentDetailModal({
                       if (parsed.isDigital) {
                         isDigital = true;
                         digitalData = parsed;
-                        digitalData.responsabilidades = parseLegacyResponsabilidades(digitalData.responsabilidades);
+                        digitalData.responsabilidades = parseResponsabilidades(digitalData.responsabilidades);
                       }
                     }
                   } catch (e) {}

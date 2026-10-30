@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useViewState } from "@/lib/hooks/useViewState";
 import { useCommandStore } from "@/lib/store/useCommandStore";
+import { responsabilidadesATexto } from "@/lib/documentoResponsabilidades";
 import {
   BookOpen,
   CheckCircle2,
@@ -593,7 +594,7 @@ export default function CapacitacionPage() {
                   { title: "Desarrollo", content: digitalData.desarrollo },
                   {
                     title: "Responsabilidades",
-                    content: digitalData.responsabilidades,
+                    content: responsabilidadesATexto(digitalData.responsabilidades),
                   },
                 ]
                   .filter((s) => s.content)
