@@ -46,3 +46,6 @@ next-env.d.ts
 
 # uploads de tickets
 /public/uploads/tickets/
+
+# El proyecto usa npm (package-lock.json); un pnpm-lock.yaml hace que Vercel use pnpm
+pnpm-lock.yaml
