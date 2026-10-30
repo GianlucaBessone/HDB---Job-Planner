@@ -111,19 +111,15 @@ export default function ModificarPrecioModal({
 
       setIsValidating(true);
       try {
-        const res = await fetch('/api/operators');
-        if (!res.ok) throw new Error('Error al consultar operadores');
-        const operators = await res.json();
+        const res = await fetch('/api/auth/verificar-supervisor', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin: pinSupervisor.trim() }),
+        });
+        const supervisor = await res.json();
 
-        const supervisor = operators.find(
-          (o: any) =>
-            o.pin === pinSupervisor.trim() &&
-            ['admin', 'supervisor'].includes((o.role || '').toLowerCase()) &&
-            o.activo
-        );
-
-        if (!supervisor) {
-          setError('PIN incorrecto o no pertenece a un Supervisor / Administrador activo.');
+        if (!res.ok) {
+          setError(supervisor.error || 'PIN incorrecto o no pertenece a un Supervisor / Administrador activo.');
           setIsValidating(false);
           pinInputRef.current?.focus();
           return;

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { detectarTipoArchivo } from '@/lib/tipoArchivo';
+import { verifyPin } from '@/lib/pinAuth';
 
 export const dynamic = 'force-dynamic';
 
@@ -75,7 +76,7 @@ export async function POST(req: Request) {
                 where: { id: operatorId }
             });
 
-            if (!operator || operator.pin !== pin || !operator.activo) {
+            if (!operator || !verifyPin(pin, operator.pin) || !operator.activo) {
                 const currentAttempts = attempts ? (attempts.lockUntil > now ? attempts.count : 0) : 0;
                 const newCount = currentAttempts + 1;
                 const lockUntil = newCount >= 5 ? now + 15 * 60 * 1000 : 0; // 15 mins lock

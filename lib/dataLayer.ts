@@ -1,8 +1,21 @@
 import { prisma } from './prisma';
 import { generateCodigoProyecto } from '@/lib/codeGenerator';
 import { logAudit } from '@/lib/audit';
+import { hashPin, isPinHashed } from '@/lib/pinAuth';
 
 export { prisma };
+
+// El PIN se guarda siempre hasheado y nunca se copia a la auditoría.
+function withHashedPin<T extends { pin?: string }>(data: T): T {
+    if (data.pin && !isPinHashed(data.pin)) return { ...data, pin: hashPin(data.pin) };
+    return data;
+}
+
+function withoutPin<T extends { pin?: string } | null>(operator: T) {
+    if (!operator) return operator;
+    const { pin: _pin, ...rest } = operator as any;
+    return rest;
+}
 
 
 export const dataLayer = {
@@ -431,14 +444,14 @@ export const dataLayer = {
     },
     async createOperator(data: { nombreCompleto: string; activo?: boolean; enVacaciones?: boolean; etiquetas: string[]; pin?: string; role?: string; dni?: string; posicion?: string }) {
         const operator = await prisma.operator.create({
-            data: { ...data, etiquetas: data.etiquetas as any }
+            data: { ...withHashedPin({ ...data, pin: data.pin || '1234' }), etiquetas: data.etiquetas as any }
         });
 
         await logAudit({
             action: 'CREATE',
             entity: 'OPERATOR',
             entityId: operator.id,
-            newValue: operator
+            newValue: withoutPin(operator)
         });
 
         // Trigger dynamic QMS training sync
@@ -452,7 +465,7 @@ export const dataLayer = {
         return operator;
     },
     async updateOperator(id: string, data: { nombreCompleto?: string; activo?: boolean; enVacaciones?: boolean; etiquetas?: string[]; pin?: string; role?: string; dni?: string; posicion?: string; primaryDeviceId?: string | null }) {
-        const updateData: any = { ...data };
+        const updateData: any = withHashedPin({ ...data });
         if (data.etiquetas) updateData.etiquetas = data.etiquetas as any;
         
         const oldOperator = await prisma.operator.findUnique({ where: { id } });
@@ -462,8 +475,9 @@ export const dataLayer = {
             action: 'UPDATE',
             entity: 'OPERATOR',
             entityId: operator.id,
-            oldValue: oldOperator,
-            newValue: operator
+            oldValue: withoutPin(oldOperator),
+            newValue: withoutPin(operator),
+            ...(data.pin ? { metadata: { pinCambiado: true } } : {})
         });
 
         // Trigger dynamic QMS training sync
@@ -484,7 +498,7 @@ export const dataLayer = {
             action: 'DELETE',
             entity: 'OPERATOR',
             entityId: id,
-            oldValue: oldOperator
+            oldValue: withoutPin(oldOperator)
         });
 
         return res;

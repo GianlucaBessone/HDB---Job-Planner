@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { sendPushNotification } from '@/lib/onesignal';
 import { format, subDays } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
+import { getSessionFromRequest } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,10 +12,18 @@ export async function GET(req: Request) {
         const url = new URL(req.url);
         const isManual = url.searchParams.get('manual') === 'true';
 
-        if (!isManual) {
+        if (isManual) {
+            // Ejecución manual desde Configuración: requiere sesión con rol de gestión
+            const session = await getSessionFromRequest(req);
+            const role = (session?.role || '').toLowerCase();
+            if (!session || !['admin', 'supervisor', 'qa'].includes(role)) {
+                return new Response('Unauthorized', { status: 401 });
+            }
+        } else {
+            const cronSecret = process.env.CRON_SECRET;
             const authHeader = req.headers.get('authorization');
-            if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-                console.error('Unauthorized cron access attempt');
+            if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+                console.error(cronSecret ? 'Unauthorized cron access attempt' : 'cron/reminders: CRON_SECRET no está configurado');
                 return new Response('Unauthorized', { status: 401 });
             }
         }
