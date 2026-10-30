@@ -63,35 +63,38 @@ const triageSchema = z.object({
 /**
  * Temas donde la política exige aprobación humana. Si la descripción los
  * menciona, nunca dejamos que la IA habilite un auto-fix.
+ *
+ * Se comparan contra el texto sin tildes y por palabra completa, para que
+ * "rol" no matchee "control" ni "desarrollo". Las que terminan en "*" son
+ * prefijos ("factur*" cubre factura, facturación, facturar).
+ * "produccion" no está: en HDB es un área de trabajo, no el entorno.
  */
 const ZONAS_SENSIBLES = [
-    'login',
-    'iniciar sesion',
-    'contraseña',
-    'contrasena',
-    'permiso',
-    'permisos',
-    'rol',
-    'roles',
-    'autentic',
-    'autoriz',
-    'factur',
-    'pago',
-    'cobro',
-    'sueldo',
-    'salario',
-    'dni',
-    'datos personales',
-    'migracion',
-    'esquema',
-    'prisma',
-    'middleware',
-    'electron',
-    'deploy',
-    'produccion',
-    '.env',
-    'token',
+    'login', 'logueo', 'loguear*', 'iniciar sesion', 'inicio de sesion', 'cerrar sesion', 'sesion', 'sesiones',
+    'contrasena', 'contrasenas', 'clave', 'claves', 'password',
+    'permiso', 'permisos', 'rol', 'roles', 'autentic*', 'autoriz*',
+    'factur*', 'pago', 'pagos', 'cobro', 'cobros', 'sueldo', 'sueldos', 'salario', 'salarios',
+    'dni', 'cuil', 'cuit', 'cbu', 'datos personales',
+    'migracion', 'migraciones', 'esquema', 'prisma', 'base de datos',
+    'middleware', 'electron', 'deploy', '.env', 'token', 'tokens',
 ];
+
+export function normalizarTexto(texto: string): string {
+    return texto
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .replace(/[^a-z0-9.]+/g, ' ')
+        .trim();
+}
+
+export function tocaZonaSensible(texto: string): boolean {
+    const normalizado = ` ${normalizarTexto(texto)} `;
+    const palabras = normalizado.trim().split(' ');
+    return ZONAS_SENSIBLES.some(clave => clave.endsWith('*')
+        ? palabras.some(p => p.startsWith(clave.slice(0, -1)))
+        : normalizado.includes(` ${clave} `));
+}
 
 const RIESGO_RANK: Record<TicketRiesgo, number> = {
     desconocido: 0,
@@ -131,12 +134,7 @@ function textoDelTicket(ticket: {
 }): string {
     return [ticket.titulo, ticket.descripcion, ticket.pasosReproducir, ticket.comportamientoEsperado]
         .filter(Boolean)
-        .join(' ')
-        .toLowerCase();
-}
-
-function tocaZonaSensible(texto: string): boolean {
-    return ZONAS_SENSIBLES.some(clave => texto.includes(clave));
+        .join(' ');
 }
 
 /**
@@ -168,20 +166,24 @@ export async function triageTicket(ticketId: string, actor: TriageActor = {}): P
         select: { codigo: true, titulo: true, tipo: true, estado: true, createdAt: true },
     });
 
+    // En un re-análisis, tipo/urgencia/impacto ya son los del triaje anterior:
+    // a la IA le pasamos siempre lo que declaró quien reportó.
+    const declarado = (ticket.clasificacionDeclarada as { tipo?: string; urgencia?: string; impacto?: string } | null) || {};
+
     const aiResponse = await generateObject<unknown>(
         'TICKET_TRIAGE',
         {
             codigo: ticket.codigo,
-            tipoDeclarado: ticket.tipo,
+            tipoDeclarado: declarado.tipo || ticket.tipo,
             titulo: ticket.titulo,
             descripcion: ticket.descripcion,
             pasosReproducir: ticket.pasosReproducir || 'No informados',
             comportamientoEsperado: ticket.comportamientoEsperado || 'No informado',
-            urgenciaDeclarada: ticket.urgencia,
-            impactoDeclarado: ticket.impacto,
+            urgenciaDeclarada: declarado.urgencia || ticket.urgencia,
+            impactoDeclarado: declarado.impacto || ticket.impacto,
             contexto: JSON.stringify(ticket.contexto || {}),
             etiquetas: JSON.stringify(ticket.etiquetas || []),
-            autoFixAutorizado: ticket.autoFixPermitido ? 'Sí' : 'No',
+            autoFixAutorizado: ticket.autoFixAutorizadoPorUsuario ? 'Sí' : 'No',
             ticketsAbiertos: abiertos.map(t => ({
                 codigo: t.codigo,
                 titulo: t.titulo,
@@ -237,8 +239,9 @@ export async function triageTicket(ticketId: string, actor: TriageActor = {}): P
         ai.requiereAprobacion || ai.confianza === 'baja' || riesgo !== 'bajo' || sensible;
 
     // El auto-fix necesita el consentimiento del usuario y pasar todos los filtros.
+    // El consentimiento vive en su propio campo: el triaje nunca lo pisa.
     const autoFixPermitido =
-        Boolean(ticket.autoFixPermitido) &&
+        ticket.autoFixAutorizadoPorUsuario &&
         ai.autoFixPermitido &&
         tipo === 'error' &&
         riesgo === 'bajo' &&

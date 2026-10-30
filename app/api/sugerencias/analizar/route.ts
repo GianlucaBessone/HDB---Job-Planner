@@ -2,8 +2,17 @@ import { NextResponse } from 'next/server';
 import { generateObject } from '@/lib/ai';
 import { prisma } from '@/lib/prisma';
 
+const GESTORES = ['admin', 'qa', 'supervisor'];
+
 export async function POST(request: Request) {
     try {
+        // Consume cuota de Gemini y pisa el análisis guardado: solo quienes gestionan sugerencias.
+        const userId = request.headers.get('x-user-id');
+        const role = (request.headers.get('x-user-role') || '').toLowerCase();
+        if (!userId || !GESTORES.includes(role)) {
+            return NextResponse.json({ error: 'No autorizado.' }, { status: 403 });
+        }
+
         const body = await request.json();
         const { sugerenciaId, titulo, descripcion, area, propuestaAutor } = body;
 
@@ -18,9 +27,9 @@ export async function POST(request: Request) {
             area: area || 'No especificada',
             propuestaAutor: propuestaAutor || 'Ninguna proporcionada'
         }, {
-            userId: 'system',
+            userId,
             userName: 'API AI Analizar',
-            userRole: 'admin',
+            userRole: role,
         });
 
         if (!aiResponse.success || !aiResponse.data) {

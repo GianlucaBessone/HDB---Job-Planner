@@ -538,7 +538,12 @@ export default function TicketsPage() {
                                             { label: 'Prioridad', value: prioridadLabel(detail.prioridad) },
                                             { label: 'Impacto', value: (TICKET_IMPACTO_LABEL as any)[detail.impacto] || detail.impacto },
                                             { label: 'Riesgo', value: (TICKET_RIESGO_LABEL as any)[detail.riesgo] || detail.riesgo },
-                                            { label: 'Auto-fix', value: detail.autoFixPermitido ? 'Habilitado' : 'No' },
+                                            {
+                                                label: 'Auto-fix',
+                                                value: detail.autoFixPermitido
+                                                    ? 'Habilitado'
+                                                    : detail.autoFixAutorizadoPorUsuario ? 'Autorizado, no habilitado' : 'No',
+                                            },
                                         ].map(item => (
                                             <div key={item.label} className="rounded-xl border border-slate-200 dark:border-slate-700 p-2.5">
                                                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{item.label}</p>
@@ -546,6 +551,20 @@ export default function TicketsPage() {
                                             </div>
                                         ))}
                                     </section>
+
+                                    {detail.clasificacionDeclarada && (
+                                        ['tipo', 'urgencia', 'impacto', 'prioridad'].some(k => detail.clasificacionDeclarada[k] && detail.clasificacionDeclarada[k] !== detail[k])
+                                    ) && (
+                                        <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                                            Declarado por quien reportó:{' '}
+                                            {[
+                                                (TICKET_TIPO_LABEL as any)[detail.clasificacionDeclarada.tipo] || detail.clasificacionDeclarada.tipo,
+                                                `urgencia ${(TICKET_URGENCIA_LABEL as any)[detail.clasificacionDeclarada.urgencia] || detail.clasificacionDeclarada.urgencia}`,
+                                                `impacto ${(TICKET_IMPACTO_LABEL as any)[detail.clasificacionDeclarada.impacto] || detail.clasificacionDeclarada.impacto}`,
+                                                detail.clasificacionDeclarada.prioridad,
+                                            ].filter(Boolean).join(' · ')}
+                                        </p>
+                                    )}
 
                                     <section>
                                         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Contexto técnico</h3>

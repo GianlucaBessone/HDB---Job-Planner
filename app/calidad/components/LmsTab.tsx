@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { safeApiRequest } from "@/lib/offline";
 import { formatDateInline } from "@/lib/formatDate";
 import { useModalScroll } from "@/lib/useModalScroll";
+import { responsabilidadesATexto } from "@/lib/documentoResponsabilidades";
 import {
   BookOpen,
   Award,
@@ -534,7 +535,7 @@ export default function LmsTab({ user }: { user: any }) {
                         },
                         {
                           title: "Responsabilidades",
-                          content: digitalData.responsabilidades,
+                          content: responsabilidadesATexto(digitalData.responsabilidades),
                         },
                       ]
                         .filter((s) => s.content)

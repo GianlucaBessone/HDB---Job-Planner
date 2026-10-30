@@ -11,7 +11,6 @@ const PUBLIC_ROUTES = [
 ];
 
 const PUBLIC_DYNAMIC_ROUTES = [
-  /^\/api\/sugerencias$/, // POST envio y GET pizarra desde /ideas-sugerencias-reclamos (publica); el resto pide sesion
   /^\/api\/ordenes-servicio\/[^\/]+$/, // GET or PUT (firma) by publicToken
   /^\/api\/ordenes-servicio\/[^\/]+\/pdf$/, // PDF generation
   /^\/api\/encuesta-servicio$/, // POST
@@ -35,6 +34,15 @@ export async function middleware(request: NextRequest) {
 
   // Permitir GET a /api/operators (necesario para el login)
   if (pathname === '/api/operators' && request.method === 'GET') {
+    return NextResponse.next();
+  }
+
+  // Pizarra pública de sugerencias (/ideas-sugerencias-reclamos): listar, enviar
+  // y descargar adjuntos. Gestionar (/[id], /analizar) requiere sesión.
+  if (pathname === '/api/sugerencias' && (request.method === 'GET' || request.method === 'POST')) {
+    return NextResponse.next();
+  }
+  if (/^\/api\/sugerencias\/adjuntos\/[^\/]+$/.test(pathname) && request.method === 'GET') {
     return NextResponse.next();
   }
 

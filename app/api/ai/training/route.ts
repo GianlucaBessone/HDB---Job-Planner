@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { generateObject } from '@/lib/ai';
 import { TrainingQuizOutput } from '@/lib/ai/types';
 import { prisma } from '@/lib/prisma';
+import { responsabilidadesATexto } from '@/lib/documentoResponsabilidades';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,7 +47,7 @@ export async function POST(req: Request) {
 Objetivo: ${parsed.objetivo || 'No especificado'}
 Alcance: ${parsed.alcance || 'No especificado'}
 Desarrollo de la Actividad: ${parsed.desarrollo || 'No especificado'}
-Responsabilidades: ${parsed.responsabilidades || 'No especificado'}
+Responsabilidades: ${responsabilidadesATexto(parsed.responsabilidades) || 'No especificado'}
 `;
                 if (parsed.videoUrl) {
                     videoContentText = `\n--- VIDEO DE CAPACITACIÓN INSERTADO ---

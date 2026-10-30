@@ -1287,7 +1287,8 @@ model Sugerencia {
   reunion_programada  DateTime?
   notas_resolucion    String?                @db.Text
   estado              String                 @default("Pendiente") // Pendiente | En evaluación | Aprobada | Rechazada | Implementada | Cerrada
-  archivos_adjuntos   Json                   @default("[]") // [{nombre, url, size}]
+  archivos_adjuntos   Json                   @default("[]") // [{id, nombre, url, size}] — url apunta a /api/sugerencias/adjuntos/{id}
+  archivos            SugerenciaAdjunto[]
   historial           SugerenciaHistorial[]
   comentarios         SugerenciaComentario[]
   acciones            AccionMejora[]
@@ -1296,6 +1297,20 @@ model Sugerencia {
   @@index([usuario_id])
   @@index([responsable_id])
   @@index([estado])
+}
+
+// Archivo adjunto de una sugerencia, guardado en la base (Vercel no tiene disco escribible).
+model SugerenciaAdjunto {
+  id           String     @id @default(cuid())
+  sugerenciaId String
+  sugerencia   Sugerencia @relation(fields: [sugerenciaId], references: [id], onDelete: Cascade)
+  nombre       String
+  mime         String
+  size         Int
+  datos        Bytes
+  createdAt    DateTime   @default(now())
+
+  @@index([sugerenciaId])
 }
 
 model SugerenciaHistorial {
@@ -3505,6 +3520,8 @@ model Ticket {
   impacto                String    @default("usuario_unico") // organizacion | area | varios_usuarios | usuario_unico
   prioridad              String    @default("P3") // P0 | P1 | P2 | P3
   estado                 String    @default("nuevo")
+  // Lo que eligió quien reportó; el triaje puede cambiar tipo/urgencia/impacto/prioridad.
+  clasificacionDeclarada Json? // { tipo, urgencia, impacto, prioridad }
 
   reportadoPorId         String?
   reportadoPor           Operator? @relation("TicketReportadoPor", fields: [reportadoPorId], references: [id], onDelete: SetNull)
@@ -3515,7 +3532,8 @@ model Ticket {
 
   // Evaluación de Gemini y trabajo del agente (API /api/agente)
   riesgo                 String    @default("desconocido") // bajo | medio | alto | critico | desconocido
-  autoFixPermitido       Boolean   @default(false)
+  autoFixAutorizadoPorUsuario Boolean @default(false) // consentimiento de quien reportó
+  autoFixPermitido       Boolean   @default(false) // decisión del triaje o del gestor
   analisisAgente         Json? // { resumen, causaRaiz, alcance, plan, archivosProbables, requiereAprobacion, ... }
   estimacion             Json? // { esfuerzo, horas, confianza, riesgo }
   rama                   String?

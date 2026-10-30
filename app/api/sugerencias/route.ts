@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { detectarTipoArchivo } from '@/lib/tipoArchivo';
 import { verifyPin } from '@/lib/pinAuth';
-import { promises as fs } from 'fs';
-import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,15 +11,11 @@ const failedAttempts = new Map<string, { count: number; lockUntil: number }>();
 const ipSubmissions = new Map<string, number[]>();
 
 // Configuration limits
-const FILE_SIZE_LIMIT = 10 * 1024 * 1024; // 10MB
-const ALLOWED_MIME_TYPES = [
-    'image/', 
-    'application/pdf', 
-    'application/msword', 
-    'application/vnd.openxmlformats-officedocument', 
-    'text/plain', 
-    'application/vnd.ms-excel'
-];
+// Vercel corta los cuerpos de más de 4,5 MB: el formulario viaja entero en un request.
+const FILE_SIZE_LIMIT = 3 * 1024 * 1024; // 3MB por archivo
+const TOTAL_FILES_LIMIT = 4 * 1024 * 1024; // 4MB entre todos
+const MAX_FILES = 5;
+const TIPOS_PERMITIDOS = ['png', 'jpeg', 'gif', 'webp', 'pdf', 'docx', 'xlsx', 'doc', 'xls', 'txt'];
 
 // Helper to sanitize inputs
 function sanitizeInput(str: string): string {
@@ -133,52 +128,34 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'El título no puede superar los 150 caracteres.' }, { status: 400 });
         }
 
-        // 4. File uploads validation and saving
-        const files = formData.getAll('files') as File[];
-        const archivos_adjuntos: Array<{ nombre: string; url: string; size: number }> = [];
+        // 4. File validation (se guardan en la base junto con la sugerencia)
+        const files = formData.getAll('files').filter((f): f is File => f instanceof File && !!f.name && f.size > 0);
+        const archivosValidados: Array<{ nombre: string; mime: string; datos: Buffer }> = [];
 
-        if (files && files.length > 0) {
-            const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-            
-            try {
-                await fs.mkdir(uploadsDir, { recursive: true });
-            } catch (dirErr) {
-                // Ignore if directory creation failed but already exists
+        if (files.length > MAX_FILES) {
+            return NextResponse.json({ error: `Puedes adjuntar hasta ${MAX_FILES} archivos.` }, { status: 400 });
+        }
+        if (files.reduce((acc, f) => acc + f.size, 0) > TOTAL_FILES_LIMIT) {
+            return NextResponse.json({ error: 'Los adjuntos superan los 4MB en total.' }, { status: 400 });
+        }
+
+        for (const file of files) {
+            if (file.size > FILE_SIZE_LIMIT) {
+                return NextResponse.json({
+                    error: `El archivo ${file.name} supera el límite de tamaño permitido (${(FILE_SIZE_LIMIT / (1024 * 1024)).toFixed(0)}MB).`
+                }, { status: 400 });
             }
 
-            for (const file of files) {
-                if (!file.name || file.size === 0) continue; // Skip empty files
-                
-                // Validate size
-                if (file.size > FILE_SIZE_LIMIT) {
-                    return NextResponse.json({ 
-                        error: `El archivo ${file.name} supera el límite de tamaño permitido (${(FILE_SIZE_LIMIT / (1024 * 1024)).toFixed(0)}MB).` 
-                    }, { status: 400 });
-                }
-
-                // Validate mime type
-                const isAllowed = ALLOWED_MIME_TYPES.some(type => file.type.startsWith(type));
-                if (!isAllowed) {
-                    return NextResponse.json({ 
-                        error: `El tipo de archivo de ${file.name} no está permitido. Solo se permiten imágenes, PDFs y documentos de texto u oficina.` 
-                    }, { status: 400 });
-                }
-
-                // Sanitize file name and create a unique name
-                const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-                const filename = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}_${sanitizedName}`;
-                
-                // Read file buffer and save
-                const bytes = await file.arrayBuffer();
-                const buffer = Buffer.from(bytes);
-                await fs.writeFile(path.join(uploadsDir, filename), buffer);
-
-                archivos_adjuntos.push({
-                    nombre: file.name,
-                    url: `/uploads/${filename}`,
-                    size: file.size
-                });
+            const datos = Buffer.from(await file.arrayBuffer());
+            // El tipo se decide por el contenido y la extensión, no por lo que declara el navegador.
+            const tipo = detectarTipoArchivo(datos, file.name, TIPOS_PERMITIDOS);
+            if (!tipo) {
+                return NextResponse.json({
+                    error: `El tipo de archivo de ${file.name} no está permitido. Solo se permiten imágenes, PDF, Word, Excel o texto.`
+                }, { status: 400 });
             }
+
+            archivosValidados.push({ nombre: file.name.slice(0, 200), mime: tipo.mime, datos });
         }
 
         // 5. Create the database record
@@ -190,7 +167,8 @@ export async function POST(req: Request) {
             customId = generateSugerenciaId();
         }
 
-        const sugerencia = await prisma.sugerencia.create({
+        const sugerencia = await prisma.$transaction(async (tx) => {
+          const creada = await tx.sugerencia.create({
             data: {
                 id: customId,
                 tipo_registro,
@@ -204,8 +182,21 @@ export async function POST(req: Request) {
                 presentacion,
                 usuario_id: usuarioId,
                 estado: 'Pendiente',
-                archivos_adjuntos: archivos_adjuntos as any
             }
+          });
+
+          const archivos = [];
+          for (const a of archivosValidados) {
+              const adj = await tx.sugerenciaAdjunto.create({
+                  data: { sugerenciaId: creada.id, nombre: a.nombre, mime: a.mime, size: a.datos.length, datos: a.datos },
+                  select: { id: true, nombre: true, size: true },
+              });
+              archivos.push({ ...adj, url: `/api/sugerencias/adjuntos/${adj.id}` });
+          }
+
+          return archivos.length > 0
+              ? tx.sugerencia.update({ where: { id: creada.id }, data: { archivos_adjuntos: archivos as any } })
+              : creada;
         });
 
         // 6. Write initial state change to audit history
