@@ -9,6 +9,7 @@ import { safeApiRequest } from '@/lib/offline';
 import TechAssistantChat from '@/components/TechAssistantChat';
 import { useModalScroll } from '@/lib/useModalScroll';
 import { showToast } from '@/components/Toast';
+import { parseResponsabilidades, type Responsabilidad } from '@/lib/documentoResponsabilidades';
 import SignatureButton from '@/components/SignatureButton';
 
 export default function NewDocumentModal({
@@ -138,7 +139,7 @@ export default function NewDocumentModal({
         objetivo: '',
         alcance: '',
         desarrollo: '',
-        responsabilidades: '',
+        responsabilidades: [] as Responsabilidad[],
         videoUrl: '',
         definiciones: [] as { term: string; definition: string }[],
         referencias: [] as { docId?: string; codigo: string; titulo: string }[]
@@ -146,6 +147,8 @@ export default function NewDocumentModal({
 
     // Abbreviations Helpers
     const [customAbbrevs, setCustomAbbrevs] = useState<{ term: string; definition: string }[]>([]);
+    const [newRol, setNewRol] = useState('');
+    const [newResp, setNewResp] = useState('');
     const [newTerm, setNewTerm] = useState('');
     const [newDef, setNewDef] = useState('');
     const [saveToFrequents, setSaveToFrequents] = useState(true);
@@ -281,6 +284,11 @@ export default function NewDocumentModal({
 
         if (!formData.revisadorId || !formData.aprobadorId) {
             showToast('Debe seleccionar un Revisador y un Aprobador para crear el documento.', 'error');
+            return;
+        }
+
+        if (isDigital && digitalData.responsabilidades.length === 0) {
+            showToast('Agregue al menos una responsabilidad (rol y descripción) en el paso 5.', 'error');
             return;
         }
 
@@ -853,13 +861,81 @@ export default function NewDocumentModal({
                                 <div>
                                     <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider">5. Responsabilidades</h3>
                                     <p className="text-[10px] text-slate-400 font-bold mb-2">Detalle las responsabilidades de cada rol en la ejecución (ej: qué corresponde a Técnicos, Supervisores, QA).</p>
-                                    <textarea
-                                        required={isDigital}
-                                        placeholder="Roles y responsabilidades de ejecución..."
-                                        value={digitalData.responsabilidades}
-                                        onChange={e => setDigitalData({ ...digitalData, responsabilidades: e.target.value })}
-                                        className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 outline-none h-36"
-                                    />
+
+                                    {digitalData.responsabilidades.length > 0 && (
+                                        <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 mb-3">
+                                            <table className="w-full text-xs">
+                                                <thead className="bg-muted text-muted-foreground">
+                                                    <tr>
+                                                        <th className="text-left px-3 py-2 font-black uppercase tracking-wider text-[10px] w-40">Rol</th>
+                                                        <th className="text-left px-3 py-2 font-black uppercase tracking-wider text-[10px]">Responsabilidad</th>
+                                                        <th className="w-10" />
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {digitalData.responsabilidades.map((r, i) => (
+                                                        <tr key={i} className="border-t border-slate-200 dark:border-slate-700 align-top">
+                                                            <td className="px-3 py-2 font-black text-indigo-600">{r.rol}</td>
+                                                            <td className="px-3 py-2 text-slate-600 dark:text-slate-300 whitespace-pre-wrap">{r.responsabilidad}</td>
+                                                            <td className="px-2 py-2 text-right">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setDigitalData({
+                                                                        ...digitalData,
+                                                                        responsabilidades: digitalData.responsabilidades.filter((_, idx) => idx !== i),
+                                                                    })}
+                                                                    className="text-red-400 hover:text-red-600"
+                                                                    title="Quitar"
+                                                                >
+                                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
+
+                                    <div className="flex gap-2 items-end">
+                                        <div className="flex-shrink-0 w-40">
+                                            <label className="text-[9px] font-bold text-slate-400 uppercase">Rol / Responsable</label>
+                                            <input
+                                                value={newRol}
+                                                onChange={e => setNewRol(e.target.value)}
+                                                placeholder="Ej: Supervisor"
+                                                className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs font-bold outline-none focus:border-indigo-500"
+                                            />
+                                        </div>
+                                        <div className="flex-1">
+                                            <label className="text-[9px] font-bold text-slate-400 uppercase">Responsabilidad</label>
+                                            <textarea
+                                                value={newResp}
+                                                onChange={e => setNewResp(e.target.value)}
+                                                placeholder="Describa la responsabilidad..."
+                                                rows={2}
+                                                className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-indigo-500 resize-none"
+                                            />
+                                        </div>
+                                        <button
+                                            type="button"
+                                            disabled={!newRol.trim() || !newResp.trim()}
+                                            onClick={() => {
+                                                setDigitalData({
+                                                    ...digitalData,
+                                                    responsabilidades: [
+                                                        ...digitalData.responsabilidades,
+                                                        { rol: newRol.trim(), responsabilidad: newResp.trim() },
+                                                    ],
+                                                });
+                                                setNewRol('');
+                                                setNewResp('');
+                                            }}
+                                            className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 disabled:opacity-50 flex-shrink-0 flex items-center gap-1"
+                                        >
+                                            <Plus className="w-3.5 h-3.5" /> Agregar
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div className="flex justify-between pt-4 border-t border-slate-100 dark:border-slate-700">
@@ -1194,7 +1270,8 @@ export default function NewDocumentModal({
                                                 objetivo: aiResult.objetivo,
                                                 alcance: aiResult.alcance,
                                                 desarrollo: aiResult.desarrollo,
-                                                responsabilidades: aiResult.responsabilidades || '',
+                                                // La IA las devuelve como texto: se pasan a la tabla.
+                                                responsabilidades: parseResponsabilidades(aiResult.responsabilidades),
                                                 definiciones: aiResult.definiciones || [],
                                                 referencias: aiResult.referencias || []
                                             }));
