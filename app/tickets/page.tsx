@@ -5,12 +5,13 @@ import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import ModuleHeader from '@/components/ModuleHeader';
 import ReportTicketModal from '@/components/tickets/ReportTicketModal';
+import AgentePanel from '@/components/tickets/AgentePanel';
 import { showToast } from '@/components/Toast';
 import {
     LifeBuoy, Plus, RefreshCw, AlertTriangle, Clock, CheckCircle2,
     Bug, Sparkles, Lightbulb, HelpCircle, MessageSquare, History, Brain,
     Loader2, X, ChevronRight, User, Paperclip, Send, ShieldAlert,
-    CircleDot, ArrowUpRight, Filter, Copy, Terminal, GitBranch, FileCode2,
+    CircleDot, ArrowUpRight, Filter, Copy, FileCode2,
     ListChecks,
 } from 'lucide-react';
 import {
@@ -702,12 +703,6 @@ export default function TicketsPage() {
                                                 </section>
                                             )}
 
-                                            {(detail.rama || detail.commitHash) && (
-                                                <section className="flex flex-wrap gap-3 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                                                    {detail.rama && <span className="inline-flex items-center gap-1"><GitBranch className="w-3.5 h-3.5" /> {detail.rama}</span>}
-                                                    {detail.commitHash && <span className="inline-flex items-center gap-1"><Terminal className="w-3.5 h-3.5" /> {detail.commitHash}</span>}
-                                                </section>
-                                            )}
                                         </>
                                     ) : (
                                         <div className="py-10 text-center">
@@ -717,7 +712,7 @@ export default function TicketsPage() {
                                             <p className="text-sm font-black text-slate-700 dark:text-slate-200">Todavía no hay evaluación</p>
                                             <p className="text-xs text-slate-400 font-medium mt-1 max-w-md mx-auto">
                                                 Gemini puede clasificar el ticket, estimar el riesgo y proponer un plan ahora mismo.
-                                                La corrección del código, si hace falta, la hace el agente con opencode.
+                                                La corrección del código, si hace falta, la hace un agente con acceso al repositorio.
                                             </p>
 
                                             {puedeAnalizar && (
@@ -730,25 +725,10 @@ export default function TicketsPage() {
                                                     {analizando ? 'Analizando…' : 'Analizar con IA'}
                                                 </button>
                                             )}
-
-                                            <p className="mt-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Para corregir el código</p>
-                                            <div className="mt-2 inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                                                <Terminal className="w-3.5 h-3.5 text-slate-400" />
-                                                <code className="text-[11px] font-mono font-bold text-slate-600 dark:text-slate-300">
-                                                    Analizá el ticket {detail.codigo} con el MCP sgi
-                                                </code>
-                                                <button
-                                                    onClick={() => {
-                                                        navigator.clipboard?.writeText(`Analizá el ticket ${detail.codigo} con el MCP sgi y seguí la política de tickets.`);
-                                                        showToast('Prompt copiado', 'success');
-                                                    }}
-                                                    className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400"
-                                                >
-                                                    <Copy className="w-3.5 h-3.5" />
-                                                </button>
-                                            </div>
                                         </div>
                                     )}
+
+                                    <AgentePanel ticket={detail} canManage={canManage} />
                                 </div>
                             ) : tab === 'historial' ? (
                                 <div className="space-y-3">

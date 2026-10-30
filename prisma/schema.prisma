@@ -3513,13 +3513,17 @@ model Ticket {
   asignadoA              Operator? @relation("TicketAsignadoA", fields: [asignadoAId], references: [id], onDelete: SetNull)
   asignadoANombre        String?
 
-  // Evaluación del agente (MCP opencode)
+  // Evaluación de Gemini y trabajo del agente (API /api/agente)
   riesgo                 String    @default("desconocido") // bajo | medio | alto | critico | desconocido
   autoFixPermitido       Boolean   @default(false)
   analisisAgente         Json? // { resumen, causaRaiz, alcance, plan, archivosProbables, requiereAprobacion, ... }
   estimacion             Json? // { esfuerzo, horas, confianza, riesgo }
   rama                   String?
   commitHash             String?
+  prUrl                  String?
+  // Bloqueo para que dos agentes no trabajen el mismo ticket
+  tomadoPorTokenId       String?
+  tomadoHasta            DateTime?
   resolucion             String?   @db.Text
   verificado             Boolean   @default(false)
   intentosAgente         Int       @default(0)
@@ -3533,6 +3537,7 @@ model Ticket {
   comentarios            TicketComentario[]
   eventosAgente          TicketEventoAgente[]
   archivos               TicketAdjunto[]
+  agenteTokens           TicketAgenteToken[]
 
   @@index([estado])
   @@index([tipo])
@@ -3558,6 +3563,25 @@ model TicketAdjunto {
 
   @@index([ticketId])
   @@index([subidoPorId])
+}
+
+// Acceso de un agente externo (cualquier herramienta con acceso al repo) a /api/agente.
+// Con ticketId solo sirve para ese ticket; sin ticketId ve los tickets listos para corregir.
+// Del token solo se guarda el hash.
+model TicketAgenteToken {
+  id          String    @id @default(cuid())
+  nombre      String
+  tokenHash   String    @unique
+  prefijo     String
+  ticketId    String?
+  ticket      Ticket?   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  creadoPorId String?
+  expiraEn    DateTime?
+  revocadoEn  DateTime?
+  ultimoUsoEn DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([ticketId])
 }
 
 model TicketHistorial {
@@ -3589,7 +3613,7 @@ model TicketEventoAgente {
   id        String   @id @default(cuid())
   ticketId  String
   ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  agente    String   @default("opencode")
+  agente    String   @default("agente")
   tipo      String // analisis | cambio | validacion | escalamiento | nota
   payload   Json?
   createdAt DateTime @default(now())

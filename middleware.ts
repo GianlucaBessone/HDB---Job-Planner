@@ -8,6 +8,7 @@ const PUBLIC_ROUTES = [
   '/api/cron',
   '/api/public',
   '/api/portal-clientes',
+  '/api/agente', // se autentica con su propio token Bearer (lib/ticketsAgente.ts)
 ];
 
 const PUBLIC_DYNAMIC_ROUTES = [
