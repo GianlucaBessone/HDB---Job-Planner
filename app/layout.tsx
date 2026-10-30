@@ -11,7 +11,7 @@ import Script from "next/script";
 import { ClipboardList, Menu, X, LogOut, Home, ChevronDown, Star, Search, LifeBuoy } from "lucide-react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
-import ToastContainer from "@/components/Toast";
+import ToastContainer, { showToast } from "@/components/Toast";
 import LoginScreen from "@/components/LoginScreen";
 import ActivityCenterDropdown from "@/components/ActivityCenterDropdown";
 import OneSignalInit from "@/components/OneSignalInit";
@@ -530,10 +530,29 @@ function Sidebar({ isOpen, onClose, user, views, onLogout }: {
 
                     <button
                         onClick={async () => {
+                            if (!(window as any).__ONESIGNAL_INITIALIZED__) {
+                                showToast("Las notificaciones todavía no están listas. Recargá la página e intentá de nuevo.", "error");
+                                return;
+                            }
+                            if (!OneSignal.Notifications.isPushSupported()) {
+                                showToast("Este navegador no admite notificaciones. En iPhone, instalá la app desde Safari (Compartir → Agregar a inicio).", "error");
+                                return;
+                            }
+                            if (typeof Notification !== "undefined" && Notification.permission === "denied") {
+                                showToast("Las notificaciones están bloqueadas. Habilitalas desde el candado de la barra de direcciones y recargá.", "error");
+                                return;
+                            }
                             try {
-                                await OneSignal.Notifications.requestPermission();
+                                // optIn pide permiso si hace falta y crea la suscripción aunque el permiso ya estuviera concedido
+                                await OneSignal.User.PushSubscription.optIn();
+                                if (OneSignal.User.PushSubscription.optedIn) {
+                                    showToast("Notificaciones activadas");
+                                } else {
+                                    showToast("No se pudo activar. Revisá el permiso de notificaciones del navegador.", "error");
+                                }
                             } catch (e) {
-                                console.error("Error al solicitar permiso:", e);
+                                console.error("Error al activar notificaciones:", e);
+                                showToast("Error al activar notificaciones", "error");
                             }
                         }}
                         className="w-full flex items-center justify-center gap-2 px-3 bg-primary/5 text-primary py-2.5 rounded-xl font-black text-[9px] sm:text-[10px] uppercase tracking-widest hover:bg-primary/10 transition-all active:scale-95 border border-primary/10"
