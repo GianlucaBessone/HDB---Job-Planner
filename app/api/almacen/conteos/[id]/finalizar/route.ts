@@ -4,8 +4,9 @@ import { verificarPermisoInventario } from '@/lib/inventario/permisos';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: paramsPromise }: { params: Promise<{ id: string }> }
 ) {
+  const params = await paramsPromise;
   try {
     const auth = verificarPermisoInventario(req, 'conteos_contar');
     if (auth.error) return auth.error;

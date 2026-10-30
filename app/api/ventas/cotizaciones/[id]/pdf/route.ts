@@ -16,7 +16,8 @@ async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
     });
 }
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     try {
         let cotizacion: any;
         try {

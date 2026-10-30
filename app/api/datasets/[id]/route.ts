@@ -6,7 +6,8 @@ import { validarSQL, calcularProximaEjecucion, construirSQLDesdeVisual, Definici
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     const auth = requireSGIRole(req, ['supervisor', 'admin', 'qa']);
     if (auth.error) return auth.error;
 
@@ -39,7 +40,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     const auth = requireSGIRole(req, ['supervisor', 'admin']);
     if (auth.error) return auth.error;
 
@@ -136,7 +138,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     const auth = requireSGIRole(req, ['supervisor', 'admin']);
     if (auth.error) return auth.error;
 

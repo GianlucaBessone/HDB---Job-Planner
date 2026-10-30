@@ -1,7 +1,7 @@
 # Política de Tickets y Auto-fix
 
 **Versión:** 1.0.0
-**Ámbito:** HDB SGI (Next.js 14 + Prisma + PostgreSQL, con escritorio Electron opcional)
+**Ámbito:** HDB SGI (Next.js 15 + Prisma + PostgreSQL, con escritorio Electron opcional)
 **Fuente de verdad:** `mcp/sgi-tickets/policy.json`
 **Última actualización:** 2026-10-29
 

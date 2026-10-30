@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
-type RouteParams = { params: { id: string } };
+type RouteParams = { params: Promise<{ id: string }> };
 
 const include = {
     template: true,
@@ -15,7 +15,8 @@ const include = {
     signature: true
 };
 
-export async function GET(req: NextRequest, { params }: RouteParams) {
+export async function GET(req: NextRequest, { params: paramsPromise }: RouteParams) {
+    const params = await paramsPromise;
     try {
         const report = await prisma.technicalReport.findUnique({
             where: { id: params.id },
@@ -33,7 +34,8 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     }
 }
 
-export async function PUT(req: NextRequest, { params }: RouteParams) {
+export async function PUT(req: NextRequest, { params: paramsPromise }: RouteParams) {
+    const params = await paramsPromise;
     try {
         const existing = await prisma.technicalReport.findUnique({ where: { id: params.id } });
         if (!existing) return NextResponse.json({ error: 'Informe no encontrado' }, { status: 404 });
@@ -131,7 +133,8 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
     }
 }
 
-export async function DELETE(req: NextRequest, { params }: RouteParams) {
+export async function DELETE(req: NextRequest, { params: paramsPromise }: RouteParams) {
+    const params = await paramsPromise;
     try {
         const existing = await prisma.technicalReport.findUnique({ where: { id: params.id } });
         if (!existing) return NextResponse.json({ error: 'Informe no encontrado' }, { status: 404 });

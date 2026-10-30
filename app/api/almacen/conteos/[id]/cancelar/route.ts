@@ -9,8 +9,9 @@ const cancelarConteoSchema = z.object({
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: paramsPromise }: { params: Promise<{ id: string }> }
 ) {
+  const params = await paramsPromise;
   try {
     const auth = verificarPermisoInventario(req, 'conteos_crear');
     if (auth.error) return auth.error;

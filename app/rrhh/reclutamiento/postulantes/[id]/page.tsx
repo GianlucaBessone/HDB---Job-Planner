@@ -34,7 +34,8 @@ const mockCandidate = {
     ]
 };
 
-export default function CandidateProfilePage({ params }: { params: { id: string } }) {
+export default function CandidateProfilePage({ params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = React.use(paramsPromise);
     const router = useRouter();
     const [activeTab, setActiveTab] = useState('cv');
 

@@ -7,7 +7,8 @@ export const dynamic = 'force-dynamic';
 /**
  * GET /api/documentos/[id]/versions — List all versions
  */
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     try {
         const versions = await prisma.documentVersion.findMany({
             where: { documentId: params.id },
@@ -27,7 +28,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
  * POST /api/documentos/[id]/versions — Create a new version
  * Automatically obsoletes the previous vigente version.
  */
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     try {
         const data = await req.json();
         const {

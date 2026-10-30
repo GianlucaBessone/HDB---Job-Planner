@@ -17,8 +17,9 @@ const almacenUpdateSchema = z.object({
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: paramsPromise }: { params: Promise<{ id: string }> }
 ) {
+  const params = await paramsPromise;
   try {
     const auth = verificarPermisoInventario(req, 'almacenes_admin');
     if (auth.error) return auth.error;
@@ -90,8 +91,9 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: paramsPromise }: { params: Promise<{ id: string }> }
 ) {
+  const params = await paramsPromise;
   try {
     const auth = verificarPermisoInventario(req, 'almacenes_admin');
     if (auth.error) return auth.error;

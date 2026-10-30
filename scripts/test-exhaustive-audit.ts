@@ -209,7 +209,7 @@ async function runExhaustiveAudit() {
                 nombre: 'Cable unipolar cambiado en PUT',
             })
         });
-        const putRes = await materialesPut(putReq, { params: { id: createdMaterialId } });
+        const putRes = await materialesPut(putReq, { params: Promise.resolve({ id: createdMaterialId }) });
         const putData = await putRes.json();
 
         if (putRes.status !== 200) {

@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function PUT(req: Request, { params }: { params: { codigo: string } }) {
+export async function PUT(req: Request, { params: paramsPromise }: { params: Promise<{ codigo: string }> }) {
+  const params = await paramsPromise;
     try {
         const body = await req.json();
         const { nombre, precioVenta, costo } = body;
@@ -28,7 +29,8 @@ export async function PUT(req: Request, { params }: { params: { codigo: string }
     }
 }
 
-export async function DELETE(req: Request, { params }: { params: { codigo: string } }) {
+export async function DELETE(req: Request, { params: paramsPromise }: { params: Promise<{ codigo: string }> }) {
+  const params = await paramsPromise;
     try {
         await prisma.materialMaestro.delete({
             where: { codigo: params.codigo }

@@ -4,8 +4,9 @@ import crypto from 'crypto';
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params: paramsPromise }: { params: Promise<{ id: string }> }
 ) {
+  const params = await paramsPromise;
   try {
     const documentId = params.id;
     const body = await request.json();

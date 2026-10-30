@@ -23,7 +23,8 @@ const include = {
     signature: true
 };
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     try {
         const report = await prisma.technicalReport.findUnique({
             where: { id: params.id },

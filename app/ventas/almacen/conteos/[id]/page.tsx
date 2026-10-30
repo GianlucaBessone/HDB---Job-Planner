@@ -69,7 +69,8 @@ interface ConteoData {
   };
 }
 
-export default function ConteoTerminalPage({ params }: { params: { id: string } }) {
+export default function ConteoTerminalPage({ params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = React.use(paramsPromise);
   const router = useRouter();
   const [conteo, setConteo] = useState<ConteoData | null>(null);
   const [items, setItems] = useState<ConteoDetalleItem[]>([]);

@@ -14,8 +14,9 @@ const configSchema = z.object({
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { clienteId: string } }
+  { params: paramsPromise }: { params: Promise<{ clienteId: string }> }
 ) {
+  const params = await paramsPromise;
   try {
     const { clienteId } = params;
     const { searchParams } = new URL(req.url);
@@ -39,8 +40,9 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { clienteId: string } }
+  { params: paramsPromise }: { params: Promise<{ clienteId: string }> }
 ) {
+  const params = await paramsPromise;
   try {
     const { clienteId } = params;
     const body = await req.json();

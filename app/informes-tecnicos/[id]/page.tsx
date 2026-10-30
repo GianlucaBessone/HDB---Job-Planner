@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { FileText, Save, CheckCircle2, FileSignature, ArrowLeft, Loader2, Building2, User, Clock, Package, Plus, Trash2, Cloud, CloudOff, CloudLightning, X } from 'lucide-react';
 import Link from 'next/link';
@@ -8,7 +8,8 @@ import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
 import SignatureButton from '@/components/SignatureButton';
 
-export default function InformeFormPage({ params }: { params: { id: string } }) {
+export default function InformeFormPage({ params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = use(paramsPromise);
     const router = useRouter();
     const [informe, setInforme] = useState<any>(null);
     const [loading, setLoading] = useState(true);

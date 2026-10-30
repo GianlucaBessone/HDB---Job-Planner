@@ -34,7 +34,8 @@ const include = {
 
 // GET /api/ordenes-servicio/[id]/pdf
 // Accepts both the internal OS id and the public token (linkPublico)
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     const { id } = params;
 
     try {

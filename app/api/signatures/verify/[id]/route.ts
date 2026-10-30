@@ -3,7 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { generateSignatureHash } from '@/lib/signature';
 import { logAudit } from '@/lib/audit';
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     try {
         let verifiedBy = null;
         try {

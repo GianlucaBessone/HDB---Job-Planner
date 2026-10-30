@@ -45,7 +45,8 @@ const fullInclude = {
     eventosAgente: { orderBy: { createdAt: 'asc' as const } },
 };
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     try {
         const { userId, canManage } = getActor(req);
 
@@ -76,7 +77,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     try {
         const { userId, canManage, role } = getActor(req);
         const body = await req.json();

@@ -4,7 +4,8 @@ import { generateObject } from '@/lib/ai/service';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     try {
         const nc = await prisma.noConformidad.findUnique({
             where: { id: params.id },

@@ -5,7 +5,8 @@ import { ChevronLeft, Info, HelpCircle, FileText, CheckCircle } from 'lucide-rea
 import ReactMarkdown from 'react-markdown';
 import { renderIcon } from '@/lib/iconRegistry';
 
-export default async function ArticuloPage({ params }: { params: { slug: string } }) {
+export default async function ArticuloPage({ params: paramsPromise }: { params: Promise<{ slug: string }> }) {
+  const params = await paramsPromise;
   const article = await prisma.helpArticle.findUnique({
     where: { slug: params.slug },
     include: {

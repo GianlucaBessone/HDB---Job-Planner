@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { enriquecerTool } from '@/lib/toolControl';
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     try {
         let cleanId = params.id ? decodeURIComponent(params.id).trim() : '';
         if (cleanId.startsWith('TOOL:')) cleanId = cleanId.replace('TOOL:', '').trim();

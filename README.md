@@ -28,7 +28,7 @@ Sistema de planificación diaria para equipos técnicos con generación automát
 
 | Capa | Tecnología |
 |---|---|
-| **Frontend** | Next.js 14, React 18, TypeScript |
+| **Frontend** | Next.js 15, React 19, TypeScript |
 | **Estilos** | TailwindCSS 3, tailwindcss-animate |
 | **Base de Datos** | PostgreSQL (compatible con Neon, Supabase, etc.) |
 | **ORM** | Prisma 5.22 |

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { ShieldCheck, Calendar, Clock, User, Building2, Package, MapPin, Hash, CheckCircle2 } from 'lucide-react';
 
-export default function PublicInformePage({ params }: { params: { signatureId: string } }) {
+export default function PublicInformePage({ params: paramsPromise }: { params: Promise<{ signatureId: string }> }) {
+  const params = use(paramsPromise);
     const [report, setReport] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 

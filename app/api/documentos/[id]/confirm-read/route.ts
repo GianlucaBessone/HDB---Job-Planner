@@ -8,7 +8,8 @@ export const dynamic = 'force-dynamic';
  * POST /api/documentos/[id]/confirm-read
  * Confirm that a user has read the document
  */
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     try {
         const { operatorId, operatorNombre, signatureId } = await req.json();
 
@@ -67,7 +68,8 @@ export async function POST(req: Request, { params }: { params: { id: string } })
  * GET /api/documentos/[id]/confirm-read
  * Get all read confirmations for a document
  */
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     try {
         const confirmations = await prisma.documentReadConfirmation.findMany({
             where: { documentId: params.id },

@@ -20,7 +20,8 @@ const initialStages = [
 
 import { getPipelineCandidates, updateCandidateStage, getVacancy, deleteVacancy } from '@/app/rrhh/actions';
 
-export default function PipelinePage({ params }: { params: { id: string } }) {
+export default function PipelinePage({ params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = React.use(paramsPromise);
     const router = useRouter();
     const [columns, setColumns] = useState<{ [key: string]: any[] }>({});
     const [isClient, setIsClient] = useState(false);

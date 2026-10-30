@@ -33,7 +33,8 @@ const include = {
 } as const;
 
 // GET /api/ordenes-servicio/[id]/cobro/pdf
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     const { id } = params;
 
     try {

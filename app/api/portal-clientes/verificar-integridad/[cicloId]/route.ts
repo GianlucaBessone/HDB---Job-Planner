@@ -7,8 +7,9 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { cicloId: string } }
+  { params: paramsPromise }: { params: Promise<{ cicloId: string }> }
 ) {
+  const params = await paramsPromise;
   try {
     const session = await getAuthenticatedResponsible(req);
     if (!session) {

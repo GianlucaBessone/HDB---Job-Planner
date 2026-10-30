@@ -4,7 +4,8 @@ import { requireSGIRole } from '@/lib/sgiAuth';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest, { params }: { params: { tablaId: string } }) {
+export async function GET(req: NextRequest, { params: paramsPromise }: { params: Promise<{ tablaId: string }> }) {
+  const params = await paramsPromise;
     const auth = requireSGIRole(req, ['supervisor', 'admin', 'qa']);
     if (auth.error) return auth.error;
 
@@ -33,7 +34,8 @@ export async function GET(req: NextRequest, { params }: { params: { tablaId: str
     }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { tablaId: string } }) {
+export async function PUT(req: NextRequest, { params: paramsPromise }: { params: Promise<{ tablaId: string }> }) {
+  const params = await paramsPromise;
     const auth = requireSGIRole(req, ['supervisor', 'admin']);
     if (auth.error) return auth.error;
 

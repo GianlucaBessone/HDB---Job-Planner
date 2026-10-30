@@ -16,8 +16,9 @@ const conteoProgresoSchema = z.object({
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: paramsPromise }: { params: Promise<{ id: string }> }
 ) {
+  const params = await paramsPromise;
   try {
     const auth = verificarPermisoInventario(req, 'consultar_stock');
     if (auth.error) return auth.error;
@@ -128,8 +129,9 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: paramsPromise }: { params: Promise<{ id: string }> }
 ) {
+  const params = await paramsPromise;
   try {
     const auth = verificarPermisoInventario(req, 'conteos_contar');
     if (auth.error) return auth.error;

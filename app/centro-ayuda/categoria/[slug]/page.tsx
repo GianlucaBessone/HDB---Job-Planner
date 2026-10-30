@@ -4,7 +4,8 @@ import { notFound } from 'next/navigation';
 import { ChevronLeft, LifeBuoy, FileText } from 'lucide-react';
 import { renderIcon } from '@/lib/iconRegistry';
 
-export default async function CategoriaPage({ params }: { params: { slug: string } }) {
+export default async function CategoriaPage({ params: paramsPromise }: { params: Promise<{ slug: string }> }) {
+  const params = await paramsPromise;
   const category = await prisma.helpCategory.findUnique({
     where: { slug: params.slug },
     include: {

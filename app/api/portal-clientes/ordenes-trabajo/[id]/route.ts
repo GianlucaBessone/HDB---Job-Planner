@@ -4,7 +4,8 @@ import { getAuthenticatedResponsible, checkResponsibleProjectAccess } from '@/li
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
   try {
     const session = await getAuthenticatedResponsible(req);
     if (!session) {

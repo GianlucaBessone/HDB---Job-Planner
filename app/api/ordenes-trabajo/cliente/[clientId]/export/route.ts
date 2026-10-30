@@ -4,8 +4,9 @@ import * as xlsx from 'xlsx';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { clientId: string } }
+  { params: paramsPromise }: { params: Promise<{ clientId: string }> }
 ) {
+  const params = await paramsPromise;
   try {
     const { clientId } = params;
     const { searchParams } = new URL(req.url);

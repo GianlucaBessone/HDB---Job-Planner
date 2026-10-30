@@ -6,7 +6,8 @@ import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     try {
         const data = await req.json();
         const { fileName, fileType, fileSize, fileContent, userId, userName } = data;

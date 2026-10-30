@@ -4,7 +4,7 @@ Guía para agentes que trabajen en este repositorio.
 
 ## Stack
 
-- Next.js 14 (App Router), React 18, TypeScript, TailwindCSS.
+- Next.js 15 (App Router), React 19, TypeScript, TailwindCSS.
 - Prisma 5.22 + PostgreSQL.
 - Electron opcional (`electron/`).
 - API routes en `app/api/**`; la autenticación pasa por `middleware.ts` y deja `x-user-id` / `x-user-role`.

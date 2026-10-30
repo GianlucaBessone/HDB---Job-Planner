@@ -7,8 +7,9 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string; responsableId: string } }
+  { params: paramsPromise }: { params: Promise<{ id: string; responsableId: string }> }
 ) {
+  const params = await paramsPromise;
   try {
     const { id: clientId, responsableId } = params;
 

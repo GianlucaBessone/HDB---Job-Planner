@@ -4,8 +4,9 @@ import { logAudit } from '@/lib/audit';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: paramsPromise }: { params: Promise<{ id: string }> }
 ) {
+  const params = await paramsPromise;
   try {
     const { id } = params;
     const userId = req.headers.get('x-user-id') || undefined;
@@ -64,14 +65,14 @@ export async function POST(
 
 export async function PATCH(
   req: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   return POST(req, context);
 }
 
 export async function PUT(
   req: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   return POST(req, context);
 }

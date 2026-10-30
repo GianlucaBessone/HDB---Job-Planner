@@ -8,8 +8,9 @@ import { dataLayer } from '@/lib/dataLayer';
  */
 export async function GET(
     _req: Request,
-    { params }: { params: { id: string } }
+    { params: paramsPromise }: { params: Promise<{ id: string }> }
 ) {
+  const params = await paramsPromise;
     try {
         const project = await dataLayer.getProjectById(params.id);
 

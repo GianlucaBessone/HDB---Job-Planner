@@ -5,7 +5,8 @@ import { getEmbedding, cosineSimilarity } from '@/lib/ai/embeddings';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     try {
         const body = await req.json();
         const { messages, methodology, currentAnalysisState } = body;

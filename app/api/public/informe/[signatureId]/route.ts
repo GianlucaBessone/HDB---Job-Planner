@@ -12,7 +12,8 @@ const include = {
     signature: true
 };
 
-export async function GET(req: Request, { params }: { params: { signatureId: string } }) {
+export async function GET(req: Request, { params: paramsPromise }: { params: Promise<{ signatureId: string }> }) {
+  const params = await paramsPromise;
     try {
         const report = await prisma.technicalReport.findFirst({
             where: { signatureId: params.signatureId },

@@ -5,7 +5,8 @@ import { logAudit } from '@/lib/audit';
 export const dynamic = 'force-dynamic';
 
 // GET /api/documentos/[id]/reglas — List rules for a document
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     try {
         const rules = await prisma.documentApplicabilityRule.findMany({
             where: { documentId: params.id },
@@ -18,7 +19,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 }
 
 // POST /api/documentos/[id]/reglas — Create a new rule
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     try {
         const data = await req.json();
         const {
@@ -57,7 +59,8 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 }
 
 // DELETE /api/documentos/[id]/reglas?ruleId=xxx
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     try {
         const { searchParams } = new URL(req.url);
         const ruleId = searchParams.get('ruleId');

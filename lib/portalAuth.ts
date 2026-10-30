@@ -85,7 +85,7 @@ export async function getAuthenticatedResponsible(request?: Request): Promise<Po
 
   if (!token) {
     try {
-      const cookieStore = cookies();
+      const cookieStore = await cookies();
       token = cookieStore.get(PORTAL_COOKIE_NAME)?.value;
     } catch {
       // Ignore if not in Next.js request context

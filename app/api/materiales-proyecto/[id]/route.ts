@@ -3,7 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { resolverPrecioProducto } from '@/lib/ventas/priceRules';
 
 // PUT /api/materiales-proyecto/[id] — actualizar material
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     const { id } = params;
     const body = await req.json();
     const { nombre, unidad, codigo, cantidadSolicitada, cantidadDisponible, cantidadEntregada, estado, precioVenta } = body;
@@ -133,7 +134,8 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 }
 
 // DELETE /api/materiales-proyecto/[id]
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     const { id } = params;
 
     // Check if any OS using this material is billed

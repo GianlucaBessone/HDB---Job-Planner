@@ -34,7 +34,8 @@ const include = {
 };
 
 // GET /api/ordenes-servicio/[id]  — por id interno o por token público
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     const { id } = params;
     try {
         // Try by internal id first, then by linkPublico
@@ -59,7 +60,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 }
 
 // POST /api/ordenes-servicio/[id]/firma — registrar firma del cliente
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     const { id } = params;
     try {
         const body = await req.json();
@@ -259,7 +261,8 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
 
 // PUT /api/ordenes-servicio/[id] — Actualizar OS existente (si no está firmada)
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     const { id } = params;
     try {
         const os = await prisma.ordenServicio.findUnique({ where: { id } });
@@ -446,7 +449,8 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 }
 
 // DELETE /api/ordenes-servicio/[id] — Eliminar OS
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     const { id } = params;
     try {
         const os = await prisma.ordenServicio.findUnique({ where: { id } });

@@ -9,7 +9,8 @@ function normalizeCode(code: string | null | undefined): string {
     return code.replace(/^0+/, '').toLowerCase().trim();
 }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     try {
         const { id } = params;
 

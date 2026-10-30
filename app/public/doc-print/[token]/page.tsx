@@ -4,10 +4,11 @@ import { formatDateTimeInline } from "@/lib/formatDate";
 import { CheckCircle2, XCircle, FileText, User, Calendar, ShieldAlert } from "lucide-react";
 
 export default async function DocumentPrintVerificationPage({
-  params,
+  params: paramsPromise,
 }: {
-  params: { token: string };
+  params: Promise<{ token: string }>;
 }) {
+  const params = await paramsPromise;
   const { token } = params;
 
   const docPrint = await prisma.documentPrint.findUnique({

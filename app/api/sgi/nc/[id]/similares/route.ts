@@ -4,7 +4,8 @@ import { getEmbedding, cosineSimilarity } from '@/lib/ai/embeddings';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     try {
         // 1. Fetch current NC
         const targetNc = await prisma.noConformidad.findUnique({

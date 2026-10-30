@@ -8,7 +8,8 @@ export const dynamic = 'force-dynamic';
  * PUT /api/documentos/[id]/versions/[versionId]
  * Update a version: change state (approve → vigente, obsolete, etc.)
  */
-export async function PUT(req: Request, { params }: { params: { id: string; versionId: string } }) {
+export async function PUT(req: Request, { params: paramsPromise }: { params: Promise<{ id: string; versionId: string }> }) {
+  const params = await paramsPromise;
     try {
         const data = await req.json();
         const {

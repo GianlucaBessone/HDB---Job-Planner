@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { dataLayer } from '@/lib/dataLayer';
 import { withIdempotency } from '@/lib/idempotency';
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     try {
         const logs = await dataLayer.getProjectLogs(params.id);
         return NextResponse.json(logs);
@@ -11,7 +12,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     }
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     return withIdempotency(req, async () => {
         try {
             const data = await req.json();

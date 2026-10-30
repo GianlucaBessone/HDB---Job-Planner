@@ -15,7 +15,8 @@ function getActor(req: NextRequest) {
     return { role, userId, canManage: GESTORES.includes(role) };
 }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise;
     try {
         const { userId, canManage, role } = getActor(req);
 

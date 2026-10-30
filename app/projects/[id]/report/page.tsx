@@ -4,7 +4,9 @@ import ProjectReportView from '@/components/projects/ProjectReportView';
 
 export const dynamic = 'force-dynamic';
 
-export default async function ProjectReportPage({ params, searchParams }: { params: { id: string }, searchParams?: { token?: string } }) {
+export default async function ProjectReportPage({ params: paramsPromise, searchParams: searchParamsPromise }: { params: Promise<{ id: string }>, searchParams?: Promise<{ token?: string }> }) {
+    const params = await paramsPromise;
+    const searchParams = await searchParamsPromise;
     const project = await prisma.project.findUnique({
         where: { id: params.id },
         include: {

@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 // GET /api/encuesta-servicio/[osId] — Obtener encuesta por OS id o token
-export async function GET(req: Request, { params }: { params: { osId: string } }) {
+export async function GET(req: Request, { params: paramsPromise }: { params: Promise<{ osId: string }> }) {
+  const params = await paramsPromise;
     const { osId } = params;
     try {
         const os = await prisma.ordenServicio.findFirst({

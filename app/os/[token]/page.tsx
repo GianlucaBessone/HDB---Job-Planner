@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle, use } from 'react';
 import { CheckCircle2, Loader2, FileText, User, Package, Clock, AlertCircle, AlertTriangle, PenLine, X, Star, MessageSquare, ThumbsUp, Smile, Download, Sparkles } from 'lucide-react';
 import CodeBadge from '@/components/CodeBadge';
 import { formatDate, formatDateTime, formatTime } from '@/lib/formatDate';
@@ -424,7 +424,8 @@ function PostFirmaModal({
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
-export default function OSPublicPage({ params }: { params: { token: string } }) {
+export default function OSPublicPage({ params: paramsPromise }: { params: Promise<{ token: string }> }) {
+  const params = use(paramsPromise);
     const { token } = params;
     const [os, setOs] = useState<OrdenServicio | null>(null);
     const [loading, setLoading] = useState(true);
