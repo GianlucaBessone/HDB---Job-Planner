@@ -37,14 +37,16 @@ No ejecutes `prisma migrate`, `db push`, commits, push ni deploy sin autorizaci�
 
 ## Tickets de soporte
 
-Existe un sistema de tickets en `/tickets` y un MCP llamado `sgi`.
+Existe un sistema de tickets en `/tickets`. Los agentes lo usan por la API HTTP `/api/agente`, con un token que genera un gestor desde el ticket ("Copiar para agente").
 
-Si te piden analizar o resolver un ticket:
+Si te piden resolver un ticket:
 
-1. Cargá el agente `sgi-ticket-fixer` o seguí su protocolo.
-2. Leé `mcp/sgi-tickets/policy.json` antes de actuar.
-3. No edites código si el riesgo no es bajo y el ticket no está en `listo_para_fix`.
-4. Todo cambio automático debe ser ≤ 4 archivos y ≤ 150 líneas, y quedará respaldado en `.sgi-backups/`.
-5. Dejá el ticket en `en_revision`; nunca lo cierres.
+1. Leé las instrucciones del link que te pasaron (`/api/agente/instrucciones`) y seguilas.
+2. Tomá el ticket antes de tocar código y trabajá en la rama `ticket/{codigo}`, nunca en `main`.
+3. Escalá en vez de resolver si el cambio toca auth, permisos, esquema, dependencias, configuración o datos sensibles.
+4. Registrá la solución con rama, commit y PR: el ticket queda en `en_revision`. Resolverlo y publicarlo lo hace una persona.
+5. No escribas el token en archivos, commits ni logs.
+
+Si cambiás la API de agentes (`app/api/agente/**`, `lib/ticketsAgente.ts`), actualizá también las instrucciones que publica y `docs/sgi-tickets/FLUJO-AGENTE.md`.
 
 Documentación: `docs/sgi-tickets/`.

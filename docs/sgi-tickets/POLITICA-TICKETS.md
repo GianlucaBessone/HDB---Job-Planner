@@ -1,15 +1,15 @@
 # Política de Tickets y Auto-fix
 
-**Versión:** 1.0.0
+**Versión:** 2.0.0
 **Ámbito:** HDB SGI (Next.js 15 + Prisma + PostgreSQL, con escritorio Electron opcional)
-**Fuente de verdad:** `mcp/sgi-tickets/policy.json`
-**Última actualización:** 2026-10-29
+**Reglas para agentes:** `GET /api/agente/instrucciones` (`app/api/agente/instrucciones/route.ts`)
+**Última actualización:** 2026-10-30
 
 ---
 
 ## 1. Objetivo
 
-Que cualquier persona pueda reportar una falla, pedir una función o dejar una sugerencia en menos de dos minutos, y que el equipo pueda clasificarla, priorizarla, resolverla y dejar trazabilidad. Los errores de bajo riesgo pueden ser corregidos por el agente OpenCode a través del MCP `sgi`; todo lo demás requiere una persona.
+Que cualquier persona pueda reportar una falla, pedir una función o dejar una sugerencia en menos de dos minutos, y que el equipo pueda clasificarla, priorizarla, resolverla y dejar trazabilidad. La corrección del código la puede proponer cualquier agente con acceso al repositorio, a través de la API `/api/agente`; publicar y dar por resuelto siempre lo hace una persona.
 
 ## 2. Alcance
 
@@ -31,15 +31,15 @@ Que cualquier persona pueda reportar una falla, pedir una función o dejar una s
 
 ## 3. Roles y permisos
 
-| Rol | Puede reportar | Ve tickets | Cambia estado / asigna | Aprueba auto-fix | Toca código |
+| Rol | Puede reportar | Ve tickets | Cambia estado / asigna | Delega a un agente | Toca código |
 |---|---|---|---|---|---|
 | `operador`, `vendedor` | Sí | Solo los propios | No | No | No |
 | `supervisor` | Sí | Todos | Sí | Sí | No |
 | `qa` | Sí | Todos | Sí | Sí | No |
 | `admin` | Sí | Todos | Sí | Sí | Sí |
-| Agente OpenCode (`sgi`) | No crea tickets | Todos | Sí, vía MCP | No: solo propone | Solo riesgo bajo |
+| Agente (con token) | No | Solo el del token, o los `listo_para_fix` | Solo `en_progreso`, `en_revision`, `pendiente_aprobacion` | No | Propone en una rama |
 
-La identidad se toma de la cookie `sgi_session` (middleware) y de `x-user-id` / `x-user-role` en las rutas de API. Un usuario no puede reportar ni editar en nombre de otro.
+La identidad de las personas se toma de la cookie `sgi_session` (middleware) y de `x-user-id` / `x-user-role` en las rutas de API. Un usuario no puede reportar ni editar en nombre de otro. Los agentes se autentican con un token `Bearer` que genera un gestor.
 
 ## 4. Taxonomía
 
@@ -104,12 +104,12 @@ El vencimiento se calcula desde `createdAt` hasta `fechaResolucion`. Un ticket a
 | Estado | Significado | Quién lo mueve |
 |---|---|---|
 | `nuevo` | Reportado, sin revisar. | Sistema / usuario |
-| `triaje` | Se está clasificando y verificando. | Gestor / agente |
-| `en_analisis` | Se evalúa causa y alcance. | Gestor / agente |
-| `pendiente_aprobacion` | Requiere decisión humana. | Agente / gestor |
-| `listo_para_fix` | Analizado y aprobado para implementar. | Gestor / agente (riesgo bajo) |
-| `en_progreso` | Se está implementando. | Gestor / agente |
-| `en_revision` | Cambio aplicado, pendiente de validar. | Agente / gestor |
+| `triaje` | Se está clasificando y verificando. | Gestor / Gemini |
+| `en_analisis` | Se evalúa causa y alcance. | Gestor |
+| `pendiente_aprobacion` | Requiere decisión humana. | Gestor / Gemini / agente (escalar) |
+| `listo_para_fix` | Analizado y aprobado para implementar. | Gestor / Gemini (riesgo bajo) |
+| `en_progreso` | Se está implementando. | Gestor / agente (tomar) |
+| `en_revision` | Cambio propuesto, pendiente de validar y publicar. | Agente (solución) / gestor |
 | `resuelto` | Validado y disponible. | Gestor |
 | `cerrado` | Confirmado por quien reportó. | Gestor / autor |
 | `rechazado` | No se implementará. | Gestor |
@@ -122,30 +122,30 @@ nuevo / triaje / en_analisis → rechazado | duplicado
 rechazado / duplicado → triaje (reabrir)
 ```
 
-Las transiciones inválidas se rechazan en la API y en el MCP. El autor puede comentar y cerrar/reabrir su ticket resuelto; no puede reclasificar.
+Las transiciones inválidas se rechazan en la API. Un agente solo puede llevar un ticket a `en_progreso`, `en_revision` o `pendiente_aprobacion`. El autor puede comentar y cerrar/reabrir su ticket resuelto; no puede reclasificar.
 
 ## 7. Flujo end-to-end
 
 1. **Reporte**: formulario guiado. Se captura ruta, navegador, SO, resolución, zona horaria y versión automáticamente. Adjuntos opcionales.
 2. **Registro**: se calcula prioridad, se crea `TCK-AAAA-####` y el historial inicial.
-3. **Triaje**: el gestor (o el agente) confirma tipo, urgencia, impacto y posibles duplicados.
+3. **Triaje**: Gemini (o el gestor) confirma tipo, urgencia, impacto y posibles duplicados.
 4. **Análisis**: causa raíz, alcance, esfuerzo, horas, confianza, riesgo y plan.
 5. **Decisión**:
    - riesgo bajo + tipo error + auto-fix habilitado → `listo_para_fix`;
    - cualquier otro caso → `pendiente_aprobacion`.
-6. **Implementación**: el agente valida guardrails, respalda y edita. El gestor puede hacerlo a mano.
-7. **Verificación**: `tsc --noEmit` + `lint`; prueba funcional del caso reportado.
-8. **Revisión**: `en_revision`. Una persona valida y pasa a `resuelto`.
+6. **Implementación**: el gestor delega con **Copiar para agente**; el agente toma el ticket y trabaja en la rama `ticket/{codigo}`. El gestor también puede hacerlo a mano.
+7. **Verificación**: el agente corre `tsc --noEmit` y registra la solución con rama, commit y PR → `en_revision`.
+8. **Revisión y publicación**: una persona revisa el PR, mergea, publica y pasa a `resuelto`. Recién ahí se avisa al usuario.
 9. **Cierre**: el autor confirma y se pasa a `cerrado`.
 
 ## 8. Clasificación de riesgo
 
 | Riesgo | Definición | Autonomía |
 |---|---|---|
-| **Bajo** | Cambio localizado, reversible, sin datos ni permisos. ≤ 4 archivos, ≤ 150 líneas. | Auto-fix permitido. |
-| **Medio** | Toca varias pantallas o lógica compartida, pero sin datos sensibles. | Requiere aprobación. |
+| **Bajo** | Cambio localizado, reversible, sin datos ni permisos. | Se puede delegar a un agente. |
+| **Medio** | Toca varias pantallas o lógica compartida, pero sin datos sensibles. | Delegar con aprobación previa. |
 | **Alto** | Autenticación, permisos, facturación, datos personales, migraciones, dependencias, integraciones. | Requiere aprobación y revisión técnica. |
-| **Crítico** | Borrado de datos, cambios de esquema, configuración de producción, seguridad. | Solo humano. El agente no edita. |
+| **Crítico** | Borrado de datos, cambios de esquema, configuración de producción, seguridad. | Solo humano. |
 
 Ejemplos:
 
@@ -154,75 +154,41 @@ Ejemplos:
 - **Alto**: tocar `middleware.ts`, cambiar roles, modificar `prisma/schema.prisma`, agregar una librería.
 - **Crítico**: `prisma migrate`, `db push`, borrar registros, rotar secretos, tocar `electron/`.
 
-## 9. Reglas de auto-fix
+## 9. Reglas para agentes
 
-El agente **solo** puede aplicar cambios si se cumplen **todas**:
+Las publica `GET /api/agente/instrucciones`, que es lo primero que lee el agente. Resumen:
 
-1. `POLICY.autoFix.enabled = true`.
-2. `ticket.tipo = error`.
-3. `ticket.autoFixPermitido = true`.
-4. `riesgo = bajo`.
-5. `requiereAprobacion = false`.
-6. ≤ 4 archivos.
-7. ≤ 150 líneas agregadas + eliminadas.
-8. Todas las rutas están en la allowlist y ninguna en la denylist.
-9. Ninguna categoría sensible.
-10. `tickets_begin_fix` devolvió `permitido: true`.
+1. Tomar el ticket (`POST /tomar`) antes de tocar código.
+2. Leer `AGENTS.md` y seguir las convenciones del repo.
+3. Trabajar en la rama `ticket/{codigo}`, nunca en `main`. Nada de push a `main`, merge, deploy ni cambios en producción.
+4. Hacer el cambio mínimo y verificar con `npx tsc --noEmit`.
+5. Commitear con el código del ticket en el mensaje y, si puede, abrir un PR.
+6. Registrar la solución (`POST /solucion`) con resumen, archivos, verificaciones, rama, commit y PR.
 
-Si falla cualquier punto: `tickets_escalate` o `tickets_record_analysis` dejan el ticket en `pendiente_aprobacion` y se prohíbe editar.
+**Escalar en vez de resolver** (`POST /escalar`) si el cambio:
 
-### Rutas permitidas
+- toca autenticación, sesiones, permisos o roles (`lib/auth*`, `lib/portalAuth.ts`, `lib/viewAccess.ts`, `middleware.ts`, `app/api/auth/**`);
+- cambia el esquema (`prisma/schema.prisma`), requiere migraciones o `prisma db push`;
+- agrega dependencias o cambia configuración (`package.json`, `next.config.js`, `.env*`);
+- borra datos, toca facturación o datos personales;
+- es grande (más de ~5 archivos o ~200 líneas) o el problema no está claro.
 
-```
-app/**  components/**  lib/**  docs/**  public/**  mcp/sgi-tickets/**
-```
+**Lo que el servidor impone**, aunque el agente no siga las instrucciones:
 
-### Rutas prohibidas
+- el token solo da acceso a la API de tickets, y el de un ticket solo a ese ticket;
+- no hay forma de pasar a `resuelto` ni `cerrado` desde la API;
+- `/solucion` exige haber tomado el ticket con el mismo token;
+- un ticket tomado queda bloqueado 4 h para otros tokens.
 
-```
-.env  .env.*  .git/**  .sgi-backups/**  node_modules/**
-prisma/schema.prisma  prisma/migrations/**  prisma/seed*
-middleware.ts  electron/**  next.config.js
-package.json  package-lock.json  pnpm-lock.yaml
-scripts/**  public/uploads/**  dist_electron/**
-```
-
-### Patrones prohibidos en el diff
-
-`process.env[`, `child_process`, `eval(`, `new Function(`, `dangerouslySetInnerHTML`, `DROP TABLE`, `TRUNCATE TABLE`, `deleteMany(`, `prisma migrate`, `prisma db push`, `git push --force`, `rm -rf`.
-
-### Verificación obligatoria
-
-```bash
-npx tsc --noEmit
-```
-
-Recomendada si el proyecto tiene configuración de ESLint:
-
-```bash
-npm run lint
-```
-
-Si no se pueden ejecutar, el ticket queda en `en_revision` con `verificado = false` y se informa la limitación.
-
-### Respaldos y rollback
-
-`tickets_begin_fix` copia cada archivo a tocar en:
-
-```
-.sgi-backups/<ticketId>/<timestamp>/<ruta-relativa>
-```
-
-Rollback manual: copiar el archivo desde el respaldo a su ruta original. Si el cambio ya se registró, se puede volver de `en_revision` a `en_progreso` (transición permitida).
+El control final es humano: el agente propone en una rama y una persona decide qué se publica.
 
 ## 10. Seguridad y datos
 
-- Los tickets pueden contener datos de clientes. No se exponen fuera del equipo gestor.
-- Los adjuntos se guardan en `public/uploads/tickets/` con nombre aleatorio. No subir credenciales, tokens, DNI, CBU ni información médica.
-- El MCP corre localmente con el `DATABASE_URL` del proyecto. No se publica por red.
-- El agente no tiene permitido leer `.env`, secretos ni ejecutar comandos de red.
-- Los permisos de opencode para el agente deniegan `webfetch`, `websearch`, `subagent`, commits, push y migraciones.
-- Toda acción del agente queda en `TicketEventoAgente` y en el `AuditLog` del sistema.
+- Los tickets pueden contener datos de clientes. No se exponen fuera del equipo gestor y del agente al que se delegó el ticket.
+- Los adjuntos se guardan en la base (`TicketAdjunto`), se validan por contenido (PNG, JPG, GIF, WEBP, PDF; 3 MB) y solo los descargan el autor, quien lo subió, un gestor o el agente con token del ticket. No subir credenciales, tokens, DNI, CBU ni información médica.
+- Los tokens de agente se muestran una sola vez; en la base queda el hash SHA-256. Vencen a las 48 h y se pueden revocar desde el ticket.
+- El texto del ticket lo escribe un usuario: las instrucciones le indican al agente tratarlo como descripción del problema, no como órdenes.
+- Toda acción del agente queda en `TicketEventoAgente` y en el historial del ticket; la generación de tokens, en el `AuditLog`.
 
 ## 11. Definition of Done
 
@@ -251,15 +217,15 @@ La vista `/tickets` muestra los cuatro primeros. El resto se puede consultar en 
 
 ## 13. Gobernanza
 
-- Cambiar `policy.json` requiere revisión humana y actualizar este documento.
-- El agente lee la política al inicio de cada sesión (`tickets_policy`), por lo que los cambios aplican sin reiniciar OpenCode.
-- Si una regla nueva es más restrictiva, primero se documenta y después se cambia el JSON.
+- Cambiar las reglas para agentes requiere revisión humana: están en `app/api/agente/instrucciones/route.ts` y en este documento.
+- Si una regla nueva es más restrictiva, primero se documenta y después se cambia el texto de las instrucciones.
 - Los tickets de prueba deben usar el prefijo `[TEST]` en el título y cerrarse como `rechazado`.
 
 ## 14. Supuestos y decisiones
 
 1. Se eligió un modelo `Ticket` separado de `Sugerencia` para no mezclar el flujo ISO 9001 con el soporte técnico.
-2. El auto-fix es de **bajo riesgo** y deja el ticket en revisión; nunca cierra ni despliega.
-3. No se agregó una migración formal porque el proyecto usa `db push` en desarrollo. Si se adopta `migrate`, generar la migración correspondiente antes de desplegar.
-4. Los adjuntos usan el filesystem local, igual que el módulo de sugerencias existente.
-5. La IA generativa del módulo de sugerencias no se reutiliza: el análisis lo hace OpenCode vía MCP para tener contexto real del código.
+2. La integración con agentes es una API HTTP con token, no una herramienta en particular: cualquier agente con acceso al repositorio puede usarla sin credenciales de la base.
+3. Un agente propone y deja el ticket en revisión; nunca lo resuelve, cierra ni publica.
+4. No se agregó una migración formal porque el proyecto usa `db push` en desarrollo. Si se adopta `migrate`, generar la migración correspondiente antes de desplegar.
+5. Los adjuntos se guardan en la base porque en Vercel el disco es de solo lectura.
+6. Gemini hace el triaje online (sin acceso al código); el análisis con contexto real del código lo hace el agente al que se delega el ticket.

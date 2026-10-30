@@ -41,8 +41,6 @@ next-env.d.ts
 # cache
 /.cache/
 
-# respaldos del agente de tickets
-/.sgi-backups/
 
 # uploads de tickets
 /public/uploads/tickets/

@@ -2,8 +2,8 @@
  * Taxonomía, prioridad, SLA y máquina de estados de los tickets de soporte.
  *
  * Este archivo es client-safe: no importa Prisma ni APIs de Node.
- * Lo usan la UI y las rutas de API. El MCP mantiene su propia copia de las
- * transiciones en `mcp/sgi-tickets/policy.json`: si cambiás una, cambiá la otra.
+ * Lo usan la UI y las rutas de API. Los estados a los que puede llevar un
+ * agente externo están en `lib/ticketsAgente.ts`.
  */
 
 // ── Tipos ──────────────────────────────────────────────────────────

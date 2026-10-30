@@ -1,6 +1,6 @@
 # Tickets de Soporte — HDB SGI
 
-Sistema de tickets para que cualquier usuario reporte fallas, pida funciones o deje sugerencias desde el buscador del header, con una vista de gestión y un agente OpenCode conectado por MCP.
+Sistema de tickets para que cualquier usuario reporte fallas, pida funciones o deje sugerencias desde el buscador del header, con una vista de gestión, triaje con Gemini y una API para que cualquier agente con acceso al repositorio proponga la corrección.
 
 ---
 
@@ -12,11 +12,9 @@ Sistema de tickets para que cualquier usuario reporte fallas, pida funciones o d
 | Botón de header | `app/layout.tsx` | Ícono de salvavidas junto al buscador. Abre el mismo formulario. |
 | Formulario guiado | `components/tickets/ReportTicketModal.tsx` | Wizard de 4 pasos: tipo → detalle → impacto → contexto y envío. |
 | Vista de gestión | `app/tickets/page.tsx` | KPIs, filtros, detalle, análisis del agente, historial, comentarios y cambio de estado. |
-| API | `app/api/tickets/**` | CRUD, métricas y subida de adjuntos. |
-| Datos | `prisma/schema.prisma` | Modelos `Ticket`, `TicketHistorial`, `TicketComentario`, `TicketEventoAgente`, `TicketCounter`. |
-| MCP | `mcp/sgi-tickets/server.mjs` | Expone tickets y guardrails a OpenCode por stdio. |
-| Política | `mcp/sgi-tickets/policy.json` | Fuente de verdad de límites, rutas y reglas de auto-fix. |
-| Agente | `.opencode/agents/sgi-ticket-fixer.md` | Perfil con permisos restringidos y protocolo de trabajo. |
+| API | `app/api/tickets/**` | CRUD, métricas, adjuntos y acceso para agentes. |
+| API para agentes | `app/api/agente/**`, `lib/ticketsAgente.ts` | Instrucciones y acciones para un agente externo, con token. Ver [FLUJO-AGENTE.md](./FLUJO-AGENTE.md). |
+| Datos | `prisma/schema.prisma` | Modelos `Ticket`, `TicketAdjunto`, `TicketAgenteToken`, `TicketHistorial`, `TicketComentario`, `TicketEventoAgente`, `TicketCounter`. |
 
 ---
 
@@ -38,37 +36,7 @@ npm run dev
 
 Abrí `http://localhost:3333`.
 
-### Verificar el MCP
-
-El archivo `opencode.json` ya declara el servidor `sgi`:
-
-```json
-{
-  "mcp": {
-    "servers": {
-      "sgi": {
-        "type": "local",
-        "command": ["node", "mcp/sgi-tickets/server.mjs"],
-        "cwd": "."
-      }
-    }
-  }
-}
-```
-
-Comprobación:
-
-```bash
-opencode mcp list
-# ✓ sgi  connected
-```
-
-Si no conecta:
-
-1. `node -v` (Node 20+ recomendado).
-2. `npx prisma generate` (el server usa `@prisma/client`).
-3. Que exista `.env` con `DATABASE_URL`.
-4. `node mcp/sgi-tickets/server.mjs` y mirar el error por stderr.
+> En local, `DATABASE_URL` tiene que apuntar a una rama de desarrollo de Neon, nunca a producción: `db push` modifica el esquema de la base a la que apunte.
 
 ---
 
@@ -80,7 +48,7 @@ Si no conecta:
 2. Elegir tipo: error, nueva función, sugerencia o consulta.
 3. Completar título y descripción. En errores se piden pasos y comportamiento esperado.
 4. Elegir urgencia e impacto. El sistema calcula la prioridad P0–P3.
-5. Adjuntar capturas (hasta 3, 5 MB cada una) y enviar.
+5. Adjuntar capturas o PDF (hasta 3, 3 MB cada uno) y enviar.
 6. Se muestra el código `TCK-AAAA-####` para seguimiento.
 
 ### Gestionar
@@ -106,7 +74,7 @@ Un usuario común solo puede analizar su ticket una vez; `admin`, `qa` y `superv
 pasados 30 segundos.
 
 **Qué no hace el triaje online:** no edita archivos, no ejecuta `tsc`, no crea respaldos y no
-despliega. Para corregir código hace falta OpenCode + MCP en una máquina con el repositorio.
+despliega. Para corregir código hace falta un agente con acceso al repositorio (ver "Delegar a un agente").
 Si Gemini no está disponible (`GEMINI_API_KEY` ausente o error de red), el ticket se crea igual y
 queda para análisis manual.
 
@@ -121,7 +89,7 @@ Reglas de seguridad aplicadas en código, no en el prompt:
 
 ### Respuesta automática al usuario
 
-Cuando una persona pasa un ticket a estado `resuelto` desde `/tickets` (el agente con el MCP no puede hacerlo), el sistema:
+Cuando una persona pasa un ticket a estado `resuelto` desde `/tickets` (un agente no puede hacerlo), el sistema:
 
 1. Genera la respuesta final con el prompt `TICKET_RESOLUTION_RESPONSE` (Gemini, `gemini-2.5-flash`).
 2. Guarda la respuesta como comentario **público** del ticket (autor `Equipo de soporte`).
@@ -135,51 +103,44 @@ Reglas:
 - La respuesta nunca se envía si el ticket no llegó a `resuelto`.
 - El mensaje es orientado al usuario final: sin markdown, sin promesas de fechas, máximo 1500 caracteres.
 
-### Pedirle al agente
+### Delegar a un agente
 
-En OpenCode, seleccionar el agente **sgi-ticket-fixer** y escribir, por ejemplo:
+En el ticket → pestaña **Análisis del agente** → **Copiar para agente**. Se copia un texto con el link a
+las instrucciones y un token de 48 h válido solo para ese ticket. Pegalo en cualquier agente abierto en
+el repositorio (Claude Code, OpenCode, Cursor, etc.).
 
-```text
-Analizá el ticket TCK-2026-0001 y, si es de bajo riesgo, corregilo.
-```
-
-O simplemente:
-
-```text
-Revisá los tickets nuevos y hacé triaje.
-```
-
-El agente usa el MCP `sgi` para leer, analizar, validar guardrails, respaldar y registrar el cambio. Si el riesgo no es bajo, el ticket queda en `pendiente_aprobacion` y no toca código.
+El agente toma el ticket, trabaja en la rama `ticket/{codigo}` y registra la solución: el ticket queda en
+`en_revision` con la rama, el commit y el PR a la vista. Si el cambio no le corresponde, lo escala a
+`pendiente_aprobacion` con una pregunta. Vos revisás, publicás y marcás `resuelto`.
 
 ---
 
-## 4. Reglas que aplica el agente
+## 4. Reglas para los agentes
 
-- Auto-fix **solo** para `tipo = error`, `riesgo = bajo`, `autoFixPermitido = true`.
-- Máximo **4 archivos** y **150 líneas** por cambio.
-- Rutas permitidas: `app/**`, `components/**`, `lib/**`, `docs/**`, `public/**`, `mcp/sgi-tickets/**`.
-- Rutas prohibidas: `.env*`, `prisma/schema.prisma`, `prisma/migrations/**`, `middleware.ts`, `electron/**`, `next.config.js`, `package.json`, lockfiles, `scripts/**`, `public/uploads/**`.
-- Verificación obligatoria: `npx tsc --noEmit`. Recomendada: `npm run lint` si hay configuración de ESLint.
-- Respaldo automático en `.sgi-backups/<ticket>/<timestamp>/`.
-- El agente deja el ticket en `en_revision`. Nunca lo cierra.
+Las publica `GET /api/agente/instrucciones`, que es lo que lee el agente:
 
-El detalle completo está en [POLITICA-TICKETS.md](./POLITICA-TICKETS.md) y [FLUJO-AGENTE.md](./FLUJO-AGENTE.md).
+- Trabajar en una rama propia; nunca push a `main`, merge, deploy ni cambios en producción.
+- Escalar si el cambio toca autenticación, permisos, esquema de la base, dependencias, configuración,
+  borrado de datos, facturación o datos personales, o si es grande.
+- Verificar con `npx tsc --noEmit`.
+- No puede marcar `resuelto` ni cerrar: la API no lo permite.
+
+El detalle está en [FLUJO-AGENTE.md](./FLUJO-AGENTE.md) y [POLITICA-TICKETS.md](./POLITICA-TICKETS.md).
 
 ---
 
 ## 5. Operación y mantenimiento
 
-- **Adjuntos**: se guardan en `public/uploads/tickets/`. En Vercel el filesystem es efímero; si se despliega ahí, migrar a S3/R2 o similar. Al estar en `public/`, las URLs son accesibles sin autenticación: no subas datos sensibles.
-- **Notificaciones**: el cambio de estado no envía push todavía. Se puede enganchar `sendPushNotification` en `PATCH /api/tickets/[id]`.
+- **Adjuntos**: se guardan en la base (`TicketAdjunto`) y se descargan por `/api/tickets/adjuntos/{id}`, que exige ser el autor, quien lo subió o un gestor. El tipo se valida por el contenido del archivo. Los que no se vinculan a un ticket se borran a las 24 h.
+- **Notificaciones**: al resolver se avisa al reportante; cuando un agente propone una solución o escala, se avisa a supervisores y admins.
 - **SLA**: se calcula en `lib/tickets.ts` (`TICKET_SLA_HORAS`) y se muestra en la lista.
-- **Respaldos**: `.sgi-backups/` está en `.gitignore`. Borrarlos es seguro una vez validado el cambio.
 
 ---
 
 ## 6. Checklist de validación
 
 - [ ] `npx prisma generate` sin errores.
-- [ ] `npx prisma db push` crea las 5 tablas nuevas.
+- [ ] `npx prisma db push` crea las tablas de tickets.
 - [ ] `npx tsc --noEmit` sin errores.
 - [ ] `npm run lint` sin errores nuevos (si hay configuración de ESLint).
 - [ ] `Ctrl/Cmd + K` muestra la acción de reporte.
@@ -187,5 +148,5 @@ El detalle completo está en [POLITICA-TICKETS.md](./POLITICA-TICKETS.md) y [FLU
 - [ ] Crear un ticket con `GEMINI_API_KEY` configurada y ver el análisis en la pestaña **Análisis**.
 - [ ] Verificar que un ticket sensible (login, permisos, pagos) quede con riesgo `alto` y sin auto-fix.
 - [ ] Cerrar un ticket resuelto y verificar que se genere la respuesta automática con Gemini y quede como comentario público.
-- [ ] `opencode mcp list` muestra `sgi` conectado.
-- [ ] Pedir un análisis y verificar que el ticket pase a `en_analisis` y luego a `listo_para_fix` o `pendiente_aprobacion`.
+- [ ] **Copiar para agente** en un ticket, pegarlo en un agente y verificar que el ticket pase a `en_progreso` y luego a `en_revision` con rama y PR.
+- [ ] Generar un acceso nuevo y verificar que el anterior devuelva `401`.

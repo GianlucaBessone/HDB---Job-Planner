@@ -1,234 +1,97 @@
-# Flujo del agente OpenCode + MCP `sgi`
+# Flujo para resolver tickets con un agente
 
-Documento operativo de cómo el agente evalúa y resuelve un ticket.
-
----
-
-## 1. Arquitectura
-
-```
-Usuario
-  │  reporta desde Ctrl+K o el header
-  ▼
-Next.js  /api/tickets  ─────────►  PostgreSQL (Ticket, Historial, Comentarios, Eventos)
-  ▲                                        ▲
-  │  vista /tickets                        │ Prisma
-  │                                        │
-Persona (gestor)                    MCP `sgi` (stdio)
-                                           ▲
-                                           │ tools/call
-                                     OpenCode + agente sgi-ticket-fixer
-                                           │
-                                           ▼
-                                     Repositorio local (edits + checks)
-```
-
-El MCP no edita archivos: **el agente edita**. El MCP es el que aplica las reglas, registra el análisis, crea el respaldo y mueve el estado. Así el código y los datos quedan sincronizados.
+Cualquier agente con acceso al repositorio (Claude Code, OpenCode, Cursor, Codex, etc.) puede resolver
+tickets usando la API HTTP `/api/agente`. No hace falta instalar nada en el agente ni darle credenciales
+de la base: solo un token.
 
 ---
 
-## 2. Secuencia obligatoria
+## 1. Piezas
 
-```
-1. tickets_policy            → leer límites
-2. tickets_list / tickets_get → elegir y entender
-3. tickets_start_analysis     → nuevo/triaje → en_analisis
-4. tickets_record_analysis    → guarda diagnóstico + riesgo
-                                ├─ riesgo bajo + error + auto-fix  → listo_para_fix
-                                └─ cualquier otro caso             → pendiente_aprobacion
-5. tickets_check_change       → validar archivos/líneas/diff
-6. tickets_begin_fix          → backup + en_progreso (solo si permitido)
-7. [edición de código]
-8. npx tsc --noEmit          → (opcional: npm run lint)
-9. tickets_record_fix         → en_revision + verificaciones
-10. persona valida            → resuelto → cerrado
-```
-
-**Regla:** si en cualquier paso el resultado no es el esperado, se escala. No se fuerza.
-
----
-
-## 3. Herramientas MCP
-
-| Tool | Para qué | Efecto en el ticket |
+| Pieza | Dónde | Qué hace |
 |---|---|---|
-| `tickets_policy` | Leer la política vigente. | Ninguno. |
-| `tickets_list` | Listar con filtros. | Ninguno. |
-| `tickets_get` | Ver detalle, historial y análisis. | Ninguno. |
-| `tickets_start_analysis` | Marcar inicio del análisis. | → `en_analisis` |
-| `tickets_record_analysis` | Guardar diagnóstico, alcance, esfuerzo y riesgo. | → `listo_para_fix` o `pendiente_aprobacion` |
-| `tickets_check_change` | Validar un cambio contra guardrails. | Ninguno. |
-| `tickets_begin_fix` | Aprobar y respaldar archivos. | → `en_progreso` |
-| `tickets_record_fix` | Registrar cambio y verificaciones. | → `en_revision` |
-| `tickets_add_comment` | Comentario o nota interna. | Comentario. |
-| `tickets_update_status` | Mover estado respetando transiciones. No admite `resuelto` ni `cerrado`, ni sacar un ticket de esos estados. | Cambio + historial. |
-| `tickets_escalate` | Derivar a decisión humana. | → `pendiente_aprobacion` |
+| Instrucciones | `GET /api/agente/instrucciones` | Texto para el agente: protocolo, endpoints y reglas. Público, sin datos. |
+| API | `app/api/agente/**` | Leer tickets, tomarlos, comentar, escalar y registrar la solución. |
+| Tokens | modelo `TicketAgenteToken`, `lib/ticketsAgente.ts` | Acceso por ticket (48 h) o general. Se guarda solo el hash. |
+| Botón | pestaña **Análisis del agente** en `/tickets` | "Copiar para agente" y "Revocar acceso". Solo `admin`, `qa`, `supervisor`. |
 
-El agente no tiene forma de resolver, cerrar ni reabrir tickets: eso lo hace una persona desde `/tickets`. Pasar a `resuelto` dispara la respuesta automática al usuario.
-
-Los nombres que ve OpenCode son `sgi_tickets_policy`, `sgi_tickets_list`, etc. En Code Mode (el modo por defecto de V2) se llaman `tools.sgi.tickets_policy`, `tools.sgi.tickets_list`, etc.
-
-Recursos:
-
-- `sgi://policy` — política completa en JSON.
-- `sgi://tickets/open` — tickets abiertos.
-
----
-
-## 4. Ejemplos de prompts
-
-### Triaje rápido
-
-```text
-Revisá los tickets nuevos con el MCP sgi. Clasificá cada uno y decime cuáles
-son de bajo riesgo y cuáles necesitan mi aprobación. No edites nada todavía.
-```
-
-### Analizar uno
-
-```text
-Analizá el ticket TCK-2026-0003. Quiero causa raíz, alcance, esfuerzo y riesgo.
-Si es bajo, corregilo y dejalo en revisión.
-```
-
-### Corregir varios de bajo riesgo
-
-```text
-Tomá todos los tickets en estado listo_para_fix de tipo error y resolvelos
-de a uno. Después de cada uno corré tsc y lint.
-```
-
-### Consulta o funcionalidad
-
-```text
-Analizá el ticket TCK-2026-0007 (nueva función). Estimá alcance y pasalo a
-pendiente_aprobacion con un plan. No toques código.
-```
-
-### Revisar un cambio del agente
-
-```text
-Mostrame qué cambió para el ticket TCK-2026-0003, dónde está el respaldo y
-qué verificaciones corrió.
-```
-
----
-
-## 5. Formato del análisis
-
-El agente escribe en `ticket.analisisAgente`:
-
-```json
-{
-  "resumen": "El botón Guardar no envía el formulario si el título supera 120 caracteres.",
-  "causaRaiz": "La validación del cliente trunca el string y deja el submit sin efecto.",
-  "alcance": "Corregir la validación y el mensaje. No cambia el modelo de datos.",
-  "plan": "1. Ajustar límite. 2. Mostrar error. 3. Probar caso borde.",
-  "archivosProbables": ["components/projects/ProjectForm.tsx", "lib/validation/project.ts"],
-  "esfuerzo": "S",
-  "horas": 1.5,
-  "confianza": "alta",
-  "riesgo": "bajo",
-  "requiereAprobacion": false,
-  "categorias": [],
-  "agente": "opencode",
-  "fecha": "2026-10-29T12:00:00.000Z"
-}
-```
-
-Y en `ticket.estimacion`:
-
-```json
-{ "esfuerzo": "S", "horas": 1.5, "confianza": "alta", "riesgo": "bajo" }
-```
-
-Esto se ve en la pestaña **Análisis del agente** de `/tickets`.
-
----
-
-## 6. Escalamiento
-
-Se escala a `pendiente_aprobacion` cuando:
-
-- El riesgo es medio, alto o crítico.
-- El tipo no es `error`.
-- El ticket no tiene `autoFixPermitido`.
-- Faltan pasos para reproducir o el problema no es claro.
-- El cambio supera 4 archivos o 150 líneas.
-- Toca autenticación, permisos, facturación, datos personales, migraciones o dependencias.
-- `tickets_check_change` devuelve bloqueos.
-- Ya se intentó corregir 2 veces y falló.
-
-El gestor ve el ticket en **Pendiente de aprobación**, revisa el análisis y usa **Aprobar corrección** o **Escalar**.
-
-Cuando se aprueba, el ticket pasa a `listo_para_fix` y el agente puede reintentar.
-
----
-
-## 7. Respaldos y rollback
-
-Cada `tickets_begin_fix` crea:
+## 2. Flujo
 
 ```
-.sgi-backups/TCK-2026-0003/2026-10-29T12-30-00-000Z/
-  components/projects/ProjectForm.tsx
-  lib/validation/project.ts
+Persona (gestor)                       Agente (con el repo)                 Sistema
+─────────────────                      ────────────────────                 ───────
+Copiar para agente  ──── texto ───────▶ lee /instrucciones
+                                       GET  /tickets/{codigo}
+                                       POST /tickets/{codigo}/tomar  ──────▶ en_progreso (bloqueo 4 h)
+                                       trabaja en la rama ticket/{codigo}
+                                       POST /tickets/{codigo}/solucion ────▶ en_revision + aviso a gestores
+                                         (o /escalar si no corresponde) ──▶ pendiente_aprobacion + aviso
+Revisa el PR, mergea y publica
+Marca "resuelto" en /tickets ─────────────────────────────────────────────▶ respuesta de Gemini + push al usuario
 ```
 
-Rollback:
+El agente **no puede** marcar un ticket como resuelto ni cerrarlo: no existe un endpoint para eso.
+"Resuelto" significa que el arreglo está publicado, y eso lo decide una persona.
 
-1. Copiar el archivo del respaldo a su ruta original.
-2. O usar el editor/IDE para revertir.
-3. Registrar el rollback con `tickets_add_comment` (nota interna) y `tickets_escalate`.
+## 3. Delegar un ticket
 
-La carpeta está en `.gitignore`; no se versiona.
+1. Abrí el ticket en `/tickets` → pestaña **Análisis del agente**.
+2. Si hace falta, **Analizar con IA** para que Gemini deje un diagnóstico previo.
+3. **Copiar para agente**. Se copia un texto como este:
 
----
+   ```text
+   Resolvé el ticket de soporte TCK-2026-0007 de HDB SGI en este repositorio.
+   Antes de empezar, leé las instrucciones: https://sgi.hdb-se.com.ar/api/agente/instrucciones
+   Token de acceso (header "Authorization: Bearer ..."): sgia_…
+   El token sirve solo para este ticket y vence el 01/11/2026, 18:00.
+   ```
 
-## 8. Verificaciones
+4. Pegalo en el agente, abierto en una copia del repositorio.
+5. Cuando el agente termina, el ticket pasa a `en_revision` con la rama, el commit y el PR visibles en la misma pestaña.
 
-Obligatoria:
+Generar un acceso nuevo revoca el anterior. **Revocar acceso** corta el token en el momento.
 
-```bash
-npx tsc --noEmit
-```
+## 4. Endpoints
 
-Recomendada (si el proyecto tiene configuración de ESLint):
+Todas las rutas, salvo `/instrucciones`, piden `Authorization: Bearer <token>`.
 
-```bash
-npm run lint
-```
-
-Recomendadas para UI:
-
-```bash
-npm run dev
-# probar la pantalla afectada en desktop y mobile
-```
-
-El agente registra el resultado en `verificaciones`. Si faltan, el ticket queda en `en_revision` con `verificado = false`.
-
----
-
-## 9. Problemas frecuentes
-
-| Síntoma | Causa probable | Solución |
+| Método | Ruta | Efecto |
 |---|---|---|
-| `sgi` no aparece en `opencode mcp list` | `opencode.json` inválido o `node` fuera del PATH. | Validar JSON y `node -v`. |
-| `No se pudo cargar @prisma/client` | Falta `npm install` o `prisma generate`. | Ejecutar ambos. |
-| `Falta DATABASE_URL` | No existe `.env` o está vacío. | Crear `.env` con `DATABASE_URL`. |
-| `No existe el ticket` | ID/código mal escrito. | Usar `tickets_list` para obtener el código. |
-| `Transición inválida` | Se intentó saltar estados. | Respetar el flujo; usar `tickets_record_analysis` primero. |
-| `Ruta prohibida` | El cambio toca una denylist. | Escalar; no editar. |
-| `El cambio requiere aprobación` | Supera archivos/líneas o toca categoría sensible. | Aprobar desde `/tickets` o reducir el alcance. |
-| `@prisma/client no expone PrismaClient` | Versión incompatible. | Verificar `@prisma/client@5.22`. |
+| GET | `/api/agente/instrucciones` | Ninguno. |
+| GET | `/api/agente/tickets` | Token de ticket: ese ticket. Token general: los `listo_para_fix`. |
+| GET | `/api/agente/tickets/{codigo}` | Ninguno. Incluye análisis previo, adjuntos, comentarios (también internos) e historial. |
+| GET | `/api/agente/tickets/{codigo}/adjuntos/{id}` | Ninguno. |
+| POST | `/api/agente/tickets/{codigo}/tomar` | → `en_progreso`, bloqueado 4 h para otros tokens. |
+| POST | `/api/agente/tickets/{codigo}/comentarios` | Comentario (interno por defecto). |
+| POST | `/api/agente/tickets/{codigo}/escalar` | → `pendiente_aprobacion`, nota interna y push a gestores. |
+| POST | `/api/agente/tickets/{codigo}/solucion` | → `en_revision`, guarda resolución, rama, commit y PR; push a gestores. |
 
----
+Desde dónde se puede tomar un ticket:
 
-## 10. Cómo extender
+- **Token de un ticket**: `nuevo`, `triaje`, `en_analisis`, `pendiente_aprobacion`, `listo_para_fix`, `en_progreso`, `en_revision` (lo generó una persona para ese ticket).
+- **Token general**: solo `listo_para_fix`.
 
-- **Nuevo estado**: agregarlo en `policy.json → transiciones`, en `lib/tickets.ts` (`TICKET_ESTADOS`, `TICKET_TRANSICIONES`, labels) y en el `z.enum` de `app/api/tickets/[id]/route.ts`.
-- **Nueva regla de auto-fix**: agregar la categoría en `requiresApprovalCategories` y documentarla.
-- **Nuevo tipo**: agregar en `TICKET_TIPOS` y en el `z.enum` de creación.
-- **Notificaciones**: enganchar `sendPushNotification` en el PATCH de estado, como hace `app/api/sugerencias/[id]/route.ts`.
-- **Adjuntos en la nube**: reemplazar el handler `app/api/tickets/upload/route.ts`.
+`/solucion` exige haber tomado el ticket con el mismo token. `commit` tiene que ser un hash de git y `prUrl` una URL `https`.
+
+## 5. Seguridad
+
+- El token da acceso solo a la API de tickets, no a la base ni al resto del sistema.
+- Se muestra una sola vez; en la base queda el hash SHA-256.
+- Los tokens de ticket vencen a las 48 h (`TOKEN_TICKET_HORAS` en `lib/ticketsAgente.ts`).
+- Cada acción queda en `TicketEventoAgente`, en el historial del ticket y, al generar el token, en el `AuditLog`.
+- Los avisos push a gestores solo se envían en producción.
+- El control real es la revisión humana: el agente trabaja en una rama y una persona decide qué se publica.
+
+## 6. Problemas comunes
+
+| Síntoma | Causa | Qué hacer |
+|---|---|---|
+| `401` | Token vencido, revocado o mal copiado. | Generar uno nuevo desde el ticket. |
+| `404` en un ticket | El token es de otro ticket. | Usar el token del ticket correcto. |
+| `409` al tomar | Estado no tomable u otro agente lo tiene bloqueado. | Esperar el bloqueo o generar un acceso nuevo (libera el bloqueo). |
+| `409` en `/solucion` | No se tomó el ticket con ese token. | `POST /tomar` primero. |
+
+## 7. Pendiente
+
+- Tokens generales (sin ticket) desde la UI: el modelo y la API los soportan, falta la pantalla para crearlos.
+- Pasar a `resuelto` automáticamente cuando el commit con el código del ticket llega a producción (webhook de GitHub o Vercel).
