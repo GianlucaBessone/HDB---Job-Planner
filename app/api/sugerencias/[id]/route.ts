@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { sendPushNotification } from '@/lib/onesignal';
+import { getSessionFromRequest } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -81,8 +82,10 @@ export async function PATCH(req: Request, { params: paramsPromise }: { params: P
 
         const oldValue = { ...sugerencia };
         let estadoActualizado = sugerencia.estado;
-        const auditUserName = actorNombre || 'Sistema';
-        const auditUserId = actorId || null;
+        // El autor del cambio sale de la sesión, no del body (que se puede falsear)
+        const session = await getSessionFromRequest(req);
+        const auditUserName = session?.nombreCompleto || actorNombre || 'Sistema';
+        const auditUserId = session?.id || actorId || null;
 
         // 1. Handle fields update (responsable, fechas, notas, etc)
         const updateData: any = {};

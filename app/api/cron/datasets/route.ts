@@ -13,7 +13,12 @@ export async function GET(req: NextRequest) {
     // Verificar token de seguridad (mismo patrón que /api/cron/reminders)
     const { searchParams } = new URL(req.url);
     const token = searchParams.get('token');
-    const expectedToken = process.env.CRON_SECRET || 'cron-secret-default';
+    const expectedToken = process.env.CRON_SECRET;
+
+    if (!expectedToken) {
+        console.error('cron/datasets: CRON_SECRET no está configurado');
+        return NextResponse.json({ error: 'CRON_SECRET no configurado' }, { status: 500 });
+    }
 
     if (token !== expectedToken) {
         console.error('Unauthorized cron/datasets access attempt');

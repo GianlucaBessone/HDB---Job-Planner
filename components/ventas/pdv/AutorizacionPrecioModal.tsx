@@ -34,20 +34,16 @@ export default function AutorizacionPrecioModal({
     setError('');
 
     try {
-      // Validar con la lista de operadores activos con rol admin o supervisor
-      const res = await fetch('/api/operators');
-      if (!res.ok) throw new Error('Error al verificar operadores');
-      const operators = await res.json();
+      // El servidor valida el PIN contra los supervisores/admins activos
+      const res = await fetch('/api/auth/verificar-supervisor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: pin.trim() }),
+      });
+      const supervisor = await res.json();
 
-      const supervisor = operators.find(
-        (o: any) =>
-          o.pin === pin.trim() &&
-          ['admin', 'supervisor'].includes((o.role || '').toLowerCase()) &&
-          o.activo
-      );
-
-      if (!supervisor) {
-        setError('PIN incorrecto o no pertenece a un Supervisor / Administrador');
+      if (!res.ok) {
+        setError(supervisor.error || 'PIN incorrecto o no pertenece a un Supervisor / Administrador');
         setIsLoading(false);
         return;
       }

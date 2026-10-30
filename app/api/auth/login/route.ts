@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import bcrypt from 'bcryptjs';
 import { encrypt } from '@/lib/auth';
+import { getPinLockMinutes, hashPin, isPinHashed, lockedMessage, registerPinAttempt, verifyPin } from '@/lib/pinAuth';
 
 export async function POST(req: Request) {
     try {
@@ -19,17 +19,24 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Operador no encontrado.' }, { status: 404 });
         }
 
-        // Check password using bcrypt. If it doesn't match, we reject.
-        // Fallback for non-migrated passwords (only during transition if needed, but we already migrated all):
-        let isValid = false;
-        if (operator.pin && operator.pin.startsWith('$2')) {
-            isValid = bcrypt.compareSync(pin, operator.pin);
-        } else {
-            isValid = operator.pin === pin; // Just in case a new one was created in plain text momentarily
+        // Bloqueo por intentos fallidos (5 en 15 minutos por operador)
+        const throttleKey = `login:${operator.id}`;
+        const lockMinutes = await getPinLockMinutes(throttleKey);
+        if (lockMinutes > 0) {
+            return NextResponse.json({ error: lockedMessage(lockMinutes) }, { status: 429 });
         }
+
+        const isValid = verifyPin(String(pin), operator.pin);
+        const intento = { userId: operator.id, userName: operator.nombreCompleto, ip: req.headers.get('x-forwarded-for') };
+        await registerPinAttempt(throttleKey, isValid, intento);
 
         if (!isValid) {
             return NextResponse.json({ error: 'PIN incorrecto.' }, { status: 401 });
+        }
+
+        // Migrar PINs heredados en texto plano a hash
+        if (!isPinHashed(operator.pin)) {
+            await prisma.operator.update({ where: { id: operator.id }, data: { pin: hashPin(String(pin)) } });
         }
 
         if (!operator.activo) {

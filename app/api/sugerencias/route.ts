@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { verifyPin } from '@/lib/pinAuth';
 import { promises as fs } from 'fs';
 import path from 'path';
 
@@ -80,7 +81,7 @@ export async function POST(req: Request) {
                 where: { id: operatorId }
             });
 
-            if (!operator || operator.pin !== pin || !operator.activo) {
+            if (!operator || !verifyPin(pin, operator.pin) || !operator.activo) {
                 const currentAttempts = attempts ? (attempts.lockUntil > now ? attempts.count : 0) : 0;
                 const newCount = currentAttempts + 1;
                 const lockUntil = newCount >= 5 ? now + 15 * 60 * 1000 : 0; // 15 mins lock

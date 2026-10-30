@@ -110,7 +110,7 @@ export default function OperatorsPage() {
             role: op.role || 'operador',
             dni: op.dni || '',
             posicion: op.posicion || '',
-            pin: op.pin || '1234'
+            pin: '' // vacío = mantener el PIN actual
         });
         setIsModalOpen(true);
     };
@@ -367,8 +367,8 @@ export default function OperatorsPage() {
                                         className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-4 px-5 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium tracking-widest"
                                         value={formData.pin}
                                         onChange={e => setFormData({ ...formData, pin: e.target.value.replace(/\D/g, '').slice(0, 8) })}
-                                        placeholder="Ej: 1234"
-                                        required
+                                        placeholder={editingOperator ? 'Dejar vacío para no cambiarlo' : 'Ej: 1234'}
+                                        required={!editingOperator}
                                     />
                                 </div>
 

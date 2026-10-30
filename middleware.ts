@@ -4,7 +4,6 @@ import { decrypt, encrypt } from './lib/auth';
 
 const PUBLIC_ROUTES = [
   '/api/auth/login',
-  '/api/sugerencias',
   '/api/cron',
   '/api/public',
   '/api/portal-clientes',
@@ -12,6 +11,7 @@ const PUBLIC_ROUTES = [
 ];
 
 const PUBLIC_DYNAMIC_ROUTES = [
+  /^\/api\/sugerencias$/, // POST envio y GET pizarra desde /ideas-sugerencias-reclamos (publica); el resto pide sesion
   /^\/api\/ordenes-servicio\/[^\/]+$/, // GET or PUT (firma) by publicToken
   /^\/api\/ordenes-servicio\/[^\/]+\/pdf$/, // PDF generation
   /^\/api\/encuesta-servicio$/, // POST
