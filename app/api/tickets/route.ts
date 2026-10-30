@@ -40,8 +40,10 @@ const crearTicketSchema = z.object({
     contexto: contextoShape.optional(),
     adjuntos: z.array(adjuntoShape).max(TICKET_ADJUNTOS_MAX).optional(),
     etiquetas: z.array(z.string().trim().min(1).max(30)).max(10).optional(),
+    // Consentimiento del usuario para que se intente una corrección automática.
     autoFixPermitido: z.boolean().optional(),
     reportadoPorId: z.string().max(120).optional().nullable(),
+    // Se ignora: el nombre se toma de Operator. Se acepta para no romper clientes viejos.
     reportadoPorNombre: z.string().max(200).optional().nullable(),
 });
 
@@ -131,7 +133,18 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'No se pudo identificar al usuario que reporta.' }, { status: 401 });
         }
 
+        // El nombre sale de la base, no del cliente.
+        const reportante = await prisma.operator.findUnique({
+            where: { id: reportadoPorId },
+            select: { nombreCompleto: true },
+        });
+        if (!reportante) {
+            return NextResponse.json({ error: 'El usuario que reporta no existe.' }, { status: 400 });
+        }
+        const reportadoPorNombre = reportante.nombreCompleto;
+
         const prioridad = computePrioridad(data.tipo, data.urgencia, data.impacto);
+        const autoFixAutorizadoPorUsuario = data.tipo === 'error' ? (data.autoFixPermitido ?? true) : false;
 
         const ticket = await prisma.$transaction(async (tx) => {
             const year = new Date().getFullYear();
@@ -167,10 +180,13 @@ export async function POST(req: NextRequest) {
                     urgencia: data.urgencia,
                     impacto: data.impacto,
                     prioridad,
+                    clasificacionDeclarada: { tipo: data.tipo, urgencia: data.urgencia, impacto: data.impacto, prioridad },
                     estado: 'nuevo',
                     reportadoPorId,
-                    reportadoPorNombre: data.reportadoPorNombre || null,
-                    autoFixPermitido: data.tipo === 'error' ? (data.autoFixPermitido ?? true) : false,
+                    reportadoPorNombre,
+                    // El auto-fix lo decide el triaje; acá solo se guarda el consentimiento.
+                    autoFixAutorizadoPorUsuario,
+                    autoFixPermitido: false,
                 },
             });
 
@@ -186,7 +202,7 @@ export async function POST(req: NextRequest) {
                     ticketId: created.id,
                     estadoAnterior: '-',
                     estadoNuevo: 'nuevo',
-                    usuario: data.reportadoPorNombre || userId || 'Usuario',
+                    usuario: reportadoPorNombre,
                     comentario: 'Ticket creado',
                 },
             });
@@ -196,7 +212,7 @@ export async function POST(req: NextRequest) {
 
         await logAudit({
             userId: userId || undefined,
-            userName: data.reportadoPorNombre || 'Usuario',
+            userName: reportadoPorNombre,
             action: 'CREATE',
             entity: 'TICKET',
             entityId: ticket.id,

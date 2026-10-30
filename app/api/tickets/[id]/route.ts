@@ -3,7 +3,15 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from '@/lib/audit';
 import { sendPushNotification } from '@/lib/onesignal';
-import { canTransition, TICKET_ESTADO_LABEL, type TicketEstado } from '@/lib/tickets';
+import {
+    canTransition,
+    computePrioridad,
+    TICKET_ESTADO_LABEL,
+    type TicketEstado,
+    type TicketImpacto,
+    type TicketTipo,
+    type TicketUrgencia,
+} from '@/lib/tickets';
 import { generateResolutionResponse } from '@/lib/tickets-ai';
 
 export const dynamic = 'force-dynamic';
@@ -133,11 +141,24 @@ export async function PATCH(req: NextRequest, { params: paramsPromise }: { param
         }
 
         const updateData: any = {};
-        const autor = data.autorNombre || (canManage ? 'Equipo de soporte' : ticket.reportadoPorNombre || 'Usuario');
+        // El nombre sale de la base, no del cliente (autorNombre se ignora).
+        const operadorActual = userId
+            ? await prisma.operator.findUnique({ where: { id: userId }, select: { nombreCompleto: true } })
+            : null;
+        const autor = operadorActual?.nombreCompleto || (canManage ? 'Equipo de soporte' : 'Usuario');
 
         if (data.urgencia !== undefined) updateData.urgencia = data.urgencia;
         if (data.impacto !== undefined) updateData.impacto = data.impacto;
-        if (data.prioridad !== undefined) updateData.prioridad = data.prioridad;
+        if (data.prioridad !== undefined) {
+            updateData.prioridad = data.prioridad;
+        } else if (data.urgencia !== undefined || data.impacto !== undefined) {
+            // Si cambia la clasificación y no mandan prioridad, se recalcula.
+            updateData.prioridad = computePrioridad(
+                ticket.tipo as TicketTipo,
+                (data.urgencia ?? ticket.urgencia) as TicketUrgencia,
+                (data.impacto ?? ticket.impacto) as TicketImpacto
+            );
+        }
         if (data.riesgo !== undefined) updateData.riesgo = data.riesgo;
         if (data.autoFixPermitido !== undefined) updateData.autoFixPermitido = data.autoFixPermitido;
         if (data.resolucion !== undefined) updateData.resolucion = data.resolucion;
@@ -207,9 +228,11 @@ export async function PATCH(req: NextRequest, { params: paramsPromise }: { param
         });
 
         // ── Flujo automático de respuesta al usuario ────────────────────────
-        // Si el ticket pasa a `resuelto`, redactamos y envíamos la respuesta final
-        // con Gemini, y la guardamos como comentario público del ticket.
+        // Si el ticket pasa a `resuelto`, redactamos la respuesta final con Gemini
+        // y la guardamos como comentario público. El aviso al usuario sale siempre,
+        // aunque Gemini falle: el comentario de la IA es un extra.
         if (data.estado === 'resuelto' && data.estado !== ticket.estado) {
+            let respuestaIA = false;
             try {
                 const respuesta = await generateResolutionResponse(ticket.id, {
                     userId,
@@ -217,43 +240,18 @@ export async function PATCH(req: NextRequest, { params: paramsPromise }: { param
                     userRole: role,
                 });
 
-                if (respuesta.ok && respuesta.mensaje) {
-                    await prisma.ticketComentario
-                        .create({
-                            data: {
-                                ticketId: ticket.id,
-                                autor: 'Equipo de soporte',
-                                texto: respuesta.mensaje,
-                                interno: false,
-                            },
-                        })
-                        .catch(err => console.error('[TICKET_RESOLUTION] Comment create failed:', err));
-
-                    if (ticket.reportadoPorId) {
-                        const message = `Tu ticket ${ticket.codigo} "${ticket.titulo}" fue marcado como resuelto.`;
-
-                        await prisma.activity
-                            .create({
-                                data: {
-                                    type: 'STATUS_UPDATED',
-                                    priority: 'NORMAL',
-                                    category: 'System',
-                                    title: `Ticket ${ticket.codigo} resuelto`,
-                                    message,
-                                    entityType: 'ticket',
-                                    entityId: ticket.id,
-                                    recipients: { create: [{ operatorId: ticket.reportadoPorId }] },
-                                },
-                            })
-                            .catch(err => console.error('[TICKET_RESOLUTION] Activity create failed:', err));
-
-                        await sendPushNotification({
-                            userIds: [ticket.reportadoPorId],
-                            title: 'Ticket resuelto',
-                            message,
-                            data: { route: `/tickets?id=${ticket.id}` },
-                        }).catch(err => console.error('[TICKET_RESOLUTION] Push failed:', err));
-                    }
+                if ('error' in respuesta) {
+                    console.error('[TICKET_RESOLUTION] Gemini no respondió:', respuesta.error);
+                } else if (respuesta.mensaje) {
+                    await prisma.ticketComentario.create({
+                        data: {
+                            ticketId: ticket.id,
+                            autor: 'Equipo de soporte',
+                            texto: respuesta.mensaje,
+                            interno: false,
+                        },
+                    });
+                    respuestaIA = true;
 
                     await logAudit({
                         userId: userId || undefined,
@@ -265,8 +263,40 @@ export async function PATCH(req: NextRequest, { params: paramsPromise }: { param
                     }).catch(err => console.error('[TICKET_RESOLUTION] Audit failed:', err));
                 }
             } catch (err) {
-                // La respuesta automática no debe romper el flujo de resolución.
                 console.error('[TICKET_RESOLUTION] Auto response failed:', err);
+            }
+
+            if (ticket.reportadoPorId) {
+                const message = respuestaIA
+                    ? `Tu ticket ${ticket.codigo} "${ticket.titulo}" fue marcado como resuelto. Te dejamos una respuesta en el ticket.`
+                    : `Tu ticket ${ticket.codigo} "${ticket.titulo}" fue marcado como resuelto.`;
+
+                await prisma.activity
+                    .create({
+                        data: {
+                            type: 'STATUS_UPDATED',
+                            priority: 'NORMAL',
+                            category: 'System',
+                            title: `Ticket ${ticket.codigo} resuelto`,
+                            message,
+                            entityType: 'ticket',
+                            entityId: ticket.id,
+                            recipients: { create: [{ operatorId: ticket.reportadoPorId }] },
+                        },
+                    })
+                    .catch(err => console.error('[TICKET_RESOLUTION] Activity create failed:', err));
+
+                // En local no se manda push: el reportante es un usuario real de producción.
+                if (process.env.NODE_ENV === 'production') {
+                    await sendPushNotification({
+                        userIds: [ticket.reportadoPorId],
+                        title: 'Ticket resuelto',
+                        message,
+                        data: { route: `/tickets?id=${ticket.id}` },
+                    }).catch(err => console.error('[TICKET_RESOLUTION] Push failed:', err));
+                } else {
+                    console.log('[TICKET_RESOLUTION] (push omitido fuera de producción)', message);
+                }
             }
         }
 

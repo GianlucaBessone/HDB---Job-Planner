@@ -3505,6 +3505,8 @@ model Ticket {
   impacto                String    @default("usuario_unico") // organizacion | area | varios_usuarios | usuario_unico
   prioridad              String    @default("P3") // P0 | P1 | P2 | P3
   estado                 String    @default("nuevo")
+  // Lo que eligió quien reportó; el triaje puede cambiar tipo/urgencia/impacto/prioridad.
+  clasificacionDeclarada Json? // { tipo, urgencia, impacto, prioridad }
 
   reportadoPorId         String?
   reportadoPor           Operator? @relation("TicketReportadoPor", fields: [reportadoPorId], references: [id], onDelete: SetNull)
@@ -3515,7 +3517,8 @@ model Ticket {
 
   // Evaluación de Gemini y trabajo del agente (API /api/agente)
   riesgo                 String    @default("desconocido") // bajo | medio | alto | critico | desconocido
-  autoFixPermitido       Boolean   @default(false)
+  autoFixAutorizadoPorUsuario Boolean @default(false) // consentimiento de quien reportó
+  autoFixPermitido       Boolean   @default(false) // decisión del triaje o del gestor
   analisisAgente         Json? // { resumen, causaRaiz, alcance, plan, archivosProbables, requiereAprobacion, ... }
   estimacion             Json? // { esfuerzo, horas, confianza, riesgo }
   rama                   String?
