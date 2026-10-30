@@ -2,9 +2,7 @@ import bcrypt from 'bcryptjs';
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'hdb-sgi-super-secret-jwt-key-production-2026';
-const encodedSecret = new TextEncoder().encode(JWT_SECRET);
+import { jwtKey } from '@/lib/jwtSecret';
 
 export const PORTAL_COOKIE_NAME = 'portal_client_session';
 
@@ -52,7 +50,7 @@ export async function createPortalSession(payload: PortalSessionPayload): Promis
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('7d')
-    .sign(encodedSecret);
+    .sign(jwtKey('portal'));
 }
 
 /**
@@ -61,9 +59,10 @@ export async function createPortalSession(payload: PortalSessionPayload): Promis
 export async function verifyPortalSession(token?: string): Promise<PortalSessionPayload | null> {
   if (!token) return null;
   try {
-    const { payload } = await jwtVerify(token, encodedSecret, {
+    const { payload } = await jwtVerify(token, jwtKey('portal'), {
       algorithms: ['HS256'],
     });
+    if (typeof payload.responsibleId !== 'string' || !payload.responsibleId) return null;
     return payload as unknown as PortalSessionPayload;
   } catch {
     return null;
