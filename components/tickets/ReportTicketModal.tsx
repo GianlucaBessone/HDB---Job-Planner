@@ -138,20 +138,21 @@ export default function ReportTicketModal({ open, onClose, onCreated, initialTip
             return;
         }
 
-        const formData = new FormData();
-        Array.from(files).slice(0, disponibles).forEach(f => formData.append('files', f));
-
         setSubiendo(true);
-        try {
-            const res = await fetch('/api/tickets/upload', { method: 'POST', body: formData });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Error al subir');
-            setAdjuntos(prev => [...prev, ...(data.archivos || [])]);
-        } catch (err: any) {
-            showToast(err.message || 'No se pudieron subir los archivos.', 'error');
-        } finally {
-            setSubiendo(false);
+        // De a uno: Vercel corta los cuerpos de más de 4,5 MB.
+        for (const file of Array.from(files).slice(0, disponibles)) {
+            const formData = new FormData();
+            formData.append('files', file);
+            try {
+                const res = await fetch('/api/tickets/upload', { method: 'POST', body: formData });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.error || `No se pudo subir ${file.name}.`);
+                setAdjuntos(prev => [...prev, ...(data.archivos || [])]);
+            } catch (err: any) {
+                showToast(err.message || `No se pudo subir ${file.name}.`, 'error');
+            }
         }
+        setSubiendo(false);
     };
 
     const enviar = async () => {
@@ -174,7 +175,7 @@ export default function ReportTicketModal({ open, onClose, onCreated, initialTip
                     urgencia,
                     impacto,
                     contexto,
-                    adjuntos,
+                    adjuntos: adjuntos.map(a => ({ id: a.id })),
                     etiquetas: etiquetas
                         .split(',')
                         .map(e => e.trim())

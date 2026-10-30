@@ -24,10 +24,9 @@ const contextoShape = z.object({
     version: z.string().max(40).optional(),
 }).catchall(z.any());
 
+// Del cliente solo se toma el id; nombre, url y tamaño salen de la base.
 const adjuntoShape = z.object({
-    nombre: z.string().min(1).max(200),
-    url: z.string().min(1).max(1000),
-    size: z.number().int().nonnegative().max(20 * 1024 * 1024),
+    id: z.string().min(1).max(60),
 });
 
 const crearTicketSchema = z.object({
@@ -144,6 +143,16 @@ export async function POST(req: NextRequest) {
 
             const codigo = generarCodigoTicket(year, counter.currentNumber);
 
+            // Solo se vinculan adjuntos sueltos que subió este mismo usuario.
+            const adjuntoIds = Array.from(new Set((data.adjuntos || []).map(a => a.id)));
+            const archivos = adjuntoIds.length > 0
+                ? await tx.ticketAdjunto.findMany({
+                    where: { id: { in: adjuntoIds }, subidoPorId: userId || '__sin_usuario__', ticketId: null },
+                    select: { id: true, nombre: true, size: true },
+                    orderBy: { createdAt: 'asc' },
+                })
+                : [];
+
             const created = await tx.ticket.create({
                 data: {
                     codigo,
@@ -153,7 +162,7 @@ export async function POST(req: NextRequest) {
                     pasosReproducir: data.pasosReproducir || null,
                     comportamientoEsperado: data.comportamientoEsperado || null,
                     contexto: (data.contexto || {}) as any,
-                    adjuntos: (data.adjuntos || []) as any,
+                    adjuntos: archivos.map(a => ({ ...a, url: `/api/tickets/adjuntos/${a.id}` })) as any,
                     etiquetas: (data.etiquetas || []) as any,
                     urgencia: data.urgencia,
                     impacto: data.impacto,
@@ -164,6 +173,13 @@ export async function POST(req: NextRequest) {
                     autoFixPermitido: data.tipo === 'error' ? (data.autoFixPermitido ?? true) : false,
                 },
             });
+
+            if (archivos.length > 0) {
+                await tx.ticketAdjunto.updateMany({
+                    where: { id: { in: archivos.map(a => a.id) } },
+                    data: { ticketId: created.id },
+                });
+            }
 
             await tx.ticketHistorial.create({
                 data: {

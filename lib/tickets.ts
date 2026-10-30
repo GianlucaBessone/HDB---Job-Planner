@@ -27,6 +27,7 @@ export type TicketEstado =
     | 'duplicado';
 
 export interface TicketAdjunto {
+    id: string;
     nombre: string;
     url: string;
     size: number;
@@ -320,4 +321,5 @@ export function resumenContexto(contexto?: TicketContexto | null): string {
 export const TICKET_TITULO_MAX = 140;
 export const TICKET_DESCRIPCION_MIN = 20;
 export const TICKET_ADJUNTOS_MAX = 3;
-export const TICKET_ADJUNTO_MAX_BYTES = 5 * 1024 * 1024;
+// Se suben de a uno: Vercel corta cuerpos de más de 4,5 MB.
+export const TICKET_ADJUNTO_MAX_BYTES = 3 * 1024 * 1024;

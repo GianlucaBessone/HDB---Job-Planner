@@ -3498,7 +3498,7 @@ model Ticket {
   pasosReproducir        String?   @db.Text
   comportamientoEsperado String?   @db.Text
   contexto               Json      @default("{}") // { ruta, url, navegador, so, pantalla, version }
-  adjuntos               Json      @default("[]") // [{ nombre, url, size }]
+  adjuntos               Json      @default("[]") // [{ id, nombre, url, size }] — url apunta a /api/tickets/adjuntos/{id}
   etiquetas              Json      @default("[]")
 
   urgencia               String    @default("media") // critica | alta | media | baja
@@ -3532,6 +3532,7 @@ model Ticket {
   historial              TicketHistorial[]
   comentarios            TicketComentario[]
   eventosAgente          TicketEventoAgente[]
+  archivos               TicketAdjunto[]
 
   @@index([estado])
   @@index([tipo])
@@ -3540,6 +3541,23 @@ model Ticket {
   @@index([reportadoPorId])
   @@index([asignadoAId])
   @@index([createdAt])
+}
+
+// Archivo adjunto guardado en la base (Vercel no tiene disco escribible).
+// Se crea suelto (ticketId null) al subirlo y se vincula al crear el ticket.
+model TicketAdjunto {
+  id          String   @id @default(cuid())
+  ticketId    String?
+  ticket      Ticket?  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  subidoPorId String
+  nombre      String
+  mime        String
+  size        Int
+  datos       Bytes
+  createdAt   DateTime @default(now())
+
+  @@index([ticketId])
+  @@index([subidoPorId])
 }
 
 model TicketHistorial {
