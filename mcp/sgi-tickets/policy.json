@@ -1,0 +1,122 @@
+{
+  "version": "1.0.0",
+  "proyecto": "HDB SGI",
+  "descripcion": "Política operativa del sistema de tickets de soporte y del agente OpenCode. Es la fuente de verdad para el MCP sgi.",
+  "autoFix": {
+    "enabled": true,
+    "descripcion": "Solo se aplican correcciones automáticas de riesgo BAJO. Todo lo demás se escala a aprobación humana.",
+    "maxRisk": "bajo",
+    "maxFiles": 4,
+    "maxLinesChanged": 150,
+    "maxAttempts": 2,
+    "allowedPaths": [
+      "app/**",
+      "components/**",
+      "lib/**",
+      "docs/**",
+      "public/**",
+      "mcp/sgi-tickets/**"
+    ],
+    "deniedPaths": [
+      ".env",
+      ".env.*",
+      ".git/**",
+      ".sgi-backups/**",
+      "node_modules/**",
+      "prisma/migrations/**",
+      "prisma/schema.prisma",
+      "middleware.ts",
+      "electron/**",
+      "next.config.js",
+      "package.json",
+      "package-lock.json",
+      "pnpm-lock.yaml",
+      "scripts/**",
+      "public/uploads/**",
+      "dist_electron/**",
+      "prisma/seed*"
+    ],
+    "deniedPatterns": [
+      "process\\.env\\[",
+      "child_process",
+      "eval\\(",
+      "new Function\\(",
+      "dangerouslySetInnerHTML",
+      "DROP\\s+TABLE",
+      "TRUNCATE\\s+TABLE",
+      "deleteMany\\(",
+      "prisma\\s+migrate",
+      "prisma\\s+db\\s+push",
+      "git\\s+push\\s+--force",
+      "rm\\s+-rf"
+    ],
+    "requiresApprovalCategories": [
+      "migracion_esquema",
+      "nueva_dependencia",
+      "autenticacion_autorizacion",
+      "permisos",
+      "facturacion",
+      "datos_personales",
+      "borrado_de_datos",
+      "integracion_externa",
+      "cambio_de_configuracion",
+      "electron",
+      "middleware",
+      "optimizacion_critica"
+    ],
+    "requiredChecks": [
+      "npx tsc --noEmit"
+    ],
+    "recommendedChecks": [
+      "npm run lint"
+    ],
+    "backupDir": ".sgi-backups"
+  },
+  "triage": {
+    "tipos": ["error", "funcionalidad", "sugerencia", "consulta"],
+    "urgencias": ["critica", "alta", "media", "baja"],
+    "impactos": ["organizacion", "area", "varios_usuarios", "usuario_unico"],
+    "prioridades": ["P0", "P1", "P2", "P3"],
+    "riesgos": ["bajo", "medio", "alto", "critico", "desconocido"]
+  },
+  "slaHoras": {
+    "critica": { "respuesta": 4, "resolucion": 24 },
+    "alta": { "respuesta": 24, "resolucion": 72 },
+    "media": { "respuesta": 72, "resolucion": 240 },
+    "baja": { "respuesta": 240, "resolucion": 720 }
+  },
+  "transiciones": {
+    "nuevo": ["triaje", "rechazado", "duplicado"],
+    "triaje": ["en_analisis", "pendiente_aprobacion", "listo_para_fix", "rechazado", "duplicado"],
+    "en_analisis": ["listo_para_fix", "pendiente_aprobacion", "rechazado", "duplicado"],
+    "pendiente_aprobacion": ["listo_para_fix", "rechazado", "duplicado"],
+    "listo_para_fix": ["en_progreso", "pendiente_aprobacion", "rechazado"],
+    "en_progreso": ["en_revision", "pendiente_aprobacion"],
+    "en_revision": ["resuelto", "en_progreso"],
+    "resuelto": ["cerrado", "en_revision"],
+    "cerrado": ["en_revision"],
+    "rechazado": ["triaje"],
+    "duplicado": ["triaje"]
+  },
+  "agente": {
+    "nombre": "opencode",
+    "obligatorio": [
+      "Leer la política antes de actuar (tickets_policy).",
+      "Registrar el análisis antes de tocar código (tickets_record_analysis).",
+      "Validar el cambio contra los guardrails (tickets_check_change) antes de editar.",
+      "Crear respaldo de los archivos que se van a tocar (tickets_begin_fix).",
+      "Ejecutar las verificaciones obligatorias y registrarlas (tickets_record_fix).",
+      "Escalar a pendiente_aprobacion cuando el riesgo no sea bajo o falte información."
+    ],
+    "prohibido": [
+      "Modificar rutas denegadas.",
+      "Aplicar migraciones, cambiar el esquema o instalar dependencias sin aprobación.",
+      "Tocar autenticación, permisos, facturación o datos personales sin aprobación.",
+      "Hacer commit, push, deploy o tocar producción.",
+      "Inventar pasos de reproducción o datos que no estén en el ticket.",
+      "Cerrar un ticket sin verificación explícita."
+    ],
+    "maxIntentosPorTicket": 2,
+    "canalEscalamiento": "estado = pendiente_aprobacion"
+  }
+}

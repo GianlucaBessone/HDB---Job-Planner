@@ -4,11 +4,13 @@ import { ReactNode } from 'react';
 export interface CommandItem {
     id: string;
     label: string;
+    description?: string;
     action: () => void;
     icon?: string;
     category: 'Global' | 'Acciones' | 'Contextual';
     keys?: string[]; // e.g. ['ctrl', 'n']
     priority?: number;
+    keywords?: string[]; // términos extra para el buscador
 }
 
 interface CommandStore {

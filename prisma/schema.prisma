@@ -193,6 +193,10 @@ model Operator {
   ventasRealizadas          Venta[]                     @relation("VentaVendedor")
   ventasAnuladas            Venta[]                     @relation("VentaAnulador")
   cotizacionesRealizadas    Cotizacion[]                @relation("CotizacionVendedor")
+
+  // Tickets de soporte
+  ticketsReportados         Ticket[]                    @relation("TicketReportadoPor")
+  ticketsAsignados          Ticket[]                    @relation("TicketAsignadoA")
 }
 
 model FavoriteBlock {
@@ -3474,4 +3478,103 @@ model CotizacionItem {
   @@index([cotizacionId])
   @@index([productoId])
   @@index([sku])
+}
+
+// ════════════════════════════════════════════════════════════════════
+// TICKETS DE SOPORTE — Incidencias, mejoras y solicitudes al equipo dev
+// ════════════════════════════════════════════════════════════════════
+
+model TicketCounter {
+  year          Int @id
+  currentNumber Int @default(0)
+}
+
+model Ticket {
+  id                     String    @id @default(cuid())
+  codigo                 String    @unique
+  tipo                   String    @default("error") // error | funcionalidad | sugerencia | consulta
+  titulo                 String
+  descripcion            String    @db.Text
+  pasosReproducir        String?   @db.Text
+  comportamientoEsperado String?   @db.Text
+  contexto               Json      @default("{}") // { ruta, url, navegador, so, pantalla, version }
+  adjuntos               Json      @default("[]") // [{ nombre, url, size }]
+  etiquetas              Json      @default("[]")
+
+  urgencia               String    @default("media") // critica | alta | media | baja
+  impacto                String    @default("usuario_unico") // organizacion | area | varios_usuarios | usuario_unico
+  prioridad              String    @default("P3") // P0 | P1 | P2 | P3
+  estado                 String    @default("nuevo")
+
+  reportadoPorId         String?
+  reportadoPor           Operator? @relation("TicketReportadoPor", fields: [reportadoPorId], references: [id], onDelete: SetNull)
+  reportadoPorNombre     String?
+  asignadoAId            String?
+  asignadoA              Operator? @relation("TicketAsignadoA", fields: [asignadoAId], references: [id], onDelete: SetNull)
+  asignadoANombre        String?
+
+  // Evaluación del agente (MCP opencode)
+  riesgo                 String    @default("desconocido") // bajo | medio | alto | critico | desconocido
+  autoFixPermitido       Boolean   @default(false)
+  analisisAgente         Json? // { resumen, causaRaiz, alcance, plan, archivosProbables, requiereAprobacion, ... }
+  estimacion             Json? // { esfuerzo, horas, confianza, riesgo }
+  rama                   String?
+  commitHash             String?
+  resolucion             String?   @db.Text
+  verificado             Boolean   @default(false)
+  intentosAgente         Int       @default(0)
+
+  fechaResolucion        DateTime?
+  fechaCierre            DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  historial              TicketHistorial[]
+  comentarios            TicketComentario[]
+  eventosAgente          TicketEventoAgente[]
+
+  @@index([estado])
+  @@index([tipo])
+  @@index([urgencia])
+  @@index([prioridad])
+  @@index([reportadoPorId])
+  @@index([asignadoAId])
+  @@index([createdAt])
+}
+
+model TicketHistorial {
+  id             String   @id @default(cuid())
+  ticketId       String
+  ticket         Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  estadoAnterior String
+  estadoNuevo    String
+  usuario        String
+  comentario     String?  @db.Text
+  createdAt      DateTime @default(now())
+
+  @@index([ticketId])
+}
+
+model TicketComentario {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  autor     String
+  texto     String   @db.Text
+  interno   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([ticketId])
+}
+
+model TicketEventoAgente {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  agente    String   @default("opencode")
+  tipo      String // analisis | cambio | validacion | escalamiento | nota
+  payload   Json?
+  createdAt DateTime @default(now())
+
+  @@index([ticketId])
 }

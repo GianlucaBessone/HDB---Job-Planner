@@ -1,0 +1,9 @@
+allowBuilds:
+  '@google/genai': true
+  '@prisma/client': true
+  '@prisma/engines': true
+  electron: false
+  electron-winstaller: false
+  prisma: true
+  protobufjs: true
+  unrs-resolver: true

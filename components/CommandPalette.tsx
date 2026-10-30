@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, X, ArrowUp, ArrowDown, CornerDownLeft, TerminalSquare, Clock, LayoutGrid } from 'lucide-react';
+import { Search, X, ArrowUp, ArrowDown, CornerDownLeft, Clock, LayoutGrid } from 'lucide-react';
 import { ViewConfig, DEFAULT_SECTIONS } from '@/lib/viewAccess';
 import { renderIcon } from '@/lib/iconRegistry';
 import { useCommandStore } from '@/lib/store/useCommandStore';
@@ -21,7 +21,7 @@ export function CommandPalette({ views, role }: CommandPaletteProps) {
     const listRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
 
-    const getCommandsArray = useCommandStore((state) => state.getCommandsArray);
+    const commandsMap = useCommandStore((state) => state.commands);
     const historyEntries = useHistoryStore((state) => state.entries);
 
     // Ctrl+K / Cmd+K shortcut
@@ -56,7 +56,18 @@ export function CommandPalette({ views, role }: CommandPaletteProps) {
         const items: any[] = [];
 
         // 1. Acciones (Commands)
-        const commands = getCommandsArray().filter(c => !q || normalize(c.label).includes(q) || normalize(c.category).includes(q));
+        const commands = Object.values(commandsMap)
+            .sort((a, b) => (b.priority || 0) - (a.priority || 0))
+            .filter(c => {
+                if (!q) return true;
+                const haystack = [
+                    c.label,
+                    c.category,
+                    c.description || '',
+                    ...(c.keywords || []),
+                ].map(normalize).join(' ');
+                return haystack.includes(q);
+            });
         if (commands.length > 0) {
             items.push({ type: 'header', label: 'Acciones' });
             commands.forEach(cmd => {
@@ -64,7 +75,7 @@ export function CommandPalette({ views, role }: CommandPaletteProps) {
                     type: 'command',
                     id: cmd.id,
                     label: cmd.label,
-                    description: cmd.category,
+                    description: cmd.description || cmd.category,
                     iconName: cmd.icon || 'TerminalSquare',
                     keys: cmd.keys,
                     action: cmd.action,
@@ -117,7 +128,7 @@ export function CommandPalette({ views, role }: CommandPaletteProps) {
         }
 
         return items;
-    }, [query, views, role, getCommandsArray, historyEntries, router]);
+    }, [query, views, role, commandsMap, historyEntries, router]);
 
     // Filter out headers for navigation indexing
     const navigableItems = flatItems.filter(item => item.type !== 'header');
@@ -218,7 +229,7 @@ export function CommandPalette({ views, role }: CommandPaletteProps) {
                                         'bg-slate-100 dark:bg-slate-800 text-slate-500'
                                     }`}>
                                         {item.type === 'view' ? renderIcon(item.iconName, 'w-4 h-4') :
-                                         item.type === 'command' ? <TerminalSquare className="w-4 h-4" /> :
+                                         item.type === 'command' ? renderIcon(item.iconName, 'w-4 h-4') :
                                          <Clock className="w-4 h-4" />}
                                     </div>
                                     

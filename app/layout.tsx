@@ -8,7 +8,7 @@ import "./globals.css";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Script from "next/script";
-import { ClipboardList, Menu, X, LogOut, Home, ChevronDown, Star, Search } from "lucide-react";
+import { ClipboardList, Menu, X, LogOut, Home, ChevronDown, Star, Search, LifeBuoy } from "lucide-react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import ToastContainer from "@/components/Toast";
@@ -22,6 +22,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { ColorThemeProvider } from "@/components/ColorThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { CommandPalette } from "@/components/CommandPalette";
+import TicketQuickAction, { OPEN_TICKET_EVENT } from "@/components/tickets/TicketQuickAction";
 import { ERPProviders } from "@/components/providers/ERPProviders";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { GlobalDrawer } from "@/components/drawers/GlobalDrawer";
@@ -218,6 +219,16 @@ export default function RootLayout({
                         </div>
                         {/* Mobile Logo version if needed or right-aligned items can go here */}
                         <div className="flex items-center gap-2 md:gap-4">
+                            {/* Reportar falla / sugerencia */}
+                            <button
+                                onClick={() => window.dispatchEvent(new Event(OPEN_TICKET_EVENT))}
+                                title="Reportar una falla o sugerencia"
+                                aria-label="Reportar una falla o sugerencia"
+                                className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/20 dark:hover:text-rose-400 border border-transparent hover:border-rose-200 dark:hover:border-rose-900/40 transition-all"
+                            >
+                                <LifeBuoy className="w-4 h-4" />
+                            </button>
+
                             {/* SAP-style Search trigger */}
                             <button
                                 onClick={() => {
@@ -311,6 +322,7 @@ export default function RootLayout({
                                     role={role}
                                 />
                             )}
+                            {currentUser && <TicketQuickAction />}
                             <GlobalDrawer />
                             <Analytics />
                         </ERPProviders>

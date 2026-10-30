@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "servers": {
+      "sgi": {
+        "type": "local",
+        "command": ["node", "mcp/sgi-tickets/server.mjs"],
+        "cwd": ".",
+        "environment": {
+          "SGI_MCP_AGENT": "opencode"
+        }
+      }
+    }
+  }
+}

@@ -35,6 +35,8 @@ const ROUTE_TABLE: Record<string, RouteConfig> = {
     'ISO_DOC_GEN':          { provider: 'gemini', model: 'gemini-2.5-flash' },
     'GENERATE_OBS':         { provider: 'gemini', model: 'gemini-2.5-flash' },
     'SUGGESTION_ANALYSIS':  { provider: 'gemini', model: 'gemini-2.5-flash' },
+    'TICKET_TRIAGE':        { provider: 'gemini', model: 'gemini-2.5-flash' },
+    'TICKET_RESOLUTION_RESPONSE': { provider: 'gemini', model: 'gemini-2.5-flash' },
     'CHECKLIST_GEN':        { provider: 'gemini', model: 'gemini-2.5-flash' },
 
     // VISION

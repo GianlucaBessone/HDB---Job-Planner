@@ -199,3 +199,38 @@ export interface ImageAnomalyOutput {
     observacionesSugeridas: string[];
     sugerenciaMantenimiento: string[];
 }
+
+// 9. Ticket Triage Types (online, sin acceso al repositorio)
+export type TicketTriageTipo = 'error' | 'funcionalidad' | 'sugerencia' | 'consulta';
+export type TicketTriageUrgencia = 'critica' | 'alta' | 'media' | 'baja';
+export type TicketTriageImpacto = 'organizacion' | 'area' | 'varios_usuarios' | 'usuario_unico';
+export type TicketTriageRiesgo = 'bajo' | 'medio' | 'alto' | 'critico' | 'desconocido';
+
+export interface TicketDuplicadoProbable {
+    codigo: string;
+    motivo: string;
+}
+
+export interface TicketTriageOutput {
+    tipo: TicketTriageTipo;
+    urgencia: TicketTriageUrgencia;
+    impacto: TicketTriageImpacto;
+    riesgo: TicketTriageRiesgo;
+    resumen: string;
+    causaRaiz: string;
+    alcance: string;
+    plan: string;
+    esfuerzo: 'bajo' | 'medio' | 'alto';
+    horas: number;
+    confianza: 'baja' | 'media' | 'alta';
+    autoFixPermitido: boolean;
+    requiereAprobacion: boolean;
+    preguntasAlUsuario: string[];
+    duplicadosProbables: TicketDuplicadoProbable[];
+    respuestaSugerida: string;
+}
+
+// 10. Ticket Resolution Response Types (respuesta automática de cierre)
+export interface TicketResolutionOutput {
+    mensaje: string;
+}

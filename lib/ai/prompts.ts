@@ -448,6 +448,104 @@ Devuelve UNICAMENTE el siguiente objeto JSON válido:
 {
   "reporteAuditoria": "Aquí va todo el reporte final estructurado y formateado con Markdown y subtítulos H3 (###)..."
 }`
+    },
+
+    // 11. TRIAJE ONLINE DE TICKETS DE SOPORTE
+    TICKET_TRIAGE: {
+        key: "TICKET_TRIAGE",
+        name: "Triaje Online de Tickets de Soporte",
+        description: "Clasifica tickets de soporte del sistema HDB SGI: tipo, urgencia, impacto, riesgo, causa probable, plan y duplicados.",
+        version: 1,
+        systemInstruction: "Eres el líder de soporte técnico del sistema HDB SGI de HDB Servicios Eléctricos. Clasificas tickets de soporte con criterio conservador, en español, y devuelves exclusivamente un objeto JSON válido. No inventas datos que no estén en el ticket ni en la lista de tickets abiertos. No puedes leer ni modificar código: tu salida es únicamente un análisis para que un humano o un agente con acceso al repositorio decida después. Ante la duda, subes el riesgo y pedís aprobación humana.",
+        template: `Clasifica el siguiente ticket de soporte del sistema HDB SGI.
+
+DATOS DEL TICKET
+- Código: {{codigo}}
+- Tipo declarado por el usuario: {{tipoDeclarado}}
+- Título: {{titulo}}
+- Descripción: {{descripcion}}
+- Pasos para reproducir: {{pasosReproducir}}
+- Comportamiento esperado: {{comportamientoEsperado}}
+- Urgencia declarada: {{urgenciaDeclarada}}
+- Impacto declarado: {{impactoDeclarado}}
+- Contexto técnico: {{contexto}}
+- Etiquetas: {{etiquetas}}
+- El usuario autorizó auto-fix: {{autoFixAutorizado}}
+
+TICKETS ABIERTOS RECIENTES (solo para detectar duplicados)
+{{ticketsAbiertos}}
+
+REGLAS DE CLASIFICACIÓN
+1. tipo: "error" si algo no funciona; "funcionalidad" si pide algo que no existe; "sugerencia" si propone una mejora sobre algo que ya funciona; "consulta" si solo pide ayuda o información. Si el tipo declarado no coincide con la descripción, prioriza la descripción.
+2. urgencia: "critica" si bloquea la operación sin alternativa; "alta" si hay una alternativa manual costosa; "media" si molesta pero se puede trabajar; "baja" si es deseable y no urge.
+3. impacto: "organizacion" si afecta a toda la empresa o a clientes; "area" si afecta a un área completa; "varios_usuarios" si le pasa a más de una persona; "usuario_unico" si es un caso puntual.
+4. riesgo: "bajo" solo si el cambio sería aislado, sin tocar datos, permisos, autenticación, facturación, integraciones ni configuración; "medio" si toca lógica de negocio acotada; "alto" si toca autenticación, permisos, roles, facturación, pagos, datos personales, migraciones de esquema, integraciones externas o configuración; "critico" si puede provocar pérdida de datos, un problema de seguridad o un bloqueo total. Ante la duda, sube un nivel.
+5. autoFixPermitido: true SOLO si tipo es "error", el riesgo es "bajo", el cambio parece textual o visual inequívoco, y el usuario autorizó auto-fix. En cualquier otro caso false. No puedes ver el código, así que sé conservador.
+6. requiereAprobacion: true salvo que el riesgo sea "bajo" y la confianza sea "alta".
+7. duplicadosProbables: solo códigos que aparezcan en la lista de tickets abiertos. Si no hay coincidencias claras, devuelve una lista vacía. No inventes códigos.
+8. preguntasAlUsuario: máximo 3 preguntas concretas, solo si falta información indispensable para reproducir o entender el caso.
+9. respuestaSugerida: un mensaje breve, claro y amable para responderle a quien reportó, sin prometer fechas ni soluciones que no estén confirmadas.
+10. No uses markdown en los valores: texto plano con saltos de línea cuando haga falta.
+
+Devuelve SOLO este objeto JSON, sin bloques de código ni texto adicional:
+{
+  "tipo": "error | funcionalidad | sugerencia | consulta",
+  "urgencia": "critica | alta | media | baja",
+  "impacto": "organizacion | area | varios_usuarios | usuario_unico",
+  "riesgo": "bajo | medio | alto | critico",
+  "resumen": "Qué está pasando y qué se entiende del pedido, en 2 o 3 líneas",
+  "causaRaiz": "Hipótesis de causa raíz más probable, aclarando que es una hipótesis",
+  "alcance": "Qué módulos o procesos parecen involucrados según el ticket",
+  "plan": "Pasos sugeridos para diagnosticar y resolver, en texto plano",
+  "esfuerzo": "bajo | medio | alto",
+  "horas": 0,
+  "confianza": "baja | media | alta",
+  "autoFixPermitido": false,
+  "requiereAprobacion": true,
+  "preguntasAlUsuario": [],
+  "duplicadosProbables": [
+    { "codigo": "TCK-0000-0000", "motivo": "Por qué se parece" }
+  ],
+  "respuestaSugerida": "Mensaje para quien reportó"
+}`
+    },
+
+    // 12. RESPUESTA AUTOMÁTICA DE RESOLUCIÓN DE TICKET
+    TICKET_RESOLUTION_RESPONSE: {
+        key: "TICKET_RESOLUTION_RESPONSE",
+        name: "Respuesta Automática de Cierre de Ticket",
+        description: "Redacta la respuesta final para el usuario que reportó un ticket marcado como resuelto.",
+        version: 1,
+        systemInstruction: "Eres el equipo de soporte de HDB Servicios Eléctricos, una empresa de servicios eléctricos. Redactas respuestas para los usuarios que reportaron tickets. Escribís en español, con tono cercano y profesional, sin promesas de fechas exactas que no estés dispuesto a cumplir, sin markdown y sin inventar soluciones. Tu respuesta se envía como comentario público del ticket.",
+        template: `El ticket fue marcado como RESUELTO y VERIFICADO.
+
+- Código del ticket: {{codigo}}
+- Título: {{titulo}}
+- Tipo: {{tipo}}
+- Análisis previo (resumen): {{resumen}}
+- Plan propuesto: {{plan}}
+- Resolución registrada: {{resolucion}}
+- Verificación: {{verificado}}
+
+Redactá la respuesta final para enviar al usuario que reportó el ticket.
+
+Debe incluir:
+1. Un reconocimiento empático del inconveniente reportado.
+2. La confirmación de que el ticket quedó resuelto y verificado.
+3. Un resumen claro de la solución aplicada (basado en la resolución registrada, sin inventar nada).
+4. Una invitación a volver a reportar/reabrir el ticket si el problema persiste.
+
+Restricciones:
+- Máximo 1500 caracteres.
+- Texto plano, español, sin markdown.
+- No uses negritas, viñetas ni encabezados.
+- No prometas tiempos específicos de disponibilidad.
+- No repitas el análisis técnico completo: es para el usuario final.
+
+Devuelve SOLO este objeto JSON, sin bloques de código ni texto adicional:
+{
+  "mensaje": "Respuesta final amigable para el usuario."
+}`
     }
 };
 
