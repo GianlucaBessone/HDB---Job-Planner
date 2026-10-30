@@ -5,6 +5,8 @@ import { sendPushNotification } from '@/lib/onesignal';
 
 export const dynamic = 'force-dynamic';
 
+const GESTORES = ['admin', 'qa', 'supervisor'];
+
 export async function GET(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
@@ -58,12 +60,17 @@ export async function GET(req: Request, { params: paramsPromise }: { params: Pro
 export async function PATCH(req: Request, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
   const params = await paramsPromise;
     try {
+        // Solo el equipo que gestiona sugerencias (ver lib/viewAccess.ts → /gestion-sugerencias).
+        const userId = req.headers.get('x-user-id');
+        const role = (req.headers.get('x-user-role') || '').toLowerCase();
+        if (!userId || !GESTORES.includes(role)) {
+            return NextResponse.json({ error: 'No autorizado.' }, { status: 403 });
+        }
+
         const body = await req.json();
-        const { 
-            estado, 
-            comentario, 
-            actorId, 
-            actorNombre,
+        const {
+            estado,
+            comentario,
             responsable_id,
             fecha_cierre,
             reunion_programada,
@@ -81,8 +88,10 @@ export async function PATCH(req: Request, { params: paramsPromise }: { params: P
 
         const oldValue = { ...sugerencia };
         let estadoActualizado = sugerencia.estado;
-        const auditUserName = actorNombre || 'Sistema';
-        const auditUserId = actorId || null;
+        // El autor sale de la sesión, no del cliente (actorId/actorNombre se ignoran).
+        const actor = await prisma.operator.findUnique({ where: { id: userId }, select: { nombreCompleto: true } });
+        const auditUserName = actor?.nombreCompleto || 'Equipo de calidad';
+        const auditUserId = userId;
 
         // 1. Handle fields update (responsable, fechas, notas, etc)
         const updateData: any = {};

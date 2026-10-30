@@ -4,7 +4,6 @@ import { decrypt, encrypt } from './lib/auth';
 
 const PUBLIC_ROUTES = [
   '/api/auth/login',
-  '/api/sugerencias',
   '/api/cron',
   '/api/public',
   '/api/portal-clientes',
@@ -35,6 +34,15 @@ export async function middleware(request: NextRequest) {
 
   // Permitir GET a /api/operators (necesario para el login)
   if (pathname === '/api/operators' && request.method === 'GET') {
+    return NextResponse.next();
+  }
+
+  // Pizarra pública de sugerencias (/ideas-sugerencias-reclamos): listar, enviar
+  // y descargar adjuntos. Gestionar (/[id], /analizar) requiere sesión.
+  if (pathname === '/api/sugerencias' && (request.method === 'GET' || request.method === 'POST')) {
+    return NextResponse.next();
+  }
+  if (/^\/api\/sugerencias\/adjuntos\/[^\/]+$/.test(pathname) && request.method === 'GET') {
     return NextResponse.next();
   }
 
