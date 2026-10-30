@@ -61,9 +61,10 @@ El MCP no edita archivos: **el agente edita**. El MCP es el que aplica las regla
 | `tickets_begin_fix` | Aprobar y respaldar archivos. | → `en_progreso` |
 | `tickets_record_fix` | Registrar cambio y verificaciones. | → `en_revision` |
 | `tickets_add_comment` | Comentario o nota interna. | Comentario. |
-| `tickets_update_status` | Mover estado respetando transiciones. | Cambio + historial. |
+| `tickets_update_status` | Mover estado respetando transiciones. No admite `resuelto` ni `cerrado`, ni sacar un ticket de esos estados. | Cambio + historial. |
 | `tickets_escalate` | Derivar a decisión humana. | → `pendiente_aprobacion` |
-| `tickets_close` | Pasar a `resuelto` o `cerrado`. | Cierre. |
+
+El agente no tiene forma de resolver, cerrar ni reabrir tickets: eso lo hace una persona desde `/tickets`. Pasar a `resuelto` dispara la respuesta automática al usuario.
 
 Los nombres que ve OpenCode son `sgi_tickets_policy`, `sgi_tickets_list`, etc. En Code Mode (el modo por defecto de V2) se llaman `tools.sgi.tickets_policy`, `tools.sgi.tickets_list`, etc.
 

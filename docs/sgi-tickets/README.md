@@ -121,7 +121,7 @@ Reglas de seguridad aplicadas en código, no en el prompt:
 
 ### Respuesta automática al usuario
 
-Cuando un ticket pasa a estado `resuelto` (por el flujo web con verificación, por el agente con el MCP o por cualquier otro camino que escriba el estado vía API), el sistema:
+Cuando una persona pasa un ticket a estado `resuelto` desde `/tickets` (el agente con el MCP no puede hacerlo), el sistema:
 
 1. Genera la respuesta final con el prompt `TICKET_RESOLUTION_RESPONSE` (Gemini, `gemini-2.5-flash`).
 2. Guarda la respuesta como comentario **público** del ticket (autor `Equipo de soporte`).

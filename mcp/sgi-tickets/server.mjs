@@ -246,6 +246,11 @@ function crearRespaldo(ticketId, archivos) {
 }
 
 // ── Estados ────────────────────────────────────────────────────────
+// Solo una persona, desde /tickets, pasa un ticket a estos estados o lo saca de ellos.
+// Pasar a "resuelto" dispara la respuesta automática al usuario.
+// Va fijo acá y no en policy.json para que no se pueda aflojar editando la política.
+const ESTADOS_SOLO_HUMANOS = ['resuelto', 'cerrado'];
+
 function transicionesDe(estado) {
     return POLICY.transiciones?.[estado] || [];
 }
@@ -260,18 +265,17 @@ function rutaDeTransicion(desde, hasta) {
 }
 
 async function cambiarEstado(tx, ticket, nuevoEstado, usuario, comentario, extra = {}) {
+    if (ESTADOS_SOLO_HUMANOS.includes(nuevoEstado) || ESTADOS_SOLO_HUMANOS.includes(ticket.estado)) {
+        throw new Error(`El agente no puede pasar un ticket de "${ticket.estado}" a "${nuevoEstado}": resolver, cerrar y reabrir se hace desde /tickets. Dejalo en "en_revision".`);
+    }
     if (ticket.estado !== nuevoEstado && !rutaDeTransicion(ticket.estado, nuevoEstado)) {
         throw new Error(`Transición inválida: ${ticket.estado} → ${nuevoEstado}.`);
     }
 
     const data = { ...extra, estado: nuevoEstado };
 
-    if (nuevoEstado === 'resuelto') data.fechaResolucion = new Date();
-    if (nuevoEstado === 'cerrado') data.fechaCierre = new Date();
-    if (['nuevo', 'triaje', 'en_analisis', 'pendiente_aprobacion', 'listo_para_fix', 'en_progreso', 'en_revision', 'rechazado', 'duplicado'].includes(nuevoEstado)) {
-        data.fechaResolucion = null;
-        data.fechaCierre = null;
-    }
+    data.fechaResolucion = null;
+    data.fechaCierre = null;
 
     const actualizado = await tx.ticket.update({ where: { id: ticket.id }, data });
 
@@ -430,7 +434,7 @@ const TOOLS = [
     },
     {
         name: 'tickets_update_status',
-        description: 'Cambia el estado de un ticket respetando la máquina de estados.',
+        description: 'Cambia el estado de un ticket respetando la máquina de estados. No permite "resuelto" ni "cerrado": eso lo hace una persona desde /tickets.',
         inputSchema: {
             type: 'object',
             properties: {
@@ -456,91 +460,7 @@ const TOOLS = [
             required: ['id', 'motivo'],
         },
     },
-    {
-        name: 'tickets_close',
-        description: 'Cierra el ciclo: si el ticket está "en_revision" lo pasa a "resuelto"; si está "resuelto", lo pasa a "cerrado".',
-        inputSchema: {
-            type: 'object',
-            properties: {
-                id: { type: 'string', description: 'ID o código del ticket.' },
-                resolucion: { type: 'string', description: 'Resumen de la solución.' },
-                verificado: { type: 'boolean', description: 'True si se verificó el arreglo.' },
-                autor: { type: 'string', description: 'Quién cierra.' },
-            },
-            required: ['id'],
-        },
-    },
 ];
-
-// ── Respuesta automática de resolución (Gemini) ─────────────────────
-const GEMINI_GENERATE_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
-
-async function generarMensajeRespuestaResolucion(ticket) {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-        log('GEMINI_API_KEY no definida: se omite la respuesta automática de resolución.');
-        return null;
-    }
-
-    const analisis = ticket?.analisisAgente || {};
-    const prompt = `El ticket fue marcado como RESUELTO y VERIFICADO.
-
-- Código del ticket: ${ticket.codigo}
-- Título: ${ticket.titulo}
-- Tipo: ${ticket.tipo}
-- Análisis previo (resumen): ${analisis.resumen || ticket.descripcion}
-- Plan propuesto: ${analisis.plan || 'Resolver el error reportado.'}
-- Resolución registrada: ${ticket.resolucion || 'No se registró texto de la solución.'}
-- Verificación: ${ticket.verificado ? 'Sí' : 'No'}
-
-Redactá la respuesta final para enviar al usuario que reportó el ticket.
-
-Debe incluir:
-1. Un reconocimiento empático del inconveniente reportado.
-2. La confirmación de que el ticket quedó resuelto y verificado.
-3. Un resumen claro de la solución aplicada (basado en la resolución registrada, sin inventar nada).
-4. Una invitación a volver a reportar/reabrir el ticket si el problema persiste.
-
-Restricciones:
-- Máximo 1500 caracteres.
-- Texto plano, español, sin markdown.
-- No uses negritas, viñetas ni encabezados.
-- No prometas tiempos específicos de disponibilidad.
-- No repitas el análisis técnico completo: es para el usuario final.
-
-Devuelve SOLO este objeto JSON, sin bloques de código ni texto adicional:
-{
-  "mensaje": "Respuesta final amigable para el usuario."
-}`;
-
-    try {
-        const response = await fetch(`${GEMINI_GENERATE_URL}?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ role: 'user', parts: [{ text: prompt }] }],
-                generationConfig: { responseMimeType: 'application/json', temperature: 0.3, maxOutputTokens: 1024 },
-            }),
-        });
-        if (!response.ok) throw new Error(`Gemini HTTP ${response.status}`);
-        const data = await response.json();
-        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (!text) return null;
-        const json = JSON.parse(text);
-        return typeof json?.mensaje === 'string' && json.mensaje.trim() ? json.mensaje.trim() : null;
-    } catch (error) {
-        log('Error generando respuesta automática de resolución:', error?.message);
-        return null;
-    }
-}
-
-async function registrarRespuestaResolucion(prisma, ticketId, mensaje) {
-    if (!mensaje) return false;
-    await prisma.ticketComentario.create({
-        data: { ticketId, autor: 'Equipo de soporte', texto: mensaje, interno: false },
-    });
-    return true;
-}
 
 // ── Utilidades de datos ────────────────────────────────────────────
 async function buscarTicket(prisma, idOCodigo) {
@@ -850,15 +770,7 @@ async function ejecutarTool(nombre, args) {
             return cambiarEstado(tx, ticket, args.estado, args.autor || 'opencode', args.comentario || null);
         });
 
-        let respuesta = null;
-        if (args.estado === 'resuelto') {
-            respuesta = await generarMensajeRespuestaResolucion(ticket);
-            if (respuesta) {
-                await registrarRespuestaResolucion(prisma, ticket.id, respuesta);
-            }
-        }
-
-        return { ticket: ticketCompacto(actualizado), mensaje: `Estado actualizado a ${args.estado}.`, respuesta };
+        return { ticket: ticketCompacto(actualizado), mensaje: `Estado actualizado a ${args.estado}.` };
     }
 
     if (nombre === 'tickets_escalate') {
@@ -879,32 +791,6 @@ async function ejecutarTool(nombre, args) {
         });
 
         return { ticket: ticketCompacto(actualizado), mensaje: 'Ticket escalado a aprobación humana.' };
-    }
-
-    if (nombre === 'tickets_close') {
-        const ticket = await buscarTicket(prisma, args.id);
-        const destino = ticket.estado === 'en_revision' ? 'resuelto' : ticket.estado === 'resuelto' ? 'cerrado' : null;
-        if (!destino) {
-            throw new Error(`No se puede cerrar un ticket en estado "${ticket.estado}".`);
-        }
-
-        const actualizado = await prisma.$transaction(async tx => {
-            await registrarEvento(tx, ticket.id, 'validacion', { cierre: true, verificado: args.verificado === true });
-            return cambiarEstado(tx, ticket, destino, args.autor || 'opencode', args.resolucion || null, {
-                resolucion: args.resolucion || ticket.resolucion,
-                verificado: args.verificado === true,
-            });
-        });
-
-        let respuesta = null;
-        if (destino === 'resuelto') {
-            respuesta = await generarMensajeRespuestaResolucion(ticket);
-            if (respuesta) {
-                await registrarRespuestaResolucion(prisma, ticket.id, respuesta);
-            }
-        }
-
-        return { ticket: ticketCompacto(actualizado), mensaje: `Ticket pasado a ${destino}.`, respuesta };
     }
 
     throw new Error(`Herramienta desconocida: ${nombre}`);

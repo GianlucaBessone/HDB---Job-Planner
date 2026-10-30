@@ -114,7 +114,7 @@
       "Tocar autenticación, permisos, facturación o datos personales sin aprobación.",
       "Hacer commit, push, deploy o tocar producción.",
       "Inventar pasos de reproducción o datos que no estén en el ticket.",
-      "Cerrar un ticket sin verificación explícita."
+      "Pasar un ticket a resuelto o cerrado, o reabrirlo: lo hace una persona desde /tickets."
     ],
     "maxIntentosPorTicket": 2,
     "canalEscalamiento": "estado = pendiente_aprobacion"
