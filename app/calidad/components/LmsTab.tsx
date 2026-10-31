@@ -430,14 +430,14 @@ export default function LmsTab({ user }: { user: any }) {
     };
 
     return (
-      <div className="space-y-6 animate-in fade-in duration-300">
+      <div className="space-y-6 animate-in fade-in duration-200">
         <button
           onClick={() => {
             setActiveCourse(null);
             setQuizResult(null);
             setAnswers({});
           }}
-          className="flex items-center gap-2 text-sm font-black text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+          className="flex items-center gap-2 text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Volver a capacitaciones
         </button>
@@ -448,12 +448,12 @@ export default function LmsTab({ user }: { user: any }) {
             <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
               <div className="flex justify-between items-start gap-4">
                 <div className="space-y-1">
-                  <span className="text-[10px] font-black uppercase tracking-widest bg-primary/10 text-primary dark:text-primary-light px-2.5 py-1 rounded-full">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider bg-primary/10 text-primary dark:text-primary-light px-2.5 py-1 rounded-full">
                     {isCompleted
                       ? "Detalle de la Capacitación"
                       : "Material de Estudio"}
                   </span>
-                  <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">
+                  <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">
                     {activeCourse.titulo}
                   </h3>
                   {activeCourse.document?.codigoDocumental && (
@@ -464,7 +464,7 @@ export default function LmsTab({ user }: { user: any }) {
                   )}
                 </div>
                 {!isCompleted && quizStarted && (
-                  <div className="flex items-center gap-2 text-xs font-black text-slate-500 dark:text-slate-400 bg-background text-foreground px-3 py-1.5 rounded-full border border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 bg-background text-foreground px-3 py-1.5 rounded-full border border-slate-100 dark:border-slate-800">
                     <Clock className="w-4 h-4 text-primary animate-pulse" />
                     <span>
                       {Math.floor(seconds / 60)}:
@@ -542,9 +542,9 @@ export default function LmsTab({ user }: { user: any }) {
                         .map((section, idx) => (
                           <div
                             key={idx}
-                            className="bg-background text-foreground/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-800"
+                            className="bg-background text-foreground p-5 rounded-2xl border border-slate-100 dark:border-slate-800"
                           >
-                            <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-2">
+                            <p className="text-[11px] font-semibold text-primary uppercase tracking-wider mb-2">
                               {section.title}
                             </p>
                             <p className="text-xs text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">
@@ -570,7 +570,7 @@ export default function LmsTab({ user }: { user: any }) {
                   <div className="aspect-video bg-slate-950 rounded-2xl flex flex-col items-center justify-center border border-slate-800 p-6 text-center space-y-4">
                     <BookOpen className="w-16 h-16 text-primary animate-pulse" />
                     <div>
-                      <h4 className="text-base font-black text-white">
+                      <h4 className="text-base font-bold text-white">
                         {activeCourse.document?.titulo || activeCourse.titulo}
                       </h4>
                       <p className="text-xs font-bold text-slate-400 mt-1">
@@ -582,7 +582,7 @@ export default function LmsTab({ user }: { user: any }) {
                             href={documentUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="bg-primary hover:bg-primary-dark text-white font-black text-xs px-6 py-3 rounded-full transition-all shadow-lg shadow-primary/20 flex items-center gap-2"
+                            className="bg-primary hover:bg-primary-dark text-white font-bold text-xs px-6 py-3 rounded-full transition-all flex items-center gap-2"
                           >
                             <ExternalLink className="w-4 h-4" /> Abrir Documento
                             Controlado
@@ -590,7 +590,7 @@ export default function LmsTab({ user }: { user: any }) {
                         ) : (
                           <button
                             disabled
-                            className="bg-slate-800 text-slate-500 border border-slate-700 font-black text-xs px-6 py-3 rounded-full cursor-not-allowed flex items-center gap-2"
+                            className="bg-slate-800 text-slate-500 border border-slate-700 font-bold text-xs px-6 py-3 rounded-full cursor-not-allowed flex items-center gap-2"
                           >
                             <ExternalLink className="w-4 h-4" /> Sin Documento
                             Adjunto
@@ -608,17 +608,17 @@ export default function LmsTab({ user }: { user: any }) {
             {isCompleted ? (
               <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
                 <div className="space-y-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                     Resultado de Evaluación
                   </span>
                   <div className="flex items-center gap-3">
                     <span
-                      className={`text-xs font-black uppercase tracking-widest px-3 py-1.5 rounded-xl flex items-center gap-1.5 ${
+                      className={`text-xs font-semibold uppercase tracking-wider px-3 py-1.5 rounded-xl flex items-center gap-1.5 ${
                         isApproved
                           ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400"
                           : isReproved
                             ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400"
-                            : "bg-muted text-muted-foreground text-slate-500 dark:text-slate-400"
+                            : "bg-muted text-slate-500 dark:text-slate-400"
                       }`}
                     >
                       {isApproved ? (
@@ -638,7 +638,7 @@ export default function LmsTab({ user }: { user: any }) {
                 </div>
 
                 {typeof activeCourse.puntaje === "number" && (
-                  <div className="flex flex-col items-center justify-center p-6 bg-background text-foreground/50 rounded-2xl border border-slate-100 dark:border-slate-800 text-center">
+                  <div className="flex flex-col items-center justify-center p-6 bg-background text-foreground rounded-2xl border border-slate-100 dark:border-slate-800 text-center">
                     <div className="relative flex items-center justify-center">
                       <svg className="w-24 h-24 transform -rotate-90">
                         <circle
@@ -666,11 +666,11 @@ export default function LmsTab({ user }: { user: any }) {
                           }
                         />
                       </svg>
-                      <span className="absolute text-xl font-black text-slate-800 dark:text-slate-100">
+                      <span className="absolute text-xl font-bold text-slate-800 dark:text-slate-100">
                         {Math.round(activeCourse.puntaje)}%
                       </span>
                     </div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-3">
+                    <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mt-3">
                       Porcentaje obtenido
                     </p>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 font-bold mt-1">
@@ -685,7 +685,7 @@ export default function LmsTab({ user }: { user: any }) {
                       <span className="font-bold text-slate-400">
                         Fecha Completado:
                       </span>
-                      <span className="font-black text-slate-700 dark:text-slate-200 flex items-center gap-1">
+                      <span className="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1">
                         <Calendar className="w-3.5 h-3.5 text-slate-400" />
                         {formatDateInline(fechaFinObj)}
                       </span>
@@ -697,7 +697,7 @@ export default function LmsTab({ user }: { user: any }) {
                         <span className="font-bold text-slate-400">
                           Periodo Validez:
                         </span>
-                        <span className="font-black text-slate-700 dark:text-slate-200">
+                        <span className="font-bold text-slate-700 dark:text-slate-200">
                           {validezMeses} meses
                         </span>
                       </div>
@@ -707,7 +707,7 @@ export default function LmsTab({ user }: { user: any }) {
                             Vencimiento:
                           </span>
                           <span
-                            className={`font-black flex items-center gap-1 ${
+                            className={`font-bold flex items-center gap-1 ${
                               new Date() > fechaVencimiento
                                 ? "text-red-500 font-bold"
                                 : "text-slate-700 dark:text-slate-200"
@@ -725,7 +725,7 @@ export default function LmsTab({ user }: { user: any }) {
                     <span className="font-bold text-slate-400">
                       Tiempo de Evaluación:
                     </span>
-                    <span className="font-black text-slate-700 dark:text-slate-200 flex items-center gap-1">
+                    <span className="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1">
                       <Timer className="w-3.5 h-3.5 text-slate-400" />
                       {formatDuration(activeCourse.tiempoInvertido)}
                     </span>
@@ -734,7 +734,7 @@ export default function LmsTab({ user }: { user: any }) {
 
                 {documentUrl && (
                   <div className="pt-4 border-t border-slate-100 dark:border-slate-700/50 space-y-2">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block">
                       Documento Relacionado
                     </span>
                     {hasDocumentFile ? (
@@ -742,7 +742,7 @@ export default function LmsTab({ user }: { user: any }) {
                         href={documentUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="w-full flex items-center justify-center gap-2 py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-black rounded-xl transition-all border border-slate-200/50 dark:border-slate-600"
+                        className="w-full flex items-center justify-center gap-2 py-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-all border border-slate-200/50 dark:border-slate-600"
                       >
                         <FileText className="w-4 h-4" />
                         Ver Documento de Calidad
@@ -750,7 +750,7 @@ export default function LmsTab({ user }: { user: any }) {
                     ) : (
                       <button
                         disabled
-                        className="w-full flex items-center justify-center gap-2 py-3 bg-muted/50 text-muted-foreground text-slate-400 dark:text-slate-500 text-xs font-black rounded-xl cursor-not-allowed border border-slate-100 dark:border-slate-700/50"
+                        className="w-full flex items-center justify-center gap-2 py-3 bg-muted/50 text-slate-400 dark:text-slate-500 text-xs font-bold rounded-xl cursor-not-allowed border border-slate-100 dark:border-slate-700/50"
                       >
                         <FileText className="w-4 h-4" />
                         Sin Documento Adjunto
@@ -761,14 +761,14 @@ export default function LmsTab({ user }: { user: any }) {
 
                 {docTags.length > 0 && (
                   <div className="pt-4 border-t border-slate-100 dark:border-slate-700/50 space-y-2">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block">
                       Habilidades Validadas
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {docTags.map((tag: string, index: number) => (
                         <span
                           key={index}
-                          className="text-[10px] font-black uppercase tracking-wider bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 px-2.5 py-1 rounded-lg border border-indigo-100/50 dark:border-indigo-900/30 flex items-center gap-1"
+                          className="text-[11px] font-semibold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 px-2.5 py-1 rounded-lg border border-indigo-100/50 dark:border-indigo-900/30 flex items-center gap-1"
                         >
                           <ShieldAlert className="w-3 h-3 text-indigo-500" />
                           {tag}
@@ -780,7 +780,7 @@ export default function LmsTab({ user }: { user: any }) {
 
                 {quiz.length > 0 && (
                   <div className="pt-4 border-t border-slate-100 dark:border-slate-700/50 space-y-4">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block">
                       Revisión de Evaluación
                     </span>
                     <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1">
@@ -845,7 +845,7 @@ export default function LmsTab({ user }: { user: any }) {
               <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-6">
                 <div className="space-y-1">
                   <span
-                    className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full ${
+                    className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full ${
                       quiz.length > 0
                         ? "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400"
                         : "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400"
@@ -855,7 +855,7 @@ export default function LmsTab({ user }: { user: any }) {
                       ? "Examen de Suficiencia"
                       : "Confirmación de Lectura"}
                   </span>
-                  <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">
+                  <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">
                     {quiz.length > 0
                       ? "Cuestionario QMS"
                       : "Conformidad de Documento"}
@@ -863,14 +863,14 @@ export default function LmsTab({ user }: { user: any }) {
                 </div>
 
                 {quizResult ? (
-                  <div className="space-y-6 text-center py-4 animate-in zoom-in-95 duration-300">
+                  <div className="space-y-6 text-center py-4 animate-in zoom-in-95 duration-200">
                     {quizResult.approved ? (
                       <div className="space-y-4">
                         <div className="mx-auto w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center">
                           <Award className="w-10 h-10" />
                         </div>
                         <div>
-                          <h4 className="text-xl font-black text-emerald-600 dark:text-emerald-400">
+                          <h4 className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
                             ¡Completado!
                           </h4>
                           <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">
@@ -880,10 +880,10 @@ export default function LmsTab({ user }: { user: any }) {
                         </div>
                         {quiz.length > 0 && (
                           <div className="bg-emerald-50 dark:bg-emerald-950/20 p-4 rounded-2xl">
-                            <p className="text-3xl font-black text-slate-800 dark:text-slate-100">
+                            <p className="text-3xl font-bold text-slate-800 dark:text-slate-100">
                               {Math.round(quizResult.score)}%
                             </p>
-                            <p className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mt-1">
+                            <p className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mt-1">
                               Score Obtenido
                             </p>
                           </div>
@@ -895,7 +895,7 @@ export default function LmsTab({ user }: { user: any }) {
                           <XCircle className="w-10 h-10" />
                         </div>
                         <div>
-                          <h4 className="text-xl font-black text-red-600 dark:text-red-400">
+                          <h4 className="text-xl font-bold text-red-600 dark:text-red-400">
                             Desaprobado
                           </h4>
                           <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">
@@ -905,10 +905,10 @@ export default function LmsTab({ user }: { user: any }) {
                           </p>
                         </div>
                         <div className="bg-red-50 dark:bg-red-950/20 p-4 rounded-2xl">
-                          <p className="text-3xl font-black text-slate-800 dark:text-slate-100">
+                          <p className="text-3xl font-bold text-slate-800 dark:text-slate-100">
                             {Math.round(quizResult.score)}%
                           </p>
-                          <p className="text-[10px] font-black text-red-600 dark:text-red-400 uppercase tracking-widest mt-1">
+                          <p className="text-[11px] font-semibold text-red-600 dark:text-red-400 uppercase tracking-wider mt-1">
                             Score Obtenido
                           </p>
                         </div>
@@ -918,7 +918,7 @@ export default function LmsTab({ user }: { user: any }) {
                             setQuizStarted(false);
                             setSeconds(0);
                           }}
-                          className="w-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 font-black text-xs py-3 rounded-xl transition-all"
+                          className="w-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 font-bold text-xs py-3 rounded-xl transition-all"
                         >
                           Intentar de Nuevo
                         </button>
@@ -932,7 +932,7 @@ export default function LmsTab({ user }: { user: any }) {
                         <Award className="w-8 h-8" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">
                           Evaluación Obligatoria
                         </h3>
                         <p className="text-xs text-slate-500 mt-2">
@@ -944,18 +944,18 @@ export default function LmsTab({ user }: { user: any }) {
                       </div>
                       <button
                         onClick={() => setQuizStarted(true)}
-                        className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-black text-xs transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+                        className="w-full bg-primary hover:bg-primary-dark text-white py-3.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2"
                       >
                         <Play className="w-4 h-4" /> Comenzar Evaluación (
                         {quiz.length} preguntas)
                       </button>
                     </div>
                   ) : (
-                    <div className="space-y-6 animate-in zoom-in-95 duration-300">
+                    <div className="space-y-6 animate-in zoom-in-95 duration-200">
                       {quiz.map((q: any, qIndex: number) => (
                         <div key={qIndex} className="space-y-3">
-                          <p className="text-xs font-black text-slate-700 dark:text-slate-200 flex gap-2">
-                            <span className="text-primary font-black">
+                          <p className="text-xs font-bold text-slate-700 dark:text-slate-200 flex gap-2">
+                            <span className="text-primary font-bold">
                               {qIndex + 1}.
                             </span>{" "}
                             {q.question}
@@ -988,7 +988,7 @@ export default function LmsTab({ user }: { user: any }) {
 
                       <button
                         onClick={handleSubmitQuiz}
-                        className="w-full bg-primary hover:bg-primary-dark text-white font-black text-xs py-3.5 rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+                        className="w-full bg-primary hover:bg-primary-dark text-white font-bold text-xs py-3.5 rounded-xl transition-all flex items-center justify-center gap-2"
                       >
                         <GraduationCap className="w-4 h-4" /> Enviar
                         Cuestionario
@@ -1012,7 +1012,7 @@ export default function LmsTab({ user }: { user: any }) {
                     </div>
                     <button
                       onClick={handleSubmitQuiz}
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs py-3.5 rounded-xl transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2"
+                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-3.5 rounded-xl transition-all flex items-center justify-center gap-2"
                     >
                       <Check className="w-4 h-4" /> Marcar como Leída y
                       Completar
@@ -1028,7 +1028,7 @@ export default function LmsTab({ user }: { user: any }) {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="space-y-6 animate-in fade-in duration-200">
       {/* Header Box */}
       <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-3">
@@ -1036,7 +1036,7 @@ export default function LmsTab({ user }: { user: any }) {
             <GraduationCap className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">
+            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">
               {!isTech
                 ? "Formación y Certificaciones"
                 : "Centro de Formación Integral"}
@@ -1051,7 +1051,7 @@ export default function LmsTab({ user }: { user: any }) {
         {!isTech && (
           <button
             onClick={openAiModal}
-            className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-6 py-3 rounded-2xl font-black text-sm hover:opacity-95 transition-all active:scale-95 shadow-md shadow-indigo-500/20"
+            className="flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-2xl font-bold text-sm transition-all"
           >
             <Sparkles className="w-4 h-4" /> Asignar con IA
           </button>
@@ -1106,13 +1106,13 @@ export default function LmsTab({ user }: { user: any }) {
                   <div className="flex justify-between items-start">
                     <div className="flex gap-2 items-center">
                       <span
-                        className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full ${
+                        className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full ${
                           isApproved
                             ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400"
                             : isReproved
                               ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400"
                               : t.estado === "obsoleto"
-                                ? "bg-muted text-muted-foreground text-slate-500 dark:text-slate-400"
+                                ? "bg-muted text-slate-500 dark:text-slate-400"
                                 : "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400"
                         }`}
                       >
@@ -1126,18 +1126,18 @@ export default function LmsTab({ user }: { user: any }) {
                       </span>
                       {t.estado === "pendiente" &&
                         t.document?.versions?.[0]?.versionMayor > 1 && (
-                          <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                          <span className="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
                             Nueva Versión
                           </span>
                         )}
                     </div>
-                    <span className="text-[10px] font-bold text-slate-400">
+                    <span className="text-[11px] font-bold text-slate-400">
                       v{t.document?.versions?.[0]?.versionLabel || "1.0"}
                     </span>
                   </div>
 
                   <div className="space-y-1">
-                    <h4 className="text-sm font-black text-slate-800 dark:text-slate-100 line-clamp-2">
+                    <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 line-clamp-2">
                       {t.titulo}
                     </h4>
                     {!isTech && (
@@ -1181,7 +1181,7 @@ export default function LmsTab({ user }: { user: any }) {
                     <div className="flex justify-between text-xs font-bold text-slate-500">
                       <span>Puntaje obtenido:</span>
                       <span
-                        className={`font-black ${isApproved ? "text-emerald-600" : "text-red-500"}`}
+                        className={`font-bold ${isApproved ? "text-emerald-600" : "text-red-500"}`}
                       >
                         {Math.round(t.puntaje)}%
                       </span>
@@ -1191,10 +1191,10 @@ export default function LmsTab({ user }: { user: any }) {
                   {(isTech || t.operatorId === user?.id) && (
                     <button
                       onClick={() => handleSelectCourse(t)}
-                      className={`w-full py-2.5 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-2 mt-2 ${
+                      className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 mt-2 ${
                         isApproved
                           ? "bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300"
-                          : "bg-primary text-white hover:bg-primary-dark shadow-md shadow-primary/10"
+                          : "bg-primary text-white hover:bg-primary-dark shadow-md"
                       }`}
                     >
                       {isApproved ? "Ver Detalles" : "Iniciar Capacitación"}
@@ -1208,7 +1208,7 @@ export default function LmsTab({ user }: { user: any }) {
           {trainings.length === 0 && (
             <div className="col-span-full bg-background text-foreground border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center text-slate-500">
               <GraduationCap className="w-12 h-12 mx-auto text-slate-400 mb-3 animate-bounce" />
-              <h4 className="text-sm font-black text-slate-700 dark:text-slate-300">
+              <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">
                 Sin Capacitaciones
               </h4>
               <p className="text-xs font-medium text-slate-500 mt-1">
@@ -1232,7 +1232,7 @@ export default function LmsTab({ user }: { user: any }) {
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
                   certFilter === filterVal
                     ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 border-transparent"
-                    : "bg-card text-card-foreground text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-50"
+                    : "bg-card text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-50"
                 }`}
               >
                 {filterVal === "all" && "Todos"}
@@ -1251,7 +1251,7 @@ export default function LmsTab({ user }: { user: any }) {
           ) : filteredCerts.length === 0 ? (
             <div className="bg-background text-foreground border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center text-slate-500">
               <Award className="w-12 h-12 mx-auto text-slate-400 mb-3" />
-              <h4 className="text-sm font-black text-slate-700 dark:text-slate-300">
+              <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">
                 Sin Certificados
               </h4>
               <p className="text-xs font-medium text-slate-500 mt-1">
@@ -1268,7 +1268,7 @@ export default function LmsTab({ user }: { user: any }) {
                   <div className="space-y-3">
                     <div className="flex justify-between items-start">
                       <span
-                        className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full ${
+                        className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full ${
                           cert.estado === "aprobado"
                             ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400"
                             : cert.estado === "rechazado"
@@ -1283,14 +1283,14 @@ export default function LmsTab({ user }: { user: any }) {
                             : "Rechazado"}
                       </span>
                       {cert.aiData && (
-                        <span className="text-[10px] font-black bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 px-2 py-1 rounded flex items-center gap-0.5">
+                        <span className="text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 px-2 py-1 rounded flex items-center gap-0.5">
                           <Sparkles className="w-3 h-3" /> IA
                         </span>
                       )}
                     </div>
 
                     <div className="space-y-1">
-                      <h4 className="text-sm font-black text-slate-800 dark:text-slate-100 line-clamp-2">
+                      <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 line-clamp-2">
                         {cert.nombreCurso}
                       </h4>
                       <p className="text-xs font-bold text-slate-500">
@@ -1321,7 +1321,7 @@ export default function LmsTab({ user }: { user: any }) {
 
                     <button
                       onClick={() => openValidationModal(cert)}
-                      className="w-full py-2.5 rounded-xl font-black text-xs transition-all flex items-center justify-center gap-2 mt-2 bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-600/10"
+                      className="w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 mt-2 bg-indigo-600 text-white hover:bg-indigo-700"
                     >
                       <Eye className="w-4 h-4" /> Examinar y Validar
                     </button>
@@ -1335,12 +1335,12 @@ export default function LmsTab({ user }: { user: any }) {
 
       {/* SUPERVISOR VALIDATION DETAIL MODAL */}
       {selectedCert && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-950/50 z-50 flex items-center justify-center p-4">
           <div className="bg-card text-card-foreground rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] border border-slate-100 dark:border-slate-700">
             {/* Header */}
-            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-background text-foreground/50">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-background text-foreground">
               <div>
-                <h3 className="font-black text-slate-800 dark:text-slate-100 text-base">
+                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base">
                   Examinar y Validar Certificado
                 </h3>
                 <p className="text-xs text-slate-400 mt-0.5">
@@ -1376,7 +1376,7 @@ export default function LmsTab({ user }: { user: any }) {
                     className="w-full h-[50vh] rounded-xl border border-slate-200 dark:border-slate-700"
                   />
                 ) : (
-                  <div className="p-8 text-center bg-secondary text-secondary-foreground rounded-2xl text-slate-400 text-xs">
+                  <div className="p-8 text-center bg-secondary rounded-2xl text-slate-400 text-xs">
                     No hay vista previa disponible o el formato no es
                     compatible.
                   </div>
@@ -1388,7 +1388,7 @@ export default function LmsTab({ user }: { user: any }) {
                 <div className="space-y-3">
                   {selectedCert.aiData && (
                     <div className="bg-indigo-50/50 dark:bg-indigo-950/20 p-4 rounded-2xl border border-indigo-100/80 dark:border-indigo-900/50">
-                      <p className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-1.5 mb-2">
+                      <p className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
                         <Sparkles className="w-3.5 h-3.5" /> Metadatos del
                         Análisis de IA Gemini
                       </p>
@@ -1408,7 +1408,7 @@ export default function LmsTab({ user }: { user: any }) {
                       type="text"
                       value={certNombreCurso}
                       onChange={(e) => setCertNombreCurso(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                      className="w-full px-4 py-2.5 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
                       disabled={validatingCert}
                     />
                   </div>
@@ -1421,7 +1421,7 @@ export default function LmsTab({ user }: { user: any }) {
                       type="text"
                       value={certInstitucion}
                       onChange={(e) => setCertInstitucion(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                      className="w-full px-4 py-2.5 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
                       disabled={validatingCert}
                     />
                   </div>
@@ -1435,7 +1435,7 @@ export default function LmsTab({ user }: { user: any }) {
                         type="number"
                         value={certHoras}
                         onChange={(e) => setCertHoras(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                        className="w-full px-4 py-2.5 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
                         disabled={validatingCert}
                       />
                     </div>
@@ -1447,14 +1447,14 @@ export default function LmsTab({ user }: { user: any }) {
                         type="date"
                         value={certFechaEmision}
                         onChange={(e) => setCertFechaEmision(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                        className="w-full px-4 py-2.5 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
                         disabled={validatingCert}
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1 pt-1">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                       Descripción Original:
                     </span>
                     <p className="text-xs text-slate-600 dark:text-slate-300 max-h-24 overflow-y-auto leading-relaxed bg-background text-foreground p-3 rounded-xl border border-slate-100 dark:border-slate-800">
@@ -1479,7 +1479,7 @@ export default function LmsTab({ user }: { user: any }) {
                       type="button"
                       onClick={() => handleValidateCertificate("rechazado")}
                       disabled={validatingCert}
-                      className="px-4 py-2.5 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/20 dark:text-rose-400 text-xs font-black rounded-xl transition-all flex items-center gap-1.5 disabled:opacity-50"
+                      className="px-4 py-2.5 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/20 dark:text-rose-400 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 disabled:opacity-50"
                     >
                       <ThumbsDown className="w-3.5 h-3.5" /> Rechazar
                     </button>
@@ -1487,7 +1487,7 @@ export default function LmsTab({ user }: { user: any }) {
                       type="button"
                       onClick={() => handleValidateCertificate("aprobado")}
                       disabled={validatingCert}
-                      className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black rounded-xl transition-all shadow-md flex items-center gap-1.5 disabled:opacity-50"
+                      className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 disabled:opacity-50"
                     >
                       <ThumbsUp className="w-3.5 h-3.5" /> Aprobar y Guardar
                     </button>
@@ -1501,13 +1501,13 @@ export default function LmsTab({ user }: { user: any }) {
 
       {/* AI Training Quiz Builder Modal */}
       {isAiModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 overflow-y-auto">
           <div className="bg-card text-card-foreground rounded-3xl shadow-2xl w-full max-w-xl flex flex-col my-8 animate-in zoom-in-95 duration-200">
             {/* Header */}
-            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-background text-foreground/50 rounded-t-3xl">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-background text-foreground rounded-t-3xl">
               <div className="flex items-center gap-3">
                 <Sparkles className="w-6 h-6 text-indigo-500" />
-                <h3 className="font-black text-slate-800 dark:text-slate-100 text-lg">
+                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">
                   Diseñar Cuestionario con Gemini
                 </h3>
               </div>
@@ -1522,7 +1522,7 @@ export default function LmsTab({ user }: { user: any }) {
             {/* Body */}
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">
+                <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                   Documento Controlado (Vigente) *
                 </label>
                 <select
@@ -1530,7 +1530,7 @@ export default function LmsTab({ user }: { user: any }) {
                   onChange={(e) =>
                     setAiData({ ...aiData, documentId: e.target.value })
                   }
-                  className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[44px] text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[44px] text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
                 >
                   <option value="">Seleccione un documento...</option>
                   {docs.map((doc) => (
@@ -1542,7 +1542,7 @@ export default function LmsTab({ user }: { user: any }) {
               </div>
 
               <div>
-                <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">
+                <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                   Asignar al Técnico / Operador *
                 </label>
                 <select
@@ -1550,7 +1550,7 @@ export default function LmsTab({ user }: { user: any }) {
                   onChange={(e) =>
                     setAiData({ ...aiData, operatorId: e.target.value })
                   }
-                  className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[44px] text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[44px] text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
                 >
                   <option value="">Seleccione un técnico...</option>
                   {operators.map((op) => (
@@ -1563,7 +1563,7 @@ export default function LmsTab({ user }: { user: any }) {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">
+                  <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                     Número de Preguntas
                   </label>
                   <select
@@ -1574,7 +1574,7 @@ export default function LmsTab({ user }: { user: any }) {
                         cantidadPreguntas: Number(e.target.value),
                       })
                     }
-                    className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[44px] text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                    className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[44px] text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
                   >
                     <option value="3">3 Preguntas</option>
                     <option value="5">5 Preguntas</option>
@@ -1583,7 +1583,7 @@ export default function LmsTab({ user }: { user: any }) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">
+                  <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                     Nivel de Dificultad
                   </label>
                   <select
@@ -1591,7 +1591,7 @@ export default function LmsTab({ user }: { user: any }) {
                     onChange={(e) =>
                       setAiData({ ...aiData, nivelDificultad: e.target.value })
                     }
-                    className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[44px] text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                    className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[44px] text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
                   >
                     <option value="facil">Fácil</option>
                     <option value="intermedio">Intermedio</option>
@@ -1602,11 +1602,11 @@ export default function LmsTab({ user }: { user: any }) {
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-background text-foreground/50 flex justify-end gap-3 rounded-b-3xl">
+            <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-background text-foreground flex justify-end gap-3 rounded-b-3xl">
               <button
                 type="button"
                 onClick={() => setIsAiModalOpen(false)}
-                className="px-5 py-2.5 rounded-xl text-sm font-black text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
               >
                 Cancelar
               </button>
@@ -1614,7 +1614,7 @@ export default function LmsTab({ user }: { user: any }) {
                 type="button"
                 onClick={handleGenerateTraining}
                 disabled={generatingTraining}
-                className="px-5 py-2.5 rounded-xl text-sm font-black bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:opacity-95 transition-all shadow-md shadow-indigo-500/20 flex items-center gap-1.5 disabled:opacity-50"
+                className="px-5 py-2.5 rounded-xl text-sm font-bold bg-indigo-600 text-white transition-all flex items-center gap-1.5 disabled:opacity-50"
               >
                 {generatingTraining ? (
                   <>

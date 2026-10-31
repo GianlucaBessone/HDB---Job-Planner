@@ -117,7 +117,7 @@ export default function GastosAjustes() {
 
 
   return (
-    <div className="p-6 h-full overflow-y-auto bg-background text-foreground/50 relative">
+    <div className="p-6 h-full overflow-y-auto bg-background text-foreground relative">
       {/* Custom Delete Confirmation Modal */}
       {deleteConfirm && (
         <div className="absolute inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
@@ -178,7 +178,7 @@ export default function GastosAjustes() {
                 />
               </div>
               <div className="md:col-span-2 flex justify-end">
-                <button type="submit" className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
+                <button type="submit" className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors">
                   Guardar Código
                 </button>
               </div>
@@ -248,7 +248,7 @@ export default function GastosAjustes() {
               />
             </div>
             <div className="md:col-span-2 flex justify-end">
-              <button type="submit" className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
+              <button type="submit" className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors">
                 Guardar Proveedor
               </button>
             </div>

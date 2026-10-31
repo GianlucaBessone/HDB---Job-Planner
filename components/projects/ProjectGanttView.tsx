@@ -132,7 +132,7 @@ export default function ProjectGanttView({
     };
 
     return (
-        <div className="bg-card text-card-foreground rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
             {withDates.length === 0 ? (
                 <div className="p-12 text-center text-slate-500 dark:text-slate-400">
                     <Calendar className="w-12 h-12 mx-auto mb-4 opacity-20" />
@@ -144,7 +144,7 @@ export default function ProjectGanttView({
                     {/* Left Panel: Project Names */}
                     <div className="w-[300px] shrink-0 border-r border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20 z-10">
                         <div className="h-10 border-b border-slate-100 dark:border-slate-800 flex items-center px-4">
-                            <span className="text-[10px] font-black tracking-widest uppercase text-slate-400 dark:text-slate-500">Proyectos ({withDates.length})</span>
+                            <span className="text-[11px] font-semibold tracking-wider uppercase text-slate-400 dark:text-slate-500">Proyectos ({withDates.length})</span>
                         </div>
                         <div className="py-2">
                             {withDates.map(p => {
@@ -156,7 +156,7 @@ export default function ProjectGanttView({
                                                 {p.codigoProyecto ? <span className="font-mono text-primary mr-1.5">{p.codigoProyecto}</span> : null}
                                                 {p.nombre}
                                             </div>
-                                            <div className="text-[10px] font-medium text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                                            <div className="text-[11px] font-medium text-slate-400 dark:text-slate-500 truncate mt-0.5">
                                                 {p.responsableUser?.nombreCompleto || p.responsable || 'Sin asignar'}
                                             </div>
                                         </div>
@@ -179,7 +179,7 @@ export default function ProjectGanttView({
                                     const leftPct = timeline.totalDays > 0 ? (differenceInDays(w, timeline.start) / timeline.totalDays) * 100 : 0;
                                     if (leftPct > 100) return null;
                                     return (
-                                        <div key={i} className="absolute h-full border-l border-slate-100 dark:border-slate-800 px-2 py-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase flex flex-col justify-center" style={{ left: `${leftPct}%` }}>
+                                        <div key={i} className="absolute h-full border-l border-slate-100 dark:border-slate-800 px-2 py-1 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase flex flex-col justify-center" style={{ left: `${leftPct}%` }}>
                                             <span>{format(w, 'MMM', { locale: es })}</span>
                                             <span className="text-slate-700 dark:text-slate-300 font-mono">{format(w, 'dd')}</span>
                                         </div>
@@ -242,8 +242,8 @@ export default function ProjectGanttView({
             )}
 
             {withoutDates.length > 0 && (
-                <div className="mt-8 border-t border-slate-100 dark:border-slate-800 p-6 bg-background text-foreground/50">
-                    <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-4 flex items-center gap-2">
+                <div className="mt-8 border-t border-slate-100 dark:border-slate-800 p-6 bg-background text-foreground">
+                    <h4 className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-4 flex items-center gap-2">
                         <AlertCircle className="w-4 h-4" /> Proyectos Sin Planificar ({withoutDates.length})
                     </h4>
                     <div className="flex flex-wrap gap-2">
@@ -251,7 +251,7 @@ export default function ProjectGanttView({
                             <button 
                                 key={p.id} 
                                 onClick={() => onDetails(p)}
-                                className="px-3 py-1.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:border-primary/50 transition-colors shadow-sm"
+                                className="px-3 py-1.5 bg-card border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:border-primary/50 transition-colors shadow-sm"
                             >
                                 {p.codigoProyecto && <span className="text-primary mr-1">{p.codigoProyecto}</span>}
                                 {p.nombre}
@@ -307,7 +307,7 @@ function GanttBar({
     };
 
     return (
-        <div className="absolute h-8 min-w-[20px] shadow-sm rounded-full cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-transform flex items-center group/bar" 
+        <div className="absolute h-8 min-w-[20px] shadow-sm rounded-full cursor-pointer hover:shadow-md transition-transform flex items-center group/bar" 
              style={{ 
                  left: `${leftPct}%`, 
                  width: `max(0.5rem, ${widthPct}%)`,
@@ -322,7 +322,7 @@ function GanttBar({
             <div className="absolute inset-0 border border-transparent hover:border-slate-300 dark:hover:border-slate-500 rounded-full z-10" onClick={openEditor} />
             
             {!isEditing && (
-                <div className="relative px-3 z-10 text-[10px] font-black tracking-widest text-slate-800 dark:text-slate-100 truncate pointer-events-none drop-shadow-md mix-blend-difference opacity-80">
+                <div className="relative px-3 z-10 text-[11px] font-bold tracking-wider text-slate-800 dark:text-slate-100 truncate pointer-events-none drop-shadow-md mix-blend-difference opacity-80">
                     {format(parseISO(project.fechaInicio!), 'd MMM')} - {format(parseISO(project.fechaFin!), 'd MMM')}
                 </div>
             )}
@@ -357,7 +357,7 @@ function GanttBar({
                     </div>
                     <button 
                         onClick={handleSave} 
-                        className="w-full bg-primary text-white text-[10px] font-black uppercase tracking-widest py-1.5 rounded-lg hover:bg-primary/90 mt-1"
+                        className="w-full bg-primary text-white text-[12px] font-semibold py-1.5 rounded-lg hover:bg-primary-hover mt-1"
                     >
                         Guardar Fechas
                     </button>

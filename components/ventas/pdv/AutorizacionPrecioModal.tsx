@@ -64,12 +64,12 @@ export default function AutorizacionPrecioModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50-xs">
       <div className="bg-card w-full max-w-sm rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 animate-in fade-in zoom-in-95 duration-150">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
             <ShieldAlert className="w-5 h-5" />
-            <h3 className="text-sm font-black text-slate-900 dark:text-slate-100">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
               Autorización Requerida
             </h3>
           </div>
@@ -85,7 +85,7 @@ export default function AutorizacionPrecioModal({
 
         <form onSubmit={handleValidarPin} className="space-y-4">
           <div>
-            <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+            <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
               PIN de Supervisor
             </label>
             <div className="relative">
@@ -97,7 +97,7 @@ export default function AutorizacionPrecioModal({
                 value={pin}
                 onChange={(e) => setPin(e.target.value)}
                 placeholder="••••"
-                className="w-full pl-9 pr-3 py-2.5 bg-slate-100/70 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-center text-lg font-black tracking-widest text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-amber-500/30"
+                className="w-full pl-9 pr-3 py-2.5 bg-slate-100/70 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-center text-lg font-bold tracking-wider text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-amber-500/30"
               />
             </div>
             {error && <p className="text-[11px] text-red-600 mt-1 font-medium">{error}</p>}

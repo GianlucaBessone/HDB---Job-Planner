@@ -67,15 +67,15 @@ function PublicHerramientasContent() {
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans pb-12">
             
             {/* Top Auditor Header */}
-            <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white py-6 sm:py-8 px-4 sm:px-6 shadow-md border-b border-indigo-900/30">
+            <div className="bg-slate-900 text-white py-6 sm:py-8 px-4 sm:px-6 shadow-md border-b border-indigo-900/30">
                 <div className="max-w-3xl mx-auto text-center space-y-2.5 sm:space-y-3">
                     <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl sm:rounded-3xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300 mx-auto shadow-inner">
                         <ShieldCheck className="w-8 h-8 sm:w-9 sm:h-9" />
                     </div>
-                    <div className="inline-flex items-center gap-2 bg-indigo-500/30 text-indigo-200 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border border-indigo-400/20">
+                    <div className="inline-flex items-center gap-2 bg-indigo-500/30 text-indigo-200 text-[11px] font-semibold uppercase tracking-wider px-3 py-1 rounded-full border border-indigo-400/20">
                         HDB SGI • AUDITORÍA Y CONTROL
                     </div>
-                    <h1 className="text-xl sm:text-3xl md:text-4xl font-black tracking-tight text-white px-2">
+                    <h1 className="text-display text-white px-2">
                         Verificación de Herramientas y Carros
                     </h1>
                     <p className="text-xs sm:text-sm text-indigo-200/80 max-w-lg mx-auto font-medium px-2">
@@ -93,7 +93,7 @@ function PublicHerramientasContent() {
                     <div className="text-center space-y-2">
                         <button
                             onClick={() => setIsScanning(true)}
-                            className="w-full py-3.5 sm:py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl sm:rounded-2xl font-black text-xs sm:text-sm transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2.5 active:scale-98"
+                            className="w-full py-3.5 sm:py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl sm:rounded-2xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2.5"
                         >
                             <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
                             <span>Escanear Código QR con Cámara</span>
@@ -105,7 +105,7 @@ function PublicHerramientasContent() {
 
                     <div className="flex items-center gap-3 my-2">
                         <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">o ingresa el código manual</span>
+                        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">o ingresa el código manual</span>
                         <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1" />
                     </div>
 
@@ -122,7 +122,7 @@ function PublicHerramientasContent() {
                                     placeholder="Ej: EV5PR2RC, TOOL-001, CARRO-01..."
                                     value={searchId}
                                     onChange={(e) => setSearchId(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-background border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-medium focus:outline-none focus:border-indigo-500 transition-colors"
+                                    className="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-card border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-medium focus:outline-none focus:border-indigo-500 transition-colors"
                                 />
                             </div>
                             <button
@@ -143,7 +143,7 @@ function PublicHerramientasContent() {
                         <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 flex items-center justify-center">
                             <CheckCircle2 className="w-4 h-4" />
                         </div>
-                        <h3 className="text-xs sm:text-sm font-black text-slate-800 dark:text-slate-200">Control Metrológico y Calibración</h3>
+                        <h3 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">Control Metrológico y Calibración</h3>
                         <p className="text-[11px] sm:text-xs text-slate-500 font-medium leading-relaxed">
                             Validación de fechas límites, vencimientos periódicos de control y registro de operadores certificados.
                         </p>
@@ -153,7 +153,7 @@ function PublicHerramientasContent() {
                         <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 flex items-center justify-center">
                             <Package className="w-4 h-4" />
                         </div>
-                        <h3 className="text-xs sm:text-sm font-black text-slate-800 dark:text-slate-200">Auditoría Integral de Carros</h3>
+                        <h3 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">Auditoría Integral de Carros</h3>
                         <p className="text-[11px] sm:text-xs text-slate-500 font-medium leading-relaxed">
                             Desglose de inventario móvil con estado individualizado de cada herramienta asignada al servicio.
                         </p>
@@ -163,7 +163,7 @@ function PublicHerramientasContent() {
                 {/* Footer Stamp */}
                 <div className="text-center py-4 text-[11px] sm:text-xs text-slate-400 space-y-0.5">
                     <p className="font-semibold">HDB Servicios Eléctricos SGI</p>
-                    <p className="text-[10px]">Plataforma Operativa y Aseguramiento de la Calidad.</p>
+                    <p className="text-[11px]">Plataforma Operativa y Aseguramiento de la Calidad.</p>
                 </div>
             </div>
 
@@ -230,7 +230,7 @@ function PublicScannerModal({ onScan, onClose }: { onScan: (text: string) => voi
     }, [containerId, onScan, onClose]);
 
     return (
-        <div className="fixed inset-0 z-[200] bg-slate-900/90 backdrop-blur-md flex flex-col items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[200] bg-slate-950/50 flex flex-col items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
             <div className="w-full max-w-sm bg-card text-card-foreground rounded-3xl overflow-hidden shadow-2xl space-y-3">
                 <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-xs sm:text-sm">
@@ -254,7 +254,7 @@ function PublicScannerModal({ onScan, onClose }: { onScan: (text: string) => voi
             </div>
             <button
                 onClick={onClose}
-                className="mt-4 px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-full font-bold text-xs uppercase tracking-widest transition-all"
+                className="mt-4 px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-full font-bold text-xs transition-all"
             >
                 Cerrar
             </button>

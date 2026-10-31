@@ -42,7 +42,7 @@ export function ProjectCard({
         <div className="bg-card text-card-foreground rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 p-5 flex flex-col gap-4 group">
             <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                    <h4 className="font-black text-lg text-slate-800 dark:text-slate-100 leading-tight group-hover:text-primary transition-colors">
+                    <h4 className="font-bold text-lg text-slate-800 dark:text-slate-100 leading-tight group-hover:text-primary transition-colors">
                         {project.codigoProyecto ? (
                             <span className="text-primary font-mono mr-1.5">{project.codigoProyecto} |</span>
                         ) : (
@@ -54,14 +54,14 @@ export function ProjectCard({
                 <div className="flex items-center gap-0.5 shrink-0">
                     <button
                         onClick={() => onEdit(project)}
-                        className="btn-icon-inline p-2 rounded-xl text-slate-400 dark:text-slate-500 hover:text-primary hover:bg-primary/5 transition-all active:scale-90"
+                        className="btn-icon-inline p-2 rounded-xl text-slate-400 dark:text-slate-500 hover:text-primary hover:bg-primary/5 transition-all"
                         title="Editar"
                     >
                         <Edit3 className="w-4 h-4" />
                     </button>
                     <button
                         onClick={() => handleDeleteClick(project.id)}
-                        className="btn-icon-inline p-2 rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all active:scale-90"
+                        className="btn-icon-inline p-2 rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all"
                         title="Eliminar"
                     >
                         <Trash2 className="w-4 h-4" />
@@ -87,12 +87,12 @@ export function ProjectCard({
             <div className="flex flex-wrap gap-1.5">
                 {project.tags && project.tags.length > 0 ? (
                     project.tags.map((tag: any) => (
-                        <span key={tag} className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground/50 text-[10px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 uppercase tracking-tighter">
+                        <span key={tag} className="px-2 py-0.5 rounded-full bg-muted text-[11px] font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 uppercase tracking-tight">
                             {tag}
                         </span>
                     ))
                 ) : (
-                    <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 italic">Sin etiquetas técnicas</span>
+                    <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500 italic">Sin etiquetas técnicas</span>
                 )}
             </div>
 
@@ -113,7 +113,7 @@ export function ProjectCard({
             </div>
 
             <div className="space-y-1.5 pt-1 border-t border-slate-50">
-                <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                <div className="flex items-center justify-between text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                     <span>Avance Técnico (Checklist)</span>
                     <span className="text-slate-600 dark:text-slate-300">
                         {project.checklistItems?.filter((i: any) => i.completed && !i.excluded).length} / {project.checklistItems?.filter((i: any) => !i.excluded).length}
@@ -139,13 +139,13 @@ export function ProjectCard({
                     {project._count && (project._count.clientDelays || 0) > 0 && (
                         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-100 text-amber-600">
                             <Timer className="w-3.5 h-3.5" />
-                            <span className="text-[10px] font-black uppercase tracking-tight">{project._count.clientDelays} Demoras</span>
+                            <span className="text-[11px] font-semibold uppercase tracking-tight">{project._count.clientDelays} Demoras</span>
                         </div>
                     )}
                     {project.finalizadoConPendientes && (
                         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-50 border border-red-100 text-red-600">
                             <AlertTriangle className="w-3.5 h-3.5" />
-                            <span className="text-[10px] font-black uppercase tracking-tight">Cierre con Pendientes</span>
+                            <span className="text-[11px] font-semibold uppercase tracking-tight">Cierre con Pendientes</span>
                         </div>
                     )}
                 </div>
@@ -208,7 +208,7 @@ export default function ProjectCardView({
     onViewCost?: (p: Project) => void;
 }) {
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
             {projects.map(p => (
                 <ProjectCard 
                     key={p.id} 

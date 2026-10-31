@@ -257,7 +257,7 @@ export default function CambioRapidoVendedorModal({
   );
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-950/50-xs">
       <div className="bg-card w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col max-h-[88vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
@@ -266,7 +266,7 @@ export default function CambioRapidoVendedorModal({
               <UserCheck className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-base font-black text-slate-900 dark:text-slate-100">
+              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                 Cambio Rápido de Vendedor
               </h3>
               <p className="text-[11px] text-slate-400">
@@ -335,15 +335,15 @@ export default function CambioRapidoVendedorModal({
                           {op.nombreCompleto.substring(0, 2)}
                         </div>
                         <div>
-                          <div className="text-xs font-black text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                          <div className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
                             {op.nombreCompleto}
                             {isCurrent && (
-                              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                              <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
                                 (Actual)
                               </span>
                             )}
                           </div>
-                          <div className="text-[10px] text-slate-400 flex items-center gap-2">
+                          <div className="text-[11px] text-slate-400 flex items-center gap-2">
                             <span className="capitalize">{op.role}</span>
                             {op.posicion && <span>• {op.posicion}</span>}
                             {op.dni && <span>• DNI: {op.dni}</span>}
@@ -365,11 +365,11 @@ export default function CambioRapidoVendedorModal({
           <div className="p-6 space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-black text-sm uppercase">
+                <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-semibold text-sm uppercase">
                   {operadorSeleccionado.nombreCompleto.substring(0, 2)}
                 </div>
                 <div>
-                  <h4 className="text-sm font-black text-slate-900 dark:text-slate-100">
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                     {operadorSeleccionado.nombreCompleto}
                   </h4>
                   <p className="text-[11px] text-slate-400 capitalize">
@@ -402,7 +402,7 @@ export default function CambioRapidoVendedorModal({
                     }
                   }}
                   placeholder="••••"
-                  className="w-full py-2.5 bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-center text-2xl font-black tracking-[0.4em] text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/40"
+                  className="w-full py-2.5 bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-center text-2xl font-bold tracking-wider text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/40"
                 />
               </div>
 
@@ -420,7 +420,7 @@ export default function CambioRapidoVendedorModal({
                     type="button"
                     disabled={isValidating}
                     onClick={() => handleNumericClick(digit)}
-                    className="h-11 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-base font-black text-slate-800 dark:text-slate-100 active:scale-95 transition-all"
+                    className="h-11 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-base font-bold text-slate-800 dark:text-slate-100 transition-all"
                   >
                     {digit}
                   </button>
@@ -429,7 +429,7 @@ export default function CambioRapidoVendedorModal({
                   type="button"
                   disabled={isValidating}
                   onClick={() => setPin('')}
-                  className="h-11 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-xs font-bold text-slate-500 active:scale-95 transition-all"
+                  className="h-11 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-xs font-bold text-slate-500 transition-all"
                 >
                   C
                 </button>
@@ -437,7 +437,7 @@ export default function CambioRapidoVendedorModal({
                   type="button"
                   disabled={isValidating}
                   onClick={() => handleNumericClick('0')}
-                  className="h-11 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-base font-black text-slate-800 dark:text-slate-100 active:scale-95 transition-all"
+                  className="h-11 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-base font-bold text-slate-800 dark:text-slate-100 transition-all"
                 >
                   0
                 </button>
@@ -445,7 +445,7 @@ export default function CambioRapidoVendedorModal({
                   type="button"
                   disabled={isValidating}
                   onClick={handleBackspace}
-                  className="h-11 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-500 flex items-center justify-center active:scale-95 transition-all"
+                  className="h-11 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-all"
                 >
                   <Delete className="w-4 h-4" />
                 </button>
@@ -455,7 +455,7 @@ export default function CambioRapidoVendedorModal({
                 <button
                   type="submit"
                   disabled={isValidating || !pin}
-                  className="w-full max-w-[240px] py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2 disabled:opacity-50 transition-all"
+                  className="w-full max-w-[240px] py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 disabled:opacity-50 transition-all"
                 >
                   {isValidating ? (
                     <>

@@ -209,11 +209,11 @@ export default function CrearFacturaManual() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">CUIT</label>
+                  <label className="block mb-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">CUIT</label>
                   <div className="flex gap-2">
                     <input 
                       type="text" 
-                      className="flex-1 bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:placeholder-slate-400 dark:text-white" 
+                      className="flex-1 bg-card border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:placeholder-slate-400 dark:text-white" 
                       placeholder="Sin guiones"
                       value={proveedor.cuit}
                       onChange={(e) => setProveedor(p => ({ ...p, cuit: e.target.value, id: '' }))}
@@ -229,10 +229,10 @@ export default function CrearFacturaManual() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Razón Social</label>
+                  <label className="block mb-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">Razón Social</label>
                   <input 
                     type="text" 
-                    className="bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white" 
+                    className="bg-card border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white" 
                     value={proveedor.razonSocial}
                     onChange={(e) => setProveedor(p => ({ ...p, razonSocial: e.target.value }))}
                   />
@@ -254,18 +254,18 @@ export default function CrearFacturaManual() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Fecha de Emisión</label>
+                    <label className="block mb-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">Fecha de Emisión</label>
                     <input 
                       type="date" 
-                      className="bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-purple-500 focus:border-purple-500 block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white" 
+                      className="bg-card border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-purple-500 focus:border-purple-500 block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white" 
                       value={comprobante.fechaEmision}
                       onChange={(e) => setComprobante(c => ({ ...c, fechaEmision: e.target.value }))}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tipo</label>
+                    <label className="block mb-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">Tipo</label>
                     <select 
-                      className="bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-purple-500 focus:border-purple-500 block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white" 
+                      className="bg-card border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-purple-500 focus:border-purple-500 block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white" 
                       value={comprobante.tipoComprobante}
                       onChange={(e) => setComprobante(c => ({ ...c, tipoComprobante: e.target.value }))}
                     >
@@ -280,19 +280,19 @@ export default function CrearFacturaManual() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Punto Vta</label>
+                    <label className="block mb-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">Punto Vta</label>
                     <input 
                       type="text" 
-                      className="bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-purple-500 focus:border-purple-500 block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white text-center" 
+                      className="bg-card border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-purple-500 focus:border-purple-500 block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white text-center" 
                       value={comprobante.puntoVenta}
                       onChange={(e) => setComprobante(c => ({ ...c, puntoVenta: e.target.value }))}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Número</label>
+                    <label className="block mb-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">Número</label>
                     <input 
                       type="text" 
-                      className="bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-purple-500 focus:border-purple-500 block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white text-right font-mono" 
+                      className="bg-card border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-purple-500 focus:border-purple-500 block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white text-right font-mono" 
                       value={comprobante.numeroComprobante}
                       onChange={(e) => setComprobante(c => ({ ...c, numeroComprobante: e.target.value }))}
                     />
@@ -300,7 +300,7 @@ export default function CrearFacturaManual() {
                 </div>
                 
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Código de Gasto</label>
+                  <label className="block mb-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">Código de Gasto</label>
                   <SearchableSelect
                     options={codigosGasto.map(c => ({ id: c.id, value: c.id, label: `${c.codigo} - ${c.descripcion}` }))}
                     value={selectedCodigo}
@@ -317,9 +317,9 @@ export default function CrearFacturaManual() {
             <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-6 pb-4 border-b border-slate-100 dark:border-slate-700">Importes</h3>
             <div className="space-y-4">
               
-              <div className="grid grid-cols-2 gap-4 bg-background text-foreground/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700/50">
+              <div className="grid grid-cols-2 gap-4 bg-background text-foreground p-4 rounded-xl border border-slate-100 dark:border-slate-700/50">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Neto Gral / No Gravado</label>
+                  <label className="block mb-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">Neto Gral / No Gravado</label>
                   <input 
                     type="number" 
                     step="0.01"
@@ -329,7 +329,7 @@ export default function CrearFacturaManual() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Exentos / Otros</label>
+                  <label className="block mb-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">Exentos / Otros</label>
                   <input 
                     type="number" 
                     step="0.01"
@@ -342,51 +342,51 @@ export default function CrearFacturaManual() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Neto 21%</label>
-                  <input type="number" step="0.01" className="bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white text-right font-mono" value={totales.neto21} onChange={(e) => setTotales(t => ({ ...t, neto21: parseFloat(e.target.value) || 0 }))} />
+                  <label className="block mb-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">Neto 21%</label>
+                  <input type="number" step="0.01" className="bg-card border border-slate-200 text-slate-900 text-sm rounded-xl block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white text-right font-mono" value={totales.neto21} onChange={(e) => setTotales(t => ({ ...t, neto21: parseFloat(e.target.value) || 0 }))} />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">IVA 21%</label>
-                  <input type="number" step="0.01" className="bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white text-right font-mono" value={totales.iva21} onChange={(e) => setTotales(t => ({ ...t, iva21: parseFloat(e.target.value) || 0 }))} />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Neto 10.5%</label>
-                  <input type="number" step="0.01" className="bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white text-right font-mono" value={totales.neto10_5} onChange={(e) => setTotales(t => ({ ...t, neto10_5: parseFloat(e.target.value) || 0 }))} />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">IVA 10.5%</label>
-                  <input type="number" step="0.01" className="bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white text-right font-mono" value={totales.iva10_5} onChange={(e) => setTotales(t => ({ ...t, iva10_5: parseFloat(e.target.value) || 0 }))} />
+                  <label className="block mb-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">IVA 21%</label>
+                  <input type="number" step="0.01" className="bg-card border border-slate-200 text-slate-900 text-sm rounded-xl block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white text-right font-mono" value={totales.iva21} onChange={(e) => setTotales(t => ({ ...t, iva21: parseFloat(e.target.value) || 0 }))} />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Neto 27%</label>
-                  <input type="number" step="0.01" className="bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white text-right font-mono" value={totales.neto27} onChange={(e) => setTotales(t => ({ ...t, neto27: parseFloat(e.target.value) || 0 }))} />
+                  <label className="block mb-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">Neto 10.5%</label>
+                  <input type="number" step="0.01" className="bg-card border border-slate-200 text-slate-900 text-sm rounded-xl block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white text-right font-mono" value={totales.neto10_5} onChange={(e) => setTotales(t => ({ ...t, neto10_5: parseFloat(e.target.value) || 0 }))} />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">IVA 27%</label>
-                  <input type="number" step="0.01" className="bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white text-right font-mono" value={totales.iva27} onChange={(e) => setTotales(t => ({ ...t, iva27: parseFloat(e.target.value) || 0 }))} />
+                  <label className="block mb-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">IVA 10.5%</label>
+                  <input type="number" step="0.01" className="bg-card border border-slate-200 text-slate-900 text-sm rounded-xl block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white text-right font-mono" value={totales.iva10_5} onChange={(e) => setTotales(t => ({ ...t, iva10_5: parseFloat(e.target.value) || 0 }))} />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block mb-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">Neto 27%</label>
+                  <input type="number" step="0.01" className="bg-card border border-slate-200 text-slate-900 text-sm rounded-xl block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white text-right font-mono" value={totales.neto27} onChange={(e) => setTotales(t => ({ ...t, neto27: parseFloat(e.target.value) || 0 }))} />
+                </div>
+                <div>
+                  <label className="block mb-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">IVA 27%</label>
+                  <input type="number" step="0.01" className="bg-card border border-slate-200 text-slate-900 text-sm rounded-xl block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white text-right font-mono" value={totales.iva27} onChange={(e) => setTotales(t => ({ ...t, iva27: parseFloat(e.target.value) || 0 }))} />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100 dark:border-slate-700">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Perc. IVA</label>
-                  <input type="number" step="0.01" className="bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white text-right font-mono" value={totales.percepcionesIva} onChange={(e) => setTotales(t => ({ ...t, percepcionesIva: parseFloat(e.target.value) || 0 }))} />
+                  <label className="block mb-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">Perc. IVA</label>
+                  <input type="number" step="0.01" className="bg-card border border-slate-200 text-slate-900 text-sm rounded-xl block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white text-right font-mono" value={totales.percepcionesIva} onChange={(e) => setTotales(t => ({ ...t, percepcionesIva: parseFloat(e.target.value) || 0 }))} />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Perc. IIBB</label>
-                  <input type="number" step="0.01" className="bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white text-right font-mono" value={totales.percepcionesIibb} onChange={(e) => setTotales(t => ({ ...t, percepcionesIibb: parseFloat(e.target.value) || 0 }))} />
+                  <label className="block mb-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">Perc. IIBB</label>
+                  <input type="number" step="0.01" className="bg-card border border-slate-200 text-slate-900 text-sm rounded-xl block w-full p-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white text-right font-mono" value={totales.percepcionesIibb} onChange={(e) => setTotales(t => ({ ...t, percepcionesIibb: parseFloat(e.target.value) || 0 }))} />
                 </div>
               </div>
 
               <div className="bg-slate-900 dark:bg-slate-950 p-6 rounded-2xl mt-6 shadow-inner text-white flex justify-between items-center">
-                <span className="text-sm font-bold uppercase tracking-widest text-slate-400">Total Factura</span>
-                <span className="text-3xl font-black">${totales.total.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <span className="text-sm font-bold uppercase tracking-wider text-slate-400">Total Factura</span>
+                <span className="text-3xl font-bold">${totales.total.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             </div>
           </div>
@@ -395,7 +395,7 @@ export default function CrearFacturaManual() {
       </div>
 
       {/* Floating Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-200 dark:border-slate-700 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] z-40 flex justify-between items-center">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-t border-slate-200 dark:border-slate-700 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] z-40 flex justify-between items-center">
         <button 
           onClick={() => router.back()}
           className="px-6 py-3 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-2"
@@ -406,7 +406,7 @@ export default function CrearFacturaManual() {
         <button 
           onClick={handleSave}
           disabled={saving || !proveedor.cuit || !proveedor.razonSocial || !comprobante.numeroComprobante}
-          className="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:hover:bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-600/30 transition-all flex items-center gap-2"
+          className="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:hover:bg-emerald-600 text-white rounded-xl font-bold transition-all flex items-center gap-2"
         >
           {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
           Guardar Comprobante

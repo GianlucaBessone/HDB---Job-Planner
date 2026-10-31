@@ -139,11 +139,11 @@ export default function VerificacionFirmasPage() {
     });
 
     return (
-        <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-200">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div className="space-y-1">
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
-                        <Fingerprint className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
+                    <h2 className="text-title text-slate-900 dark:text-slate-50 flex items-center gap-2 md:gap-3">
+                        <Fingerprint className="text-blue-600 w-5 h-5 text-brand-600 dark:text-brand-300" />
                         Verificación de Firmas
                         <HelpContextual slug="verificacion-firmas" />
                     </h2>
@@ -159,7 +159,7 @@ export default function VerificacionFirmasPage() {
                     <input
                         type="text"
                         placeholder="Buscar por Doc, Usuario, DNI o ID..."
-                        className="w-full h-[42px] bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-bold text-slate-700 dark:text-slate-200 text-sm"
+                        className="w-full h-[42px] bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-bold text-slate-700 dark:text-slate-200 text-sm"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                     />
@@ -193,13 +193,13 @@ export default function VerificacionFirmasPage() {
                 <div className="overflow-x-auto custom-scrollbar">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-slate-50/80 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400">
-                                <th className="px-6 py-4 font-black">FirmaID / Fecha</th>
-                                <th className="px-6 py-4 font-black">Documento</th>
-                                <th className="px-6 py-4 font-black">Usuario / DNI</th>
-                                <th className="px-6 py-4 font-black">Dispositivo</th>
-                                <th className="px-6 py-4 font-black">Estado</th>
-                                <th className="px-6 py-4 font-black text-right">Acciones</th>
+                            <tr className="bg-slate-50/80 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                <th className="px-6 py-4 font-bold">FirmaID / Fecha</th>
+                                <th className="px-6 py-4 font-bold">Documento</th>
+                                <th className="px-6 py-4 font-bold">Usuario / DNI</th>
+                                <th className="px-6 py-4 font-bold">Dispositivo</th>
+                                <th className="px-6 py-4 font-bold">Estado</th>
+                                <th className="px-6 py-4 font-bold text-right">Acciones</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-sm">
@@ -218,7 +218,7 @@ export default function VerificacionFirmasPage() {
                                 filteredSignatures.map((sig) => (
                                     <tr key={sig.SignatureID} className="group hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors">
                                         <td className="px-6 py-4">
-                                            <div className="font-mono text-xs font-bold text-slate-700 dark:text-slate-300 bg-muted text-muted-foreground inline-block px-2 py-0.5 rounded-md mb-1 border border-slate-200 dark:border-slate-700">
+                                            <div className="font-mono text-xs font-bold text-slate-700 dark:text-slate-300 bg-muted inline-block px-2 py-0.5 rounded-md mb-1 border border-slate-200 dark:border-slate-700">
                                                 {sig.SignatureID.split('-')[1]}-{sig.SignatureID.split('-')[2]}...
                                             </div>
                                             <div className="text-xs text-slate-500 font-medium">
@@ -252,7 +252,7 @@ export default function VerificacionFirmasPage() {
                                                 <button
                                                     onClick={() => verifyIntegrity(sig.SignatureID)}
                                                     disabled={isVerifying === sig.SignatureID}
-                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs rounded-xl hover:border-blue-300 hover:text-blue-600 dark:hover:border-blue-700 dark:hover:text-blue-400 transition-all disabled:opacity-50"
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-card border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs rounded-xl hover:border-blue-300 hover:text-blue-600 dark:hover:border-blue-700 dark:hover:text-blue-400 transition-all disabled:opacity-50"
                                                 >
                                                     <RefreshCcw className={`w-3.5 h-3.5 ${isVerifying === sig.SignatureID ? 'animate-spin' : ''}`} />
                                                     {isVerifying === sig.SignatureID ? 'Verificando...' : 'Verificar'}

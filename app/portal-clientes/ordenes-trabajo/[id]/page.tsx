@@ -121,7 +121,7 @@ export default function PortalDetalleOtPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 font-mono">
+              <h1 className="text-title text-slate-900 dark:text-slate-100 font-mono">
                 {ot.numeroOT}
               </h1>
 
@@ -154,19 +154,19 @@ export default function PortalDetalleOtPage() {
         {/* Metadatos */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Responsable</span>
+            <span className="text-[11px] uppercase font-bold text-slate-400 block mb-0.5">Responsable</span>
             <span className="font-bold text-slate-800 dark:text-slate-200">{ot.responsable?.nombreCompleto}</span>
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Fecha Creación</span>
+            <span className="text-[11px] uppercase font-bold text-slate-400 block mb-0.5">Fecha Creación</span>
             <span className="font-bold text-slate-800 dark:text-slate-200">{formatDate(ot.createdAt)}</span>
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Sector</span>
+            <span className="text-[11px] uppercase font-bold text-slate-400 block mb-0.5">Sector</span>
             <span className="font-bold text-slate-800 dark:text-slate-200">{ot.sector || 'Sin sector'}</span>
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Ciclos Totales</span>
+            <span className="text-[11px] uppercase font-bold text-slate-400 block mb-0.5">Ciclos Totales</span>
             <span className="font-bold text-slate-800 dark:text-slate-200">{ot.ciclos.length}</span>
           </div>
         </div>
@@ -174,7 +174,7 @@ export default function PortalDetalleOtPage() {
 
       {/* Reporte de Trabajo */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-2">
-        <h3 className="text-xs font-black uppercase text-slate-500 tracking-wider">Reporte Técnico de Trabajo</h3>
+        <h3 className="text-xs font-semibold uppercase text-slate-500 tracking-wider">Reporte Técnico de Trabajo</h3>
         <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">
           {ot.reporteTrabajo}
         </p>
@@ -182,7 +182,7 @@ export default function PortalDetalleOtPage() {
 
       {/* Ciclos */}
       <div className="space-y-6">
-        <h2 className="text-base font-black text-slate-900 dark:text-slate-100">
+        <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
           Períodos y Ciclos de Facturación
         </h2>
 
@@ -201,16 +201,16 @@ export default function PortalDetalleOtPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-black text-slate-900 dark:text-slate-100">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                       Ciclo {ciclo.numeroCiclo} ({ciclo.periodo})
                     </h3>
                     {isSigned ? (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 flex items-center gap-1">
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 flex items-center gap-1">
                         <Lock className="w-3 h-3" />
                         FIRMADO DIGITALMENTE
                       </span>
                     ) : (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20">
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/10 text-blue-600 border border-blue-500/20">
                         ABIERTO
                       </span>
                     )}
@@ -225,7 +225,7 @@ export default function PortalDetalleOtPage() {
                 {isSigned && ciclo.hashIntegridad && (
                   <button
                     onClick={() => handleVerifyIntegrity(ciclo.id)}
-                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm self-start sm:self-auto"
+                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 self-start sm:self-auto"
                   >
                     <ShieldCheck className="w-4 h-4" />
                     Verificar Integridad
@@ -257,7 +257,7 @@ export default function PortalDetalleOtPage() {
                             <td className="py-2.5 px-4 text-right text-slate-500 font-mono">
                               ${op.valorHoraSnapshot.toLocaleString('es-AR')}
                             </td>
-                            <td className="py-2.5 px-4 text-right font-black text-slate-900 dark:text-slate-100 font-mono">
+                            <td className="py-2.5 px-4 text-right font-bold text-slate-900 dark:text-slate-100 font-mono">
                               ${op.costoManoObra.toLocaleString('es-AR')}
                             </td>
                           </tr>
@@ -296,7 +296,7 @@ export default function PortalDetalleOtPage() {
                             <td className="py-2.5 px-4 text-right font-mono text-slate-500">
                               ${m.precioFinalSnapshot.toLocaleString('es-AR')}
                             </td>
-                            <td className="py-2.5 px-4 text-right font-black text-slate-900 dark:text-slate-100 font-mono">
+                            <td className="py-2.5 px-4 text-right font-bold text-slate-900 dark:text-slate-100 font-mono">
                               ${m.importeTotal.toLocaleString('es-AR')}
                             </td>
                           </tr>
@@ -311,22 +311,22 @@ export default function PortalDetalleOtPage() {
               <div className="flex flex-wrap items-center justify-between gap-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
                 <div className="flex items-center gap-6 text-xs">
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Horas</span>
+                    <span className="text-[11px] uppercase font-bold text-slate-400 block">Horas</span>
                     <strong className="text-slate-700 dark:text-slate-300">{ciclo.totalHoras.toFixed(2)} h</strong>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Mano de Obra</span>
+                    <span className="text-[11px] uppercase font-bold text-slate-400 block">Mano de Obra</span>
                     <strong className="text-slate-700 dark:text-slate-300">${ciclo.totalManoObra.toLocaleString('es-AR')}</strong>
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Materiales</span>
+                    <span className="text-[11px] uppercase font-bold text-slate-400 block">Materiales</span>
                     <strong className="text-slate-700 dark:text-slate-300">${ciclo.totalMateriales.toLocaleString('es-AR')}</strong>
                   </div>
                 </div>
 
                 <div className="text-right">
-                  <span className="text-[10px] uppercase font-bold text-primary block">Total Ciclo</span>
-                  <span className="text-sm font-black text-primary font-mono">
+                  <span className="text-[11px] uppercase font-bold text-primary block">Total Ciclo</span>
+                  <span className="text-sm font-bold text-primary font-mono">
                     ${ciclo.totalGeneral.toLocaleString('es-AR')}
                   </span>
                 </div>
@@ -338,7 +338,7 @@ export default function PortalDetalleOtPage() {
 
       {/* Integrity Verification Modal */}
       {integrityModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-3">
               {integrityModal.valido ? (
@@ -351,7 +351,7 @@ export default function PortalDetalleOtPage() {
                 </div>
               )}
               <div>
-                <h3 className="text-base font-black text-slate-900 dark:text-slate-100">
+                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                   {integrityModal.valido ? 'INTEGRIDAD VERIFICADA' : 'ADVERTENCIA'}
                 </h3>
                 <p className="text-xs text-slate-500">

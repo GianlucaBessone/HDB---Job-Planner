@@ -177,12 +177,12 @@ export default function AiAuditPage() {
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500 pb-20">
+        <div className="space-y-8 animate-in fade-in duration-200 pb-20">
             {/* Header banner */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="space-y-1">
-                    <h1 className="text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-3">
-                        <Sparkles className="w-8 h-8 text-primary animate-pulse" />
+                    <h1 className="text-title text-slate-800 dark:text-slate-100 flex items-center gap-3">
+                        <Sparkles className="animate-pulse w-5 h-5 text-brand-600 dark:text-brand-300" />
                         Monitoreo e Auditoría de IA
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400 font-medium italic">
@@ -193,7 +193,7 @@ export default function AiAuditPage() {
                 <div className="flex gap-2">
                     <button
                         onClick={fetchData}
-                        className="flex items-center gap-2 px-4 py-2 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-750 transition-all text-slate-700 dark:text-slate-200"
+                        className="flex items-center gap-2 px-4 py-2 bg-card border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-750 transition-all text-slate-700 dark:text-slate-200"
                     >
                         <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
                         Sincronizar
@@ -204,61 +204,61 @@ export default function AiAuditPage() {
             {/* Metrics Dashboard */}
             {stats && (
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="bg-card text-card-foreground p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 transition-all hover:scale-[1.02]">
+                    <div className="bg-card text-card-foreground p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 transition-all">
                         <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
                             <TrendingUp className="w-5 h-5" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1.5">Peticiones Totales</p>
-                            <p className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight leading-none">
+                            <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none mb-1.5">Peticiones Totales</p>
+                            <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight leading-none">
                                 {stats.totalCount}
                             </p>
-                            <span className="text-[9px] font-bold text-emerald-500 mt-1 block">
+                            <span className="text-[11px] font-bold text-emerald-500 mt-1 block">
                                 {stats.totalCount > 0 ? ((stats.successCount / stats.totalCount) * 100).toFixed(1) : 100}% éxito
                             </span>
                         </div>
                     </div>
 
-                    <div className="bg-card text-card-foreground p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 transition-all hover:scale-[1.02]">
+                    <div className="bg-card text-card-foreground p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 transition-all">
                         <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                             <Coins className="w-5 h-5" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1.5">Tokens Consumidos</p>
-                            <p className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight leading-none">
+                            <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none mb-1.5">Tokens Consumidos</p>
+                            <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight leading-none">
                                 {stats.totalTokens.toLocaleString()}
                             </p>
-                            <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 mt-1 block">
+                            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 mt-1 block">
                                 In: {stats.totalInputTokens.toLocaleString()} | Out: {stats.totalOutputTokens.toLocaleString()}
                             </span>
                         </div>
                     </div>
 
-                    <div className="bg-card text-card-foreground p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 transition-all hover:scale-[1.02]">
+                    <div className="bg-card text-card-foreground p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 transition-all">
                         <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center text-amber-600 dark:text-amber-400">
                             <DollarSign className="w-5 h-5" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1.5">Costo Estimado</p>
-                            <p className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight leading-none text-amber-600 dark:text-amber-400">
+                            <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none mb-1.5">Costo Estimado</p>
+                            <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight leading-none text-amber-600 dark:text-amber-400">
                                 {formatCost(stats.totalCost)}
                             </p>
-                            <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 mt-1 block">
+                            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 mt-1 block">
                                 USD (gemini-2.5-flash)
                             </span>
                         </div>
                     </div>
 
-                    <div className="bg-card text-card-foreground p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 transition-all hover:scale-[1.02]">
+                    <div className="bg-card text-card-foreground p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 transition-all">
                         <div className="w-12 h-12 rounded-2xl bg-sky-50 dark:bg-sky-950/30 flex items-center justify-center text-sky-600 dark:text-sky-400">
                             <Clock className="w-5 h-5" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1.5">Latencia Promedio</p>
-                            <p className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight leading-none">
+                            <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none mb-1.5">Latencia Promedio</p>
+                            <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight leading-none">
                                 {(stats.avgLatency / 1000).toFixed(2)}s
                             </p>
-                            <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 mt-1 block">
+                            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 mt-1 block">
                                 Tiempo de respuesta
                             </span>
                         </div>
@@ -270,7 +270,7 @@ export default function AiAuditPage() {
             <div className="flex gap-1 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl p-1.5 shadow-sm overflow-x-auto w-full max-w-2xl">
                 <button
                     onClick={() => setViewMode('consumption')}
-                    className={`flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all whitespace-nowrap ${
+                    className={`flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                         viewMode === 'consumption'
                             ? 'bg-primary text-white shadow-md'
                             : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'
@@ -281,7 +281,7 @@ export default function AiAuditPage() {
                 </button>
                 <button
                     onClick={() => setViewMode('audit')}
-                    className={`flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all whitespace-nowrap ${
+                    className={`flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                         viewMode === 'audit'
                             ? 'bg-primary text-white shadow-md'
                             : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'
@@ -292,7 +292,7 @@ export default function AiAuditPage() {
                 </button>
                 <button
                     onClick={() => setViewMode('chats')}
-                    className={`flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all whitespace-nowrap ${
+                    className={`flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                         viewMode === 'chats'
                             ? 'bg-primary text-white shadow-md'
                             : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'
@@ -309,7 +309,7 @@ export default function AiAuditPage() {
                 {viewMode === 'consumption' && (
                     <div className="bg-card text-card-foreground rounded-3xl border border-slate-100 dark:border-slate-800 overflow-hidden shadow-sm">
                         <div className="p-6 border-b border-slate-100 dark:border-slate-800">
-                            <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                                 <Users className="w-5 h-5 text-primary" />
                                 Consumos de IA por Usuario
                             </h3>
@@ -332,7 +332,7 @@ export default function AiAuditPage() {
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
-                                        <tr className="border-b border-slate-100 dark:border-slate-800 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                                        <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                                             <th className="px-6 py-4">Usuario</th>
                                             <th className="px-6 py-4">Rol</th>
                                             <th className="px-6 py-4 text-center">Llamadas Realizadas</th>
@@ -349,11 +349,11 @@ export default function AiAuditPage() {
                                                     </div>
                                                     <div>
                                                         <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{userStats.userName}</p>
-                                                        <span className="text-[10px] font-mono text-slate-400">{userStats.userId}</span>
+                                                        <span className="text-[11px] font-mono text-slate-400">{userStats.userId}</span>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4.5">
-                                                    <span className="px-2.5 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-350">
+                                                    <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-semibold uppercase tracking-wider bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-350">
                                                         {userStats.userRole}
                                                     </span>
                                                 </td>
@@ -387,7 +387,7 @@ export default function AiAuditPage() {
                                     placeholder="Buscar por usuario, rol o error..."
                                     value={searchTerm}
                                     onChange={e => setSearchTerm(e.target.value)}
-                                    className="w-full bg-background text-foreground border-none rounded-xl pl-10 pr-4 py-2.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20"
+                                    className="w-full bg-card text-foreground border-none rounded-xl pl-10 pr-4 py-2.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20"
                                 />
                             </div>
 
@@ -435,7 +435,7 @@ export default function AiAuditPage() {
                                             key={log.id}
                                             className={`bg-card text-card-foreground rounded-2xl border transition-all overflow-hidden ${
                                                 isExpanded
-                                                    ? 'border-primary/40 shadow-lg shadow-primary/5'
+                                                    ? 'border-primary/40 shadow-lg'
                                                     : 'border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700'
                                             }`}
                                         >
@@ -454,13 +454,13 @@ export default function AiAuditPage() {
 
                                                     <div className="min-w-0 flex-1">
                                                         <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                                                            <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border ${getActionBadgeColor(log.action)}`}>
+                                                            <span className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold uppercase tracking-wider border ${getActionBadgeColor(log.action)}`}>
                                                                 {getActionLabel(log.action)}
                                                             </span>
-                                                            <span className="px-2 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-widest bg-slate-100 dark:bg-slate-700 text-slate-500 border border-slate-200 dark:border-slate-600">
+                                                            <span className="px-2 py-0.5 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-700 text-slate-500 border border-slate-200 dark:border-slate-600">
                                                                 {log.provider || 'gemini'}
                                                             </span>
-                                                            <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                                                            <span className="text-[11px] font-mono text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                                                                 {log.model}
                                                             </span>
                                                         </div>
@@ -479,10 +479,10 @@ export default function AiAuditPage() {
                                                     </div>
 
                                                     <div className="text-right hidden md:block">
-                                                        <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                                                        <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                                                             {format(new Date(log.createdAt), "dd MMM yyyy", { locale: es })}
                                                         </p>
-                                                        <p className="text-xs font-black text-slate-600 dark:text-slate-350">
+                                                        <p className="text-xs font-bold text-slate-600 dark:text-slate-350">
                                                             {format(new Date(log.createdAt), 'HH:mm:ss')}
                                                         </p>
                                                     </div>
@@ -497,31 +497,31 @@ export default function AiAuditPage() {
                                                 <div className="px-5 pb-5 pt-1.5 border-t border-slate-50 dark:border-slate-800/60 bg-slate-50/20 dark:bg-slate-900/10 space-y-4 animate-in slide-in-from-top-2">
                                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                                                         <div className="bg-card text-card-foreground p-3 rounded-xl border border-slate-100 dark:border-slate-800/80">
-                                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">ID Registro</p>
+                                                            <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">ID Registro</p>
                                                             <p className="font-mono font-bold text-slate-700 dark:text-slate-300 mt-0.5 truncate">{log.id}</p>
                                                         </div>
                                                         <div className="bg-card text-card-foreground p-3 rounded-xl border border-slate-100 dark:border-slate-800/80">
-                                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Tokens Usados</p>
+                                                            <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Tokens Usados</p>
                                                             <p className="font-bold text-slate-700 dark:text-slate-300 mt-0.5">
                                                                 {log.totalTokens.toLocaleString()}
-                                                                <span className="text-[10px] text-slate-400 font-normal ml-1">
+                                                                <span className="text-[11px] text-slate-400 font-normal ml-1">
                                                                     (In: {log.inputTokens} | Out: {log.outputTokens})
                                                                 </span>
                                                             </p>
                                                         </div>
                                                         <div className="bg-card text-card-foreground p-3 rounded-xl border border-slate-100 dark:border-slate-800/80">
-                                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Costo Generado</p>
+                                                            <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Costo Generado</p>
                                                             <p className="font-bold text-amber-600 dark:text-amber-400 mt-0.5">{formatCost(log.estimatedCost)} USD</p>
                                                         </div>
                                                         <div className="bg-card text-card-foreground p-3 rounded-xl border border-slate-100 dark:border-slate-800/80">
-                                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Latencia / Tiempo</p>
+                                                            <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Latencia / Tiempo</p>
                                                             <p className="font-bold text-slate-700 dark:text-slate-300 mt-0.5">{(log.latencyMs / 1000).toFixed(2)} segundos</p>
                                                         </div>
                                                     </div>
 
                                                     {log.entity && (
                                                         <div className="bg-card text-card-foreground p-4 rounded-xl border border-slate-100 dark:border-slate-800/80 text-xs">
-                                                            <h5 className="font-black text-slate-400 dark:text-slate-500 text-[10px] uppercase tracking-widest mb-1.5">Entidad Vinculada</h5>
+                                                            <h5 className="font-semibold text-slate-400 dark:text-slate-500 text-[11px] uppercase tracking-wider mb-1.5">Entidad Vinculada</h5>
                                                             <div className="flex gap-4">
                                                                 <div>
                                                                     <span className="text-slate-400 font-bold">Tipo:</span>{' '}
@@ -537,7 +537,7 @@ export default function AiAuditPage() {
 
                                                     {!log.success && log.errorMessage && (
                                                         <div className="bg-rose-50/50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/50 p-4 rounded-xl text-xs">
-                                                            <h5 className="font-black text-rose-500 uppercase tracking-widest text-[9px] mb-1.5 flex items-center gap-1.5">
+                                                            <h5 className="font-semibold text-rose-500 uppercase tracking-wider text-[11px] mb-1.5 flex items-center gap-1.5">
                                                                 <ShieldAlert className="w-3.5 h-3.5" />
                                                                 Detalle del Error de Ejecución
                                                             </h5>
@@ -560,7 +560,7 @@ export default function AiAuditPage() {
                 {viewMode === 'chats' && (
                     <div className="space-y-4">
                         <div className="bg-card text-card-foreground p-5 rounded-3xl border border-slate-100 dark:border-slate-800">
-                            <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                                 <MessageSquare className="w-5 h-5 text-primary" />
                                 Auditoría de Transcripción de Chats
                             </h3>
@@ -604,10 +604,10 @@ export default function AiAuditPage() {
 
                                                     <div className="min-w-0 flex-1">
                                                         <div className="flex items-center gap-2 mb-0.5">
-                                                            <span className="text-xs font-black text-slate-800 dark:text-slate-200">
+                                                            <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
                                                                 {chat.title || 'Conversación técnica'}
                                                             </span>
-                                                            <span className="px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300">
+                                                            <span className="px-2 py-0.5 rounded-lg text-[11px] font-semibold uppercase tracking-wider bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300">
                                                                 {msgCount} mensaje{msgCount !== 1 ? 's' : ''}
                                                             </span>
                                                         </div>
@@ -625,10 +625,10 @@ export default function AiAuditPage() {
 
                                                 <div className="flex items-center gap-5 shrink-0 justify-between md:justify-end">
                                                     <div className="text-right">
-                                                        <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                                                        <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                                                             Último Cambio
                                                         </p>
-                                                        <p className="text-xs font-black text-slate-600 dark:text-slate-350">
+                                                        <p className="text-xs font-bold text-slate-600 dark:text-slate-350">
                                                             {format(new Date(chat.updatedAt), "dd/MM/yyyy HH:mm")}
                                                         </p>
                                                     </div>
@@ -641,7 +641,7 @@ export default function AiAuditPage() {
 
                                             {isExpanded && (
                                                 <div className="px-5 pb-5 pt-3 border-t border-slate-50 dark:border-slate-800/60 bg-slate-50/20 dark:bg-slate-900/10 space-y-4 animate-in slide-in-from-top-2">
-                                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-2 mb-2 border-slate-100 dark:border-slate-800">
+                                                    <h4 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b pb-2 mb-2 border-slate-100 dark:border-slate-800">
                                                         Detalle de la Conversación
                                                     </h4>
                                                     
@@ -670,11 +670,11 @@ export default function AiAuditPage() {
                                                                             <div className={`p-3.5 rounded-2xl text-xs font-semibold leading-relaxed shadow-sm ${
                                                                                 isUser
                                                                                     ? 'bg-primary text-white rounded-tr-none'
-                                                                                    : 'bg-card text-card-foreground border border-slate-100 dark:border-slate-700/80 text-slate-700 dark:text-slate-100 rounded-tl-none'
+                                                                                    : 'bg-card border border-slate-100 dark:border-slate-700/80 text-slate-700 dark:text-slate-100 rounded-tl-none'
                                                                             }`}>
                                                                                 <p className="whitespace-pre-wrap">{msg.content}</p>
                                                                             </div>
-                                                                            <p className={`text-[9px] text-slate-400 font-bold ${isUser ? 'text-right' : 'text-left'}`}>
+                                                                            <p className={`text-[11px] text-slate-400 font-bold ${isUser ? 'text-right' : 'text-left'}`}>
                                                                                 {format(new Date(msg.createdAt), 'HH:mm')}
                                                                             </p>
                                                                         </div>

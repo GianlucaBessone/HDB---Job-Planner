@@ -31,11 +31,11 @@ function GaugeChart({ value, label }: { value: number; label: string }) {
             itemStyle: { color: value >= 100 ? '#10b981' : value >= 70 ? '#f59e0b' : '#ef4444' },
             progress: { show: true, width: 16 },
             pointer: { show: false },
-            axisLine: { lineStyle: { width: 16, color: [[1, '#e2e8f0']] } },
+            axisLine: { lineStyle: { width: 16, color: [[1, '#e1e4e9']] } },
             axisTick: { show: false },
             splitLine: { show: false },
             axisLabel: { show: false },
-            title: { show: true, offsetCenter: [0, '65%'], fontSize: 11, fontWeight: 'bold', color: '#64748b' },
+            title: { show: true, offsetCenter: [0, '65%'], fontSize: 11, fontWeight: 'bold', color: '#5a6372' },
             detail: { valueAnimation: true, fontSize: 24, fontWeight: 'bold', offsetCenter: [0, '20%'], formatter: '{value}%', color: value >= 100 ? '#10b981' : value >= 70 ? '#f59e0b' : '#ef4444' },
             data: [{ value: Math.round(value), name: label }],
         }],
@@ -58,8 +58,8 @@ function KpiSparkline({ historico, valorObjetivo }: { historico: any[]; valorObj
                 smooth: true,
                 symbol: 'circle',
                 symbolSize: 4,
-                lineStyle: { width: 2, color: '#6366f1' },
-                itemStyle: { color: '#6366f1' },
+                lineStyle: { width: 2, color: '#2f74da' },
+                itemStyle: { color: '#2f74da' },
                 areaStyle: { color: { type: 'linear' as const, x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(99,102,241,0.3)' }, { offset: 1, color: 'rgba(99,102,241,0.02)' }] } },
             },
             {
@@ -153,8 +153,8 @@ export default function DashboardEstrategicoTab({ user, isActive = true }: { use
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 flex-wrap">
-                                        <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-md uppercase tracking-wider">{okr.codigoOkr}</span>
-                                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider ${
+                                        <span className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-md uppercase tracking-wider">{okr.codigoOkr}</span>
+                                        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-md uppercase tracking-wider ${
                                             okr.estado === 'Activo' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
                                             okr.estado === 'Cerrado' ? 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300' :
                                             'bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'
@@ -170,11 +170,11 @@ export default function DashboardEstrategicoTab({ user, isActive = true }: { use
                                     <GaugeChart value={okr.porcentajeAvance} label="Avance" />
                                 </div>
                                 <div className="md:hidden shrink-0 text-right">
-                                    <div className={`text-2xl font-black ${
+                                    <div className={`text-2xl font-bold ${
                                         okr.porcentajeAvance >= 100 ? 'text-emerald-600' :
                                         okr.porcentajeAvance >= 70 ? 'text-amber-600' : 'text-rose-600'
                                     }`}>{Math.round(okr.porcentajeAvance)}%</div>
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase">Avance</div>
+                                    <div className="text-[11px] font-bold text-slate-400 uppercase">Avance</div>
                                 </div>
                             </button>
 
@@ -188,9 +188,9 @@ export default function DashboardEstrategicoTab({ user, isActive = true }: { use
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-[9px] font-black text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded uppercase tracking-wider">{kpi.codigoKpi}</span>
+                                                    <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded uppercase tracking-wider">{kpi.codigoKpi}</span>
                                                     {kpi.estadoCumplimiento && (
-                                                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase ${
+                                                        <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded uppercase ${
                                                             kpi.estadoCumplimiento === 'Cumple' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
                                                             kpi.estadoCumplimiento === 'En Riesgo' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
                                                             'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'
@@ -203,7 +203,7 @@ export default function DashboardEstrategicoTab({ user, isActive = true }: { use
                                             <div className="flex items-center gap-4 md:gap-6 shrink-0">
                                                 <div className="text-right">
                                                     <p className="text-xs text-slate-400 font-medium">Último</p>
-                                                    <p className="text-base font-black text-slate-800 dark:text-slate-100">
+                                                    <p className="text-base font-bold text-slate-800 dark:text-slate-100">
                                                         {kpi.ultimoValor !== null ? kpi.ultimoValor : '—'}
                                                         {kpi.unidadMedida && <span className="text-xs font-normal text-slate-400 ml-1">{kpi.unidadMedida}</span>}
                                                     </p>
@@ -244,8 +244,8 @@ function SummaryCard({ icon, label, value, color }: { icon: React.ReactNode; lab
                 {icon}
             </div>
             <div>
-                <p className="text-2xl font-black text-slate-800 dark:text-slate-100 leading-none">{value}</p>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">{label}</p>
+                <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 leading-none">{value}</p>
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">{label}</p>
             </div>
         </div>
     );

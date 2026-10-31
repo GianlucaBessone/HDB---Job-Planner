@@ -67,7 +67,7 @@ export default function OkrKpiPage() {
     );
 
     return (
-        <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
+        <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200 pb-12">
             <ModuleHeader
                 title="Gestión de OKR y KPI"
                 description="Objetivos Estratégicos, Indicadores y Seguimiento de Cumplimiento — ISO 9001:2015"
@@ -77,7 +77,7 @@ export default function OkrKpiPage() {
                 onTabChange={(id) => setActiveTab(id as TabId)}
             />
 
-            <div className="animate-in fade-in duration-300">
+            <div className="animate-in fade-in duration-200">
                 {visitedTabs['dashboard'] && (
                     <div className={activeTab === 'dashboard' ? '' : 'hidden'}>
                         <DashboardEstrategicoTab user={currentUser} isActive={activeTab === 'dashboard'} />

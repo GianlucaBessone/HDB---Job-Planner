@@ -288,7 +288,7 @@ export default function OSCobroDrawerContent({ id, onClose }: { id: string, onCl
             {/* Header */}
             <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-card text-card-foreground shrink-0">
                 <div className="space-y-1">
-                    <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                         <Calculator className="w-5 h-5 text-indigo-600" />
                         Generar Documento de Cobro
                     </h3>
@@ -307,34 +307,34 @@ export default function OSCobroDrawerContent({ id, onClose }: { id: string, onCl
                     <div className="space-y-6">
                         {/* Mano de Obra Section */}
                         <div className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
-                            <h4 className="font-black text-sm text-slate-800 dark:text-slate-100 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-3 flex flex-col gap-1">
+                            <h4 className="font-semibold text-sm text-slate-800 dark:text-slate-100 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-3 flex flex-col gap-1">
                                 <div className="flex justify-between w-full">
                                     Mano de Obra
                                     <span className="text-slate-400 dark:text-slate-500">Total: {horasNormales + horasExtras} hs</span>
                                 </div>
-                                <div className="flex justify-between w-full text-[10px] lowercase items-center">
+                                <div className="flex justify-between w-full text-[11px] lowercase items-center">
                                     <span className="text-slate-400 dark:text-slate-500 font-bold">{horasNormales} hs normales + {horasExtras} hs extras (x2)</span>
-                                    <span className="text-indigo-400 font-black">{horasNormales + (horasExtras * 2)} hs facturables</span>
+                                    <span className="text-indigo-400 font-bold">{horasNormales + (horasExtras * 2)} hs facturables</span>
                                 </div>
                             </h4>
                             <div>
-                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Valor Unitario por Hora ($)</label>
+                                <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">Valor Unitario por Hora ($)</label>
                                 <input 
                                     type="number" min="0" step="10"
                                     value={valorMo} onChange={e => setValorMo(e.target.value)}
-                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                    className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                                 />
                             </div>
                             <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-3 flex justify-between items-center px-4">
-                                <span className="text-xs font-black text-indigo-400 uppercase tracking-widest">Subtotal Mano de Obra</span>
-                                <span className="font-black text-indigo-700 text-lg">${formatARS(subtotalMo)}</span>
+                                <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">Subtotal Mano de Obra</span>
+                                <span className="font-bold text-indigo-700 text-lg">${formatARS(subtotalMo)}</span>
                             </div>
                         </div>
 
                         {/* Materiales Section */}
                         {materiales.length > 0 && (
                             <div className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
-                                <h4 className="font-black text-sm text-slate-800 dark:text-slate-100 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-3">
+                                <h4 className="font-semibold text-sm text-slate-800 dark:text-slate-100 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-3">
                                     Materiales
                                 </h4>
                                 <div className="space-y-4">
@@ -342,10 +342,10 @@ export default function OSCobroDrawerContent({ id, onClose }: { id: string, onCl
                                         <div key={m.id} className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-start sm:items-center text-sm border-b border-slate-50 pb-4 last:border-0 last:pb-0">
                                             <div className="flex-1 w-full">
                                                 <div className="font-bold text-slate-700 dark:text-slate-200">{m.material}</div>
-                                                {m.codigo && <div className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tighter">{m.codigo}</div>}
+                                                {m.codigo && <div className="text-[11px] font-mono font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tight">{m.codigo}</div>}
                                             </div>
                                             <div className="flex items-center gap-3 w-full sm:w-auto shrink-0 justify-between sm:justify-end">
-                                                <div className="text-center font-bold text-slate-500 dark:text-slate-400 bg-muted text-muted-foreground/50 rounded-lg py-1 px-3 min-w-[3rem]">{m.cantidad}</div>
+                                                <div className="text-center font-bold text-slate-500 dark:text-slate-400 bg-muted rounded-lg py-1 px-3 min-w-[3rem]">{m.cantidad}</div>
                                                 <div className="relative w-28">
                                                     <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold">$</span>
                                                     <input 
@@ -356,7 +356,7 @@ export default function OSCobroDrawerContent({ id, onClose }: { id: string, onCl
                                                         placeholder="0.00"
                                                     />
                                                 </div>
-                                                <div className="text-right font-black text-amber-600 min-w-[5rem]">
+                                                <div className="text-right font-bold text-amber-600 min-w-[5rem]">
                                                     ${formatARS(m.cantidad * safeNum(m.precioUnitario))}
                                                 </div>
                                             </div>
@@ -364,8 +364,8 @@ export default function OSCobroDrawerContent({ id, onClose }: { id: string, onCl
                                     ))}
                                 </div>
                                 <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 flex justify-between items-center px-4 mt-2">
-                                    <span className="text-xs font-black text-amber-500 uppercase tracking-widest">Subtotal Materiales</span>
-                                    <span className="font-black text-amber-700 text-lg">${formatARS(subtotalMat)}</span>
+                                    <span className="text-xs font-semibold text-amber-500 uppercase tracking-wider">Subtotal Materiales</span>
+                                    <span className="font-bold text-amber-700 text-lg">${formatARS(subtotalMat)}</span>
                                 </div>
                             </div>
                         )}
@@ -373,7 +373,7 @@ export default function OSCobroDrawerContent({ id, onClose }: { id: string, onCl
                         {/* Gastos Operativos Section */}
                         <div className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
                             <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
-                                <h4 className="font-black text-sm text-slate-800 dark:text-slate-100 uppercase tracking-widest">
+                                <h4 className="font-semibold text-sm text-slate-800 dark:text-slate-100 uppercase tracking-wider">
                                     Gastos Operativos
                                 </h4>
                                 <button 
@@ -428,23 +428,23 @@ export default function OSCobroDrawerContent({ id, onClose }: { id: string, onCl
                             
                             {otrosConceptos.length > 0 && (
                                 <div className="bg-background text-foreground border border-slate-100 dark:border-slate-700 rounded-xl p-3 flex justify-between items-center px-4 mt-2">
-                                    <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Subtotal Otros Gastos</span>
-                                    <span className="font-black text-slate-700 dark:text-slate-200 text-lg">${formatARS(subtotalOtros)}</span>
+                                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Subtotal Otros Gastos</span>
+                                    <span className="font-bold text-slate-700 dark:text-slate-200 text-lg">${formatARS(subtotalOtros)}</span>
                                 </div>
                             )}
                         </div>
 
                         {/* Additional Options */}
                         <div className="bg-card text-card-foreground p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
-                            <h4 className="font-black text-sm text-slate-800 dark:text-slate-100 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-3">
+                            <h4 className="font-semibold text-sm text-slate-800 dark:text-slate-100 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-3">
                                 Información Adicional
                             </h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Condición de Pago</label>
+                                    <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">Condición de Pago</label>
                                     <select 
                                         value={condicionPago} onChange={e => setCondicionPago(e.target.value)}
-                                        className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-200 transition-all"
+                                        className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-200 transition-all"
                                     >
                                         <option value="">Seleccionar...</option>
                                         <option value="Contado">Contado</option>
@@ -454,10 +454,10 @@ export default function OSCobroDrawerContent({ id, onClose }: { id: string, onCl
                                     </select>
                                 </div>
                                 <div className="md:col-span-2">
-                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Observaciones Generales</label>
+                                    <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">Observaciones Generales</label>
                                     <textarea 
                                         value={observaciones} onChange={e => setObservaciones(e.target.value)}
-                                        className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 font-medium text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-200 transition-all min-h-[80px]"
+                                        className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 font-medium text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-200 transition-all min-h-[80px]"
                                         placeholder="Detalles del acuerdo, cuentas, etc..."
                                     />
                                 </div>
@@ -468,7 +468,7 @@ export default function OSCobroDrawerContent({ id, onClose }: { id: string, onCl
                     {/* Summary Panel */}
                     <div className="bg-slate-800 rounded-3xl overflow-hidden shadow-xl sticky top-6">
                         <div className="p-6 space-y-5">
-                            <h3 className="text-white font-black text-lg flex items-center gap-2">
+                            <h3 className="text-white font-bold text-lg flex items-center gap-2">
                                 <FileText className="w-5 h-5 text-indigo-400" />
                                 Resumen
                             </h3>
@@ -491,7 +491,7 @@ export default function OSCobroDrawerContent({ id, onClose }: { id: string, onCl
                                         >
                                             <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-card text-card-foreground shadow ring-0 transition duration-200 ease-in-out ${descuentoAplicado ? 'translate-x-5' : 'translate-x-0'}`} />
                                         </button>
-                                        <span className="text-xs font-bold text-slate-300 uppercase tracking-widest align-middle cursor-pointer" onClick={() => setDescuentoAplicado(!descuentoAplicado)}>Aplicar Descuento</span>
+                                        <span className="text-xs font-bold text-slate-300 uppercase tracking-wider align-middle cursor-pointer" onClick={() => setDescuentoAplicado(!descuentoAplicado)}>Aplicar Descuento</span>
                                     </div>
                                     {descuentoAplicado && (
                                         <div className="flex items-center gap-3">
@@ -521,7 +521,7 @@ export default function OSCobroDrawerContent({ id, onClose }: { id: string, onCl
                                             >
                                                 <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-card text-card-foreground shadow ring-0 transition duration-200 ease-in-out ${ivaAplicado ? 'translate-x-5' : 'translate-x-0'}`} />
                                             </button>
-                                            <span className="text-xs font-bold text-slate-300 uppercase tracking-widest align-middle cursor-pointer" onClick={() => setIvaAplicado(!ivaAplicado)}>Añadir IVA (21%)</span>
+                                            <span className="text-xs font-bold text-slate-300 uppercase tracking-wider align-middle cursor-pointer" onClick={() => setIvaAplicado(!ivaAplicado)}>Añadir IVA (21%)</span>
                                         </div>
                                         {ivaAplicado && <span className="text-rose-400 font-bold text-sm">+${formatARS(montoIva)}</span>}
                                     </div>
@@ -530,29 +530,29 @@ export default function OSCobroDrawerContent({ id, onClose }: { id: string, onCl
                         </div>
                         
                         <div className="bg-slate-900 p-6">
-                            <p className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-widest font-black mb-1">Total a Cobrar</p>
-                            <p className="text-3xl font-black text-white">${formatARS(totalFinal)}</p>
+                            <p className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wider font-semibold mb-1">Total a Cobrar</p>
+                            <p className="text-3xl font-bold text-white">${formatARS(totalFinal)}</p>
                         </div>
 
                         <div className="p-4 bg-slate-900/50 space-y-2">
                             <button
                                 onClick={handleExportExcel}
                                 type="button"
-                                className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 text-sm"
+                                className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 text-sm"
                             >
                                 <FileSpreadsheet className="w-4.5 h-4.5 text-emerald-400" /> Exportar a Excel
                             </button>
                             <button
                                 onClick={handleSaveAndGenerate}
                                 disabled={loading || parsedValorMo < 0}
-                                className="w-full bg-indigo-500 hover:bg-indigo-400 text-white font-black py-3.5 rounded-xl transition-all shadow-lg shadow-indigo-500/20 flex flex-col items-center justify-center disabled:opacity-50 active:scale-95 group"
+                                className="w-full bg-indigo-500 hover:bg-indigo-400 text-white font-bold py-3.5 rounded-xl transition-all flex flex-col items-center justify-center disabled:opacity-50 group"
                             >
                                 {loading ? (
                                     <Loader2 className="w-6 h-6 animate-spin" />
                                 ) : (
                                     <>
                                         <span className="flex items-center gap-2"><Download className="w-5 h-5"/> Generar Documento</span>
-                                        <span className="text-[10px] uppercase font-bold text-indigo-200 mt-1">Guarda e imprime PDF</span>
+                                        <span className="text-[11px] uppercase font-bold text-indigo-200 mt-1">Guarda e imprime PDF</span>
                                     </>
                                 )}
                             </button>

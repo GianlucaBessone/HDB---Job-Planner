@@ -465,12 +465,12 @@ export default function IdeasSugerenciasReclamosPage() {
     if (activeTab === 'registrar' && submitStatus === 'success' && submissionResult) {
         return (
             <div className="w-full max-w-2xl mx-auto px-4 py-8 md:py-16">
-                <div className="bg-card text-card-foreground rounded-3xl p-8 md:p-12 shadow-2xl text-center border border-slate-100 dark:border-slate-700 animate-in zoom-in-95 duration-500">
+                <div className="bg-card text-card-foreground rounded-3xl p-8 md:p-12 shadow-2xl text-center border border-slate-100 dark:border-slate-700 animate-in zoom-in-95 duration-200">
                     <div className="w-20 h-20 bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-8 animate-bounce">
                         <CheckCircle2 className="w-12 h-12" />
                     </div>
                     
-                    <h1 className="text-3xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight mb-2">
+                    <h1 className="text-title text-slate-800 dark:text-slate-100 mb-2">
                         ¡Propuesta Registrada!
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-8">
@@ -479,18 +479,18 @@ export default function IdeasSugerenciasReclamosPage() {
 
                     <div className="bg-background text-foreground rounded-2xl p-6 mb-8 border border-slate-100 dark:border-slate-800 text-left space-y-4 max-w-md mx-auto">
                         <div>
-                            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Código de Propuesta</span>
+                            <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Código de Propuesta</span>
                             <span className="text-lg font-bold text-slate-800 dark:text-slate-100 font-mono select-all">
                                 {submissionResult.id}
                             </span>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Tipo</span>
+                                <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Tipo</span>
                                 <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{submissionResult.tipo_registro}</span>
                             </div>
                             <div>
-                                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Presentación</span>
+                                <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Presentación</span>
                                 <span className="text-sm font-bold text-slate-700 dark:text-slate-300 capitalize">{submissionResult.presentacion}</span>
                             </div>
                         </div>
@@ -498,7 +498,7 @@ export default function IdeasSugerenciasReclamosPage() {
 
                     <button
                         onClick={handleStartNew}
-                        className="px-8 py-4 bg-primary text-white font-extrabold text-sm uppercase tracking-widest rounded-2xl hover:bg-primary-dark transition-all active:scale-95 shadow-lg shadow-primary/20"
+                        className="px-8 py-4 bg-primary text-white font-semibold text-sm rounded-2xl hover:bg-primary-dark transition-all"
                     >
                         Registrar Otra Propuesta
                     </button>
@@ -514,7 +514,7 @@ export default function IdeasSugerenciasReclamosPage() {
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-bold uppercase tracking-wider mb-3">
                     <Lightbulb className="w-3.5 h-3.5" /> Portal de Ideas y Sugerencias
                 </div>
-                <h1 className="text-3xl md:text-5xl font-black text-slate-800 dark:text-slate-100 tracking-tight leading-tight mb-3">
+                <h1 className="text-display text-slate-800 dark:text-slate-100 leading-tight mb-3">
                     Ideas, Sugerencias y Reclamos
                 </h1>
                 <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
@@ -531,7 +531,7 @@ export default function IdeasSugerenciasReclamosPage() {
                             setActiveTab('registrar');
                             setErrorMessage('');
                         }}
-                        className={`px-6 py-3 font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all ${
+                        className={`px-6 py-3 font-semibold text-xs uppercase tracking-wider rounded-xl transition-all ${
                             activeTab === 'registrar'
                                 ? 'bg-card text-card-foreground text-primary shadow-sm'
                                 : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -545,7 +545,7 @@ export default function IdeasSugerenciasReclamosPage() {
                             setActiveTab('pizarra');
                             setErrorMessage('');
                         }}
-                        className={`px-6 py-3 font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all ${
+                        className={`px-6 py-3 font-semibold text-xs uppercase tracking-wider rounded-xl transition-all ${
                             activeTab === 'pizarra'
                                 ? 'bg-card text-card-foreground text-primary shadow-sm'
                                 : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -563,7 +563,7 @@ export default function IdeasSugerenciasReclamosPage() {
                     {errorMessage && (
                         <div 
                             ref={errorBannerRef}
-                            className="mb-8 p-4 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/40 rounded-2xl flex items-start gap-3 text-rose-600 dark:text-rose-400 text-sm font-semibold animate-in slide-in-from-top-4 duration-300"
+                            className="mb-8 p-4 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/40 rounded-2xl flex items-start gap-3 text-rose-600 dark:text-rose-400 text-sm font-semibold animate-in slide-in-from-top-2 duration-200"
                         >
                             <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
                             <div className="flex-1">
@@ -581,14 +581,14 @@ export default function IdeasSugerenciasReclamosPage() {
                         >
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all border ${
                                 currentStep === 1 
-                                    ? 'bg-primary border-primary text-white scale-110 shadow-lg shadow-primary/20' 
+                                    ? 'bg-primary border-primary text-white scale-110 shadow-lg' 
                                     : currentStep > 1 
                                         ? 'bg-emerald-500 border-emerald-500 text-white' 
-                                        : 'bg-card text-card-foreground border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500'
+                                        : 'bg-card border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500'
                             }`}>
                                 {currentStep > 1 ? <Check className="w-4 h-4" /> : 1}
                             </div>
-                            <span className={`text-[10px] font-black uppercase tracking-wider transition-colors ${
+                            <span className={`text-[11px] font-semibold uppercase tracking-wider transition-colors ${
                                 currentStep === 1 ? 'text-primary' : 'text-slate-400 dark:text-slate-500'
                             }`}>Identidad</span>
                         </button>
@@ -601,14 +601,14 @@ export default function IdeasSugerenciasReclamosPage() {
                         >
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all border ${
                                 currentStep === 2 
-                                    ? 'bg-primary border-primary text-white scale-110 shadow-lg shadow-primary/20' 
+                                    ? 'bg-primary border-primary text-white scale-110 shadow-lg' 
                                     : currentStep > 2 
                                         ? 'bg-emerald-500 border-emerald-500 text-white' 
-                                        : 'bg-card text-card-foreground border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500'
+                                        : 'bg-card border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500'
                             }`}>
                                 {currentStep > 2 ? <Check className="w-4 h-4" /> : 2}
                             </div>
-                            <span className={`text-[10px] font-black uppercase tracking-wider transition-colors ${
+                            <span className={`text-[11px] font-semibold uppercase tracking-wider transition-colors ${
                                 currentStep === 2 ? 'text-primary' : 'text-slate-400 dark:text-slate-500'
                             }`}>Propuesta</span>
                         </button>
@@ -621,12 +621,12 @@ export default function IdeasSugerenciasReclamosPage() {
                         >
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all border ${
                                 currentStep === 3 
-                                    ? 'bg-primary border-primary text-white scale-110 shadow-lg shadow-primary/20' 
-                                    : 'bg-card text-card-foreground border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500'
+                                    ? 'bg-primary border-primary text-white scale-110 shadow-lg' 
+                                    : 'bg-card border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500'
                             }`}>
                                 3
                             </div>
-                            <span className={`text-[10px] font-black uppercase tracking-wider transition-colors ${
+                            <span className={`text-[11px] font-semibold uppercase tracking-wider transition-colors ${
                                 currentStep === 3 ? 'text-primary' : 'text-slate-400 dark:text-slate-500'
                             }`}>Impacto</span>
                         </button>
@@ -637,9 +637,9 @@ export default function IdeasSugerenciasReclamosPage() {
                         
                         {/* STEP 1: PRESENTACION / IDENTIFICACION */}
                         {currentStep === 1 && (
-                            <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
+                            <div className="space-y-8 animate-in fade-in slide-in-from-right-2 duration-200">
                                 <div>
-                                    <h2 className="text-xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight mb-2">
+                                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight mb-2">
                                         Tipo de Presentación
                                     </h2>
                                     <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -660,7 +660,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                         }`}
                                     >
                                         <div>
-                                            <h3 className="font-extrabold text-base text-slate-800 dark:text-slate-100 mb-1">
+                                            <h3 className="font-bold text-base text-slate-800 dark:text-slate-100 mb-1">
                                                 Presentación Anónima
                                             </h3>
                                             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
@@ -685,7 +685,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                         }`}
                                     >
                                         <div>
-                                            <h3 className="font-extrabold text-base text-slate-800 dark:text-slate-100 mb-1">
+                                            <h3 className="font-bold text-base text-slate-800 dark:text-slate-100 mb-1">
                                                 Presentación Identificada
                                             </h3>
                                             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
@@ -702,7 +702,7 @@ export default function IdeasSugerenciasReclamosPage() {
 
                                 {/* Identified Credentials inputs */}
                                 {presentacion === 'identificada' && (
-                                    <div className="p-6 bg-background text-foreground/50 rounded-2xl border border-slate-100 dark:border-slate-800/80 grid grid-cols-1 md:grid-cols-2 gap-6 animate-in slide-in-from-top-4 duration-300">
+                                    <div className="p-6 bg-background text-foreground rounded-2xl border border-slate-100 dark:border-slate-800/80 grid grid-cols-1 md:grid-cols-2 gap-6 animate-in slide-in-from-top-2 duration-200">
                                         <div className="space-y-1">
                                             {isLoadingOperators ? (
                                                 <div className="flex items-center gap-2 py-3 text-sm text-slate-400">
@@ -721,7 +721,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                         </div>
 
                                         <div className="space-y-1.5">
-                                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block px-1">
+                                            <label className="block px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                                 PIN de Acceso
                                             </label>
                                             <div className="relative">
@@ -732,7 +732,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                                     value={pin}
                                                     onChange={(e) => setPin(e.target.value.replace(/[^0-9]/g, ''))}
                                                     placeholder="Ingresa tu PIN"
-                                                    className="w-full h-[44px] md:h-[50px] bg-card text-card-foreground/80 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-3 px-4 text-sm font-bold tracking-widest outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
+                                                    className="w-full h-[44px] md:h-[50px] bg-card text-card-foreground/80 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-3 px-4 text-sm font-bold tracking-wider outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10"
                                                 />
                                                 <button
                                                     type="button"
@@ -742,7 +742,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                                     {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                                 </button>
                                             </div>
-                                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 px-1 leading-relaxed">
+                                            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 px-1 leading-relaxed">
                                                 Para resguardar tu identidad, ingresa tu clave personal. No permitimos asociar usuarios ajenos.
                                             </p>
                                         </div>
@@ -753,7 +753,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                     <button
                                         type="button"
                                         onClick={() => handleGoToStep(2)}
-                                        className="px-6 py-3.5 bg-primary text-white font-extrabold text-xs uppercase tracking-widest rounded-xl hover:bg-primary-dark transition-all active:scale-95 flex items-center gap-2"
+                                        className="px-6 py-3.5 bg-primary text-white font-semibold text-xs rounded-xl hover:bg-primary-dark transition-all flex items-center gap-2"
                                     >
                                         Continuar <ChevronRight className="w-4 h-4" />
                                     </button>
@@ -763,9 +763,9 @@ export default function IdeasSugerenciasReclamosPage() {
 
                         {/* STEP 2: CONTENIDO DE LA SUGERENCIA */}
                         {currentStep === 2 && (
-                            <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
+                            <div className="space-y-8 animate-in fade-in slide-in-from-right-2 duration-200">
                                 <div>
-                                    <h2 className="text-xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight mb-2">
+                                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight mb-2">
                                         Detalles de la Propuesta
                                     </h2>
                                     <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -775,8 +775,8 @@ export default function IdeasSugerenciasReclamosPage() {
 
                                 {/* Tipo Registro selection */}
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block px-1">
-                                        Tipo de Registro <span className="text-rose-500 font-black">*</span>
+                                    <label className="block px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
+                                        Tipo de Registro <span className="text-rose-500 font-bold">*</span>
                                     </label>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                         {TIPO_OPCIONES.map(option => (
@@ -793,10 +793,10 @@ export default function IdeasSugerenciasReclamosPage() {
                                                 <div className={`p-2 rounded-lg ${option.color} inline-block mb-3 w-fit`}>
                                                     {option.icon}
                                                 </div>
-                                                <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-100 mb-1">
+                                                <h3 className="font-bold text-sm text-slate-800 dark:text-slate-100 mb-1">
                                                     {option.label}
                                                 </h3>
-                                                <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-normal">
+                                                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-normal">
                                                     {option.description}
                                                 </p>
                                             </button>
@@ -807,8 +807,8 @@ export default function IdeasSugerenciasReclamosPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {/* Titulo */}
                                     <div className="space-y-1.5 md:col-span-2">
-                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block px-1">
-                                            Título Breve <span className="text-rose-500 font-black">*</span>
+                                        <label className="block px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
+                                            Título Breve <span className="text-rose-500 font-bold">*</span>
                                         </label>
                                         <input
                                             type="text"
@@ -816,10 +816,10 @@ export default function IdeasSugerenciasReclamosPage() {
                                             value={titulo}
                                             onChange={(e) => setTitulo(e.target.value)}
                                             placeholder="Ej: Automatizar orden de herramientas en carro de taller"
-                                            className="w-full h-[44px] md:h-[50px] bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-3 px-4 text-sm font-bold outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10 text-slate-700 dark:text-slate-200"
+                                            className="w-full h-[44px] md:h-[50px] bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-3 px-4 text-sm font-bold outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10 text-slate-700 dark:text-slate-200"
                                             required
                                         />
-                                        <div className="flex justify-between px-1 text-[10px] text-slate-400 dark:text-slate-500 font-semibold">
+                                        <div className="flex justify-between px-1 text-[11px] text-slate-400 dark:text-slate-500 font-semibold">
                                             <span>Sé descriptivo y concreto.</span>
                                             <span>{titulo.length}/150</span>
                                         </div>
@@ -827,31 +827,31 @@ export default function IdeasSugerenciasReclamosPage() {
 
                                     {/* Descripcion */}
                                     <div className="space-y-1.5 md:col-span-2">
-                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block px-1">
-                                            Descripción Detallada <span className="text-rose-500 font-black">*</span>
+                                        <label className="block px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
+                                            Descripción Detallada <span className="text-rose-500 font-bold">*</span>
                                         </label>
                                         <textarea
                                             rows={4}
                                             value={descripcion}
                                             onChange={(e) => setDescripcion(e.target.value)}
                                             placeholder="Describe la problemática actual y cómo el cambio propuesto solucionaría la situación..."
-                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-3 px-4 text-sm font-bold outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10 text-slate-700 dark:text-slate-200"
+                                            className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-3 px-4 text-sm font-bold outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10 text-slate-700 dark:text-slate-200"
                                             required
                                         />
-                                        <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 px-1">
+                                        <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 px-1">
                                             Explica el problema, su causa raíz y tu análisis de la situación.
                                         </p>
                                     </div>
 
                                     {/* Area Involucrada */}
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block px-1">
-                                            Área Involucrada / Afectada <span className="text-rose-500 font-black">*</span>
+                                        <label className="block px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
+                                            Área Involucrada / Afectada <span className="text-rose-500 font-bold">*</span>
                                         </label>
                                         <select
                                             value={areaInvolucrada}
                                             onChange={(e) => setAreaInvolucrada(e.target.value)}
-                                            className="w-full h-[44px] md:h-[50px] bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-2 px-4 text-sm font-bold outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10 text-slate-700 dark:text-slate-200"
+                                            className="w-full h-[44px] md:h-[50px] bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-2 px-4 text-sm font-bold outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10 text-slate-700 dark:text-slate-200"
                                             required
                                         >
                                             <option value="" disabled>Selecciona el área...</option>
@@ -863,13 +863,13 @@ export default function IdeasSugerenciasReclamosPage() {
 
                                     {/* Frecuencia del problema */}
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block px-1">
+                                        <label className="block px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                             Frecuencia del Problema (Opcional)
                                         </label>
                                         <select
                                             value={frecuenciaProblema}
                                             onChange={(e) => setFrecuenciaProblema(e.target.value)}
-                                            className="w-full h-[44px] md:h-[50px] bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-2 px-4 text-sm font-bold outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10 text-slate-700 dark:text-slate-200"
+                                            className="w-full h-[44px] md:h-[50px] bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-2 px-4 text-sm font-bold outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10 text-slate-700 dark:text-slate-200"
                                         >
                                             <option value="">No aplica / Desconocido</option>
                                             {FRECUENCIA_OPCIONES.map(freq => (
@@ -883,14 +883,14 @@ export default function IdeasSugerenciasReclamosPage() {
                                     <button
                                         type="button"
                                         onClick={() => handleGoToStep(1)}
-                                        className="px-6 py-3.5 bg-slate-100 text-slate-600 dark:bg-slate-750 dark:text-slate-300 font-extrabold text-xs uppercase tracking-widest rounded-xl hover:bg-slate-250 transition-all active:scale-95"
+                                        className="px-6 py-3.5 bg-slate-100 text-slate-600 dark:bg-slate-750 dark:text-slate-300 font-semibold text-xs rounded-xl hover:bg-slate-250 transition-all"
                                     >
                                         Atrás
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => handleGoToStep(3)}
-                                        className="px-6 py-3.5 bg-primary text-white font-extrabold text-xs uppercase tracking-widest rounded-xl hover:bg-primary-dark transition-all active:scale-95 flex items-center gap-2"
+                                        className="px-6 py-3.5 bg-primary text-white font-semibold text-xs rounded-xl hover:bg-primary-dark transition-all flex items-center gap-2"
                                     >
                                         Siguiente <ChevronRight className="w-4 h-4" />
                                     </button>
@@ -900,9 +900,9 @@ export default function IdeasSugerenciasReclamosPage() {
 
                         {/* STEP 3: IMPACTO, BENEFICIOS Y ADJUNTOS */}
                         {currentStep === 3 && (
-                            <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
+                            <div className="space-y-8 animate-in fade-in slide-in-from-right-2 duration-200">
                                 <div>
-                                    <h2 className="text-xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight mb-2">
+                                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight mb-2">
                                         Impacto, Beneficios y Adjuntos
                                     </h2>
                                     <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -913,8 +913,8 @@ export default function IdeasSugerenciasReclamosPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {/* Impacto Estimado */}
                                     <div className="space-y-3 md:col-span-2">
-                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block px-1">
-                                            Impacto Estimado del Cambio <span className="text-rose-500 font-black">*</span>
+                                        <label className="block px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
+                                            Impacto Estimado del Cambio <span className="text-rose-500 font-bold">*</span>
                                         </label>
                                         <div className="grid grid-cols-3 gap-3">
                                             {IMPACTO_OPCIONES.map(option => (
@@ -928,10 +928,10 @@ export default function IdeasSugerenciasReclamosPage() {
                                                             : 'border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700'
                                                     }`}
                                                 >
-                                                    <span className="font-extrabold text-sm text-slate-800 dark:text-slate-100 block mb-0.5">
+                                                    <span className="font-bold text-sm text-slate-800 dark:text-slate-100 block mb-0.5">
                                                         {option.label}
                                                     </span>
-                                                    <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500">
+                                                    <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500">
                                                         {option.desc}
                                                     </span>
                                                 </button>
@@ -941,7 +941,7 @@ export default function IdeasSugerenciasReclamosPage() {
 
                                     {/* Propuesta de Solucion */}
                                     <div className="space-y-1.5 md:col-span-2">
-                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block px-1">
+                                        <label className="block px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                             Propuesta de Solución Sugerida (Opcional)
                                         </label>
                                         <textarea
@@ -949,13 +949,13 @@ export default function IdeasSugerenciasReclamosPage() {
                                             value={propuestaSolucion}
                                             onChange={(e) => setPropuestaSolucion(e.target.value)}
                                             placeholder="Si tienes en mente un plan de acción para solucionarlo, detallalo aquí..."
-                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-3 px-4 text-sm font-bold outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10 text-slate-700 dark:text-slate-200"
+                                            className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-3 px-4 text-sm font-bold outline-none transition-all focus:border-primary focus:ring-4 focus:ring-primary/10 text-slate-700 dark:text-slate-200"
                                         />
                                     </div>
 
                                     {/* Beneficios Esperados */}
                                     <div className="space-y-3 md:col-span-2">
-                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block px-1">
+                                        <label className="block px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                             Beneficios Esperados (Selección Múltiple)
                                         </label>
                                         <div className="flex flex-wrap gap-2">
@@ -968,8 +968,8 @@ export default function IdeasSugerenciasReclamosPage() {
                                                         onClick={() => handleToggleBeneficio(option)}
                                                         className={`px-4 py-2.5 rounded-full text-xs font-bold transition-all border ${
                                                             isSelected
-                                                                ? 'bg-primary text-white border-primary shadow-md shadow-primary/10'
-                                                                : 'bg-slate-55 border-slate-200 dark:border-slate-750 text-slate-600 dark:text-slate-300 hover:border-slate-350 hover:bg-muted text-muted-foreground'
+                                                                ? 'bg-primary text-white border-primary shadow-md'
+                                                                : 'bg-slate-55 border-slate-200 dark:border-slate-750 text-slate-600 dark:text-slate-300 hover:border-slate-350 hover:bg-muted'
                                                         }`}
                                                     >
                                                         {option}
@@ -981,7 +981,7 @@ export default function IdeasSugerenciasReclamosPage() {
 
                                     {/* Adjuntar Archivos */}
                                     <div className="space-y-3 md:col-span-2">
-                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block px-1">
+                                        <label className="block px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                             Archivos Adjuntos (Imágenes, PDF, Documentos - Max 5)
                                         </label>
                                         
@@ -1002,7 +1002,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                             <span className="text-sm font-bold text-slate-700 dark:text-slate-200 block">
                                                 Haz clic para seleccionar o arrastra archivos aquí
                                             </span>
-                                            <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 mt-1 block">
+                                            <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 mt-1 block">
                                                 Hasta 3MB por archivo y 4MB en total.
                                             </span>
                                         </div>
@@ -1013,7 +1013,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                                 {selectedFiles.map((file, idx) => (
                                                     <div 
                                                         key={`${file.name}-${idx}`}
-                                                        className="flex items-center justify-between p-3 bg-background text-foreground rounded-xl border border-slate-100 dark:border-slate-800/80 animate-in fade-in duration-300"
+                                                        className="flex items-center justify-between p-3 bg-background text-foreground rounded-xl border border-slate-100 dark:border-slate-800/80 animate-in fade-in duration-200"
                                                     >
                                                         <div className="flex items-center gap-2.5 min-w-0">
                                                             <FileText className="w-4 h-4 text-slate-400 shrink-0" />
@@ -1021,7 +1021,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                                                 <p className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate pr-4">
                                                                     {file.name}
                                                                 </p>
-                                                                <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500">
+                                                                <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500">
                                                                     {formatBytes(file.size)}
                                                                 </p>
                                                             </div>
@@ -1044,7 +1044,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                     <button
                                         type="button"
                                         onClick={() => handleGoToStep(2)}
-                                        className="px-6 py-3.5 bg-slate-100 text-slate-600 dark:bg-slate-750 dark:text-slate-300 font-extrabold text-xs uppercase tracking-widest rounded-xl hover:bg-slate-250 transition-all active:scale-95"
+                                        className="px-6 py-3.5 bg-slate-100 text-slate-600 dark:bg-slate-750 dark:text-slate-300 font-semibold text-xs rounded-xl hover:bg-slate-250 transition-all"
                                         disabled={isSubmitting}
                                     >
                                         Atrás
@@ -1052,7 +1052,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                     <button
                                         type="submit"
                                         disabled={isSubmitting}
-                                        className="px-8 py-3.5 bg-primary text-white font-extrabold text-xs uppercase tracking-widest rounded-xl hover:bg-primary-dark transition-all active:scale-95 flex items-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="px-8 py-3.5 bg-primary text-white font-semibold text-xs rounded-xl hover:bg-primary-dark transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {isSubmitting ? (
                                             <>
@@ -1072,28 +1072,28 @@ export default function IdeasSugerenciasReclamosPage() {
 
             {/* Pizarra de Propuestas Tab */}
             {activeTab === 'pizarra' && (
-                <div className="space-y-6 animate-in fade-in duration-300">
+                <div className="space-y-6 animate-in fade-in duration-200">
                     {/* Stats Summary */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="bg-card text-card-foreground p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
-                            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Total Propuestas</span>
-                            <span className="text-2xl font-black text-slate-800 dark:text-slate-100">{sugerencias.length}</span>
+                            <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Total Propuestas</span>
+                            <span className="text-2xl font-bold text-slate-800 dark:text-slate-100">{sugerencias.length}</span>
                         </div>
                         <div className="bg-amber-500/5 dark:bg-amber-500/10 p-4 rounded-2xl border border-amber-500/10 shadow-sm">
-                            <span className="text-[10px] font-black text-amber-500/70 dark:text-amber-500/80 uppercase tracking-widest block">Pendientes</span>
-                            <span className="text-2xl font-black text-amber-600 dark:text-amber-400">
+                            <span className="text-[11px] font-semibold text-amber-500/70 dark:text-amber-500/80 uppercase tracking-wider block">Pendientes</span>
+                            <span className="text-2xl font-bold text-amber-600 dark:text-amber-400">
                                 {sugerencias.filter(s => s.estado === 'Pendiente').length}
                             </span>
                         </div>
                         <div className="bg-blue-500/5 dark:bg-blue-500/10 p-4 rounded-2xl border border-blue-500/10 shadow-sm">
-                            <span className="text-[10px] font-black text-blue-500/70 dark:text-blue-500/80 uppercase tracking-widest block">En Evaluación</span>
-                            <span className="text-2xl font-black text-blue-600 dark:text-blue-400">
+                            <span className="text-[11px] font-semibold text-blue-500/70 dark:text-blue-500/80 uppercase tracking-wider block">En Evaluación</span>
+                            <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                                 {sugerencias.filter(s => s.estado === 'En evaluación' || s.estado === 'En Revisión').length}
                             </span>
                         </div>
                         <div className="bg-emerald-500/5 dark:bg-emerald-500/10 p-4 rounded-2xl border border-emerald-500/10 shadow-sm">
-                            <span className="text-[10px] font-black text-emerald-500/70 dark:text-emerald-500/80 uppercase tracking-widest block">Aprobadas / Impl.</span>
-                            <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+                            <span className="text-[11px] font-semibold text-emerald-500/70 dark:text-emerald-500/80 uppercase tracking-wider block">Aprobadas / Impl.</span>
+                            <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                                 {sugerencias.filter(s => s.estado === 'Aprobada' || s.estado === 'Implementada').length}
                             </span>
                         </div>
@@ -1185,8 +1185,8 @@ export default function IdeasSugerenciasReclamosPage() {
 
                                 if (filtered.length === 0) {
                                     return (
-                                        <div className="text-center py-16 bg-card text-card-foreground rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm animate-in fade-in duration-300">
-                                            <p className="text-slate-400 dark:text-slate-500 font-extrabold text-sm mb-2">No se encontraron propuestas</p>
+                                        <div className="text-center py-16 bg-card text-card-foreground rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm animate-in fade-in duration-200">
+                                            <p className="text-slate-400 dark:text-slate-500 font-bold text-sm mb-2">No se encontraron propuestas</p>
                                             <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">Prueba cambiando los criterios de filtrado o registra una nueva propuesta.</p>
                                         </div>
                                     );
@@ -1225,21 +1225,21 @@ export default function IdeasSugerenciasReclamosPage() {
                                                                 <div className={`p-1.5 rounded-lg ${categoryObj.color}`}>
                                                                     {categoryObj.icon}
                                                                 </div>
-                                                                <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                                                <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                                                     {sug.tipo_registro}
                                                                 </span>
                                                             </div>
-                                                            <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full border ${statusColor}`}>
+                                                            <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${statusColor}`}>
                                                                 {sug.estado}
                                                             </span>
                                                         </div>
 
                                                         {/* Code & Title */}
                                                         <div>
-                                                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 font-mono block mb-0.5 select-all uppercase">
+                                                            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 font-mono block mb-0.5 select-all uppercase">
                                                                 #{sug.id}
                                                             </span>
-                                                            <h3 className="font-extrabold text-base text-slate-800 dark:text-slate-100 leading-tight">
+                                                            <h3 className="font-bold text-base text-slate-800 dark:text-slate-100 leading-tight">
                                                                 {decodeEntities(sug.titulo)}
                                                             </h3>
                                                         </div>
@@ -1256,27 +1256,27 @@ export default function IdeasSugerenciasReclamosPage() {
 
                                                         {/* Extended Info */}
                                                         {isExpanded && (
-                                                            <div className="space-y-4 pt-4 border-t border-slate-150 dark:border-slate-750 animate-in fade-in duration-300">
+                                                            <div className="space-y-4 pt-4 border-t border-slate-150 dark:border-slate-750 animate-in fade-in duration-200">
                                                                 {sug.propuesta_solucion && (
                                                                     <div>
-                                                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1">Propuesta de Solución</span>
-                                                                        <p className="text-xs text-slate-650 dark:text-slate-300 font-semibold bg-background text-foreground/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                                                                        <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1">Propuesta de Solución</span>
+                                                                        <p className="text-xs text-slate-650 dark:text-slate-300 font-semibold bg-background text-foreground p-3 rounded-xl border border-slate-100 dark:border-slate-800">
                                                                             {decodeEntities(sug.propuesta_solucion)}
                                                                         </p>
                                                                     </div>
                                                                 )}
                                                                 {sug.frecuencia_problema && (
                                                                     <div>
-                                                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-0.5">Frecuencia del problema</span>
+                                                                        <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-0.5">Frecuencia del problema</span>
                                                                         <span className="text-xs text-slate-700 dark:text-slate-300 font-bold">{decodeEntities(sug.frecuencia_problema)}</span>
                                                                     </div>
                                                                 )}
                                                                 {sug.beneficios && Array.isArray(sug.beneficios) && sug.beneficios.length > 0 && (
                                                                     <div>
-                                                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Beneficios esperados</span>
+                                                                        <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5">Beneficios esperados</span>
                                                                         <div className="flex flex-wrap gap-1">
                                                                             {sug.beneficios.map((b: string) => (
-                                                                                <span key={b} className="text-[10px] font-bold bg-secondary text-secondary-foreground px-2.5 py-1 rounded-full text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                                                                                <span key={b} className="text-[11px] font-bold bg-secondary px-2.5 py-1 rounded-full text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                                                                                     {decodeEntities(b)}
                                                                                 </span>
                                                                             ))}
@@ -1287,7 +1287,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                                                 {/* Attachments */}
                                                                 {sug.archivos_adjuntos && Array.isArray(sug.archivos_adjuntos) && sug.archivos_adjuntos.length > 0 && (
                                                                     <div>
-                                                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Adjuntos</span>
+                                                                        <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5">Adjuntos</span>
                                                                         <div className="space-y-1.5">
                                                                             {sug.archivos_adjuntos.map((file: any, index: number) => (
                                                                                 <a
@@ -1310,10 +1310,10 @@ export default function IdeasSugerenciasReclamosPage() {
                                                                 {/* Historial / Auditoria */}
                                                                 {sug.historial && Array.isArray(sug.historial) && sug.historial.length > 0 && (
                                                                     <div>
-                                                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-2">Historial de Estados</span>
+                                                                        <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-2">Historial de Estados</span>
                                                                         <div className="space-y-2 pl-2 border-l border-slate-200 dark:border-slate-700">
                                                                             {sug.historial.map((hist: any, index: number) => (
-                                                                                <div key={index} className="text-[10px] leading-relaxed text-slate-500 dark:text-slate-400 font-semibold relative">
+                                                                                <div key={index} className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400 font-semibold relative">
                                                                                     <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600 absolute -left-[11px] top-1.5" />
                                                                                     <span>{new Date(hist.fecha).toLocaleDateString()} {new Date(hist.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                                                                     <span className="mx-1.5">|</span>
@@ -1327,11 +1327,11 @@ export default function IdeasSugerenciasReclamosPage() {
                                                                 {/* Comentarios de Gestión */}
                                                                 {sug.comentarios && Array.isArray(sug.comentarios) && sug.comentarios.length > 0 && (
                                                                     <div>
-                                                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-2">Comentarios Administrativos</span>
+                                                                        <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-2">Comentarios Administrativos</span>
                                                                         <div className="space-y-2">
                                                                             {sug.comentarios.map((c: any, index: number) => (
                                                                                 <div key={index} className="bg-background text-foreground/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
-                                                                                    <div className="flex justify-between items-center text-[9px] text-slate-400 dark:text-slate-500 font-bold mb-1">
+                                                                                    <div className="flex justify-between items-center text-[11px] text-slate-400 dark:text-slate-500 font-bold mb-1">
                                                                                         <span>{c.autor}</span>
                                                                                         <span>{new Date(c.fecha).toLocaleDateString()}</span>
                                                                                     </div>
@@ -1349,14 +1349,14 @@ export default function IdeasSugerenciasReclamosPage() {
 
                                                     {/* Card Bottom Meta */}
                                                     <div className="mt-5 space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                                                        <div className="flex items-center justify-between text-[10px] text-slate-450 dark:text-slate-500 font-bold">
+                                                        <div className="flex items-center justify-between text-[11px] text-slate-450 dark:text-slate-500 font-bold">
                                                             <div className="flex items-center gap-1">
                                                                 <Calendar className="w-3.5 h-3.5" />
                                                                 <span>{new Date(sug.fecha_creacion).toLocaleDateString()}</span>
                                                             </div>
                                                             <div className="flex items-center gap-1 bg-background text-foreground px-2 py-0.5 rounded-md border border-slate-100 dark:border-slate-800">
                                                                 <span>Área:</span>
-                                                                <span className="text-slate-600 dark:text-slate-400 font-extrabold">{decodeEntities(sug.area_involucrada)}</span>
+                                                                <span className="text-slate-600 dark:text-slate-400 font-bold">{decodeEntities(sug.area_involucrada)}</span>
                                                             </div>
                                                         </div>
 
@@ -1374,7 +1374,7 @@ export default function IdeasSugerenciasReclamosPage() {
                                                             <button
                                                                 type="button"
                                                                 onClick={() => setExpandedCard(isExpanded ? null : sug.id)}
-                                                                className="text-xs font-black text-primary hover:text-primary-dark transition-colors uppercase tracking-wider flex items-center gap-1.5"
+                                                                className="text-xs font-semibold text-primary hover:text-primary-dark transition-colors flex items-center gap-1.5"
                                                             >
                                                                 {isExpanded ? 'Ver Menos' : 'Ver Detalles'}
                                                                 <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />

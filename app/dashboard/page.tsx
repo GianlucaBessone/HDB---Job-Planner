@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { LayoutDashboard, Target, TrendingDown, TrendingUp, Activity, Briefcase, Users, PieChart, BarChart3, AlertTriangle, Building2, Download, Calendar, Info, Clock, Timer, SlidersHorizontal, Star, MessageSquare, Smile, Award, TrendingUp as TrendUp, CheckCircle2, ArrowUpRight, User2, ClipboardList } from 'lucide-react';
 import useSWR from 'swr';
 import SearchableSelect from '@/components/SearchableSelect';
+import ModuleHeader from '@/components/ModuleHeader';
 import CodeBadge from '@/components/CodeBadge';
 import { safeApiRequest } from '@/lib/offline';
 import OperadoresTab from './OperadoresTab';
@@ -170,107 +171,57 @@ export default function DashboardPage() {
     const hasActiveCrossFilters = filterClientId !== '' || filterFrom !== '' || filterTo !== '' || filterProjectId !== '' || filterClassification !== '' || filterOperator !== '' || filterArea !== '' || (filterStatus !== 'all' && filterStatus !== 'active');
 
     return (
-        <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-                <div className="space-y-1">
-                    <h2 className="text-2xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
-                        <LayoutDashboard className="w-6 h-6 md:w-8 md:h-8 text-primary" />
-                        Panel de Análisis
-                    </h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium hidden md:block">Resumen del estado operativo y métricas de rendimiento</p>
-                </div>
-            </div>
-
-            <div className="flex gap-1 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl p-1.5 shadow-sm w-fit">
-                <button
-                    onClick={() => setActiveTab('proyectos')}
-                    className={`px-5 py-2.5 rounded-xl text-sm font-black transition-all ${
-                        activeTab === 'proyectos'
-                            ? 'bg-primary text-white shadow-md shadow-primary/20'
-                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80'
-                    }`}
-                >
-                    <span className="flex items-center gap-2">
-                        <Briefcase className="w-4 h-4" />
-                        Proyectos
-                    </span>
-                </button>
-                <button
-                    onClick={() => setActiveTab('ordenes')}
-                    className={`px-5 py-2.5 rounded-xl text-sm font-black transition-all ${
-                        activeTab === 'ordenes'
-                            ? 'bg-amber-500 text-white shadow-md shadow-amber-200'
-                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80'
-                    }`}
-                >
-                    <span className="flex items-center gap-2">
-                        <ClipboardList className="w-4 h-4" />
-                        Órdenes de Trabajo
-                    </span>
-                </button>
-                <button
-                    onClick={() => setActiveTab('servicios')}
-                    className={`px-5 py-2.5 rounded-xl text-sm font-black transition-all ${
-                        activeTab === 'servicios'
-                            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
-                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80'
-                    }`}
-                >
-                    <span className="flex items-center gap-2">
-                        <Star className="w-4 h-4" />
-                        Servicios
-                    </span>
-                </button>
-                <button
-                    onClick={() => setActiveTab('operadores')}
-                    className={`px-5 py-2.5 rounded-xl text-sm font-black transition-all ${
-                        activeTab === 'operadores'
-                            ? 'bg-violet-600 text-white shadow-md shadow-violet-200'
-                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80'
-                    }`}
-                >
-                    <span className="flex items-center gap-2">
-                        <Award className="w-4 h-4" />
-                        Operadores
-                    </span>
-                </button>
-            </div>
+        <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-200 pb-12">
+            <ModuleHeader
+                title="Panel de Análisis"
+                description="Resumen del estado operativo y métricas de rendimiento"
+                icon={<LayoutDashboard />}
+                tabs={[
+                    { id: 'proyectos', label: 'Proyectos', icon: <Briefcase /> },
+                    { id: 'ordenes', label: 'Órdenes de Trabajo', icon: <ClipboardList /> },
+                    { id: 'servicios', label: 'Servicios', icon: <Star /> },
+                    { id: 'operadores', label: 'Operadores', icon: <Award /> },
+                ]}
+                activeTabId={activeTab}
+                onTabChange={(id) => setActiveTab(id as typeof activeTab)}
+                className="!mb-0"
+            />
 
             {activeTab === 'servicios' && <ServiciosTab clients={clients} />}
             {activeTab === 'operadores' && <OperadoresTab />}
             {['proyectos', 'ordenes'].includes(activeTab) && <>
 
-            <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-[2rem] p-3 md:p-4 shadow-sm space-y-2">
+            <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-3xl p-3 md:p-4 shadow-sm space-y-2">
                 <div className="flex items-center justify-between mb-2">
                     <h3 className="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 text-sm">
                         <SlidersHorizontal className="w-4 h-4 text-primary" />
                         Filtros de Análisis
                     </h3>
                     {hasActiveCrossFilters && (
-                        <button onClick={clearFilters} className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">
+                        <button onClick={clearFilters} className="text-[12px] font-semibold text-primary hover:underline">
                             Limpiar Filtros
                         </button>
                     )}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1">
+                        <label className="px-1 flex items-center gap-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                             <Calendar className="w-3 h-3" /> Desde
                         </label>
                         <input
                             type="date"
-                            className="w-full h-11 md:h-9 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none"
+                            className="w-full h-11 md:h-9 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none"
                             value={filterFrom}
                             onChange={e => setFilterFrom(e.target.value)}
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1">
+                        <label className="px-1 flex items-center gap-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                             <Calendar className="w-3 h-3" /> Hasta
                         </label>
                         <input
                             type="date"
-                            className="w-full h-11 md:h-9 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none"
+                            className="w-full h-11 md:h-9 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none"
                             value={filterTo}
                             onChange={e => setFilterTo(e.target.value)}
                         />
@@ -287,11 +238,11 @@ export default function DashboardPage() {
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1">
+                        <label className="px-1 flex items-center gap-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                             <Activity className="w-3 h-3" /> Estado
                         </label>
                         <select
-                            className="w-full h-11 md:h-9 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none cursor-pointer"
+                            className="w-full h-11 md:h-9 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-primary/10 transition-all outline-none appearance-none cursor-pointer"
                             value={filterStatus}
                             onChange={e => setFilterStatus(e.target.value)}
                         >
@@ -322,7 +273,7 @@ export default function DashboardPage() {
                                 </div>
                             </div>
                             {data.performance.hoursConsumption?.length === 0 ? (
-                                <div className="h-56 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Sin datos de proyectos</div>
+                                <div className="h-56 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider text-[11px]">Sin datos de proyectos</div>
                             ) : (
                                 <div className="mt-4">
                                     <BasicBarChart 
@@ -344,12 +295,12 @@ export default function DashboardPage() {
                                 </div>
                             </div>
                             {data.performance.hoursConsumption?.length === 0 ? (
-                                <div className="h-56 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Sin datos de proyectos</div>
+                                <div className="h-56 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider text-[11px]">Sin datos de proyectos</div>
                             ) : (
                                 <div className="mt-4">
                                     <TrendChart 
                                         data={data.performance.hoursConsumption?.slice(0, 15).map((p: any) => ({ label: p.codigoProyecto || p.nombre, value: p.horasConsumidas })) || []} 
-                                        color="#6366f1" 
+                                        color="#2f74da" 
                                         height={400} 
                                         valueSuffix="h"
                                         onEvents={{ click: (e: any) => handleChartClick('project', e.name) }}
@@ -433,7 +384,7 @@ export default function DashboardPage() {
                             />
                         </div>
                     ) : (
-                        <div className="h-56 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Cargando...</div>
+                        <div className="h-56 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider text-[11px]">Cargando...</div>
                     )}
                 </div>
 
@@ -450,11 +401,11 @@ export default function DashboardPage() {
                         />
                     </div>
                     {data.performance.trend.length === 0 ? (
-                        <div className="h-56 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Sin datos históricos</div>
+                        <div className="h-56 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider text-[11px]">Sin datos históricos</div>
                     ) : (
                         <TrendChart 
                             data={data.performance.trend.map((t: any) => ({ label: t.label, value: t.ipt }))} 
-                            color="#3b82f6" 
+                            color="#2f74da" 
                             height={224} 
                             targetRange={[0.95, 1.05]}
                             onEvents={{ click: (e: any) => handleChartClick('trend_month', e.name) }}
@@ -484,7 +435,7 @@ export default function DashboardPage() {
                                 onEvents={{ click: (e: any) => handleChartClick('classification', e.name) }}
                             />
                         ) : (
-                            <div className="h-full flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Cargando...</div>
+                            <div className="h-full flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider text-[11px]">Cargando...</div>
                         )}
                     </div>
                 </div>
@@ -509,7 +460,7 @@ export default function DashboardPage() {
                                 onEvents={{ click: (e: any) => handleChartClick('project', e.name) }}
                             />
                         ) : (
-                            <div className="h-[280px] flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Cargando...</div>
+                            <div className="h-[280px] flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider text-[11px]">Cargando...</div>
                         )}
                     </div>
                 </div>
@@ -544,7 +495,7 @@ export default function DashboardPage() {
                                         return (
                                             <div key={idx} onClick={() => handleChartClick('client', client.name)} className={`flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer group ${isActive ? 'bg-primary/5 border-primary/30 ring-2 ring-primary/20' : 'bg-slate-50/50 border-transparent hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm hover:border-slate-100'}`}>
                                                 <span className={`font-bold text-sm truncate transition-colors ${isActive ? 'text-primary' : 'text-slate-600 dark:text-slate-300 group-hover:text-primary'}`}>{client.name}</span>
-                                                <span className="px-3 py-1 bg-card text-card-foreground border border-slate-100 dark:border-slate-800 text-primary text-[10px] font-black rounded-xl shadow-sm shrink-0">{client.count} Proj</span>
+                                                <span className="px-3 py-1 bg-card text-card-foreground border border-slate-100 dark:border-slate-800 text-primary text-[11px] font-bold rounded-xl shadow-sm shrink-0">{client.count} Proj</span>
                                             </div>
                                         );
                                     })}
@@ -562,7 +513,7 @@ export default function DashboardPage() {
                                         return (
                                             <div key={idx} onClick={() => handleChartClick('operator', op.name)} className={`flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer group ${isActive ? 'bg-indigo-50/80 border-indigo-300 ring-2 ring-indigo-200' : 'bg-indigo-50/30 border-transparent hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm hover:border-indigo-100'}`}>
                                                 <span className={`font-bold text-sm truncate transition-colors ${isActive ? 'text-indigo-700' : 'text-slate-600 dark:text-slate-300 group-hover:text-indigo-600'}`}>{op.name}</span>
-                                                <span className="px-3 py-1 bg-card text-card-foreground border border-indigo-100 text-indigo-600 text-[10px] font-black rounded-xl shadow-sm shrink-0">{op.count} Asig</span>
+                                                <span className="px-3 py-1 bg-card text-card-foreground border border-indigo-100 text-indigo-600 text-[11px] font-bold rounded-xl shadow-sm shrink-0">{op.count} Asig</span>
                                             </div>
                                         );
                                     })}
@@ -578,7 +529,7 @@ export default function DashboardPage() {
                             Alertas de Consumo
                         </h3>
                         {data.criticalProjects.length === 0 ? (
-                            <div className="py-8 text-center text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-widest flex-1 flex items-center justify-center">Sin proyectos críticos activos</div>
+                            <div className="py-8 text-center text-slate-400 dark:text-slate-500 font-bold text-[11px] uppercase tracking-wider flex-1 flex items-center justify-center">Sin proyectos críticos activos</div>
                         ) : (
                             <div className="space-y-4 flex-1">
                                 {data.criticalProjects.map((p: any, idx: number) => {
@@ -587,14 +538,14 @@ export default function DashboardPage() {
                                         <div 
                                             key={idx} 
                                             onClick={() => handleChartClick('project', p.nombre)}
-                                            className={`p-3 rounded-2xl border transition-all cursor-pointer group ${isActive ? 'bg-rose-50 border-rose-300 ring-2 ring-rose-200' : 'bg-background text-foreground/50 hover:bg-white dark:hover:bg-slate-800 border-transparent hover:border-rose-100 hover:shadow-sm'}`}
+                                            className={`p-3 rounded-2xl border transition-all cursor-pointer group ${isActive ? 'bg-rose-50 border-rose-300 ring-2 ring-rose-200' : 'bg-background text-foreground hover:bg-white dark:hover:bg-slate-800 border-transparent hover:border-rose-100 hover:shadow-sm'}`}
                                         >
                                             <div className="flex justify-between items-center mb-2">
                                                 <div className={`font-bold text-sm truncate transition-colors ${isActive ? 'text-rose-700' : 'text-slate-700 dark:text-slate-200 group-hover:text-rose-600'}`}>
-                                                    {p.codigoProyecto && <span className="text-[10px] text-slate-400 font-bold mr-2">{p.codigoProyecto}</span>}
+                                                    {p.codigoProyecto && <span className="text-[11px] text-slate-400 font-bold mr-2">{p.codigoProyecto}</span>}
                                                     {p.nombre}
                                                 </div>
-                                                <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg border ${p.percentage >= 100 ? 'bg-rose-100 text-rose-600 border-rose-200' : 'bg-amber-100 text-amber-600 border-amber-200'}`}>
+                                                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-lg border ${p.percentage >= 100 ? 'bg-rose-100 text-rose-600 border-rose-200' : 'bg-amber-100 text-amber-600 border-amber-200'}`}>
                                                     {Math.round(p.percentage)}%
                                                 </span>
                                             </div>
@@ -613,12 +564,12 @@ export default function DashboardPage() {
             {/* Client Delays Analysis Section (NEW) */}
             <div className="space-y-6 pt-8 border-t border-slate-200 dark:border-slate-700">
                 <div className="flex items-center gap-4">
-                    <div className="p-3 bg-amber-500 rounded-2xl text-white shadow-lg shadow-amber-500/20">
+                    <div className="p-3 bg-amber-500 rounded-2xl text-white shadow-lg">
                         <Timer className="w-7 h-7" />
                     </div>
                     <div>
-                        <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight leading-none">Análisis de Demoras Externas</h3>
-                        <p className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1 px-0.5">Responsabilidad del Cliente</p>
+                        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight leading-none">Análisis de Demoras Externas</h3>
+                        <p className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-1 px-0.5">Responsabilidad del Cliente</p>
                     </div>
                 </div>
 
@@ -677,7 +628,7 @@ export default function DashboardPage() {
                         </div>
                         <div className="mt-4">
                             {data.delays.topAreas.length === 0 ? (
-                                <div className="h-48 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Sin datos de áreas</div>
+                                <div className="h-48 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider text-[11px]">Sin datos de áreas</div>
                             ) : (
                                 <BasicBarChart 
                                     data={data.delays.topAreas.slice(0, 5).map(area => ({ name: area.name, value: area.hours }))} 
@@ -703,7 +654,7 @@ export default function DashboardPage() {
                             />
                         </div>
                         {data.delays.trend.length === 0 ? (
-                            <div className="h-56 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-[10px]">Sin datos históricos</div>
+                            <div className="h-56 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider text-[11px]">Sin datos históricos</div>
                         ) : (
                             <TrendChart 
                                 data={data.delays.trend.map(t => ({ label: t.label, value: t.hours }))} 
@@ -812,36 +763,36 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-400">
             {/* Section header */}
             <div className="flex items-center gap-4">
-                <div className="p-3 bg-indigo-600 rounded-2xl text-white shadow-lg shadow-indigo-200">
+                <div className="p-3 bg-indigo-600 rounded-2xl text-white shadow-lg">
                     <Star className="w-7 h-7" fill="white" />
                 </div>
                 <div>
-                    <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Métricas de Servicios</h3>
-                    <p className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">Satisfacción del cliente · NPS · Desempeño por operador</p>
+                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">Métricas de Servicios</h3>
+                    <p className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-0.5">Satisfacción del cliente · NPS · Desempeño por operador</p>
                 </div>
             </div>
 
             {/* Filters */}
-            <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-[2rem] p-3 md:p-4 shadow-sm space-y-2">
+            <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-3xl p-3 md:p-4 shadow-sm space-y-2">
                 <div className="flex items-center justify-between mb-2">
                     <h4 className="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 text-sm">
                         <SlidersHorizontal className="w-4 h-4 text-indigo-500" />
                         Filtros de Servicio
                     </h4>
                     {hasFilters && (
-                        <button onClick={clearFilters} className="text-[10px] font-black text-indigo-500 uppercase tracking-widest hover:underline">
+                        <button onClick={clearFilters} className="text-[12px] font-semibold text-indigo-500 hover:underline">
                             Limpiar Filtros
                         </button>
                     )}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                     <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1"><Calendar className="w-3 h-3" /> Desde</label>
-                        <input type="date" className="w-full h-11 md:h-9 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-indigo-100 outline-none appearance-none" value={filterFrom} onChange={e => setFilterFrom(e.target.value)} />
+                        <label className="px-1 flex items-center gap-1 text-[13px] font-medium text-slate-700 dark:text-slate-200"><Calendar className="w-3 h-3" /> Desde</label>
+                        <input type="date" className="w-full h-11 md:h-9 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-indigo-100 outline-none appearance-none" value={filterFrom} onChange={e => setFilterFrom(e.target.value)} />
                     </div>
                     <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 flex items-center gap-1"><Calendar className="w-3 h-3" /> Hasta</label>
-                        <input type="date" className="w-full h-11 md:h-9 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-indigo-100 outline-none appearance-none" value={filterTo} onChange={e => setFilterTo(e.target.value)} />
+                        <label className="px-1 flex items-center gap-1 text-[13px] font-medium text-slate-700 dark:text-slate-200"><Calendar className="w-3 h-3" /> Hasta</label>
+                        <input type="date" className="w-full h-11 md:h-9 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-1 px-3 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-indigo-100 outline-none appearance-none" value={filterTo} onChange={e => setFilterTo(e.target.value)} />
                     </div>
                     <div className="space-y-1.5 pt-0.5">
                         <SearchableSelect
@@ -947,7 +898,7 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                                         { name: 'Pasivos', value: m.nps.pasivos },
                                         { name: 'Detractores', value: m.nps.detractores }
                                     ]}
-                                    colors={['#10b981', '#f59e0b', '#f43f5e']}
+                                    colors={['#10b981', '#f59e0b', '#ef4444']}
                                     centerText={npsScore !== null ? (npsScore >= 0 ? `+${npsScore}` : npsScore) : '—'}
                                     centerSubtext="NPS Global"
                                     height={192}
@@ -992,12 +943,12 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                                 </div>
                                 <TrendChart 
                                     data={m.porMes.map(p => ({ label: p.label, value: p.nps }))} 
-                                    color="#6366f1" 
+                                    color="#2f74da" 
                                     height={224} 
                                 />
                             </div>
                             {/* CSAT trend */}
-                            <div className="bg-card text-card-foreground p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+                            <div className="bg-card text-card-foreground p-6 md:p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
                                 <div className="flex items-center gap-3 mb-6">
                                     <BarChart3 className="w-5 h-5 text-blue-500" />
                                     <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Evolución de CSAT</h3>
@@ -1011,11 +962,11 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
 
                     {/* Metrics per operator */}
                     {m.porOperador.length > 0 && (
-                        <div className="bg-card text-card-foreground p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <div className="bg-card text-card-foreground p-6 md:p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
                             <div className="flex items-center gap-3 mb-6">
                                 <Users className="w-5 h-5 text-indigo-500" />
                                 <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Métricas por Operador</h3>
-                                <span className="ml-auto text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-background text-foreground/50 px-3 py-1.5 rounded-xl border border-slate-100 dark:border-slate-800">
+                                <span className="ml-auto text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider bg-background text-foreground px-3 py-1.5 rounded-xl border border-slate-100 dark:border-slate-800">
                                     {m.total} encuesta{m.total !== 1 ? 's' : ''}
                                 </span>
                             </div>
@@ -1023,27 +974,27 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                                 <table className="w-full text-sm">
                                     <thead>
                                         <tr className="border-b border-slate-100 dark:border-slate-800">
-                                            <th className="text-left px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Operador</th>
-                                            <th className="text-center px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Atención</th>
-                                            <th className="text-center px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Calidad</th>
-                                            <th className="text-center px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Tiempo</th>
-                                            <th className="text-center px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">NPS</th>
-                                            <th className="text-center px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Encuestas</th>
+                                            <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Operador</th>
+                                            <th className="text-center px-4 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Atención</th>
+                                            <th className="text-center px-4 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Calidad</th>
+                                            <th className="text-center px-4 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Tiempo</th>
+                                            <th className="text-center px-4 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">NPS</th>
+                                            <th className="text-center px-4 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Encuestas</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-50">
                                         {m.porOperador.map(op => {
                                             const ratingColor = (v: number | null) => {
                                                 if (v === null) return 'text-slate-400 dark:text-slate-500';
-                                                if (v >= TARGET_CSAT) return 'text-emerald-700 font-black';
-                                                if (v >= 6) return 'text-amber-600 font-black';
-                                                return 'text-rose-600 font-black';
+                                                if (v >= TARGET_CSAT) return 'text-emerald-700 font-bold';
+                                                if (v >= 6) return 'text-amber-600 font-bold';
+                                                return 'text-rose-600 font-bold';
                                             };
                                             const npsOpColor = (v: number | null) => {
                                                 if (v === null) return 'text-slate-400 dark:text-slate-500';
-                                                if (v >= TARGET_NPS) return 'text-emerald-700 font-black';
-                                                if (v >= 0) return 'text-amber-600 font-black';
-                                                return 'text-rose-600 font-black';
+                                                if (v >= TARGET_NPS) return 'text-emerald-700 font-bold';
+                                                if (v >= 0) return 'text-amber-600 font-bold';
+                                                return 'text-rose-600 font-bold';
                                             };
                                             const barWidth = (v: number | null, max = 10) =>
                                                 v !== null ? `${(v / max) * 100}%` : '0%';
@@ -1051,14 +1002,14 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                                                 <tr key={op.id} className="hover:bg-slate-50/50 transition-colors">
                                                     <td className="px-4 py-4">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-black text-xs shrink-0">
+                                                            <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs shrink-0">
                                                                 {op.nombre.charAt(0)}
                                                             </div>
                                                             <span className="font-bold text-slate-700 dark:text-slate-200">{op.nombre}</span>
                                                         </div>
                                                     </td>
                                                     {[
-                                                        { val: op.atencion, color: '#3b82f6' },
+                                                        { val: op.atencion, color: '#2f74da' },
                                                         { val: op.calidad, color: '#10b981' },
                                                         { val: op.tiempo, color: '#f59e0b' },
                                                     ].map(({ val, color }, idx) => (
@@ -1078,7 +1029,7 @@ function ServiciosTab({ clients }: { clients: { id: string; nombre: string }[] }
                                                         </span>
                                                     </td>
                                                     <td className="px-4 py-4 text-center">
-                                                        <span className="px-2.5 py-1 bg-indigo-50 text-indigo-600 text-[10px] font-black rounded-lg border border-indigo-100">{op.count}</span>
+                                                        <span className="px-2.5 py-1 bg-indigo-50 text-indigo-600 text-[11px] font-bold rounded-lg border border-indigo-100">{op.count}</span>
                                                     </td>
                                                 </tr>
                                             );
@@ -1105,7 +1056,7 @@ function ServiceTrendChart({ data, color, targetY, minY, maxY, valueSuffix = '',
     targetLabel?: string;
 }) {
     const [hovered, setHovered] = useState<number | null>(null);
-    if (data.length === 0) return <div className="h-48 flex items-center justify-center text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-widest">Sin datos</div>;
+    if (data.length === 0) return <div className="h-48 flex items-center justify-center text-slate-400 dark:text-slate-500 text-[11px] font-semibold uppercase tracking-wider">Sin datos</div>;
 
     const range = maxY - minY;
     const yOf = (v: number) => 100 - ((v - minY) / range) * 85;
@@ -1128,8 +1079,8 @@ function ServiceTrendChart({ data, color, targetY, minY, maxY, valueSuffix = '',
             <svg className="w-full h-full overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
                 {/* Target line */}
                 <line x1="0" y1={targetYPct} x2="100" y2={targetYPct}
-                    stroke="#94a3b8" strokeWidth="0.5" strokeDasharray="2 2" />
-                <text x="1" y={targetYPct - 1.5} fill="#94a3b8" fontSize="3.5" fontWeight="bold" fontFamily="sans-serif">
+                    stroke="#8b93a1" strokeWidth="0.5" strokeDasharray="2 2" />
+                <text x="1" y={targetYPct - 1.5} fill="#8b93a1" fontSize="3.5" fontWeight="bold" fontFamily="sans-serif">
                     {targetLabel || `Objetivo: ${targetY}`}
                 </text>
                 {/* Area */}
@@ -1144,14 +1095,14 @@ function ServiceTrendChart({ data, color, targetY, minY, maxY, valueSuffix = '',
             {hovered !== null && points[hovered] && (
                 <div className="absolute w-2.5 h-2.5 rounded-full border-2 bg-card text-card-foreground pointer-events-none"
                     style={{ borderColor: color, left: `${points[hovered].x}%`, top: `${points[hovered].y}%`, transform: 'translate(-50%,-50%)' }}>
-                    <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[9px] font-black px-2 py-1 rounded-lg whitespace-nowrap">
+                    <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[11px] font-bold px-2 py-1 rounded-lg whitespace-nowrap">
                         {data[hovered].label}: {data[hovered].value >= 0 ? '+' : ''}{data[hovered].value}{valueSuffix}
                     </div>
                 </div>
             )}
             <div className="absolute inset-x-0 bottom-[-1.5rem] flex justify-between px-2">
                 {data.map((t, i) => (
-                    <span key={i} className={`text-[9px] font-black uppercase tracking-tighter ${hovered === i ? 'text-slate-900 dark:text-slate-50' : 'text-slate-400 dark:text-slate-500'}`}>
+                    <span key={i} className={`text-[11px] font-semibold uppercase tracking-tight ${hovered === i ? 'text-slate-900 dark:text-slate-50' : 'text-slate-400 dark:text-slate-500'}`}>
                         {t.label.split('-')[1] || t.label}
                     </span>
                 ))}
@@ -1165,7 +1116,7 @@ function ServiceMultiTrendChart({ data, targetCsat }: {
     data: { label: string; atencion: number; calidad: number; tiempo: number }[];
     targetCsat: number;
 }) {
-    if (data.length === 0) return <div className="h-48 flex items-center justify-center text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-widest">Sin datos</div>;
+    if (data.length === 0) return <div className="h-48 flex items-center justify-center text-slate-400 dark:text-slate-500 text-[11px] font-semibold uppercase tracking-wider">Sin datos</div>;
 
     const yOf = (v: number) => 100 - (v / 10) * 85;
     const targetYPct = yOf(targetCsat);
@@ -1190,29 +1141,29 @@ function ServiceMultiTrendChart({ data, targetCsat }: {
                 <svg className="w-full h-full overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
                     {/* Target line */}
                     <line x1="0" y1={targetYPct} x2="100" y2={targetYPct}
-                        stroke="#94a3b8" strokeWidth="0.5" strokeDasharray="2 2" />
-                    <text x="1" y={targetYPct - 1.5} fill="#94a3b8" fontSize="3.5" fontWeight="bold" fontFamily="sans-serif">
+                        stroke="#8b93a1" strokeWidth="0.5" strokeDasharray="2 2" />
+                    <text x="1" y={targetYPct - 1.5} fill="#8b93a1" fontSize="3.5" fontWeight="bold" fontFamily="sans-serif">
                         Objetivo {targetCsat}
                     </text>
-                    <path d={atencionPath} fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" />
+                    <path d={atencionPath} fill="none" stroke="#2f74da" strokeWidth="2" strokeLinecap="round" />
                     <path d={calidadPath} fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" />
                     <path d={tiempoPth} fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
                 </svg>
                 <div className="absolute inset-x-0 bottom-[-1.5rem] flex justify-between px-2">
                     {data.map((d, i) => (
-                        <span key={i} className="text-[9px] font-black uppercase tracking-tighter text-slate-400 dark:text-slate-500">{d.label.split('-')[1] || d.label}</span>
+                        <span key={i} className="text-[11px] font-semibold uppercase tracking-tight text-slate-400 dark:text-slate-500">{d.label.split('-')[1] || d.label}</span>
                     ))}
                 </div>
             </div>
             <div className="flex items-center gap-4 justify-center mt-4 pt-2">
                 {[
-                    { label: 'Atención', color: '#3b82f6' },
+                    { label: 'Atención', color: '#2f74da' },
                     { label: 'Calidad', color: '#10b981' },
                     { label: 'Tiempo', color: '#f59e0b' },
                 ].map(l => (
                     <div key={l.label} className="flex items-center gap-1.5">
                         <div className="w-4 h-0.5 rounded-full" style={{ backgroundColor: l.color }} />
-                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">{l.label}</span>
+                        <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">{l.label}</span>
                     </div>
                 ))}
             </div>
@@ -1221,25 +1172,25 @@ function ServiceMultiTrendChart({ data, targetCsat }: {
 }
 function KpiCard({ title, value, icon, color, trend, tooltip }: { title: string; value: string | number; icon: any; color: string; trend: string; tooltip?: { def: string; purpose: string; calc: string } }) {
     return (
-        <div className="bg-card text-card-foreground p-2.5 md:p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between h-[64px] md:h-[72px] gap-2">
+        <div className="bg-card text-card-foreground px-3 py-2.5 md:px-4 md:py-3 rounded-2xl border border-border flex items-center justify-between min-h-[68px] md:min-h-[76px] gap-2">
             <div className="flex items-center gap-2.5 min-w-0">
-                <div className={`w-8 h-8 md:w-9 md:h-9 rounded-lg flex items-center justify-center shrink-0 ${color} text-white shadow-sm`}>
+                <div className={`w-8 h-8 md:w-9 md:h-9 rounded-lg flex items-center justify-center shrink-0 ${color} bg-opacity-[0.14] dark:bg-opacity-25 text-slate-700 dark:text-slate-100`}>
                     {/* El ícono ya viene como prop, aseguramos que encaje */}
                     <div className="[&>svg]:w-4 [&>svg]:h-4 md:[&>svg]:w-5 md:[&>svg]:h-5">
                         {icon}
                     </div>
                 </div>
                 <div className="flex flex-col justify-center min-w-0 py-0.5">
-                    <p className="text-[10px] md:text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest line-clamp-1">{title}</p>
-                    <h4 className="text-lg md:text-xl lg:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tighter truncate leading-none mt-0.5">{value}</h4>
+                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400 line-clamp-1" title={title}>{title}</p>
+                    <h4 className="text-xl lg:text-2xl font-semibold text-slate-900 dark:text-slate-50 tracking-tight tabular-nums truncate leading-tight mt-0.5">{value}</h4>
                 </div>
             </div>
             
             <div className="flex flex-col items-end justify-between shrink-0 h-full py-0.5">
-                {tooltip ? <MetricTooltip {...tooltip} /> : <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1.5 py-0.5 bg-background text-foreground/50 rounded-md">KPI</div>}
+                {tooltip ? <MetricTooltip {...tooltip} /> : <span className="badge badge-neutral !h-5 !px-1.5 !text-[11px]">KPI</span>}
                 <div className="flex items-center gap-1.5 mt-auto">
-                    <div className={`w-1.5 h-1.5 rounded-full ${color} animate-pulse`} />
-                    <p className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase max-w-[130px] lg:max-w-[180px] truncate" title={trend}>{trend}</p>
+                    <div className={`w-1.5 h-1.5 rounded-full ${color}`} aria-hidden="true" />
+                    <p className="text-xs text-slate-500 dark:text-slate-400 max-w-[130px] lg:max-w-[180px] truncate" title={trend}>{trend}</p>
                 </div>
             </div>
         </div>
@@ -1249,20 +1200,20 @@ function KpiCard({ title, value, icon, color, trend, tooltip }: { title: string;
 function MetricTooltip({ def, purpose, calc }: { def: string; purpose: string; calc: string }) {
     return (
         <div className="group/tooltip relative">
-            <Info className="w-5 h-5 text-slate-300 hover:text-primary transition-colors cursor-pointer" />
-            <div className="absolute top-0 right-full mr-3 w-64 p-4 bg-slate-900 text-white rounded-2xl text-[10px] leading-relaxed hidden group-hover/tooltip:block z-[9999] shadow-2xl animate-in fade-in slide-in-from-right-2 duration-200">
+            <Info className="w-4 h-4 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-help" aria-label="Qué mide este indicador" tabIndex={0} />
+            <div className="absolute top-0 right-full mr-3 w-64 p-4 bg-slate-900 text-white rounded-2xl text-[11px] leading-relaxed hidden group-hover/tooltip:block group-focus-within/tooltip:block z-[9999] shadow-2xl animate-in fade-in slide-in-from-right-2 duration-200">
                 <div className="space-y-3">
                     <div>
-                        <span className="block font-black uppercase tracking-widest text-primary mb-1">¿Qué mide?</span>
+                        <span className="block font-semibold uppercase tracking-wider text-primary mb-1">¿Qué mide?</span>
                         <p className="text-slate-300 font-medium">{def}</p>
                     </div>
                     <div>
-                        <span className="block font-black uppercase tracking-widest text-emerald-400 mb-1">¿Para qué sirve?</span>
+                        <span className="block font-semibold uppercase tracking-wider text-emerald-400 mb-1">¿Para qué sirve?</span>
                         <p className="text-slate-300 font-medium">{purpose}</p>
                     </div>
                     <div className="pt-2 border-t border-white/10">
-                        <span className="block font-black uppercase tracking-widest text-indigo-400 mb-1">Cálculo</span>
-                        <p className="font-mono text-[9px] text-slate-400 dark:text-slate-500">{calc}</p>
+                        <span className="block font-semibold uppercase tracking-wider text-indigo-400 mb-1">Cálculo</span>
+                        <p className="font-mono text-[11px] text-slate-400 dark:text-slate-500">{calc}</p>
                     </div>
                 </div>
                 {/* Arrow */}
@@ -1274,12 +1225,12 @@ function MetricTooltip({ def, purpose, calc }: { def: string; purpose: string; c
 
 function LegendItem({ label, count, color }: { label: string; count: number; color: string }) {
     return (
-        <div className="flex items-center justify-between px-4 py-3 bg-background text-foreground/50 rounded-2xl group hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm transition-all border border-transparent hover:border-slate-100">
+        <div className="flex items-center justify-between px-4 py-3 bg-background text-foreground rounded-2xl group hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm transition-all border border-transparent hover:border-slate-100">
             <div className="flex items-center gap-3">
                 <div className={`w-3 h-3 rounded-full ${color}`} />
-                <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">{label}</span>
+                <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">{label}</span>
             </div>
-            <span className="text-sm font-black text-slate-800 dark:text-slate-100">{count}</span>
+            <span className="text-sm font-bold text-slate-800 dark:text-slate-100">{count}</span>
         </div>
     );
 }
@@ -1289,7 +1240,7 @@ function StatusPill({ label, count, color, onClick, isActive }: { label: string;
         primary: 'bg-primary/10 text-primary border-primary/20 hover:bg-primary/20',
         amber: 'bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-100',
         rose: 'bg-rose-50 text-rose-500 border-rose-100 hover:bg-rose-100',
-        slate: 'bg-background text-foreground/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800',
+        slate: 'bg-background text-foreground text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800',
         blue: 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100',
         violet: 'bg-violet-50 text-violet-600 border-violet-100 hover:bg-violet-100'
     };
@@ -1297,10 +1248,10 @@ function StatusPill({ label, count, color, onClick, isActive }: { label: string;
     return (
         <div 
             onClick={onClick}
-            className={`p-4 rounded-2xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer relative ${colors[color]} ${isActive ? 'ring-2 ring-offset-2 ring-current z-10 shadow-md' : 'opacity-80 hover:opacity-100 hover:shadow-md hover:-translate-y-0.5 hover:z-20'}`}
+            className={`p-4 rounded-2xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer relative ${colors[color]} ${isActive ? 'ring-2 ring-offset-2 ring-current z-10 shadow-md' : 'opacity-80 hover:opacity-100 hover:shadow-md hover:z-20'}`}
         >
-            <span className="text-2xl font-black leading-none">{count}</span>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-center">{label}</span>
+            <span className="text-2xl font-bold leading-none">{count}</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-center">{label}</span>
         </div>
     );
 }

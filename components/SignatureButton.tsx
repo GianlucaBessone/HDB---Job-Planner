@@ -128,7 +128,7 @@ export default function SignatureButton({ documentId, documentVersion, onSignCom
         <button
             onClick={handleSign}
             disabled={isSigning}
-            className={`group relative flex items-center justify-center gap-3 px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-indigo-800 hover:from-indigo-500 hover:to-indigo-700 text-white rounded-2xl font-bold shadow-xl shadow-indigo-600/20 transition-all hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:hover:translate-y-0 border border-indigo-500/30 overflow-hidden ${className}`}
+            className={`group relative flex items-center justify-center gap-3 px-8 py-3.5 bg-indigo-600 text-white rounded-2xl font-bold transition-all disabled:opacity-70 border border-indigo-500/30 overflow-hidden ${className}`}
         >
             <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
             {isSigning ? (
@@ -138,7 +138,7 @@ export default function SignatureButton({ documentId, documentVersion, onSignCom
                 </>
             ) : (
                 <>
-                    <Fingerprint className="w-6 h-6 text-indigo-200 group-hover:scale-110 transition-transform relative z-10" />
+                    <Fingerprint className="w-6 h-6 text-indigo-200 transition-transform relative z-10" />
                     <span className="tracking-wide text-[15px] relative z-10">Firmar con Identidad Digital</span>
                 </>
             )}

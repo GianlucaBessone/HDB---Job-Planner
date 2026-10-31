@@ -21,7 +21,7 @@ export default async function CategoriaPage({ params: paramsPromise }: { params:
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
       <Link 
         href="/centro-ayuda" 
         className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-blue-600 transition-colors"
@@ -35,7 +35,7 @@ export default async function CategoriaPage({ params: paramsPromise }: { params:
           {renderIcon(category.iconName, 'w-8 h-8')}
         </div>
         <div>
-          <h1 className="text-3xl font-black text-slate-800 dark:text-slate-100">
+          <h1 className="text-title text-slate-800 dark:text-slate-100">
             {category.title}
           </h1>
           <p className="text-slate-500 mt-1">

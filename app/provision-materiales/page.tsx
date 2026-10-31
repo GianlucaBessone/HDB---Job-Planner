@@ -90,7 +90,7 @@ const ESTADO_CONFIG: Record<
   material_cargado: {
     label: "Disponible",
     color:
-      "bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700",
+      "bg-muted text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700",
     icon: Package,
   },
   material_entregado: {
@@ -130,13 +130,13 @@ function EstadoBadge({
   const cfg = ESTADO_CONFIG[hasPending ? "pendiente_devolucion" : estado] || {
     label: estado,
     color:
-      "bg-muted text-muted-foreground/50 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700",
+      "bg-muted text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700",
     icon: Package,
   };
   const Icon = cfg.icon;
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${cfg.color}`}
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wider border ${cfg.color}`}
     >
       <Icon className={`w-3 h-3 ${hasPending ? "animate-pulse" : ""}`} />
       {hasPending ? "Pendiente" : cfg.label}
@@ -196,7 +196,7 @@ function QtyCell({
         </button>
         <button
           onClick={() => setEditing(false)}
-          className="p-1 bg-muted text-muted-foreground/50 text-slate-500 dark:text-slate-400 rounded-md"
+          className="p-1 bg-muted text-slate-500 dark:text-slate-400 rounded-md"
         >
           <X className="w-3 h-3" />
         </button>
@@ -456,7 +456,7 @@ function AddMaterialForm({
     return (
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary/90 active:scale-95 transition-all shadow-md shadow-primary/20"
+        className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary-hover transition-all"
       >
         <Plus className="w-4 h-4" /> Agregar material
       </button>
@@ -468,7 +468,7 @@ function AddMaterialForm({
   return (
     <div
       ref={containerRef}
-      className="bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 flex flex-col gap-2 relative shadow-lg"
+      className="bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl p-3 flex flex-col gap-2 relative shadow-lg"
     >
       <div className="flex flex-wrap md:flex-nowrap items-center gap-2 w-full">
         {!manualPrice && (
@@ -521,7 +521,7 @@ function AddMaterialForm({
         <select
           value={form.unidad}
           onChange={(e) => setForm((p) => ({ ...p, unidad: e.target.value }))}
-          className="w-24 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2 text-sm font-bold outline-none focus:border-primary bg-card text-card-foreground text-slate-700 dark:text-slate-200 cursor-pointer"
+          className="w-24 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2 text-sm font-bold outline-none focus:border-primary bg-card text-slate-700 dark:text-slate-200 cursor-pointer"
         >
           {UNIDADES.map((u) => (
             <option key={u} value={u}>
@@ -573,7 +573,7 @@ function AddMaterialForm({
 
         {manualPrice ? (
           <div className="relative w-28 shrink-0">
-            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400">
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[11px] font-bold text-slate-400">
               $
             </span>
             <input
@@ -583,15 +583,15 @@ function AddMaterialForm({
               placeholder="Precio"
               value={form.precioVenta}
               onChange={handleQty("precioVenta")}
-              className="w-full border border-emerald-200 dark:border-emerald-900/50 rounded-xl pl-5 pr-2 py-2 text-xs font-black text-emerald-700 dark:text-emerald-400 outline-none focus:border-emerald-500 bg-emerald-50/30"
+              className="w-full border border-emerald-200 dark:border-emerald-900/50 rounded-xl pl-5 pr-2 py-2 text-xs font-bold text-emerald-700 dark:text-emerald-400 outline-none focus:border-emerald-500 bg-emerald-50/30"
             />
           </div>
         ) : (
           <div className="shrink-0 px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-right min-w-[90px]" title="Precio resuelto desde Gestión Comercial">
-            <span className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 block leading-tight">
+            <span className="text-[11px] uppercase font-bold text-emerald-600 dark:text-emerald-400 block leading-tight">
               Precio {listaPrecioNombre ? `(${listaPrecioNombre})` : 'Base'}
             </span>
-            <span className="text-xs font-black text-emerald-700 dark:text-emerald-300">
+            <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300">
               {form.precioVenta ? formatARS(parseFloat(form.precioVenta)) : '$ 0,00'}
             </span>
           </div>
@@ -611,7 +611,7 @@ function AddMaterialForm({
               ? "Volver a catálogo Gestión Comercial"
               : "Modo manual: Ingresar precio o material no catalogado"
           }
-          className={`p-2 rounded-xl transition-all border shrink-0 ${manualPrice ? "bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/20" : "bg-muted text-muted-foreground text-slate-400 border-slate-200 dark:border-slate-700 hover:text-emerald-600"}`}
+          className={`p-2 rounded-xl transition-all border shrink-0 ${manualPrice ? "bg-emerald-500 text-white border-emerald-500 shadow-lg" : "bg-muted text-slate-400 border-slate-200 dark:border-slate-700 hover:text-emerald-600"}`}
         >
           <Calculator className="w-4 h-4" />
         </button>
@@ -622,14 +622,14 @@ function AddMaterialForm({
               setOpen(false);
               setShowSuggestions(false);
             }}
-            className="p-2 bg-card text-card-foreground text-slate-400 dark:text-slate-500 rounded-xl hover:bg-slate-200 hover:text-slate-600 border border-slate-200 dark:border-slate-700 transition-colors shadow-sm"
+            className="p-2 bg-card text-slate-400 dark:text-slate-500 rounded-xl hover:bg-slate-200 hover:text-slate-600 border border-slate-200 dark:border-slate-700 transition-colors shadow-sm"
           >
             <X className="w-4 h-4" />
           </button>
           <button
             onClick={handleSubmit}
             disabled={saving || !form.nombre}
-            className="p-2 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 shadow-sm shadow-primary/20"
+            className="p-2 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 shadow-sm"
           >
             {saving ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -649,7 +649,7 @@ function AddMaterialForm({
               Gestión Comercial ({suggestions.length} resultados)
             </span>
             {listaPrecioNombre && (
-              <span className="text-primary font-black">
+              <span className="text-primary font-bold">
                 Lista: {listaPrecioNombre}
               </span>
             )}
@@ -668,16 +668,16 @@ function AddMaterialForm({
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
-                    <span className="font-mono text-xs font-black text-slate-800 dark:text-slate-100 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+                    <span className="font-mono text-xs font-bold text-slate-800 dark:text-slate-100 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
                       {item.codigo || item.sku}
                     </span>
                     {item.marca && (
-                      <span className="text-[10px] uppercase font-bold text-slate-400">
+                      <span className="text-[11px] uppercase font-bold text-slate-400">
                         {item.marca}
                       </span>
                     )}
                     {item.esCoincidenciaExacta && (
-                      <span className="text-[9px] uppercase font-black tracking-widest text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-1 rounded">
+                      <span className="text-[11px] uppercase font-semibold tracking-wider text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-1 rounded">
                         Exacto
                       </span>
                     )}
@@ -687,10 +687,10 @@ function AddMaterialForm({
                   </p>
                 </div>
                 <div className="text-right shrink-0">
-                  <div className="text-xs font-black text-emerald-600 dark:text-emerald-400">
+                  <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
                     {formatARS(item.precioVenta ?? item.precioAplicado ?? 0)}
                   </div>
-                  <div className="text-[10px] text-slate-400 font-medium">
+                  <div className="text-[11px] text-slate-400 font-medium">
                     {item.unidad || 'Unid.'} {item.stockActual !== undefined ? `· Stock: ${item.stockActual}` : ''}
                   </div>
                 </div>
@@ -706,7 +706,7 @@ function AddMaterialForm({
           <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
           <span>Gestión Comercial: {formatARS(parseFloat(form.precioVenta))}</span>
           {listaPrecioNombre && (
-            <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 font-black">
+            <span className="text-[11px] bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 font-bold">
               Lista: {listaPrecioNombre}
             </span>
           )}
@@ -794,11 +794,11 @@ function DevolucionModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
       <div className="bg-card text-card-foreground rounded-3xl shadow-2xl max-w-lg w-full p-6 space-y-5 flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between shrink-0">
           <div>
-            <h2 className="text-lg font-black text-slate-800 dark:text-slate-100 leading-tight">
+            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 leading-tight">
               Gestión de Devoluciones
             </h2>
             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
@@ -816,7 +816,7 @@ function DevolucionModal({
         <div className="flex-1 overflow-y-auto space-y-6 pr-2 custom-scrollbar">
           {/* Pending Section */}
           <div className="space-y-3">
-            <h3 className="text-[10px] font-black text-amber-600 uppercase tracking-widest flex items-center gap-2">
+            <h3 className="text-[11px] font-semibold text-amber-600 uppercase tracking-wider flex items-center gap-2">
               <Clock className="w-3 h-3" /> Pendientes de Confirmación
             </h3>
             {pendingReturns.length === 0 ? (
@@ -832,21 +832,21 @@ function DevolucionModal({
                     className={`w-full text-left p-3 rounded-2xl border transition-all ${
                       selectedId === d.id
                         ? "bg-amber-50 border-amber-200 ring-2 ring-amber-200/50"
-                        : "bg-background text-foreground/50 border-slate-100 dark:border-slate-800 hover:border-slate-200"
+                        : "bg-background text-foreground border-slate-100 dark:border-slate-800 hover:border-slate-200"
                     }`}
                   >
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-black text-slate-700 dark:text-slate-200">
+                      <span className="text-sm font-bold text-slate-700 dark:text-slate-200">
                         {d.cantidadADevolver} {material.unidad}
                       </span>
-                      <span className="text-[10px] font-bold text-slate-400">
+                      <span className="text-[11px] font-bold text-slate-400">
                         {formatDateInline(
                           new Date(d.id.startsWith("c") ? Date.now() : 0),
                         )}
                       </span>
                     </div>
                     {d.estado === "delegacion_pendiente" && (
-                      <p className="text-[10px] font-bold text-indigo-500 mt-1 uppercase tracking-wider bg-indigo-50 rounded px-1.5 py-0.5 inline-block">
+                      <p className="text-[11px] font-bold text-indigo-500 mt-1 uppercase tracking-wider bg-indigo-50 rounded px-1.5 py-0.5 inline-block">
                         Delegado por {d.delegadoPorNombre} a {d.delegadoANombre}
                       </p>
                     )}
@@ -863,8 +863,8 @@ function DevolucionModal({
 
           {/* Confirmation Form */}
           {selectedReturn && (
-            <div className="bg-background text-foreground/50 rounded-2xl p-5 space-y-4 border border-slate-100 dark:border-slate-800 animate-in slide-in-from-top-2 duration-200">
-              <p className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+            <div className="bg-background text-foreground rounded-2xl p-5 space-y-4 border border-slate-100 dark:border-slate-800 animate-in slide-in-from-top-2 duration-200">
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 Confirmar {selectedReturn.cantidadADevolver} {material.unidad}
               </p>
 
@@ -873,12 +873,12 @@ function DevolucionModal({
                   <button
                     key={opt}
                     onClick={() => setEstado(opt)}
-                    className={`px-3 py-3 rounded-2xl text-[10px] font-black border transition-all uppercase tracking-widest ${
+                    className={`px-3 py-3 rounded-2xl text-[11px] font-semibold border transition-all uppercase tracking-wider ${
                       estado === opt
                         ? opt === "cerrado_ok"
-                          ? "bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/20"
-                          : "bg-rose-500 text-white border-rose-500 shadow-lg shadow-rose-500/20"
-                        : "bg-card text-card-foreground text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300"
+                          ? "bg-emerald-500 text-white border-emerald-500 shadow-lg"
+                          : "bg-rose-500 text-white border-rose-500 shadow-lg"
+                        : "bg-card text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300"
                     }`}
                   >
                     {opt === "cerrado_ok"
@@ -889,7 +889,7 @@ function DevolucionModal({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">
                   {estado === "cerrado_con_reserva"
                     ? "Comentario obligatorio *"
                     : "Comentario opcional"}
@@ -908,7 +908,7 @@ function DevolucionModal({
               </div>
 
               {error && (
-                <p className="text-[10px] font-bold text-rose-500 bg-rose-50 rounded-lg px-3 py-2">
+                <p className="text-[11px] font-bold text-rose-500 bg-rose-50 rounded-lg px-3 py-2">
                   {error}
                 </p>
               )}
@@ -916,7 +916,7 @@ function DevolucionModal({
               <button
                 onClick={handleConfirm}
                 disabled={saving}
-                className={`w-full py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-xl active:scale-95 ${estado === "cerrado_ok" ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-100" : "bg-rose-600 hover:bg-rose-700 text-white shadow-rose-100"} disabled:opacity-50`}
+                className={`w-full py-3.5 rounded-2xl font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${estado === "cerrado_ok" ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-rose-600 hover:bg-rose-700 text-white"} disabled:opacity-50`}
               >
                 {saving ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -930,7 +930,7 @@ function DevolucionModal({
 
           {/* History Section */}
           <div className="space-y-3 pt-2">
-            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+            <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
               <History className="w-3 h-3" /> Historial de Recepciones
             </h3>
             {confirmedReturns.length === 0 ? (
@@ -946,19 +946,19 @@ function DevolucionModal({
                   >
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-black text-slate-700 dark:text-slate-200">
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
                           {d.cantidadADevolver} {material.unidad}
                         </span>
                         <EstadoBadge estado={d.estado} />
                       </div>
-                      <p className="text-[9px] text-slate-400 mt-0.5 font-bold uppercase">
+                      <p className="text-[11px] text-slate-400 mt-0.5 font-bold uppercase">
                         Confirmado por {d.confirmadoPor} ·{" "}
                         {d.fechaConfirm
                           ? formatDateInline(d.fechaConfirm)
                           : "-"}
                       </p>
                       {d.comentario && (
-                        <p className="text-[10px] text-slate-500 mt-1 italic">
+                        <p className="text-[11px] text-slate-500 mt-1 italic">
                           "{d.comentario}"
                         </p>
                       )}
@@ -1047,10 +1047,10 @@ function EditMaterialModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
       <div className="bg-card text-card-foreground rounded-3xl shadow-2xl max-w-sm w-full p-6 space-y-5">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-black text-slate-800 dark:text-slate-100">
+          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">
             Editar Material
           </h2>
           <button
@@ -1062,7 +1062,7 @@ function EditMaterialModal({
         </div>
         <div className="space-y-3">
           <div>
-            <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+            <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">
               Código
             </label>
             <input
@@ -1075,7 +1075,7 @@ function EditMaterialModal({
             />
           </div>
           <div>
-            <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+            <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">
               Nombre
             </label>
             <input
@@ -1087,7 +1087,7 @@ function EditMaterialModal({
             />
           </div>
           <div>
-            <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+            <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">
               Unidad
             </label>
             <select
@@ -1095,7 +1095,7 @@ function EditMaterialModal({
               onChange={(e) =>
                 setForm((p) => ({ ...p, unidad: e.target.value }))
               }
-              className="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold outline-none focus:border-primary mt-1 bg-card text-card-foreground text-slate-700 dark:text-slate-200"
+              className="w-full border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold outline-none focus:border-primary mt-1 bg-card text-slate-700 dark:text-slate-200"
             >
               {!UNIDADES.includes(form.unidad) && form.unidad && (
                 <option value={form.unidad}>{form.unidad}</option>
@@ -1115,7 +1115,7 @@ function EditMaterialModal({
                 Gestión Comercial: {formatARS(parseFloat(form.precioVenta))}
               </span>
               {listaPrecioNombre && (
-                <span className="text-[10px] bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 px-1.5 py-0.5 rounded font-black">
+                <span className="text-[11px] bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 px-1.5 py-0.5 rounded font-bold">
                   {listaPrecioNombre}
                 </span>
               )}
@@ -1125,7 +1125,7 @@ function EditMaterialModal({
         <button
           onClick={handleSave}
           disabled={saving || !form.nombre}
-          className="w-full py-3 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+          className="w-full py-3 bg-primary hover:bg-primary-hover text-white rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50"
         >
           {saving && <Loader2 className="w-4 h-4 animate-spin" />} Guardar
         </button>
@@ -1154,13 +1154,13 @@ function DeleteMaterialModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
       <div className="bg-card text-card-foreground rounded-3xl shadow-2xl max-w-sm w-full p-6 space-y-5">
         <div className="flex flex-col items-center text-center space-y-3">
           <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center mb-2">
             <AlertTriangle className="w-6 h-6 text-rose-500" />
           </div>
-          <h2 className="text-xl font-black text-slate-800 dark:text-slate-100">
+          <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">
             Eliminar material
           </h2>
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -1175,14 +1175,14 @@ function DeleteMaterialModal({
           <button
             onClick={onClose}
             disabled={deleting}
-            className="flex-1 py-3 bg-muted text-muted-foreground/50 hover:bg-slate-200 text-slate-600 dark:text-slate-300 rounded-2xl font-black text-sm transition-colors"
+            className="flex-1 py-3 bg-muted hover:bg-slate-200 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-sm transition-colors"
           >
             Cancelar
           </button>
           <button
             onClick={handleConfirm}
             disabled={deleting}
-            className="flex-1 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+            className="flex-1 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
           >
             {deleting && <Loader2 className="w-4 h-4 animate-spin" />} Eliminar
           </button>
@@ -1194,12 +1194,12 @@ function DeleteMaterialModal({
 
 function SuccessNotificationModal({ onClose }: { onClose: () => void }) {
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="bg-card text-card-foreground w-full max-w-sm rounded-[2.5rem] shadow-2xl overflow-hidden p-8 flex flex-col items-center text-center animate-in zoom-in-95 duration-300">
-        <div className="w-20 h-20 bg-emerald-100 rounded-3xl flex items-center justify-center mb-6 shadow-lg shadow-emerald-100/50">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in duration-200">
+      <div className="bg-card text-card-foreground w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden p-8 flex flex-col items-center text-center animate-in zoom-in-95 duration-200">
+        <div className="w-20 h-20 bg-emerald-100 rounded-3xl flex items-center justify-center mb-6 shadow-lg">
           <ShieldCheck className="w-10 h-10 text-emerald-600" />
         </div>
-        <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight mb-2">
+        <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight mb-2">
           Notificación Enviada
         </h3>
         <p className="text-slate-500 dark:text-slate-400 font-medium mb-8 leading-relaxed">
@@ -1208,7 +1208,7 @@ function SuccessNotificationModal({ onClose }: { onClose: () => void }) {
         </p>
         <button
           onClick={onClose}
-          className="w-full py-4 bg-primary text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95"
+          className="w-full py-4 bg-primary text-white rounded-2xl font-semibold text-sm hover:bg-primary-hover transition-all"
         >
           Entendido
         </button>
@@ -1282,14 +1282,14 @@ function ImportModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
-      <div className="bg-card text-card-foreground rounded-[2.5rem] shadow-2xl max-w-md w-full p-8 space-y-6 animate-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 animate-in fade-in duration-200">
+      <div className="bg-card text-card-foreground rounded-3xl shadow-2xl max-w-md w-full p-8 space-y-6 animate-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-xl">
               <FileUp className="w-6 h-6 text-primary" />
             </div>
-            <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">
+            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">
               Importar Materiales
             </h2>
           </div>
@@ -1309,21 +1309,21 @@ function ImportModal({
               onChange={handleFileChange}
               className="absolute inset-0 opacity-0 cursor-pointer"
             />
-            <div className="w-12 h-12 bg-card text-card-foreground rounded-2xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+            <div className="w-12 h-12 bg-card text-card-foreground rounded-2xl flex items-center justify-center shadow-sm transition-transform">
               <Upload className="w-6 h-6 text-slate-400 dark:text-slate-500" />
             </div>
             <div className="text-center">
               <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
                 {file ? file.name : "Seleccionar archivo"}
               </p>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest mt-1">
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-1">
                 XLSX, XLS, ODS
               </p>
             </div>
           </div>
 
-          <div className="bg-background text-foreground/50 p-4 rounded-2xl space-y-3">
-            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+          <div className="bg-background text-foreground p-4 rounded-2xl space-y-3">
+            <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
               Modo de importación
             </p>
             <div className="grid grid-cols-2 gap-2">
@@ -1331,13 +1331,13 @@ function ImportModal({
                 <button
                   key={m}
                   onClick={() => setMode(m)}
-                  className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest border transition-all ${mode === m ? "bg-card text-card-foreground text-primary border-primary shadow-sm" : "bg-transparent text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"}`}
+                  className={`px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider border transition-all ${mode === m ? "bg-card text-primary border-primary shadow-sm" : "bg-transparent text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"}`}
                 >
                   {m}
                 </button>
               ))}
             </div>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500 italic">
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 italic">
               {mode === "reemplazar"
                 ? "* Sobrescribe cantidades si el nombre coincide."
                 : "* Suma las cantidades a las actuales."}
@@ -1348,14 +1348,14 @@ function ImportModal({
         <div className="flex gap-3 pt-2">
           <button
             onClick={onClose}
-            className="flex-1 py-4 bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all"
+            className="flex-1 py-4 bg-muted text-slate-600 dark:text-slate-300 rounded-2xl font-semibold text-xs hover:bg-slate-200 transition-all"
           >
             Cancelar
           </button>
           <button
             onClick={handleImport}
             disabled={!file || loading}
-            className="flex-[2] py-4 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 disabled:opacity-50"
+            className="flex-[2] py-4 bg-primary text-white rounded-2xl font-semibold text-xs hover:bg-primary-hover transition-all disabled:opacity-50"
           >
             {loading ? (
               <Loader2 className="w-5 h-5 animate-spin mx-auto" />
@@ -1377,10 +1377,10 @@ function ImportResultModal({
   onClose: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
-      <div className="bg-card text-card-foreground rounded-[2.5rem] shadow-2xl max-w-lg w-full p-8 flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/50 p-4 animate-in fade-in duration-200">
+      <div className="bg-card text-card-foreground rounded-3xl shadow-2xl max-w-lg w-full p-8 flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">
+          <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">
             Resumen de Importación
           </h2>
           <button
@@ -1395,7 +1395,7 @@ function ImportResultModal({
           {results.map((res, i) => (
             <div
               key={i}
-              className={`p-4 rounded-2xl border flex items-center justify-between ${res.ignored ? "bg-background text-foreground/50 border-slate-200 dark:border-slate-700 opacity-60" : res.success ? "bg-emerald-50 border-emerald-100" : "bg-rose-50 border-rose-100"}`}
+              className={`p-4 rounded-2xl border flex items-center justify-between ${res.ignored ? "bg-background text-foreground border-slate-200 dark:border-slate-700 opacity-60" : res.success ? "bg-emerald-50 border-emerald-100" : "bg-rose-50 border-rose-100"}`}
             >
               <div className="flex items-center gap-3">
                 <div
@@ -1410,17 +1410,17 @@ function ImportResultModal({
                   )}
                 </div>
                 <div>
-                  <p className="text-sm font-black text-slate-800 dark:text-slate-100">
+                  <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
                     {res.sheetName}
                   </p>
-                  <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">
+                  <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase">
                     {res.message}
                   </p>
                 </div>
               </div>
               {!res.ignored && (
                 <div className="text-right">
-                  <p className="text-xs font-black text-emerald-600">
+                  <p className="text-xs font-bold text-emerald-600">
                     +{res.processedRows}
                   </p>
                   {res.ignoredRows > 0 && (
@@ -1436,7 +1436,7 @@ function ImportResultModal({
 
         <button
           onClick={onClose}
-          className="w-full py-4 mt-6 bg-slate-900 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95"
+          className="w-full py-4 mt-6 bg-slate-900 text-white rounded-2xl font-semibold text-sm hover:bg-slate-800 transition-all"
         >
           Cerrar Resumen
         </button>
@@ -1668,7 +1668,7 @@ function MaterialesTable({
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-black text-slate-800 dark:text-slate-100 text-sm md:text-base">
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm md:text-base">
                 {proyecto.nombre}
               </h3>
               {proyecto.codigoProyecto && (
@@ -1677,7 +1677,7 @@ function MaterialesTable({
                   variant="project"
                   size="sm"
                   showCopy={true}
-                  className="cursor-pointer active:scale-95 transition-transform"
+                  className="cursor-pointer transition-transform"
                 />
               )}
             </div>
@@ -1685,12 +1685,12 @@ function MaterialesTable({
               {proyecto.client?.nombre || proyecto.cliente || "—"} ·{" "}
               {materiales.length} material{materiales.length !== 1 ? "es" : ""}
               {proyecto.listaPrecio?.nombre && (
-                <span className="ml-2 inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.2 rounded border border-primary/20">
+                <span className="ml-2 inline-flex items-center gap-1 text-[11px] font-bold text-primary bg-primary/10 px-1.5 py-0.2 rounded border border-primary/20">
                   Lista: {proyecto.listaPrecio.nombre}
                 </span>
               )}
               {hayPendientes && (
-                <span className="ml-2 text-amber-600 font-black">
+                <span className="ml-2 text-amber-600 font-bold">
                   ⚠ Pendiente devolución
                 </span>
               )}
@@ -1702,7 +1702,7 @@ function MaterialesTable({
             onClick={handleNotificarFaltantes}
             disabled={!hasFaltantes || notificando}
             title={hasFaltantes ? "Notificar Faltantes" : "No hay faltantes"}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${hasFaltantes ? "bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100 shadow-sm" : "bg-background text-foreground/50 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 opacity-70"} ${notificando ? "opacity-50" : ""}`}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${hasFaltantes ? "bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100 shadow-sm" : "bg-background text-foreground text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 opacity-70"} ${notificando ? "opacity-50" : ""}`}
           >
             {notificando ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -1752,7 +1752,7 @@ function MaterialesTable({
                     placeholder="Buscar por código o nombre..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 text-sm bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-slate-800 dark:text-slate-100 placeholder:text-slate-400"
+                    className="w-full pl-9 pr-4 py-2 text-sm bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-slate-800 dark:text-slate-100 placeholder:text-slate-400"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -1780,7 +1780,7 @@ function MaterialesTable({
                 <div className="overflow-x-auto -mx-1">
                   <table className="w-full text-sm min-w-[1000px] table-fixed">
                     <thead>
-                      <tr className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800">
+                      <tr className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800">
                         <th className="text-left pb-3 pl-2 w-20">Cod.</th>
                         <th className="text-left pb-3 pr-4">Material</th>
                         <th className="text-center pb-3 w-24">Solicitada</th>
@@ -1821,7 +1821,7 @@ function MaterialesTable({
                             className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors"
                           >
                             <td className="py-3 pl-2 truncate">
-                              <span className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500">
+                              <span className="text-[11px] font-mono font-bold text-slate-400 dark:text-slate-500">
                                 {mat.codigo || "—"}
                               </span>
                             </td>
@@ -1829,7 +1829,7 @@ function MaterialesTable({
                               <span className="font-bold text-slate-700 dark:text-slate-200">
                                 {mat.nombre}
                               </span>
-                              <span className="ml-1.5 text-[10px] text-slate-400 dark:text-slate-500 font-medium uppercase whitespace-nowrap">
+                              <span className="ml-1.5 text-[11px] text-slate-400 dark:text-slate-500 font-medium uppercase whitespace-nowrap">
                                 {mat.unidad}
                               </span>
                             </td>
@@ -1990,7 +1990,7 @@ function MaterialesTable({
             <button
               onClick={handleExportarExcel}
               disabled={!hasFaltantes}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all border ${hasFaltantes ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 shadow-sm" : "bg-background text-foreground/50 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 opacity-70 cursor-not-allowed"}`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all border ${hasFaltantes ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 shadow-sm" : "bg-background text-foreground text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 opacity-70 cursor-not-allowed"}`}
               title={
                 hasFaltantes
                   ? "Exportar faltantes a Excel"
@@ -2124,11 +2124,11 @@ export default function ProvisionMaterialesPage() {
 
   if (user && !isAuthorized) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 bg-card text-card-foreground rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm animate-in zoom-in-95 duration-300">
+      <div className="flex flex-col items-center justify-center py-20 bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm animate-in zoom-in-95 duration-200">
         <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mb-4">
           <AlertTriangle className="w-8 h-8 text-rose-500" />
         </div>
-        <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">
+        <h1 className="text-title text-slate-800 dark:text-slate-100">
           Acceso Denegado
         </h1>
         <p className="text-slate-500 dark:text-slate-400 font-medium mt-1">
@@ -2136,7 +2136,7 @@ export default function ProvisionMaterialesPage() {
         </p>
         <Link
           href="/"
-          className="mt-8 px-8 py-3 bg-primary text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
+          className="mt-8 px-8 py-3 bg-primary text-white rounded-2xl font-semibold text-sm uppercase tracking-wider transition-all"
         >
           Volver al Inicio
         </Link>
@@ -2237,11 +2237,11 @@ export default function ProvisionMaterialesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 md:gap-6 justify-between">
         <div className="flex items-center gap-4">
-          <div className="p-3 bg-primary rounded-2xl shadow-lg shadow-primary/20 shrink-0">
+          <div className="p-3 bg-primary rounded-2xl shadow-lg shrink-0">
             <Package className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight leading-tight">
+            <h1 className="text-title text-slate-800 dark:text-slate-100 leading-tight">
               Provisión de Materiales
             </h1>
             <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
@@ -2253,13 +2253,13 @@ export default function ProvisionMaterialesPage() {
           <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
             <button
               onClick={handleDownloadTemplate}
-              className="hidden sm:flex items-center justify-center gap-2 px-4 py-3 sm:py-2.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-2xl text-[10px] md:text-xs font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all shadow-sm"
+              className="hidden sm:flex items-center justify-center gap-2 px-4 py-3 sm:py-2.5 bg-card border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-2xl text-[12px] md:text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all shadow-sm"
             >
               <Download className="w-4 h-4" /> Plantilla
             </button>
             <button
               onClick={() => setShowImport(true)}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 bg-slate-900 text-white rounded-2xl text-[10px] md:text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 active:scale-95"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 bg-slate-900 text-white rounded-2xl text-[12px] md:text-xs font-semibold hover:bg-slate-800 transition-all shadow-lg"
             >
               <FileUp className="w-4 h-4 md:w-4 md:h-4" /> Importar Excel
             </button>
@@ -2299,14 +2299,14 @@ export default function ProvisionMaterialesPage() {
           <button
             key={k.label}
             onClick={() => setFilter(k.filterKey)}
-            className={`bg-card text-card-foreground rounded-2xl border p-2 sm:p-4 shadow-sm text-center flex flex-col justify-center transition-all hover:scale-[1.02] active:scale-95 cursor-pointer ${filter === k.filterKey ? "border-primary ring-2 ring-primary/10" : "border-slate-200 dark:border-slate-700"}`}
+            className={`bg-card text-card-foreground rounded-2xl border p-2 sm:p-4 shadow-sm text-center flex flex-col justify-center transition-all cursor-pointer ${filter === k.filterKey ? "border-primary ring-2 ring-primary/10" : "border-slate-200 dark:border-slate-700"}`}
           >
             <div
-              className={`text-xl md:text-2xl font-black ${k.color.split(" ")[1]}`}
+              className={`text-xl md:text-2xl font-bold ${k.color.split(" ")[1]}`}
             >
               {k.value}
             </div>
-            <div className="text-[9px] sm:text-[10px] sm:font-black font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider md:tracking-widest mt-0.5 md:mt-1 leading-tight break-words">
+            <div className="text-[11px] sm:text-[11px] sm:font-semibold font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider md:tracking-wider mt-0.5 md:mt-1 leading-tight break-words">
               {k.label}
             </div>
           </button>
@@ -2322,7 +2322,7 @@ export default function ProvisionMaterialesPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar por proyecto, código, cliente o material..."
-            className="w-full pl-10 pr-4 py-2.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-medium text-slate-700 dark:text-slate-200 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
+            className="w-full pl-10 pr-4 py-2.5 bg-card border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-medium text-slate-700 dark:text-slate-200 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
           />
           {searchQuery && (
             <button
@@ -2345,7 +2345,7 @@ export default function ProvisionMaterialesPage() {
             <button
               key={t.key}
               onClick={() => setFilter(t.key)}
-              className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${filter === t.key ? "bg-card text-card-foreground text-primary shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"}`}
+              className={`px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all ${filter === t.key ? "bg-card text-primary shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"}`}
             >
               {t.label}
             </button>
@@ -2361,7 +2361,7 @@ export default function ProvisionMaterialesPage() {
       ) : filteredProyectos.length === 0 ? (
         <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-3xl p-16 text-center shadow-sm">
           <Package className="w-12 h-12 mx-auto mb-3 text-slate-300" />
-          <p className="text-base font-black text-slate-500 dark:text-slate-400">
+          <p className="text-base font-bold text-slate-500 dark:text-slate-400">
             Sin proyectos en este estado
           </p>
           <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">

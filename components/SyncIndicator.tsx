@@ -46,7 +46,7 @@ export default function SyncIndicator() {
   if (status === 'online' && pendingCount === 0) return null;
 
   return (
-    <div className={`flex items-center gap-2 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-xl border transition-all duration-500 shadow-sm ${
+    <div className={`flex items-center gap-2 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-xl border transition-all duration-500 shadow-sm ${
       status === 'syncing' ? 'bg-indigo-50 text-indigo-700 border-indigo-200 animate-pulse' :
       status === 'offline' ? 'bg-amber-50 text-amber-700 border-amber-200' :
       'bg-emerald-50 text-emerald-700 border-emerald-200'

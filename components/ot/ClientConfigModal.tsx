@@ -379,7 +379,7 @@ export default function ClientConfigModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in duration-200">
       <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-4xl w-full h-[85vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 shrink-0">
@@ -493,7 +493,7 @@ export default function ClientConfigModal({
                       <button
                         onClick={handleSavePorcentaje}
                         disabled={saving}
-                        className="px-4 py-2 bg-primary hover:bg-primary/90 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-2 shadow-sm"
+                        className="px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-2"
                       >
                         {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                         Guardar Porcentaje
@@ -516,7 +516,7 @@ export default function ClientConfigModal({
                   {/* Form to Assign Rate */}
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 p-4 bg-slate-50/50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800">
                     <div className="flex-1">
-                      <label className="text-[11px] font-bold uppercase text-slate-400 mb-1 block">
+                      <label className="mb-1 block text-[13px] font-medium text-slate-700 dark:text-slate-200">
                         Operador / Técnico
                       </label>
                       <SearchableCombobox
@@ -532,7 +532,7 @@ export default function ClientConfigModal({
                       />
                     </div>
                     <div className="w-36">
-                      <label className="text-[11px] font-bold uppercase text-slate-400 mb-1 block">
+                      <label className="mb-1 block text-[13px] font-medium text-slate-700 dark:text-slate-200">
                         Valor / Hora ($)
                       </label>
                       <input
@@ -547,7 +547,7 @@ export default function ClientConfigModal({
                       <button
                         onClick={handleAddRate}
                         disabled={saving || !newRateOperatorId || !newRateValue.trim()}
-                        className="w-full sm:w-auto px-4 py-2 bg-primary hover:bg-primary/90 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-sm h-[38px] disabled:opacity-50"
+                        className="w-full sm:w-auto px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 h-[38px] disabled:opacity-50"
                       >
                         {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
                         Asignar
@@ -587,7 +587,7 @@ export default function ClientConfigModal({
                                 <td className="py-3 px-4 text-slate-500 capitalize">
                                   {r.operator?.role}
                                 </td>
-                                <td className="py-3 px-4 text-right font-black text-slate-900 dark:text-slate-100 font-mono">
+                                <td className="py-3 px-4 text-right font-bold text-slate-900 dark:text-slate-100 font-mono">
                                   {isEditing ? (
                                     <input
                                       type="number"
@@ -605,7 +605,7 @@ export default function ClientConfigModal({
                                     <button
                                       type="button"
                                       onClick={() => setEditingRateActivo(!editingRateActivo)}
-                                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold transition-colors ${
+                                      className={`px-2 py-0.5 rounded-full text-[11px] font-bold transition-colors ${
                                         editingRateActivo
                                           ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
                                           : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
@@ -615,7 +615,7 @@ export default function ClientConfigModal({
                                     </button>
                                   ) : (
                                     <span
-                                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold ${
                                         isActivo
                                           ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50'
                                           : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700'
@@ -682,7 +682,7 @@ export default function ClientConfigModal({
                   {generatedKeyInfo && (
                     <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 space-y-2 animate-in fade-in">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 font-black text-xs">
+                        <div className="flex items-center gap-2 font-bold text-xs">
                           <KeyRound className="w-4 h-4" />
                           <span>Contraseña Temporal Generada para {generatedKeyInfo.nombre}</span>
                         </div>
@@ -698,12 +698,12 @@ export default function ClientConfigModal({
                         sistema le solicitará obligatoriamente cambiarla por una contraseña definitiva.
                       </p>
                       <div className="flex items-center gap-2 pt-1">
-                        <span className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-emerald-500/40 rounded-lg text-sm font-black font-mono tracking-wider text-emerald-600 dark:text-emerald-400">
+                        <span className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-emerald-500/40 rounded-lg text-sm font-bold font-mono tracking-wider text-emerald-600 dark:text-emerald-400">
                           {generatedKeyInfo.key}
                         </span>
                         <button
                           onClick={() => copyToClipboard(generatedKeyInfo.key)}
-                          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+                          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors"
                         >
                           {copiedKey ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                           {copiedKey ? 'Copiada' : 'Copiar Clave'}
@@ -726,7 +726,7 @@ export default function ClientConfigModal({
                       {/* Fixed: Single + icon, no "+ +" duplication */}
                       <button
                         onClick={openNewResponsable}
-                        className="px-3.5 py-2 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+                        className="px-3.5 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         Nuevo Responsable
@@ -753,12 +753,12 @@ export default function ClientConfigModal({
                                   {r.nombre}
                                 </span>
                                 {r.cargo && (
-                                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 font-medium">
+                                  <span className="text-[11px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 font-medium">
                                     {r.cargo}
                                   </span>
                                 )}
                                 <span
-                                  className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                                  className={`text-[11px] px-2 py-0.5 rounded-full font-bold ${
                                     r.portalHabilitado
                                       ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60'
                                       : 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200 dark:border-rose-800/60'
@@ -771,14 +771,14 @@ export default function ClientConfigModal({
                                 {r.email || 'Sin correo electrónico'}
                               </p>
                               <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                                <span className="text-[10px] font-bold text-slate-400">Proyectos permitidos:</span>
+                                <span className="text-[11px] font-bold text-slate-400">Proyectos permitidos:</span>
                                 {r.proyectos.length === 0 ? (
-                                  <span className="text-[10px] text-amber-500 font-semibold">Ninguno asignado</span>
+                                  <span className="text-[11px] text-amber-500 font-semibold">Ninguno asignado</span>
                                 ) : (
                                   r.proyectos.map((p: any) => (
                                     <span
                                       key={p.id}
-                                      className="text-[10px] px-2 py-0.5 rounded bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 font-medium"
+                                      className="text-[11px] px-2 py-0.5 rounded bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 font-medium"
                                     >
                                       {p.project?.nombre}
                                     </span>
@@ -797,7 +797,7 @@ export default function ClientConfigModal({
                               </button>
                               <button
                                 onClick={() => openEditResponsable(r)}
-                                className="px-3 py-1.5 text-xs font-bold rounded-lg bg-primary hover:bg-primary/90 text-white transition-colors"
+                                className="px-3 py-1.5 text-xs font-bold rounded-lg bg-primary hover:bg-primary-hover text-white transition-colors"
                               >
                                 Configurar
                               </button>
@@ -825,7 +825,7 @@ export default function ClientConfigModal({
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <label className="text-[11px] font-bold uppercase text-slate-400 mb-1 block">
+                          <label className="mb-1 block text-[13px] font-medium text-slate-700 dark:text-slate-200">
                             Nombre y Apellido *
                           </label>
                           <input
@@ -837,7 +837,7 @@ export default function ClientConfigModal({
                           />
                         </div>
                         <div>
-                          <label className="text-[11px] font-bold uppercase text-slate-400 mb-1 block">
+                          <label className="mb-1 block text-[13px] font-medium text-slate-700 dark:text-slate-200">
                             Email (Opcional)
                           </label>
                           <input
@@ -849,7 +849,7 @@ export default function ClientConfigModal({
                           />
                         </div>
                         <div>
-                          <label className="text-[11px] font-bold uppercase text-slate-400 mb-1 block">
+                          <label className="mb-1 block text-[13px] font-medium text-slate-700 dark:text-slate-200">
                             Cargo / Función
                           </label>
                           <input
@@ -861,7 +861,7 @@ export default function ClientConfigModal({
                           />
                         </div>
                         <div>
-                          <label className="text-[11px] font-bold uppercase text-slate-400 mb-1 block">
+                          <label className="mb-1 block text-[13px] font-medium text-slate-700 dark:text-slate-200">
                             Estado de Acceso
                           </label>
                           <select
@@ -877,7 +877,7 @@ export default function ClientConfigModal({
 
                       {/* Granular Project Permissions */}
                       <div className="pt-2">
-                        <label className="text-[11px] font-bold uppercase text-slate-400 mb-2 block">
+                        <label className="mb-2 block text-[13px] font-medium text-slate-700 dark:text-slate-200">
                           Proyectos Autorizados (Permisos Granulares)
                         </label>
                         <p className="text-[11px] text-slate-500 mb-3">
@@ -927,7 +927,7 @@ export default function ClientConfigModal({
                           type="button"
                           onClick={handleSaveResponsable}
                           disabled={saving}
-                          className="px-5 py-2 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-2 shadow-sm"
+                          className="px-5 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-2"
                         >
                           {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                           Guardar Responsable
@@ -959,7 +959,7 @@ export default function ClientConfigModal({
                     </h5>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div className="sm:col-span-2">
-                        <label className="text-[11px] font-bold uppercase text-slate-400 mb-1 block">
+                        <label className="mb-1 block text-[13px] font-medium text-slate-700 dark:text-slate-200">
                           Nombre del Sector / Ubicación *
                         </label>
                         <input
@@ -971,7 +971,7 @@ export default function ClientConfigModal({
                         />
                       </div>
                       <div>
-                        <label className="text-[11px] font-bold uppercase text-slate-400 mb-1 block">
+                        <label className="mb-1 block text-[13px] font-medium text-slate-700 dark:text-slate-200">
                           Proyecto (Opcional)
                         </label>
                         <select
@@ -1023,7 +1023,7 @@ export default function ClientConfigModal({
                           }
                         }}
                         disabled={saving || !newSectorNombre.trim()}
-                        className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm disabled:opacity-50"
+                        className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors disabled:opacity-50"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         Agregar Sector
@@ -1051,7 +1051,7 @@ export default function ClientConfigModal({
                                   {s.nombre}
                                 </span>
                                 {s.project && (
-                                  <span className="text-[10px] text-slate-400 truncate block">
+                                  <span className="text-[11px] text-slate-400 truncate block">
                                     Proyecto: {s.project.nombre}
                                   </span>
                                 )}

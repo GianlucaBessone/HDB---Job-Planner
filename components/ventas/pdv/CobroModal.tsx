@@ -284,7 +284,7 @@ export default function CobroModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-950/50-xs">
       <div className="bg-card w-full max-w-2xl rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
@@ -294,11 +294,11 @@ export default function CobroModal({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-black text-slate-900 dark:text-slate-100">
+                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                   Confirmar Venta y Cobro
                 </h3>
                 {ivaDiscriminado && (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300/40">
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300/40">
                     IVA Discriminado
                   </span>
                 )}
@@ -325,7 +325,7 @@ export default function CobroModal({
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
                 Total a Cobrar
               </span>
-              <span className="text-3xl font-black text-emerald-400 tracking-tight">
+              <span className="text-3xl font-bold text-emerald-400 tracking-tight">
                 {formatARS(totalVenta)}
               </span>
               <div className="text-[11px] text-slate-400 mt-1 flex flex-wrap items-center gap-1.5">
@@ -337,7 +337,7 @@ export default function CobroModal({
                   <button
                     type="button"
                     onClick={() => setShowModalCambioCliente(true)}
-                    className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-400 hover:text-indigo-300 bg-slate-800/80 hover:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-700 transition-colors ml-1"
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-400 hover:text-indigo-300 bg-slate-800/80 hover:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-700 transition-colors ml-1"
                   >
                     <User className="w-2.5 h-2.5" />
                     Cambiar cliente
@@ -363,7 +363,7 @@ export default function CobroModal({
                   <span>+{formatARS(impuestosMonto)}</span>
                 </div>
               )}
-              <div className="flex justify-between w-full sm:justify-end gap-3 text-slate-400 text-[10px] pt-0.5 border-t border-slate-800/80">
+              <div className="flex justify-between w-full sm:justify-end gap-3 text-slate-400 text-[11px] pt-0.5 border-t border-slate-800/80">
                 <span>Régimen:</span>
                 <span className={ivaDiscriminado ? 'text-amber-400 font-semibold' : 'text-slate-300'}>
                   {ivaDiscriminado ? 'IVA Discriminado' : 'IVA Incluido'}
@@ -446,7 +446,7 @@ export default function CobroModal({
           {/* Medios de Pago Configurados */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+              <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
                 Desglose de Medios de Pago
               </span>
               <button
@@ -506,7 +506,7 @@ export default function CobroModal({
                             handleUpdatePago(p.id, 'monto', parseFloat(e.target.value) || 0)
                           }
                           placeholder="Monto..."
-                          className="w-full pl-6 pr-3 py-1.5 bg-card border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-black text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/30"
+                          className="w-full pl-6 pr-3 py-1.5 bg-card border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/30"
                         />
                       </div>
                     </div>
@@ -528,7 +528,7 @@ export default function CobroModal({
                   {p.metodo === 'EFECTIVO' && (
                     <div className="grid grid-cols-2 gap-3 pt-1 border-t border-slate-200/60 dark:border-slate-800/60">
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                        <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                           Importe Recibido del Cliente
                         </label>
                         <div className="relative">
@@ -552,10 +552,10 @@ export default function CobroModal({
                         </div>
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                        <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                           Cambio / Vuelto a Entregar
                         </label>
-                        <div className="px-3 py-1 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-lg text-xs font-black text-emerald-700 dark:text-emerald-300">
+                        <div className="px-3 py-1 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-lg text-xs font-bold text-emerald-700 dark:text-emerald-300">
                           {formatARS(vueltoEfectivo)}
                         </div>
                       </div>
@@ -585,7 +585,7 @@ export default function CobroModal({
                       <Receipt className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                       <div>
                         <strong>Saldo a Cuenta Corriente: {formatARS(p.monto)}</strong>
-                        <p className="text-[10px] text-amber-800 dark:text-amber-400 mt-0.5">
+                        <p className="text-[11px] text-amber-800 dark:text-amber-400 mt-0.5">
                           Este monto quedará registrado como pendiente de cobro en la cuenta del cliente <strong>{cliente.nombre}</strong>. La venta se registrará como Confirmada con estado de pago <strong>{totalPagos - p.monto > 0 ? 'PARCIAL' : 'PENDIENTE'}</strong>.
                         </p>
                       </div>
@@ -603,7 +603,7 @@ export default function CobroModal({
             </span>
             <div className="flex items-center gap-2">
               <span
-                className={`font-black text-sm ${
+                className={`font-bold text-sm ${
                   Math.abs(saldoRestante) <= 0.05
                     ? 'text-emerald-600 dark:text-emerald-400'
                     : 'text-amber-600 dark:text-amber-400'
@@ -621,7 +621,7 @@ export default function CobroModal({
 
           {/* Observaciones opcionales */}
           <div>
-            <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1">
+            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
               Observaciones de la Venta (opcional)
             </label>
             <input
@@ -657,7 +657,7 @@ export default function CobroModal({
             type="button"
             onClick={handleConfirmar}
             disabled={isSubmitting || Math.abs(saldoRestante) > 0.05}
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm shadow-md shadow-emerald-600/20 disabled:opacity-50 transition-all"
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm disabled:opacity-50 transition-all"
           >
             {isSubmitting ? (
               <>

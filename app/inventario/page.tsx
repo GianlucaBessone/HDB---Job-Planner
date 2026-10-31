@@ -89,19 +89,19 @@ export default function InventarioPage() {
     const [mostrarHeredados, setMostrarHeredados] = useState(false);
 
     return (
-        <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
+        <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-200 space-y-6">
             {/* Banner de vista desactivada */}
-            <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/10 border-2 border-amber-500/30 rounded-[2rem] p-6 md:p-8 space-y-4 shadow-sm">
+            <div className="bg-amber-500/10 border-2 border-amber-500/30 rounded-3xl p-6 md:p-8 space-y-4 shadow-sm">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
                         <div className="w-14 h-14 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
                             <PackageSearch className="w-8 h-8" />
                         </div>
                         <div>
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 mb-1">
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 mb-1">
                                 Vista Desactivada Temporalmente
                             </div>
-                            <h2 className="text-xl md:text-2xl font-black text-slate-900 dark:text-slate-100">
+                            <h2 className="text-title text-slate-900 dark:text-slate-100">
                                 Inventario de Materiales
                             </h2>
                             <p className="text-slate-600 dark:text-slate-400 text-xs md:text-sm font-medium mt-0.5 max-w-2xl">
@@ -112,13 +112,13 @@ export default function InventarioPage() {
                     <div className="flex flex-wrap gap-2 shrink-0 w-full md:w-auto">
                         <Link
                             href="/ventas/gestion"
-                            className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold flex items-center gap-2 text-xs transition-all shadow-md shadow-emerald-600/20"
+                            className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold flex items-center gap-2 text-xs transition-all"
                         >
                             <Boxes className="w-4 h-4" /> Gestión Comercial
                         </Link>
                         <Link
                             href="/provision-materiales"
-                            className="px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold flex items-center gap-2 text-xs transition-all shadow-md shadow-orange-600/20"
+                            className="px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold flex items-center gap-2 text-xs transition-all"
                         >
                             <Package className="w-4 h-4" /> Provisión de Materiales
                         </Link>
@@ -140,7 +140,7 @@ export default function InventarioPage() {
             </div>
 
             {mostrarHeredados && (
-                <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-[2rem] p-4 md:p-6 shadow-sm space-y-4">
+                <div className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-3xl p-4 md:p-6 shadow-sm space-y-4">
                     <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-700">
                         <div>
                             <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">Registros Heredados (MaterialMaestro)</h3>
@@ -169,7 +169,7 @@ export default function InventarioPage() {
                         <input
                             type="text"
                             placeholder={searchMode === 'codigo' ? "Buscar por código (ej: 004 o 4)..." : "Buscar por nombre..."}
-                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm font-medium"
+                            className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm font-medium"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
@@ -195,7 +195,7 @@ export default function InventarioPage() {
                 ) : (
                     <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
                         <table className="w-full text-sm text-left">
-                            <thead className="bg-background text-foreground/50 text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px] tracking-widest border-b border-slate-200 dark:border-slate-700">
+                            <thead className="bg-background text-foreground text-slate-500 dark:text-slate-400 font-bold uppercase text-[11px] tracking-wider border-b border-slate-200 dark:border-slate-700">
                                 <tr>
                                     <th className="px-4 py-3">Código</th>
                                     <th className="px-4 py-3">Material</th>
@@ -211,14 +211,14 @@ export default function InventarioPage() {
                                     <tr key={m.codigo} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                         <td className="px-4 py-3 font-mono text-xs font-bold text-slate-600 dark:text-slate-300">{m.codigo}</td>
                                         <td className="px-4 py-3 font-bold text-slate-800 dark:text-slate-100">{m.nombre}</td>
-                                        <td className="px-4 py-3 text-right text-emerald-600 font-black">
+                                        <td className="px-4 py-3 text-right text-emerald-600 font-bold">
                                             {m.precioVenta != null ? `$${m.precioVenta.toLocaleString('es-AR')}` : <span className="text-slate-300">—</span>}
                                         </td>
                                         <td className="px-4 py-3 text-right text-slate-600 dark:text-slate-300 font-bold">
                                             {m.costo != null ? `$${m.costo.toLocaleString('es-AR')}` : <span className="text-slate-300">—</span>}
                                         </td>
                                         <td className="px-4 py-3 text-center">
-                                            <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+                                            <span className="text-[11px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
                                                 Solo Lectura
                                             </span>
                                         </td>

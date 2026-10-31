@@ -63,9 +63,9 @@ export default function HelpDashboardClient({ categories, popularArticles }: Hel
   return (
     <div className="space-y-8">
       {/* Buscador Global */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-8 sm:p-12 text-center text-white relative overflow-hidden shadow-xl">
+      <div className="bg-blue-600 rounded-3xl p-8 sm:p-12 text-center text-white relative overflow-hidden shadow-xl">
         <div className="relative z-10 max-w-2xl mx-auto space-y-6">
-          <h2 className="text-3xl font-black">¿En qué podemos ayudarte?</h2>
+          <h2 className="text-title">¿En qué podemos ayudarte?</h2>
           <p className="text-blue-100 text-sm font-medium">
             Busca guías, procesos, configuración de módulos o resolución de problemas.
           </p>
@@ -95,9 +95,9 @@ export default function HelpDashboardClient({ categories, popularArticles }: Hel
 
       {searchQuery.trim().length >= 2 ? (
         // Resultados de Búsqueda
-        <div className="space-y-6 animate-in fade-in duration-300">
+        <div className="space-y-6 animate-in fade-in duration-200">
           <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-4">
-            <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">
+            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">
               Resultados de la búsqueda ({filteredArticles.length})
             </h3>
             <button 
@@ -116,7 +116,7 @@ export default function HelpDashboardClient({ categories, popularArticles }: Hel
                     {renderIcon(article.categoryIcon, 'w-6 h-6')}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-blue-500">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-500">
                       {article.categoryTitle}
                     </span>
                     <h4 className="text-lg font-bold text-slate-800 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mt-0.5">
@@ -146,7 +146,7 @@ export default function HelpDashboardClient({ categories, popularArticles }: Hel
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Categorías Principales */}
           <div className="lg:col-span-2 space-y-6">
-            <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
               Explorar por Categoría
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -154,7 +154,7 @@ export default function HelpDashboardClient({ categories, popularArticles }: Hel
                 <Link href={`/centro-ayuda/categoria/${cat.slug}`} key={cat.id}>
                   <div className="bg-card text-card-foreground p-6 rounded-3xl border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-lg transition-all group h-full flex flex-col justify-between">
                     <div>
-                      <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400 mb-4 group-hover:scale-110 transition-transform">
+                      <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400 mb-4 transition-transform">
                         {renderIcon(cat.iconName, 'w-6 h-6')}
                       </div>
                       <h4 className="font-bold text-slate-800 dark:text-slate-100 text-lg mb-2">
@@ -184,7 +184,7 @@ export default function HelpDashboardClient({ categories, popularArticles }: Hel
 
           {/* Artículos Populares */}
           <div className="space-y-6">
-            <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">
+            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">
               Artículos Populares
             </h3>
             <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 overflow-hidden">
@@ -198,7 +198,7 @@ export default function HelpDashboardClient({ categories, popularArticles }: Hel
                       <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
                         {article.title}
                       </p>
-                      <p className="text-[10px] text-slate-500 mt-0.5 truncate">
+                      <p className="text-[11px] text-slate-500 mt-0.5 truncate">
                         {article.viewsCount} vistas
                       </p>
                     </div>

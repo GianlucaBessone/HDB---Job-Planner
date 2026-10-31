@@ -203,7 +203,7 @@ export default function ResumenStockView({
                 }
               }}
               placeholder="Buscar SKU, Barra o Descripción (lector compatible)..."
-              className="w-full pl-8 pr-7 h-8 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-background focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
+              className="w-full pl-8 pr-7 h-8 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-card focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
             />
             {search && (
               <button
@@ -325,7 +325,7 @@ export default function ResumenStockView({
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[11px] font-black text-slate-500 uppercase tracking-wider select-none whitespace-nowrap">
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none whitespace-nowrap">
                 {[
                   { key: 'sku', label: 'SKU', className: 'py-2.5 px-3 w-28', align: 'left' },
                   { key: 'codigoBarras', label: 'Código Barras', className: 'py-2.5 px-2 w-32 hidden md:table-cell', align: 'left' },
@@ -452,7 +452,7 @@ export default function ResumenStockView({
                     </td>
                     <td className="py-2 px-3 text-right whitespace-nowrap">
                       <span
-                        className={`font-mono text-xs font-black ${
+                        className={`font-mono text-xs font-bold ${
                           prod.stockActual <= 0
                             ? 'text-rose-600 dark:text-rose-400'
                             : prod.stockMinimo > 0 && prod.stockActual <= prod.stockMinimo
@@ -469,12 +469,12 @@ export default function ResumenStockView({
                     <td className="py-2 px-2 text-right font-mono text-[11px] text-slate-500 hidden sm:table-cell">
                       {prod.stockMaximo > 0 ? prod.stockMaximo : '—'}
                     </td>
-                    <td className="py-2 px-2 text-center font-bold text-slate-500 text-[10px] uppercase">
+                    <td className="py-2 px-2 text-center font-bold text-slate-500 text-[11px] uppercase">
                       {prod.unidad}
                     </td>
                     <td className="py-2 px-2.5 text-center whitespace-nowrap">
                       <span
-                        className={`inline-block px-2 py-0.5 rounded text-[10px] font-black border uppercase tracking-wider ${prod.estadoBadge}`}
+                        className={`inline-block px-2 py-0.5 rounded text-[11px] font-semibold border uppercase tracking-wider ${prod.estadoBadge}`}
                       >
                         {prod.estadoLabel}
                       </span>

@@ -94,7 +94,7 @@ function CalidadPage() {
     );
 
     return (
-        <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
+        <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200 pb-12">
             <ModuleHeader
                 title="Gestión Operativa y Calidad"
                 description="Plataforma de Cumplimiento, Capacitación Obligatoria (LMS) y Competencias QMS"
@@ -105,7 +105,7 @@ function CalidadPage() {
                 onTabChange={(id) => setActiveTab(id as TabId)}
             />
 
-            <div className="animate-in fade-in duration-300">
+            <div className="animate-in fade-in duration-200">
                 {visitedTabs['dashboard'] && (
                     <div className={activeTab === 'dashboard' ? '' : 'hidden'}>
                         <DashboardTab user={currentUser} />

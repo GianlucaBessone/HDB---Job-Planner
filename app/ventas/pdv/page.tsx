@@ -909,7 +909,7 @@ export default function PdvPage() {
         <button
           type="button"
           onClick={() => router.push('/')}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm transition-all"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition-all"
         >
           <Home className="w-4 h-4" />
           <span>Volver al Inicio</span>
@@ -950,7 +950,7 @@ export default function PdvPage() {
           <div className="h-8 flex items-center gap-2 bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-lg px-2.5">
             <User className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
             <div className="flex items-center gap-1.5 text-xs">
-              <span className="text-[10px] text-slate-400 font-medium hidden sm:inline">Cliente:</span>
+              <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">Cliente:</span>
               <strong className="text-slate-800 dark:text-slate-200 font-semibold truncate max-w-[120px] sm:max-w-[160px]">
                 {cliente.nombre}
               </strong>
@@ -979,7 +979,7 @@ export default function PdvPage() {
               ))}
             </select>
             {esIvaDiscriminado && (
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300/40">
+              <span className="text-[11px] font-bold px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300/40">
                 IVA Disc.
               </span>
             )}
@@ -1022,7 +1022,7 @@ export default function PdvPage() {
             <button
               type="button"
               onClick={() => setShowCambioVendedorModal(true)}
-              className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline px-1 py-0.5 ml-1"
+              className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline px-1 py-0.5 ml-1"
               title="Cambiar vendedor [F9]"
             >
               F9
@@ -1063,7 +1063,7 @@ export default function PdvPage() {
           >
             <History className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
             <span className="hidden sm:inline">Historial</span>
-            <span className="text-[10px] text-slate-400 font-mono">F8</span>
+            <span className="text-[11px] text-slate-400 font-mono">F8</span>
           </button>
 
           {carrito.length > 0 && (
@@ -1091,7 +1091,7 @@ export default function PdvPage() {
                 <Search className="w-3.5 h-3.5 text-indigo-500" />
                 <span>Búsqueda de Artículos</span>
                 {totalResultados > 0 && (
-                  <span className="text-[10px] text-slate-400 font-normal">
+                  <span className="text-[11px] text-slate-400 font-normal">
                     ({totalResultados.toLocaleString()} disp.)
                   </span>
                 )}
@@ -1109,7 +1109,7 @@ export default function PdvPage() {
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-indigo-600' : ''}`} />
                 </button>
-                <span className="text-[10px] text-slate-400 font-mono">F2 para enfocar</span>
+                <span className="text-[11px] text-slate-400 font-mono">F2 para enfocar</span>
               </div>
             </div>
 
@@ -1122,14 +1122,14 @@ export default function PdvPage() {
                 placeholder="SKU (ej: 3, 5001), código de barras o descripción..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-9 pl-9 pr-8 bg-slate-100/60 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:bg-background focus:outline-hidden focus:ring-1 focus:ring-indigo-500 transition-all"
+                className="w-full h-9 pl-9 pr-8 bg-slate-100/60 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:bg-card focus:outline-hidden focus:ring-1 focus:ring-indigo-500 transition-all"
               />
               {isLoadingCatalogo && (
                 <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-500 absolute right-2.5 top-1/2 -translate-y-1/2" />
               )}
             </div>
 
-            <div className="flex items-center justify-between text-[10px] text-slate-400 px-0.5">
+            <div className="flex items-center justify-between text-[11px] text-slate-400 px-0.5">
               <span>
                 {searchQuery
                   ? `Filtrando: ${totalResultados.toLocaleString()} de ${rawCatalogo.length.toLocaleString()}`
@@ -1182,14 +1182,14 @@ export default function PdvPage() {
                           </span>
 
                           {isExact && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-semibold border border-emerald-300/50 dark:border-emerald-700/50 flex items-center gap-1">
+                            <span className="text-[11px] px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-semibold border border-emerald-300/50 dark:border-emerald-700/50 flex items-center gap-1">
                               <CheckCircle2 className="w-2.5 h-2.5" />
                               Exacto [Enter]
                             </span>
                           )}
 
                           {prod.marca && (
-                            <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium truncate max-w-[90px]">
+                            <span className="text-[11px] px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium truncate max-w-[90px]">
                               {prod.marca}
                             </span>
                           )}
@@ -1199,7 +1199,7 @@ export default function PdvPage() {
                           {prod.descripcion}
                         </div>
 
-                        <div className="flex items-center gap-2.5 text-[10px] text-slate-400">
+                        <div className="flex items-center gap-2.5 text-[11px] text-slate-400">
                           {prod.codigoBarras && (
                             <span className="flex items-center gap-1">
                               <Barcode className="w-3 h-3 text-slate-400" />
@@ -1218,7 +1218,7 @@ export default function PdvPage() {
                           {formatARS(prod.precioAplicado > 0 ? prod.precioAplicado : prod.precioBase)}
                         </div>
                         {esIvaDiscriminado && (
-                          <div className="text-[9px] text-slate-400">Neto s/IVA</div>
+                          <div className="text-[11px] text-slate-400">Neto s/IVA</div>
                         )}
                         <button
                           type="button"
@@ -1237,7 +1237,7 @@ export default function PdvPage() {
                 })}
 
                 {resultadosVisibles.length < totalResultados && (
-                  <div className="py-2.5 text-center text-[10px] text-slate-400">
+                  <div className="py-2.5 text-center text-[11px] text-slate-400">
                     Mostrando {resultadosVisibles.length} de {totalResultados.toLocaleString()} productos. Desplácese hacia abajo para ver más...
                   </div>
                 )}
@@ -1260,7 +1260,7 @@ export default function PdvPage() {
               <h2 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
                 Detalle de Venta
               </h2>
-              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold">
+              <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold">
                 {carrito.length} {carrito.length === 1 ? 'artículo' : 'artículos'}
               </span>
             </div>
@@ -1293,7 +1293,7 @@ export default function PdvPage() {
                         {item.sku}
                       </span>
                       {item.precioModificado && (
-                        <span className="text-[9px] px-1 py-0.2 rounded bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 font-semibold">
+                        <span className="text-[11px] px-1 py-0.2 rounded bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 font-semibold">
                           Modificado
                         </span>
                       )}
@@ -1301,7 +1301,7 @@ export default function PdvPage() {
                     <div className="font-medium text-slate-800 dark:text-slate-200 truncate">
                       {item.descripcion}
                     </div>
-                    <div className="text-[10px] text-slate-400 flex items-center gap-2.5">
+                    <div className="text-[11px] text-slate-400 flex items-center gap-2.5">
                       <span>P. Unit: {formatARS(item.precioUnitario)}</span>
                       {item.descuentoPorcentaje > 0 && (
                         <span className="text-emerald-600 font-semibold">
@@ -1423,17 +1423,17 @@ export default function PdvPage() {
             {/* Total Final y Botón de Cobro */}
             <div className="p-3 rounded-xl bg-slate-900 text-white dark:bg-slate-950 dark:border dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
               <div>
-                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
                   Total Final a Cobrar {esIvaDiscriminado ? '(Neto + IVA)' : ''}
                 </span>
-                <span className="text-2xl font-black text-emerald-400 tracking-tight">
+                <span className="text-2xl font-bold text-emerald-400 tracking-tight">
                   {formatARS(totalFinal)}
                 </span>
-                <div className="text-[10px] text-slate-400 mt-0.5">
+                <div className="text-[11px] text-slate-400 mt-0.5">
                   Cliente: <strong className="text-white">{cliente.nombre}</strong>
                 </div>
                 {!esIvaDiscriminado && impuestosEstimados > 0 && (
-                  <div className="text-[10px] text-slate-400 mt-0.5">
+                  <div className="text-[11px] text-slate-400 mt-0.5">
                     (Incluye IVA estimado: {formatARS(impuestosEstimados)})
                   </div>
                 )}
@@ -1443,7 +1443,7 @@ export default function PdvPage() {
                 type="button"
                 disabled={carrito.length === 0}
                 onClick={() => setShowCobroModal(true)}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               >
                 <CreditCard className="w-4 h-4" />
                 <span>Cobrar / Confirmar (F4)</span>

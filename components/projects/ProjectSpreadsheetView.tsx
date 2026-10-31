@@ -46,21 +46,21 @@ export default function ProjectSpreadsheetView({
     };
 
     return (
-        <div className="bg-card text-card-foreground rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
             <div className="overflow-x-auto custom-scrollbar">
                 <table className="w-full text-left border-collapse min-w-[1000px]">
                     <thead>
-                        <tr className="bg-background text-foreground/50 border-b border-slate-100 dark:border-slate-700">
-                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest sticky left-0 bg-background text-foreground/90 backdrop-blur z-10 w-24">Código</th>
-                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest sticky left-24 bg-background text-foreground/90 backdrop-blur z-10 shadow-[2px_0_5px_rgba(0,0,0,0.05)] w-48">Nombre</th>
-                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest w-40">Cliente</th>
-                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest w-40">Responsable</th>
-                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest w-32">Estado</th>
-                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right w-24">Horas Est.</th>
-                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right w-24">Horas Cons.</th>
-                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest min-w-[280px]">Fechas</th>
-                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest w-24">Avance</th>
-                            <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center w-12"></th>
+                        <tr className="bg-background text-foreground border-b border-slate-100 dark:border-slate-700">
+                            <th className="px-4 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider sticky left-0 bg-background text-foreground/90 backdrop-blur z-10 w-24">Código</th>
+                            <th className="px-4 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider sticky left-24 bg-background text-foreground/90 backdrop-blur z-10 shadow-[2px_0_5px_rgba(0,0,0,0.05)] w-48">Nombre</th>
+                            <th className="px-4 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider w-40">Cliente</th>
+                            <th className="px-4 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider w-40">Responsable</th>
+                            <th className="px-4 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider w-32">Estado</th>
+                            <th className="px-4 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-right w-24">Horas Est.</th>
+                            <th className="px-4 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-right w-24">Horas Cons.</th>
+                            <th className="px-4 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider min-w-[280px]">Fechas</th>
+                            <th className="px-4 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider w-24">Avance</th>
+                            <th className="px-4 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-center w-12"></th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50 dark:divide-slate-700/50">
@@ -144,7 +144,7 @@ export default function ProjectSpreadsheetView({
                                             )}
                                             <div className="w-5 h-5 inline-flex items-center justify-center relative">
                                                 {isSaving && <Loader2 className="w-4 h-4 text-primary animate-spin absolute" />}
-                                                {isSaved && <Check className="w-4 h-4 text-emerald-500 animate-in zoom-in duration-300 absolute" />}
+                                                {isSaved && <Check className="w-4 h-4 text-emerald-500 animate-in zoom-in duration-200 absolute" />}
                                                 {!isSaving && !isSaved && <span className="w-1.5 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700" title="Sin cambios guardando" />}
                                             </div>
                                         </div>

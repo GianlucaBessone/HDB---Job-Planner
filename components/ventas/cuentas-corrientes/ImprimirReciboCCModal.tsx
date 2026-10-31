@@ -72,7 +72,7 @@ export default function ImprimirReciboCCModal({
       : 'NOTA DE DÉBITO / CARGO EN CUENTA CORRIENTE';
 
   return (
-    <div className="fixed inset-0 z-[95] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div className="fixed inset-0 z-[95] flex items-center justify-center p-4 bg-slate-950/50-xs">
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -104,11 +104,11 @@ export default function ImprimirReciboCCModal({
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 print:hidden">
           <div className="flex items-center gap-2">
             <Receipt className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
-            <h3 className="text-base font-black text-slate-900 dark:text-slate-100">
+            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
               Comprobante {movimiento.numero}
             </h3>
             {esAnulado && (
-              <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-red-100 text-red-700 border border-red-300">
+              <span className="px-2 py-0.5 rounded text-[11px] font-semibold uppercase bg-red-100 text-red-700 border border-red-300">
                 ANULADO
               </span>
             )}
@@ -136,18 +136,18 @@ export default function ImprimirReciboCCModal({
             {/* Encabezado */}
             <div className="flex items-start justify-between border-b-2 border-slate-900 dark:border-slate-700 pb-4">
               <div>
-                <h2 className="text-lg font-black tracking-tight text-slate-900 dark:text-slate-100 uppercase">
+                <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100 uppercase">
                   HDB - Materiales Eléctricos
                 </h2>
                 <p className="text-[11px] text-slate-500">
                   ADMINISTRACIÓN DE CUENTAS CORRIENTES — SGI
                 </p>
-                <div className="mt-1.5 inline-block px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-[10px] font-bold uppercase tracking-wider border border-slate-300 dark:border-slate-700">
+                <div className="mt-1.5 inline-block px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-[11px] font-bold uppercase tracking-wider border border-slate-300 dark:border-slate-700">
                   {tituloTipo}
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-sm font-black font-mono text-slate-900 dark:text-slate-100">
+                <div className="text-sm font-bold font-mono text-slate-900 dark:text-slate-100">
                   N° {movimiento.numero}
                 </div>
                 <div className="text-[11px] text-slate-500 mt-0.5">
@@ -162,10 +162,10 @@ export default function ImprimirReciboCCModal({
             {/* Datos del cliente */}
             <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 text-[11px]">
               <div>
-                <span className="text-slate-400 uppercase font-bold text-[9px] block">
+                <span className="text-slate-400 uppercase font-bold text-[11px] block">
                   Titular de Cuenta Corriente
                 </span>
-                <span className="font-black text-slate-900 dark:text-slate-100 text-xs">
+                <span className="font-bold text-slate-900 dark:text-slate-100 text-xs">
                   {clienteData.nombre || 'Cliente Registrado'}
                 </span>
                 {clienteData.direccion && (
@@ -194,7 +194,7 @@ export default function ImprimirReciboCCModal({
 
             {/* Concepto */}
             <div className="text-xs">
-              <span className="text-slate-500 font-bold uppercase text-[10px] block mb-0.5">
+              <span className="text-slate-500 font-bold uppercase text-[11px] block mb-0.5">
                 Concepto de la Operación:
               </span>
               <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 font-semibold text-slate-900 dark:text-slate-100">
@@ -205,7 +205,7 @@ export default function ImprimirReciboCCModal({
             {/* Medios de pago (si aplica) */}
             {mediosPago.length > 0 && (
               <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-1.5">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1.5">
                   Detalle de Valores / Medios de Pago Recibidos
                 </span>
                 <table className="w-full text-left text-[11px] border border-slate-200 dark:border-slate-800">
@@ -223,7 +223,7 @@ export default function ImprimirReciboCCModal({
                           {String(mp.metodo || 'PAGO').replace(/_/g, ' ')}
                         </td>
                         <td className="py-1.5 px-2.5 text-slate-500">{mp.referencia || '—'}</td>
-                        <td className="py-1.5 px-2.5 text-right font-black">
+                        <td className="py-1.5 px-2.5 text-right font-bold">
                           {formatARS(mp.monto)}
                         </td>
                       </tr>
@@ -236,7 +236,7 @@ export default function ImprimirReciboCCModal({
             {/* Comprobantes Imputados */}
             {imputaciones.length > 0 && (
               <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block mb-1.5">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 block mb-1.5">
                   Imputación a Comprobantes de Cuenta Corriente
                 </span>
                 <table className="w-full text-left text-[11px] border border-slate-200 dark:border-slate-800">
@@ -258,7 +258,7 @@ export default function ImprimirReciboCCModal({
                         <td className="py-1.5 px-2.5 text-right font-bold text-emerald-600">
                           {formatARS(imp.montoImputado)}
                         </td>
-                        <td className="py-1.5 px-2.5 text-right font-black">
+                        <td className="py-1.5 px-2.5 text-right font-bold">
                           {formatARS(imp.saldoPosterior)}
                         </td>
                       </tr>
@@ -270,10 +270,10 @@ export default function ImprimirReciboCCModal({
 
             {/* Total del comprobante */}
             <div className="p-3.5 rounded-xl bg-slate-900 text-white print:bg-slate-100 print:text-black print:border print:border-slate-400 flex items-center justify-between">
-              <span className="text-xs font-black uppercase tracking-wider">
+              <span className="text-xs font-semibold uppercase tracking-wider">
                 Importe Total del Comprobante:
               </span>
-              <span className="text-lg font-black text-emerald-400 print:text-black">
+              <span className="text-lg font-bold text-emerald-400 print:text-black">
                 {formatARS(montoTotal)}
               </span>
             </div>
@@ -285,7 +285,7 @@ export default function ImprimirReciboCCModal({
             )}
 
             {/* Firma y conformidad */}
-            <div className="pt-8 grid grid-cols-2 gap-8 text-center text-[10px] text-slate-500">
+            <div className="pt-8 grid grid-cols-2 gap-8 text-center text-[11px] text-slate-500">
               <div className="border-t border-slate-400 pt-1.5">
                 Firma y Sello — Administración HDB
               </div>

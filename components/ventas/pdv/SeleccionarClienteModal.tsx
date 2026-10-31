@@ -109,13 +109,13 @@ export default function SeleccionarClienteModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[95] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div className="fixed inset-0 z-[95] flex items-center justify-center p-4 bg-slate-950/50-xs">
       <div className="bg-card w-full max-w-lg rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
           <div className="flex items-center gap-2">
             <User className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-            <h3 className="text-base font-black text-slate-900 dark:text-slate-100">
+            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
               Seleccionar Cliente
             </h3>
           </div>
@@ -247,7 +247,7 @@ export default function SeleccionarClienteModal({
                 <User className="w-4 h-4" />
               </div>
               <div>
-                <div className="text-xs font-black text-slate-900 dark:text-slate-100">
+                <div className="text-xs font-bold text-slate-900 dark:text-slate-100">
                   Consumidor Final
                 </div>
                 <div className="text-[11px] text-slate-400">Venta rápida sin identificación nominal</div>
@@ -341,10 +341,10 @@ export default function SeleccionarClienteModal({
                         {c.nombre}
                       </span>
                       {c.listaPrecio && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 font-semibold flex items-center gap-1">
+                        <span className="text-[11px] px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 font-semibold flex items-center gap-1">
                           <span>{c.listaPrecio.nombre}</span>
                           {c.listaPrecio.ivaDiscriminado && (
-                            <span className="text-[9px] px-1 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-bold border border-amber-300/40">
+                            <span className="text-[11px] px-1 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-bold border border-amber-300/40">
                               IVA Disc.
                             </span>
                           )}

@@ -169,20 +169,20 @@ export default function FaltantesView({ meta, onAdjustProduct }: FaltantesViewPr
       {/* Resumen Superior de Métricas */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
         <div className="p-3 rounded-xl bg-card border border-slate-200 dark:border-slate-800 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-slate-400 block">Total en Lista</span>
-          <span className="font-mono text-base font-black text-slate-900 dark:text-slate-100">{items.length}</span>
+          <span className="text-[11px] font-bold uppercase text-slate-400 block">Total en Lista</span>
+          <span className="font-mono text-base font-bold text-slate-900 dark:text-slate-100">{items.length}</span>
         </div>
         <div className="p-3 rounded-xl bg-rose-50/60 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-rose-700 dark:text-rose-400 block">Sin Stock (Quiebre)</span>
-          <span className="font-mono text-base font-black text-rose-700 dark:text-rose-400">{articulosCriticos}</span>
+          <span className="text-[11px] font-bold uppercase text-rose-700 dark:text-rose-400 block">Sin Stock (Quiebre)</span>
+          <span className="font-mono text-base font-bold text-rose-700 dark:text-rose-400">{articulosCriticos}</span>
         </div>
         <div className="p-3 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-amber-700 dark:text-amber-400 block">Bajo Mínimo</span>
-          <span className="font-mono text-base font-black text-amber-700 dark:text-amber-400">{articulosBajoMinimo}</span>
+          <span className="text-[11px] font-bold uppercase text-amber-700 dark:text-amber-400 block">Bajo Mínimo</span>
+          <span className="font-mono text-base font-bold text-amber-700 dark:text-amber-400">{articulosBajoMinimo}</span>
         </div>
         <div className="p-3 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-900/40 shadow-xs">
-          <span className="text-[10px] font-bold uppercase text-indigo-700 dark:text-indigo-400 block">Unidades Sugeridas</span>
-          <span className="font-mono text-base font-black text-indigo-700 dark:text-indigo-400">+{totalSugerido} u.</span>
+          <span className="text-[11px] font-bold uppercase text-indigo-700 dark:text-indigo-400 block">Unidades Sugeridas</span>
+          <span className="font-mono text-base font-bold text-indigo-700 dark:text-indigo-400">+{totalSugerido} u.</span>
         </div>
       </div>
 
@@ -202,7 +202,7 @@ export default function FaltantesView({ meta, onAdjustProduct }: FaltantesViewPr
                 }
               }}
               placeholder="Buscar SKU, barra o descripción..."
-              className="w-full pl-8 pr-7 h-8 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full pl-8 pr-7 h-8 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             />
             {search && (
               <button
@@ -284,7 +284,7 @@ export default function FaltantesView({ meta, onAdjustProduct }: FaltantesViewPr
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[11px] font-black text-slate-500 uppercase tracking-wider select-none whitespace-nowrap">
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none whitespace-nowrap">
                 {[
                   { key: 'sku', label: 'SKU', className: 'py-2.5 px-3 w-28', align: 'left' },
                   { key: 'descripcion', label: 'Descripción', className: 'py-2.5 px-3', align: 'left' },
@@ -414,7 +414,7 @@ export default function FaltantesView({ meta, onAdjustProduct }: FaltantesViewPr
                     </td>
                     <td className="py-2 px-3 text-right whitespace-nowrap">
                       <span
-                        className={`font-mono text-xs font-black ${
+                        className={`font-mono text-xs font-bold ${
                           it.stockActual <= 0
                             ? 'text-rose-600 dark:text-rose-400'
                             : it.stockMinimo > 0 && it.stockActual <= it.stockMinimo
@@ -433,7 +433,7 @@ export default function FaltantesView({ meta, onAdjustProduct }: FaltantesViewPr
                     </td>
                     <td className="py-2 px-3 text-right whitespace-nowrap">
                       {it.cantidadSugeridaReposicion > 0 ? (
-                        <span className="font-mono text-xs font-black text-indigo-600 dark:text-indigo-400 inline-flex items-center">
+                        <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400 inline-flex items-center">
                           <TrendingUp className="w-3.5 h-3.5 mr-0.5 inline" />
                           +{it.cantidadSugeridaReposicion}
                         </span>
@@ -441,12 +441,12 @@ export default function FaltantesView({ meta, onAdjustProduct }: FaltantesViewPr
                         <span className="font-mono text-slate-400 text-xs">0</span>
                       )}
                     </td>
-                    <td className="py-2 px-2 text-center font-bold text-[10px] text-slate-500 uppercase">
+                    <td className="py-2 px-2 text-center font-bold text-[11px] text-slate-500 uppercase">
                       {it.unidad}
                     </td>
                     <td className="py-2 px-2.5 text-center whitespace-nowrap">
                       <span
-                        className={`inline-block px-2 py-0.5 rounded text-[10px] font-black border uppercase tracking-wider ${it.estadoBadge}`}
+                        className={`inline-block px-2 py-0.5 rounded text-[11px] font-semibold border uppercase tracking-wider ${it.estadoBadge}`}
                       >
                         {it.estadoLabel}
                       </span>

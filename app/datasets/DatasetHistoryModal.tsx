@@ -20,7 +20,7 @@ export default function DatasetHistoryModal({ dataset, onClose }: any) {
     }, [dataset.id]);
 
     return (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-950/50 z-[200] flex items-center justify-center p-4">
             <div className="bg-card text-card-foreground rounded-2xl shadow-2xl w-full max-w-4xl max-h-[80vh] flex flex-col overflow-hidden border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200">
                 <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700 shrink-0">
                     <div>
@@ -51,7 +51,7 @@ export default function DatasetHistoryModal({ dataset, onClose }: any) {
                                             <span className="font-bold text-sm text-slate-700 dark:text-slate-200">
                                                 {new Date(record.fechaEjecucion).toLocaleString()}
                                             </span>
-                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
+                                            <span className={`text-[11px] font-bold px-2 py-0.5 rounded uppercase ${
                                                 (record.estado === 'Exitosa' || record.estado === 'Exito') ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' :
                                                 record.estado === 'Timeout' ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300' :
                                                 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
@@ -75,14 +75,14 @@ export default function DatasetHistoryModal({ dataset, onClose }: any) {
                                         </div>
                                     )}
                                     {(record.estado === 'Exitosa' || record.estado === 'Exito') && (
-                                        <div className="text-xs text-slate-500 dark:text-slate-400 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg">
+                                        <div className="text-xs text-slate-500 dark:text-slate-400 bg-card border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg">
                                             <div className="flex justify-between items-center mb-1">
                                                 <span className="font-semibold text-slate-600 dark:text-slate-300">
                                                     Tipo de Ejecución: <strong className="text-indigo-600 dark:text-indigo-400">{record.tipo || record.tipoTrigger || 'Manual'}</strong>
                                                 </span>
                                             </div>
                                             {(record.consultaEjecutada || record.queryEjecutada) && (
-                                                <div className="mt-1 line-clamp-2 font-mono text-[10px] text-slate-500 dark:text-slate-400 bg-muted/40 p-1.5 rounded select-all" title={record.consultaEjecutada || record.queryEjecutada}>
+                                                <div className="mt-1 line-clamp-2 font-mono text-[11px] text-slate-500 dark:text-slate-400 bg-muted/40 p-1.5 rounded select-all" title={record.consultaEjecutada || record.queryEjecutada}>
                                                     {record.consultaEjecutada || record.queryEjecutada}
                                                 </div>
                                             )}

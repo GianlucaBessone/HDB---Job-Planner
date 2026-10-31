@@ -160,7 +160,7 @@ export default function SearchableSelect({
             onKeyDown={handleKeyDown}
         >
             {label && (
-                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">
+                <label className="flex items-center gap-2 px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                     {icon} {label}
                 </label>
             )}
@@ -176,7 +176,7 @@ export default function SearchableSelect({
                     }
                     mouseDownRef.current = false;
                 }}
-                className={`w-full min-h-[44px] md:h-[50px] bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-2 md:py-3 px-3 md:px-4 flex items-center justify-between cursor-pointer transition-all text-sm ${
+                className={`w-full min-h-[44px] md:h-[50px] bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl md:rounded-2xl py-2 md:py-3 px-3 md:px-4 flex items-center justify-between cursor-pointer transition-all text-sm ${
                     isOpen ? 'ring-4 ring-primary/10 border-primary' : 'hover:border-slate-300 dark:hover:border-slate-600'
                 } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                 tabIndex={disabled ? -1 : 0}
@@ -200,7 +200,7 @@ export default function SearchableSelect({
 
             {/* ── Dropdown panel ── */}
             {isOpen && (
-                <div className="absolute z-[110] left-0 right-0 mt-1.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-[2rem] shadow-2xl animate-in zoom-in-95 duration-150 overflow-hidden min-w-full">
+                <div className="absolute z-[110] left-0 right-0 mt-1.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-3xl shadow-2xl animate-in zoom-in-95 duration-150 overflow-hidden min-w-full">
 
                     {/* Search bar */}
                     <div className="p-3 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
@@ -239,7 +239,7 @@ export default function SearchableSelect({
                     <div className="max-h-60 overflow-y-auto p-2">
                         {filteredOptions.length === 0 ? (
                             <div className="p-4 text-center space-y-3">
-                                <p className="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">
+                                <p className="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
                                     No se encontraron resultados
                                 </p>
                                 {allowCreate && searchTerm.trim() && onCreateOption && (
@@ -266,7 +266,7 @@ export default function SearchableSelect({
                                 return (
                                     <div key={`container-${opt.id}`}>
                                         {showGroupHeader && (
-                                            <div className="px-3 pt-3 pb-1 text-[10px] font-black text-primary/70 uppercase tracking-widest border-b border-primary/10 mb-1">
+                                            <div className="px-3 pt-3 pb-1 text-[11px] font-semibold text-primary/70 uppercase tracking-wider border-b border-primary/10 mb-1">
                                                 {opt.group}
                                             </div>
                                         )}
@@ -281,7 +281,7 @@ export default function SearchableSelect({
                                                 isSelected
                                                     ? 'bg-primary/20 text-primary'
                                                     : isHighlighted
-                                                        ? 'bg-muted text-muted-foreground/50 text-slate-900 dark:text-slate-50'
+                                                        ? 'bg-muted text-slate-900 dark:text-slate-50'
                                                         : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80'
                                             }`}
                                         >

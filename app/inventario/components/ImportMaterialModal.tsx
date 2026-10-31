@@ -26,15 +26,15 @@ export function ImportMaterialModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-card text-card-foreground w-full max-w-md rounded-[2rem] shadow-2xl p-6 border border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-200 space-y-6">
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in duration-200">
+            <div className="bg-card text-card-foreground w-full max-w-md rounded-3xl shadow-2xl p-6 border border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-200 space-y-6">
                 <div className="flex justify-between items-center">
-                    <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-2"><Upload className="w-5 h-5"/> Importar Excel</h3>
-                    <button onClick={onClose} aria-label="Cerrar modal" className="p-2 bg-muted text-muted-foreground text-slate-400 rounded-full"><X className="w-5 h-5"/></button>
+                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2"><Upload className="w-5 h-5"/> Importar Excel</h3>
+                    <button onClick={onClose} aria-label="Cerrar modal" className="p-2 bg-muted text-slate-400 rounded-full"><X className="w-5 h-5"/></button>
                 </div>
                 
                 <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
-                    <h4 className="text-xs font-black text-amber-700 uppercase mb-1 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" /> Importante</h4>
+                    <h4 className="text-xs font-semibold text-amber-700 uppercase mb-1 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" /> Importante</h4>
                     <p className="text-xs text-amber-600 mb-2">Para importar, el archivo Excel <b>DEBE</b> tener exactamente las columnas: <code className="font-bold">Codigo, Material, Precio Venta, Costo</code>.</p>
                     <p className="text-xs text-amber-600">Si un Código ya existe será actualizado (sobreescribiendo cualquier precio manual anterior).</p>
                 </div>

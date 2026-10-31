@@ -14,7 +14,7 @@ export function TimePicker({ value, onChange, label, placeholder = 'Seleccionar 
     return (
         <div className="relative">
             {label && (
-                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1 mb-2">
+                <label className="flex items-center gap-2 px-1 mb-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                     {label}
                 </label>
             )}
@@ -25,7 +25,7 @@ export function TimePicker({ value, onChange, label, placeholder = 'Seleccionar 
                     type="time"
                     value={value || ''}
                     onChange={(e) => onChange(e.target.value)}
-                    className={`w-full bg-background text-left flex items-center gap-3 border border-slate-200 dark:border-slate-700 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all h-[52px] font-bold ${value ? 'text-slate-700 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500 font-medium'}`}
+                    className={`w-full bg-card text-left flex items-center gap-3 border border-slate-200 dark:border-slate-700 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all h-[52px] font-bold ${value ? 'text-slate-700 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500 font-medium'}`}
                     placeholder={placeholder}
                 />
             </div>

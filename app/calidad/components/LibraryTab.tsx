@@ -319,9 +319,9 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
     const getModuleTheme = (codigo: string) => {
         if (codigo === '1') {
             return {
-                bgGradient: 'from-indigo-500/10 via-purple-500/5 to-transparent',
+                bgGradient: 'bg-indigo-500/5',
                 borderColor: 'border-indigo-500/30 dark:border-indigo-500/20',
-                badgeBg: 'bg-indigo-600 text-white shadow-indigo-500/20',
+                badgeBg: 'bg-indigo-600 text-white',
                 titleColor: 'text-indigo-950 dark:text-indigo-100',
                 iconBg: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300',
                 IconComp: Compass
@@ -329,18 +329,18 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
         }
         if (codigo === '2') {
             return {
-                bgGradient: 'from-emerald-500/10 via-teal-500/5 to-transparent',
+                bgGradient: 'bg-emerald-500/5',
                 borderColor: 'border-emerald-500/30 dark:border-emerald-500/20',
-                badgeBg: 'bg-emerald-600 text-white shadow-emerald-500/20',
+                badgeBg: 'bg-emerald-600 text-white',
                 titleColor: 'text-emerald-950 dark:text-emerald-100',
                 iconBg: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300',
                 IconComp: Layers
             };
         }
         return {
-            bgGradient: 'from-amber-500/10 via-orange-500/5 to-transparent',
+            bgGradient: 'bg-amber-500/5',
             borderColor: 'border-amber-500/30 dark:border-amber-500/20',
-            badgeBg: 'bg-amber-600 text-white shadow-amber-500/20',
+            badgeBg: 'bg-amber-600 text-white',
             titleColor: 'text-amber-950 dark:text-amber-100',
             iconBg: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300',
             IconComp: LifeBuoy
@@ -358,7 +358,7 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                             <span className="p-2 rounded-2xl bg-primary/10 text-primary">
                                 <FolderTree className="w-5 h-5" />
                             </span>
-                            <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+                            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
                                 Estructura de Control Documental SGI (ISO 9001)
                             </h2>
                         </div>
@@ -371,7 +371,7 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                     <div className="flex flex-wrap items-center gap-2">
                         <button
                             onClick={() => handleOpenNewDoc()}
-                            className="flex items-center gap-2 bg-primary text-white px-4 py-2.5 rounded-2xl font-black text-xs hover:bg-primary/90 transition-all active:scale-95 shadow-md shadow-primary/20"
+                            className="flex items-center gap-2 bg-primary text-white px-4 py-2.5 rounded-2xl font-bold text-xs hover:bg-primary-hover transition-all"
                         >
                             <Plus className="w-4 h-4" />
                             <span>Nuevo Documento</span>
@@ -379,7 +379,7 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
 
                         <button
                             onClick={() => handleOpenQuickUpload()}
-                            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-2xl font-black text-xs transition-all active:scale-95 shadow-md shadow-emerald-600/20"
+                            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-2xl font-bold text-xs transition-all"
                         >
                             <UploadCloud className="w-4 h-4" />
                             <span>Subir Archivo Rápido</span>
@@ -387,7 +387,7 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
 
                         <button
                             onClick={() => handleOpenNewSubAccess()}
-                            className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all active:scale-95"
+                            className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all"
                             title="Gestionar módulos y sub-accesos"
                         >
                             <Settings2 className="w-4 h-4" />
@@ -409,7 +409,7 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                             aria-selected={viewMode === 'structured'}
                             tabIndex={viewMode === 'structured' ? 0 : -1}
                             onClick={() => setViewMode('structured')}
-                            className={`flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+                            className={`flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                                 viewMode === 'structured'
                                     ? 'bg-card text-card-foreground text-primary shadow-xs'
                                     : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
@@ -423,7 +423,7 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                             aria-selected={viewMode === 'grid'}
                             tabIndex={viewMode === 'grid' ? 0 : -1}
                             onClick={() => setViewMode('grid')}
-                            className={`flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+                            className={`flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                                 viewMode === 'grid'
                                     ? 'bg-card text-card-foreground text-primary shadow-xs'
                                     : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
@@ -437,7 +437,7 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                             aria-selected={viewMode === 'table'}
                             tabIndex={viewMode === 'table' ? 0 : -1}
                             onClick={() => setViewMode('table')}
-                            className={`flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+                            className={`flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                                 viewMode === 'table'
                                     ? 'bg-card text-card-foreground text-primary shadow-xs'
                                     : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
@@ -457,7 +457,7 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                                 placeholder="Buscar por código, título o norma..."
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
-                                className="w-full pl-9 pr-4 py-2 bg-background border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none focus:border-primary"
+                                className="w-full pl-9 pr-4 py-2 bg-card border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold outline-none focus:border-primary"
                             />
                         </div>
 
@@ -504,7 +504,7 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                             >
                                 {/* Module Banner Header */}
                                 <div
-                                    className={`px-6 py-4 bg-gradient-to-r ${theme.bgGradient} flex items-center justify-between gap-4 cursor-pointer select-none border-b border-slate-100 dark:border-slate-800/80 outline-none focus-visible:ring-2 focus-visible:ring-primary`}
+                                    className={`px-6 py-4 ${theme.bgGradient} flex items-center justify-between gap-4 cursor-pointer select-none border-b border-slate-100 dark:border-slate-800/80 outline-none focus-visible:ring-2 focus-visible:ring-primary`}
                                     onClick={() => toggleModuleExpand(mod.codigo)}
                                     role="button"
                                     tabIndex={0}
@@ -518,15 +518,15 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                                     }}
                                 >
                                     <div className="flex items-center gap-3.5 min-w-0">
-                                        <div className={`w-11 h-11 rounded-2xl ${theme.iconBg} flex items-center justify-center font-black shrink-0 shadow-xs`}>
+                                        <div className={`w-11 h-11 rounded-2xl ${theme.iconBg} flex items-center justify-center font-bold shrink-0 shadow-xs`}>
                                             <ModIconComp className="w-5 h-5" />
                                         </div>
                                         <div className="min-w-0">
                                             <div className="flex items-center gap-2">
-                                                <span className={`text-[11px] font-black uppercase font-mono px-2 py-0.5 rounded-lg ${theme.badgeBg} shadow-sm`}>
+                                                <span className={`text-[11px] font-semibold uppercase font-mono px-2 py-0.5 rounded-lg ${theme.badgeBg} shadow-sm`}>
                                                     Módulo {mod.codigo}
                                                 </span>
-                                                <h3 className={`text-base font-black ${theme.titleColor} truncate`}>
+                                                <h3 className={`text-base font-bold ${theme.titleColor} truncate`}>
                                                     {mod.nombre}
                                                 </h3>
                                             </div>
@@ -540,7 +540,7 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
 
                                     <div className="flex items-center gap-3 shrink-0">
                                         <div className="text-right hidden sm:block">
-                                            <span className="text-xs font-black text-slate-700 dark:text-slate-300">
+                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                                                 {mod.subAccesses.length} Sub-accesos
                                             </span>
                                             <p className="text-[11px] font-bold text-slate-400">
@@ -585,16 +585,16 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                                                                     </div>
                                                                     <div className="min-w-0">
                                                                         <div className="flex items-center gap-1.5">
-                                                                            <span className="text-[10px] font-mono font-black text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                                                                            <span className="text-[11px] font-mono font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
                                                                                 {sub.codigo}
                                                                             </span>
-                                                                            <span className="text-[10px] font-bold text-slate-400">
+                                                                            <span className="text-[11px] font-bold text-slate-400">
                                                                                 {isFilterActive
                                                                                     ? `(${subDocs.length}/${subTotalDocs.length})`
                                                                                     : `(${subTotalDocs.length})`}
                                                                             </span>
                                                                         </div>
-                                                                        <h4 className="text-sm font-black text-slate-800 dark:text-slate-100 truncate leading-snug mt-0.5">
+                                                                        <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate leading-snug mt-0.5">
                                                                             {sub.nombre}
                                                                         </h4>
                                                                     </div>
@@ -637,11 +637,11 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                                                                             >
                                                                                 <div className="min-w-0 flex-1">
                                                                                     <div className="flex items-center gap-1.5">
-                                                                                        <span className="text-[10px] font-mono font-bold text-slate-500">
+                                                                                        <span className="text-[11px] font-mono font-bold text-slate-500">
                                                                                             {doc.codigoDocumental}
                                                                                         </span>
                                                                                         <span
-                                                                                            className={`text-[9px] font-black uppercase px-1.5 py-0.2 rounded ${
+                                                                                            className={`text-[11px] font-semibold uppercase px-1.5 py-0.2 rounded ${
                                                                                                 isVigente
                                                                                                     ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400'
                                                                                                     : isObsoleto
@@ -691,7 +691,7 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                                                                         <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
                                                                             0 coincidentes con el filtro
                                                                         </p>
-                                                                        <p className="text-[10px] text-slate-400">
+                                                                        <p className="text-[11px] text-slate-400">
                                                                             {subTotalDocs.length} doc(s) con otros estados
                                                                         </p>
                                                                     </div>
@@ -700,7 +700,7 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                                                                         <p className="text-[11px] font-bold text-slate-400">
                                                                             Sin documentos cargados en este acceso
                                                                         </p>
-                                                                        <p className="text-[10px] text-slate-400">
+                                                                        <p className="text-[11px] text-slate-400">
                                                                             Crea un documento o sube un archivo propio
                                                                         </p>
                                                                     </div>
@@ -712,7 +712,7 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => handleOpenNewDoc(sub.id)}
-                                                                    className="flex-1 flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-xl bg-primary/10 hover:bg-primary text-primary hover:text-white text-[11px] font-black transition-all"
+                                                                    className="flex-1 flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-xl bg-primary/10 hover:bg-primary text-primary hover:text-white text-[11px] font-bold transition-all"
                                                                 >
                                                                     <Plus className="w-3 h-3" />
                                                                     <span>Crear Doc</span>
@@ -720,7 +720,7 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => handleOpenQuickUpload(sub.id)}
-                                                                    className="flex-1 flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-600 text-emerald-600 dark:text-emerald-400 hover:text-white text-[11px] font-black transition-all"
+                                                                    className="flex-1 flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-600 text-emerald-600 dark:text-emerald-400 hover:text-white text-[11px] font-bold transition-all"
                                                                 >
                                                                     <UploadCloud className="w-3 h-3" />
                                                                     <span>Subir Archivo</span>
@@ -757,7 +757,7 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                                     <span className="p-1.5 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-600 font-bold">
                                         <HelpCircle className="w-4 h-4" />
                                     </span>
-                                    <h3 className="text-sm font-black text-slate-800 dark:text-slate-100">
+                                    <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">
                                         Documentos sin Sub-acceso Asignado ({unassignedDocs.length}{isFilterActive ? ` de ${totalUnassignedCount}` : ''})
                                     </h3>
                                 </div>
@@ -775,7 +775,7 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                                     >
                                         <div className="flex items-start justify-between gap-2">
                                             <div className="min-w-0 flex-1">
-                                                <span className="text-[10px] font-mono font-black text-slate-500">
+                                                <span className="text-[11px] font-mono font-bold text-slate-500">
                                                     {doc.codigoDocumental}
                                                 </span>
                                                 <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate mt-0.5">
@@ -813,7 +813,7 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                                         </div>
 
                                         <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800/80" onClick={e => e.stopPropagation()}>
-                                            <label className="block text-[9px] font-black text-slate-500 uppercase tracking-wider mb-1">
+                                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                                 Clasificar en:
                                             </label>
                                             <select
@@ -851,7 +851,7 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse text-xs">
                             <thead>
-                                <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 font-black text-slate-500 uppercase tracking-wider text-[11px] select-none">
+                                <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 font-semibold text-slate-500 uppercase tracking-wider text-[11px] select-none">
                                     <th 
                                         className="py-3 px-4 cursor-pointer hover:text-primary transition-colors"
                                         onClick={() => handleSort('codigo')}
@@ -953,7 +953,7 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                                                         {doc.titulo}
                                                     </div>
                                                     {doc.requiereConfirmacionLectura && (
-                                                        <span className="inline-block mt-0.5 text-[9px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-1.5 py-0.2 rounded border border-indigo-200/50">
+                                                        <span className="inline-block mt-0.5 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-1.5 py-0.2 rounded border border-indigo-200/50">
                                                             Lectura obligatoria
                                                         </span>
                                                     )}
@@ -980,7 +980,7 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                                                     )}
                                                 </td>
                                                 <td className="py-3 px-3 text-center whitespace-nowrap">
-                                                    <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${
+                                                    <span className={`text-[11px] font-semibold uppercase px-2 py-0.5 rounded ${
                                                         isVigente
                                                             ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400'
                                                             : doc.estado === 'borrador'
@@ -1051,11 +1051,11 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                             >
                                 <div>
                                     <div className="flex justify-between items-start mb-2.5">
-                                        <span className="text-[10px] font-black font-mono bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-slate-600 dark:text-slate-300">
+                                        <span className="text-[11px] font-bold font-mono bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-slate-600 dark:text-slate-300">
                                             {doc.codigoDocumental}
                                         </span>
                                         <span
-                                            className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${
+                                            className={`text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded ${
                                                 isVigente
                                                     ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400'
                                                     : doc.estado === 'borrador'
@@ -1067,16 +1067,16 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                                         </span>
                                     </div>
 
-                                    <h3 className="font-black text-slate-800 dark:text-slate-100 text-base mb-1 line-clamp-2">
+                                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base mb-1 line-clamp-2">
                                         {doc.titulo}
                                     </h3>
 
                                     <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">
+                                        <span className="text-[11px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">
                                             {doc.tipoDocumento} • {doc.area}
                                         </span>
                                         {sub && (
-                                            <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded truncate max-w-[200px]">
+                                            <span className="text-[11px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded truncate max-w-[200px]">
                                                 {sub.codigo} {sub.nombre}
                                             </span>
                                         )}
@@ -1101,7 +1101,7 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                                         )}
                                         <button
                                             onClick={() => setSelectedDocId(doc.id)}
-                                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-black text-primary hover:bg-primary/10 rounded-xl transition-colors"
+                                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-primary hover:bg-primary/10 rounded-xl transition-colors"
                                         >
                                             <Eye className="w-3.5 h-3.5" />
                                             <span>Detalle</span>
@@ -1123,7 +1123,7 @@ export default function LibraryTab({ user, initialDocId }: { user: any; initialD
                     {filteredDocs.length === 0 && (
                         <div className="col-span-full text-center py-16 bg-card rounded-3xl border border-slate-200 dark:border-slate-800 p-8 space-y-3">
                             <FileText className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600" />
-                            <h4 className="text-sm font-black text-slate-700 dark:text-slate-300">
+                            <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">
                                 No se encontraron documentos
                             </h4>
                             <p className="text-xs text-slate-400">

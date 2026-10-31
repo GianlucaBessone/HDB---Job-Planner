@@ -53,17 +53,17 @@ export default function RecursosPage() {
     }, [projects, operators]);
 
     return (
-        <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
+        <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-200 pb-20">
             <ProjectsHeader activeTabId="recursos" />
             
             {isLoading ? (
                 <div className="flex flex-col items-center justify-center py-32 space-y-4">
                     <Loader2 className="w-10 h-10 text-primary animate-spin" />
-                    <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Calculando carga de recursos...</p>
+                    <p className="text-slate-500 font-bold uppercase tracking-wider text-xs">Calculando carga de recursos...</p>
                 </div>
             ) : workload.length === 0 ? (
-                <div className="py-24 flex flex-col items-center justify-center bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-[2.5rem] shadow-sm border-dashed">
-                    <div className="p-6 bg-background text-foreground/50 rounded-full mb-6">
+                <div className="py-24 flex flex-col items-center justify-center bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-3xl shadow-sm border-dashed">
+                    <div className="p-6 bg-background text-foreground rounded-full mb-6">
                         <Users className="w-12 h-12 opacity-20" />
                     </div>
                     <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Sin recursos asignados</h2>
@@ -74,16 +74,16 @@ export default function RecursosPage() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {workload.map(op => (
-                        <div key={op.id} className="bg-card border border-slate-200 dark:border-slate-700 rounded-[2rem] p-6 shadow-sm flex flex-col">
+                        <div key={op.id} className="bg-card border border-slate-200 dark:border-slate-700 rounded-3xl p-6 shadow-sm flex flex-col">
                             <div className="flex items-center gap-4 mb-6">
                                 <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 font-bold text-lg shrink-0">
                                     {op.nombreCompleto.charAt(0).toUpperCase()}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 truncate">{op.nombreCompleto}</h3>
-                                    <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">{op.role || 'Operador'}</p>
+                                    <p className="text-xs text-slate-500 uppercase tracking-wider font-bold">{op.role || 'Operador'}</p>
                                 </div>
-                                <div className={`px-3 py-1.5 rounded-xl text-xs font-black ${
+                                <div className={`px-3 py-1.5 rounded-xl text-xs font-bold ${
                                     op.load > 3 ? 'bg-red-50 text-red-600' : 
                                     op.load > 1 ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'
                                 }`}>

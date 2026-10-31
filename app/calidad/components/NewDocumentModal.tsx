@@ -361,7 +361,7 @@ export default function NewDocumentModal({
     // En document.body para cubrir también el encabezado de la app a pantalla completa.
     return createPortal(
         <div
-            className="fixed inset-0 z-[70] flex bg-slate-900/50 backdrop-blur-sm p-2 sm:p-4"
+            className="fixed inset-0 z-[70] flex bg-slate-950/50 p-2 sm:p-4"
             onClick={(e) => {
                 if (e.target === e.currentTarget) onClose();
             }}
@@ -369,7 +369,7 @@ export default function NewDocumentModal({
             aria-modal="true"
             aria-label="Nuevo Documento Controlado"
         >
-            <div className={`relative bg-card text-card-foreground rounded-2xl sm:rounded-3xl shadow-xl w-full h-full overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col transition-all duration-300 ${showAiDrawer ? 'sm:pr-[420px]' : ''}`}>
+            <div className={`relative bg-card text-card-foreground rounded-2xl sm:rounded-3xl shadow-xl w-full h-full overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col transition-all duration-200 ${showAiDrawer ? 'sm:pr-[420px]' : ''}`}>
                 {/* Header */}
                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-background text-foreground">
                     <div className="flex items-center gap-3">
@@ -385,7 +385,7 @@ export default function NewDocumentModal({
                         <button
                             type="button"
                             onClick={() => setShowAiDrawer(true)}
-                            className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-750 hover:to-indigo-750 text-white rounded-xl shadow-md shadow-indigo-600/10 hover:shadow-indigo-600/20 active:scale-95 transition-all"
+                            className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold bg-purple-600 text-white rounded-xl transition-all"
                         >
                             <Sparkles className="w-3.5 h-3.5" />
                             <span>Redactar con IA</span>
@@ -399,11 +399,11 @@ export default function NewDocumentModal({
                 {/* Main Form Area */}
                 <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto flex flex-col md:flex-row">
                     {/* Left Sidebar Steps Selector */}
-                    <div className="w-full md:w-64 bg-background text-foreground/50 border-r border-slate-100 dark:border-slate-800 p-4 space-y-2 flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible">
+                    <div className="w-full md:w-64 bg-background text-foreground border-r border-slate-100 dark:border-slate-800 p-4 space-y-2 flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible">
                         <button
                             type="button"
                             onClick={() => setActiveStep('general')}
-                            className={`w-full text-left px-4 py-3 rounded-2xl text-xs font-bold transition-all flex items-center gap-3 shrink-0 ${activeStep === 'general' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/10' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`w-full text-left px-4 py-3 rounded-2xl text-xs font-bold transition-all flex items-center gap-3 shrink-0 ${activeStep === 'general' ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                         >
                             <FileText className="w-4 h-4" />
                             <span>Datos Generales</span>
@@ -413,19 +413,19 @@ export default function NewDocumentModal({
 
                         {/* Format Switcher */}
                         <div className="p-2 bg-indigo-50/50 dark:bg-indigo-950/20 rounded-2xl hidden md:block space-y-1">
-                            <span className="text-[9px] font-bold text-indigo-500 dark:text-indigo-400 uppercase tracking-widest px-2">Formato</span>
+                            <span className="text-[11px] font-bold text-indigo-500 dark:text-indigo-400 uppercase tracking-wider px-2">Formato</span>
                             <div className="flex gap-1">
                                 <button
                                     type="button"
                                     onClick={() => setIsDigital(true)}
-                                    className={`flex-1 py-1.5 rounded-xl text-[10px] font-bold transition-all ${isDigital ? 'bg-card text-card-foreground text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:bg-white/50'}`}
+                                    className={`flex-1 py-1.5 rounded-xl text-[11px] font-bold transition-all ${isDigital ? 'bg-card text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:bg-white/50'}`}
                                 >
                                     Digital SOP
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setIsDigital(false)}
-                                    className={`flex-1 py-1.5 rounded-xl text-[10px] font-bold transition-all ${!isDigital ? 'bg-card text-card-foreground text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:bg-white/50'}`}
+                                    className={`flex-1 py-1.5 rounded-xl text-[11px] font-bold transition-all ${!isDigital ? 'bg-card text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:bg-white/50'}`}
                                 >
                                     Básico
                                 </button>
@@ -437,7 +437,7 @@ export default function NewDocumentModal({
                                 <button
                                     type="button"
                                     onClick={() => setActiveStep('content_1')}
-                                    className={`w-full text-left px-4 py-3 rounded-2xl text-xs font-bold transition-all flex items-center gap-3 shrink-0 ${activeStep === 'content_1' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/10' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                                    className={`w-full text-left px-4 py-3 rounded-2xl text-xs font-bold transition-all flex items-center gap-3 shrink-0 ${activeStep === 'content_1' ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                                 >
                                     <BookOpen className="w-4 h-4" />
                                     <span>1. Objetivo y Alcance</span>
@@ -446,7 +446,7 @@ export default function NewDocumentModal({
                                 <button
                                     type="button"
                                     onClick={() => setActiveStep('content_2')}
-                                    className={`w-full text-left px-4 py-3 rounded-2xl text-xs font-bold transition-all flex items-center gap-3 shrink-0 ${activeStep === 'content_2' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/10' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                                    className={`w-full text-left px-4 py-3 rounded-2xl text-xs font-bold transition-all flex items-center gap-3 shrink-0 ${activeStep === 'content_2' ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                                 >
                                     <Sparkles className="w-4 h-4" />
                                     <span>2. Desarrollo y Responsabilidad</span>
@@ -455,7 +455,7 @@ export default function NewDocumentModal({
                                 <button
                                     type="button"
                                     onClick={() => setActiveStep('content_3')}
-                                    className={`w-full text-left px-4 py-3 rounded-2xl text-xs font-bold transition-all flex items-center gap-3 shrink-0 ${activeStep === 'content_3' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/10' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                                    className={`w-full text-left px-4 py-3 rounded-2xl text-xs font-bold transition-all flex items-center gap-3 shrink-0 ${activeStep === 'content_3' ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                                 >
                                     <Link2 className="w-4 h-4" />
                                     <span>3. Glosario y Referencias</span>
@@ -468,7 +468,7 @@ export default function NewDocumentModal({
                         <button
                             type="button"
                             onClick={() => setActiveStep('signature')}
-                            className={`w-full text-left px-4 py-3 rounded-2xl text-xs font-bold transition-all flex items-center gap-3 shrink-0 ${activeStep === 'signature' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/10' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`w-full text-left px-4 py-3 rounded-2xl text-xs font-bold transition-all flex items-center gap-3 shrink-0 ${activeStep === 'signature' ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                         >
                             <FileSignature className="w-4 h-4" />
                             <span>Video y Firma Digital</span>
@@ -485,7 +485,7 @@ export default function NewDocumentModal({
                                 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Código Documental</label>
+                                        <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Código Documental</label>
                                         <div className="w-full bg-secondary text-secondary-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] flex items-center justify-between">
                                             {previewCode ? (
                                                 <span className="text-sm font-bold text-slate-800 dark:text-slate-100 font-mono">{previewCode}</span>
@@ -496,10 +496,10 @@ export default function NewDocumentModal({
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Tipo de Documento</label>
+                                        <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Tipo de Documento</label>
                                         <select
                                             value={formData.tipoDocumento} onChange={e => setFormData({ ...formData, tipoDocumento: e.target.value })}
-                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
+                                            className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
                                         >
                                             <option value="MQ">MQ - Manual de Calidad</option>
                                             <option value="PG">PG - Procedimientos Generales</option>
@@ -510,20 +510,20 @@ export default function NewDocumentModal({
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Título del Documento</label>
+                                    <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Título del Documento</label>
                                     <input
                                         required type="text" placeholder="Ej. Procedimiento Operativo para Pruebas Hidrostáticas..."
                                         value={formData.titulo} onChange={e => setFormData({ ...formData, titulo: e.target.value })}
-                                        className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
+                                        className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
                                     />
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Área / Sector</label>
+                                        <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Área / Sector</label>
                                         <select
                                             value={formData.area} onChange={e => setFormData({ ...formData, area: e.target.value })}
-                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
+                                            className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
                                         >
                                             <option value="GLB">GLB - Globales</option>
                                             <option value="MNG">MNG - Gerencia</option>
@@ -534,10 +534,10 @@ export default function NewDocumentModal({
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Sub-Acceso / Proceso SGI</label>
+                                        <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Sub-Acceso / Proceso SGI</label>
                                         <select
                                             value={formData.subAccessId} onChange={e => setFormData({ ...formData, subAccessId: e.target.value })}
-                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
+                                            className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
                                         >
                                             <option value="">(Sin asignar a sub-acceso)</option>
                                             {accessModules.map(mod => (
@@ -555,11 +555,11 @@ export default function NewDocumentModal({
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Revisado Por (Supervisor/QA) <span className="text-rose-500">*</span></label>
+                                        <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Revisado Por (Supervisor/QA) <span className="text-rose-500">*</span></label>
                                         <select
                                             required
                                             value={formData.revisadorId} onChange={e => setFormData({ ...formData, revisadorId: e.target.value })}
-                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
+                                            className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
                                         >
                                             <option value="">(Sin asignar)</option>
                                             {operators
@@ -570,11 +570,11 @@ export default function NewDocumentModal({
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Aprobado Por (QA/Gerente) <span className="text-rose-500">*</span></label>
+                                        <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Aprobado Por (QA/Gerente) <span className="text-rose-500">*</span></label>
                                         <select
                                             required
                                             value={formData.aprobadorId} onChange={e => setFormData({ ...formData, aprobadorId: e.target.value })}
-                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
+                                            className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
                                         >
                                             <option value="">(Sin asignar)</option>
                                             {operators
@@ -587,10 +587,10 @@ export default function NewDocumentModal({
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Etiquetas (Aplica a)</label>
-                                    <div className="flex flex-wrap gap-2 p-2.5 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl min-h-[44px]">
+                                    <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Etiquetas (Aplica a)</label>
+                                    <div className="flex flex-wrap gap-2 p-2.5 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl min-h-[44px]">
                                         {tagsList.map(tag => (
-                                            <label key={tag.id} className={`cursor-pointer px-3 py-1.5 text-xs font-bold rounded-lg border transition-colors ${formData.tags.includes(tag.name) ? 'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800' : 'bg-white text-slate-600 border-slate-200 hover:bg-muted text-muted-foreground dark:text-slate-300 dark:border-slate-700'}`}>
+                                            <label key={tag.id} className={`cursor-pointer px-3 py-1.5 text-xs font-bold rounded-lg border transition-colors ${formData.tags.includes(tag.name) ? 'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800' : 'bg-white text-slate-600 border-slate-200 hover:bg-muted dark:text-slate-300 dark:border-slate-700'}`}>
                                                 <input
                                                     type="checkbox"
                                                     className="hidden"
@@ -610,7 +610,7 @@ export default function NewDocumentModal({
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Operadores Afectados Directamente (Sin etiquetas)</label>
+                                    <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Operadores Afectados Directamente (Sin etiquetas)</label>
                                     
                                     {/* Selected operators as badges */}
                                     <div className="flex flex-wrap gap-1.5 mb-2">
@@ -642,7 +642,7 @@ export default function NewDocumentModal({
                                             placeholder="Buscar operador para agregar..."
                                             value={opSearchQuery}
                                             onChange={e => setOpSearchQuery(e.target.value)}
-                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold focus:border-indigo-500 outline-none"
+                                            className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold focus:border-indigo-500 outline-none"
                                         />
                                         {opSearchQuery.trim() && (
                                             <div className="absolute z-10 w-full mt-1 bg-popover text-popover-foreground border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-48 overflow-y-auto p-1.5 space-y-1">
@@ -663,7 +663,7 @@ export default function NewDocumentModal({
                                                             className="w-full text-left px-3 py-1.5 text-xs rounded-lg hover:bg-muted text-muted-foreground transition-colors font-bold flex items-center justify-between"
                                                         >
                                                             <span>{op.nombreCompleto || op.nombre}</span>
-                                                            <span className="text-[9px] uppercase px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded font-normal">
+                                                            <span className="text-[11px] uppercase px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded font-normal">
                                                                 {op.role || 'operador'}
                                                             </span>
                                                         </button>
@@ -673,7 +673,7 @@ export default function NewDocumentModal({
                                                     const query = opSearchQuery.toLowerCase();
                                                     return name.includes(query) && !formData.operatorIds.includes(op.id);
                                                 }).length === 0 && (
-                                                    <p className="text-[10px] text-slate-400 p-2 italic text-center">No se encontraron operadores disponibles</p>
+                                                    <p className="text-[11px] text-slate-400 p-2 italic text-center">No se encontraron operadores disponibles</p>
                                                 )}
                                             </div>
                                         )}
@@ -703,7 +703,7 @@ export default function NewDocumentModal({
 
                                     {formData.requiereCapacitacion && (
                                         <div className="pl-7 space-y-1 animate-in slide-in-from-top-2 duration-200">
-                                            <label className="block text-[10px] font-bold text-slate-400 uppercase">Vencimiento de la Capacitación (en meses)</label>
+                                            <label className="block text-[13px] font-medium text-slate-700 dark:text-slate-200">Vencimiento de la Capacitación (en meses)</label>
                                             <input
                                                 type="number"
                                                 min="1"
@@ -720,17 +720,17 @@ export default function NewDocumentModal({
                                 {!isDigital && (
                                     <>
                                         <div className="space-y-1.5">
-                                            <label className="block text-xs font-bold text-slate-500 uppercase">Descripción / Nota</label>
+                                            <label className="block text-[13px] font-medium text-slate-700 dark:text-slate-200">Descripción / Nota</label>
                                             <textarea
                                                 placeholder="Detalles sobre el alcance, manual de fabricante..."
                                                 value={digitalData.desarrollo}
                                                 onChange={e => setDigitalData({ ...digitalData, desarrollo: e.target.value })}
-                                                className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 outline-none h-20 resize-none"
+                                                className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 outline-none h-20 resize-none"
                                             />
                                         </div>
 
                                         <div className="space-y-1.5">
-                                            <label className="block text-xs font-bold text-slate-500 uppercase">Archivo Adjunto (PDF, Word, Planilla)</label>
+                                            <label className="block text-[13px] font-medium text-slate-700 dark:text-slate-200">Archivo Adjunto (PDF, Word, Planilla)</label>
                                             <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-center hover:border-indigo-400 transition-colors bg-muted/20">
                                                 {traditionalFile ? (
                                                     <div className="flex items-center justify-between gap-3 bg-card p-3 rounded-xl border border-slate-200 dark:border-slate-700">
@@ -738,7 +738,7 @@ export default function NewDocumentModal({
                                                             <FileText className="w-5 h-5 text-indigo-500 shrink-0" />
                                                             <div className="text-left truncate">
                                                                 <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">{traditionalFile.file.name}</p>
-                                                                <p className="text-[10px] text-slate-400">{(traditionalFile.file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                                                                <p className="text-[11px] text-slate-400">{(traditionalFile.file.size / (1024 * 1024)).toFixed(2)} MB</p>
                                                             </div>
                                                         </div>
                                                         <button
@@ -755,7 +755,7 @@ export default function NewDocumentModal({
                                                         <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
                                                             Selecciona el archivo para adjuntar al documento
                                                         </span>
-                                                        <span className="text-[10px] text-slate-400">
+                                                        <span className="text-[11px] text-slate-400">
                                                             PDF, Word (.docx), Excel (.xlsx) o Imágenes
                                                         </span>
                                                         <input
@@ -788,7 +788,7 @@ export default function NewDocumentModal({
                                         type="button"
                                         onClick={() => setActiveStep(isDigital ? 'content_1' : 'signature')}
                                         disabled={!!previewError || previewCode === 'Calculando...'}
-                                        className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         <span>Siguiente</span>
                                         <ChevronRight className="w-4 h-4" />
@@ -802,25 +802,25 @@ export default function NewDocumentModal({
                             <div className="space-y-5">
                                 <div>
                                     <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider">2. Objetivo</h3>
-                                    <p className="text-[10px] text-slate-400 font-bold mb-2">Describa con precisión cuál es el propósito final de este procedimiento y qué metas operativas busca estandarizar para HDB.</p>
+                                    <p className="text-[11px] text-slate-400 font-bold mb-2">Describa con precisión cuál es el propósito final de este procedimiento y qué metas operativas busca estandarizar para HDB.</p>
                                     <textarea
                                         required={isDigital}
                                         placeholder="Objetivo principal del procedimiento..."
                                         value={digitalData.objetivo}
                                         onChange={e => setDigitalData({ ...digitalData, objetivo: e.target.value })}
-                                        className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 outline-none h-32"
+                                        className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 outline-none h-32"
                                     />
                                 </div>
 
                                 <div>
                                     <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider">3. Alcance</h3>
-                                    <p className="text-[10px] text-slate-400 font-bold mb-2">Indique a qué sucursales, puestos de trabajo, personal técnico, herramientas o tipos de órdenes de servicio aplica directamente este procedimiento.</p>
+                                    <p className="text-[11px] text-slate-400 font-bold mb-2">Indique a qué sucursales, puestos de trabajo, personal técnico, herramientas o tipos de órdenes de servicio aplica directamente este procedimiento.</p>
                                     <textarea
                                         required={isDigital}
                                         placeholder="Alcance y límites de aplicación..."
                                         value={digitalData.alcance}
                                         onChange={e => setDigitalData({ ...digitalData, alcance: e.target.value })}
-                                        className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 outline-none h-32"
+                                        className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 outline-none h-32"
                                     />
                                 </div>
 
@@ -828,7 +828,7 @@ export default function NewDocumentModal({
                                     <button
                                         type="button"
                                         onClick={() => setActiveStep('general')}
-                                        className="px-5 py-2.5 bg-muted text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-350 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                                        className="px-5 py-2.5 bg-muted hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-350 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
                                     >
                                         <ChevronLeft className="w-4 h-4" />
                                         <span>Atrás</span>
@@ -836,7 +836,7 @@ export default function NewDocumentModal({
                                     <button
                                         type="button"
                                         onClick={() => setActiveStep('content_2')}
-                                        className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/10"
+                                        className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
                                     >
                                         <span>Siguiente</span>
                                         <ChevronRight className="w-4 h-4" />
@@ -850,34 +850,34 @@ export default function NewDocumentModal({
                             <div className="space-y-5">
                                 <div>
                                     <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider">4. Desarrollo de la Actividad</h3>
-                                    <p className="text-[10px] text-slate-400 font-bold mb-2">Describa detalladamente el desarrollo operativo paso a paso, tareas técnicas, métodos seguros, mejores prácticas.</p>
+                                    <p className="text-[11px] text-slate-400 font-bold mb-2">Describa detalladamente el desarrollo operativo paso a paso, tareas técnicas, métodos seguros, mejores prácticas.</p>
                                     <textarea
                                         required={isDigital}
                                         placeholder="Escriba los pasos secuenciales..."
                                         value={digitalData.desarrollo}
                                         onChange={e => setDigitalData({ ...digitalData, desarrollo: e.target.value })}
-                                        className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 outline-none h-48 sm:h-80 resize-y"
+                                        className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:border-indigo-500 outline-none h-48 sm:h-80 resize-y"
                                     />
                                 </div>
 
                                 <div>
                                     <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider">5. Responsabilidades</h3>
-                                    <p className="text-[10px] text-slate-400 font-bold mb-2">Detalle las responsabilidades de cada rol en la ejecución (ej: qué corresponde a Técnicos, Supervisores, QA).</p>
+                                    <p className="text-[11px] text-slate-400 font-bold mb-2">Detalle las responsabilidades de cada rol en la ejecución (ej: qué corresponde a Técnicos, Supervisores, QA).</p>
 
                                     {digitalData.responsabilidades.length > 0 && (
                                         <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 mb-3">
                                             <table className="w-full text-xs">
                                                 <thead className="bg-muted text-muted-foreground">
                                                     <tr>
-                                                        <th className="text-left px-3 py-2 font-black uppercase tracking-wider text-[10px] w-40">Rol</th>
-                                                        <th className="text-left px-3 py-2 font-black uppercase tracking-wider text-[10px]">Responsabilidad</th>
+                                                        <th className="text-left px-3 py-2 font-semibold uppercase tracking-wider text-[11px] w-40">Rol</th>
+                                                        <th className="text-left px-3 py-2 font-semibold uppercase tracking-wider text-[11px]">Responsabilidad</th>
                                                         <th className="w-10" />
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     {digitalData.responsabilidades.map((r, i) => (
                                                         <tr key={i} className="border-t border-slate-200 dark:border-slate-700 align-top">
-                                                            <td className="px-3 py-2 font-black text-indigo-600">{r.rol}</td>
+                                                            <td className="px-3 py-2 font-bold text-indigo-600">{r.rol}</td>
                                                             <td className="px-3 py-2 text-slate-600 dark:text-slate-300 whitespace-pre-wrap">{r.responsabilidad}</td>
                                                             <td className="px-2 py-2 text-right">
                                                                 <button
@@ -901,22 +901,22 @@ export default function NewDocumentModal({
 
                                     <div className="flex flex-col sm:flex-row gap-2 sm:items-start">
                                         <div className="sm:flex-shrink-0 sm:w-48">
-                                            <label className="text-[9px] font-bold text-slate-400 uppercase">Rol / Responsable</label>
+                                            <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Rol / Responsable</label>
                                             <input
                                                 value={newRol}
                                                 onChange={e => setNewRol(e.target.value)}
                                                 placeholder="Ej: Supervisor"
-                                                className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs font-bold outline-none focus:border-indigo-500"
+                                                className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs font-bold outline-none focus:border-indigo-500"
                                             />
                                         </div>
                                         <div className="flex-1">
-                                            <label className="text-[9px] font-bold text-slate-400 uppercase">Responsabilidad</label>
+                                            <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Responsabilidad</label>
                                             <textarea
                                                 value={newResp}
                                                 onChange={e => setNewResp(e.target.value)}
                                                 placeholder="Describa la responsabilidad..."
                                                 rows={2}
-                                                className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-indigo-500 resize-none"
+                                                className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-indigo-500 resize-none"
                                             />
                                         </div>
                                         <button
@@ -944,7 +944,7 @@ export default function NewDocumentModal({
                                     <button
                                         type="button"
                                         onClick={() => setActiveStep('content_1')}
-                                        className="px-5 py-2.5 bg-muted text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-350 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                                        className="px-5 py-2.5 bg-muted hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-350 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
                                     >
                                         <ChevronLeft className="w-4 h-4" />
                                         <span>Atrás</span>
@@ -952,7 +952,7 @@ export default function NewDocumentModal({
                                     <button
                                         type="button"
                                         onClick={() => setActiveStep('content_3')}
-                                        className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/10"
+                                        className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
                                     >
                                         <span>Siguiente</span>
                                         <ChevronRight className="w-4 h-4" />
@@ -971,14 +971,14 @@ export default function NewDocumentModal({
                                             <Sparkles className="w-4 h-4 text-indigo-500" />
                                             <span>6. Definiciones y Abreviaturas</span>
                                         </h3>
-                                        <p className="text-[10px] text-slate-400 font-bold">Use el asistente para agregar abreviaciones de forma rápida. Escriba o seleccione una y se autocompletará.</p>
+                                        <p className="text-[11px] text-slate-400 font-bold">Use el asistente para agregar abreviaciones de forma rápida. Escriba o seleccione una y se autocompletará.</p>
                                     </div>
 
                                     {/* Added definition list pills */}
                                     {digitalData.definiciones.length > 0 && (
                                         <div className="flex flex-wrap gap-2 p-3 bg-indigo-50/20 dark:bg-indigo-950/10 rounded-2xl border border-indigo-50/50 dark:border-indigo-950/20">
                                             {digitalData.definiciones.map((def, idx) => (
-                                                <div key={idx} className="flex items-center gap-2 bg-card text-card-foreground border border-slate-150 dark:border-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200">
+                                                <div key={idx} className="flex items-center gap-2 bg-card border border-slate-150 dark:border-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200">
                                                     <span className="text-indigo-600 dark:text-indigo-400">{def.term}:</span>
                                                     <span className="font-bold text-[11px] text-slate-500">{def.definition}</span>
                                                     <button type="button" onClick={() => handleRemoveDefinition(idx)} className="text-red-500 hover:text-red-700 transition-colors ml-1">
@@ -990,15 +990,15 @@ export default function NewDocumentModal({
                                     )}
 
                                     {/* Predefined Helper Quickbox */}
-                                    <div className="bg-background text-foreground/50 border border-slate-100 dark:border-slate-800 p-3 rounded-2xl space-y-2">
-                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Sugeridas y Frecuentes:</span>
+                                    <div className="bg-background text-foreground border border-slate-100 dark:border-slate-800 p-3 rounded-2xl space-y-2">
+                                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Sugeridas y Frecuentes:</span>
                                         <div className="flex flex-wrap gap-1.5 max-h-[80px] overflow-y-auto pr-2">
                                             {mergedAbbreviations.map((item, idx) => (
                                                 <button
                                                     key={idx}
                                                     type="button"
                                                     onClick={() => handleSelectAbbreviation(item)}
-                                                    className="px-2.5 py-1 bg-card text-card-foreground hover:bg-indigo-50 dark:hover:bg-indigo-950 text-[10px] font-bold border border-slate-150 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 transition-all hover:border-indigo-300"
+                                                    className="px-2.5 py-1 bg-card hover:bg-indigo-50 dark:hover:bg-indigo-950 text-[11px] font-bold border border-slate-150 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 transition-all hover:border-indigo-300"
                                                 >
                                                     {item.term}
                                                 </button>
@@ -1033,7 +1033,7 @@ export default function NewDocumentModal({
                                                 onChange={e => setSaveToFrequents(e.target.checked)}
                                                 className="w-3.5 h-3.5 rounded border-slate-350 text-indigo-600 focus:ring-indigo-500"
                                             />
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase">Guardar en mis abreviaciones frecuentes</span>
+                                            <span className="text-[11px] font-bold text-slate-400 uppercase">Guardar en mis abreviaciones frecuentes</span>
                                         </label>
                                     </div>
                                 </div>
@@ -1045,7 +1045,7 @@ export default function NewDocumentModal({
                                             <Link2 className="w-4 h-4 text-indigo-500" />
                                             <span>7. Referencias y Documentación Anexa</span>
                                         </h3>
-                                        <p className="text-[10px] text-slate-400 font-bold">Busque y agregue instructivos o procedimientos QMS internos, o añada manuales/normativas externas.</p>
+                                        <p className="text-[11px] text-slate-400 font-bold">Busque y agregue instructivos o procedimientos QMS internos, o añada manuales/normativas externas.</p>
                                     </div>
 
                                     {/* Added references list */}
@@ -1054,7 +1054,7 @@ export default function NewDocumentModal({
                                             {digitalData.referencias.map((ref, idx) => (
                                                 <div key={idx} className="flex items-center justify-between bg-background text-foreground border border-slate-150 dark:border-slate-800 p-2.5 rounded-xl">
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded">
+                                                        <span className="text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded">
                                                             {ref.codigo}
                                                         </span>
                                                         <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{ref.titulo}</span>
@@ -1071,8 +1071,8 @@ export default function NewDocumentModal({
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         
                                         {/* QMS Search helper */}
-                                        <div className="bg-background text-foreground/50 border border-slate-100 dark:border-slate-800 p-3 rounded-2xl relative space-y-2">
-                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Buscar en QMS Interno:</span>
+                                        <div className="bg-background text-foreground border border-slate-100 dark:border-slate-800 p-3 rounded-2xl relative space-y-2">
+                                            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Buscar en QMS Interno:</span>
                                             <div className="relative">
                                                 <input
                                                     type="text" placeholder="Escriba título o código..."
@@ -1097,7 +1097,7 @@ export default function NewDocumentModal({
                                                             className="w-full text-left px-3 py-2 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded-xl transition-colors flex items-center justify-between"
                                                         >
                                                             <div className="truncate pr-2">
-                                                                <span className="text-[9px] font-bold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 px-1.5 py-0.5 rounded mr-1.5">{doc.codigoDocumental}</span>
+                                                                <span className="text-[11px] font-bold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 px-1.5 py-0.5 rounded mr-1.5">{doc.codigoDocumental}</span>
                                                                 <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{doc.titulo}</span>
                                                             </div>
                                                             <PlusCircle className="w-4 h-4 text-indigo-500 shrink-0" />
@@ -1111,8 +1111,8 @@ export default function NewDocumentModal({
                                         </div>
 
                                         {/* External Reference helper */}
-                                        <div className="bg-background text-foreground/50 border border-slate-100 dark:border-slate-800 p-3 rounded-2xl space-y-2">
-                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Norma o Instructivo Externo:</span>
+                                        <div className="bg-background text-foreground border border-slate-100 dark:border-slate-800 p-3 rounded-2xl space-y-2">
+                                            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Norma o Instructivo Externo:</span>
                                             <div className="flex gap-2">
                                                 <input
                                                     type="text" placeholder="Ej. Norma ISO 9001:2015..."
@@ -1136,7 +1136,7 @@ export default function NewDocumentModal({
                                     <button
                                         type="button"
                                         onClick={() => setActiveStep('content_2')}
-                                        className="px-5 py-2.5 bg-muted text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-350 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                                        className="px-5 py-2.5 bg-muted hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-350 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
                                     >
                                         <ChevronLeft className="w-4 h-4" />
                                         <span>Atrás</span>
@@ -1144,7 +1144,7 @@ export default function NewDocumentModal({
                                     <button
                                         type="button"
                                         onClick={() => setActiveStep('signature')}
-                                        className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/10"
+                                        className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
                                     >
                                         <span>Siguiente</span>
                                         <ChevronRight className="w-4 h-4" />
@@ -1162,11 +1162,11 @@ export default function NewDocumentModal({
                                         <Play className="w-4 h-4 text-indigo-500" />
                                         <span>Enlace Multimedia / Capacitación</span>
                                     </h3>
-                                    <p className="text-[10px] text-slate-400 font-bold mb-2">Pegue un enlace de YouTube o video de capacitación para que el operador lo estudie en su portal.</p>
+                                    <p className="text-[11px] text-slate-400 font-bold mb-2">Pegue un enlace de YouTube o video de capacitación para que el operador lo estudie en su portal.</p>
                                     <input
                                         type="url" placeholder="https://www.youtube.com/watch?v=..."
                                         value={digitalData.videoUrl} onChange={e => setDigitalData({ ...digitalData, videoUrl: e.target.value })}
-                                        className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
+                                        className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none"
                                     />
                                 </div>
 
@@ -1176,7 +1176,7 @@ export default function NewDocumentModal({
                                         <FileSignature className="w-4 h-4 text-indigo-500" />
                                         <span>Firma Digital del Creador <span className="text-red-500">*</span></span>
                                     </h3>
-                                    <p className="text-[10px] text-slate-400 font-bold">Valide su identidad electrónicamente para registrar la validez formal del documento en el flujo QMS.</p>
+                                    <p className="text-[11px] text-slate-400 font-bold">Valide su identidad electrónicamente para registrar la validez formal del documento en el flujo QMS.</p>
 
                                     <div className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden bg-card text-card-foreground p-4">
                                         <SignatureButton 
@@ -1191,7 +1191,7 @@ export default function NewDocumentModal({
                                     <button
                                         type="button"
                                         onClick={() => setActiveStep(isDigital ? 'content_3' : 'general')}
-                                        className="px-5 py-2.5 bg-muted text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-350 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                                        className="px-5 py-2.5 bg-muted hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-350 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
                                     >
                                         <ChevronLeft className="w-4 h-4" />
                                         <span>Atrás</span>
@@ -1201,7 +1201,7 @@ export default function NewDocumentModal({
                                         <button type="button" onClick={onClose} className="px-5 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
                                             Cancelar
                                         </button>
-                                        <button disabled={loading || !pendingCreatorSignature || !!previewError || previewCode === 'Calculando...'} type="submit" className="px-6 py-2.5 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors flex items-center gap-2 shadow-lg shadow-indigo-600/10 disabled:opacity-50">
+                                        <button disabled={loading || !pendingCreatorSignature || !!previewError || previewCode === 'Calculando...'} type="submit" className="px-6 py-2.5 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors flex items-center gap-2 disabled:opacity-50">
                                             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                                             Crear e ir al detalle
                                         </button>
@@ -1215,7 +1215,7 @@ export default function NewDocumentModal({
 
                 {/* AI Assistant Drawer */}
                 {showAiDrawer && (
-                    <div className="absolute right-0 top-0 bottom-0 w-full sm:w-[420px] bg-background text-foreground border-l border-slate-200 dark:border-slate-800 shadow-2xl z-30 flex flex-col animate-in slide-in-from-right duration-300 ease-out">
+                    <div className="absolute right-0 top-0 bottom-0 w-full sm:w-[420px] bg-background text-foreground border-l border-slate-200 dark:border-slate-800 shadow-2xl z-30 flex flex-col animate-in slide-in-from-right duration-200 ease-out">
                         {/* Drawer Header */}
                         <div className="p-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-card text-card-foreground">
                             <div className="flex items-center gap-2">
@@ -1224,7 +1224,7 @@ export default function NewDocumentModal({
                                 </div>
                                 <div>
                                     <span className="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider block">Redactor Inteligente IA</span>
-                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Google Gemini</span>
+                                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Google Gemini</span>
                                 </div>
                             </div>
                             <button type="button" onClick={() => setShowAiDrawer(false)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
@@ -1241,21 +1241,21 @@ export default function NewDocumentModal({
                                     </div>
                                     <div className="space-y-3">
                                         <div>
-                                            <h4 className="font-bold text-slate-400 uppercase text-[9px] mb-1">Título del Procedimiento</h4>
-                                            <div className="bg-card text-card-foreground p-3 border border-slate-200 dark:border-slate-850 rounded-xl font-bold text-slate-805 dark:text-slate-200 leading-snug">{aiResult.titulo}</div>
+                                            <h4 className="font-bold text-slate-400 uppercase text-[11px] mb-1">Título del Procedimiento</h4>
+                                            <div className="bg-card p-3 border border-slate-200 dark:border-slate-850 rounded-xl font-bold text-slate-805 dark:text-slate-200 leading-snug">{aiResult.titulo}</div>
                                         </div>
 
                                         <div>
-                                            <h4 className="font-bold text-slate-400 uppercase text-[9px] mb-1">Objetivo del Procedimiento</h4>
-                                            <div className="bg-card text-card-foreground p-3 border border-slate-200 dark:border-slate-850 rounded-xl text-slate-600 dark:text-slate-350 max-h-[120px] overflow-y-auto whitespace-pre-wrap">{aiResult.objetivo}</div>
+                                            <h4 className="font-bold text-slate-400 uppercase text-[11px] mb-1">Objetivo del Procedimiento</h4>
+                                            <div className="bg-card p-3 border border-slate-200 dark:border-slate-850 rounded-xl text-slate-600 dark:text-slate-350 max-h-[120px] overflow-y-auto whitespace-pre-wrap">{aiResult.objetivo}</div>
                                         </div>
                                         <div>
-                                            <h4 className="font-bold text-slate-400 uppercase text-[9px] mb-1">Alcance y Límites</h4>
-                                            <div className="bg-card text-card-foreground p-3 border border-slate-200 dark:border-slate-850 rounded-xl text-slate-600 dark:text-slate-350 max-h-[120px] overflow-y-auto whitespace-pre-wrap">{aiResult.alcance}</div>
+                                            <h4 className="font-bold text-slate-400 uppercase text-[11px] mb-1">Alcance y Límites</h4>
+                                            <div className="bg-card p-3 border border-slate-200 dark:border-slate-850 rounded-xl text-slate-600 dark:text-slate-350 max-h-[120px] overflow-y-auto whitespace-pre-wrap">{aiResult.alcance}</div>
                                         </div>
                                         <div>
-                                            <h4 className="font-bold text-slate-400 uppercase text-[9px] mb-1">Desarrollo de Pasos Operativos</h4>
-                                            <div className="bg-card text-card-foreground p-3 border border-slate-200 dark:border-slate-850 rounded-xl text-slate-600 dark:text-slate-350 max-h-[180px] overflow-y-auto whitespace-pre-wrap">{aiResult.desarrollo}</div>
+                                            <h4 className="font-bold text-slate-400 uppercase text-[11px] mb-1">Desarrollo de Pasos Operativos</h4>
+                                            <div className="bg-card p-3 border border-slate-200 dark:border-slate-850 rounded-xl text-slate-600 dark:text-slate-350 max-h-[180px] overflow-y-auto whitespace-pre-wrap">{aiResult.desarrollo}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -1281,7 +1281,7 @@ export default function NewDocumentModal({
                                             setShowAiDrawer(false);
                                             setAiResult(null);
                                         }}
-                                        className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md flex items-center justify-center gap-1.5"
+                                        className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5"
                                     >
                                         <Check className="w-3.5 h-3.5" />
                                         <span>Aplicar Borrador</span>
@@ -1289,7 +1289,7 @@ export default function NewDocumentModal({
                                     <button 
                                         type="button" 
                                         onClick={() => setAiResult(null)}
-                                        className="px-4 py-2.5 bg-muted text-muted-foreground hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-colors"
+                                        className="px-4 py-2.5 bg-muted hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-colors"
                                     >
                                         Atrás
                                     </button>
@@ -1305,7 +1305,7 @@ export default function NewDocumentModal({
 
                                     <div className="space-y-4">
                                         <div>
-                                            <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Proceso / Tarea principal</label>
+                                            <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">Proceso / Tarea principal</label>
                                             <input 
                                                 type="text" 
                                                 required
@@ -1316,7 +1316,7 @@ export default function NewDocumentModal({
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Alcance / Instalación</label>
+                                            <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">Alcance / Instalación</label>
                                             <input 
                                                 type="text" 
                                                 required
@@ -1327,7 +1327,7 @@ export default function NewDocumentModal({
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Sector Responsable</label>
+                                            <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">Sector Responsable</label>
                                             <input 
                                                 type="text" 
                                                 required
@@ -1338,7 +1338,7 @@ export default function NewDocumentModal({
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Notas / Detalles Adicionales</label>
+                                            <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">Notas / Detalles Adicionales</label>
                                             <textarea 
                                                 placeholder="Ej. Indicar uso obligatorio de calzado aislante y despresurización previa de tuberías..."
                                                 value={aiParams.detallesAdicionales}
@@ -1359,7 +1359,7 @@ export default function NewDocumentModal({
                                         type="button" 
                                         disabled={aiLoading} 
                                         onClick={handleGenerateAiDoc}
-                                        className="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-750 hover:to-indigo-750 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/10 flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+                                        className="w-full py-3 bg-purple-600 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all"
                                     >
                                         {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
                                         <span>{aiLoading ? "Redactando borrador..." : "Redactar Borrador con Gemini"}</span>

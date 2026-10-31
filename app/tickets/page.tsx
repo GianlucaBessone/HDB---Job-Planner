@@ -306,8 +306,8 @@ export default function TicketsPage() {
                             <s.icon className="w-5 h-5" />
                         </div>
                         <div className="min-w-0">
-                            <p className="text-2xl font-black text-slate-800 dark:text-slate-100 leading-none">{s.value}</p>
-                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1 truncate">{s.label}</p>
+                            <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 leading-none">{s.value}</p>
+                            <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-1 truncate">{s.label}</p>
                         </div>
                     </div>
                 ))}
@@ -317,20 +317,20 @@ export default function TicketsPage() {
             <div className="flex flex-col md:flex-row md:items-center gap-2 mb-4">
                 <div className="flex items-center gap-2 text-slate-400">
                     <Filter className="w-4 h-4" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Filtros</span>
+                    <span className="text-[11px] font-semibold uppercase tracking-wider">Filtros</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 flex-1">
                     <select
                         value={filters.estado}
                         onChange={e => setFilters(f => ({ ...f, estado: e.target.value }))}
-                        className="h-9 px-3 rounded-lg bg-card text-card-foreground border border-slate-200 dark:border-slate-700 text-[12px] font-bold text-slate-600 dark:text-slate-300 outline-none focus:border-rose-500"
+                        className="h-9 px-3 rounded-lg bg-card border border-slate-200 dark:border-slate-700 text-[12px] font-bold text-slate-600 dark:text-slate-300 outline-none focus:border-rose-500"
                     >
                         {ESTADOS_FILTRO.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
                     </select>
                     <select
                         value={filters.tipo}
                         onChange={e => setFilters(f => ({ ...f, tipo: e.target.value }))}
-                        className="h-9 px-3 rounded-lg bg-card text-card-foreground border border-slate-200 dark:border-slate-700 text-[12px] font-bold text-slate-600 dark:text-slate-300 outline-none focus:border-rose-500"
+                        className="h-9 px-3 rounded-lg bg-card border border-slate-200 dark:border-slate-700 text-[12px] font-bold text-slate-600 dark:text-slate-300 outline-none focus:border-rose-500"
                     >
                         <option value="todos">Todos los tipos</option>
                         {TICKET_TIPOS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
@@ -338,7 +338,7 @@ export default function TicketsPage() {
                     <select
                         value={filters.urgencia}
                         onChange={e => setFilters(f => ({ ...f, urgencia: e.target.value }))}
-                        className="h-9 px-3 rounded-lg bg-card text-card-foreground border border-slate-200 dark:border-slate-700 text-[12px] font-bold text-slate-600 dark:text-slate-300 outline-none focus:border-rose-500"
+                        className="h-9 px-3 rounded-lg bg-card border border-slate-200 dark:border-slate-700 text-[12px] font-bold text-slate-600 dark:text-slate-300 outline-none focus:border-rose-500"
                     >
                         <option value="todos">Todas las urgencias</option>
                         {TICKET_URGENCIAS.map(u => <option key={u.value} value={u.value}>{u.label}</option>)}
@@ -351,14 +351,14 @@ export default function TicketsPage() {
                 {loading ? (
                     <div className="py-20 flex flex-col items-center justify-center gap-3 text-slate-400">
                         <Loader2 className="w-7 h-7 animate-spin" />
-                        <p className="text-xs font-bold uppercase tracking-widest">Cargando tickets…</p>
+                        <p className="text-xs font-bold uppercase tracking-wider">Cargando tickets…</p>
                     </div>
                 ) : tickets.length === 0 ? (
                     <div className="py-20 px-6 text-center">
                         <div className="w-14 h-14 mx-auto rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mb-4">
                             <LifeBuoy className="w-7 h-7" />
                         </div>
-                        <p className="text-sm font-black text-slate-700 dark:text-slate-200">No hay tickets con estos filtros</p>
+                        <p className="text-sm font-bold text-slate-700 dark:text-slate-200">No hay tickets con estos filtros</p>
                         <p className="text-xs text-slate-400 font-medium mt-1 mb-4">
                             Si algo no funciona, reportalo y el equipo lo revisa.
                         </p>
@@ -395,18 +395,18 @@ export default function TicketsPage() {
 
                                         <div className="min-w-0 flex-1">
                                             <div className="flex items-center gap-2 flex-wrap">
-                                                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-wider">{t.codigo}</span>
-                                                <span className={`px-1.5 py-0.5 rounded border text-[9px] font-black uppercase tracking-wider ${TICKET_TIPO_STYLE[t.tipo as keyof typeof TICKET_TIPO_STYLE] || ''}`}>
+                                                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider">{t.codigo}</span>
+                                                <span className={`px-1.5 py-0.5 rounded border text-[11px] font-semibold uppercase tracking-wider ${TICKET_TIPO_STYLE[t.tipo as keyof typeof TICKET_TIPO_STYLE] || ''}`}>
                                                     {TICKET_TIPO_LABEL[t.tipo as keyof typeof TICKET_TIPO_LABEL] || t.tipo}
                                                 </span>
-                                                <span className={`px-1.5 py-0.5 rounded border text-[9px] font-black uppercase tracking-wider ${TICKET_URGENCIA_STYLE[t.urgencia as keyof typeof TICKET_URGENCIA_STYLE] || ''}`}>
+                                                <span className={`px-1.5 py-0.5 rounded border text-[11px] font-semibold uppercase tracking-wider ${TICKET_URGENCIA_STYLE[t.urgencia as keyof typeof TICKET_URGENCIA_STYLE] || ''}`}>
                                                     {TICKET_URGENCIA_LABEL[t.urgencia as keyof typeof TICKET_URGENCIA_LABEL] || t.urgencia}
                                                 </span>
-                                                <span className={`px-1.5 py-0.5 rounded border text-[9px] font-black uppercase tracking-wider ${TICKET_ESTADO_STYLE[t.estado as keyof typeof TICKET_ESTADO_STYLE] || ''}`}>
+                                                <span className={`px-1.5 py-0.5 rounded border text-[11px] font-semibold uppercase tracking-wider ${TICKET_ESTADO_STYLE[t.estado as keyof typeof TICKET_ESTADO_STYLE] || ''}`}>
                                                     {TICKET_ESTADO_LABEL[t.estado as keyof typeof TICKET_ESTADO_LABEL] || t.estado}
                                                 </span>
                                                 {abierto && sla.estado === 'vencido' && (
-                                                    <span className="px-1.5 py-0.5 rounded bg-rose-600 text-white text-[9px] font-black uppercase tracking-wider">
+                                                    <span className="px-1.5 py-0.5 rounded bg-rose-600 text-white text-[11px] font-semibold uppercase tracking-wider">
                                                         SLA vencido
                                                     </span>
                                                 )}
@@ -416,7 +416,7 @@ export default function TicketsPage() {
                                                 {t.titulo}
                                             </p>
 
-                                            <div className="flex items-center gap-3 mt-1 flex-wrap text-[10px] font-semibold text-slate-400 dark:text-slate-500">
+                                            <div className="flex items-center gap-3 mt-1 flex-wrap text-[11px] font-semibold text-slate-400 dark:text-slate-500">
                                                 <span className="flex items-center gap-1">
                                                     <User className="w-3 h-3" />
                                                     {t.reportadoPorNombre || t.reportadoPor?.nombreCompleto || 'Anónimo'}
@@ -460,21 +460,21 @@ export default function TicketsPage() {
             {/* Detalle */}
             {selected && (
                 <div className="fixed inset-0 z-[205] flex items-start sm:items-center justify-center p-3 sm:p-6 overflow-y-auto">
-                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setSelected(null)} />
+                    <div className="fixed inset-0 bg-slate-950/50 animate-in fade-in duration-200" onClick={() => setSelected(null)} />
 
-                    <div className="relative w-full max-w-3xl bg-card text-card-foreground rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in fade-in zoom-in-95 duration-300 my-auto">
+                    <div className="relative w-full max-w-3xl bg-card text-card-foreground rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-auto">
                         <div className="flex items-start justify-between gap-3 px-5 py-4 border-b border-slate-100 dark:border-slate-700">
                             <div className="min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap mb-1">
-                                    <span className="text-[10px] font-black text-slate-400 tracking-wider">{selected.codigo}</span>
-                                    <span className={`px-1.5 py-0.5 rounded border text-[9px] font-black uppercase tracking-wider ${TICKET_ESTADO_STYLE[(detail?.estado || selected.estado) as keyof typeof TICKET_ESTADO_STYLE] || ''}`}>
+                                    <span className="text-[11px] font-bold text-slate-400 tracking-wider">{selected.codigo}</span>
+                                    <span className={`px-1.5 py-0.5 rounded border text-[11px] font-semibold uppercase tracking-wider ${TICKET_ESTADO_STYLE[(detail?.estado || selected.estado) as keyof typeof TICKET_ESTADO_STYLE] || ''}`}>
                                         {TICKET_ESTADO_LABEL[(detail?.estado || selected.estado) as keyof typeof TICKET_ESTADO_LABEL] || selected.estado}
                                     </span>
-                                    <span className={`px-1.5 py-0.5 rounded border text-[9px] font-black uppercase tracking-wider ${TICKET_URGENCIA_STYLE[(detail?.urgencia || selected.urgencia) as keyof typeof TICKET_URGENCIA_STYLE] || ''}`}>
+                                    <span className={`px-1.5 py-0.5 rounded border text-[11px] font-semibold uppercase tracking-wider ${TICKET_URGENCIA_STYLE[(detail?.urgencia || selected.urgencia) as keyof typeof TICKET_URGENCIA_STYLE] || ''}`}>
                                         {TICKET_URGENCIA_LABEL[(detail?.urgencia || selected.urgencia) as keyof typeof TICKET_URGENCIA_LABEL]}
                                     </span>
                                 </div>
-                                <h2 className="text-base sm:text-lg font-black text-slate-800 dark:text-slate-100 leading-tight">
+                                <h2 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 leading-tight">
                                     {detail?.titulo || selected.titulo}
                                 </h2>
                             </div>
@@ -510,25 +510,25 @@ export default function TicketsPage() {
                             {detailLoading || !detail ? (
                                 <div className="py-16 flex flex-col items-center gap-3 text-slate-400">
                                     <Loader2 className="w-6 h-6 animate-spin" />
-                                    <p className="text-[10px] font-black uppercase tracking-widest">Cargando…</p>
+                                    <p className="text-[11px] font-semibold uppercase tracking-wider">Cargando…</p>
                                 </div>
                             ) : tab === 'detalle' ? (
                                 <div className="space-y-5">
                                     <section>
-                                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Descripción</h3>
+                                        <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Descripción</h3>
                                         <p className="text-sm font-medium text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">{detail.descripcion}</p>
                                     </section>
 
                                     {detail.pasosReproducir && (
                                         <section>
-                                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Cómo reproducirlo</h3>
+                                            <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Cómo reproducirlo</h3>
                                             <pre className="text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl p-3 whitespace-pre-wrap font-sans">{detail.pasosReproducir}</pre>
                                         </section>
                                     )}
 
                                     {detail.comportamientoEsperado && (
                                         <section>
-                                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Comportamiento esperado</h3>
+                                            <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Comportamiento esperado</h3>
                                             <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{detail.comportamientoEsperado}</p>
                                         </section>
                                     )}
@@ -546,7 +546,7 @@ export default function TicketsPage() {
                                             },
                                         ].map(item => (
                                             <div key={item.label} className="rounded-xl border border-slate-200 dark:border-slate-700 p-2.5">
-                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{item.label}</p>
+                                                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">{item.label}</p>
                                                 <p className="text-[12px] font-bold text-slate-700 dark:text-slate-200 mt-0.5">{item.value}</p>
                                             </div>
                                         ))}
@@ -567,7 +567,7 @@ export default function TicketsPage() {
                                     )}
 
                                     <section>
-                                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Contexto técnico</h3>
+                                        <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Contexto técnico</h3>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-[11px] font-medium text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl p-3">
                                             {Object.entries(detail.contexto || {}).map(([k, v]) => (
                                                 <p key={k} className="truncate"><span className="text-slate-400">{k}:</span> {String(v)}</p>
@@ -578,7 +578,7 @@ export default function TicketsPage() {
 
                                     {Array.isArray(detail.adjuntos) && detail.adjuntos.length > 0 && (
                                         <section>
-                                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Adjuntos</h3>
+                                            <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Adjuntos</h3>
                                             <div className="flex flex-wrap gap-2">
                                                 {detail.adjuntos.map((a: any) => (
                                                     <a
@@ -598,7 +598,7 @@ export default function TicketsPage() {
 
                                     {detail.resolucion && (
                                         <section>
-                                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Resolución</h3>
+                                            <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Resolución</h3>
                                             <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300 whitespace-pre-wrap">{detail.resolucion}</p>
                                         </section>
                                     )}
@@ -619,7 +619,7 @@ export default function TicketsPage() {
                                                     <button
                                                         onClick={analizarConIA}
                                                         disabled={analizando}
-                                                        className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-violet-700 disabled:opacity-60 transition-colors shrink-0"
+                                                        className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-violet-600 text-white text-[12px] font-semibold hover:bg-violet-700 disabled:opacity-60 transition-colors shrink-0"
                                                     >
                                                         {analizando ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
                                                         {analizando ? 'Analizando…' : 'Re-analizar'}
@@ -634,7 +634,7 @@ export default function TicketsPage() {
                                                 ['Plan', detail.analisisAgente.plan],
                                             ].map(([label, value]) => value ? (
                                                 <section key={label as string}>
-                                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">{label as string}</h3>
+                                                    <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">{label as string}</h3>
                                                     <p className="text-sm font-medium text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">{String(value)}</p>
                                                 </section>
                                             ) : null)}
@@ -642,19 +642,19 @@ export default function TicketsPage() {
                                             {detail.estimacion && (
                                                 <section className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                                     <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-2.5">
-                                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Esfuerzo</p>
+                                                        <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Esfuerzo</p>
                                                         <p className="text-[12px] font-bold text-slate-700 dark:text-slate-200">{detail.estimacion.esfuerzo || '—'}</p>
                                                     </div>
                                                     <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-2.5">
-                                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Horas</p>
+                                                        <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Horas</p>
                                                         <p className="text-[12px] font-bold text-slate-700 dark:text-slate-200">{detail.estimacion.horas ?? '—'}</p>
                                                     </div>
                                                     <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-2.5">
-                                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Confianza</p>
+                                                        <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Confianza</p>
                                                         <p className="text-[12px] font-bold text-slate-700 dark:text-slate-200">{detail.estimacion.confianza || '—'}</p>
                                                     </div>
                                                     <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-2.5">
-                                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Riesgo</p>
+                                                        <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Riesgo</p>
                                                         <p className="text-[12px] font-bold text-slate-700 dark:text-slate-200">{(TICKET_RIESGO_LABEL as any)[detail.estimacion.riesgo] || detail.estimacion.riesgo || '—'}</p>
                                                     </div>
                                                 </section>
@@ -662,10 +662,10 @@ export default function TicketsPage() {
 
                                             {Array.isArray(detail.analisisAgente.archivosProbables) && detail.analisisAgente.archivosProbables.length > 0 && (
                                                 <section>
-                                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Archivos probables</h3>
+                                                    <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Archivos probables</h3>
                                                     <div className="flex flex-wrap gap-1.5">
                                                         {detail.analisisAgente.archivosProbables.map((f: string) => (
-                                                            <span key={f} className="inline-flex items-center gap-1 px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-mono font-semibold text-slate-600 dark:text-slate-300">
+                                                            <span key={f} className="inline-flex items-center gap-1 px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-[11px] font-mono font-semibold text-slate-600 dark:text-slate-300">
                                                                 <FileCode2 className="w-3 h-3" />
                                                                 {f}
                                                             </span>
@@ -676,11 +676,11 @@ export default function TicketsPage() {
 
                                             {Array.isArray(detail.analisisAgente.preguntasAlUsuario) && detail.analisisAgente.preguntasAlUsuario.length > 0 && (
                                                 <section>
-                                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Datos que faltan</h3>
+                                                    <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Datos que faltan</h3>
                                                     <ul className="space-y-1.5">
                                                         {detail.analisisAgente.preguntasAlUsuario.map((p: string) => (
                                                             <li key={p} className="flex gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
-                                                                <span className="text-violet-500 font-black">?</span>
+                                                                <span className="text-violet-500 font-bold">?</span>
                                                                 <span>{p}</span>
                                                             </li>
                                                         ))}
@@ -690,11 +690,11 @@ export default function TicketsPage() {
 
                                             {Array.isArray(detail.analisisAgente.duplicadosProbables) && detail.analisisAgente.duplicadosProbables.length > 0 && (
                                                 <section>
-                                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Posibles duplicados</h3>
+                                                    <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Posibles duplicados</h3>
                                                     <div className="space-y-1.5">
                                                         {detail.analisisAgente.duplicadosProbables.map((d: any) => (
                                                             <div key={d.codigo} className="rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50/50 dark:bg-amber-900/10 p-2.5">
-                                                                <p className="text-[11px] font-black text-amber-700 dark:text-amber-300">{d.codigo}</p>
+                                                                <p className="text-[11px] font-bold text-amber-700 dark:text-amber-300">{d.codigo}</p>
                                                                 {d.motivo && <p className="text-[11px] font-medium text-amber-700/80 dark:text-amber-300/80 mt-0.5">{d.motivo}</p>}
                                                             </div>
                                                         ))}
@@ -705,13 +705,13 @@ export default function TicketsPage() {
                                             {detail.analisisAgente.respuestaSugerida && (
                                                 <section>
                                                     <div className="flex items-center justify-between mb-1.5">
-                                                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Respuesta sugerida</h3>
+                                                        <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Respuesta sugerida</h3>
                                                         <button
                                                             onClick={() => {
                                                                 navigator.clipboard?.writeText(detail.analisisAgente.respuestaSugerida);
                                                                 showToast('Respuesta copiada', 'success');
                                                             }}
-                                                            className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                                                            className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                                                         >
                                                             <Copy className="w-3 h-3" /> Copiar
                                                         </button>
@@ -728,7 +728,7 @@ export default function TicketsPage() {
                                             <div className="w-14 h-14 mx-auto rounded-2xl bg-violet-50 dark:bg-violet-900/20 text-violet-500 flex items-center justify-center mb-4">
                                                 <Brain className="w-7 h-7" />
                                             </div>
-                                            <p className="text-sm font-black text-slate-700 dark:text-slate-200">Todavía no hay evaluación</p>
+                                            <p className="text-sm font-bold text-slate-700 dark:text-slate-200">Todavía no hay evaluación</p>
                                             <p className="text-xs text-slate-400 font-medium mt-1 max-w-md mx-auto">
                                                 Gemini puede clasificar el ticket, estimar el riesgo y proponer un plan ahora mismo.
                                                 La corrección del código, si hace falta, la hace un agente con acceso al repositorio.
@@ -738,7 +738,7 @@ export default function TicketsPage() {
                                                 <button
                                                     onClick={analizarConIA}
                                                     disabled={analizando}
-                                                    className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600 text-white text-xs font-black uppercase tracking-widest hover:bg-violet-700 disabled:opacity-60 transition-colors"
+                                                    className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600 text-white text-xs font-semibold hover:bg-violet-700 disabled:opacity-60 transition-colors"
                                                 >
                                                     {analizando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                                                     {analizando ? 'Analizando…' : 'Analizar con IA'}
@@ -764,7 +764,7 @@ export default function TicketsPage() {
                                                     <p className="text-[12px] font-bold text-slate-700 dark:text-slate-200">
                                                         {h.estadoAnterior === '-' ? 'Ticket creado' : `${(TICKET_ESTADO_LABEL as any)[h.estadoAnterior] || h.estadoAnterior} → ${(TICKET_ESTADO_LABEL as any)[h.estadoNuevo] || h.estadoNuevo}`}
                                                     </p>
-                                                    <p className="text-[10px] font-semibold text-slate-400">
+                                                    <p className="text-[11px] font-semibold text-slate-400">
                                                         {h.usuario} · {fechaRelativa(h.createdAt)}
                                                     </p>
                                                     {h.comentario && <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">{h.comentario}</p>}
@@ -782,11 +782,11 @@ export default function TicketsPage() {
                                             detail.comentarios.map((c: any) => (
                                                 <div key={c.id} className={`rounded-xl border p-3 ${c.interno ? 'bg-amber-50/50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-900/40' : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700'}`}>
                                                     <div className="flex items-center justify-between gap-2 mb-1">
-                                                        <p className="text-[11px] font-black text-slate-700 dark:text-slate-200">{c.autor}</p>
-                                                        <p className="text-[10px] font-semibold text-slate-400">{fechaRelativa(c.createdAt)}</p>
+                                                        <p className="text-[11px] font-bold text-slate-700 dark:text-slate-200">{c.autor}</p>
+                                                        <p className="text-[11px] font-semibold text-slate-400">{fechaRelativa(c.createdAt)}</p>
                                                     </div>
                                                     <p className="text-[12px] font-medium text-slate-600 dark:text-slate-300 whitespace-pre-wrap">{c.texto}</p>
-                                                    {c.interno && <span className="inline-block mt-1 text-[9px] font-black text-amber-600 uppercase tracking-widest">Nota interna</span>}
+                                                    {c.interno && <span className="inline-block mt-1 text-[11px] font-semibold text-amber-600 uppercase tracking-wider">Nota interna</span>}
                                                 </div>
                                             ))
                                         )}
@@ -798,7 +798,7 @@ export default function TicketsPage() {
                                             onChange={e => setComentario(e.target.value)}
                                             rows={3}
                                             placeholder="Escribí un comentario…"
-                                            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 resize-none"
+                                            className="w-full px-3.5 py-2.5 rounded-xl bg-card border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 resize-none"
                                         />
                                         <div className="flex items-center justify-between mt-2">
                                             {canManage ? (
@@ -831,11 +831,11 @@ export default function TicketsPage() {
                             <div className="px-5 py-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-900/30 space-y-3">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     <div>
-                                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Cambiar estado</label>
+                                        <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Cambiar estado</label>
                                         <select
                                             value={nuevoEstado || detail.estado}
                                             onChange={e => setNuevoEstado(e.target.value)}
-                                            className="w-full h-9 px-3 rounded-lg bg-card text-card-foreground border border-slate-200 dark:border-slate-700 text-[12px] font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-rose-500"
+                                            className="w-full h-9 px-3 rounded-lg bg-card border border-slate-200 dark:border-slate-700 text-[12px] font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-rose-500"
                                         >
                                             <option value={detail.estado}>{(TICKET_ESTADO_LABEL as any)[detail.estado] || detail.estado} (actual)</option>
                                             {transiciones.map(e => (
@@ -844,11 +844,11 @@ export default function TicketsPage() {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Asignar a</label>
+                                        <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Asignar a</label>
                                         <select
                                             value={asignado}
                                             onChange={e => setAsignado(e.target.value)}
-                                            className="w-full h-9 px-3 rounded-lg bg-card text-card-foreground border border-slate-200 dark:border-slate-700 text-[12px] font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-rose-500"
+                                            className="w-full h-9 px-3 rounded-lg bg-card border border-slate-200 dark:border-slate-700 text-[12px] font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-rose-500"
                                         >
                                             <option value="">Sin asignar</option>
                                             {operadores.map(o => (

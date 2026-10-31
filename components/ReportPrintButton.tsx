@@ -34,7 +34,7 @@ export default function ReportPrintButton({
     }, []);
 
     if (!isMounted) return (
-        <button className="bg-muted text-muted-foreground/50 text-slate-400 dark:text-slate-500 px-6 py-3 rounded-xl font-bold flex items-center gap-2 cursor-wait">
+        <button className="bg-muted text-slate-400 dark:text-slate-500 px-6 py-3 rounded-xl font-bold flex items-center gap-2 cursor-wait">
             <Loader2 className="w-5 h-5 animate-spin" />
             Cargando Generador...
         </button>
@@ -63,7 +63,7 @@ export default function ReportPrintButton({
             {({ loading }) => (
                 <button
                     disabled={loading}
-                    className={`bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-indigo-700 shadow-xl transition-all ${loading ? 'opacity-70 cursor-wait' : 'active:scale-95'}`}
+                    className={`bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-indigo-700 transition-all ${loading ? 'opacity-70 cursor-wait' : 'active:scale-95'}`}
                 >
                     {loading ? (
                         <Loader2 className="w-5 h-5 animate-spin" />

@@ -157,12 +157,12 @@ function HerramientasPage() {
     );
 
     return (
-        <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
+        <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200 pb-12">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div className="space-y-1">
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
-                        <Wrench className="w-6 h-6 md:w-8 md:h-8 text-primary" />
+                    <h2 className="text-title text-slate-900 dark:text-slate-50 flex items-center gap-2 md:gap-3">
+                        <Wrench className="w-5 h-5 text-brand-600 dark:text-brand-300" />
                         Herramientas y Carros
                     </h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium hidden md:block">
@@ -177,9 +177,9 @@ function HerramientasPage() {
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center gap-1.5 px-3 md:px-5 py-2 md:py-2.5 rounded-xl text-xs md:text-sm font-black transition-all whitespace-nowrap ${
+                        className={`flex items-center gap-1.5 px-3 md:px-5 py-2 md:py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all whitespace-nowrap ${
                             activeTab === tab.id
-                                ? 'bg-primary text-white shadow-md shadow-primary/20'
+                                ? 'bg-primary text-white shadow-md'
                                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80'
                         }`}
                     >
@@ -190,7 +190,7 @@ function HerramientasPage() {
             </div>
 
             {/* Tab Content */}
-            <div className="animate-in fade-in duration-300">
+            <div className="animate-in fade-in duration-200">
                 {activeTab === 'herramientas' && <HerramientasTab user={currentUser} />}
                 {activeTab === 'carros' && <CarrosTab user={currentUser} />}
                 {activeTab === 'retiros' && <RetirosTab user={currentUser} />}
@@ -409,16 +409,16 @@ function HerramientasTab({ user }: { user: any }) {
                     {TIPOS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                 </select>
                 <button onClick={() => { resetForm(); setShowForm(true); }}
-                    className="flex items-center justify-center gap-2 bg-primary text-white px-6 py-3 rounded-2xl font-black text-sm hover:bg-primary/90 transition-all active:scale-95 shadow-md shadow-primary/20 whitespace-nowrap">
+                    className="flex items-center justify-center gap-2 bg-primary text-white px-6 py-3 rounded-2xl font-bold text-sm hover:bg-primary-hover transition-all whitespace-nowrap">
                     <Plus className="w-5 h-5" /> Crear Herramienta
                 </button>
             </div>
 
             {/* Creation / Edit Form */}
             {showForm && (
-                <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 animate-in slide-in-from-top-4 duration-300">
+                <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 animate-in slide-in-from-top-2 duration-200">
                     <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">
                             {editingTool ? `Editar: ${editingTool.id}` : 'Nueva Herramienta'}
                         </h3>
                         <button onClick={resetForm} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400">
@@ -429,14 +429,14 @@ function HerramientasTab({ user }: { user: any }) {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {/* Nombre */}
                         <div className="lg:col-span-2">
-                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Nombre *</label>
+                            <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">Nombre *</label>
                             <input type="text" value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })}
-                                placeholder="Ej: Amoladora 9 pulgadas" className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-sm font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
+                                placeholder="Ej: Amoladora 9 pulgadas" className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-sm font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" />
                         </div>
 
                         {/* Marca */}
                         <div>
-                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Marca</label>
+                            <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">Marca</label>
                             <SearchableSelect
                                 options={marcas.map(m => ({ id: m, label: m }))}
                                 value={form.marca}
@@ -450,18 +450,18 @@ function HerramientasTab({ user }: { user: any }) {
 
                         {/* Tipo */}
                         <div>
-                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Tipo *</label>
+                            <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">Tipo *</label>
                             <select value={form.tipo} onChange={e => setForm({ ...form, tipo: e.target.value })}
-                                className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-sm font-bold outline-none focus:border-primary">
+                                className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-sm font-bold outline-none focus:border-primary">
                                 {TIPOS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                             </select>
                         </div>
 
                         {/* Subtipo */}
                         <div>
-                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Subtipo</label>
+                            <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">Subtipo</label>
                             <select value={form.subtipo} onChange={e => setForm({ ...form, subtipo: e.target.value })}
-                                className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-sm font-bold outline-none focus:border-primary">
+                                className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-sm font-bold outline-none focus:border-primary">
                                 <option value="">Sin subtipo</option>
                                 {SUBTIPOS.map(s => <option key={s} value={s}>{s.charAt(0) + s.slice(1).toLowerCase()}</option>)}
                             </select>
@@ -469,9 +469,9 @@ function HerramientasTab({ user }: { user: any }) {
 
                         {/* Rubro */}
                         <div>
-                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Rubro</label>
+                            <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">Rubro</label>
                             <select value={form.rubro} onChange={e => setForm({ ...form, rubro: e.target.value })}
-                                className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-sm font-bold outline-none focus:border-primary">
+                                className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-sm font-bold outline-none focus:border-primary">
                                 <option value="">Sin rubro</option>
                                 {RUBROS.map(r => <option key={r} value={r}>{r.charAt(0) + r.slice(1).toLowerCase()}</option>)}
                             </select>
@@ -479,16 +479,16 @@ function HerramientasTab({ user }: { user: any }) {
 
                         {/* Descripción */}
                         <div className="lg:col-span-3">
-                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Descripción (Opcional)</label>
+                            <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">Descripción (Opcional)</label>
                             <textarea value={form.descripcion} onChange={e => setForm({ ...form, descripcion: e.target.value })}
                                 rows={2} placeholder="Descripción larga opcional..."
-                                className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-sm font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none" />
+                                className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-sm font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none" />
                         </div>
 
                         {/* Control */}
-                        <div className="lg:col-span-3 bg-background text-foreground/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
+                        <div className="lg:col-span-3 bg-background text-foreground rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
                             <div className="flex items-center justify-between mb-3">
-                                <label className="text-sm font-black text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                                <label className="text-sm font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
                                     <ShieldCheck className="w-4 h-4 text-primary" /> Control de Verificación
                                 </label>
                                 <button
@@ -501,7 +501,7 @@ function HerramientasTab({ user }: { user: any }) {
                             </div>
                             {form.controlActivo && (
                                 <div className="animate-in slide-in-from-top-2 duration-200">
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Periodo de Vencimiento</label>
+                                    <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">Periodo de Vencimiento</label>
                                     <select value={form.periodoControl} onChange={e => setForm({ ...form, periodoControl: parseInt(e.target.value) })}
                                         className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-4 text-sm font-bold outline-none focus:border-primary">
                                         {PERIODOS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
@@ -514,7 +514,7 @@ function HerramientasTab({ user }: { user: any }) {
                         {!editingTool && (
                             <>
                                 <div>
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Cantidad</label>
+                                    <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">Cantidad</label>
                                     <div className="flex items-center gap-3">
                                         <input type="number" min={1} max={100} value={form.cantidad}
                                             onChange={e => {
@@ -535,7 +535,7 @@ function HerramientasTab({ user }: { user: any }) {
                                 </div>
                                 {form.tipo !== 'CARRO' && (
                                     <div className="lg:col-span-2">
-                                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Asignar a Carro (Opcional)</label>
+                                        <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">Asignar a Carro (Opcional)</label>
                                         <SearchableSelect
                                             options={carros.map(c => ({ id: c.id, label: c.nombre }))}
                                             value={form.carroId}
@@ -556,7 +556,7 @@ function HerramientasTab({ user }: { user: any }) {
                         {/* Replicar Herramienta (solo en edición) */}
                         {editingTool && editingTool.tipo !== 'CARRO' && (
                             <div className="lg:col-span-3 bg-indigo-50/50 dark:bg-indigo-950/20 rounded-2xl p-4 border border-indigo-100 dark:border-indigo-900/30">
-                                <label className="block text-sm font-black text-indigo-700 dark:text-indigo-300 mb-2 flex items-center gap-2">
+                                <label className="block text-sm font-bold text-indigo-700 dark:text-indigo-300 mb-2 flex items-center gap-2">
                                     <Copy className="w-4 h-4" /> Replicar Herramienta
                                 </label>
                                 <p className="text-xs font-medium text-indigo-500 dark:text-indigo-400 mb-3">
@@ -576,7 +576,7 @@ function HerramientasTab({ user }: { user: any }) {
                                     <button
                                         onClick={handleReplicate}
                                         disabled={!replicateCantidad || replicateCantidad < 1 || isReplicating}
-                                        className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-black text-sm hover:bg-indigo-700 transition-all active:scale-95 shadow-md shadow-indigo-600/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100 whitespace-nowrap"
+                                        className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
                                     >
                                         {isReplicating ? (
                                             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -598,11 +598,11 @@ function HerramientasTab({ user }: { user: any }) {
 
                     <div className="flex gap-3 mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
                         <button onClick={handleSave}
-                            className="flex-1 py-3 bg-primary text-white rounded-xl font-black text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all active:scale-95 shadow-md shadow-primary/20">
+                            className="flex-1 py-3 bg-primary text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary-hover transition-all">
                             <Save className="w-4 h-4" /> {editingTool ? 'Guardar Cambios' : 'Crear'}
                         </button>
                         <button onClick={resetForm}
-                            className="py-3 px-6 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-black text-sm hover:bg-slate-200 transition-all">
+                            className="py-3 px-6 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all">
                             Cancelar
                         </button>
                     </div>
@@ -625,12 +625,12 @@ function HerramientasTab({ user }: { user: any }) {
                         <div key={tool.id} className="bg-card text-card-foreground rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col gap-3 hover:shadow-md transition-shadow">
                             <div className="flex justify-between items-start">
                                 <div className="flex-1 min-w-0">
-                                    <h5 className="font-black text-slate-800 dark:text-slate-100 text-base truncate">{tool.nombre}</h5>
+                                    <h5 className="font-bold text-slate-800 dark:text-slate-100 text-base truncate">{tool.nombre}</h5>
                                     <div className="flex flex-wrap gap-1.5 mt-1">
-                                        <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400">{tool.tipo}</span>
-                                        {tool.marca && <span className="text-[9px] font-bold px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">{tool.marca}</span>}
-                                        {tool.subtipo && <span className="text-[9px] font-bold px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400">{tool.subtipo}</span>}
-                                        {tool.rubro && <span className="text-[9px] font-bold px-2 py-0.5 rounded-md bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400">{tool.rubro}</span>}
+                                        <span className="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400">{tool.tipo}</span>
+                                        {tool.marca && <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">{tool.marca}</span>}
+                                        {tool.subtipo && <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400">{tool.subtipo}</span>}
+                                        {tool.rubro && <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400">{tool.rubro}</span>}
                                     </div>
                                 </div>
                                 <div className="flex gap-1 shrink-0 ml-2">
@@ -642,7 +642,7 @@ function HerramientasTab({ user }: { user: any }) {
 
                             {/* Control badge */}
                             {tool.estadoControl && (
-                                <div className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg w-fit ${ESTADO_CONTROL_STYLES[tool.estadoControl]?.cls || ''}`}>
+                                <div className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-lg w-fit ${ESTADO_CONTROL_STYLES[tool.estadoControl]?.cls || ''}`}>
                                     {ESTADO_CONTROL_STYLES[tool.estadoControl]?.label}
                                     {tool.diasRestantes !== null && tool.diasRestantes >= 0 && <span className="ml-1">({tool.diasRestantes}d)</span>}
                                 </div>
@@ -650,12 +650,12 @@ function HerramientasTab({ user }: { user: any }) {
 
                             {/* Cart assignment */}
                             {tool.carroId && tool.carro && (
-                                <div className="text-[10px] font-bold text-slate-500 flex items-center gap-1">
+                                <div className="text-[11px] font-bold text-slate-500 flex items-center gap-1">
                                     <LinkIcon className="w-3 h-3" /> En carro: <span className="text-slate-700 dark:text-slate-300">{tool.carro.nombre}</span>
                                 </div>
                             )}
 
-                            <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 font-mono">ID: {tool.id}</div>
+                            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 font-mono">ID: {tool.id}</div>
                         </div>
                     ))}
                 </div>
@@ -663,10 +663,10 @@ function HerramientasTab({ user }: { user: any }) {
 
             {/* QR Modal */}
             {qrTool && (
-                <div className="fixed inset-0 z-[110] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setQrTool(null)}>
+                <div className="fixed inset-0 z-[110] bg-slate-950/50 flex items-center justify-center p-4" onClick={() => setQrTool(null)}>
                     <div className="bg-card text-card-foreground p-8 rounded-3xl shadow-2xl max-w-sm w-full animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
                         <div className="text-center mb-6">
-                            <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100">{qrTool.nombre}</h3>
+                            <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{qrTool.nombre}</h3>
                             <p className="text-sm font-bold text-slate-500 mt-1">ID: {qrTool.id}</p>
                         </div>
                         <div className="flex justify-center bg-white p-4 rounded-xl border-2 border-dashed border-slate-200 mb-4" ref={qrRef}>
@@ -815,7 +815,7 @@ function CarrosTab({ user }: { user: any }) {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Cart List */}
                 <div className="space-y-3">
-                    <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
                         <Package className="w-4 h-4 text-primary" /> Carros
                     </h3>
                     {isLoading ? (
@@ -838,12 +838,12 @@ function CarrosTab({ user }: { user: any }) {
                                     }`}>
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <h5 className="font-black text-slate-800 dark:text-slate-100">{carro.nombre}</h5>
-                                            <p className="text-[10px] font-bold text-slate-400 mt-0.5">
+                                            <h5 className="font-bold text-slate-800 dark:text-slate-100">{carro.nombre}</h5>
+                                            <p className="text-[11px] font-bold text-slate-400 mt-0.5">
                                                 {carro.herramientas?.length || 0} herramientas
                                             </p>
                                         </div>
-                                        <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-md ${
+                                        <span className={`text-[11px] font-semibold uppercase tracking-wider px-2 py-1 rounded-md ${
                                             hasActiveMovement
                                                 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
                                                 : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
@@ -865,13 +865,13 @@ function CarrosTab({ user }: { user: any }) {
                             <p className="text-sm font-bold text-slate-400">Seleccioná un carro para ver su configuración</p>
                         </div>
                     ) : (
-                        <div className="space-y-4 animate-in fade-in duration-300">
+                        <div className="space-y-4 animate-in fade-in duration-200">
                             {/* Cart Header */}
                             <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
                                 <div className="flex items-center justify-between mb-4">
                                     <div>
-                                        <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">{selectedCarro.nombre}</h3>
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 font-mono mt-1">ID: {selectedCarro.id}</p>
+                                        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">{selectedCarro.nombre}</h3>
+                                        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 font-mono mt-1">ID: {selectedCarro.id}</p>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <button onClick={handleExportExcel} disabled={!selectedCarro.herramientas?.length}
@@ -889,12 +889,12 @@ function CarrosTab({ user }: { user: any }) {
                                 {(controlIssues.vencidas > 0 || controlIssues.porVencer > 0) && (
                                     <div className="flex flex-wrap gap-3 mb-4">
                                         {controlIssues.vencidas > 0 && (
-                                            <div className="flex items-center gap-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-3 py-2 rounded-xl text-xs font-black">
+                                            <div className="flex items-center gap-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-3 py-2 rounded-xl text-xs font-bold">
                                                 <AlertTriangle className="w-4 h-4" /> {controlIssues.vencidas} vencida(s)
                                             </div>
                                         )}
                                         {controlIssues.porVencer > 0 && (
-                                            <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 px-3 py-2 rounded-xl text-xs font-black">
+                                            <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 px-3 py-2 rounded-xl text-xs font-bold">
                                                 <Clock className="w-4 h-4" /> {controlIssues.porVencer} por vencer
                                             </div>
                                         )}
@@ -912,7 +912,7 @@ function CarrosTab({ user }: { user: any }) {
                                         />
                                     </div>
                                     <button onClick={handleAssign} disabled={!assigningToolId}
-                                        className="px-4 py-2 shrink-0 bg-primary text-white rounded-xl font-bold text-xs disabled:opacity-40 hover:bg-primary/90 transition-all active:scale-95 flex items-center gap-1.5 whitespace-nowrap">
+                                        className="px-4 py-2 shrink-0 bg-primary text-white rounded-xl font-bold text-xs disabled:opacity-40 hover:bg-primary-hover transition-all flex items-center gap-1.5 whitespace-nowrap">
                                         <LinkIcon className="w-4 h-4" /> Asignar
                                     </button>
                                 </div>
@@ -923,11 +923,11 @@ function CarrosTab({ user }: { user: any }) {
                                         selectedCarro.herramientas.map((h: any) => (
                                             <div key={h.id} className="flex items-center justify-between p-3 rounded-xl bg-background text-foreground/30 border border-slate-100 dark:border-slate-700">
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-sm font-black text-slate-800 dark:text-slate-100 truncate">{h.nombre}</p>
+                                                    <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{h.nombre}</p>
                                                     <div className="flex items-center gap-2 mt-0.5">
-                                                        <span className="text-[9px] font-mono font-bold text-slate-400">{h.id}</span>
+                                                        <span className="text-[11px] font-mono font-bold text-slate-400">{h.id}</span>
                                                         {h.estadoControl && (
-                                                            <span className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${ESTADO_CONTROL_STYLES[h.estadoControl]?.cls || ''}`}>
+                                                            <span className={`text-[11px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded ${ESTADO_CONTROL_STYLES[h.estadoControl]?.cls || ''}`}>
                                                                 {ESTADO_CONTROL_STYLES[h.estadoControl]?.label}
                                                             </span>
                                                         )}
@@ -955,15 +955,15 @@ function CarrosTab({ user }: { user: any }) {
 
             {/* Modal de opciones de impresión QR */}
             {showPrintQROptions && (
-                <div className="fixed inset-0 z-[120] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowPrintQROptions(false)}>
+                <div className="fixed inset-0 z-[120] bg-slate-950/50 flex items-center justify-center p-4" onClick={() => setShowPrintQROptions(false)}>
                     <div className="bg-card text-card-foreground p-6 rounded-3xl shadow-2xl max-w-sm w-full animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
-                        <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">Imprimir QRs</h3>
+                        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">Imprimir QRs</h3>
                         <p className="text-sm font-medium text-slate-500 mb-6">¿Qué herramientas deseas imprimir de este carro?</p>
                         <div className="space-y-3">
-                            <button onClick={() => handlePrintAllQrs(false)} className="w-full py-3 bg-indigo-600 text-white rounded-xl font-black text-sm hover:bg-indigo-700 transition-colors">
+                            <button onClick={() => handlePrintAllQrs(false)} className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-colors">
                                 Todas las herramientas
                             </button>
-                            <button onClick={() => handlePrintAllQrs(true)} className="w-full py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-black text-sm hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+                            <button onClick={() => handlePrintAllQrs(true)} className="w-full py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
                                 Solo sujetas a control
                             </button>
                             <button onClick={() => setShowPrintQROptions(false)} className="w-full py-3 text-slate-400 font-bold text-sm hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
@@ -1139,20 +1139,20 @@ function RetirosTab({ user }: { user: any }) {
     return (
         <div className="max-w-lg mx-auto space-y-6">
             {mode === 'IDLE' && (
-                <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
+                <div className="space-y-6 animate-in fade-in zoom-in-95 duration-200">
                     {/* Scanner */}
                     <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
                         <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center mx-auto mb-4">
                             <ScanLine className="w-8 h-8" />
                         </div>
-                        <h2 className="text-lg font-black text-slate-800 dark:text-slate-100 mb-2">Retirar un Carro</h2>
+                        <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">Retirar un Carro</h2>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 font-medium">Escanea el código QR del carro para registrar su salida.</p>
                         <button type="button" onClick={() => setIsScanning(true)}
-                            className="w-full py-3.5 bg-primary text-white rounded-2xl font-black text-sm hover:bg-primary/90 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-md">
+                            className="w-full py-3.5 bg-primary text-white rounded-2xl font-bold text-sm hover:bg-primary-hover transition-all flex items-center justify-center gap-2">
                             <Camera className="w-5 h-5" /> Escanear QR
                         </button>
                         <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">O ingresa el ID manual</p>
+                            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-3">O ingresa el ID manual</p>
                             <div className="flex gap-2">
                                 <input type="text" placeholder="ID del Carro" value={manualId}
                                     onChange={e => setManualId(e.target.value)}
@@ -1168,13 +1168,13 @@ function RetirosTab({ user }: { user: any }) {
                     {/* Active Movements */}
                     {activeMovements.length > 0 && (
                         <div className="space-y-4">
-                            <h3 className="font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest text-sm flex items-center gap-2">
+                            <h3 className="font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider text-sm flex items-center gap-2">
                                 <Wrench className="w-4 h-4 text-primary" /> Mis Carros en Uso
                             </h3>
                             {activeMovements.map(mov => (
                                 <div key={mov.id} className="bg-card text-card-foreground rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col gap-4">
                                     <div>
-                                        <h4 className="font-black text-slate-800 dark:text-slate-100 text-lg">{mov.cart?.nombre || mov.carro?.nombre}</h4>
+                                        <h4 className="font-bold text-slate-800 dark:text-slate-100 text-lg">{mov.cart?.nombre || mov.carro?.nombre}</h4>
                                         <p className="text-xs font-bold text-slate-500">Obra: {mov.project.nombre}</p>
                                     </div>
                                     <button type="button" onClick={() => startCheckin(mov)}
@@ -1388,14 +1388,14 @@ function VerificacionTab({ user }: { user: any }) {
                 <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4">
                     <ShieldCheck className="w-8 h-8" />
                 </div>
-                <h2 className="text-lg font-black text-slate-800 dark:text-slate-100 mb-2">Verificación de Herramientas</h2>
+                <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">Verificación de Herramientas</h2>
                 <p className="text-xs text-slate-500 mb-6 font-medium">Escanea el QR de una herramienta para visualizar o verificar su estado.</p>
                 <button onClick={() => setIsScanning(true)}
-                    className="w-full py-3.5 bg-emerald-600 text-white rounded-2xl font-black text-sm hover:bg-emerald-500 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-md">
+                    className="w-full py-3.5 bg-emerald-600 text-white rounded-2xl font-bold text-sm hover:bg-emerald-500 transition-all flex items-center justify-center gap-2">
                     <Camera className="w-5 h-5" /> Escanear QR
                 </button>
                 <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">O ingresa el ID</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-3">O ingresa el ID</p>
                     <div className="flex gap-2">
                         <input type="text" placeholder="ID de herramienta" value={manualId}
                             onChange={e => setManualId(e.target.value)}
@@ -1438,11 +1438,11 @@ function VerificacionTab({ user }: { user: any }) {
 
             {/* Tool Detail */}
             {tool && (
-                <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 duration-300 space-y-4">
+                <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-2 duration-200 space-y-4">
                     <div className="flex justify-between items-start">
                         <div>
-                            <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">{tool.nombre}</h3>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 font-mono mt-1">ID: {tool.id}</p>
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">{tool.nombre}</h3>
+                            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 font-mono mt-1">ID: {tool.id}</p>
                         </div>
                         <div className="flex items-center gap-1.5">
                             <button onClick={() => handleOpenPublicView(tool.id)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400 hover:text-indigo-600 transition-colors" title="Abrir Vista Pública para Auditoría">
@@ -1459,40 +1459,40 @@ function VerificacionTab({ user }: { user: any }) {
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 text-xs">
-                        <div className="bg-background text-foreground/30 p-3 rounded-xl"><span className="block text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Tipo</span><span className="font-bold text-slate-700 dark:text-slate-200">{tool.tipo}</span></div>
-                        {tool.marca && <div className="bg-background text-foreground/30 p-3 rounded-xl"><span className="block text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Marca</span><span className="font-bold text-slate-700 dark:text-slate-200">{tool.marca}</span></div>}
-                        {tool.subtipo && <div className="bg-background text-foreground/30 p-3 rounded-xl"><span className="block text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Subtipo</span><span className="font-bold text-slate-700 dark:text-slate-200">{tool.subtipo}</span></div>}
-                        {tool.rubro && <div className="bg-background text-foreground/30 p-3 rounded-xl"><span className="block text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Rubro</span><span className="font-bold text-slate-700 dark:text-slate-200">{tool.rubro}</span></div>}
+                        <div className="bg-background text-foreground/30 p-3 rounded-xl"><span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Tipo</span><span className="font-bold text-slate-700 dark:text-slate-200">{tool.tipo}</span></div>
+                        {tool.marca && <div className="bg-background text-foreground/30 p-3 rounded-xl"><span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Marca</span><span className="font-bold text-slate-700 dark:text-slate-200">{tool.marca}</span></div>}
+                        {tool.subtipo && <div className="bg-background text-foreground/30 p-3 rounded-xl"><span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Subtipo</span><span className="font-bold text-slate-700 dark:text-slate-200">{tool.subtipo}</span></div>}
+                        {tool.rubro && <div className="bg-background text-foreground/30 p-3 rounded-xl"><span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Rubro</span><span className="font-bold text-slate-700 dark:text-slate-200">{tool.rubro}</span></div>}
                     </div>
 
                     {tool.controlActivo && (
                         <div className="space-y-2 bg-background text-foreground/30 p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
-                            <h4 className="text-xs font-black uppercase tracking-widest text-slate-500 flex items-center gap-2"><ShieldCheck className="w-3.5 h-3.5" /> Control</h4>
+                            <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-2"><ShieldCheck className="w-3.5 h-3.5" /> Control</h4>
                             {tool.estadoControl && (
-                                <div className={`inline-block text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg ${ESTADO_CONTROL_STYLES[tool.estadoControl]?.cls}`}>
+                                <div className={`inline-block text-[11px] font-semibold uppercase tracking-wider px-3 py-1 rounded-lg ${ESTADO_CONTROL_STYLES[tool.estadoControl]?.cls}`}>
                                     {ESTADO_CONTROL_STYLES[tool.estadoControl]?.label}
                                     {tool.diasRestantes !== null && <span className="ml-1">({tool.diasRestantes}d)</span>}
                                 </div>
                             )}
-                            {tool.estadoHerramienta && <p className="text-xs font-bold text-slate-500">Estado: <span className={`font-black ${tool.estadoHerramienta === 'APROBADA' ? 'text-emerald-600' : 'text-red-600'}`}>{tool.estadoHerramienta}</span></p>}
+                            {tool.estadoHerramienta && <p className="text-xs font-bold text-slate-500">Estado: <span className={`font-bold ${tool.estadoHerramienta === 'APROBADA' ? 'text-emerald-600' : 'text-red-600'}`}>{tool.estadoHerramienta}</span></p>}
                             {tool.ultimoControlOperador && <p className="text-xs font-bold text-slate-500">Último control por: {tool.ultimoControlOperador}</p>}
                             {tool.ultimoControlFecha && <p className="text-xs font-bold text-slate-500">Fecha: {formatDateInline(tool.ultimoControlFecha)}</p>}
-                            {tool.proximoControlFecha && <p className="text-xs font-bold text-slate-500">Próxima verificación: <span className="text-slate-700 dark:text-slate-300 font-black">{formatDateInline(tool.proximoControlFecha)}</span></p>}
+                            {tool.proximoControlFecha && <p className="text-xs font-bold text-slate-500">Próxima verificación: <span className="text-slate-700 dark:text-slate-300 font-bold">{formatDateInline(tool.proximoControlFecha)}</span></p>}
 
                             {/* Verify Actions */}
                             {!verifyMode ? (
                                 <button onClick={() => setVerifyMode(true)}
-                                    className="w-full mt-2 py-3 bg-primary text-white rounded-xl font-black text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition-all">
+                                    className="w-full mt-2 py-3 bg-primary text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary-hover transition-all">
                                     <ShieldCheck className="w-4 h-4" /> Verificar Ahora
                                 </button>
                             ) : (
                                 <div className="flex gap-2 mt-2 animate-in fade-in duration-200">
                                     <button onClick={() => handleVerify('APROBADA')}
-                                        className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-black text-sm flex items-center justify-center gap-2 hover:bg-emerald-500 transition-all active:scale-95">
+                                        className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-emerald-500 transition-all">
                                         <CheckCircle2 className="w-4 h-4" /> Aprobada
                                     </button>
                                     <button onClick={() => handleVerify('RECHAZADA')}
-                                        className="flex-1 py-3 bg-red-600 text-white rounded-xl font-black text-sm flex items-center justify-center gap-2 hover:bg-red-500 transition-all active:scale-95">
+                                        className="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-red-500 transition-all">
                                         <X className="w-4 h-4" /> Rechazada
                                     </button>
                                 </div>
@@ -1503,14 +1503,14 @@ function VerificacionTab({ user }: { user: any }) {
                     {/* Verification History */}
                     {tool.verificaciones && tool.verificaciones.length > 0 && (
                         <div className="space-y-2">
-                            <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">Historial de Verificaciones</h4>
+                            <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Historial de Verificaciones</h4>
                             {tool.verificaciones.map((v: any) => (
                                 <div key={v.id} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50/50 dark:bg-slate-900/20">
                                     <div className="flex items-center gap-2">
                                         {v.estado === 'APROBADA' ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> : <X className="w-3.5 h-3.5 text-red-500" />}
                                         <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{v.operadorNombre}</span>
                                     </div>
-                                    <span className="text-[10px] font-bold text-slate-400">{formatDateInline(v.fecha)}</span>
+                                    <span className="text-[11px] font-bold text-slate-400">{formatDateInline(v.fecha)}</span>
                                 </div>
                             ))}
                         </div>
@@ -1527,7 +1527,7 @@ function VerificacionTab({ user }: { user: any }) {
                                     <>
                                         {conControl.length > 0 && (
                                             <div className="space-y-3">
-                                                <h4 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                                                <h4 className="text-xs font-semibold uppercase tracking-wider text-primary flex items-center gap-2">
                                                     <ShieldCheck className="w-4 h-4" /> Herramientas Sujetas a Control ({conControl.length})
                                                 </h4>
                                                 <div className="space-y-2.5">
@@ -1535,21 +1535,21 @@ function VerificacionTab({ user }: { user: any }) {
                                                         <div key={h.id} className="p-3.5 rounded-2xl bg-card text-card-foreground border border-slate-200 dark:border-slate-700 shadow-sm">
                                                             <div className="flex justify-between items-start mb-2 gap-3">
                                                                 <div className="flex-1">
-                                                                    <span className="text-sm font-black text-slate-800 dark:text-slate-100 block leading-tight">{h.nombre}</span>
-                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 font-mono mt-1 block">ID: {h.id}</span>
+                                                                    <span className="text-sm font-bold text-slate-800 dark:text-slate-100 block leading-tight">{h.nombre}</span>
+                                                                    <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 font-mono mt-1 block">ID: {h.id}</span>
                                                                 </div>
                                                                 {h.estadoControl && (
-                                                                    <div className={`shrink-0 whitespace-nowrap text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg ${ESTADO_CONTROL_STYLES[h.estadoControl]?.cls || ''}`}>
+                                                                    <div className={`shrink-0 whitespace-nowrap text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-lg ${ESTADO_CONTROL_STYLES[h.estadoControl]?.cls || ''}`}>
                                                                         {ESTADO_CONTROL_STYLES[h.estadoControl]?.label}
                                                                         {h.diasRestantes !== null && <span className="ml-1">({h.diasRestantes}d)</span>}
                                                                     </div>
                                                                 )}
                                                             </div>
-                                                            <div className="text-xs font-medium text-slate-500 dark:text-slate-400 space-y-1.5 mt-2 bg-muted/50 text-muted-foreground p-2.5 rounded-xl">
+                                                            <div className="text-xs font-medium text-slate-500 dark:text-slate-400 space-y-1.5 mt-2 bg-muted/50 p-2.5 rounded-xl">
                                                                 {h.estadoHerramienta && (
                                                                     <div className="flex justify-between">
                                                                         <span>Estado Actual:</span>
-                                                                        <span className={`font-black ${h.estadoHerramienta === 'APROBADA' ? 'text-emerald-600' : 'text-red-600'}`}>{h.estadoHerramienta}</span>
+                                                                        <span className={`font-bold ${h.estadoHerramienta === 'APROBADA' ? 'text-emerald-600' : 'text-red-600'}`}>{h.estadoHerramienta}</span>
                                                                     </div>
                                                                 )}
                                                                 <div className="flex justify-between">
@@ -1562,7 +1562,7 @@ function VerificacionTab({ user }: { user: any }) {
                                                                 {h.proximoControlFecha && (
                                                                     <div className="flex justify-between">
                                                                         <span>Próxima verificación:</span>
-                                                                        <span className="font-black text-slate-800 dark:text-slate-200">{formatDateInline(h.proximoControlFecha)}</span>
+                                                                        <span className="font-bold text-slate-800 dark:text-slate-200">{formatDateInline(h.proximoControlFecha)}</span>
                                                                     </div>
                                                                 )}
                                                             </div>
@@ -1573,14 +1573,14 @@ function VerificacionTab({ user }: { user: any }) {
                                         )}
                                         {sinControl.length > 0 && (
                                             <div className="space-y-3 pt-2">
-                                                <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                                                <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
                                                     <Wrench className="w-4 h-4" /> Otras Herramientas ({sinControl.length})
                                                 </h4>
                                                 <div className="space-y-2">
                                                     {sinControl.map((h: any) => (
                                                         <div key={h.id} className="p-3 rounded-xl bg-background text-foreground border border-slate-200 dark:border-slate-700 flex justify-between items-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                                                            <span className="text-sm font-black text-slate-700 dark:text-slate-300 truncate">{h.nombre}</span>
-                                                            <span className="shrink-0 ml-2 text-[10px] font-black text-slate-400 font-mono">ID: {h.id}</span>
+                                                            <span className="text-sm font-bold text-slate-700 dark:text-slate-300 truncate">{h.nombre}</span>
+                                                            <span className="shrink-0 ml-2 text-[11px] font-bold text-slate-400 font-mono">ID: {h.id}</span>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -1636,16 +1636,16 @@ function HistorialTab({ user }: { user: any }) {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-3">
                 <div className="bg-card text-card-foreground rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
-                    <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{totalMovements}</p>
-                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-1">Movimientos</p>
+                    <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{totalMovements}</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mt-1">Movimientos</p>
                 </div>
                 <div className="bg-card text-card-foreground rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
-                    <p className="text-2xl font-black text-blue-600">{activeCount}</p>
-                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-1">En Uso</p>
+                    <p className="text-2xl font-bold text-blue-600">{activeCount}</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mt-1">En Uso</p>
                 </div>
                 <div className="bg-card text-card-foreground rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
-                    <p className="text-2xl font-black text-red-500">{withMissing}</p>
-                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-1">Con Faltantes</p>
+                    <p className="text-2xl font-bold text-red-500">{withMissing}</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mt-1">Con Faltantes</p>
                 </div>
             </div>
 
@@ -1669,16 +1669,16 @@ function HistorialTab({ user }: { user: any }) {
                                     <div className="flex items-start justify-between gap-3">
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 flex-wrap">
-                                                <span className="font-black text-slate-800 dark:text-slate-100 text-base">{mov.cart?.nombre || mov.carro?.nombre}</span>
-                                                <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${isActive ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'}`}>{isActive ? 'En Uso' : 'Devuelto'}</span>
-                                                {hasMissing && <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Faltantes</span>}
+                                                <span className="font-bold text-slate-800 dark:text-slate-100 text-base">{mov.cart?.nombre || mov.carro?.nombre}</span>
+                                                <span className={`text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md ${isActive ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'}`}>{isActive ? 'En Uso' : 'Devuelto'}</span>
+                                                {hasMissing && <span className="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Faltantes</span>}
                                             </div>
                                             <p className="text-xs font-medium text-slate-500 mt-1">
                                                 <span className="font-bold text-slate-600 dark:text-slate-300">{mov.operator?.nombreCompleto}</span> → {mov.project?.nombre}
                                             </p>
                                             <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-1.5">
-                                                <span className="text-[10px] font-bold text-slate-400">Salida: {formatDateInline(mov.fechaSalida)}</span>
-                                                <span className="text-[10px] font-bold text-slate-400">Devolución: {mov.fechaDevolucion ? formatDateInline(mov.fechaDevolucion) : '—'}</span>
+                                                <span className="text-[11px] font-bold text-slate-400">Salida: {formatDateInline(mov.fechaSalida)}</span>
+                                                <span className="text-[11px] font-bold text-slate-400">Devolución: {mov.fechaDevolucion ? formatDateInline(mov.fechaDevolucion) : '—'}</span>
                                             </div>
                                         </div>
                                         {isExpanded ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
@@ -1686,7 +1686,7 @@ function HistorialTab({ user }: { user: any }) {
                                 </button>
                                 {isExpanded && (
                                     <div className="px-5 pb-5 pt-0 border-t border-slate-100 dark:border-slate-800 animate-in slide-in-from-top-2 duration-200">
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 mt-4">Herramientas</p>
+                                        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-3 mt-4">Herramientas</p>
                                         <div className="space-y-2">
                                             {mov.items?.map((item: any) => {
                                                 const missingOut = (item.cantidadOut ?? 0) < item.cantidad;
@@ -1696,10 +1696,10 @@ function HistorialTab({ user }: { user: any }) {
                                                     <div key={item.id} className={`p-3 rounded-xl text-xs flex items-start gap-3 ${isMissing ? 'bg-red-50 dark:bg-red-900/15 border border-red-200 dark:border-red-800' : 'bg-background text-foreground/30 border border-slate-100 dark:border-slate-700'}`}>
                                                         {isMissing ? <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" /> : <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />}
                                                         <div className="flex-1 min-w-0">
-                                                            <p className="font-black text-slate-800 dark:text-slate-100 break-words">{item.nombre}
-                                                                {item.isAdditional && <span className="ml-1 text-[9px] font-bold text-blue-500">(adicional)</span>}
+                                                            <p className="font-bold text-slate-800 dark:text-slate-100 break-words">{item.nombre}
+                                                                {item.isAdditional && <span className="ml-1 text-[11px] font-bold text-blue-500">(adicional)</span>}
                                                             </p>
-                                                            <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-[10px] font-bold text-slate-500">
+                                                            <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-[11px] font-bold text-slate-500">
                                                                 <span>Esperado: {item.cantidad}</span>
                                                                 <span>Salida: <span className={missingOut ? 'text-red-500' : ''}>{item.cantidadOut}</span></span>
                                                                 {mov.estado === 'COMPLETADO' && <span>Devolución: <span className={missingIn ? 'text-red-500' : ''}>{item.cantidadIn ?? '—'}</span></span>}
@@ -1773,7 +1773,7 @@ function ScannerModal({ onScan, onClose }: { onScan: (text: string) => void, onC
     }, [containerId, onScan, onClose]);
 
     return (
-        <div className="fixed inset-0 z-[200] bg-slate-900/90 backdrop-blur-md flex flex-col items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[200] bg-slate-950/50 flex flex-col items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
             <div className="w-full max-w-sm bg-card text-card-foreground rounded-3xl overflow-hidden shadow-2xl space-y-3">
                 <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-xs sm:text-sm">
@@ -1794,7 +1794,7 @@ function ScannerModal({ onScan, onClose }: { onScan: (text: string) => void, onC
                     <p className="text-[11px] font-bold text-slate-500">Apunta la cámara al código QR</p>
                 </div>
             </div>
-            <button onClick={onClose} className="mt-4 px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-full font-bold text-xs uppercase tracking-widest transition-all">
+            <button onClick={onClose} className="mt-4 px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-full font-bold text-xs transition-all">
                 Cancelar
             </button>
         </div>
@@ -1808,12 +1808,12 @@ function CheckoutCheckinView({
 }: any) {
     const isCheckout = type === 'checkout';
     return (
-        <div className="space-y-6 animate-in slide-in-from-right-8 duration-300">
+        <div className="space-y-6 animate-in slide-in-from-right-2 duration-200">
             <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
                 <div className="flex justify-between items-start mb-4">
                     <div>
-                        <h2 className="text-xl font-black text-slate-800 dark:text-slate-100">{title}</h2>
-                        <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">{isCheckout ? 'Checklist de Salida' : 'Devolución de Carro'}</p>
+                        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">{title}</h2>
+                        <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-1">{isCheckout ? 'Checklist de Salida' : 'Devolución de Carro'}</p>
                         {subtitle && <p className="text-xs font-medium text-slate-500 mt-2">{subtitle}</p>}
                     </div>
                     <button onClick={onBack} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-slate-400"><ArrowLeft className="w-5 h-5" /></button>
@@ -1835,27 +1835,27 @@ function CheckoutCheckinView({
                         return (
                             <div key={item.id} className="p-4 rounded-2xl border border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/30 space-y-3">
                                 <div>
-                                    <span className="text-sm font-black text-slate-800 dark:text-slate-100 block break-words">{item.nombre}</span>
-                                    <span className="text-[10px] uppercase tracking-widest font-black text-slate-400">Esperado: {item.cantidad}</span>
+                                    <span className="text-sm font-bold text-slate-800 dark:text-slate-100 block break-words">{item.nombre}</span>
+                                    <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-400">Esperado: {item.cantidad}</span>
                                 </div>
                                 <div className="flex items-center justify-center gap-2">
                                     <button type="button" onClick={() => updateToolQty(item.id, value - 1, isCheckout)}
-                                        className="w-11 h-11 flex items-center justify-center bg-card text-card-foreground rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 active:scale-90 transition-transform">
+                                        className="w-11 h-11 flex items-center justify-center bg-card rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 transition-transform">
                                         <Minus className="w-4 h-4" />
                                     </button>
                                     <input type="number" min={0} max={item.cantidad} value={value}
                                         onChange={e => updateToolQty(item.id, parseInt(e.target.value) || 0, isCheckout)}
-                                        className="w-16 h-11 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl text-center text-base font-black text-slate-800 dark:text-slate-100 outline-none focus:border-primary" />
+                                        className="w-16 h-11 bg-card border border-slate-200 dark:border-slate-700 rounded-xl text-center text-base font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-primary" />
                                     <button type="button" disabled={value >= item.cantidad}
                                         onClick={() => updateToolQty(item.id, value + 1, isCheckout)}
-                                        className="w-11 h-11 flex items-center justify-center bg-card text-card-foreground rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 disabled:opacity-30 active:scale-90 transition-transform">
+                                        className="w-11 h-11 flex items-center justify-center bg-card rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 disabled:opacity-30 transition-transform">
                                         <Plus className="w-4 h-4" />
                                     </button>
                                 </div>
                                 {missingCount > 0 && (
                                     <div className="flex items-center gap-1.5 text-red-500 animate-in fade-in slide-in-from-top-1">
                                         <AlertTriangle className="w-3.5 h-3.5" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest">Faltan {missingCount} unidades</span>
+                                        <span className="text-[11px] font-semibold uppercase tracking-wider">Faltan {missingCount} unidades</span>
                                     </div>
                                 )}
                             </div>
@@ -1864,13 +1864,13 @@ function CheckoutCheckinView({
                 </div>
 
                 {isCheckout && handleAddNewTool && (
-                    <div className="flex gap-2 p-1 bg-background text-foreground/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                    <div className="flex gap-2 p-1 bg-background text-foreground rounded-2xl border border-slate-100 dark:border-slate-800">
                         <input type="text" placeholder="Agregar adicional..." value={newToolName}
                             onChange={(e: any) => setNewToolName(e.target.value)}
                             className="flex-1 bg-transparent px-4 py-3 text-xs font-bold outline-none min-w-0" />
                         <input type="number" min={1} value={newToolQty}
                             onChange={(e: any) => setNewToolQty(Math.max(1, parseInt(e.target.value) || 1))}
-                            className="w-14 bg-transparent border-x border-slate-200 dark:border-slate-700 text-xs font-black text-center outline-none" />
+                            className="w-14 bg-transparent border-x border-slate-200 dark:border-slate-700 text-xs font-bold text-center outline-none" />
                         <button type="button" onClick={handleAddNewTool} disabled={!newToolName?.trim()} className="px-4 text-primary disabled:opacity-30">
                             <Plus className="w-5 h-5" />
                         </button>
@@ -1888,7 +1888,7 @@ function CheckoutCheckinView({
             )}
 
             <button type="button" disabled={isLoading || (isCheckout && !selectedProjectId)} onClick={onSubmit}
-                className={`w-full py-4 ${isCheckout ? 'bg-primary shadow-xl shadow-primary/20' : 'bg-slate-800 dark:bg-slate-100 dark:text-slate-900'} text-white rounded-2xl font-black uppercase tracking-widest text-sm disabled:opacity-50 flex items-center justify-center gap-2`}>
+                className={`w-full py-4 ${isCheckout ? 'bg-primary' : 'bg-slate-800 dark:bg-slate-100 dark:text-slate-900'} text-white rounded-2xl font-semibold uppercase tracking-wider text-sm disabled:opacity-50 flex items-center justify-center gap-2`}>
                 {isCheckout ? <><ClipboardCheck className="w-5 h-5" /> Confirmar Salida</> : 'Finalizar y Entregar Carro'}
             </button>
         </div>

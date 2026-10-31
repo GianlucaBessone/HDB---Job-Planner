@@ -549,7 +549,7 @@ export default function TareasPage() {
     }
 
     return (
-        <div className="w-full space-y-4 md:space-y-6 animate-in fade-in duration-500 pb-20">
+        <div className="w-full space-y-4 md:space-y-6 animate-in fade-in duration-200 pb-20">
             <ModuleHeader
                 title="Tareas"
                 description="Planificación, involucrados y recordatorios"
@@ -594,8 +594,8 @@ export default function TareasPage() {
                         <div key={e.value} className="bg-card text-card-foreground rounded-2xl border border-slate-200 dark:border-slate-700 p-4 flex items-center gap-3 shadow-sm">
                             <div className={`w-3 h-3 rounded-full ${e.dot}`}></div>
                             <div>
-                                <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{count}</p>
-                                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{e.label}</p>
+                                <p className="text-2xl font-bold text-slate-800 dark:text-slate-100">{count}</p>
+                                <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{e.label}</p>
                             </div>
                         </div>
                     );
@@ -619,9 +619,9 @@ export default function TareasPage() {
                                 <div className="flex items-center justify-between px-1">
                                     <div className="flex items-center gap-2">
                                         <div className={`w-2.5 h-2.5 rounded-full ${estadoConfig.dot}`}></div>
-                                        <h3 className="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider">{estadoConfig.label}</h3>
+                                        <h3 className="text-xs font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wider">{estadoConfig.label}</h3>
                                     </div>
-                                    <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full">{columnTareas.length}</span>
+                                    <span className="text-[11px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full">{columnTareas.length}</span>
                                 </div>
                                 {/* Column Cards */}
                                 <div className="space-y-2.5 min-h-[100px]">
@@ -647,7 +647,7 @@ export default function TareasPage() {
                                     })}
                                     {columnTareas.length === 0 && (
                                         <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-6 text-center">
-                                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Sin tareas</p>
+                                            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Sin tareas</p>
                                         </div>
                                     )}
                                 </div>
@@ -690,11 +690,11 @@ export default function TareasPage() {
 
             {/* ──── Create/Edit Modal ──── */}
             {showModal && (
-                <div className="fixed inset-0 z-[200] flex items-start justify-center bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto p-4 pt-[5vh]" onClick={() => setShowModal(false)}>
-                    <div className="bg-card text-card-foreground w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-4 duration-300 my-4" onClick={e => e.stopPropagation()}>
+                <div className="fixed inset-0 z-[200] flex items-start justify-center bg-slate-950/50 animate-in fade-in duration-200 overflow-y-auto p-4 pt-[5vh]" onClick={() => setShowModal(false)}>
+                    <div className="bg-card text-card-foreground w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 animate-in slide-in-from-bottom-2 duration-200 my-4" onClick={e => e.stopPropagation()}>
                         {/* Modal Header */}
                         <div className="flex items-center justify-between p-5 pb-4 border-b border-slate-100 dark:border-slate-700">
-                            <h2 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                                 <div className="p-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg"><ListTodo className="w-5 h-5 text-purple-600 dark:text-purple-400" /></div>
                                 {editingTarea ? (isViewMode ? 'Detalle de Tarea' : 'Editar Tarea') : 'Nueva Tarea'}
                             </h2>
@@ -706,13 +706,13 @@ export default function TareasPage() {
                         <div className="p-5 space-y-5 max-h-[70vh] overflow-y-auto custom-scrollbar">
                             {/* Title */}
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Título *</label>
+                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Título *</label>
                                 <input
                                     type="text"
                                     value={form.titulo}
                                     onChange={e => setForm({ ...form, titulo: e.target.value })}
                                     disabled={isViewMode}
-                                    className="w-full h-12 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-sm font-semibold text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
+                                    className="w-full h-12 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-sm font-semibold text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                     placeholder="¿Qué hay que hacer?"
                                     autoFocus={!isViewMode}
                                 />
@@ -721,23 +721,23 @@ export default function TareasPage() {
                             {/* Estado + Prioridad row */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Estado</label>
+                                    <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Estado</label>
                                     <select
                                         value={form.estado}
                                         onChange={e => setForm({ ...form, estado: e.target.value })}
                                         disabled={isViewMode}
-                                        className="w-full h-12 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
+                                        className="w-full h-12 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                     >
                                         {ESTADOS.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
                                     </select>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Prioridad</label>
+                                    <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Prioridad</label>
                                     <select
                                         value={form.prioridad}
                                         onChange={e => setForm({ ...form, prioridad: e.target.value })}
                                         disabled={isViewMode}
-                                        className="w-full h-12 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
+                                        className="w-full h-12 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                     >
                                         {PRIORIDADES.map(p => <option key={p.value} value={p.value}>{p.icon} {p.label}</option>)}
                                     </select>
@@ -746,12 +746,12 @@ export default function TareasPage() {
 
                             {/* Description */}
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Descripción</label>
+                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Descripción</label>
                                 <textarea
                                     value={form.descripcion}
                                     onChange={e => setForm({ ...form, descripcion: e.target.value })}
                                     disabled={isViewMode}
-                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 resize-none h-20 disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
+                                    className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 resize-none h-20 disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                     placeholder="Detalles de la tarea..."
                                 />
                             </div>
@@ -759,23 +759,23 @@ export default function TareasPage() {
                             {/* Dates row */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Fecha Inicio</label>
+                                    <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Fecha Inicio</label>
                                     <input
                                         type="datetime-local"
                                         value={form.fechaInicio}
                                         onChange={e => setForm({ ...form, fechaInicio: e.target.value })}
                                         disabled={isViewMode}
-                                        className="w-full h-12 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
+                                        className="w-full h-12 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Fecha Vencimiento</label>
+                                    <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Fecha Vencimiento</label>
                                     <input
                                         type="datetime-local"
                                         value={form.fechaVencimiento}
                                         onChange={e => setForm({ ...form, fechaVencimiento: e.target.value })}
                                         disabled={isViewMode}
-                                        className="w-full h-12 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
+                                        className="w-full h-12 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                     />
                                 </div>
                             </div>
@@ -783,12 +783,12 @@ export default function TareasPage() {
                             {/* Project + Category */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Proyecto (opcional)</label>
+                                    <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Proyecto (opcional)</label>
                                     <select
                                         value={form.projectId}
                                         onChange={e => setForm({ ...form, projectId: e.target.value })}
                                         disabled={isViewMode}
-                                        className="w-full h-12 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
+                                        className="w-full h-12 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-3 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                     >
                                         <option value="">Sin proyecto</option>
                                         {projects.map((p: any) => (
@@ -797,13 +797,13 @@ export default function TareasPage() {
                                     </select>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Categoría</label>
+                                    <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Categoría</label>
                                     <input
                                         type="text"
                                         value={form.categoria}
                                         onChange={e => setForm({ ...form, categoria: e.target.value })}
                                         disabled={isViewMode}
-                                        className="w-full h-12 bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
+                                        className="w-full h-12 bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 transition-all disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                         placeholder="ej: Mantenimiento"
                                     />
                                 </div>
@@ -812,13 +812,13 @@ export default function TareasPage() {
                             {/* ─── Involucrados ─── */}
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
-                                    <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                                    <label className="flex items-center gap-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                         <UsersIcon className="w-3.5 h-3.5" /> Involucrados
                                     </label>
                                     {!isViewMode && (
                                         <button
                                             onClick={() => setFormInvolucrados([...formInvolucrados, { operatorId: '', rol: 'responsable' }])}
-                                            className="text-[10px] font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 uppercase tracking-wider flex items-center gap-1 transition-colors"
+                                            className="text-[12px] font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 flex items-center gap-1 transition-colors"
                                         >
                                             <Plus className="w-3 h-3" /> Agregar
                                         </button>
@@ -838,7 +838,7 @@ export default function TareasPage() {
                                                     setFormInvolucrados(next);
                                                 }}
                                                 disabled={isViewMode}
-                                                className="w-full sm:flex-1 h-10 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent disabled:appearance-none"
+                                                className="w-full sm:flex-1 h-10 bg-card border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent disabled:appearance-none"
                                             >
                                                 <option value="">Seleccionar...</option>
                                                 {operators.map((op: any) => (
@@ -854,7 +854,7 @@ export default function TareasPage() {
                                                         setFormInvolucrados(next);
                                                     }}
                                                     disabled={isViewMode}
-                                                    className="flex-1 sm:w-32 h-10 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent disabled:appearance-none"
+                                                    className="flex-1 sm:w-32 h-10 bg-card border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent disabled:appearance-none"
                                                 >
                                                     {ROLES_INVOLUCRADO.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                                                 </select>
@@ -875,13 +875,13 @@ export default function TareasPage() {
                             {/* ─── Recordatorios ─── */}
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
-                                    <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                                    <label className="flex items-center gap-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                         <BellRing className="w-3.5 h-3.5" /> Recordatorios
                                     </label>
                                     {!isViewMode && (
                                         <button
                                             onClick={() => setFormRecordatorios([...formRecordatorios, { tipo: 'unico', fechaDisparo: '', mensaje: '' }])}
-                                            className="text-[10px] font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 uppercase tracking-wider flex items-center gap-1 transition-colors"
+                                            className="text-[12px] font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 flex items-center gap-1 transition-colors"
                                         >
                                             <BellPlus className="w-3 h-3" /> Agregar
                                         </button>
@@ -891,7 +891,7 @@ export default function TareasPage() {
                                 {/* Existing recordatorios for editing tarea */}
                                 {editingTarea && editingTarea.recordatorios.length > 0 && (
                                     <div className="space-y-1.5">
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Recordatorios activos</p>
+                                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Recordatorios activos</p>
                                         {editingTarea.recordatorios.map(rec => (
                                             <div key={rec.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-2.5">
                                                 <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 text-xs">
@@ -901,7 +901,7 @@ export default function TareasPage() {
                                                     <span className="font-bold text-slate-700 dark:text-slate-200">{TIPOS_RECORDATORIO.find(t => t.value === rec.tipo)?.label}</span>
                                                     <span className="text-slate-400 dark:text-slate-500">—</span>
                                                     <span className="text-slate-600 dark:text-slate-300">{format(new Date(rec.fechaDisparo), 'dd/MM/yyyy HH:mm', { locale: es })}</span>
-                                                    {rec.disparado && <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded uppercase">Disparado</span>}
+                                                    {rec.disparado && <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded uppercase">Disparado</span>}
                                                 </div>
                                                 {!isViewMode && (
                                                     <button onClick={() => handleDeleteRecordatorio(rec.id)} className="p-1 text-slate-400 hover:text-rose-500 rounded transition-colors">
@@ -925,7 +925,7 @@ export default function TareasPage() {
                                                     setFormRecordatorios(next);
                                                 }}
                                                 disabled={isViewMode}
-                                                className="w-full sm:flex-1 h-10 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent disabled:appearance-none"
+                                                className="w-full sm:flex-1 h-10 bg-card border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent disabled:appearance-none"
                                             >
                                                 {TIPOS_RECORDATORIO.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                                             </select>
@@ -939,7 +939,7 @@ export default function TareasPage() {
                                                         setFormRecordatorios(next);
                                                     }}
                                                     disabled={isViewMode}
-                                                    className="flex-1 h-10 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent disabled:appearance-none"
+                                                    className="flex-1 h-10 bg-card border border-slate-200 dark:border-slate-700 rounded-lg px-2 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none appearance-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent disabled:appearance-none"
                                                 />
                                                 {!isViewMode && (
                                                     <button
@@ -961,7 +961,7 @@ export default function TareasPage() {
                                                 setFormRecordatorios(next);
                                             }}
                                             disabled={isViewMode}
-                                            className="w-full h-9 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-lg px-3 text-xs text-slate-700 dark:text-slate-200 outline-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
+                                            className="w-full h-9 bg-card border border-slate-200 dark:border-slate-700 rounded-lg px-3 text-xs text-slate-700 dark:text-slate-200 outline-none disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                         />
                                     </div>
                                 ))}
@@ -973,12 +973,12 @@ export default function TareasPage() {
 
                             {/* Notes */}
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Notas</label>
+                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Notas</label>
                                 <textarea
                                     value={form.notas}
                                     onChange={e => setForm({ ...form, notas: e.target.value })}
                                     disabled={isViewMode}
-                                    className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 resize-none h-16 disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
+                                    className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl py-3 px-4 text-sm text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20 resize-none h-16 disabled:opacity-80 disabled:bg-transparent disabled:border-transparent"
                                     placeholder="Notas adicionales..."
                                 />
                             </div>
@@ -986,7 +986,7 @@ export default function TareasPage() {
                             {/* Chat / Comentarios */}
                             {editingTarea && (
                                 <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
-                                    <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4 block">
+                                    <label className="mb-4 block text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                         Chat de Tarea
                                     </label>
                                     <div 
@@ -1001,14 +1001,14 @@ export default function TareasPage() {
                                                 return (
                                                     <div key={c.id} className={`flex flex-col max-w-[85%] ${isMe ? 'self-end items-end' : 'self-start items-start'}`}>
                                                         {!isMe && (
-                                                            <span className="text-[10px] text-slate-500 ml-1 mb-0.5">
+                                                            <span className="text-[11px] text-slate-500 ml-1 mb-0.5">
                                                                 {c.operator.nombreCompleto} ({c.operator.role})
                                                             </span>
                                                         )}
-                                                        <div className={`px-4 py-2 rounded-2xl text-sm ${isMe ? 'bg-primary text-white rounded-tr-sm' : 'bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-tl-sm shadow-sm'}`}>
+                                                        <div className={`px-4 py-2 rounded-2xl text-sm ${isMe ? 'bg-primary text-white rounded-tr-sm' : 'bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-tl-sm'}`}>
                                                             {c.mensaje}
                                                         </div>
-                                                        <span className="text-[9px] text-slate-400 mt-1 mx-1">
+                                                        <span className="text-[11px] text-slate-400 mt-1 mx-1">
                                                             {format(new Date(c.createdAt), 'HH:mm - dd/MM')}
                                                         </span>
                                                     </div>
@@ -1034,7 +1034,7 @@ export default function TareasPage() {
                                         <button 
                                             onClick={handlePostComentario}
                                             disabled={isComentando || !comentarioInput.trim()}
-                                            className="px-4 bg-primary text-white rounded-xl hover:bg-primary/90 disabled:opacity-50 transition-colors shrink-0 flex items-center justify-center"
+                                            className="px-4 bg-primary text-white rounded-xl hover:bg-primary-hover disabled:opacity-50 transition-colors shrink-0 flex items-center justify-center"
                                         >
                                             {isComentando ? <Loader2 className="w-5 h-5 animate-spin" /> : <ChevronRight className="w-5 h-5" />}
                                         </button>
@@ -1056,7 +1056,7 @@ export default function TareasPage() {
                                     {(!editingTarea || getPermissions(editingTarea).canEditFull) && (
                                         <button
                                             onClick={() => setIsViewMode(false)}
-                                            className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/90 shadow-lg shadow-blue-600/20 transition-all active:scale-95"
+                                            className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary-hover transition-all"
                                         >
                                             <Edit3 className="w-4 h-4" /> Editar
                                         </button>
@@ -1073,7 +1073,7 @@ export default function TareasPage() {
                                     <button
                                         onClick={handleSave}
                                         disabled={isSaving}
-                                        className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 text-white text-sm font-bold rounded-xl hover:bg-purple-700 shadow-lg shadow-purple-600/20 transition-all disabled:opacity-50 active:scale-95"
+                                        className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 text-white text-sm font-bold rounded-xl hover:bg-purple-700 transition-all disabled:opacity-50"
                                     >
                                         {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                                         {isSaving ? 'Guardando...' : editingTarea ? 'Guardar Cambios' : 'Crear Tarea'}
@@ -1098,7 +1098,7 @@ export default function TareasPage() {
             <div className="md:hidden fixed bottom-20 right-4 z-40">
                 <button
                     onClick={openNew}
-                    className="w-14 h-14 bg-purple-600 text-white rounded-2xl shadow-xl shadow-purple-600/30 flex items-center justify-center hover:bg-purple-700 active:scale-90 transition-all"
+                    className="w-14 h-14 bg-purple-600 text-white rounded-2xl shadow-xl flex items-center justify-center hover:bg-purple-700 transition-all"
                 >
                     <Plus className="w-6 h-6" />
                 </button>
@@ -1150,7 +1150,7 @@ function TareaCard({
         >
             {/* Top: Priority + Actions */}
             <div className="flex items-start justify-between mb-2">
-                <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${prioridad.bg} ${prioridad.color}`}>
+                <span className={`text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md ${prioridad.bg} ${prioridad.color}`}>
                     {prioridad.icon} {prioridad.label}
                 </span>
                 <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
@@ -1184,7 +1184,7 @@ function TareaCard({
             {tarea.project && (
                 <div className="flex items-center gap-1.5 mb-3">
                     <Briefcase className="w-3 h-3 text-slate-400" />
-                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate">{tarea.project.codigoProyecto || tarea.project.nombre}</span>
+                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 truncate">{tarea.project.codigoProyecto || tarea.project.nombre}</span>
                 </div>
             )}
 
@@ -1192,7 +1192,7 @@ function TareaCard({
             {vencimiento && (
                 <div className={`flex items-center gap-1.5 mb-3 ${vencimiento.class}`}>
                     <Timer className="w-3 h-3" />
-                    <span className="text-[10px] font-bold">{vencimiento.text}</span>
+                    <span className="text-[11px] font-bold">{vencimiento.text}</span>
                 </div>
             )}
 
@@ -1202,14 +1202,14 @@ function TareaCard({
                     {tarea.involucrados.slice(0, 4).map(inv => (
                         <div
                             key={inv.id}
-                            className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-[9px] font-black text-white border-2 border-white dark:border-slate-800 shadow-sm"
+                            className="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center text-[11px] font-bold text-white border-2 border-white dark:border-slate-800 shadow-sm"
                             title={`${inv.operator.nombreCompleto} (${inv.rol})`}
                         >
                             {inv.operator.nombreCompleto.charAt(0).toUpperCase()}
                         </div>
                     ))}
                     {tarea.involucrados.length > 4 && (
-                        <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[9px] font-bold text-slate-600 dark:text-slate-300 border-2 border-white dark:border-slate-800">
+                        <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[11px] font-bold text-slate-600 dark:text-slate-300 border-2 border-white dark:border-slate-800">
                             +{tarea.involucrados.length - 4}
                         </div>
                     )}
@@ -1217,7 +1217,7 @@ function TareaCard({
                 {hasReminders && (
                     <div className="flex items-center gap-1 text-purple-500" title={`${activeReminders} recordatorio(s) activo(s)`}>
                         <Bell className={`w-3.5 h-3.5 ${activeReminders > 0 ? 'animate-pulse' : 'opacity-50'}`} />
-                        {activeReminders > 0 && <span className="text-[10px] font-bold">{activeReminders}</span>}
+                        {activeReminders > 0 && <span className="text-[11px] font-bold">{activeReminders}</span>}
                     </div>
                 )}
             </div>
@@ -1276,31 +1276,31 @@ function TareaListRow({
                     <h4 className={`text-sm font-bold leading-snug truncate ${tarea.estado === 'completada' ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-800 dark:text-slate-100'}`}>
                         {tarea.titulo}
                     </h4>
-                    <span className={`text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded ${prioridad.bg} ${prioridad.color} shrink-0`}>
+                    <span className={`text-[11px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded ${prioridad.bg} ${prioridad.color} shrink-0`}>
                         {prioridad.label}
                     </span>
-                    <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${estado.color} shrink-0`}>
+                    <span className={`text-[11px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${estado.color} shrink-0`}>
                         {estado.label}
                     </span>
                 </div>
                 <div className="flex items-center gap-3 mt-1.5 flex-wrap">
                     {tarea.project && (
-                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                        <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1">
                             <Briefcase className="w-3 h-3" /> {tarea.project.codigoProyecto || tarea.project.nombre}
                         </span>
                     )}
                     {vencimiento && (
-                        <span className={`text-[10px] font-bold flex items-center gap-1 ${vencimiento.class}`}>
+                        <span className={`text-[11px] font-bold flex items-center gap-1 ${vencimiento.class}`}>
                             <Timer className="w-3 h-3" /> {vencimiento.text}
                         </span>
                     )}
                     {tarea.involucrados.length > 0 && (
-                        <span className="text-[10px] text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                        <span className="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1">
                             <UsersIcon className="w-3 h-3" /> {tarea.involucrados.length}
                         </span>
                     )}
                     {activeReminders > 0 && (
-                        <span className="text-[10px] text-purple-500 flex items-center gap-1">
+                        <span className="text-[11px] text-purple-500 flex items-center gap-1">
                             <Bell className="w-3 h-3 animate-pulse" /> {activeReminders}
                         </span>
                     )}
@@ -1312,14 +1312,14 @@ function TareaListRow({
                 {tarea.involucrados.slice(0, 3).map(inv => (
                     <div
                         key={inv.id}
-                        className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-[10px] font-black text-white border-2 border-white dark:border-slate-800"
+                        className="w-7 h-7 rounded-full bg-purple-600 flex items-center justify-center text-[11px] font-bold text-white border-2 border-white dark:border-slate-800"
                         title={inv.operator.nombreCompleto}
                     >
                         {inv.operator.nombreCompleto.charAt(0).toUpperCase()}
                     </div>
                 ))}
                 {tarea.involucrados.length > 3 && (
-                    <div className="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[9px] font-bold text-slate-600 dark:text-slate-300 border-2 border-white dark:border-slate-800">
+                    <div className="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[11px] font-bold text-slate-600 dark:text-slate-300 border-2 border-white dark:border-slate-800">
                         +{tarea.involucrados.length - 3}
                     </div>
                 )}

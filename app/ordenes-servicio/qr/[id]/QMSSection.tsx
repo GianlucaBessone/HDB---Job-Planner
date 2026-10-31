@@ -33,10 +33,10 @@ function SignatureModal({ isOpen, onClose, onSave }: { isOpen: boolean, onClose:
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/50 p-4">
             <div className="bg-card text-card-foreground rounded-3xl shadow-2xl w-full max-w-md flex flex-col p-6 animate-in zoom-in-95 duration-200">
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-base font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                         <PenTool className="w-5 h-5 text-indigo-600" /> Firma de Conformidad
                     </h3>
                     <button onClick={onClose} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors text-slate-500">
@@ -56,13 +56,13 @@ function SignatureModal({ isOpen, onClose, onSave }: { isOpen: boolean, onClose:
                     <div className="flex gap-2">
                         <button
                             onClick={onClose}
-                            className="px-4 py-2 text-xs font-black text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors rounded-xl"
+                            className="px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors rounded-xl"
                         >
                             Cancelar
                         </button>
                         <button
                             onClick={handleSave}
-                            className="px-5 py-2.5 bg-primary hover:bg-primary/95 text-white text-xs font-black rounded-xl transition-all shadow-md shadow-primary/20"
+                            className="px-5 py-2.5 bg-primary hover:bg-primary/95 text-white text-xs font-bold rounded-xl transition-all"
                         >
                             Confirmar Firma
                         </button>
@@ -356,11 +356,11 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
     };
 
     return (
-        <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
             <div className="px-6 py-4 border-b border-slate-50 dark:border-slate-700 bg-indigo-50/50 dark:bg-indigo-900/10">
                 <div className="flex items-center gap-2">
                     <ShieldAlert className="w-5 h-5 text-indigo-600" />
-                    <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-wide">
+                    <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
                         QMS - Calidad y Compliance
                     </h3>
                 </div>
@@ -371,18 +371,18 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                 {/* Documentación Aplicable */}
                 {documentos.length > 0 && (
                     <div className="space-y-3">
-                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Documentación Aplicable</h4>
+                        <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Documentación Aplicable</h4>
                         <div className="space-y-3">
                             {documentos.map((d: any) => (
                                 <div key={d.id} className={`p-4 rounded-2xl border ${d.bloqueante && !d.leido ? 'border-amber-200 bg-amber-50 dark:bg-amber-900/10' : 'border-slate-200 dark:border-slate-700'}`}>
                                     <div className="flex items-start justify-between mb-2">
                                         <div>
                                             <div className="flex gap-2 items-center mb-1">
-                                                <span className="text-[10px] font-black font-mono bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded text-slate-600 dark:text-slate-300">
+                                                <span className="text-[11px] font-bold font-mono bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded text-slate-600 dark:text-slate-300">
                                                     {d.document.codigoDocumental}
                                                 </span>
                                                 {d.bloqueante && !d.leido && (
-                                                    <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 bg-amber-100 px-2 py-0.5 rounded flex items-center gap-1">
+                                                    <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-600 bg-amber-100 px-2 py-0.5 rounded flex items-center gap-1">
                                                         <AlertTriangle className="w-3 h-3" /> Bloqueante
                                                     </span>
                                                 )}
@@ -402,10 +402,10 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                                             <button 
                                                 onClick={() => handleAcknowledge(d.id)}
                                                 disabled={d.leido || loadingAction === d.id}
-                                                className={`text-xs font-black px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 active:scale-95 duration-200 ${
+                                                className={`text-xs font-bold px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 duration-200 ${
                                                     d.leido 
                                                         ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50 cursor-default' 
-                                                        : 'bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/20 dark:shadow-none hover:shadow-none'
+                                                        : 'bg-primary hover:bg-primary/90 text-white shadow-md dark:shadow-none hover:shadow-none'
                                                 }`}
                                             >
                                                 {loadingAction === d.id ? (
@@ -427,7 +427,7 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                 {/* Checklists Operativos Desacoplados */}
                 {documentChecklists.length > 0 && (
                     <div className="space-y-3">
-                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Checklists Operativos (Snapshots ISO)</h4>
+                        <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Checklists Operativos (Snapshots ISO)</h4>
                         <div className="space-y-4">
                             {documentChecklists.map((chk: any) => {
                                 const snapshot = chk.snapshotData;
@@ -444,14 +444,14 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
 
                                 return (
                                     <div key={chk.id} className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden shadow-sm bg-card text-card-foreground/80">
-                                        <div className="bg-background text-foreground/50 px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex flex-wrap justify-between items-center gap-2">
+                                        <div className="bg-background text-foreground px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex flex-wrap justify-between items-center gap-2">
                                             <div>
                                                 <div className="flex items-center gap-2">
-                                                    <h5 className="font-black text-sm text-slate-700 dark:text-slate-200">{chk.templateName}</h5>
-                                                    <span className="text-[9px] font-black font-mono bg-slate-200 dark:bg-slate-750 px-1.5 py-0.5 rounded text-slate-500">
+                                                    <h5 className="font-bold text-sm text-slate-700 dark:text-slate-200">{chk.templateName}</h5>
+                                                    <span className="text-[11px] font-bold font-mono bg-slate-200 dark:bg-slate-750 px-1.5 py-0.5 rounded text-slate-500">
                                                         v{chk.templateVersion}
                                                     </span>
-                                                    <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border ${
+                                                    <span className={`text-[11px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded border ${
                                                         riskLevel === 'high' || riskLevel === 'critical' ? 'bg-red-50 text-red-700 border-red-200' :
                                                         riskLevel === 'medium' ? 'bg-amber-50 text-amber-700 border-amber-200' :
                                                         'bg-slate-100 text-slate-600 border-slate-200'
@@ -461,9 +461,9 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                                                 </div>
                                             </div>
                                             <div className="flex flex-wrap gap-1">
-                                                {reqEvidence && <span className="text-[8px] font-black bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded border border-amber-100">EVIDENCIA</span>}
-                                                {reqPhotos && <span className="text-[8px] font-black bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded border border-blue-100">FOTO</span>}
-                                                {reqSignature && <span className="text-[8px] font-black bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded border border-purple-100">FIRMA</span>}
+                                                {reqEvidence && <span className="text-[11px] font-bold bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded border border-amber-100">EVIDENCIA</span>}
+                                                {reqPhotos && <span className="text-[11px] font-bold bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded border border-blue-100">FOTO</span>}
+                                                {reqSignature && <span className="text-[11px] font-bold bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded border border-purple-100">FIRMA</span>}
                                             </div>
                                         </div>
 
@@ -503,7 +503,7 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                                                                     {item.esObligatorio && <span className="text-red-500 ml-1">*</span>}
                                                                 </p>
                                                                 {item.completado && (item.completadoPorNombre || item.fechaCompletado) && (
-                                                                    <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-semibold">
+                                                                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 font-semibold">
                                                                         Verificado por {item.completadoPorNombre || 'Operador'} el {item.fechaCompletado ? formatDateInline(item.fechaCompletado) : ''}
                                                                     </p>
                                                                 )}
@@ -520,7 +520,7 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                                                             <div className="px-11 pb-5 pt-1 bg-slate-50/50 dark:bg-slate-900/10 space-y-4 border-t border-slate-50 dark:border-slate-750/30 animate-in slide-in-from-top-2 duration-200">
                                                                 {reqEvidence && (
                                                                     <div>
-                                                                        <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Evidencia / Medición</label>
+                                                                        <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Evidencia / Medición</label>
                                                                         <textarea
                                                                             rows={2}
                                                                             value={localForm.observacion}
@@ -534,9 +534,9 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                                     {reqPhotos && (
                                                                         <div>
-                                                                            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Captura Fotográfica</label>
+                                                                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Captura Fotográfica</label>
                                                                             <div className="flex items-center gap-3">
-                                                                                <label className="flex items-center gap-1.5 px-4 py-2.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-750 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors text-xs font-black text-slate-600 dark:text-slate-300">
+                                                                                <label className="flex items-center gap-1.5 px-4 py-2.5 bg-card border border-slate-200 dark:border-slate-750 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors text-xs font-bold text-slate-600 dark:text-slate-300">
                                                                                     <Camera className="w-4 h-4 text-blue-500" />
                                                                                     {localForm.foto ? 'Cambiar Foto' : 'Tomar Foto'}
                                                                                     <input 
@@ -566,7 +566,7 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                                                                                                 type="button"
                                                                                                 onClick={() => handleAnalyzeImage(item.descripcion)}
                                                                                                 disabled={analyzingImage}
-                                                                                                className="flex items-center gap-1.5 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/30 dark:text-indigo-400 rounded-xl text-xs font-black transition-colors disabled:opacity-50"
+                                                                                                className="flex items-center gap-1.5 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/30 dark:text-indigo-400 rounded-xl text-xs font-bold transition-colors disabled:opacity-50"
                                                                                             >
                                                                                                 {analyzingImage ? (
                                                                                                     <>
@@ -589,11 +589,11 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
 
                                                                     {reqSignature && (
                                                                         <div>
-                                                                            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Firma Digital</label>
+                                                                            <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Firma Digital</label>
                                                                             <div className="flex items-center gap-3">
                                                                                 <button
                                                                                     onClick={() => setSigModalOpen(true)}
-                                                                                    className="flex items-center gap-1.5 px-4 py-2.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-750 rounded-xl hover:bg-slate-50 transition-colors text-xs font-black text-slate-600 dark:text-slate-300"
+                                                                                    className="flex items-center gap-1.5 px-4 py-2.5 bg-card border border-slate-200 dark:border-slate-750 rounded-xl hover:bg-slate-50 transition-colors text-xs font-bold text-slate-600 dark:text-slate-300"
                                                                                 >
                                                                                     <PenTool className="w-4 h-4 text-purple-500" />
                                                                                     {localForm.firma ? 'Cambiar Firma' : 'Dibujar Firma'}
@@ -620,9 +620,9 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                                                                         <div className="flex items-center justify-between">
                                                                             <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-400">
                                                                                 <Sparkles className="w-4 h-4 text-indigo-500 animate-pulse" />
-                                                                                <span className="text-[10px] font-black uppercase tracking-wider">Reporte de Anomalías Gemini</span>
+                                                                                <span className="text-[11px] font-semibold uppercase tracking-wider">Reporte de Anomalías Gemini</span>
                                                                             </div>
-                                                                            <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border ${
+                                                                            <span className={`text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded border ${
                                                                                 analysisResult.estadoGeneral === 'critico' ? 'bg-red-100 border-red-200 text-red-700' :
                                                                                 analysisResult.estadoGeneral === 'requiere_atencion' ? 'bg-amber-100 border-amber-200 text-amber-700' :
                                                                                 'bg-emerald-105 border-emerald-200 text-emerald-700'
@@ -637,7 +637,7 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                                                                                     <div key={idx} className="bg-card text-card-foreground border border-slate-100 dark:border-slate-800/80 rounded-xl p-3 space-y-1 shadow-sm">
                                                                                         <div className="flex justify-between items-center gap-2">
                                                                                             <span className="font-bold text-xs text-slate-800 dark:text-slate-200">{a.anomalia}</span>
-                                                                                            <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${
+                                                                                            <span className={`text-[11px] font-semibold uppercase px-1.5 py-0.5 rounded ${
                                                                                                 a.gravedad === 'critica' || a.gravedad === 'alta' ? 'bg-red-50 text-red-650 border border-red-100' :
                                                                                                 a.gravedad === 'media' ? 'bg-amber-50 text-amber-650 border border-amber-100' :
                                                                                                 'bg-blue-50 text-blue-650 border border-blue-100'
@@ -647,7 +647,7 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                                                                                         </div>
                                                                                         <p className="text-[10.5px] text-slate-500 dark:text-slate-400 leading-snug font-medium">{a.descripcion}</p>
                                                                                         {a.ubicacionEnImagen && (
-                                                                                            <p className="text-[9px] text-slate-400 dark:text-slate-500 italic font-semibold">Ubicación: {a.ubicacionEnImagen}</p>
+                                                                                            <p className="text-[11px] text-slate-400 dark:text-slate-500 italic font-semibold">Ubicación: {a.ubicacionEnImagen}</p>
                                                                                         )}
                                                                                     </div>
                                                                                 ))}
@@ -661,7 +661,7 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
 
                                                                         {analysisResult.observacionesSugeridas && analysisResult.observacionesSugeridas.length > 0 && (
                                                                             <div className="space-y-1">
-                                                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Observaciones Sugeridas:</span>
+                                                                                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Observaciones Sugeridas:</span>
                                                                                 <ul className="list-disc pl-4 text-[10.5px] font-semibold text-slate-600 dark:text-slate-350 space-y-0.5">
                                                                                     {analysisResult.observacionesSugeridas.map((obs: string, idx: number) => (
                                                                                         <li key={idx}>{obs}</li>
@@ -682,7 +682,7 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                                                                                     observacion: prev.observacion ? `${prev.observacion}\n${observationsText}` : observationsText
                                                                                 }));
                                                                             }}
-                                                                            className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-sm"
+                                                                            className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[12px] font-semibold transition-all flex items-center justify-center gap-1.5"
                                                                         >
                                                                             <CheckCircle2 className="w-3.5 h-3.5" />
                                                                             Aplicar Observaciones al Reporte
@@ -704,7 +704,7 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                                                                             (reqSignature && !localForm.firma)
                                                                         }
                                                                         onClick={() => saveItemState(chk.id, idx, true, localForm.observacion, localForm.foto, localForm.firma)}
-                                                                        className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white text-xs font-black rounded-xl transition-all shadow-sm shadow-indigo-150"
+                                                                        className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white text-xs font-bold rounded-xl transition-all"
                                                                     >
                                                                         Guardar Verificación
                                                                     </button>
@@ -727,17 +727,17 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                     <div className="pt-5 border-t border-slate-200 dark:border-slate-700 space-y-4">
                         <div className="flex items-center justify-between gap-2 flex-wrap">
                             <div>
-                                <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                                     <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
                                     <span>Informe Técnico QMS</span>
                                 </h4>
-                                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Analiza los checklists y sugiere observaciones técnicas automáticas.</p>
+                                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Analiza los checklists y sugiere observaciones técnicas automáticas.</p>
                             </div>
                             <button
                                 type="button"
                                 onClick={handleGenerateObservations}
                                 disabled={generatingObs}
-                                className="flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black transition-colors disabled:opacity-50 shadow-sm shadow-indigo-600/10 active:scale-95"
+                                className="flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors disabled:opacity-50"
                             >
                                 {generatingObs ? (
                                     <>
@@ -754,9 +754,9 @@ export default function QMSSection({ os, onUpdate }: { os: any, onUpdate: () => 
                         </div>
 
                         <div className="bg-background text-foreground/40 rounded-2xl p-4 border border-slate-100 dark:border-slate-800 space-y-3">
-                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Observaciones Sugeridas / Reporte Final:</label>
+                            <label className="block text-[13px] font-medium text-slate-700 dark:text-slate-200">Observaciones Sugeridas / Reporte Final:</label>
                             {os.comentario ? (
-                                <p className="text-xs font-medium text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed bg-card text-card-foreground p-3 rounded-xl border border-slate-150 dark:border-slate-850">
+                                <p className="text-xs font-medium text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed bg-card p-3 rounded-xl border border-slate-150 dark:border-slate-850">
                                     {os.comentario}
                                 </p>
                             ) : (

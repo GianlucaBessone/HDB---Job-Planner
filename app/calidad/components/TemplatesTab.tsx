@@ -314,13 +314,13 @@ export default function TemplatesTab({ user }: { user: any }) {
                         });
                         setIsAiModalOpen(true);
                     }}
-                    className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-6 py-3 rounded-2xl font-black text-sm hover:opacity-95 transition-all active:scale-95 shadow-md shadow-indigo-500/20"
+                    className="flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-2xl font-bold text-sm transition-all"
                 >
                     <Sparkles className="w-4 h-4" /> Generar con IA
                 </button>
                 <button
                     onClick={handleOpenNew}
-                    className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-2xl font-black text-sm hover:bg-primary/90 transition-all active:scale-95 shadow-md shadow-primary/20"
+                    className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-2xl font-bold text-sm hover:bg-primary-hover transition-all"
                 >
                     <Plus className="w-4 h-4" /> Nueva Plantilla
                 </button>
@@ -341,14 +341,14 @@ export default function TemplatesTab({ user }: { user: any }) {
                     {filteredTemplates.map(template => (
                         <div key={template.id} className="bg-card text-card-foreground rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow relative group">
                             <div className="flex justify-between items-start mb-3">
-                                <span className="text-[10px] font-black font-mono bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300">
+                                <span className="text-[11px] font-bold font-mono bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300">
                                     {template.code || 'SIN CÓDIGO'}
                                 </span>
                                 <div className="flex gap-2">
-                                    <span className="text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300">
+                                    <span className="text-[11px] font-semibold uppercase tracking-wider px-2 py-1 rounded bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300">
                                         v{template.version}
                                     </span>
-                                    <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded ${
+                                    <span className={`text-[11px] font-semibold uppercase tracking-wider px-2 py-1 rounded ${
                                         template.status === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-600'
                                     }`}>
                                         {template.status === 'active' ? 'Activo' : 'Inactivo'}
@@ -356,28 +356,28 @@ export default function TemplatesTab({ user }: { user: any }) {
                                 </div>
                             </div>
 
-                            <h3 className="font-black text-slate-800 dark:text-slate-100 text-base mb-1">{template.name}</h3>
+                            <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base mb-1">{template.name}</h3>
                             <p className="text-xs text-slate-400 dark:text-slate-500 line-clamp-2 min-h-[32px] mb-4">
                                 {template.description || 'Sin descripción'}
                             </p>
 
                             <div className="flex flex-wrap gap-1.5 mb-4">
                                 {template.requiresEvidence && (
-                                    <span className="text-[9px] font-bold bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-900">
+                                    <span className="text-[11px] font-bold bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-900">
                                         EVIDENCIA
                                     </span>
                                 )}
                                 {template.requiresPhotos && (
-                                    <span className="text-[9px] font-bold bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-900">
+                                    <span className="text-[11px] font-bold bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-900">
                                         FOTO
                                     </span>
                                 )}
                                 {template.requiresSignature && (
-                                    <span className="text-[9px] font-bold bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-400 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-900">
+                                    <span className="text-[11px] font-bold bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-400 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-900">
                                         FIRMA
                                     </span>
                                 )}
-                                <span className={`text-[9px] font-bold px-2 py-0.5 rounded border ${
+                                <span className={`text-[11px] font-bold px-2 py-0.5 rounded border ${
                                     template.riskLevel === 'high' || template.riskLevel === 'critical' ? 'bg-red-50 text-red-700 border-red-200' :
                                     template.riskLevel === 'medium' ? 'bg-amber-50 text-amber-700 border-amber-200' :
                                     'bg-slate-50 text-slate-700 border-slate-200'
@@ -390,7 +390,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                             {template.tags && template.tags.length > 0 && (
                                 <div className="flex flex-wrap gap-1 mb-4 pt-3 border-t border-slate-100 dark:border-slate-700">
                                     {template.tags.map((t: any) => (
-                                        <span key={t.id} className="text-[10px] bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-md font-bold">
+                                        <span key={t.id} className="text-[11px] bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-md font-bold">
                                             #{t.tag?.name}
                                         </span>
                                     ))}
@@ -424,13 +424,13 @@ export default function TemplatesTab({ user }: { user: any }) {
 
             {/* Creation/Edit Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 overflow-y-auto">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 overflow-y-auto">
                     <div className="bg-card text-card-foreground rounded-3xl shadow-2xl w-full max-w-3xl flex flex-col my-8 animate-in zoom-in-95 duration-200">
                         {/* Modal Header */}
-                        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-background text-foreground/50 rounded-t-3xl">
+                        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-background text-foreground rounded-t-3xl">
                             <div className="flex items-center gap-3">
                                 <CheckSquare className="w-6 h-6 text-primary" />
-                                <h3 className="font-black text-slate-800 dark:text-slate-100 text-lg">
+                                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">
                                     {selectedTemplate ? 'Editar Plantilla de Checklist' : 'Nueva Plantilla de Checklist'}
                                 </h3>
                             </div>
@@ -443,45 +443,45 @@ export default function TemplatesTab({ user }: { user: any }) {
                         <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Código ISO / Interno</label>
+                                    <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Código ISO / Interno</label>
                                     <input
                                         type="text"
                                         value={modalData.code}
                                         onChange={e => setModalData({ ...modalData, code: e.target.value })}
                                         placeholder="Ej. CK-OP-01"
-                                        className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-primary outline-none"
+                                        className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-primary outline-none"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Nombre de la Plantilla</label>
+                                    <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Nombre de la Plantilla</label>
                                     <input
                                         type="text"
                                         value={modalData.name}
                                         onChange={e => setModalData({ ...modalData, name: e.target.value })}
                                         placeholder="Nombre descriptivo"
-                                        className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-primary outline-none"
+                                        className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-primary outline-none"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Descripción</label>
+                                <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Descripción</label>
                                 <textarea
                                     value={modalData.description}
                                     onChange={e => setModalData({ ...modalData, description: e.target.value })}
                                     placeholder="Detalles sobre el uso o alcance de esta verificación..."
                                     rows={2}
-                                    className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-primary outline-none resize-none"
+                                    className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-primary outline-none resize-none"
                                 />
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100 dark:border-slate-700">
                                 <div>
-                                    <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Nivel de Riesgo Operativo</label>
+                                    <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Nivel de Riesgo Operativo</label>
                                     <select
                                         value={modalData.riskLevel}
                                         onChange={e => setModalData({ ...modalData, riskLevel: e.target.value })}
-                                        className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-primary outline-none"
+                                        className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-primary outline-none"
                                     >
                                         <option value="low">Bajo (Low)</option>
                                         <option value="medium">Medio (Medium)</option>
@@ -490,7 +490,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Vincular a Etiquetas de Actividad</label>
+                                    <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Vincular a Etiquetas de Actividad</label>
                                     <div className="flex flex-wrap gap-1.5 p-2 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl min-h-[46px] max-h-[120px] overflow-y-auto">
                                         {allTags.map(tag => {
                                             const isSelected = modalData.tagIds.includes(tag.id);
@@ -507,7 +507,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                                                     className={`text-xs px-2.5 py-1 rounded-lg font-bold border transition-colors ${
                                                         isSelected 
                                                             ? 'bg-primary text-white border-primary shadow-sm'
-                                                            : 'bg-card text-card-foreground text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-primary/50'
+                                                            : 'bg-card text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-primary/50'
                                                     }`}
                                                 >
                                                     {tag.name}
@@ -519,7 +519,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                             </div>
 
                             <div className="p-4 bg-background text-foreground/40 rounded-2xl border border-slate-100 dark:border-slate-700/80 space-y-3">
-                                <span className="block text-xs font-black uppercase tracking-widest text-slate-400">Requisitos para Aprobación Técnica</span>
+                                <span className="block text-xs font-semibold uppercase tracking-wider text-slate-400">Requisitos para Aprobación Técnica</span>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                     <label className="flex items-center gap-2.5 p-3 bg-card text-card-foreground rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-sm transition-shadow">
                                         <input
@@ -530,7 +530,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                                         />
                                         <div className="text-left">
                                             <p className="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1"><Award className="w-3.5 h-3.5 text-amber-500" /> Evidencia</p>
-                                            <p className="text-[10px] text-slate-400">Texto descriptivo obligatorio</p>
+                                            <p className="text-[11px] text-slate-400">Texto descriptivo obligatorio</p>
                                         </div>
                                     </label>
                                     <label className="flex items-center gap-2.5 p-3 bg-card text-card-foreground rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-sm transition-shadow">
@@ -542,7 +542,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                                         />
                                         <div className="text-left">
                                             <p className="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1"><Camera className="w-3.5 h-3.5 text-blue-500" /> Foto</p>
-                                            <p className="text-[10px] text-slate-400">Captura fotográfica mandatoria</p>
+                                            <p className="text-[11px] text-slate-400">Captura fotográfica mandatoria</p>
                                         </div>
                                     </label>
                                     <label className="flex items-center gap-2.5 p-3 bg-card text-card-foreground rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-sm transition-shadow">
@@ -554,7 +554,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                                         />
                                         <div className="text-left">
                                             <p className="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5 text-purple-500" /> Firma</p>
-                                            <p className="text-[10px] text-slate-400">Firma digital obligatoria</p>
+                                            <p className="text-[11px] text-slate-400">Firma digital obligatoria</p>
                                         </div>
                                     </label>
                                 </div>
@@ -562,14 +562,14 @@ export default function TemplatesTab({ user }: { user: any }) {
 
                             <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-700">
                                 <div className="flex justify-between items-center">
-                                    <span className="block text-xs font-black uppercase tracking-widest text-slate-400">Pasos del Checklist</span>
+                                    <span className="block text-xs font-semibold uppercase tracking-wider text-slate-400">Pasos del Checklist</span>
                                     <button
                                         type="button"
                                         onClick={() => {
                                             const checklistItems = [...modalData.checklistItems, { descripcion: '', esObligatorio: true }];
                                             setModalData({ ...modalData, checklistItems });
                                         }}
-                                        className="text-xs font-black text-primary hover:text-primary/90 flex items-center gap-1"
+                                        className="text-xs font-bold text-primary hover:text-primary/90 flex items-center gap-1"
                                     >
                                         <PlusCircle className="w-4 h-4" /> Agregar paso
                                     </button>
@@ -622,13 +622,13 @@ export default function TemplatesTab({ user }: { user: any }) {
                         </div>
 
                         {/* Modal Footer */}
-                        <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-background text-foreground/50 flex flex-wrap justify-between items-center gap-3 rounded-b-3xl">
+                        <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-background text-foreground flex flex-wrap justify-between items-center gap-3 rounded-b-3xl">
                             {selectedTemplate ? (
                                 <div className="flex gap-2">
                                     <button
                                         type="button"
                                         onClick={() => handleSave(true)}
-                                        className="px-5 py-2.5 rounded-xl text-xs font-black bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300 transition-colors flex items-center gap-1.5"
+                                        className="px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300 transition-colors flex items-center gap-1.5"
                                     >
                                         <RefreshCw className="w-3.5 h-3.5 animate-spin-reverse" /> Incrementar Versión (v{selectedTemplate.version + 1})
                                     </button>
@@ -639,14 +639,14 @@ export default function TemplatesTab({ user }: { user: any }) {
                                 <button
                                     type="button"
                                     onClick={() => setIsModalOpen(false)}
-                                    className="px-5 py-2.5 rounded-xl text-sm font-black text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                    className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => handleSave(false)}
-                                    className="px-5 py-2.5 rounded-xl text-sm font-black bg-primary text-white hover:bg-primary/95 transition-all shadow-md shadow-primary/20 flex items-center gap-1.5"
+                                    className="px-5 py-2.5 rounded-xl text-sm font-bold bg-primary text-white hover:bg-primary/95 transition-all flex items-center gap-1.5"
                                 >
                                     <Save className="w-4 h-4" /> Guardar Cambios
                                 </button>
@@ -658,11 +658,11 @@ export default function TemplatesTab({ user }: { user: any }) {
 
             {/* Signature Modal */}
             {signatureModal.isOpen && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+                <div className="fixed inset-0 bg-slate-950/50 z-[60] flex items-center justify-center p-4">
                     <div className="bg-card text-card-foreground rounded-3xl w-full max-w-lg shadow-2xl border border-slate-100 dark:border-slate-700 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                         {/* Header */}
                         <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
-                            <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                                 <FileSignature className="w-5 h-5 text-primary" />
                                 {signatureModal.showWarning ? 'Confirmar Cambio sin Nueva Versión' : 'Aprobación de Nueva Versión'}
                             </h3>
@@ -688,7 +688,7 @@ export default function TemplatesTab({ user }: { user: any }) {
 
                             {signatureModal.showWarning && (
                                 <div>
-                                    <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">
+                                    <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                         Justificación / Motivo del Cambio <span className="text-red-500">*</span>
                                     </label>
                                     <textarea
@@ -703,7 +703,7 @@ export default function TemplatesTab({ user }: { user: any }) {
 
                             <div>
                                 <div className="flex justify-between items-center mb-1.5">
-                                    <label className="block text-xs font-black uppercase tracking-widest text-slate-400">
+                                    <label className="block text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                         Firma Digital <span className="text-red-500">*</span>
                                     </label>
                                 </div>
@@ -718,11 +718,11 @@ export default function TemplatesTab({ user }: { user: any }) {
                         </div>
 
                         {/* Footer */}
-                        <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-background text-foreground/50 flex justify-end gap-3">
+                        <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-background text-foreground flex justify-end gap-3">
                             <button
                                 type="button"
                                 onClick={() => setSignatureModal({ ...signatureModal, isOpen: false })}
-                                className="px-5 py-2.5 rounded-xl text-sm font-black text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                             >
                                 Cancelar
                             </button>
@@ -730,8 +730,8 @@ export default function TemplatesTab({ user }: { user: any }) {
                                 type="button"
                                 onClick={handleConfirmSignature}
                                 disabled={!pendingTemplateSignature}
-                                className={`px-5 py-2.5 rounded-xl text-sm font-black text-white hover:bg-primary/95 transition-all shadow-md shadow-primary/20 flex items-center gap-1.5 disabled:opacity-50 ${
-                                    signatureModal.showWarning ? 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/10' : 'bg-primary'
+                                className={`px-5 py-2.5 rounded-xl text-sm font-bold text-white hover:bg-primary/95 transition-all shadow-md flex items-center gap-1.5 disabled:opacity-50 ${
+                                    signatureModal.showWarning ? 'bg-amber-600 hover:bg-amber-700' : 'bg-primary'
                                 }`}
                             >
                                 <Check className="w-4 h-4" /> Confirmar Firma
@@ -743,13 +743,13 @@ export default function TemplatesTab({ user }: { user: any }) {
 
             {/* AI Generator Modal */}
             {isAiModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 overflow-y-auto">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 overflow-y-auto">
                     <div className="bg-card text-card-foreground rounded-3xl shadow-2xl w-full max-w-xl flex flex-col my-8 animate-in zoom-in-95 duration-200">
                         {/* Header */}
-                        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-background text-foreground/50 rounded-t-3xl">
+                        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-background text-foreground rounded-t-3xl">
                             <div className="flex items-center gap-3">
                                 <Sparkles className="w-6 h-6 text-indigo-500" />
-                                <h3 className="font-black text-slate-800 dark:text-slate-100 text-lg">
+                                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-lg">
                                     Generar Checklist con Gemini
                                 </h3>
                             </div>
@@ -761,34 +761,34 @@ export default function TemplatesTab({ user }: { user: any }) {
                         {/* Body */}
                         <div className="p-6 space-y-4">
                             <div>
-                                <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">Tipo de Trabajo / Actividad *</label>
+                                <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">Tipo de Trabajo / Actividad *</label>
                                 <input
                                     type="text"
                                     value={aiData.tipoTrabajo}
                                     onChange={e => setAiData({ ...aiData, tipoTrabajo: e.target.value })}
                                     placeholder="Ej. Trabajos en Altura, Mantenimiento Eléctrico..."
-                                    className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">Normativa o Norma de Referencia (Opcional)</label>
+                                <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">Normativa o Norma de Referencia (Opcional)</label>
                                 <input
                                     type="text"
                                     value={aiData.normativa}
                                     onChange={e => setAiData({ ...aiData, normativa: e.target.value })}
                                     placeholder="Ej. OSHA 1926, ISO 9001, Norma Interna..."
-                                    className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
                                 />
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">Categoría</label>
+                                    <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">Categoría</label>
                                     <select
                                         value={aiData.categoria}
                                         onChange={e => setAiData({ ...aiData, categoria: e.target.value })}
-                                        className="w-full bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none"
                                     >
                                         <option value="General">General</option>
                                         <option value="Seguridad">Seguridad / EPP</option>
@@ -797,7 +797,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-1.5">Vincular a Etiquetas</label>
+                                    <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">Vincular a Etiquetas</label>
                                     <div className="flex flex-wrap gap-1.5 p-2 bg-background text-foreground border border-slate-200 dark:border-slate-700 rounded-xl min-h-[46px] max-h-[120px] overflow-y-auto">
                                         {allTags.map(tag => {
                                             const isSelected = aiData.tagIds.includes(tag.id);
@@ -814,7 +814,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                                                     className={`text-xs px-2.5 py-1 rounded-lg font-bold border transition-colors ${
                                                         isSelected 
                                                             ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                                                            : 'bg-card text-card-foreground text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-indigo-500/50'
+                                                            : 'bg-card text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-indigo-500/50'
                                                     }`}
                                                 >
                                                     {tag.name}
@@ -827,11 +827,11 @@ export default function TemplatesTab({ user }: { user: any }) {
                         </div>
 
                         {/* Footer */}
-                        <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-background text-foreground/50 flex justify-end gap-3 rounded-b-3xl">
+                        <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-background text-foreground flex justify-end gap-3 rounded-b-3xl">
                             <button
                                 type="button"
                                 onClick={() => setIsAiModalOpen(false)}
-                                className="px-5 py-2.5 rounded-xl text-sm font-black text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                             >
                                 Cancelar
                             </button>
@@ -839,7 +839,7 @@ export default function TemplatesTab({ user }: { user: any }) {
                                 type="button"
                                 onClick={handleGenerateChecklist}
                                 disabled={generatingChecklist}
-                                className="px-5 py-2.5 rounded-xl text-sm font-black bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:opacity-95 transition-all shadow-md shadow-indigo-500/20 flex items-center gap-1.5 disabled:opacity-50"
+                                className="px-5 py-2.5 rounded-xl text-sm font-bold bg-indigo-600 text-white transition-all flex items-center gap-1.5 disabled:opacity-50"
                             >
                                 {generatingChecklist ? (
                                     <>

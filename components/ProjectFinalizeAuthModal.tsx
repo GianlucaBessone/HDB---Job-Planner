@@ -37,7 +37,7 @@ const STATUS_CONFIG: any = {
     activo: { label: 'Activo', color: 'text-emerald-700', bg: 'bg-emerald-50' },
     en_riesgo: { label: 'En Riesgo', color: 'text-amber-700', bg: 'bg-amber-50' },
     atrasado: { label: 'Atrasado', color: 'text-red-700', bg: 'bg-red-50' },
-    finalizado: { label: 'Finalizado', color: 'text-slate-500 dark:text-slate-400', bg: 'bg-muted text-muted-foreground/50' },
+    finalizado: { label: 'Finalizado', color: 'text-slate-500 dark:text-slate-400', bg: 'bg-muted' },
 };
 
 export default function ProjectFinalizeAuthModal({
@@ -160,10 +160,10 @@ export default function ProjectFinalizeAuthModal({
 
     if (isLoading || !project) {
         return (
-            <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-                <div className="bg-card text-card-foreground p-12 rounded-[2.5rem] shadow-2xl flex flex-col items-center gap-4">
+            <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in duration-200">
+                <div className="bg-card text-card-foreground p-12 rounded-3xl shadow-2xl flex flex-col items-center gap-4">
                     <Loader2 className="w-10 h-10 text-primary animate-spin" />
-                    <p className="text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest text-xs">Cargando revisión...</p>
+                    <p className="text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider text-xs">Cargando revisión...</p>
                 </div>
             </div>
         );
@@ -210,25 +210,25 @@ export default function ProjectFinalizeAuthModal({
     const statsArray = Object.values(operatorStats);
 
     return (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-card text-card-foreground w-full max-w-5xl rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-300 max-h-[95vh] overflow-hidden flex flex-col">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in duration-200">
+            <div className="bg-card text-card-foreground w-full max-w-5xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 animate-in zoom-in-95 duration-200 max-h-[95vh] overflow-hidden flex flex-col">
                 {/* Header */}
                 <div className="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0 bg-slate-50/50">
                     <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1.5 bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                            <div className="flex items-center gap-1.5 bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-lg text-[11px] font-semibold uppercase tracking-wider">
                                 <ShieldCheck className="w-3.5 h-3.5" /> Autorización de Cierre
                             </div>
-                            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${STATUS_CONFIG[project.estado]?.bg || 'bg-muted text-muted-foreground/50'} ${STATUS_CONFIG[project.estado]?.color || 'text-slate-500 dark:text-slate-400'}`}>
+                            <span className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold uppercase tracking-wider ${STATUS_CONFIG[project.estado]?.bg || 'bg-muted'} ${STATUS_CONFIG[project.estado]?.color || 'text-slate-500 dark:text-slate-400'}`}>
                                 {STATUS_CONFIG[project.estado]?.label || project.estado}
                             </span>
                         </div>
-                        <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">{project.nombre}</h3>
+                        <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">{project.nombre}</h3>
                         <p className="text-sm text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1.5">
                             <Building2 className="w-4 h-4" /> {project.client?.nombre || project.cliente || 'Sin cliente'}
                         </p>
                     </div>
-                    <button onClick={onClose} className="p-3 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500 transition-all active:scale-95">
+                    <button onClick={onClose} className="p-3 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-400 dark:text-slate-500 transition-all">
                         <X className="w-6 h-6" />
                     </button>
                 </div>
@@ -240,10 +240,10 @@ export default function ProjectFinalizeAuthModal({
                         <div className="bg-indigo-50/50 border border-indigo-100 p-5 rounded-3xl space-y-2">
                             <div className="flex items-center justify-between">
                                 <Clock className="w-5 h-5 text-indigo-500" />
-                                <span className="text-xs font-black text-indigo-400 uppercase tracking-widest">Horas</span>
+                                <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">Horas</span>
                             </div>
                             <div>
-                                <p className="text-2xl font-black text-indigo-900">{project.horasConsumidas}h / {project.horasEstimadas}h</p>
+                                <p className="text-2xl font-bold text-indigo-900">{project.horasConsumidas}h / {project.horasEstimadas}h</p>
                                 <p className="text-xs font-bold text-indigo-600/70 uppercase">Consumidas vs Estimadas</p>
                             </div>
                             <div className="w-full bg-indigo-100 h-1.5 rounded-full overflow-hidden">
@@ -254,13 +254,13 @@ export default function ProjectFinalizeAuthModal({
                         <div className="bg-emerald-50/50 border border-emerald-100 p-5 rounded-3xl space-y-2">
                             <div className="flex items-center justify-between">
                                 <Timer className="w-5 h-5 text-emerald-500" />
-                                <span className="text-xs font-black text-emerald-400 uppercase tracking-widest">Restante</span>
+                                <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Restante</span>
                             </div>
                             <div>
-                                <p className="text-2xl font-black text-emerald-900">{hoursRemaining}h</p>
+                                <p className="text-2xl font-bold text-emerald-900">{hoursRemaining}h</p>
                                 <p className="text-xs font-bold text-emerald-600/70 uppercase">Tiempo disponible</p>
                             </div>
-                            <div className="flex items-center gap-1.5 text-[10px] font-black text-emerald-600/50 uppercase tracking-tight">
+                            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600/50 uppercase tracking-tight">
                                 <Activity className="w-3 h-3" /> Eficiencia: {100 - progress > 0 ? 'En rango' : 'Límite'}
                             </div>
                         </div>
@@ -268,10 +268,10 @@ export default function ProjectFinalizeAuthModal({
                         <div className="bg-amber-50/50 border border-amber-100 p-5 rounded-3xl space-y-2">
                             <div className="flex items-center justify-between">
                                 <CheckSquare className="w-5 h-5 text-amber-500" />
-                                <span className="text-xs font-black text-amber-400 uppercase tracking-widest">Tareas</span>
+                                <span className="text-xs font-semibold text-amber-400 uppercase tracking-wider">Tareas</span>
                             </div>
                             <div>
-                                <p className="text-2xl font-black text-amber-900">
+                                <p className="text-2xl font-bold text-amber-900">
                                     {checklist.filter(i => i.completed).length} / {checklist.length}
                                 </p>
                                 <p className="text-xs font-bold text-amber-600/70 uppercase">Checklist completado</p>
@@ -284,8 +284,8 @@ export default function ProjectFinalizeAuthModal({
 
                     {/* Latest Report from Service Order */}
                     {serviceOrders.length > 0 && (
-                        <div className="bg-background text-foreground/50 border border-slate-100 dark:border-slate-800 rounded-[2.5rem] p-6 md:p-8 space-y-4">
-                            <h4 className="flex items-center gap-2 font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest text-xs">
+                        <div className="bg-background text-foreground border border-slate-100 dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-4">
+                            <h4 className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider text-xs">
                                 <FileSignature className="w-4 h-4 text-emerald-500" /> Reporte de la Última Orden de Servicio ({serviceOrders[0].codigoOS})
                             </h4>
                             <div className="space-y-4">
@@ -298,7 +298,7 @@ export default function ProjectFinalizeAuthModal({
                                     <div className="flex gap-3 px-4">
                                         <MessageSquare className="w-4 h-4 text-slate-400 shrink-0 mt-1" />
                                         <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                                            <span className="font-black uppercase tracking-widest text-[9px] block mb-1">Comentario Adicional</span>
+                                            <span className="font-semibold uppercase tracking-wider text-[11px] block mb-1">Comentario Adicional</span>
                                             {serviceOrders[0].comentario}
                                         </p>
                                     </div>
@@ -311,15 +311,15 @@ export default function ProjectFinalizeAuthModal({
                         {/* Personnel & History */}
                         <div className="space-y-6">
                             <div className="space-y-4">
-                                <h4 className="flex items-center gap-2 font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest text-xs">
+                                <h4 className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider text-xs">
                                     <Users className="w-4 h-4 text-primary" /> Personal Asignado
                                 </h4>
                                 <div className="bg-card text-card-foreground border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-background text-foreground/50 border-b border-slate-100 dark:border-slate-800">
-                                                <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Operador</th>
-                                                <th className="px-4 py-3 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Horas Totales</th>
+                                            <tr className="bg-background text-foreground border-b border-slate-100 dark:border-slate-800">
+                                                <th className="px-4 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Operador</th>
+                                                <th className="px-4 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-right">Horas Totales</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-50">
@@ -327,10 +327,10 @@ export default function ProjectFinalizeAuthModal({
                                                 <tr key={stat.name} className="hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors">
                                                     <td className="px-4 py-3">
                                                         <div className="font-bold text-slate-700 dark:text-slate-200 text-sm">{stat.name}</div>
-                                                        <div className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Carga: {formatDate(stat.lastSeen)}</div>
+                                                        <div className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">Carga: {formatDate(stat.lastSeen)}</div>
                                                     </td>
                                                     <td className="px-4 py-3 text-right">
-                                                        <span className="inline-block px-3 py-1 rounded-xl bg-primary/5 text-primary font-black text-sm border border-primary/10">
+                                                        <span className="inline-block px-3 py-1 rounded-xl bg-primary/5 text-primary font-bold text-sm border border-primary/10">
                                                             {stat.totalHours.toLocaleString()}h
                                                         </span>
                                                     </td>
@@ -344,12 +344,12 @@ export default function ProjectFinalizeAuthModal({
                             {/* History */}
                             {entries.length > 0 && (
                                 <div className="space-y-4">
-                                    <h4 className="flex items-center gap-2 font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest text-xs">
+                                    <h4 className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider text-xs">
                                         <Activity className="w-4 h-4 text-primary" /> Historial Reciente
                                     </h4>
                                     <div className="bg-card text-card-foreground border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
                                         <table className="w-full text-left text-xs">
-                                            <thead className="bg-background text-foreground/50 border-b border-slate-100 dark:border-slate-800 font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                                            <thead className="bg-background text-foreground border-b border-slate-100 dark:border-slate-800 font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                                                 <tr>
                                                     <th className="px-4 py-3">Fecha</th>
                                                     <th className="px-4 py-3">Operador</th>
@@ -361,7 +361,7 @@ export default function ProjectFinalizeAuthModal({
                                                     <tr key={entry.id}>
                                                         <td className="px-4 py-2 text-slate-500 dark:text-slate-400 font-medium">{formatDate(entry.fecha)}</td>
                                                         <td className="px-4 py-2 font-bold text-slate-700 dark:text-slate-200">{entry.operator?.nombreCompleto}</td>
-                                                        <td className="px-4 py-2 text-right font-black text-slate-900 dark:text-slate-50">{entry.horasTrabajadas}h</td>
+                                                        <td className="px-4 py-2 text-right font-bold text-slate-900 dark:text-slate-50">{entry.horasTrabajadas}h</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
@@ -373,24 +373,24 @@ export default function ProjectFinalizeAuthModal({
 
                         {/* Checklist Detail */}
                         <div className="space-y-4">
-                            <h4 className="flex items-center gap-2 font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest text-xs">
+                            <h4 className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider text-xs">
                                 <CheckCircle2 className="w-4 h-4 text-primary" /> Estado del Checklist
                             </h4>
                             <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin">
                                 {checklist.length === 0 ? (
-                                    <div className="p-10 text-center bg-background text-foreground/50 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
+                                    <div className="p-10 text-center bg-background text-foreground rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
                                         <CheckCircle2 className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                                        <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Sin tareas definidas</p>
+                                        <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Sin tareas definidas</p>
                                     </div>
                                 ) : (
                                     checklist.map((item: any) => (
                                         <div key={item.id} className={`flex items-start gap-4 p-4 rounded-3xl border transition-all ${item.completed ? 'bg-emerald-50/40 border-emerald-100 shadow-sm' : 'bg-red-50/40 border-red-100 hover:border-red-200'}`}>
-                                            <div className={`mt-0.5 shrink-0 w-6 h-6 rounded-xl border-2 flex items-center justify-center transition-all ${item.completed ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-200' : 'bg-red-500 border-red-500 text-white shadow-lg shadow-red-200'}`}>
+                                            <div className={`mt-0.5 shrink-0 w-6 h-6 rounded-xl border-2 flex items-center justify-center transition-all ${item.completed ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg' : 'bg-red-500 border-red-500 text-white shadow-lg'}`}>
                                                 {item.completed ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
                                             </div>
                                             <div className="min-w-0 flex-1">
                                                 <p className={`text-sm font-bold leading-snug ${item.completed ? 'text-emerald-900' : 'text-red-900'}`}>{item.description}</p>
-                                                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-white/50 px-2 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700 mt-1 inline-block">{item.tag}</span>
+                                                <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider bg-white/50 px-2 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700 mt-1 inline-block">{item.tag}</span>
                                             </div>
                                         </div>
                                     ))
@@ -405,7 +405,7 @@ export default function ProjectFinalizeAuthModal({
                     <button
                         onClick={handleReject}
                         disabled={isActionLoading}
-                        className="flex-1 py-4 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-2xl font-bold hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all flex items-center justify-center gap-2 shadow-sm"
+                        className="flex-1 py-4 bg-card border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-2xl font-bold hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all flex items-center justify-center gap-2 shadow-sm"
                     >
                         {isActionLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <XCircle className="w-5 h-5 text-rose-500" />}
                         RECHAZAR CIERRE
@@ -413,7 +413,7 @@ export default function ProjectFinalizeAuthModal({
                     <button
                         onClick={handleAuthorize}
                         disabled={isActionLoading}
-                        className="flex-[2] py-4 bg-primary text-white rounded-2xl font-black text-lg shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        className="flex-[2] py-4 bg-primary text-white rounded-2xl font-bold text-lg hover:bg-primary-hover transition-all flex items-center justify-center gap-2"
                     >
                         {isActionLoading ? <Loader2 className="w-6 h-6 animate-spin text-white" /> : <ShieldCheck className="w-7 h-7" />}
                         AUTORIZAR Y FINALIZAR PROYECTO

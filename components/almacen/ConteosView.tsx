@@ -196,7 +196,7 @@ export default function ConteosView({ meta }: ConteosViewProps) {
                 if (e.key === 'Escape' && search) setSearch('');
               }}
               placeholder="Buscar conteo, almacén o responsable..."
-              className="w-full pl-8 pr-7 h-8 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full pl-8 pr-7 h-8 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             />
             {search && (
               <button
@@ -251,7 +251,7 @@ export default function ConteosView({ meta }: ConteosViewProps) {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[11px] font-black text-slate-500 uppercase tracking-wider select-none whitespace-nowrap">
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none whitespace-nowrap">
                 {[
                   { key: 'numero', label: 'Número Conteo', align: 'left' },
                   { key: 'almacen', label: 'Almacén / Ubicación', align: 'left' },
@@ -333,7 +333,7 @@ export default function ConteosView({ meta }: ConteosViewProps) {
                     </td>
                     <td className="py-2.5 px-3 text-center whitespace-nowrap">
                       <span
-                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black border uppercase tracking-wider ${getBadgeEstado(
+                        className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold border uppercase tracking-wider ${getBadgeEstado(
                           cnt.estado
                         )}`}
                       >
@@ -365,7 +365,7 @@ export default function ConteosView({ meta }: ConteosViewProps) {
 
       {/* Modal Crear Sesión de Conteo */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/50-xs animate-in fade-in duration-150">
           <div className="bg-card border border-slate-200 dark:border-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden p-6 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2.5">
@@ -373,7 +373,7 @@ export default function ConteosView({ meta }: ConteosViewProps) {
                   <ClipboardCheck className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-slate-900 dark:text-slate-100">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                     Nueva Sesión de Conteo Físico
                   </h3>
                   <p className="text-[11px] text-slate-500">Defina el alcance de auditoría física</p>
@@ -491,7 +491,7 @@ export default function ConteosView({ meta }: ConteosViewProps) {
                 <button
                   type="submit"
                   disabled={creando}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white text-xs font-bold shadow-md shadow-primary/20 hover:opacity-90 disabled:opacity-50"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 disabled:opacity-50"
                 >
                   {creando ? (
                     <>

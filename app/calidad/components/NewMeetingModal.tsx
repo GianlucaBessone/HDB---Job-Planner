@@ -84,11 +84,11 @@ export default function NewMeetingModal({ isOpen, onClose, onSuccess, ncId, init
     };
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in duration-200">
             <div className="bg-card text-card-foreground w-full max-w-2xl rounded-3xl shadow-xl flex flex-col max-h-[95vh] border border-slate-100 dark:border-slate-700 animate-in zoom-in-95 duration-200">
                 <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/20 rounded-t-3xl shrink-0">
                     <div>
-                        <h2 className="text-xl font-black text-slate-800 dark:text-slate-100">{initialData ? 'Editar Reunión' : 'Programar Reunión'}</h2>
+                        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">{initialData ? 'Editar Reunión' : 'Programar Reunión'}</h2>
                         <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-wider">{initialData ? 'Modifique los detalles de la sesión.' : 'Agende una sesión para debatir el tratamiento de la NC.'}</p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors text-slate-400">
@@ -106,29 +106,29 @@ export default function NewMeetingModal({ isOpen, onClose, onSuccess, ncId, init
 
                     <form id="reunion-form" onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-2">
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Agenda / Asunto *</label>
+                            <label className="block text-[13px] font-medium text-slate-700 dark:text-slate-200">Agenda / Asunto *</label>
                             <input 
                                 required
                                 type="text"
-                                className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none transition-colors dark:text-slate-100"
+                                className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none transition-colors dark:text-slate-100"
                                 value={formData.agenda}
                                 onChange={e => setFormData({...formData, agenda: e.target.value})}
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Fecha y Hora *</label>
+                            <label className="block text-[13px] font-medium text-slate-700 dark:text-slate-200">Fecha y Hora *</label>
                             <input 
                                 type="datetime-local" 
                                 required
-                                className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none transition-colors dark:text-slate-100"
+                                className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-[46px] text-sm font-bold focus:border-indigo-500 outline-none transition-colors dark:text-slate-100"
                                 value={formData.fecha}
                                 onChange={e => setFormData({...formData, fecha: e.target.value})}
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Convocados / Participantes</label>
+                            <label className="block text-[13px] font-medium text-slate-700 dark:text-slate-200">Convocados / Participantes</label>
                             <OperatorMultiSelect 
                                 operators={operators}
                                 selectedIds={formData.participantes}
@@ -140,10 +140,10 @@ export default function NewMeetingModal({ isOpen, onClose, onSuccess, ncId, init
                 </div>
 
                 <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-100 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-900/50 rounded-b-3xl shrink-0">
-                    <button type="button" onClick={onClose} className="px-5 py-2.5 bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 font-bold text-slate-600 dark:text-slate-300 text-xs transition-all shadow-sm" disabled={loading}>
+                    <button type="button" onClick={onClose} className="px-5 py-2.5 bg-card border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 font-bold text-slate-600 dark:text-slate-300 text-xs transition-all shadow-sm" disabled={loading}>
                         Cancelar
                     </button>
-                    <button type="submit" form="reunion-form" className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-md shadow-indigo-600/10" disabled={loading}>
+                    <button type="submit" form="reunion-form" className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2" disabled={loading}>
                         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                         Guardar Reunión
                     </button>

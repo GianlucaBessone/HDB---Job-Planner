@@ -157,14 +157,14 @@ export default function HistorialCotizacionesModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-950/50 flex items-center justify-center p-4">
             <div className="bg-card rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
                 {/* Header */}
                 <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
                     <div className="flex items-center gap-3">
                         <FileText className="w-5 h-5 text-indigo-400" />
                         <div>
-                            <h3 className="font-black text-base">Historial y Seguimiento de Cotizaciones</h3>
+                            <h3 className="font-bold text-base">Historial y Seguimiento de Cotizaciones</h3>
                             <p className="text-xs text-slate-400">
                                 {totalCount} cotizaciones registradas • Reimprima, edite, duplique o convierta en venta de PDV
                             </p>
@@ -187,7 +187,7 @@ export default function HistorialCotizacionesModal({
                             onKeyDown={(e) => {
                                 if (e.key === 'Escape' && busqueda) setBusqueda('');
                             }}
-                            className="w-full pl-9 pr-8 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="w-full pl-9 pr-8 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                         {busqueda && (
                             <button
@@ -235,7 +235,7 @@ export default function HistorialCotizacionesModal({
                     ) : (
                         <table className="w-full text-xs">
                             <thead>
-                                <tr className="border-b border-slate-200 dark:border-slate-800 text-[10px] font-bold uppercase tracking-wider text-slate-400 select-none whitespace-nowrap">
+                                <tr className="border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold uppercase tracking-wider text-slate-400 select-none whitespace-nowrap">
                                     {[
                                         { key: 'numero', label: 'N° Cotización', align: 'left' },
                                         { key: 'fecha', label: 'Emisión / Vto.', align: 'left' },
@@ -288,24 +288,24 @@ export default function HistorialCotizacionesModal({
                                     const est = cot.estaVencida && cot.estado === 'VIGENTE' ? 'VENCIDA' : cot.estado;
                                     return (
                                         <tr key={cot.id} className="hover:bg-slate-50/90 dark:hover:bg-slate-800/40">
-                                            <td className="py-3 px-3 font-mono font-black text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                                            <td className="py-3 px-3 font-mono font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
                                                 {cot.numero}
                                                 {cot.ventaNumero && (
-                                                    <div className="text-[10px] font-sans font-bold text-emerald-700 dark:text-emerald-400">
+                                                    <div className="text-[11px] font-sans font-bold text-emerald-700 dark:text-emerald-400">
                                                         → {cot.ventaNumero}
                                                     </div>
                                                 )}
                                             </td>
                                             <td className="py-3 px-3 whitespace-nowrap">
                                                 <div className="text-slate-800 dark:text-slate-200 font-medium">{fmtDate(cot.fecha)}</div>
-                                                <div className="text-[10px] text-slate-400">
+                                                <div className="text-[11px] text-slate-400">
                                                     Vence: {fmtDate(cot.fechaVencimiento)}
                                                 </div>
                                             </td>
                                             <td className="py-3 px-3">
                                                 <div className="font-bold text-slate-900 dark:text-slate-100">{cot.clienteNombre}</div>
                                                 {cot.clienteIdentificacion && (
-                                                    <div className="text-[10px] font-mono text-slate-400">
+                                                    <div className="text-[11px] font-mono text-slate-400">
                                                         {cot.clienteIdentificacion}
                                                     </div>
                                                 )}
@@ -314,20 +314,20 @@ export default function HistorialCotizacionesModal({
                                                 <div className="text-slate-700 dark:text-slate-300 truncate max-w-[180px]">
                                                     {cot.referenciaObra || cot.condicionPago || '—'}
                                                 </div>
-                                                <div className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold">
+                                                <div className="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold">
                                                     Lista: {cot.listaPrecioNombre || 'General'}
                                                 </div>
                                             </td>
                                             <td className="py-3 px-3 text-center font-mono font-bold text-slate-600 dark:text-slate-300">
                                                 {(cot.items || []).length}
                                             </td>
-                                            <td className="py-3 px-3 text-right font-mono font-black text-slate-900 dark:text-slate-100 text-sm whitespace-nowrap">
+                                            <td className="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-slate-100 text-sm whitespace-nowrap">
                                                 $ {fmt(cot.total)}{' '}
-                                                <span className="text-[10px] text-slate-400 font-sans font-bold">ARS</span>
+                                                <span className="text-[11px] text-slate-400 font-sans font-bold">ARS</span>
                                             </td>
                                             <td className="py-3 px-3 text-center whitespace-nowrap">
                                                 <span
-                                                    className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                                                    className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase ${
                                                         est === 'CONVERTIDA'
                                                             ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
                                                             : est === 'APROBADA'
@@ -433,7 +433,7 @@ export default function HistorialCotizacionesModal({
 
             {/* Modal Nativo de la App: Desestimar / Anular Cotización */}
             {cotizacionADesestimar && (
-                <div className="fixed inset-0 z-[60] bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
+                <div className="fixed inset-0 z-[60] bg-slate-950/50 flex items-center justify-center p-4 animate-in fade-in duration-150">
                     <div className="bg-card text-card-foreground rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-150">
                         {/* Header */}
                         <div className="p-4 bg-red-600 text-white flex items-center justify-between">
@@ -442,7 +442,7 @@ export default function HistorialCotizacionesModal({
                                     <Ban className="w-4 h-4 text-white" />
                                 </div>
                                 <div>
-                                    <h4 className="font-black text-sm">Desestimar Cotización</h4>
+                                    <h4 className="font-bold text-sm">Desestimar Cotización</h4>
                                     <p className="text-[11px] text-red-100 font-mono">
                                         {cotizacionADesestimar.numero} • {cotizacionADesestimar.clienteNombre}
                                     </p>
@@ -467,7 +467,7 @@ export default function HistorialCotizacionesModal({
 
                             {/* Chips de motivos frecuentes */}
                             <div className="space-y-1.5">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                                     Motivos rápidos:
                                 </span>
                                 <div className="flex flex-wrap gap-1.5">
@@ -505,10 +505,10 @@ export default function HistorialCotizacionesModal({
                                     value={motivoDesestimacion}
                                     onChange={(e) => setMotivoDesestimacion(e.target.value)}
                                     placeholder="Ingrese el motivo de desestimación..."
-                                    className="w-full p-2.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-red-500"
+                                    className="w-full p-2.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-red-500"
                                     autoFocus
                                 />
-                                <div className="flex justify-between items-center text-[10px] text-slate-400 mt-1">
+                                <div className="flex justify-between items-center text-[11px] text-slate-400 mt-1">
                                     <span>Mínimo 3 caracteres requeridos</span>
                                     <span>{motivoDesestimacion.trim().length} chars</span>
                                 </div>
@@ -528,7 +528,7 @@ export default function HistorialCotizacionesModal({
                                     type="button"
                                     disabled={desestimando || motivoDesestimacion.trim().length < 3}
                                     onClick={handleConfirmarDesestimacion}
-                                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-red-600 hover:bg-red-700 text-white disabled:opacity-50 transition-colors shadow-sm"
+                                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-red-600 hover:bg-red-700 text-white disabled:opacity-50 transition-colors"
                                 >
                                     {desestimando ? (
                                         <>

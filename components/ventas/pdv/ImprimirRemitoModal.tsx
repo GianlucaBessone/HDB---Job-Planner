@@ -118,7 +118,7 @@ export default function ImprimirRemitoModal({
   const receptor = remito.receptorNombre || clienteNombre;
 
   return (
-    <div className="fixed inset-0 z-[95] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div className="fixed inset-0 z-[95] flex items-center justify-center p-3 sm:p-4 bg-slate-950/50-xs">
       {/* Estilos para impresión física de remito comercial sobrio */}
       <style
         dangerouslySetInnerHTML={{
@@ -160,10 +160,10 @@ export default function ImprimirRemitoModal({
           <div className="flex items-center gap-2">
             <PackageCheck className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             <div>
-              <h3 className="text-base font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <span>Remito de Entrega {remito.numero}</span>
                 {isVentaAnulada && (
-                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-red-100 text-red-700 border border-red-300">
+                  <span className="text-[11px] font-semibold uppercase px-2 py-0.5 rounded bg-red-100 text-red-700 border border-red-300">
                     Venta Anulada
                   </span>
                 )}
@@ -202,31 +202,31 @@ export default function ImprimirRemitoModal({
               <div className="flex items-start justify-between gap-4">
                 {/* Membrete Emisor */}
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-xl font-black tracking-tight text-slate-900 uppercase">
+                  <h1 className="text-xl font-semibold tracking-tight text-slate-900 uppercase">
                     HDB - Materiales Eléctricos
                   </h1>
                   <p className="text-[11px] text-slate-600 font-medium">
                     Distribución y Suministro de Materiales Eléctricos Industriales
                   </p>
-                  <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-wider font-semibold">
+                  <p className="text-[11px] text-slate-500 mt-1 uppercase tracking-wider font-semibold">
                     Documento no válido como factura comercial
                   </p>
                 </div>
 
                 {/* Letra 'R' formato oficial de remito */}
                 <div className="flex flex-col items-center justify-center border-2 border-slate-900 px-3 py-1 text-center shrink-0">
-                  <span className="text-2xl font-black leading-none text-slate-900">R</span>
-                  <span className="text-[8px] font-bold tracking-tight text-slate-600 uppercase mt-0.5">
+                  <span className="text-2xl font-bold leading-none text-slate-900">R</span>
+                  <span className="text-[11px] font-bold tracking-tight text-slate-600 uppercase mt-0.5">
                     CÓD. 091
                   </span>
                 </div>
 
                 {/* Numeración y Fecha */}
                 <div className="text-right shrink-0">
-                  <div className="text-xs font-black tracking-wider text-slate-900 uppercase">
+                  <div className="text-xs font-semibold tracking-wider text-slate-900 uppercase">
                     REMITO DE ENTREGA
                   </div>
-                  <div className="text-base font-black font-mono text-slate-900 mt-0.5">
+                  <div className="text-base font-bold font-mono text-slate-900 mt-0.5">
                     {remito.numero}
                   </div>
                   <div className="text-[11px] text-slate-600 mt-1 font-medium">
@@ -238,7 +238,7 @@ export default function ImprimirRemitoModal({
                     </div>
                   )}
                   {isVentaAnulada && (
-                    <div className="inline-block mt-1 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider bg-slate-200 text-slate-800 border border-slate-400">
+                    <div className="inline-block mt-1 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider bg-slate-200 text-slate-800 border border-slate-400">
                       COMPROBANTE DE VENTA ANULADA
                     </div>
                   )}
@@ -250,10 +250,10 @@ export default function ImprimirRemitoModal({
             <div className="border border-slate-300 divide-y divide-slate-200 text-[11px]">
               <div className="grid grid-cols-2 divide-x divide-slate-200 p-2.5">
                 <div>
-                  <span className="text-slate-500 font-bold uppercase text-[9px] tracking-wider block">
+                  <span className="text-slate-500 font-bold uppercase text-[11px] tracking-wider block">
                     Destinatario / Cliente
                   </span>
-                  <div className="font-black text-slate-900 text-xs mt-0.5">
+                  <div className="font-bold text-slate-900 text-xs mt-0.5">
                     {clienteNombre}
                   </div>
                   {remito.clienteIdentificacion && (
@@ -263,7 +263,7 @@ export default function ImprimirRemitoModal({
                   )}
                 </div>
                 <div className="pl-3">
-                  <span className="text-slate-500 font-bold uppercase text-[9px] tracking-wider block">
+                  <span className="text-slate-500 font-bold uppercase text-[11px] tracking-wider block">
                     Lugar / Datos de Entrega
                   </span>
                   <div className="text-slate-700 mt-0.5">
@@ -279,7 +279,7 @@ export default function ImprimirRemitoModal({
 
               <div className="grid grid-cols-2 divide-x divide-slate-200 p-2.5 bg-slate-50/50">
                 <div>
-                  <span className="text-slate-500 font-bold uppercase text-[9px] tracking-wider block">
+                  <span className="text-slate-500 font-bold uppercase text-[11px] tracking-wider block">
                     Despacho
                   </span>
                   <div className="text-slate-800 mt-0.5">
@@ -288,7 +288,7 @@ export default function ImprimirRemitoModal({
                   </div>
                 </div>
                 <div className="pl-3">
-                  <span className="text-slate-500 font-bold uppercase text-[9px] tracking-wider block">
+                  <span className="text-slate-500 font-bold uppercase text-[11px] tracking-wider block">
                     Receptor de la Mercadería
                   </span>
                   <div className="text-slate-800 mt-0.5">
@@ -296,7 +296,7 @@ export default function ImprimirRemitoModal({
                     <span className="font-bold">{receptor}</span>
                   </div>
                   {remito.receptorDni && (
-                    <div className="text-slate-700 text-[10px]">
+                    <div className="text-slate-700 text-[11px]">
                       <span className="font-semibold">DNI:</span> {remito.receptorDni}
                     </div>
                   )}
@@ -306,12 +306,12 @@ export default function ImprimirRemitoModal({
 
             {/* Tabla de Materiales Entregados (ESTRICTAMENTE SIN PRECIOS) */}
             <div className="space-y-1.5">
-              <div className="text-[11px] font-black uppercase text-slate-900 tracking-wider">
+              <div className="text-[11px] font-semibold uppercase text-slate-900 tracking-wider">
                 Detalle de Materiales Entregados en este Acto
               </div>
               <table className="w-full text-left text-[11px] border-collapse border border-slate-300">
                 <thead>
-                  <tr className="bg-slate-100 text-slate-900 font-bold uppercase tracking-wider text-[10px] border-b border-slate-300">
+                  <tr className="bg-slate-100 text-slate-900 font-bold uppercase tracking-wider text-[11px] border-b border-slate-300">
                     <th className="py-2 px-2.5 w-10 text-center border-r border-slate-300">#</th>
                     <th className="py-2 px-2.5 w-28 border-r border-slate-300">Código / SKU</th>
                     <th className="py-2 px-2.5 border-r border-slate-300">Descripción del Material</th>
@@ -338,7 +338,7 @@ export default function ImprimirRemitoModal({
                         <td className="py-1.5 px-2.5 font-medium text-slate-900 border-r border-slate-200">
                           {it.descripcion}
                         </td>
-                        <td className="py-1.5 px-2.5 text-right font-black text-slate-900 border-r border-slate-200">
+                        <td className="py-1.5 px-2.5 text-right font-bold text-slate-900 border-r border-slate-200">
                           {it.cantidad}
                         </td>
                         <td className="py-1.5 px-2.5 text-center text-slate-600">
@@ -349,7 +349,7 @@ export default function ImprimirRemitoModal({
                   )}
                 </tbody>
               </table>
-              <div className="text-[10px] text-slate-500 text-right pr-1">
+              <div className="text-[11px] text-slate-500 text-right pr-1">
                 Total artículos entregados: <span className="font-bold text-slate-800">{items.length}</span>
               </div>
             </div>
@@ -357,12 +357,12 @@ export default function ImprimirRemitoModal({
             {/* Sección de Saldo Pendiente de Retiro (Sober y tabular) */}
             {itemsPendientes.length > 0 && (
               <div className="space-y-1.5 pt-1">
-                <div className="text-[11px] font-black uppercase text-slate-700 tracking-wider">
+                <div className="text-[11px] font-semibold uppercase text-slate-700 tracking-wider">
                   Materiales Pendientes de Retiro (Saldo en Depósito)
                 </div>
                 <table className="w-full text-left text-[11px] border-collapse border border-slate-300">
                   <thead>
-                    <tr className="bg-slate-50 text-slate-700 font-bold uppercase tracking-wider text-[10px] border-b border-slate-300">
+                    <tr className="bg-slate-50 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-300">
                       <th className="py-1.5 px-2.5 w-28 border-r border-slate-300">SKU</th>
                       <th className="py-1.5 px-2.5 border-r border-slate-300">Descripción</th>
                       <th className="py-1.5 px-2.5 text-right w-24 border-r border-slate-300">Cant. Pendiente</th>
@@ -398,7 +398,7 @@ export default function ImprimirRemitoModal({
 
             {/* Cuadro de Conformidad y Firma ÚNICA para el Receptor (Sin firma del vendedor) */}
             <div className="border border-slate-300 p-4 mt-6">
-              <div className="text-[10px] text-slate-600 text-center leading-relaxed">
+              <div className="text-[11px] text-slate-600 text-center leading-relaxed">
                 El receptor declara haber recibido en este acto, a su entera conformidad y en perfecto estado, los materiales detallados en este remito.
               </div>
 
@@ -410,10 +410,10 @@ export default function ImprimirRemitoModal({
                   <div className="text-[11px] text-slate-800 font-semibold">
                     Aclaración: {receptor}
                   </div>
-                  <div className="text-[10px] text-slate-600">
+                  <div className="text-[11px] text-slate-600">
                     DNI: {remito.receptorDni || '__________________'}
                   </div>
-                  <div className="text-[10px] text-slate-600">
+                  <div className="text-[11px] text-slate-600">
                     Fecha: ______ / ______ / 202___
                   </div>
                 </div>

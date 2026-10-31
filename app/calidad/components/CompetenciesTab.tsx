@@ -133,14 +133,14 @@ export default function CompetenciesTab({ user }: { user: any }) {
 
     if (isTech) {
         return (
-            <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="space-y-6 animate-in fade-in duration-200">
                 <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
                     <div className="flex items-center gap-3">
                         <div className="p-3 bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 rounded-2xl">
                             <Award className="w-6 h-6" />
                         </div>
                         <div>
-                            <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">Mis Competencias Técnicas</h3>
+                            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Mis Competencias Técnicas</h3>
                             <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                                 Certificaciones y habilitaciones QMS activas
                             </p>
@@ -158,10 +158,10 @@ export default function CompetenciesTab({ user }: { user: any }) {
                             >
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-1">
-                                        <h4 className="text-sm font-black text-slate-800 dark:text-slate-100">{c.nombre}</h4>
-                                        <span className="text-[10px] font-bold text-slate-400">Certificación HDB-QMS</span>
+                                        <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">{c.nombre}</h4>
+                                        <span className="text-[11px] font-bold text-slate-400">Certificación HDB-QMS</span>
                                     </div>
-                                    <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full ${
+                                    <span className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full ${
                                         isVigente 
                                             ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400' 
                                             : 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400'
@@ -179,11 +179,11 @@ export default function CompetenciesTab({ user }: { user: any }) {
                                     )}
                                     {c.evidencia && (
                                         <div className="space-y-1">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Evidencia</p>
+                                            <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Evidencia</p>
                                             <p className="text-xs font-medium text-slate-600 dark:text-slate-300 bg-background text-foreground p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">{c.evidencia}</p>
                                         </div>
                                     )}
-                                    <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 pt-2">
+                                    <div className="flex justify-between items-center text-[11px] font-bold text-slate-400 pt-2">
                                         <span>Aprobador: {c.aprobadorNombre || 'QMS Auto Engine'}</span>
                                     </div>
                                 </div>
@@ -194,7 +194,7 @@ export default function CompetenciesTab({ user }: { user: any }) {
                     {competencies.length === 0 && (
                         <div className="col-span-full bg-background text-foreground border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center text-slate-500">
                             <Award className="w-12 h-12 mx-auto text-slate-400 mb-3" />
-                            <h4 className="text-sm font-black text-slate-700 dark:text-slate-300">Sin Competencias</h4>
+                            <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">Sin Competencias</h4>
                             <p className="text-xs font-medium text-slate-500 mt-1">Aún no cuentas con competencias acreditadas.</p>
                         </div>
                     )}
@@ -204,7 +204,7 @@ export default function CompetenciesTab({ user }: { user: any }) {
     }
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-300">
+        <div className="space-y-6 animate-in fade-in duration-200">
             <div className="bg-card text-card-foreground rounded-3xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
@@ -212,7 +212,7 @@ export default function CompetenciesTab({ user }: { user: any }) {
                             <Award className="w-6 h-6" />
                         </div>
                         <div>
-                            <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">Matriz de Competencias Enterprise</h3>
+                            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Matriz de Competencias Enterprise</h3>
                             <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                                 Acreditación, monitoreo y auditoría de personal operativo
                             </p>
@@ -227,11 +227,11 @@ export default function CompetenciesTab({ user }: { user: any }) {
                     <table className="w-full border-collapse">
                         <thead>
                             <tr className="bg-background text-foreground/60 border-b border-slate-200 dark:border-slate-700">
-                                <th className="px-6 py-4 text-left text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest sticky left-0 bg-background text-foreground z-10 w-64">
+                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider sticky left-0 bg-background text-foreground z-10 w-64">
                                     Operador / Técnico
                                 </th>
                                 {documents.map(doc => (
-                                    <th key={doc.id} className="px-6 py-4 text-left text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest min-w-[200px]">
+                                    <th key={doc.id} className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider min-w-[200px]">
                                         {doc.titulo}
                                     </th>
                                 ))}
@@ -240,13 +240,13 @@ export default function CompetenciesTab({ user }: { user: any }) {
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-750">
                             {operators.map(op => (
                                 <tr key={op.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                                    <td className="px-6 py-4 font-bold text-slate-800 dark:text-slate-100 sticky left-0 bg-card text-card-foreground shadow-md shadow-slate-100/10 z-10 flex items-center gap-2">
-                                        <div className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-xs font-black">
+                                    <td className="px-6 py-4 font-bold text-slate-800 dark:text-slate-100 sticky left-0 bg-card shadow-md z-10 flex items-center gap-2">
+                                        <div className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-xs font-bold">
                                             {op.nombreCompleto.charAt(0)}
                                         </div>
                                         <div>
-                                            <p className="text-sm font-black">{op.nombreCompleto}</p>
-                                            <p className="text-[10px] text-slate-400 font-medium">{op.role}</p>
+                                            <p className="text-sm font-bold">{op.nombreCompleto}</p>
+                                            <p className="text-[11px] text-slate-400 font-medium">{op.role}</p>
                                         </div>
                                     </td>
                                     {documents.map(doc => {
@@ -259,7 +259,7 @@ export default function CompetenciesTab({ user }: { user: any }) {
                                             <td key={doc.id} className="px-6 py-4">
                                                 <button
                                                     onClick={() => handleOpenCertify(op.id, doc.id, comp)}
-                                                    className={`px-3 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 border border-dashed ${
+                                                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border border-dashed ${
                                                         isVigente
                                                             ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/50'
                                                             : isPendiente
@@ -287,17 +287,17 @@ export default function CompetenciesTab({ user }: { user: any }) {
 
             {/* Certify technician modal */}
             {selectedCell && (
-                <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+                <div className="fixed inset-0 bg-slate-950/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
                     <div className="bg-card text-card-foreground w-full max-w-lg rounded-3xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-200 dark:border-slate-700">
                         <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
-                            <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                                 <Award className="w-5 h-5 text-primary" /> Acreditación Técnica QMS
                             </h3>
                             <button onClick={() => setSelectedCell(null)} className="text-slate-400 hover:text-slate-600 font-bold">×</button>
                         </div>
                         <div className="p-6 space-y-4">
                             <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Técnico Operador</label>
+                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Técnico Operador</label>
                                 <div className="bg-background text-foreground px-4 py-3 rounded-xl flex items-center gap-2">
                                     <User className="w-4 h-4 text-slate-400" />
                                     <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
@@ -307,7 +307,7 @@ export default function CompetenciesTab({ user }: { user: any }) {
                             </div>
 
                             <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Norma / Documento</label>
+                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Norma / Documento</label>
                                 <div className="bg-background text-foreground px-4 py-3 rounded-xl flex items-center gap-2">
                                     <FileText className="w-4 h-4 text-slate-400" />
                                     <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
@@ -318,7 +318,7 @@ export default function CompetenciesTab({ user }: { user: any }) {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estado</label>
+                                    <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Estado</label>
                                     <select
                                         value={formState.estado}
                                         onChange={(e) => setFormState(prev => ({ ...prev, estado: e.target.value }))}
@@ -332,7 +332,7 @@ export default function CompetenciesTab({ user }: { user: any }) {
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Vencimiento</label>
+                                    <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Vencimiento</label>
                                     <input
                                         type="date"
                                         value={formState.vencimiento}
@@ -343,7 +343,7 @@ export default function CompetenciesTab({ user }: { user: any }) {
                             </div>
 
                             <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Evidencia Acreditada</label>
+                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Evidencia Acreditada</label>
                                 <textarea
                                     value={formState.evidencia}
                                     onChange={(e) => setFormState(prev => ({ ...prev, evidencia: e.target.value }))}
@@ -353,7 +353,7 @@ export default function CompetenciesTab({ user }: { user: any }) {
                             </div>
 
                             <div className="space-y-1">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Evaluación / Notas de Auditor</label>
+                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Evaluación / Notas de Auditor</label>
                                 <textarea
                                     value={formState.evaluacion}
                                     onChange={(e) => setFormState(prev => ({ ...prev, evaluacion: e.target.value }))}
@@ -365,13 +365,13 @@ export default function CompetenciesTab({ user }: { user: any }) {
                         <div className="px-6 py-4 bg-background text-foreground/60 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3">
                             <button
                                 onClick={() => setSelectedCell(null)}
-                                className="px-4 py-2 text-xs font-black text-slate-500 hover:text-slate-700"
+                                className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700"
                             >
                                 Cancelar
                             </button>
                             <button
                                 onClick={handleSaveCertify}
-                                className="bg-primary hover:bg-primary-dark text-white px-5 py-2.5 rounded-xl text-xs font-black transition-all shadow-md shadow-primary/10 flex items-center gap-1.5"
+                                className="bg-primary hover:bg-primary-dark text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
                             >
                                 <Check className="w-4 h-4" /> Acreditar Competencia
                             </button>

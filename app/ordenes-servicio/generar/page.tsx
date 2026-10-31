@@ -10,6 +10,7 @@ import {
 import { safeApiRequest } from '@/lib/offline';
 import { showToast } from '@/components/Toast';
 import { MaterialSearchSelector, MaterialOption } from '@/components/os/MaterialSearchSelector';
+import { EmptyState } from '@/components/ui/States';
 
 const UNIDADES = ['Unidad', 'Metro', 'Kg', 'Litro', 'Otro'];
 
@@ -74,7 +75,8 @@ function GenerarOSContent() {
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     useEffect(() => {
-        if (!projectId) return;
+        // Sin proyecto no hay nada que cargar: se muestra el estado vacío en lugar de un esqueleto infinito
+        if (!projectId) { setLoading(false); return; }
         loadData();
     }, [projectId]);
 
@@ -356,7 +358,7 @@ function GenerarOSContent() {
 
     if (loading) {
         return (
-            <div className="max-w-3xl mx-auto p-6 space-y-6">
+            <div role="status" aria-label="Cargando proyecto" className="max-w-3xl mx-auto space-y-6">
                 <div className="h-12 bg-muted rounded-2xl animate-pulse" />
                 <div className="h-40 bg-muted rounded-3xl animate-pulse" />
                 <div className="h-40 bg-muted rounded-3xl animate-pulse" />
@@ -366,15 +368,21 @@ function GenerarOSContent() {
 
     if (!project) {
         return (
-            <div className="max-w-2xl mx-auto p-6 text-center space-y-4 py-20">
-                <AlertCircle className="w-12 h-12 text-slate-300 mx-auto" />
-                <p className="text-slate-500 dark:text-slate-400 font-medium">Proyecto no encontrado</p>
+            <div className="max-w-2xl mx-auto surface">
+                <EmptyState
+                    icon={<AlertCircle />}
+                    title={projectId ? 'Proyecto no encontrado' : 'Falta elegir un proyecto'}
+                    description={projectId
+                        ? 'El proyecto de esta orden no existe o ya no está disponible.'
+                        : 'Las órdenes de servicio se generan desde un proyecto: abrilo en Mis Proyectos o en Gestión de Proyectos y elegí Generar orden de servicio.'}
+                    action={<button className="btn btn-secondary" onClick={() => router.push('/my-projects')}>Ir a Mis Proyectos</button>}
+                />
             </div>
         );
     }
 
     return (
-        <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-16">
+        <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200 pb-16">
             {/* Header */}
             <div className="space-y-1">
                 <button
@@ -385,11 +393,11 @@ function GenerarOSContent() {
                     Volver
                 </button>
                 <div className="flex items-center gap-3">
-                    <div className="bg-emerald-600 p-2.5 rounded-2xl shadow-lg shadow-emerald-200 text-white">
+                    <div className="bg-emerald-600 p-2.5 rounded-2xl shadow-lg text-white">
                         <FileSignature className="w-6 h-6" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight">
+                        <h1 className="text-title text-slate-900 dark:text-slate-50">
                             {isFirmada ? 'Orden de Servicio Firmada' : editId ? 'Modificar Orden de Servicio' : 'Generar Orden de Servicio'}
                         </h1>
                         <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
@@ -400,7 +408,7 @@ function GenerarOSContent() {
             </div>
 
             {isFirmada && (
-                <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex gap-3 text-emerald-800 animate-in zoom-in-95 duration-300">
+                <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex gap-3 text-emerald-800 animate-in zoom-in-95 duration-200">
                     <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
                     <div className="text-sm font-medium">
                         Esta orden de servicio ya ha sido firmada por el cliente y no puede ser modificada. Las horas, materiales y reporte a continuación son de solo lectura.
@@ -412,14 +420,14 @@ function GenerarOSContent() {
             <section className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
                     <Clock className="w-4 h-4 text-indigo-500" />
-                    <h2 className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase tracking-wide">
+                    <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
                         Horas del Proyecto
                     </h2>
                 </div>
 
                 {existingHoras.length > 0 && !isFirmada && (
                     <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-indigo-50/50 dark:bg-indigo-500/10">
-                        <p className="text-[10px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-widest mb-3">
+                        <p className="text-[11px] font-semibold text-indigo-500 dark:text-indigo-400 uppercase tracking-wider mb-3">
                             Horas ya registradas (del listado de tiempos)
                         </p>
                         <div className="space-y-2">
@@ -428,12 +436,12 @@ function GenerarOSContent() {
                                     <span className="text-sm font-medium text-slate-700 dark:text-slate-200 flex items-center gap-2">
                                         {g.nombreCompleto}
                                         {g.isExtra && (
-                                            <span className="text-[10px] bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 px-1.5 py-0.5 rounded font-black uppercase">
+                                            <span className="text-[11px] bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 px-1.5 py-0.5 rounded font-semibold uppercase">
                                                 Extra
                                             </span>
                                         )}
                                     </span>
-                                    <span className="text-sm font-black text-indigo-600 dark:text-indigo-400">
+                                    <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
                                         {g.totalHoras}h
                                     </span>
                                 </div>
@@ -444,7 +452,7 @@ function GenerarOSContent() {
 
                 <div className="px-6 py-4 space-y-3">
                     <div className="flex items-center justify-between">
-                        <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                        <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                             Operadores y horas {isFirmada ? 'en esta OS' : 'para esta OS'}
                         </p>
                         {!isFirmada && (
@@ -471,7 +479,7 @@ function GenerarOSContent() {
                                         disabled={isFirmada}
                                         value={op.operadorId}
                                         onChange={e => updateOperador(i, 'operadorId', e.target.value)}
-                                        className="w-full disabled:opacity-75 disabled:bg-slate-100 bg-background border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                        className="w-full disabled:opacity-75 disabled:bg-slate-100 bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                                     >
                                         <option value="">Seleccionar operador...</option>
                                         {operators.map(o => (
@@ -484,7 +492,7 @@ function GenerarOSContent() {
                                         type="button"
                                         disabled={isFirmada}
                                         onClick={() => updateOperador(i, 'isExtra', !op.isExtra)}
-                                        className={`w-full h-10 px-2 rounded-xl text-[10px] font-black uppercase border transition-all ${
+                                        className={`w-full h-10 px-2 rounded-xl text-[11px] font-semibold uppercase border transition-all ${
                                             op.isExtra 
                                             ? 'bg-amber-100 border-amber-300 text-amber-700 shadow-sm' 
                                             : 'bg-card border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500'
@@ -504,7 +512,7 @@ function GenerarOSContent() {
                                             placeholder="0"
                                             value={op.horas}
                                             onChange={e => updateOperador(i, 'horas', e.target.value)}
-                                            className="w-full disabled:opacity-75 disabled:bg-slate-100 bg-background border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all pr-7"
+                                            className="w-full disabled:opacity-75 disabled:bg-slate-100 bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all pr-7"
                                         />
                                         <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 dark:text-slate-500">h</span>
                                     </div>
@@ -528,7 +536,7 @@ function GenerarOSContent() {
             <section className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
                     <FileText className="w-4 h-4 text-blue-500" />
-                    <h2 className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase tracking-wide">
+                    <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
                         Reporte del Trabajo
                     </h2>
                     {!isFirmada && <span className="text-red-500 font-bold text-xs ml-auto">* Obligatorio</span>}
@@ -545,12 +553,12 @@ function GenerarOSContent() {
                         value={reporte}
                         onChange={e => setReporte(e.target.value)}
                         placeholder="Descripción detallada del trabajo realizado..."
-                        className={`w-full disabled:opacity-75 disabled:bg-slate-100 bg-background border rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 transition-all resize-none ${errors.reporte
+                        className={`w-full disabled:opacity-75 disabled:bg-slate-100 bg-card border rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 transition-all resize-none ${errors.reporte
                             ? 'border-red-300 focus:ring-red-500/10 focus:border-red-400'
                             : 'border-slate-200 dark:border-slate-700 focus:ring-primary/10 focus:border-primary'
                             }`}
                     />
-                    <p className="text-right text-[10px] text-slate-400 dark:text-slate-500 font-medium mt-1">{reporte.length} caracteres</p>
+                    <p className="text-right text-[11px] text-slate-400 dark:text-slate-500 font-medium mt-1">{reporte.length} caracteres</p>
                 </div>
             </section>
 
@@ -558,10 +566,10 @@ function GenerarOSContent() {
             <section className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
                     <MessageSquare className="w-4 h-4 text-slate-400 dark:text-slate-500" />
-                    <h2 className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase tracking-wide">
+                    <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
                         Comentario Adicional
                     </h2>
-                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 ml-auto">(Opcional)</span>
+                    <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 ml-auto">(Opcional)</span>
                 </div>
                 <div className="px-6 py-4">
                     <textarea
@@ -570,7 +578,7 @@ function GenerarOSContent() {
                         value={comentario}
                         onChange={e => setComentario(e.target.value)}
                         placeholder="Cualquier nota adicional o comentario para el cliente..."
-                        className="w-full disabled:opacity-75 disabled:bg-slate-100 bg-background border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all resize-none"
+                        className="w-full disabled:opacity-75 disabled:bg-slate-100 bg-card border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 text-sm font-medium outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all resize-none"
                     />
                 </div>
             </section>
@@ -581,7 +589,7 @@ function GenerarOSContent() {
                     <div className="flex items-center gap-2">
                         <Package className="w-4 h-4 text-amber-500" />
                         <div>
-                            <h2 className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase tracking-wide">
+                            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
                                 Materiales Utilizados
                             </h2>
                             <p className="text-[11px] text-slate-400 font-medium">
@@ -593,7 +601,7 @@ function GenerarOSContent() {
                     {/* Selector de Lista de Precios aplicable (modificable desde la OS) */}
                     <div className="flex items-center gap-2">
                         <Tag className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span className="text-[11px] font-black uppercase text-slate-400">Lista:</span>
+                        <span className="text-[11px] font-semibold uppercase text-slate-400">Lista:</span>
                         <select
                             disabled={isFirmada}
                             value={selectedListaPrecioId || ''}
@@ -624,7 +632,7 @@ function GenerarOSContent() {
                                 id="btn-add-material-gc"
                                 type="button"
                                 onClick={() => setIsSearchSelectorOpen(true)}
-                                className="px-4 py-2.5 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary/90 active:scale-95 transition-all flex items-center gap-2 shadow-sm shadow-primary/20"
+                                className="px-4 py-2.5 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary-hover transition-all flex items-center gap-2"
                             >
                                 <Search className="w-4 h-4" /> Buscar en Gestión Comercial
                             </button>
@@ -673,25 +681,25 @@ function GenerarOSContent() {
                                         <div className="flex-1 min-w-0 space-y-1">
                                             <div className="flex items-center gap-2 flex-wrap">
                                                 {m.codigo && (
-                                                    <span className="font-mono text-xs font-black text-slate-900 dark:text-slate-100 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
+                                                    <span className="font-mono text-xs font-bold text-slate-900 dark:text-slate-100 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
                                                         {m.codigo}
                                                     </span>
                                                 )}
 
                                                 {m.skuProveedor && (
-                                                    <span className="text-[10px] font-mono font-bold text-slate-500 bg-slate-50 dark:bg-slate-900 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-800">
+                                                    <span className="text-[11px] font-mono font-bold text-slate-500 bg-slate-50 dark:bg-slate-900 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-800">
                                                         Prov: {m.skuProveedor}
                                                     </span>
                                                 )}
 
                                                 {isManual && (
-                                                    <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">
+                                                    <span className="text-[11px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">
                                                         Material Manual (999999)
                                                     </span>
                                                 )}
 
                                                 {m.materialProyectoId && (
-                                                    <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800 border border-indigo-200">
+                                                    <span className="text-[11px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800 border border-indigo-200">
                                                         Provisión Proyecto
                                                     </span>
                                                 )}
@@ -703,7 +711,7 @@ function GenerarOSContent() {
                                                     value={m.material}
                                                     onChange={(e) => updateMaterialRow(i, 'material', e.target.value)}
                                                     placeholder="Descripción del material manual..."
-                                                    className="w-full bg-background border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20"
+                                                    className="w-full bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20"
                                                 />
                                             ) : (
                                                 <p className="text-sm font-bold text-slate-800 dark:text-slate-100 line-clamp-1">
@@ -725,7 +733,7 @@ function GenerarOSContent() {
                                             </div>
 
                                             {m.materialProyectoId && (
-                                                <div className="flex gap-2 items-center text-[10px] font-bold">
+                                                <div className="flex gap-2 items-center text-[11px] font-bold">
                                                     <span className="text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded">Entregado: {m.entregada} {m.unidadMedida}</span>
                                                     <span className="text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded">Disponible: {m.disponible} {m.unidadMedida}</span>
                                                 </div>
@@ -735,7 +743,7 @@ function GenerarOSContent() {
                                         {/* Input de Cantidad y Unidad */}
                                         <div className="flex items-center gap-3 shrink-0">
                                             <div className="w-24">
-                                                <label className="text-[10px] font-black uppercase text-slate-400 block mb-1">
+                                                <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                                     Cant. Usada
                                                 </label>
                                                 <input
@@ -747,12 +755,12 @@ function GenerarOSContent() {
                                                     placeholder="0"
                                                     value={m.cantidad}
                                                     onChange={(e) => updateMaterialRow(i, 'cantidad', e.target.value)}
-                                                    className="w-full bg-background border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-2 text-sm font-black text-center text-slate-900 dark:text-slate-50 outline-none focus:ring-2 focus:ring-primary/20"
+                                                    className="w-full bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-2 text-sm font-bold text-center text-slate-900 dark:text-slate-50 outline-none focus:ring-2 focus:ring-primary/20"
                                                 />
                                             </div>
 
                                             <div className="w-20">
-                                                <label className="text-[10px] font-black uppercase text-slate-400 block mb-1">
+                                                <label className="block mb-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                                     Unidad
                                                 </label>
                                                 {isManual && !isFirmada ? (
@@ -760,7 +768,7 @@ function GenerarOSContent() {
                                                         type="text"
                                                         value={m.unidadMedida}
                                                         onChange={(e) => updateMaterialRow(i, 'unidadMedida', e.target.value)}
-                                                        className="w-full bg-background border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2 text-xs font-bold text-center outline-none focus:ring-2 focus:ring-primary/20"
+                                                        className="w-full bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-2 text-xs font-bold text-center outline-none focus:ring-2 focus:ring-primary/20"
                                                     />
                                                 ) : (
                                                     <span className="block py-2 text-xs font-bold text-slate-500 text-center">
@@ -803,7 +811,7 @@ function GenerarOSContent() {
                     <button
                         onClick={handleSubmit}
                         disabled={submitting}
-                        className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black text-base shadow-xl shadow-emerald-200 hover:bg-emerald-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                        className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-bold text-base hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
                     >
                         {submitting ? (
                             <><Loader2 className="w-5 h-5 animate-spin" /> Guardando OS...</>
@@ -814,7 +822,7 @@ function GenerarOSContent() {
                 ) : (
                     <button
                         onClick={() => router.back()}
-                        className="w-full py-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2"
+                        className="w-full py-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl font-bold text-base transition-all flex items-center justify-center gap-2"
                     >
                         Volver
                     </button>

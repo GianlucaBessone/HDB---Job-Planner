@@ -17,17 +17,17 @@ export function KpiCard({ title, value, icon, trend, color, tooltip }: any) {
                         <div className="absolute right-0 w-64 p-3 bg-slate-900 text-slate-100 text-[11px] rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none top-6 leading-relaxed font-medium z-50 border border-slate-700">
                             <p className="mb-1.5"><strong className="text-white">Qué es:</strong> {tooltip.def}</p>
                             <p className="mb-1.5"><strong className="text-white">Para qué sirve:</strong> {tooltip.purpose}</p>
-                            <p className="text-slate-400 text-[10px] border-t border-slate-700 pt-1.5 mt-1.5"><strong className="text-slate-300">Cálculo:</strong> {tooltip.calc}</p>
+                            <p className="text-slate-400 text-[11px] border-t border-slate-700 pt-1.5 mt-1.5"><strong className="text-slate-300">Cálculo:</strong> {tooltip.calc}</p>
                         </div>
                     </div>
                 )}
             </div>
             <div>
-                <p className="text-[10px] md:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">{title}</p>
+                <p className="text-[11px] md:text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">{title}</p>
                 <div className="flex items-baseline gap-2">
-                    <h3 className="text-2xl md:text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tighter">{value}</h3>
+                    <h3 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">{value}</h3>
                 </div>
-                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wider flex items-center gap-1">
+                <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wider flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></span>
                     {trend}
                 </p>
@@ -40,17 +40,17 @@ export function RevenueLineChart({ data, height = 300 }: { data: any[], height?:
     const option = useMemo(() => ({
         tooltip: {
             trigger: 'axis',
-            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+            backgroundColor: 'rgba(22, 27, 36, 0.96)',
             borderColor: 'rgba(255,255,255,0.1)',
-            textStyle: { color: '#f8fafc', fontSize: 12 },
+            textStyle: { color: '#f6f7f9', fontSize: 12 },
             formatter: (params: any) => {
                 const label = params[0].name;
-                let html = `<div style="font-weight:bold;margin-bottom:4px;color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px">${label}</div>`;
+                let html = `<div style="font-weight:bold;margin-bottom:4px;color:#8b93a1;font-size:10px;text-transform:uppercase;letter-spacing:1px">${label}</div>`;
                 params.forEach((p: any) => {
                     const formattedValue = Math.round(p.value).toLocaleString('es-AR');
                     html += `<div style="display:flex;align-items:center;gap:8px;margin-top:2px;">
                                 <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background-color:${p.color}"></span>
-                                <span style="color:#cbd5e1;font-size:12px">${p.seriesName}:</span>
+                                <span style="color:#c9ced6;font-size:12px">${p.seriesName}:</span>
                                 <span style="color:${p.color};font-weight:bold">$${formattedValue}</span>
                              </div>`;
                 });
@@ -61,19 +61,19 @@ export function RevenueLineChart({ data, height = 300 }: { data: any[], height?:
             data: ['Total', 'Materiales', 'Mano de Obra'],
             bottom: 0,
             icon: 'circle',
-            textStyle: { color: '#64748b', fontSize: 12, fontWeight: 'bold' }
+            textStyle: { color: '#5a6372', fontSize: 12, fontWeight: 'bold' }
         },
         grid: { top: 20, right: 20, bottom: 40, left: 60, containLabel: false },
         xAxis: {
             type: 'category',
             data: data.map(d => d.label),
-            axisLine: { lineStyle: { color: '#e2e8f0' } },
-            axisLabel: { color: '#64748b', fontWeight: 'bold', fontSize: 11 }
+            axisLine: { lineStyle: { color: '#e1e4e9' } },
+            axisLabel: { color: '#5a6372', fontWeight: 'bold', fontSize: 11 }
         },
         yAxis: {
             type: 'value',
-            splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } },
-            axisLabel: { color: '#64748b', fontWeight: 'bold', fontSize: 11, formatter: (val: number) => '$' + Math.round(val).toLocaleString('es-AR') }
+            splitLine: { lineStyle: { type: 'dashed', color: '#eef0f3' } },
+            axisLabel: { color: '#5a6372', fontWeight: 'bold', fontSize: 11, formatter: (val: number) => '$' + Math.round(val).toLocaleString('es-AR') }
         },
         series: [
             {
@@ -83,7 +83,7 @@ export function RevenueLineChart({ data, height = 300 }: { data: any[], height?:
                 smooth: true,
                 symbol: 'circle',
                 symbolSize: 8,
-                itemStyle: { color: '#3b82f6' }, // Blue
+                itemStyle: { color: '#2f74da' }, // Blue
                 lineStyle: { width: 3 },
                 areaStyle: {
                     color: {
@@ -122,11 +122,11 @@ export function AvgLaborLineChart({ data, height = 300 }: { data: any[], height?
     const option = useMemo(() => ({
         tooltip: {
             trigger: 'axis',
-            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+            backgroundColor: 'rgba(22, 27, 36, 0.96)',
             borderColor: 'rgba(255,255,255,0.1)',
             formatter: (params: any) => {
                 const val = params[0];
-                return `<div style="font-weight:bold;margin-bottom:4px;color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px">${val.name}</div>
+                return `<div style="font-weight:bold;margin-bottom:4px;color:#8b93a1;font-size:10px;text-transform:uppercase;letter-spacing:1px">${val.name}</div>
                         <div style="font-size:14px;font-weight:bold;color:${val.color}">${val.value} hs</div>`;
             }
         },
@@ -134,13 +134,13 @@ export function AvgLaborLineChart({ data, height = 300 }: { data: any[], height?
         xAxis: {
             type: 'category',
             data: data.map(d => d.label),
-            axisLine: { lineStyle: { color: '#e2e8f0' } },
-            axisLabel: { color: '#64748b', fontWeight: 'bold', fontSize: 11 }
+            axisLine: { lineStyle: { color: '#e1e4e9' } },
+            axisLabel: { color: '#5a6372', fontWeight: 'bold', fontSize: 11 }
         },
         yAxis: {
             type: 'value',
-            splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } },
-            axisLabel: { color: '#64748b', fontWeight: 'bold', fontSize: 11 }
+            splitLine: { lineStyle: { type: 'dashed', color: '#eef0f3' } },
+            axisLabel: { color: '#5a6372', fontWeight: 'bold', fontSize: 11 }
         },
         series: [{
             data: data.map(d => d.avgHours),
@@ -167,11 +167,11 @@ export function ProcessTimeBarChart({ data, height = 300 }: { data: any[], heigh
         tooltip: {
             trigger: 'axis',
             axisPointer: { type: 'shadow' },
-            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+            backgroundColor: 'rgba(22, 27, 36, 0.96)',
             borderColor: 'rgba(255,255,255,0.1)',
             formatter: (params: any) => {
                 const val = params[0];
-                return `<div style="font-weight:bold;margin-bottom:4px;color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px">${val.name}</div>
+                return `<div style="font-weight:bold;margin-bottom:4px;color:#8b93a1;font-size:10px;text-transform:uppercase;letter-spacing:1px">${val.name}</div>
                         <div style="font-size:14px;font-weight:bold;color:${val.color}">${val.value} días</div>`;
             }
         },
@@ -179,18 +179,18 @@ export function ProcessTimeBarChart({ data, height = 300 }: { data: any[], heigh
         xAxis: {
             type: 'category',
             data: data.map(d => d.name),
-            axisLine: { lineStyle: { color: '#e2e8f0' } },
-            axisLabel: { color: '#64748b', fontWeight: 'bold', fontSize: 11 }
+            axisLine: { lineStyle: { color: '#e1e4e9' } },
+            axisLabel: { color: '#5a6372', fontWeight: 'bold', fontSize: 11 }
         },
         yAxis: {
             type: 'value',
-            splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } },
-            axisLabel: { color: '#64748b', fontWeight: 'bold', fontSize: 11 }
+            splitLine: { lineStyle: { type: 'dashed', color: '#eef0f3' } },
+            axisLabel: { color: '#5a6372', fontWeight: 'bold', fontSize: 11 }
         },
         series: [{
             data: data.map((d, idx) => ({
                 value: d.days,
-                itemStyle: { color: idx === 0 ? '#6366f1' : '#f43f5e', borderRadius: [4, 4, 0, 0] }
+                itemStyle: { color: idx === 0 ? '#2f74da' : '#ef4444', borderRadius: [4, 4, 0, 0] }
             })),
             type: 'bar',
             barMaxWidth: 60

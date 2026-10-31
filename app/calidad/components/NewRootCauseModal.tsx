@@ -400,7 +400,7 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-2 bg-black/60 backdrop-blur-sm animate-in fade-in">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-2 bg-slate-950/50 animate-in fade-in">
             {/* Main Premium Container */}
             <div className="bg-card w-full max-w-[98vw] h-[96vh] rounded-xl border border-border shadow-2xl flex flex-col overflow-hidden relative text-slate-900 dark:text-slate-100">
                 
@@ -413,7 +413,7 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                         <div>
                             <div className="flex items-center gap-1.5">
                                 <h2 className="text-sm font-bold text-card-foreground">Análisis de Causa Raíz (RCA)</h2>
-                                <span className="px-1.5 py-0.5 text-[10px] bg-indigo-500/10 text-indigo-500 rounded-full border border-indigo-500/20 flex items-center gap-0.5 font-semibold">
+                                <span className="px-1.5 py-0.5 text-[11px] bg-indigo-500/10 text-indigo-500 rounded-full border border-indigo-500/20 flex items-center gap-0.5 font-semibold">
                                     <Sparkles className="w-2.5 h-2.5" /> Asistente SGI
                                 </span>
                             </div>
@@ -432,7 +432,7 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                     <div className="w-[18%] border-r bg-muted/20 p-2.5 flex flex-col gap-4 overflow-y-auto min-w-[200px] shrink-0">
                         <div>
                             <div className="flex items-center justify-between mb-2">
-                                <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">1. Metodología</h3>
+                                <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">1. Metodología</h3>
                                 <button 
                                     onClick={() => setShowHelpModal(true)}
                                     className="p-1 hover:bg-primary/10 text-primary rounded-full transition-colors"
@@ -470,19 +470,19 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                         </div>
 
                         <div>
-                            <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">2. Configuración</h3>
+                            <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">2. Configuración</h3>
                             <div className="space-y-2.5">
                                 <div className="space-y-0.5">
-                                    <label className="text-[10px] font-semibold text-card-foreground">Fecha de Análisis</label>
+                                    <label className="text-[11px] font-semibold text-card-foreground">Fecha de Análisis</label>
                                     <input 
                                         type="date"
-                                        className="w-full text-xs h-8 px-2 bg-background border border-border rounded-lg text-foreground focus:ring-1 focus:ring-primary outline-none"
+                                        className="w-full text-xs h-8 px-2 bg-card border border-border rounded-lg text-foreground focus:ring-1 focus:ring-primary outline-none"
                                         value={formData.fechaAnalisis}
                                         onChange={e => setFormData(prev => ({ ...prev, fechaAnalisis: e.target.value }))}
                                     />
                                 </div>
                                 <div className="space-y-0.5">
-                                    <label className="text-[10px] font-semibold text-card-foreground">Participantes</label>
+                                    <label className="text-[11px] font-semibold text-card-foreground">Participantes</label>
                                     <OperatorMultiSelect 
                                         operators={operators}
                                         selectedIds={formData.participantes}
@@ -495,11 +495,11 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                         {ncData && (
                             <div className="mt-auto p-2 rounded-lg border border-border/80 bg-background/50 flex flex-col gap-1 text-[11px]">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-[9px] px-1.5 py-0.5 bg-muted font-bold rounded text-muted-foreground uppercase">{ncData.codigoNC || 'Borrador'}</span>
-                                    <span className="text-[9px] text-muted-foreground">{new Date(ncData.fechaDeteccion).toLocaleDateString()}</span>
+                                    <span className="text-[11px] px-1.5 py-0.5 bg-muted font-bold rounded text-muted-foreground uppercase">{ncData.codigoNC || 'Borrador'}</span>
+                                    <span className="text-[11px] text-muted-foreground">{new Date(ncData.fechaDeteccion).toLocaleDateString()}</span>
                                 </div>
                                 <h4 className="font-bold text-foreground truncate">{ncData.descripcion}</h4>
-                                <div className="flex flex-col gap-0.5 text-[10px] text-muted-foreground">
+                                <div className="flex flex-col gap-0.5 text-[11px] text-muted-foreground">
                                     <p><strong className="text-foreground">Proceso:</strong> {ncData.procesoAfectado || 'N/A'}</p>
                                     <p><strong className="text-foreground">Área:</strong> {ncData.areaAfectada || 'N/A'}</p>
                                     <p><strong className="text-foreground">Categoría:</strong> {ncData.categoria || 'N/A'}</p>
@@ -532,7 +532,7 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                                     {formData.metodologia === '5 Porqués' && (
                                         <div className="space-y-3">
                                             <div className="p-2.5 bg-muted/30 border rounded-lg text-xs flex flex-col gap-0.5">
-                                                <span className="font-bold text-muted-foreground uppercase text-[9px]">Problema Identificado</span>
+                                                <span className="font-bold text-muted-foreground uppercase text-[11px]">Problema Identificado</span>
                                                 <p className="italic text-foreground">{ncData?.descripcion || 'Cargando desvío...'}</p>
                                             </div>
 
@@ -541,7 +541,7 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                                                     <div key={index} className="relative flex items-start gap-2 text-xs">
                                                         <div className="flex-1 space-y-0.5">
                                                             <div className="flex items-center justify-between">
-                                                                <label className="text-[10px] font-bold text-muted-foreground">¿Por qué {index + 1}?</label>
+                                                                <label className="text-[11px] font-bold text-muted-foreground">¿Por qué {index + 1}?</label>
                                                                 {workspaceState.length > 5 && (
                                                                     <button 
                                                                         type="button"
@@ -558,7 +558,7 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                                                             </div>
                                                             <input
                                                                 type="text"
-                                                                className="w-full text-xs p-1.5 bg-background border border-border rounded-lg text-foreground focus:ring-1 focus:ring-primary outline-none"
+                                                                className="w-full text-xs p-1.5 bg-card border border-border rounded-lg text-foreground focus:ring-1 focus:ring-primary outline-none"
                                                                 placeholder="Ingrese la causa..."
                                                                 value={why}
                                                                 onChange={e => {
@@ -619,7 +619,7 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                                                                             }
                                                                         }}
                                                                         placeholder="Nueva causa..."
-                                                                        className="flex-1 h-6 px-1.5 text-[10px] rounded border bg-background text-foreground"
+                                                                        className="flex-1 h-6 px-1.5 text-[11px] rounded border bg-background text-foreground"
                                                                     />
                                                                     <button onClick={() => setIshikawaAddingCauseTo(null)} className="p-1 hover:bg-muted text-red-500 rounded">
                                                                         <X className="w-3 h-3" />
@@ -627,10 +627,10 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                                                                 </div>
                                                             )}
                                                             {list.length === 0 && ishikawaAddingCauseTo !== category ? (
-                                                                <p className="text-[10px] text-muted-foreground italic my-1">Sin registrar.</p>
+                                                                <p className="text-[11px] text-muted-foreground italic my-1">Sin registrar.</p>
                                                             ) : (
                                                                 list.map((cause: string, i: number) => (
-                                                                    <div key={i} className="flex items-center justify-between p-1 bg-background rounded border group/cause text-[10px] hover:border-red-500/20">
+                                                                    <div key={i} className="flex items-center justify-between p-1 bg-background rounded border group/cause text-[11px] hover:border-red-500/20">
                                                                         <span className="text-foreground truncate pr-1">{cause}</span>
                                                                         <button 
                                                                             onClick={() => {
@@ -663,7 +663,7 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                                                             } else if (e.key === 'Escape') setIshikawaAddingCategory(false);
                                                         }}
                                                         placeholder="Nombre de la categoría..."
-                                                        className="flex-1 h-6 px-1.5 text-[10px] rounded border bg-background text-foreground"
+                                                        className="flex-1 h-6 px-1.5 text-[11px] rounded border bg-background text-foreground"
                                                     />
                                                     <button onClick={() => setIshikawaAddingCategory(false)} className="p-1 hover:bg-muted text-red-500 rounded">
                                                         <X className="w-3.5 h-3.5" />
@@ -701,7 +701,7 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                                                     )}
                                                     <div className="flex-1 flex items-center gap-1.5">
                                                         <select
-                                                            className="text-[10px] h-6 px-1 bg-muted/50 border rounded font-semibold text-muted-foreground outline-none"
+                                                            className="text-[11px] h-6 px-1 bg-muted/50 border rounded font-semibold text-muted-foreground outline-none"
                                                             value={node.type}
                                                             onChange={e => {
                                                                 const updated = [...workspaceState];
@@ -773,7 +773,7 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                                                             updated.barrerasExistentes = [...updated.barrerasExistentes, { barrera: '', tipo: 'Administrativa', estado: 'Falló' }];
                                                             setWorkspaceState(updated);
                                                         }}
-                                                        className="text-[10px] text-primary font-bold hover:underline flex items-center gap-0.5"
+                                                        className="text-[11px] text-primary font-bold hover:underline flex items-center gap-0.5"
                                                     >
                                                         <Plus className="w-3 h-3" /> Agregar
                                                     </button>
@@ -792,7 +792,7 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                                                             }}
                                                         />
                                                         <select
-                                                            className="text-[10px] p-1 bg-background border rounded text-foreground outline-none"
+                                                            className="text-[11px] p-1 bg-background border rounded text-foreground outline-none"
                                                             value={b.tipo}
                                                             onChange={e => {
                                                                 const updated = { ...workspaceState };
@@ -806,7 +806,7 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                                                             <option>Tecnológica</option>
                                                         </select>
                                                         <select
-                                                            className="text-[10px] p-1 bg-background border rounded text-foreground outline-none"
+                                                            className="text-[11px] p-1 bg-background border rounded text-foreground outline-none"
                                                             value={b.estado}
                                                             onChange={e => {
                                                                 const updated = { ...workspaceState };
@@ -842,7 +842,7 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                                                             updated.barrerasAusentes = [...updated.barrerasAusentes, { barrera: '', tipo: 'Física' }];
                                                             setWorkspaceState(updated);
                                                         }}
-                                                        className="text-[10px] text-primary font-bold hover:underline flex items-center gap-0.5"
+                                                        className="text-[11px] text-primary font-bold hover:underline flex items-center gap-0.5"
                                                     >
                                                         <Plus className="w-3 h-3" /> Agregar
                                                     </button>
@@ -861,7 +861,7 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                                                             }}
                                                         />
                                                         <select
-                                                            className="text-[10px] p-1 bg-background border rounded text-foreground outline-none"
+                                                            className="text-[11px] p-1 bg-background border rounded text-foreground outline-none"
                                                             value={b.tipo}
                                                             onChange={e => {
                                                                 const updated = { ...workspaceState };
@@ -893,7 +893,7 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                                     {/* 5. AMFE Simplificado */}
                                     {formData.metodologia === 'AMFE Simplificado' && (
                                         <div className="space-y-2 overflow-x-auto">
-                                            <table className="w-full text-[10px] text-left border-collapse min-w-[500px]">
+                                            <table className="w-full text-[11px] text-left border-collapse min-w-[500px]">
                                                 <thead>
                                                     <tr className="border-b bg-muted/50 font-bold">
                                                         <th className="p-1">Modo Falla</th>
@@ -994,7 +994,7 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                                                                     </select>
                                                                 </td>
                                                                 <td className="p-0.5 text-center">
-                                                                    <span className={`px-1.5 py-0.5 rounded text-[9px] border ${nprClass}`}>
+                                                                    <span className={`px-1.5 py-0.5 rounded text-[11px] border ${nprClass}`}>
                                                                         {npr}
                                                                     </span>
                                                                 </td>
@@ -1030,25 +1030,25 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
 
                         {/* Final Investigation Summary Form (Causa Inmediata, Básica y Raíz) */}
                         <div className="pt-3 border-t space-y-3 bg-muted/5 p-3 rounded-lg border shrink-0">
-                            <h4 className="text-[10px] font-bold text-foreground uppercase tracking-wider">3. Conclusiones y Causa Raíz SGI</h4>
+                            <h4 className="text-[11px] font-bold text-foreground uppercase tracking-wider">3. Conclusiones y Causa Raíz SGI</h4>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div className="space-y-0.5">
-                                    <label className="text-[9px] font-bold text-muted-foreground uppercase">Causa Inmediata</label>
+                                    <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Causa Inmediata</label>
                                     <textarea 
                                         rows={1.5}
                                         placeholder="Síntoma o evento disparador..."
-                                        className="w-full text-xs p-1.5 bg-background border rounded-lg text-foreground focus:ring-1 focus:ring-primary outline-none"
+                                        className="w-full text-xs p-1.5 bg-card border rounded-lg text-foreground focus:ring-1 focus:ring-primary outline-none"
                                         value={formData.causaInmediata}
                                         onChange={e => setFormData(prev => ({ ...prev, causaInmediata: e.target.value }))}
                                     />
                                 </div>
                                 <div className="space-y-0.5">
-                                    <label className="text-[9px] font-bold text-muted-foreground uppercase">Causa Básica</label>
+                                    <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Causa Básica</label>
                                     <textarea 
                                         rows={1.5}
                                         placeholder="Factores organizacionales/entorno..."
-                                        className="w-full text-xs p-1.5 bg-background border rounded-lg text-foreground focus:ring-1 focus:ring-primary outline-none"
+                                        className="w-full text-xs p-1.5 bg-card border rounded-lg text-foreground focus:ring-1 focus:ring-primary outline-none"
                                         value={formData.causaBasica}
                                         onChange={e => setFormData(prev => ({ ...prev, causaBasica: e.target.value }))}
                                     />
@@ -1057,13 +1057,13 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
 
                             <div className="space-y-1 relative">
                                 <div className="flex justify-between items-center">
-                                    <label className="text-[9px] font-bold text-foreground uppercase flex items-center gap-1">
+                                    <label className="text-foreground flex items-center gap-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                         Causa Raíz Final *
                                     </label>
                                     <button 
                                         type="button" 
                                         onClick={handleAutoPopulateRoot}
-                                        className="text-[9px] font-semibold text-primary hover:underline flex items-center gap-0.5"
+                                        className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-0.5"
                                     >
                                         <RefreshCw className="w-2.5 h-2.5" /> Autocompletar
                                     </button>
@@ -1072,18 +1072,18 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                                     required
                                     rows={2}
                                     placeholder="Defina con precisión la causa raíz estructural..."
-                                    className="w-full text-xs p-2 bg-background border border-primary/20 rounded-lg text-foreground focus:ring-1 focus:ring-primary outline-none"
+                                    className="w-full text-xs p-2 bg-card border border-primary/20 rounded-lg text-foreground focus:ring-1 focus:ring-primary outline-none"
                                     value={formData.causaRaiz}
                                     onChange={e => setFormData(prev => ({ ...prev, causaRaiz: e.target.value }))}
                                 />
                             </div>
 
                             <div className="space-y-0.5">
-                                <label className="text-[9px] font-bold text-muted-foreground uppercase">Descripción / Comentarios</label>
+                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Descripción / Comentarios</label>
                                 <textarea 
                                     rows={1.5}
                                     placeholder="Conclusiones generales..."
-                                    className="w-full text-xs p-1.5 bg-background border rounded-lg text-foreground focus:ring-1 focus:ring-primary outline-none"
+                                    className="w-full text-xs p-1.5 bg-card border rounded-lg text-foreground focus:ring-1 focus:ring-primary outline-none"
                                     value={formData.descripcion}
                                     onChange={e => setFormData(prev => ({ ...prev, descripcion: e.target.value }))}
                                 />
@@ -1118,15 +1118,15 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                         {/* Tab header or metadata widget */}
                         <div className="p-3 bg-background/50 border-b flex flex-col gap-1.5 shrink-0">
                             <div className="flex items-center justify-between">
-                                <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                                <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                                     <Sparkles className="w-3.5 h-3.5 text-indigo-500" /> Copiloto IA
                                 </h3>
-                                <span className="text-[9px] px-1.5 py-0.5 bg-green-500/10 text-green-500 border border-green-500/20 rounded font-semibold uppercase">Activo</span>
+                                <span className="text-[11px] px-1.5 py-0.5 bg-green-500/10 text-green-500 border border-green-500/20 rounded font-semibold uppercase">Activo</span>
                             </div>
                             
                             {/* Similar NCs counter (Embeddings based) */}
                             {loadingSimilar ? (
-                                <div className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                <div className="text-[11px] text-muted-foreground flex items-center gap-1">
                                     <span className="w-3 h-3 border border-t-transparent rounded-full animate-spin shrink-0" />
                                     Buscando antecedentes...
                                 </div>
@@ -1134,17 +1134,17 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                                 <div className="p-1.5 bg-indigo-500/5 border border-indigo-500/10 rounded-lg flex items-center justify-between gap-1.5">
                                     <div className="flex items-center gap-1">
                                         <Info className="w-3 h-3 text-indigo-500 shrink-0" />
-                                        <span className="text-[10px] font-semibold text-indigo-600">Se detectaron {similarNcs.length} incidentes similares.</span>
+                                        <span className="text-[11px] font-semibold text-indigo-600">Se detectaron {similarNcs.length} incidentes similares.</span>
                                     </div>
                                     <button 
                                         onClick={() => setSelectedSimilarNc(similarNcs[0])}
-                                        className="text-[9px] bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-600 px-1.5 py-0.5 rounded font-bold transition-all"
+                                        className="text-[11px] bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-600 px-1.5 py-0.5 rounded font-bold transition-all"
                                     >
                                         Ver
                                     </button>
                                 </div>
                             ) : (
-                                <div className="text-[10px] text-muted-foreground">Sin incidentes similares en el SGI.</div>
+                                <div className="text-[11px] text-muted-foreground">Sin incidentes similares en el SGI.</div>
                             )}
                         </div>
 
@@ -1160,7 +1160,7 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                                             ? 'bg-primary text-primary-foreground rounded-tr-none' 
                                             : 'bg-card text-foreground border border-border/80 rounded-tl-none'
                                     }`}>
-                                        <span className={`text-[8px] font-bold uppercase ${msg.role === 'user' ? 'text-primary-foreground/70' : 'text-primary'}`}>
+                                        <span className={`text-[11px] font-bold uppercase ${msg.role === 'user' ? 'text-primary-foreground/70' : 'text-primary'}`}>
                                             {msg.role === 'user' ? 'Usuario' : 'Asistente'}
                                         </span>
                                         <div className={`font-medium break-words ${
@@ -1192,10 +1192,10 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                         {validationResult && (
                             <div className="mx-2 mb-2 p-2 bg-card border rounded-lg flex flex-col gap-1 shadow-sm shrink-0">
                                 <div className="flex items-center justify-between border-b pb-0.5">
-                                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-0.5">
+                                    <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-0.5">
                                         <CheckCircle className="w-3 h-3 text-green-500" /> Diagnóstico lógico
                                     </span>
-                                    <span className={`text-[8px] font-extrabold px-1 py-0.5 rounded ${
+                                    <span className={`text-[11px] font-bold px-1 py-0.5 rounded ${
                                         validationResult.confianza === 'ALTA' 
                                             ? 'bg-green-500/10 text-green-500 border border-green-500/20'
                                             : validationResult.confianza === 'MEDIA'
@@ -1205,7 +1205,7 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                                         Confianza: {validationResult.confianza}
                                     </span>
                                 </div>
-                                <p className="text-[10px] text-foreground font-medium leading-relaxed">{validationResult.diagnostico}</p>
+                                <p className="text-[11px] text-foreground font-medium leading-relaxed">{validationResult.diagnostico}</p>
                             </div>
                         )}
 
@@ -1214,13 +1214,13 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                             <div className="mx-2 mb-2 bg-background/50 border rounded-lg p-2 flex flex-col gap-1.5 shrink-0 max-h-[160px] overflow-y-auto">
                                 {aiSuggestions.length > 0 && (
                                     <div className="space-y-0.5">
-                                        <span className="text-[9px] font-semibold text-muted-foreground uppercase">Causas sugeridas:</span>
+                                        <span className="text-[11px] font-semibold text-muted-foreground uppercase">Causas sugeridas:</span>
                                         <div className="flex flex-wrap gap-1">
                                             {aiSuggestions.map((sug, i) => (
                                                 <button
                                                     key={i}
                                                     onClick={() => setFormData(prev => ({ ...prev, causaRaiz: sug }))}
-                                                    className="text-[9px] bg-primary/5 hover:bg-primary/10 border border-primary/15 text-primary px-1.5 py-0.5 rounded-full transition-all text-left truncate max-w-full"
+                                                    className="text-[11px] bg-primary/5 hover:bg-primary/10 border border-primary/15 text-primary px-1.5 py-0.5 rounded-full transition-all text-left truncate max-w-full"
                                                 >
                                                     + {sug}
                                                 </button>
@@ -1231,13 +1231,13 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
 
                                 {recommendedActions.length > 0 && (
                                     <div className="space-y-1">
-                                        <span className="text-[9px] font-semibold text-muted-foreground uppercase">Acciones Recomendadas (Plan CAPA):</span>
+                                        <span className="text-[11px] font-semibold text-muted-foreground uppercase">Acciones Recomendadas (Plan CAPA):</span>
                                         <div className="flex flex-col gap-1">
                                             {recommendedActions.map((act, i) => (
-                                                <div key={i} className="p-1 bg-card border rounded text-[9px] flex flex-col gap-0.5">
+                                                <div key={i} className="p-1 bg-card border rounded text-[11px] flex flex-col gap-0.5">
                                                     <div className="flex items-center justify-between font-bold">
                                                         <span className="truncate">{act.accion}</span>
-                                                        <span className="px-1 bg-muted text-muted-foreground rounded text-[8px]">{act.tipo}</span>
+                                                        <span className="px-1 bg-muted text-muted-foreground rounded text-[11px]">{act.tipo}</span>
                                                     </div>
                                                     <p className="text-muted-foreground truncate">{act.descripcion}</p>
                                                 </div>
@@ -1254,13 +1254,13 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                             <div className="flex flex-wrap gap-1">
                                 <button
                                     onClick={() => handleSendChatMessage('Analiza coherencia lógica de causa raíz.')}
-                                    className="text-[9px] bg-muted/65 hover:bg-muted text-foreground border border-border/50 px-1.5 py-0.5 rounded transition-all"
+                                    className="text-[11px] bg-muted/65 hover:bg-muted text-foreground border border-border/50 px-1.5 py-0.5 rounded transition-all"
                                 >
                                     ✔️ Validar Causa
                                 </button>
                                 <button
                                     onClick={() => handleSendChatMessage('Sugerir plan CAPA.')}
-                                    className="text-[9px] bg-muted/65 hover:bg-muted text-foreground border border-border/50 px-1.5 py-0.5 rounded transition-all"
+                                    className="text-[11px] bg-muted/65 hover:bg-muted text-foreground border border-border/50 px-1.5 py-0.5 rounded transition-all"
                                 >
                                     ⚡ Sugerir Acciones CAPA
                                 </button>
@@ -1298,11 +1298,11 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
 
             {/* Read-only Modal Overlay for Similar NC Detail */}
             {selectedSimilarNc && (
-                <div className="fixed inset-0 z-[210] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+                <div className="fixed inset-0 z-[210] flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in">
                     <div className="bg-card w-full max-w-lg rounded-xl border border-border shadow-xl p-4 flex flex-col gap-3">
                         <div className="flex justify-between items-center border-b pb-1.5">
                             <div>
-                                <span className="text-[9px] px-1.5 py-0.5 bg-muted font-bold rounded text-muted-foreground uppercase">{selectedSimilarNc.codigoNC}</span>
+                                <span className="text-[11px] px-1.5 py-0.5 bg-muted font-bold rounded text-muted-foreground uppercase">{selectedSimilarNc.codigoNC}</span>
                                 <h3 className="font-bold text-xs text-foreground">Detalle del Antecedente SGI</h3>
                             </div>
                             <button onClick={() => setSelectedSimilarNc(null)} className="p-1 hover:bg-muted rounded-full">
@@ -1311,36 +1311,36 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                         </div>
                         <div className="space-y-2.5 overflow-y-auto max-h-[60vh] text-xs">
                             <div className="space-y-0.5">
-                                <span className="font-bold text-muted-foreground text-[10px]">Descripción de la falla:</span>
+                                <span className="font-bold text-muted-foreground text-[11px]">Descripción de la falla:</span>
                                 <p className="bg-muted/30 p-1.5 rounded-lg italic text-[11px]">{selectedSimilarNc.descripcion}</p>
                             </div>
                             <div className="space-y-0.5">
-                                <span className="font-bold text-muted-foreground text-[10px]">Causa Raíz Encontrada:</span>
+                                <span className="font-bold text-muted-foreground text-[11px]">Causa Raíz Encontrada:</span>
                                 <p className="bg-muted/30 p-1.5 rounded-lg font-medium text-[11px]">{selectedSimilarNc.causaRaiz}</p>
                             </div>
                             <div className="space-y-0.5">
-                                <span className="font-bold text-muted-foreground text-[10px]">Acciones CAPA Aplicadas:</span>
+                                <span className="font-bold text-muted-foreground text-[11px]">Acciones CAPA Aplicadas:</span>
                                 {selectedSimilarNc.acciones.length > 0 ? (
                                     <div className="flex flex-col gap-1">
                                         {selectedSimilarNc.acciones.map((acc, idx) => (
-                                            <div key={idx} className="p-1.5 border rounded bg-card text-[10px] flex flex-col gap-0.5">
+                                            <div key={idx} className="p-1.5 border rounded bg-card text-[11px] flex flex-col gap-0.5">
                                                 <div className="flex justify-between font-semibold">
                                                     <span>{acc.codigoAccion}</span>
                                                     <span className="text-muted-foreground">{acc.estado}</span>
                                                 </div>
                                                 <p className="text-muted-foreground">{acc.descripcion}</p>
-                                                {acc.eficacia && <span className="text-[9px] text-green-500 font-bold">Eficacia: {acc.eficacia}</span>}
+                                                {acc.eficacia && <span className="text-[11px] text-green-500 font-bold">Eficacia: {acc.eficacia}</span>}
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
-                                    <p className="text-muted-foreground italic text-[10px]">Ninguna acción registrada.</p>
+                                    <p className="text-muted-foreground italic text-[11px]">Ninguna acción registrada.</p>
                                 )}
                             </div>
                             {selectedSimilarNc.verificaciones.length > 0 && (
                                 <div className="space-y-0.5">
-                                    <span className="font-bold text-muted-foreground text-[10px]">Resultado de Eficacia:</span>
-                                    <div className="p-1.5 border rounded bg-green-500/5 text-[10px] flex items-center gap-1.5">
+                                    <span className="font-bold text-muted-foreground text-[11px]">Resultado de Eficacia:</span>
+                                    <div className="p-1.5 border rounded bg-green-500/5 text-[11px] flex items-center gap-1.5">
                                         <Check className="w-3.5 h-3.5 text-green-500" />
                                         <span className="font-bold text-green-500 uppercase">
                                             {selectedSimilarNc.verificaciones[0].eficaz ? 'EFICAZ' : 'INEFICAZ'}
@@ -1361,7 +1361,7 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
             
             {/* Methodology Help Modal */}
             {showHelpModal && (
-                <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+                <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in">
                     <div className="bg-card w-[600px] max-w-full rounded-xl shadow-2xl overflow-hidden flex flex-col border border-border">
                         <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/30">
                             <h2 className="font-bold text-sm flex items-center gap-2">
@@ -1398,20 +1398,20 @@ Por favor, preséntate brevemente y de forma amigable. Sugiérele qué metodolog
                                 </h3>
                                 <div className="space-y-4 text-xs pb-4">
                                     <div>
-                                        <h4 className="font-bold text-muted-foreground mb-1.5 text-[10px] uppercase tracking-wider">¿Qué es y cómo funciona?</h4>
+                                        <h4 className="font-bold text-muted-foreground mb-1.5 text-[11px] uppercase tracking-wider">¿Qué es y cómo funciona?</h4>
                                         <p className="text-foreground/90 leading-relaxed bg-primary/5 p-3 rounded-xl border border-primary/10">
                                             {HELP_INFO[selectedHelpMethod].desc}
                                         </p>
                                     </div>
                                     <div>
-                                        <h4 className="font-bold text-muted-foreground mb-1.5 text-[10px] uppercase tracking-wider">¿Cuándo se recomienda?</h4>
+                                        <h4 className="font-bold text-muted-foreground mb-1.5 text-[11px] uppercase tracking-wider">¿Cuándo se recomienda?</h4>
                                         <p className="text-foreground/90 leading-relaxed bg-green-500/5 p-3 rounded-xl border border-green-500/20">
                                             {HELP_INFO[selectedHelpMethod].recom}
                                         </p>
                                     </div>
                                     {HELP_INFO[selectedHelpMethod].details?.map((detail, i) => (
                                         <div key={i}>
-                                            <h4 className="font-bold text-muted-foreground mb-1.5 text-[10px] uppercase tracking-wider">{detail.title}</h4>
+                                            <h4 className="font-bold text-muted-foreground mb-1.5 text-[11px] uppercase tracking-wider">{detail.title}</h4>
                                             <div className="text-foreground/90 leading-relaxed bg-muted/30 p-3 rounded-xl border border-border/80 whitespace-pre-wrap">
                                                 {detail.content}
                                             </div>

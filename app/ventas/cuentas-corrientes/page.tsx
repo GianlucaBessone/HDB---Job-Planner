@@ -442,7 +442,7 @@ export default function CuentasCorrientesPage() {
                         <div className="text-[11px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400">
                             Deuda Activa en Calle
                         </div>
-                        <div className="text-2xl font-black font-mono text-slate-900 dark:text-slate-100 mt-0.5">
+                        <div className="text-2xl font-bold font-mono text-slate-900 dark:text-slate-100 mt-0.5">
                             ${fmt(kpis.deudaTotalActiva)}
                         </div>
                         <div className="text-xs text-slate-500 mt-1">
@@ -470,7 +470,7 @@ export default function CuentasCorrientesPage() {
                         <div className="text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
                             Clientes con Mora / Vencidos
                         </div>
-                        <div className="text-2xl font-black font-mono text-amber-800 dark:text-amber-300 mt-0.5">
+                        <div className="text-2xl font-bold font-mono text-amber-800 dark:text-amber-300 mt-0.5">
                             {kpis.clientesConVencidos}
                         </div>
                         <div className="text-xs text-amber-700/80 dark:text-amber-400/80 mt-1">
@@ -487,7 +487,7 @@ export default function CuentasCorrientesPage() {
                         <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                             Cobranzas del Mes Actual
                         </div>
-                        <div className="text-2xl font-black font-mono text-emerald-700 dark:text-emerald-400 mt-0.5">
+                        <div className="text-2xl font-bold font-mono text-emerald-700 dark:text-emerald-400 mt-0.5">
                             ${fmt(kpis.cobranzasMesActual)}
                         </div>
                         <div className="text-xs text-slate-500 mt-1">
@@ -511,7 +511,7 @@ export default function CuentasCorrientesPage() {
                         <div className="text-[11px] font-bold uppercase tracking-wider text-red-700 dark:text-red-400">
                             Alertas de Límite / Saldos a Favor
                         </div>
-                        <div className="text-lg font-black font-mono text-slate-900 dark:text-slate-100 mt-0.5 flex items-center gap-2">
+                        <div className="text-lg font-bold font-mono text-slate-900 dark:text-slate-100 mt-0.5 flex items-center gap-2">
                             <span className={kpis.clientesExcedidosLimite > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-700 dark:text-slate-300'}>
                                 {kpis.clientesExcedidosLimite} excedidos
                             </span>
@@ -534,7 +534,7 @@ export default function CuentasCorrientesPage() {
                 <div className="lg:col-span-4 bg-card rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs overflow-hidden flex flex-col max-h-[760px]">
                     <div className="p-3.5 border-b border-slate-200 dark:border-slate-800 space-y-2.5 bg-slate-50/50 dark:bg-slate-900/40">
                         <div className="flex items-center justify-between gap-2">
-                            <h2 className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-200 flex items-center gap-1.5 whitespace-nowrap">
+                            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-200 flex items-center gap-1.5 whitespace-nowrap">
                                 <UserCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
                                 Cartera ({clientesFiltrados.length})
                             </h2>
@@ -648,12 +648,12 @@ export default function CuentasCorrientesPage() {
                                                     {cli.nombre}
                                                 </span>
                                                 {cli.config.estadoCredito === 'SUSPENDIDO' && (
-                                                    <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-400">
+                                                    <span className="px-1.5 py-0.5 rounded text-[11px] font-semibold uppercase bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-400">
                                                         Susp.
                                                     </span>
                                                 )}
                                                 {cli.config.estadoCredito === 'OBSERVADO' && (
-                                                    <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400">
+                                                    <span className="px-1.5 py-0.5 rounded text-[11px] font-semibold uppercase bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400">
                                                         Obs.
                                                     </span>
                                                 )}
@@ -666,7 +666,7 @@ export default function CuentasCorrientesPage() {
                                             </div>
 
                                             {cli.deudaVencida > 0.01 && (
-                                                <div className="mt-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100/80 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
+                                                <div className="mt-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-bold bg-amber-100/80 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
                                                     <AlertTriangle className="w-3 h-3" />
                                                     Vencido: ${fmt(cli.deudaVencida)} ({cli.diasMoraMax}d)
                                                 </div>
@@ -693,26 +693,26 @@ export default function CuentasCorrientesPage() {
                                         <div className="text-right shrink-0">
                                             {cli.saldoActual > 0.01 ? (
                                                 <>
-                                                    <div className="text-xs font-black font-mono text-slate-900 dark:text-slate-100">
+                                                    <div className="text-xs font-bold font-mono text-slate-900 dark:text-slate-100">
                                                         ${fmt(cli.saldoActual)}
                                                     </div>
-                                                    <div className="text-[10px] text-amber-700 dark:text-amber-400 font-semibold">
+                                                    <div className="text-[11px] text-amber-700 dark:text-amber-400 font-semibold">
                                                         Saldo Deudor
                                                     </div>
                                                 </>
                                             ) : cli.saldoActual < -0.01 ? (
                                                 <>
-                                                    <div className="text-xs font-black font-mono text-emerald-700 dark:text-emerald-400">
+                                                    <div className="text-xs font-bold font-mono text-emerald-700 dark:text-emerald-400">
                                                         ${fmt(Math.abs(cli.saldoActual))}
                                                     </div>
-                                                    <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                                                    <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
                                                         Saldo a Favor
                                                     </div>
                                                 </>
                                             ) : (
                                                 <>
                                                     <div className="text-xs font-mono font-bold text-slate-400">$0,00</div>
-                                                    <div className="text-[10px] text-slate-400">Al día</div>
+                                                    <div className="text-[11px] text-slate-400">Al día</div>
                                                 </>
                                             )}
                                         </div>
@@ -740,11 +740,11 @@ export default function CuentasCorrientesPage() {
                                 <div className="flex flex-wrap items-start justify-between gap-4">
                                     <div>
                                         <div className="flex items-center gap-2.5 flex-wrap">
-                                            <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+                                            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
                                                 {detalleCliente.cliente.nombre}
                                             </h2>
                                             <span
-                                                className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border whitespace-nowrap ${
+                                                className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wider border whitespace-nowrap ${
                                                     detalleCliente.cliente.config.estadoCredito === 'SUSPENDIDO'
                                                         ? 'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800'
                                                         : detalleCliente.cliente.config.estadoCredito === 'OBSERVADO'
@@ -823,11 +823,11 @@ export default function CuentasCorrientesPage() {
                                                 : 'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800'
                                         }`}
                                     >
-                                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                                        <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
                                             {saldoAFavorActual > 0 ? 'Saldo a Favor' : 'Saldo Deudor Actual'}
                                         </div>
                                         <div
-                                            className={`text-lg font-black font-mono mt-0.5 ${
+                                            className={`text-lg font-bold font-mono mt-0.5 ${
                                                 saldoDeudorActual > 0
                                                     ? 'text-slate-900 dark:text-slate-100'
                                                     : saldoAFavorActual > 0
@@ -840,35 +840,35 @@ export default function CuentasCorrientesPage() {
                                     </div>
 
                                     <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
-                                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                                        <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
                                             Deuda Vencida ({detalleCliente.cliente.config.plazoDias}d)
                                         </div>
                                         <div
-                                            className={`text-lg font-black font-mono mt-0.5 ${
+                                            className={`text-lg font-bold font-mono mt-0.5 ${
                                                 detalleCliente.resumen.deudaVencida > 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-600 dark:text-slate-300'
                                             }`}
                                         >
                                             ${fmt(detalleCliente.resumen.deudaVencida)}
                                         </div>
                                         {detalleCliente.resumen.diasMoraMaxima > 0 && (
-                                            <div className="text-[10px] text-red-600 dark:text-red-400 font-bold">
+                                            <div className="text-[11px] text-red-600 dark:text-red-400 font-bold">
                                                 Mora máx: {detalleCliente.resumen.diasMoraMaxima} días
                                             </div>
                                         )}
                                     </div>
 
                                     <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
-                                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                                        <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
                                             Límite de Crédito
                                         </div>
-                                        <div className="text-lg font-black font-mono text-slate-800 dark:text-slate-200 mt-0.5">
+                                        <div className="text-lg font-bold font-mono text-slate-800 dark:text-slate-200 mt-0.5">
                                             {detalleCliente.cliente.config.limiteCredito > 0
                                                 ? `$${fmt(detalleCliente.cliente.config.limiteCredito)}`
                                                 : 'Sin Tope'}
                                         </div>
                                         {detalleCliente.cliente.config.limiteCredito > 0 && (
                                             <div
-                                                className={`text-[10px] font-bold ${
+                                                className={`text-[11px] font-bold ${
                                                     saldoDeudorActual > detalleCliente.cliente.config.limiteCredito
                                                         ? 'text-red-600 dark:text-red-400'
                                                         : 'text-emerald-700 dark:text-emerald-400'
@@ -882,13 +882,13 @@ export default function CuentasCorrientesPage() {
                                     </div>
 
                                     <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
-                                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                                        <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
                                             Total Histórico Operado
                                         </div>
                                         <div className="text-sm font-mono font-bold text-slate-800 dark:text-slate-200 mt-1">
                                             Cargos: ${fmt(detalleCliente.resumen.totalDebe)}
                                         </div>
-                                        <div className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400 font-semibold">
+                                        <div className="text-[11px] font-mono text-emerald-700 dark:text-emerald-400 font-semibold">
                                             Pagos: ${fmt(detalleCliente.resumen.totalHaber)}
                                         </div>
                                     </div>
@@ -956,7 +956,7 @@ export default function CuentasCorrientesPage() {
                                             <div className="overflow-x-auto">
                                                 <table className="w-full text-xs">
                                                     <thead>
-                                                        <tr className="border-b border-slate-200 dark:border-slate-800 text-[10px] font-bold uppercase tracking-wider text-slate-400 select-none">
+                                                        <tr className="border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold uppercase tracking-wider text-slate-400 select-none">
                                                             <th
                                                                 onClick={() => handlePendientesSort('numero')}
                                                                 className="py-2.5 px-3 text-left cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 whitespace-nowrap"
@@ -1038,11 +1038,11 @@ export default function CuentasCorrientesPage() {
                                                                             {fmtDate(comp.fechaVencimiento)}
                                                                         </span>
                                                                         {comp.vencido ? (
-                                                                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-400">
+                                                                            <span className="px-1.5 py-0.5 rounded text-[11px] font-bold bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-400">
                                                                                 +{comp.diasVencido}d mora
                                                                             </span>
                                                                         ) : (
-                                                                            <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400">
+                                                                            <span className="px-1.5 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400">
                                                                                 En plazo
                                                                             </span>
                                                                         )}
@@ -1057,7 +1057,7 @@ export default function CuentasCorrientesPage() {
                                                                 <td className="py-3 px-3 text-right font-mono text-emerald-700 dark:text-emerald-400 whitespace-nowrap">
                                                                     ${fmt(comp.montoPagadoCC)}
                                                                 </td>
-                                                                <td className="py-3 px-3 text-right font-mono font-black text-amber-800 dark:text-amber-300 text-sm whitespace-nowrap">
+                                                                <td className="py-3 px-3 text-right font-mono font-bold text-amber-800 dark:text-amber-300 text-sm whitespace-nowrap">
                                                                     ${fmt(comp.saldoPendiente)}
                                                                 </td>
                                                                 <td className="py-3 px-3 text-right whitespace-nowrap">
@@ -1099,7 +1099,7 @@ export default function CuentasCorrientesPage() {
                                             <div className="overflow-x-auto">
                                                 <table className="w-full text-xs">
                                                     <thead>
-                                                        <tr className="border-b border-slate-200 dark:border-slate-800 text-[10px] font-bold uppercase tracking-wider text-slate-400 select-none">
+                                                        <tr className="border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold uppercase tracking-wider text-slate-400 select-none">
                                                             <th
                                                                 onClick={() => handleMayorSort('fecha')}
                                                                 className="py-2.5 px-3 text-left cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 whitespace-nowrap"
@@ -1189,7 +1189,7 @@ export default function CuentasCorrientesPage() {
                                                                     </td>
                                                                     <td className="py-2.5 px-3 whitespace-nowrap">
                                                                         <span
-                                                                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                                                            className={`px-2 py-0.5 rounded text-[11px] font-bold ${
                                                                                 row.debe > 0
                                                                                     ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
                                                                                     : 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
@@ -1201,7 +1201,7 @@ export default function CuentasCorrientesPage() {
                                                                     <td className="py-2.5 px-3 text-slate-700 dark:text-slate-300 max-w-xs">
                                                                         <div className="truncate">{row.concepto}</div>
                                                                         {row.observaciones && (
-                                                                            <div className="text-[10px] text-slate-400 truncate">
+                                                                            <div className="text-[11px] text-slate-400 truncate">
                                                                                 {row.observaciones}
                                                                             </div>
                                                                         )}
@@ -1212,7 +1212,7 @@ export default function CuentasCorrientesPage() {
                                                                     <td className="py-2.5 px-3 text-right font-mono text-emerald-700 dark:text-emerald-400 font-semibold whitespace-nowrap">
                                                                         {row.haber > 0 ? `$${fmt(row.haber)}` : '—'}
                                                                     </td>
-                                                                    <td className="py-2.5 px-3 text-right font-mono font-black text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                                                                    <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
                                                                         ${fmt(row.saldoAcumulado)}
                                                                     </td>
                                                                     <td className="py-2.5 px-3 text-right whitespace-nowrap">
@@ -1286,7 +1286,7 @@ export default function CuentasCorrientesPage() {
                                             <div className="overflow-x-auto">
                                                 <table className="w-full text-xs">
                                                     <thead>
-                                                        <tr className="border-b border-slate-200 dark:border-slate-800 text-[10px] font-bold uppercase tracking-wider text-slate-400 select-none">
+                                                        <tr className="border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold uppercase tracking-wider text-slate-400 select-none">
                                                             <th
                                                                 onClick={() => handleRecibosSort('numero')}
                                                                 className="py-2.5 px-3 text-left cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 whitespace-nowrap"
@@ -1370,7 +1370,7 @@ export default function CuentasCorrientesPage() {
                                                                     <td className="py-3 px-3 text-slate-500 whitespace-nowrap">
                                                                         {mediosTexto}
                                                                     </td>
-                                                                    <td className="py-3 px-3 text-right font-mono font-black text-emerald-700 dark:text-emerald-400 text-sm whitespace-nowrap">
+                                                                    <td className="py-3 px-3 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400 text-sm whitespace-nowrap">
                                                                         ${fmt(montoRec)}
                                                                     </td>
                                                                     <td className="py-3 px-3 text-right whitespace-nowrap">
@@ -1487,10 +1487,10 @@ export default function CuentasCorrientesPage() {
 
             {/* Modal de Confirmación de Anulación */}
             {movimientoAnular && (
-                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 bg-slate-950/50 flex items-center justify-center p-4">
                     <div className="bg-card rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden">
                         <div className="px-6 py-4 bg-red-600 text-white flex items-center justify-between">
-                            <h3 className="font-black text-sm">Anular Movimiento {movimientoAnular.numero}</h3>
+                            <h3 className="font-bold text-sm">Anular Movimiento {movimientoAnular.numero}</h3>
                             <button
                                 onClick={() => {
                                     setMovimientoAnular(null);

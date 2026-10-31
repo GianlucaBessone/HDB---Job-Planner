@@ -446,7 +446,7 @@ export default function ImportarProductosPage() {
               <div className="p-1 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                 <FileSpreadsheet className="w-4 h-4" />
               </div>
-              <h1 className="text-sm md:text-base font-black tracking-tight text-slate-900 dark:text-slate-100">
+              <h1 className="text-sm md:text-base font-bold tracking-tight text-slate-900 dark:text-slate-100">
                 Importación Masiva de Productos
               </h1>
               {fileName && (
@@ -459,15 +459,15 @@ export default function ImportarProductosPage() {
 
           {/* Right: Step Indicator */}
           <div className="flex items-center gap-1 text-[11px] font-bold text-slate-500 dark:text-slate-400 overflow-x-auto">
-            <span className={step === 'archivo' ? 'text-primary font-black' : ''}>1. Archivo</span>
+            <span className={step === 'archivo' ? 'text-primary font-bold' : ''}>1. Archivo</span>
             <span>→</span>
-            <span className={step === 'mapeo' ? 'text-primary font-black' : ''}>2. Mapeo</span>
+            <span className={step === 'mapeo' ? 'text-primary font-bold' : ''}>2. Mapeo</span>
             <span>→</span>
-            <span className={step === 'validacion' ? 'text-primary font-black' : ''}>3. Validación</span>
+            <span className={step === 'validacion' ? 'text-primary font-bold' : ''}>3. Validación</span>
             <span>→</span>
-            <span className={step === 'previsualizacion' ? 'text-primary font-black' : ''}>4. Revisión</span>
+            <span className={step === 'previsualizacion' ? 'text-primary font-bold' : ''}>4. Revisión</span>
             <span>→</span>
-            <span className={step === 'resultado' ? 'text-emerald-600 dark:text-emerald-400 font-black' : ''}>5. Resultado</span>
+            <span className={step === 'resultado' ? 'text-emerald-600 dark:text-emerald-400 font-bold' : ''}>5. Resultado</span>
           </div>
         </div>
 
@@ -479,7 +479,7 @@ export default function ImportarProductosPage() {
             </div>
 
             <div className="max-w-md space-y-1">
-              <h2 className="text-base md:text-lg font-black text-slate-900 dark:text-slate-100">
+              <h2 className="text-base md:text-lg font-bold text-slate-900 dark:text-slate-100">
                 Seleccionar planilla de productos Excel
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -497,7 +497,7 @@ export default function ImportarProductosPage() {
 
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-2 h-10 px-6 rounded-xl bg-primary text-white text-xs font-bold shadow-md shadow-primary/25 hover:opacity-90 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="flex items-center gap-2 h-10 px-6 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 transition-all"
             >
               <FileSpreadsheet className="w-4 h-4" />
               <span>Examinar archivo en el equipo</span>
@@ -570,7 +570,7 @@ export default function ImportarProductosPage() {
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
-                <p className="text-[10px] text-slate-400">Identificador único del producto.</p>
+                <p className="text-[11px] text-slate-400">Identificador único del producto.</p>
               </div>
 
               {/* Nombre / Descripción */}
@@ -588,7 +588,7 @@ export default function ImportarProductosPage() {
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
-                <p className="text-[10px] text-slate-400">Descripción comercial del artículo.</p>
+                <p className="text-[11px] text-slate-400">Descripción comercial del artículo.</p>
               </div>
 
               {/* Código de Barras */}
@@ -606,7 +606,7 @@ export default function ImportarProductosPage() {
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
-                <p className="text-[10px] text-slate-400">Para lector láser o pistola de escaneo.</p>
+                <p className="text-[11px] text-slate-400">Para lector láser o pistola de escaneo.</p>
               </div>
 
               {/* Categoría */}
@@ -624,7 +624,7 @@ export default function ImportarProductosPage() {
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
-                <p className="text-[10px] text-slate-400">Independiente de Familia y Sub-Familia.</p>
+                <p className="text-[11px] text-slate-400">Independiente de Familia y Sub-Familia.</p>
               </div>
 
               {/* Marca */}
@@ -642,7 +642,7 @@ export default function ImportarProductosPage() {
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
-                <p className="text-[10px] text-slate-400">Maestro de marcas comerciales.</p>
+                <p className="text-[11px] text-slate-400">Maestro de marcas comerciales.</p>
               </div>
 
               {/* Familia */}
@@ -660,7 +660,7 @@ export default function ImportarProductosPage() {
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
-                <p className="text-[10px] text-slate-400">Agrupación técnica principal.</p>
+                <p className="text-[11px] text-slate-400">Agrupación técnica principal.</p>
               </div>
 
               {/* Sub-Familia */}
@@ -678,7 +678,7 @@ export default function ImportarProductosPage() {
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
-                <p className="text-[10px] text-slate-400">Jerárquica respecto a la Familia.</p>
+                <p className="text-[11px] text-slate-400">Jerárquica respecto a la Familia.</p>
               </div>
 
               {/* Unidad */}
@@ -696,12 +696,12 @@ export default function ImportarProductosPage() {
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
-                <p className="text-[10px] text-slate-400">Ej: UN, M, KG, ROLLO, CAJA.</p>
+                <p className="text-[11px] text-slate-400">Ej: UN, M, KG, ROLLO, CAJA.</p>
               </div>
 
               {/* Precio Base de Venta (Corresponde a Precio de venta) */}
               <div className="p-3 rounded-lg border border-primary/30 bg-primary/5 dark:bg-primary/10 space-y-1">
-                <label className="block text-xs font-black text-slate-800 dark:text-slate-200">
+                <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
                   Precio Base de Venta <span className="text-rose-500">*</span>
                 </label>
                 <select
@@ -714,7 +714,7 @@ export default function ImportarProductosPage() {
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
                   Columna "Precio de venta". Es el precio base comercial, NO una lista de precios.
                 </p>
               </div>
@@ -734,7 +734,7 @@ export default function ImportarProductosPage() {
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
-                <p className="text-[10px] text-slate-400">Costo neto de adquisición del producto.</p>
+                <p className="text-[11px] text-slate-400">Costo neto de adquisición del producto.</p>
               </div>
 
               {/* Stock Inicial */}
@@ -752,7 +752,7 @@ export default function ImportarProductosPage() {
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
-                <p className="text-[10px] text-slate-400">Se registrará como movimiento inicial de almacén.</p>
+                <p className="text-[11px] text-slate-400">Se registrará como movimiento inicial de almacén.</p>
               </div>
             </div>
 
@@ -770,7 +770,7 @@ export default function ImportarProductosPage() {
                 type="button"
                 disabled={isValidating}
                 onClick={handleRunValidation}
-                className="flex items-center gap-1.5 h-8 px-5 rounded-lg bg-primary text-white text-xs font-bold shadow-sm shadow-primary/25 hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="flex items-center gap-1.5 h-8 px-5 rounded-lg bg-primary text-white text-xs font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
               >
                 {isValidating ? (
                   <>
@@ -795,7 +795,7 @@ export default function ImportarProductosPage() {
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
               <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800">
                 <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total de Filas</div>
-                <div className="text-xl font-black text-slate-900 dark:text-slate-100">{resumenValidacion.totalFilas.toLocaleString('es-AR')}</div>
+                <div className="text-xl font-bold text-slate-900 dark:text-slate-100">{resumenValidacion.totalFilas.toLocaleString('es-AR')}</div>
               </div>
 
               <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40">
@@ -803,7 +803,7 @@ export default function ImportarProductosPage() {
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   Correctas
                 </div>
-                <div className="text-xl font-black text-emerald-700 dark:text-emerald-300">{resumenValidacion.correctas.toLocaleString('es-AR')}</div>
+                <div className="text-xl font-bold text-emerald-700 dark:text-emerald-300">{resumenValidacion.correctas.toLocaleString('es-AR')}</div>
               </div>
 
               <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40">
@@ -811,7 +811,7 @@ export default function ImportarProductosPage() {
                   <AlertTriangle className="w-3.5 h-3.5" />
                   Advertencias
                 </div>
-                <div className="text-xl font-black text-amber-700 dark:text-amber-300">{resumenValidacion.advertencias.toLocaleString('es-AR')}</div>
+                <div className="text-xl font-bold text-amber-700 dark:text-amber-300">{resumenValidacion.advertencias.toLocaleString('es-AR')}</div>
               </div>
 
               <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800/40">
@@ -819,7 +819,7 @@ export default function ImportarProductosPage() {
                   <XCircle className="w-3.5 h-3.5" />
                   Errores
                 </div>
-                <div className="text-xl font-black text-rose-700 dark:text-rose-300">{resumenValidacion.errores.toLocaleString('es-AR')}</div>
+                <div className="text-xl font-bold text-rose-700 dark:text-rose-300">{resumenValidacion.errores.toLocaleString('es-AR')}</div>
               </div>
             </div>
 
@@ -852,11 +852,11 @@ export default function ImportarProductosPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="w-4 h-4 text-amber-600" />
-                    <span className="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">
+                    <span className="text-xs font-semibold text-slate-800 dark:text-slate-100 uppercase tracking-wider">
                       Maestros no encontrados en el sistema (Requiere acción del usuario)
                     </span>
                   </div>
-                  <span className="text-[10px] font-bold text-slate-500">No se realizan correcciones silenciosas</span>
+                  <span className="text-[11px] font-bold text-slate-500">No se realizan correcciones silenciosas</span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 text-xs">
@@ -866,13 +866,13 @@ export default function ImportarProductosPage() {
                     return (
                       <div key={m} className="p-2 rounded-lg bg-background border border-slate-200 dark:border-slate-700 flex items-center justify-between">
                         <div>
-                          <span className="text-[10px] font-bold uppercase text-slate-400">Marca: </span>
+                          <span className="text-[11px] font-bold uppercase text-slate-400">Marca: </span>
                           <span className="font-bold text-slate-800 dark:text-slate-200">"{m}"</span>
                         </div>
                         <button
                           type="button"
                           onClick={() => toggleCrearMaestro('marcas', m)}
-                          className={`h-6 px-2 rounded text-[10px] font-bold transition-colors ${
+                          className={`h-6 px-2 rounded text-[11px] font-bold transition-colors ${
                             isSelected
                               ? 'bg-emerald-600 text-white'
                               : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-emerald-50'
@@ -890,13 +890,13 @@ export default function ImportarProductosPage() {
                     return (
                       <div key={c} className="p-2 rounded-lg bg-background border border-slate-200 dark:border-slate-700 flex items-center justify-between">
                         <div>
-                          <span className="text-[10px] font-bold uppercase text-slate-400">Categoría: </span>
+                          <span className="text-[11px] font-bold uppercase text-slate-400">Categoría: </span>
                           <span className="font-bold text-slate-800 dark:text-slate-200">"{c}"</span>
                         </div>
                         <button
                           type="button"
                           onClick={() => toggleCrearMaestro('categorias', c)}
-                          className={`h-6 px-2 rounded text-[10px] font-bold transition-colors ${
+                          className={`h-6 px-2 rounded text-[11px] font-bold transition-colors ${
                             isSelected
                               ? 'bg-emerald-600 text-white'
                               : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-emerald-50'
@@ -914,13 +914,13 @@ export default function ImportarProductosPage() {
                     return (
                       <div key={f} className="p-2 rounded-lg bg-background border border-slate-200 dark:border-slate-700 flex items-center justify-between">
                         <div>
-                          <span className="text-[10px] font-bold uppercase text-slate-400">Familia: </span>
+                          <span className="text-[11px] font-bold uppercase text-slate-400">Familia: </span>
                           <span className="font-bold text-slate-800 dark:text-slate-200">"{f}"</span>
                         </div>
                         <button
                           type="button"
                           onClick={() => toggleCrearMaestro('familias', f)}
-                          className={`h-6 px-2 rounded text-[10px] font-bold transition-colors ${
+                          className={`h-6 px-2 rounded text-[11px] font-bold transition-colors ${
                             isSelected
                               ? 'bg-emerald-600 text-white'
                               : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-emerald-50'
@@ -939,13 +939,13 @@ export default function ImportarProductosPage() {
                     return (
                       <div key={key} className="p-2 rounded-lg bg-background border border-slate-200 dark:border-slate-700 flex items-center justify-between">
                         <div className="truncate max-w-[140px]" title={`${sf.familia} > ${sf.subfamilia}`}>
-                          <span className="text-[10px] font-bold uppercase text-slate-400">Sub-Fam: </span>
+                          <span className="text-[11px] font-bold uppercase text-slate-400">Sub-Fam: </span>
                           <span className="font-bold text-slate-800 dark:text-slate-200">"{sf.subfamilia}"</span>
                         </div>
                         <button
                           type="button"
                           onClick={() => toggleCrearSubfamilia(sf.familia, sf.subfamilia)}
-                          className={`h-6 px-2 rounded text-[10px] font-bold transition-colors ${
+                          className={`h-6 px-2 rounded text-[11px] font-bold transition-colors ${
                             isSelected
                               ? 'bg-emerald-600 text-white'
                               : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-emerald-50'
@@ -963,13 +963,13 @@ export default function ImportarProductosPage() {
                     return (
                       <div key={u} className="p-2 rounded-lg bg-background border border-slate-200 dark:border-slate-700 flex items-center justify-between">
                         <div>
-                          <span className="text-[10px] font-bold uppercase text-slate-400">Unidad: </span>
+                          <span className="text-[11px] font-bold uppercase text-slate-400">Unidad: </span>
                           <span className="font-bold text-slate-800 dark:text-slate-200">"{u}"</span>
                         </div>
                         <button
                           type="button"
                           onClick={() => toggleCrearMaestro('unidades', u)}
-                          className={`h-6 px-2 rounded text-[10px] font-bold transition-colors ${
+                          className={`h-6 px-2 rounded text-[11px] font-bold transition-colors ${
                             isSelected
                               ? 'bg-emerald-600 text-white'
                               : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-emerald-50'
@@ -997,7 +997,7 @@ export default function ImportarProductosPage() {
               <button
                 type="button"
                 onClick={() => setStep('previsualizacion')}
-                className="flex items-center gap-1.5 h-8 px-5 rounded-lg bg-primary text-white text-xs font-bold shadow-sm shadow-primary/25 hover:opacity-90 transition-opacity"
+                className="flex items-center gap-1.5 h-8 px-5 rounded-lg bg-primary text-white text-xs font-bold hover:opacity-90 transition-opacity"
               >
                 <span>Revisar Tabla de Previsualización</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -1069,7 +1069,7 @@ export default function ImportarProductosPage() {
             {/* Dense Data Table */}
             <div className="flex-1 overflow-x-auto overflow-y-auto border border-slate-200 dark:border-slate-800 rounded-lg max-h-[480px]">
               <table className="w-full text-left text-xs border-collapse">
-                <thead className="bg-slate-100/80 dark:bg-slate-800 text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 sticky top-0 z-10">
+                <thead className="bg-slate-100/80 dark:bg-slate-800 text-[11px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 sticky top-0 z-10">
                   <tr>
                     <th className="py-2 px-2 text-center w-8">Est.</th>
                     <th className="py-2 px-2 w-10">Fila</th>
@@ -1114,7 +1114,7 @@ export default function ImportarProductosPage() {
                             {isWarn && <span className="text-amber-500 font-bold" title="Advertencia">⚠</span>}
                             {isErr && <span className="text-rose-500 font-bold" title="Error">✕</span>}
                           </td>
-                          <td className="py-1.5 px-2 font-mono text-[10px] text-slate-400">{r.filaNumero}</td>
+                          <td className="py-1.5 px-2 font-mono text-[11px] text-slate-400">{r.filaNumero}</td>
                           <td className="py-1.5 px-2 font-mono font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
                             {r.sku || '-'}
                           </td>
@@ -1139,10 +1139,10 @@ export default function ImportarProductosPage() {
                           <td className="py-1.5 px-2 text-center font-mono font-bold whitespace-nowrap">
                             {r.stock} u.
                           </td>
-                          <td className="py-1.5 px-2 text-slate-500 whitespace-nowrap font-mono text-[10px]">
+                          <td className="py-1.5 px-2 text-slate-500 whitespace-nowrap font-mono text-[11px]">
                             {r.unidad || '-'}
                           </td>
-                          <td className="py-1.5 px-2 text-[10px] max-w-[240px] truncate">
+                          <td className="py-1.5 px-2 text-[11px] max-w-[240px] truncate">
                             {r.errores?.length > 0 ? (
                               <span className="text-rose-600 dark:text-rose-400 font-semibold">{r.errores.join(' • ')}</span>
                             ) : r.advertencias?.length > 0 ? (
@@ -1160,7 +1160,7 @@ export default function ImportarProductosPage() {
             </div>
 
             {filteredRows.length > 200 && (
-              <p className="text-[10px] text-slate-400 text-center">
+              <p className="text-[11px] text-slate-400 text-center">
                 Mostrando las primeras 200 filas de {filteredRows.length}.
               </p>
             )}
@@ -1198,7 +1198,7 @@ export default function ImportarProductosPage() {
                 type="button"
                 disabled={isExecuting}
                 onClick={handleExecuteImport}
-                className="flex items-center gap-1.5 h-8 px-6 rounded-lg bg-emerald-600 text-white text-xs font-bold shadow-sm shadow-emerald-600/25 hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="flex items-center gap-1.5 h-8 px-6 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
               >
                 {isExecuting ? (
                   <>
@@ -1224,7 +1224,7 @@ export default function ImportarProductosPage() {
             </div>
 
             <div className="max-w-md space-y-1">
-              <h2 className="text-lg md:text-xl font-black text-slate-900 dark:text-slate-100">
+              <h2 className="text-lg md:text-xl font-bold text-slate-900 dark:text-slate-100">
                 Importación completada con éxito
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -1236,21 +1236,21 @@ export default function ImportarProductosPage() {
             <div className="grid grid-cols-3 gap-4 max-w-lg w-full text-center">
               <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40">
                 <div className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Creados</div>
-                <div className="text-2xl font-black text-emerald-700 dark:text-emerald-300">
+                <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">
                   {resultadoFinal.creados.toLocaleString('es-AR')}
                 </div>
               </div>
 
               <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800">
                 <div className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Omitidos</div>
-                <div className="text-2xl font-black text-slate-700 dark:text-slate-300">
+                <div className="text-2xl font-bold text-slate-700 dark:text-slate-300">
                   {resultadoFinal.omitidos.toLocaleString('es-AR')}
                 </div>
               </div>
 
               <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800/40">
                 <div className="text-xs font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider">Errores</div>
-                <div className="text-2xl font-black text-rose-700 dark:text-rose-300">
+                <div className="text-2xl font-bold text-rose-700 dark:text-rose-300">
                   {resultadoFinal.errores.toLocaleString('es-AR')}
                 </div>
               </div>
@@ -1272,7 +1272,7 @@ export default function ImportarProductosPage() {
               <button
                 type="button"
                 onClick={() => router.push('/ventas/gestion')}
-                className="flex items-center gap-1.5 h-9 px-6 rounded-xl bg-primary text-white text-xs font-bold shadow-md shadow-primary/25 hover:opacity-90 transition-opacity"
+                className="flex items-center gap-1.5 h-9 px-6 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 transition-opacity"
               >
                 <span>Volver a Gestión Comercial</span>
               </button>

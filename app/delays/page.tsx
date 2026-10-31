@@ -302,12 +302,12 @@ export default function DelaysPage() {
     }, [registerCommand, unregisterCommand]);
 
     return (
-        <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
+        <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200 pb-12">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <div className="space-y-1">
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2 md:gap-3">
-                        <Timer className="w-6 h-6 md:w-8 md:h-8 text-amber-500" />
+                    <h2 className="text-title text-slate-900 dark:text-slate-50 flex items-center gap-2 md:gap-3">
+                        <Timer className="text-amber-500 w-5 h-5 text-brand-600 dark:text-brand-300" />
                         Demoras del Cliente
                     </h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium italic hidden md:block">Registro de tiempos externos para análisis de causa raíz</p>
@@ -318,7 +318,7 @@ export default function DelaysPage() {
                         setFormData(prev => ({ ...prev, projectId: '', motivo: '', duracion: '' as any, area: '', responsableArea: '' }));
                         setIsModalOpen(true);
                     }}
-                    className="bg-muted text-muted-foreground text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-4 py-2.5 md:px-6 md:py-3 rounded-xl md:rounded-2xl font-bold flex items-center gap-2 hover:bg-primary hover:text-primary-foreground hover:border-primary shadow-sm hover:shadow-primary/20 hover:shadow-lg active:scale-95 transition-all w-full md:w-auto justify-center text-sm"
+                    className="bg-muted text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-4 py-2.5 md:px-6 md:py-3 rounded-xl md:rounded-2xl font-bold flex items-center gap-2 hover:bg-primary hover:text-primary-foreground hover:border-primary shadow-sm hover:shadow-lg transition-all w-full md:w-auto justify-center text-sm"
                 >
                     <Plus className="w-4 h-4" /> Registrar Demora
                 </button>
@@ -336,13 +336,13 @@ export default function DelaysPage() {
             </div>
 
             {/* Main Content Card */}
-            <div className="bg-card text-card-foreground rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+            <div className="bg-card text-card-foreground rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                 {/* Toolbar */}
                 <div className="p-4 md:p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
                         <History className="w-4 h-4 md:w-5 md:h-5 text-slate-400 dark:text-slate-500" />
                         <h3 className="font-bold text-slate-700 dark:text-slate-200 text-sm md:text-base">Historial</h3>
-                        <span className="bg-amber-100 text-amber-700 text-[9px] md:text-[10px] font-black px-2 py-0.5 rounded-lg uppercase tracking-widest">
+                        <span className="bg-amber-100 text-amber-700 text-[11px] md:text-[11px] font-semibold px-2 py-0.5 rounded-lg uppercase tracking-wider">
                             {filteredDelays.length} · {totalHours.toFixed(1)}h
                         </span>
                     </div>
@@ -352,7 +352,7 @@ export default function DelaysPage() {
                             <button
                                 onClick={() => setViewMode('tabla')}
                                 title="Vista Tabla"
-                                className={`p-1.5 md:p-2 rounded-lg transition-all ${viewMode === 'tabla' ? 'bg-card text-card-foreground text-primary shadow-sm' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600'}`}
+                                className={`p-1.5 md:p-2 rounded-lg transition-all ${viewMode === 'tabla' ? 'bg-card text-primary shadow-sm' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600'}`}
                             >
                                 <svg className="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
                                     <path d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1z" />
@@ -361,7 +361,7 @@ export default function DelaysPage() {
                             <button
                                 onClick={() => setViewMode('tarjetas')}
                                 title="Vista Tarjetas"
-                                className={`p-1.5 md:p-2 rounded-lg transition-all ${viewMode === 'tarjetas' ? 'bg-card text-card-foreground text-primary shadow-sm' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600'}`}
+                                className={`p-1.5 md:p-2 rounded-lg transition-all ${viewMode === 'tarjetas' ? 'bg-card text-primary shadow-sm' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600'}`}
                             >
                                 <LayoutGrid className="w-4 h-4" />
                             </button>
@@ -383,22 +383,22 @@ export default function DelaysPage() {
                         <input
                             type="text"
                             placeholder="Buscar..."
-                            className="w-full h-[42px] bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-3 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-bold text-slate-700 dark:text-slate-200"
+                            className="w-full h-[42px] bg-card border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-3 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all text-sm font-bold text-slate-700 dark:text-slate-200"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
                     </div>
 
                     <div className="flex items-center gap-1.5 w-[calc(50%-4px)] md:w-auto">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap shrink-0">Desde</label>
+                        <label className="whitespace-nowrap shrink-0 text-[13px] font-medium text-slate-700 dark:text-slate-200">Desde</label>
                         <input type="date" value={filterDateFrom} onChange={e => setFilterDateFrom(e.target.value)}
-                            className="h-[42px] bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-2 md:px-4 text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none flex-1 min-w-0" />
+                            className="h-[42px] bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-2 md:px-4 text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none flex-1 min-w-0" />
                     </div>
 
                     <div className="flex items-center gap-1.5 w-[calc(50%-4px)] md:w-auto">
-                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap shrink-0">Hasta</label>
+                        <label className="whitespace-nowrap shrink-0 text-[13px] font-medium text-slate-700 dark:text-slate-200">Hasta</label>
                         <input type="date" value={filterDateTo} onChange={e => setFilterDateTo(e.target.value)}
-                            className="h-[42px] bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-xl px-2 md:px-4 text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none flex-1 min-w-0" />
+                            className="h-[42px] bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-2 md:px-4 text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-primary/10 transition-all appearance-none flex-1 min-w-0" />
                     </div>
 
                     <div className="w-[calc(50%-4px)] md:w-auto md:min-w-[160px]">
@@ -440,37 +440,37 @@ export default function DelaysPage() {
                     ) : filteredDelays.length === 0 ? (
                         <div className="py-24 flex flex-col items-center justify-center text-slate-400 dark:text-slate-500">
                             <Clock className="w-12 h-12 mb-4 opacity-10" />
-                            <p className="font-bold uppercase tracking-widest text-xs">Sin registros que coincidan</p>
+                            <p className="font-bold uppercase tracking-wider text-xs">Sin registros que coincidan</p>
                         </div>
                     ) : (
                         <>
                             {viewMode === 'tabla' && (
                                 <table className="w-full text-left border-collapse hidden md:table">
                                     <thead>
-                                        <tr className="bg-background text-foreground/50 border-b border-slate-100 dark:border-slate-800">
-                                            <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap">Fecha</th>
-                                            <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Proyecto</th>
-                                            <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Área</th>
-                                            <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Motivo</th>
-                                            <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest hidden lg:table-cell">Resp. Área</th>
-                                            <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest hidden md:table-cell">Operador</th>
-                                            <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Duración</th>
-                                            <th className="p-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right"></th>
+                                        <tr className="bg-background text-foreground border-b border-slate-100 dark:border-slate-800">
+                                            <th className="p-4 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider whitespace-nowrap">Fecha</th>
+                                            <th className="p-4 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Proyecto</th>
+                                            <th className="p-4 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Área</th>
+                                            <th className="p-4 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Motivo</th>
+                                            <th className="p-4 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider hidden lg:table-cell">Resp. Área</th>
+                                            <th className="p-4 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider hidden md:table-cell">Operador</th>
+                                            <th className="p-4 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-center">Duración</th>
+                                            <th className="p-4 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-right"></th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {filteredDelays.map(delay => (
                                             <tr key={delay.id} className="border-b border-slate-50 hover:bg-slate-50/60 transition-colors">
                                                 <td className="p-4 text-xs font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">{formatDate(delay.fecha)}</td>
-                                                <td className="p-4 text-sm font-black text-slate-800 dark:text-slate-100 max-w-[200px] truncate">{delay.project.nombre}</td>
+                                                <td className="p-4 text-sm font-bold text-slate-800 dark:text-slate-100 max-w-[200px] truncate">{delay.project.nombre}</td>
                                                 <td className="p-4">
-                                                    <span className="text-[10px] font-black bg-amber-50 text-amber-700 px-2 py-1 rounded-lg uppercase tracking-widest whitespace-nowrap">{delay.area}</span>
+                                                    <span className="text-[11px] font-semibold bg-amber-50 text-amber-700 px-2 py-1 rounded-lg uppercase tracking-wider whitespace-nowrap">{delay.area}</span>
                                                 </td>
                                                 <td className="p-4 text-xs font-medium text-slate-500 dark:text-slate-400 italic max-w-[250px] truncate" title={delay.motivo}>"{delay.motivo}"</td>
                                                 <td className="p-4 text-xs font-bold text-slate-400 dark:text-slate-500 hidden lg:table-cell">{delay.responsableArea || '—'}</td>
                                                 <td className="p-4 text-xs font-bold text-primary hidden md:table-cell">{delay.operador}</td>
                                                 <td className="p-4 text-center">
-                                                    <span className="px-3 py-1 bg-amber-50 text-amber-600 font-black rounded-xl text-sm border border-amber-100">{delay.duracion}h</span>
+                                                    <span className="px-3 py-1 bg-amber-50 text-amber-600 font-bold rounded-xl text-sm border border-amber-100">{delay.duracion}h</span>
                                                 </td>
                                                 <td className="p-4 text-right">
                                                     <div className="flex items-center justify-end gap-1">
@@ -486,9 +486,9 @@ export default function DelaysPage() {
                                                 </td>
                                             </tr>
                                         ))}
-                                        <tr className="bg-background text-foreground/50 font-black border-t-2 border-slate-200 dark:border-slate-700">
-                                            <td colSpan={6} className="p-4 text-right text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400 hidden md:table-cell">Total Horas en Rango:</td>
-                                            <td className="p-4 text-center text-amber-600 text-base font-black">{totalHours.toFixed(1)}h</td>
+                                        <tr className="bg-background text-foreground font-bold border-t-2 border-slate-200 dark:border-slate-700">
+                                            <td colSpan={6} className="p-4 text-right text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 hidden md:table-cell">Total Horas en Rango:</td>
+                                            <td className="p-4 text-center text-amber-600 text-base font-bold">{totalHours.toFixed(1)}h</td>
                                             <td className="hidden md:table-cell"></td>
                                         </tr>
                                     </tbody>
@@ -498,16 +498,16 @@ export default function DelaysPage() {
                             {/* Cards View (Mobile Fallback + Explicit Card View) */}
                             <div className={`p-4 md:p-6 grid gap-4 ${viewMode === 'tabla' ? 'grid-cols-1 md:hidden' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}>
                                 {filteredDelays.map(delay => (
-                                    <div key={delay.id} className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-[2rem] shadow-sm p-4 md:p-5 flex flex-col gap-3 hover:shadow-md transition-all group animate-card-in">
+                                    <div key={delay.id} className="bg-card text-card-foreground border border-slate-200 dark:border-slate-700 rounded-2xl md:rounded-3xl shadow-sm p-4 md:p-5 flex flex-col gap-3 hover:shadow-md transition-all group animate-card-in">
                                         <div className="flex items-start gap-3 justify-between">
                                             <div className="flex items-start gap-3 min-w-0">
                                                 <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
                                                     <Building2 className="w-5 h-5 text-amber-500" />
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <h4 className="font-black text-slate-800 dark:text-slate-100 text-sm leading-tight truncate">{delay.project.nombre}</h4>
+                                                    <h4 className="font-bold text-slate-800 dark:text-slate-100 text-sm leading-tight truncate">{delay.project.nombre}</h4>
                                                     <div className="flex flex-wrap items-center gap-2 mt-1">
-                                                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">{formatDate(delay.fecha)} · {delay.hora}</span>
+                                                        <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500">{formatDate(delay.fecha)} · {delay.hora}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -522,20 +522,20 @@ export default function DelaysPage() {
                                                 </button>
                                             </div>
                                         </div>
-                                        <span className="text-[10px] font-black bg-amber-50 text-amber-700 px-2 py-1 rounded-lg uppercase tracking-widest w-fit">{delay.area}</span>
-                                        <div className="bg-background text-foreground/50 px-3 py-2.5 rounded-xl">
+                                        <span className="text-[11px] font-semibold bg-amber-50 text-amber-700 px-2 py-1 rounded-lg uppercase tracking-wider w-fit">{delay.area}</span>
+                                        <div className="bg-background text-foreground px-3 py-2.5 rounded-xl">
                                             <p className="text-xs font-medium text-slate-600 dark:text-slate-300 italic line-clamp-2">"{delay.motivo}"</p>
                                         </div>
                                         <div className="flex items-center justify-between pt-2 border-t border-slate-50">
                                             <div className="flex items-center gap-2">
-                                                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary">
+                                                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[11px] font-bold text-primary">
                                                     {delay.operador.charAt(0)}
                                                 </div>
-                                                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate max-w-[100px]">{delay.operador}</span>
+                                                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 truncate max-w-[100px]">{delay.operador}</span>
                                             </div>
                                             <div className="flex items-baseline gap-1">
-                                                <span className="text-2xl font-black text-amber-500 tracking-tighter">{delay.duracion}</span>
-                                                <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase">Hs</span>
+                                                <span className="text-2xl font-bold text-amber-500 tracking-tight">{delay.duracion}</span>
+                                                <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase">Hs</span>
                                             </div>
                                         </div>
                                     </div>
@@ -548,19 +548,19 @@ export default function DelaysPage() {
 
             {/* Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-card text-card-foreground w-full max-w-xl rounded-t-3xl md:rounded-[3rem] shadow-2xl border border-white/20 animate-in slide-in-from-bottom-4 md:zoom-in-95 duration-300 max-h-[90vh] flex flex-col overflow-hidden">
+                <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-950/50 animate-in fade-in duration-200">
+                    <div className="bg-card text-card-foreground w-full max-w-xl rounded-t-3xl md:rounded-3xl shadow-2xl border border-white/20 animate-in slide-in-from-bottom-2 md:zoom-in-95 duration-200 max-h-[90vh] flex flex-col overflow-hidden">
                         {/* Header - Fixed */}
                         <div className="p-5 md:p-8 pb-4 flex items-center justify-between border-b border-slate-50 flex-shrink-0">
                             <div className="flex items-center gap-3 md:gap-4">
-                                <div className="w-10 h-10 md:w-12 md:h-12 bg-amber-500 rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-lg shadow-amber-500/30">
+                                <div className="w-10 h-10 md:w-12 md:h-12 bg-amber-500 rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-lg">
                                     <Timer className="w-5 h-5 md:w-6 md:h-6" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg md:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight leading-none">
+                                    <h3 className="text-lg md:text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight leading-none">
                                         {editingDelayId ? 'Editar Registro' : 'Registrar Demora'}
                                     </h3>
-                                    <p className="text-[10px] md:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5 md:mt-1">Responsabilidad del Cliente</p>
+                                    <p className="text-[11px] md:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-0.5 md:mt-1">Responsabilidad del Cliente</p>
                                 </div>
                             </div>
                             <button type="button" onClick={() => { setIsModalOpen(false); setEditingDelayId(null); }} className="btn-icon-inline p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors text-slate-400 dark:text-slate-500">
@@ -586,28 +586,28 @@ export default function DelaysPage() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                        <label className="flex items-center gap-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                             <Calendar className="w-3 h-3" /> Fecha
                                         </label>
                                         <input type="date" required value={formData.fecha}
                                             onChange={e => setFormData({ ...formData, fecha: e.target.value })}
-                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 dark:text-slate-200 h-[50px]"
+                                            className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 dark:text-slate-200 h-[50px]"
                                         />
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                        <label className="flex items-center gap-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                             <Clock className="w-3 h-3" /> Hora
                                         </label>
                                         <input type="time" required value={formData.hora}
                                             onChange={e => setFormData({ ...formData, hora: e.target.value })}
-                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 dark:text-slate-200 h-[50px]"
+                                            className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 dark:text-slate-200 h-[50px]"
                                         />
                                     </div>
 
                                     <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">Motivo Frecuente</label>
+                                            <label className="flex items-center gap-2 px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Motivo Frecuente</label>
                                             <SearchableSelect
                                                 options={motivoOptions.map(m => ({ id: m, label: m }))}
                                                 value={motivoOptions.includes(formData.motivo) ? formData.motivo : ''}
@@ -618,19 +618,19 @@ export default function DelaysPage() {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">Detalle / Motivo Específico</label>
+                                            <label className="flex items-center gap-2 px-1 text-[13px] font-medium text-slate-700 dark:text-slate-200">Detalle / Motivo Específico</label>
                                             <textarea required value={formData.motivo} onChange={e => setFormData({ ...formData, motivo: e.target.value })}
-                                                className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 dark:text-slate-200 min-h-[50px] max-h-[150px]"
+                                                className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 dark:text-slate-200 min-h-[50px] max-h-[150px]"
                                                 placeholder="Describe o amplía el motivo de la demora..."
                                             />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                        <label className="flex items-center gap-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                             <User className="w-3 h-3" /> Quien registra
                                         </label>
                                         {currentUser?.role === 'operador' ? (
-                                            <div className="w-full bg-muted text-muted-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 font-bold text-slate-500 dark:text-slate-400 h-[50px] flex items-center">
+                                            <div className="w-full bg-muted border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 font-bold text-slate-500 dark:text-slate-400 h-[50px] flex items-center">
                                                 {formData.operador}
                                             </div>
                                         ) : (
@@ -645,7 +645,7 @@ export default function DelaysPage() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                        <label className="flex items-center gap-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                             <Building2 className="w-3 h-3" /> Área del Cliente
                                         </label>
                                         <SearchableSelect
@@ -658,29 +658,29 @@ export default function DelaysPage() {
                                     </div>
 
                                     <div className="md:col-span-2 space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                        <label className="flex items-center gap-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                             <User className="w-3 h-3" /> Responsable del Área (Opcional)
                                         </label>
                                         <input type="text" value={formData.responsableArea}
                                             onChange={e => setFormData({ ...formData, responsableArea: e.target.value })}
                                             placeholder="Nombre del responsable si lo conoce..."
-                                            className="w-full h-[50px] bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 dark:text-slate-200 text-sm rounded-2xl"
+                                            className="w-full h-[50px] bg-card text-foreground border border-slate-200 dark:border-slate-700 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-slate-700 dark:text-slate-200 text-sm rounded-2xl"
                                         />
                                     </div>
 
                                     <div className="md:col-span-2 space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                        <label className="flex items-center gap-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                             <AlertCircle className="w-3 h-3" /> Motivo de la demora
                                         </label>
                                         <textarea required value={formData.motivo}
                                             onChange={e => setFormData({ ...formData, motivo: e.target.value })}
                                             placeholder="Describa el motivo de la demora externa..."
-                                            className="w-full bg-background text-foreground/50 border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-medium text-slate-700 dark:text-slate-200 resize-none h-24"
+                                            className="w-full bg-card text-foreground border border-slate-200 dark:border-slate-700 rounded-2xl py-3 px-4 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-medium text-slate-700 dark:text-slate-200 resize-none h-24"
                                         />
                                     </div>
 
                                     <div className="md:col-span-2 space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                        <label className="flex items-center gap-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                             <Timer className="w-3 h-3" /> Tiempo perdido (Horas)
                                         </label>
                                         <div className="flex items-center gap-3">
@@ -712,22 +712,22 @@ export default function DelaysPage() {
                                                 }}
                                                 inputMode="decimal"
                                                 placeholder=""
-                                                className="w-28 bg-amber-50 border border-amber-200 rounded-xl py-3 px-4 text-xl font-black text-amber-500 text-center outline-none focus:border-amber-400 focus:ring-4 focus:ring-amber-500/10"
+                                                className="w-28 bg-amber-50 border border-amber-200 rounded-xl py-3 px-4 text-xl font-bold text-amber-500 text-center outline-none focus:border-amber-400 focus:ring-4 focus:ring-amber-500/10"
                                             />
-                                            <span className="text-xs font-black text-amber-600 uppercase">Hs</span>
+                                            <span className="text-xs font-semibold text-amber-600 uppercase">Hs</span>
                                         </div>
-                                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium pl-1">Ajuste en tramos de 15 minutos (0.25h)</p>
+                                        <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium pl-1">Ajuste en tramos de 15 minutos (0.25h)</p>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="flex gap-3 md:gap-4 p-5 md:p-8 border-t border-slate-50 flex-shrink-0">
                                 <button type="button" onClick={() => setIsModalOpen(false)}
-                                    className="flex-1 bg-muted text-muted-foreground/50 text-slate-600 dark:text-slate-300 py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95">
+                                    className="flex-1 bg-muted text-slate-600 dark:text-slate-300 py-3.5 md:py-4 rounded-2xl font-semibold text-xs hover:bg-slate-200 transition-all">
                                     Cancelar
                                 </button>
                                 <button type="submit"
-                                    className="flex-[2] bg-muted text-muted-foreground text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-primary hover:text-primary-foreground hover:border-primary shadow-sm hover:shadow-primary/20 hover:shadow-xl transition-all active:scale-95">
+                                    className="flex-[2] bg-muted text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 py-3.5 md:py-4 rounded-2xl font-semibold text-xs hover:bg-primary hover:text-primary-foreground hover:border-primary shadow-sm hover:shadow-xl transition-all">
                                     {editingDelayId ? 'Guardar Cambios' : 'Registrar Evento'}
                                 </button>
                             </div>

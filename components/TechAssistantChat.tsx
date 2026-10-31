@@ -263,18 +263,16 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
             <button
                 type="button"
                 onClick={() => setIsOpen(true)}
-                className="fixed bottom-6 right-6 z-[9998] w-14 h-14 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-750 hover:to-indigo-750 text-white rounded-full flex items-center justify-center shadow-xl shadow-indigo-600/30 hover:shadow-indigo-600/50 active:scale-90 hover:scale-105 transition-all focus:outline-none"
+                className="fixed bottom-5 right-5 z-[90] h-12 w-12 sm:w-auto sm:pl-4 sm:pr-5 btn btn-primary rounded-full shadow-lg safe-area-bottom"
+                aria-label="Abrir asistente técnico"
             >
-                <Sparkles className="w-6 h-6 animate-pulse" />
-                <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-purple-500"></span>
-                </span>
+                <Sparkles className="!w-5 !h-5" aria-hidden="true" />
+                <span className="hidden sm:inline">Asistente</span>
             </button>
 
             {/* Slider Drawer Panel */}
             {isOpen && (
-                <div className="fixed inset-0 z-[9999] flex justify-end bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-[9999] flex justify-end bg-slate-950/50 animate-in fade-in duration-200">
                     <div className="w-full sm:w-[480px] bg-card text-card-foreground h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-350 ease-out relative">
                         
                         {/* HEADER */}
@@ -285,8 +283,8 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
                                         <Sparkles className="w-4 h-4" />
                                     </div>
                                     <div>
-                                        <h3 className="text-sm font-black text-slate-850 dark:text-slate-100 uppercase tracking-wider block">Asistentes IA</h3>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Seleccione el modo</p>
+                                        <h3 className="text-sm font-semibold text-slate-850 dark:text-slate-100 uppercase tracking-wider block">Asistentes IA</h3>
+                                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Seleccione el modo</p>
                                     </div>
                                 </div>
                             ) : (
@@ -301,10 +299,10 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
                                         {activeMode === 'FIELD' ? <Wrench className="w-4 h-4" /> : <HelpCircle className="w-4 h-4" />}
                                     </div>
                                     <div>
-                                        <h3 className="text-sm font-black text-slate-850 dark:text-slate-100 uppercase tracking-wider block">
+                                        <h3 className="text-sm font-semibold text-slate-850 dark:text-slate-100 uppercase tracking-wider block">
                                             {activeMode === 'FIELD' ? 'Asistencia de Campo' : 'Ayuda del Sistema'}
                                         </h3>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Gemini AI</p>
+                                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Gemini AI</p>
                                     </div>
                                 </div>
                             )}
@@ -333,11 +331,11 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
                                         onClick={() => { setActiveMode('FIELD'); setError(''); }}
                                         className="w-full text-left p-6 rounded-3xl border border-slate-200 dark:border-slate-800 hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all group shadow-sm flex items-center gap-4"
                                     >
-                                        <div className="w-12 h-12 rounded-2xl bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                                        <div className="w-12 h-12 rounded-2xl bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 transition-transform">
                                             <Wrench className="w-6 h-6" />
                                         </div>
                                         <div>
-                                            <h4 className="text-base font-black text-slate-800 dark:text-slate-100 mb-1">🛠 Asistencia de Campo</h4>
+                                            <h4 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-1">🛠 Asistencia de Campo</h4>
                                             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Diagnóstico de fallas, recomendaciones de seguridad y pasos técnicos para reparaciones en proyectos.</p>
                                         </div>
                                     </button>
@@ -346,11 +344,11 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
                                         onClick={() => { setActiveMode('SYSTEM'); setError(''); }}
                                         className="w-full text-left p-6 rounded-3xl border border-slate-200 dark:border-slate-800 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group shadow-sm flex items-center gap-4"
                                     >
-                                        <div className="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                                        <div className="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 transition-transform">
                                             <HelpCircle className="w-6 h-6" />
                                         </div>
                                         <div>
-                                            <h4 className="text-base font-black text-slate-800 dark:text-slate-100 mb-1">❓ Ayuda del Sistema</h4>
+                                            <h4 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-1">❓ Ayuda del Sistema</h4>
                                             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Soporte sobre uso de HDB SGI, procedimientos, estado personal, horas, proyectos asignados y manuales.</p>
                                         </div>
                                     </button>
@@ -366,7 +364,7 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
                                             </div>
                                             <div className="space-y-3.5">
                                                 <div className="relative space-y-1.5">
-                                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                                    <label className="block text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                                         Proyecto / Instalación <span className="text-red-500">*</span>
                                                     </label>
                                                     <div className="relative">
@@ -386,7 +384,7 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
                                                                         placeholder="Buscar proyecto..."
                                                                         value={projectSearch}
                                                                         onChange={e => setProjectSearch(e.target.value)}
-                                                                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-medium outline-none focus:border-indigo-500"
+                                                                        className="w-full bg-card border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-medium outline-none focus:border-indigo-500"
                                                                     />
                                                                 </div>
                                                                 <div className="overflow-y-auto flex-1 divide-y divide-slate-50 dark:divide-slate-850">
@@ -406,19 +404,19 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <label className="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Falla detectada <span className="text-red-500">*</span></label>
-                                                    <input type="text" required placeholder="Ej. El motor reductor se sobrecalienta" value={falla} onChange={e => setFalla(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-3 text-xs font-bold focus:border-indigo-500 outline-none transition-all" />
+                                                    <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">Falla detectada <span className="text-red-500">*</span></label>
+                                                    <input type="text" required placeholder="Ej. El motor reductor se sobrecalienta" value={falla} onChange={e => setFalla(e.target.value)} className="w-full bg-card border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-3 text-xs font-bold focus:border-indigo-500 outline-none transition-all" />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Síntomas observados <span className="text-red-500">*</span></label>
-                                                    <textarea required rows={3} placeholder="Ej. Vibraciones inusuales..." value={sintomas} onChange={e => setSintomas(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-3 text-xs font-bold focus:border-indigo-500 outline-none transition-all resize-none" />
+                                                    <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">Síntomas observados <span className="text-red-500">*</span></label>
+                                                    <textarea required rows={3} placeholder="Ej. Vibraciones inusuales..." value={sintomas} onChange={e => setSintomas(e.target.value)} className="w-full bg-card border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-3 text-xs font-bold focus:border-indigo-500 outline-none transition-all resize-none" />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-[10px] font-black text-slate-400 uppercase mb-1.5">Observaciones previas</label>
-                                                    <textarea rows={2} value={observaciones} onChange={e => setObservaciones(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-3 text-xs font-bold focus:border-indigo-500 outline-none transition-all resize-none" />
+                                                    <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">Observaciones previas</label>
+                                                    <textarea rows={2} value={observaciones} onChange={e => setObservaciones(e.target.value)} className="w-full bg-card border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-3 text-xs font-bold focus:border-indigo-500 outline-none transition-all resize-none" />
                                                 </div>
                                             </div>
-                                            <button type="submit" disabled={loading} className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl text-xs font-black flex items-center justify-center gap-2 active:scale-95 transition-all">
+                                            <button type="submit" disabled={loading} className="w-full py-3.5 bg-purple-600 text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-all">
                                                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                                                 <span>{loading ? 'Analizando...' : 'Iniciar Diagnóstico Asistido'}</span>
                                             </button>
@@ -428,21 +426,21 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
                                             {/* Reporte de Diagnóstico */}
                                             <div className="bg-slate-50 dark:bg-slate-950/40 rounded-3xl border border-slate-100 dark:border-slate-800 p-5 space-y-4">
                                                 <div className="flex justify-between items-center flex-wrap gap-2">
-                                                    <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full border ${getPriorityColor(diagnosis.prioridadProblema)}`}>
+                                                    <span className={`text-[11px] font-semibold uppercase px-2.5 py-1 rounded-full border ${getPriorityColor(diagnosis.prioridadProblema)}`}>
                                                         Prioridad: {diagnosis.prioridadProblema}
                                                     </span>
-                                                    <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                                                    <span className="text-[11px] font-bold text-slate-400 flex items-center gap-1">
                                                         <Clock className="w-3.5 h-3.5" /> {diagnosis.tiempoEstimadoResolucion}
                                                     </span>
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><AlertCircle className="w-3.5 h-3.5 text-indigo-500" /> Causas Posibles:</span>
+                                                    <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><AlertCircle className="w-3.5 h-3.5 text-indigo-500" /> Causas Posibles:</span>
                                                     <div className="space-y-2">
                                                         {diagnosis.causasPosibles.map((c, i) => (
                                                             <div key={i} className="bg-card text-card-foreground border border-slate-100 dark:border-slate-800/80 rounded-2xl p-3 space-y-1.5 shadow-sm">
                                                                 <div className="flex justify-between items-start">
                                                                     <p className="font-bold text-slate-800 dark:text-slate-200 text-xs flex-1">{c.causa}</p>
-                                                                    <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${getProbabilityBadge(c.probabilidad)}`}>{c.probabilidad}</span>
+                                                                    <span className={`text-[11px] font-semibold uppercase px-1.5 py-0.5 rounded ${getProbabilityBadge(c.probabilidad)}`}>{c.probabilidad}</span>
                                                                 </div>
                                                                 <p className="text-[10.5px] text-slate-500">{c.justificacion}</p>
                                                             </div>
@@ -450,7 +448,7 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
                                                     </div>
                                                 </div>
                                                 <div className="space-y-2.5">
-                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Wrench className="w-3.5 h-3.5 text-indigo-500" /> Pasos Sugeridos:</span>
+                                                    <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><Wrench className="w-3.5 h-3.5 text-indigo-500" /> Pasos Sugeridos:</span>
                                                     <div className="space-y-1.5">
                                                         {diagnosis.pasosDiagnostico.map((p, idx) => (
                                                             <label key={idx} onClick={() => toggleStep(idx)} className={`flex items-start gap-2.5 p-3 rounded-2xl border cursor-pointer select-none transition-all ${checkedSteps[idx] ? 'bg-emerald-50/50 border-emerald-100 text-emerald-800/80 line-through dark:bg-emerald-950/10 dark:border-emerald-900/40' : 'bg-white border-slate-100 hover:bg-slate-50/50 dark:bg-slate-900 dark:border-slate-800/80'}`}>
@@ -462,7 +460,7 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
                                                 </div>
                                                 {diagnosis.recomendacionesSeguridad?.length > 0 && (
                                                     <div className="space-y-2">
-                                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><ShieldAlert className="w-3.5 h-3.5 text-red-500 animate-pulse" /> Seguridad:</span>
+                                                        <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><ShieldAlert className="w-3.5 h-3.5 text-red-500 animate-pulse" /> Seguridad:</span>
                                                         <div className="bg-red-50/40 dark:bg-red-950/10 border border-red-100 dark:border-red-950/40 rounded-2xl p-3 space-y-1">
                                                             {diagnosis.recomendacionesSeguridad.map((rec, i) => <p key={i} className="text-[10.5px] font-bold text-red-700 dark:text-red-400">• {rec}</p>)}
                                                         </div>
@@ -472,16 +470,16 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
 
                                             {/* Chat log */}
                                             <div className="space-y-3 pt-2">
-                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><MessageSquare className="w-3.5 h-3.5 text-purple-500" /> Seguimiento:</span>
+                                                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><MessageSquare className="w-3.5 h-3.5 text-purple-500" /> Seguimiento:</span>
                                                 <div className="border border-slate-100 dark:border-slate-800 rounded-3xl p-4 bg-slate-50/50 dark:bg-slate-950/20 space-y-3.5 max-h-[220px] overflow-y-auto">
                                                     {messages.map((msg, i) => (
                                                         <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                                            <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs ${msg.role === 'user' ? 'bg-indigo-600 text-white font-bold rounded-tr-none' : 'bg-card text-card-foreground border border-slate-100 dark:border-slate-800 text-slate-650 dark:text-slate-300 font-bold rounded-tl-none'}`}>
+                                                            <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs ${msg.role === 'user' ? 'bg-indigo-600 text-white font-bold rounded-tr-none' : 'bg-card border border-slate-100 dark:border-slate-800 text-slate-650 dark:text-slate-300 font-bold rounded-tl-none'}`}>
                                                                 {msg.content}
                                                             </div>
                                                         </div>
                                                     ))}
-                                                    {followUpLoading && <div className="flex justify-start"><div className="bg-card text-card-foreground border border-slate-100 dark:border-slate-800 rounded-2xl rounded-tl-none px-3.5 py-2.5 flex items-center gap-2"><Loader2 className="w-4 h-4 text-purple-600 animate-spin" /><span className="text-xs font-bold text-slate-400 animate-pulse">Gemini refinando...</span></div></div>}
+                                                    {followUpLoading && <div className="flex justify-start"><div className="bg-card border border-slate-100 dark:border-slate-800 rounded-2xl rounded-tl-none px-3.5 py-2.5 flex items-center gap-2"><Loader2 className="w-4 h-4 text-purple-600 animate-spin" /><span className="text-xs font-bold text-slate-400 animate-pulse">Gemini refinando...</span></div></div>}
                                                     <div ref={messagesEndRef} />
                                                 </div>
                                             </div>
@@ -500,7 +498,7 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
                                                         <Sparkles className="w-3 h-3 text-blue-600 dark:text-blue-400" />
                                                     </div>
                                                 )}
-                                                <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${msg.role === 'user' ? 'bg-primary text-white font-bold rounded-tr-none' : 'bg-card text-card-foreground border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-tl-none prose prose-sm dark:prose-invert prose-p:leading-snug prose-p:mb-2 prose-a:text-blue-500'}`}>
+                                                <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${msg.role === 'user' ? 'bg-primary text-white font-bold rounded-tr-none' : 'bg-card border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-tl-none prose prose-sm dark:prose-invert prose-p:leading-snug prose-p:mb-2 prose-a:text-blue-500'}`}>
                                                     {msg.role === 'model' ? (
                                                         <ReactMarkdown>{msg.content}</ReactMarkdown>
                                                     ) : (
@@ -530,11 +528,11 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
                         {activeMode === 'FIELD' && diagnosis && (
                             <div className="shrink-0">
                                 <form onSubmit={handleSendFollowUp} className="p-4 border-t border-slate-100 dark:border-slate-800 bg-card text-card-foreground flex gap-2">
-                                    <input type="text" placeholder="Ej. Medí continuidad y da infinito..." value={followUpText} onChange={e => setFollowUpText(e.target.value)} disabled={followUpLoading} className="flex-1 bg-background text-foreground/60 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs font-bold focus:border-indigo-500 outline-none transition-all disabled:opacity-70" />
-                                    <button type="submit" disabled={!followUpText.trim() || followUpLoading} className="px-4 bg-indigo-600 text-white rounded-xl flex items-center justify-center hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50"><Send className="w-4 h-4" /></button>
+                                    <input type="text" placeholder="Ej. Medí continuidad y da infinito..." value={followUpText} onChange={e => setFollowUpText(e.target.value)} disabled={followUpLoading} className="flex-1 bg-card text-foreground/60 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs font-bold focus:border-indigo-500 outline-none transition-all disabled:opacity-70" />
+                                    <button type="submit" disabled={!followUpText.trim() || followUpLoading} className="px-4 bg-indigo-600 text-white rounded-xl flex items-center justify-center hover:bg-indigo-700 transition-all disabled:opacity-50"><Send className="w-4 h-4" /></button>
                                 </form>
                                 <div className="p-2 border-t border-slate-100 dark:border-slate-805 bg-slate-50 dark:bg-slate-950 text-center">
-                                    <button type="button" onClick={() => { setDiagnosis(null); setConversationId(null); setMessages([]); setFalla(''); setSintomas(''); setObservaciones(''); }} className="text-[10px] font-black text-slate-400 hover:text-slate-600 uppercase tracking-widest">Nueva Consulta / Limpiar Chat</button>
+                                    <button type="button" onClick={() => { setDiagnosis(null); setConversationId(null); setMessages([]); setFalla(''); setSintomas(''); setObservaciones(''); }} className="text-[12px] font-semibold text-slate-400 hover:text-slate-600">Nueva Consulta / Limpiar Chat</button>
                                 </div>
                             </div>
                         )}
@@ -542,11 +540,11 @@ export default function TechAssistantChat({ projectId, osId, user }: TechAssista
                         {activeMode === 'SYSTEM' && (
                             <div className="shrink-0">
                                 <form onSubmit={handleSystemQuery} className="p-4 border-t border-slate-100 dark:border-slate-800 bg-card text-card-foreground flex gap-2">
-                                    <input type="text" placeholder="Ej. ¿Cuántas horas trabajé este mes?" value={systemQuery} onChange={e => setSystemQuery(e.target.value)} disabled={loading} className="flex-1 bg-background text-foreground/60 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs font-bold focus:border-blue-500 outline-none transition-all disabled:opacity-70" />
-                                    <button type="submit" disabled={!systemQuery.trim() || loading} className="px-4 bg-primary text-white rounded-xl flex items-center justify-center hover:bg-primary/90 active:scale-95 transition-all disabled:opacity-50"><Send className="w-4 h-4" /></button>
+                                    <input type="text" placeholder="Ej. ¿Cuántas horas trabajé este mes?" value={systemQuery} onChange={e => setSystemQuery(e.target.value)} disabled={loading} className="flex-1 bg-card text-foreground/60 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs font-bold focus:border-blue-500 outline-none transition-all disabled:opacity-70" />
+                                    <button type="submit" disabled={!systemQuery.trim() || loading} className="px-4 bg-primary text-white rounded-xl flex items-center justify-center hover:bg-primary-hover transition-all disabled:opacity-50"><Send className="w-4 h-4" /></button>
                                 </form>
                                 <div className="p-2 border-t border-slate-100 dark:border-slate-805 bg-slate-50 dark:bg-slate-950 text-center flex justify-center gap-4">
-                                    <button type="button" onClick={() => { setSystemMessages([{ role: 'model', content: 'Hola. Soy tu Asistente del Sistema HDB SGI. ¿En qué te puedo ayudar hoy?' }]); setSystemConversationId(null); }} className="text-[10px] font-black text-slate-400 hover:text-slate-600 uppercase tracking-widest">Limpiar Chat</button>
+                                    <button type="button" onClick={() => { setSystemMessages([{ role: 'model', content: 'Hola. Soy tu Asistente del Sistema HDB SGI. ¿En qué te puedo ayudar hoy?' }]); setSystemConversationId(null); }} className="text-[12px] font-semibold text-slate-400 hover:text-slate-600">Limpiar Chat</button>
                                 </div>
                             </div>
                         )}

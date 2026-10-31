@@ -365,18 +365,18 @@ export default function EppResolution299Modal({
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in overflow-y-auto">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-slate-950/50 animate-in fade-in overflow-y-auto">
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-[1200px] w-full overflow-hidden shadow-2xl flex flex-col my-auto max-h-[95vh]">
                 {/* Header del Modal */}
                 <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-950/50 shrink-0">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-2xl bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-black">
+                        <div className="w-10 h-10 rounded-2xl bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
                             <FileText className="w-5 h-5" />
                         </div>
                         <div>
-                            <h3 className="font-black text-slate-900 dark:text-slate-100 text-sm sm:text-base flex items-center gap-2">
+                            <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base flex items-center gap-2">
                                 <span>Planilla Oficial EPP (Resolución 299/11 Anexo I)</span>
-                                <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] font-black rounded-full uppercase">
+                                <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[11px] font-semibold rounded-full uppercase">
                                     Formato Apaisado
                                 </span>
                             </h3>
@@ -389,7 +389,7 @@ export default function EppResolution299Modal({
                     <div className="flex items-center gap-2">
                         <button
                             onClick={handlePrint}
-                            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 active:scale-95"
+                            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
                         >
                             <Printer className="w-4 h-4" />
                             <span>Imprimir / Guardar PDF</span>
@@ -447,7 +447,7 @@ export default function EppResolution299Modal({
                         </div>
 
                         {/* Title preview */}
-                        <div className="bg-black text-white text-center font-black text-xs py-1.5 px-3 uppercase tracking-wider mb-2">
+                        <div className="bg-black text-white text-center font-semibold text-xs py-1.5 px-3 uppercase tracking-wider mb-2">
                             ENTREGA DE ROPA DE TRABAJO Y ELEMENTOS DE PROTECCIÓN PERSONAL
                         </div>
 
@@ -485,12 +485,12 @@ export default function EppResolution299Modal({
                             </div>
                             <div className="grid grid-cols-12">
                                 <div className="col-span-6 p-1.5 border-r border-black">
-                                    <span className="text-[10px] block text-slate-600">(9) Descripción breve del puesto/s de trabajo en el/los cuales se desempeña en trabajador:</span>
+                                    <span className="text-[11px] block text-slate-600">(9) Descripción breve del puesto/s de trabajo en el/los cuales se desempeña en trabajador:</span>
                                     <strong className="block mt-0.5">{operator.posicion || operator.role || 'Operario de Instalaciones Eléctricas'}</strong>
                                 </div>
                                 <div className="col-span-6 p-1.5">
-                                    <span className="text-[10px] block text-slate-600">(10) Elementos de protección personal necesarios según puesto:</span>
-                                    <span className="block text-[10px] font-semibold mt-0.5">
+                                    <span className="text-[11px] block text-slate-600">(10) Elementos de protección personal necesarios según puesto:</span>
+                                    <span className="block text-[11px] font-semibold mt-0.5">
                                         Zapatos de seguridad dieléctricos, casco de seguridad con barbijo, lentes protectores, guantes anticorte/nitrilo, ropa grafa.
                                     </span>
                                 </div>
@@ -499,7 +499,7 @@ export default function EppResolution299Modal({
 
                         {/* EPP Table preview */}
                         <div className="border border-black overflow-hidden mb-1">
-                            <table className="w-full text-[10px] border-collapse">
+                            <table className="w-full text-[11px] border-collapse">
                                 <thead>
                                     <tr className="bg-slate-100 font-bold border-b border-black text-center">
                                         <th className="p-1 border-r border-black w-8">#</th>
@@ -545,7 +545,7 @@ export default function EppResolution299Modal({
                                                 <td className="p-1 text-center font-mono border-r border-black">
                                                     {new Date(it.fechaEntrega || del.fechaEntrega).toLocaleDateString('es-AR')}
                                                 </td>
-                                                <td className="p-1 text-center font-bold text-[9px] text-emerald-800">
+                                                <td className="p-1 text-center font-bold text-[11px] text-emerald-800">
                                                     {del.estado === 'FIRMADA' ? (
                                                         <div 
                                                             className="flex items-center justify-between gap-1 bg-emerald-50 dark:bg-emerald-950/30 px-1 py-0.5 rounded cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900 transition-colors"
@@ -572,12 +572,12 @@ export default function EppResolution299Modal({
                             </table>
                         </div>
                         {rowsArray.length > 10 && (
-                            <div className="text-center text-[10px] text-slate-500 italic py-1">
+                            <div className="text-center text-[11px] text-slate-500 italic py-1">
                                 (... y {rowsArray.length - 10} filas adicionales incluidas en la impresión oficial)
                             </div>
                         )}
 
-                        <div className="border border-black p-1.5 text-[9px] mt-1 flex items-center justify-between">
+                        <div className="border border-black p-1.5 text-[11px] mt-1 flex items-center justify-between">
                             <div>
                                 (18) Información adicional: Constancia de entrega conforme a Resolución SRT 299/11 y normativas de Higiene y Seguridad con trazabilidad criptográfica.
                             </div>
@@ -610,7 +610,7 @@ export default function EppResolution299Modal({
                         </button>
                         <button
                             onClick={handlePrint}
-                            className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs transition-all shadow-sm flex items-center gap-1.5 active:scale-95"
+                            className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs transition-all flex items-center gap-1.5"
                         >
                             <Printer className="w-4 h-4" />
                             <span>Imprimir Formato Apaisado</span>

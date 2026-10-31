@@ -38,13 +38,13 @@ export default function CronogramaPage() {
     };
 
     return (
-        <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
+        <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-200 pb-20">
             <ProjectsHeader activeTabId="cronograma" />
             
             {isLoading ? (
                 <div className="flex flex-col items-center justify-center py-32 space-y-4">
                     <Loader2 className="w-10 h-10 text-primary animate-spin" />
-                    <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Cargando Cronograma...</p>
+                    <p className="text-slate-500 font-bold uppercase tracking-wider text-xs">Cargando Cronograma...</p>
                 </div>
             ) : (
                 <div className="h-[75vh] w-full">

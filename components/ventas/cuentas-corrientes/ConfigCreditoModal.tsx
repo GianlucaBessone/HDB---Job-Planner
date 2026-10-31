@@ -64,7 +64,7 @@ export default function ConfigCreditoModal({
     };
 
     return (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-950/50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
                 <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -72,7 +72,7 @@ export default function ConfigCreditoModal({
                             <Settings2 className="w-5 h-5" />
                         </div>
                         <div>
-                            <h3 className="font-black text-sm">Política Crediticia del Cliente</h3>
+                            <h3 className="font-bold text-sm">Política Crediticia del Cliente</h3>
                             <p className="text-xs text-slate-400">{cliente.name}</p>
                         </div>
                     </div>
@@ -135,7 +135,7 @@ export default function ConfigCreditoModal({
                                 onChange={(e) => setLimiteCredito(e.target.value)}
                                 className="w-full px-3 py-2 text-sm font-mono font-bold rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             />
-                            <span className="text-[10px] text-slate-400">0 = Sin tope fijo</span>
+                            <span className="text-[11px] text-slate-400">0 = Sin tope fijo</span>
                         </div>
 
                         <div>
@@ -150,7 +150,7 @@ export default function ConfigCreditoModal({
                                 onChange={(e) => setPlazoDias(e.target.value)}
                                 className="w-full px-3 py-2 text-sm font-mono font-bold rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             />
-                            <span className="text-[10px] text-slate-400">Ej: 15, 30, 60 días</span>
+                            <span className="text-[11px] text-slate-400">Ej: 15, 30, 60 días</span>
                         </div>
                     </div>
 
@@ -179,7 +179,7 @@ export default function ConfigCreditoModal({
                         <button
                             type="submit"
                             disabled={submitting}
-                            className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50"
                         >
                             <CheckCircle2 className="w-4 h-4" />
                             {submitting ? 'Guardando...' : 'Guardar Configuración'}

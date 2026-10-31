@@ -230,17 +230,17 @@ export default function AuditPage() {
             case 'DELETE': return 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800';
             case 'APPROVE': return 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800';
             case 'REJECT': return 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800';
-            default: return 'bg-background text-foreground/50 text-slate-600 dark:text-slate-300 border-slate-100 dark:border-slate-800';
+            default: return 'bg-background text-foreground text-slate-600 dark:text-slate-300 border-slate-100 dark:border-slate-800';
         }
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500 pb-20">
+        <div className="space-y-8 animate-in fade-in duration-200 pb-20">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-3">
-                        <History className="w-8 h-8 text-primary" />
+                    <h1 className="text-title text-slate-800 dark:text-slate-100 flex items-center gap-3">
+                        <History className="w-5 h-5 text-brand-600 dark:text-brand-300" />
                         Registro de Auditoría
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400 font-medium italic">Trazabilidad completa de acciones y cambios en el sistema.</p>
@@ -326,7 +326,7 @@ function LogEntry({ log, isExpanded, onToggle, actionStyle }: any) {
     const summary = buildSummary(log);
 
     return (
-        <div className={`bg-card text-card-foreground rounded-2xl border transition-all duration-300 overflow-hidden ${isExpanded ? 'border-primary/40 shadow-lg shadow-primary/5' : 'border-slate-100 dark:border-slate-800 shadow-sm hover:border-slate-200 dark:hover:border-slate-700'}`}>
+        <div className={`bg-card text-card-foreground rounded-2xl border transition-all duration-300 overflow-hidden ${isExpanded ? 'border-primary/40 shadow-lg' : 'border-slate-100 dark:border-slate-800 shadow-sm hover:border-slate-200 dark:hover:border-slate-700'}`}>
             <div className="p-4 md:p-5 flex flex-col md:flex-row md:items-center justify-between gap-3 cursor-pointer" onClick={onToggle}>
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                     {/* Action Icon */}
@@ -337,10 +337,10 @@ function LogEntry({ log, isExpanded, onToggle, actionStyle }: any) {
                     <div className="min-w-0 flex-1">
                         {/* Tags row */}
                         <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                            <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border ${actionStyle}`}>
+                            <span className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold uppercase tracking-wider border ${actionStyle}`}>
                                 {actionLabel}
                             </span>
-                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{entityLabel}</span>
+                            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{entityLabel}</span>
                         </div>
                         {/* Summary */}
                         <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">
@@ -359,10 +359,10 @@ function LogEntry({ log, isExpanded, onToggle, actionStyle }: any) {
                     </div>
                     {/* Timestamp */}
                     <div className="text-right hidden md:block">
-                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 leading-none">
+                        <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 leading-none">
                             {format(new Date(log.timestamp), "dd MMM yyyy", { locale: es })}
                         </p>
-                        <p className="text-xs font-black text-slate-600 dark:text-slate-300 leading-tight">
+                        <p className="text-xs font-bold text-slate-600 dark:text-slate-300 leading-tight">
                             {format(new Date(log.timestamp), 'HH:mm:ss')}
                         </p>
                     </div>
@@ -422,8 +422,8 @@ function ExpandedDetails({ log }: { log: any }) {
         <div className="space-y-4 mt-2">
             {/* ID mini badge */}
             {log.entityId && (
-                <div className="flex items-center gap-2 text-[10px] text-slate-400 dark:text-slate-500">
-                    <span className="font-bold uppercase tracking-widest">ID:</span>
+                <div className="flex items-center gap-2 text-[11px] text-slate-400 dark:text-slate-500">
+                    <span className="font-bold uppercase tracking-wider">ID:</span>
                     <code className="bg-background text-foreground px-2 py-0.5 rounded font-mono">{log.entityId}</code>
                 </div>
             )}
@@ -486,8 +486,8 @@ function DiffTable({ oldValue, newValue }: { oldValue: any; newValue: any }) {
 
     return (
         <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-            <div className="bg-background text-foreground/50 px-4 py-2 border-b border-slate-200 dark:border-slate-700">
-                <h5 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+            <div className="bg-background text-foreground px-4 py-2 border-b border-slate-200 dark:border-slate-700">
+                <h5 className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                     {changedFields.length} campo{changedFields.length > 1 ? 's' : ''} modificado{changedFields.length > 1 ? 's' : ''}
                 </h5>
             </div>
@@ -541,7 +541,7 @@ function FieldsTable({ title, data, variant }: { title: string; data: any; varia
     return (
         <div className={`rounded-xl border ${borderColor} overflow-hidden`}>
             <div className={`px-4 py-2 border-b ${headerBg}`}>
-                <h5 className={`text-[10px] font-black uppercase tracking-widest ${headerText}`}>{title}</h5>
+                <h5 className={`text-[11px] font-semibold uppercase tracking-wider ${headerText}`}>{title}</h5>
             </div>
             <div className="divide-y divide-slate-50 dark:divide-slate-800/50">
                 {sorted.map(([key, value]) => (
@@ -562,7 +562,7 @@ function MetadataSection({ metadata }: { metadata: any }) {
     return (
         <div className="rounded-xl border border-indigo-200 dark:border-indigo-800 overflow-hidden">
             <div className="px-4 py-2 border-b border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/30">
-                <h5 className="text-[10px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-widest">Contexto de la Acción</h5>
+                <h5 className="text-[11px] font-semibold text-indigo-500 dark:text-indigo-400 uppercase tracking-wider">Contexto de la Acción</h5>
             </div>
             <div className="p-3 flex flex-wrap gap-3">
                 {metadata.deviceId && (
@@ -601,7 +601,7 @@ function MetaBadge({ icon, label, value }: { icon: any; label: string; value: st
     return (
         <div className="flex items-center gap-1.5 bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-800/50 rounded-lg px-2.5 py-1.5">
             <span className="text-indigo-400">{icon}</span>
-            <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">{label}:</span>
+            <span className="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider">{label}:</span>
             <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">{value}</span>
         </div>
     );
@@ -610,13 +610,13 @@ function MetaBadge({ icon, label, value }: { icon: any; label: string; value: st
 // ── Stat Card ────────────────────────────────────────────────────
 function StatCard({ icon, label, value }: any) {
     return (
-        <div className="bg-card text-card-foreground p-5 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 transition-all hover:scale-[1.03]">
+        <div className="bg-card text-card-foreground p-5 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-4 transition-all">
             <div className="w-10 h-10 rounded-2xl bg-primary/5 flex items-center justify-center text-primary">
                 {icon}
             </div>
             <div>
-                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1">{label}</p>
-                <p className="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight leading-none">{value}</p>
+                <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none mb-1">{label}</p>
+                <p className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight leading-none">{value}</p>
             </div>
         </div>
     );

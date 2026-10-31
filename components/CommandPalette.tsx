@@ -165,12 +165,12 @@ export function CommandPalette({ views, role }: CommandPaletteProps) {
     return (
         <div className="fixed inset-0 z-[200] flex items-start justify-center pt-[12vh] sm:pt-[15vh]">
             <div
-                className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200"
+                className="scrim animate-in fade-in duration-150"
                 onClick={() => setOpen(false)}
             />
 
-            <div className="relative w-full max-w-2xl mx-4 bg-card text-card-foreground rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-top-4 duration-300">
-                <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 dark:border-slate-700">
+            <div role="dialog" aria-modal="true" aria-label="Buscador global" className="relative w-full max-w-2xl mx-4 bg-popover text-popover-foreground rounded-2xl shadow-2xl border border-border overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                <div className="flex items-center gap-3 px-4 h-14 border-b border-border">
                     <Search className="w-5 h-5 text-slate-400 shrink-0" />
                     <input
                         ref={inputRef}
@@ -179,27 +179,30 @@ export function CommandPalette({ views, role }: CommandPaletteProps) {
                         value={query}
                         onChange={e => setQuery(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        className="flex-1 bg-transparent outline-none text-base sm:text-lg font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400"
+                        aria-label="Buscar vistas, acciones y registros recientes"
+                        className="flex-1 !bg-transparent !border-0 !p-0 !min-h-0 outline-none focus-visible:!outline-none text-base text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
                     />
                     <button
                         onClick={() => setOpen(false)}
-                        className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                        className="btn btn-ghost btn-icon btn-sm btn-icon-inline"
+                        aria-label="Cerrar buscador"
                     >
-                        <X className="w-5 h-5 text-slate-400" />
+                        <X />
                     </button>
                 </div>
 
                 <div ref={listRef} className="max-h-[50vh] overflow-y-auto p-2">
                     {flatItems.length === 0 ? (
                         <div className="py-12 text-center">
-                            <Search className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-                            <p className="text-sm text-slate-400 font-semibold">No se encontraron resultados</p>
+                            <Search className="w-6 h-6 text-slate-400 mx-auto mb-2" aria-hidden="true" />
+                            <p className="text-sm font-medium text-slate-700 dark:text-slate-200">No se encontraron resultados</p>
+                            <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-1">Probá con el nombre de un módulo o una acción.</p>
                         </div>
                     ) : (
                         flatItems.map((item, i) => {
                             if (item.type === 'header') {
                                 return (
-                                    <p key={`header-${i}`} className="px-3 py-2 mt-2 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest first:mt-0">
+                                    <p key={`header-${i}`} className="eyebrow px-3 pt-3 pb-1.5 first:pt-1">
                                         {item.label}
                                     </p>
                                 );
@@ -217,16 +220,16 @@ export function CommandPalette({ views, role }: CommandPaletteProps) {
                                         item.action();
                                     }}
                                     onMouseEnter={() => setSelectedIdx(idx)}
-                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-150 ${
+                                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
                                         isSelected
-                                            ? 'bg-primary/10 dark:bg-primary/20'
+                                            ? 'bg-brand-50 dark:bg-brand-950'
                                             : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'
                                     }`}
                                 >
-                                    <div className={`p-2 rounded-lg shrink-0 ${
-                                        item.type === 'view' ? (item.color + ' text-white') : 
-                                        item.type === 'command' ? 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300' :
-                                        'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                                    <div className={`w-8 h-8 flex items-center justify-center rounded-lg shrink-0 ${
+                                        isSelected
+                                            ? 'bg-brand-100 text-brand-700 dark:bg-brand-900 dark:text-brand-200'
+                                            : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
                                     }`}>
                                         {item.type === 'view' ? renderIcon(item.iconName, 'w-4 h-4') :
                                          item.type === 'command' ? renderIcon(item.iconName, 'w-4 h-4') :
@@ -235,45 +238,45 @@ export function CommandPalette({ views, role }: CommandPaletteProps) {
                                     
                                     <div className="flex-1 min-w-0 flex items-center justify-between">
                                         <div>
-                                            <p className={`text-sm font-bold truncate ${isSelected ? 'text-primary' : 'text-slate-700 dark:text-slate-200'}`}>
+                                            <p className={`text-[13px] font-medium truncate ${isSelected ? 'text-brand-800 dark:text-brand-100' : 'text-slate-800 dark:text-slate-100'}`}>
                                                 {item.label}
                                             </p>
-                                            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate">
+                                            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                                                 {item.description}
                                             </p>
                                         </div>
                                         {item.keys && (
                                             <div className="hidden sm:flex gap-1 items-center">
                                                 {item.keys.map((k: string) => (
-                                                    <kbd key={k} className="px-1.5 py-0.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded text-[10px] font-bold text-slate-500 uppercase">
-                                                        {k === 'ctrl' ? '⌘' : k}
+                                                    <kbd key={k} className="kbd">
+                                                        {k === 'ctrl' ? 'Ctrl' : k.toUpperCase()}
                                                     </kbd>
                                                 ))}
                                             </div>
                                         )}
                                     </div>
                                     
-                                    {isSelected && <CornerDownLeft className="w-4 h-4 text-primary shrink-0 opacity-50" />}
+                                    {isSelected && <CornerDownLeft className="w-4 h-4 text-brand-600 dark:text-brand-300 shrink-0" aria-hidden="true" />}
                                 </button>
                             );
                         })
                     )}
                 </div>
 
-                <div className="flex flex-wrap items-center justify-center gap-4 px-4 py-3 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/30">
-                    <span className="flex items-center gap-1.5 text-[10px] text-slate-400 font-semibold">
+                <div className="hidden sm:flex items-center gap-4 px-4 h-10 border-t border-border bg-surface-sunken text-xs text-slate-500 dark:text-slate-400">
+                    <span className="flex items-center gap-1.5">
                         <span className="flex items-center gap-0.5">
-                            <kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-[9px] font-bold shadow-sm"><ArrowUp className="w-2.5 h-2.5 inline" /></kbd>
-                            <kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-[9px] font-bold shadow-sm"><ArrowDown className="w-2.5 h-2.5 inline" /></kbd>
+                            <kbd className="kbd"><ArrowUp className="w-2.5 h-2.5 inline" /></kbd>
+                            <kbd className="kbd"><ArrowDown className="w-2.5 h-2.5 inline" /></kbd>
                         </span>
                         navegar
                     </span>
-                    <span className="flex items-center gap-1.5 text-[10px] text-slate-400 font-semibold">
-                        <kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-[9px] font-bold shadow-sm">↵</kbd>
+                    <span className="flex items-center gap-1.5">
+                        <kbd className="kbd">↵</kbd>
                         ejecutar
                     </span>
-                    <span className="flex items-center gap-1.5 text-[10px] text-slate-400 font-semibold">
-                        <kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded text-[9px] font-bold shadow-sm">esc</kbd>
+                    <span className="flex items-center gap-1.5">
+                        <kbd className="kbd">esc</kbd>
                         cerrar
                     </span>
                 </div>

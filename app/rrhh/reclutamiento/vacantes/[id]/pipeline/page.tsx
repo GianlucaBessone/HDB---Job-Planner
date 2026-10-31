@@ -125,7 +125,7 @@ export default function PipelinePage({ params: paramsPromise }: { params: Promis
     const totalCandidatesCount = Object.values(columns).reduce((acc, col) => acc + (col?.length || 0), 0);
 
     return (
-        <div className="w-full max-w-[1600px] mx-auto p-4 md:p-6 flex flex-col h-screen animate-in fade-in">
+        <div className="w-full flex flex-col h-[calc(100dvh-var(--topbar-h)-4rem)]">
             <ModuleHeader
                 title={vacancy ? `Pipeline: ${vacancy.title}` : "Pipeline de Reclutamiento"}
                 description={
@@ -217,7 +217,7 @@ export default function PipelinePage({ params: paramsPromise }: { params: Promis
                                                             
                                                             <div className="flex flex-wrap gap-1 mb-3">
                                                                 {candidate.tags.map((tag: string) => (
-                                                                    <span key={tag} className="text-[10px] uppercase font-bold px-1.5 py-0.5 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-700">
+                                                                    <span key={tag} className="text-[11px] uppercase font-bold px-1.5 py-0.5 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-700">
                                                                         {tag}
                                                                     </span>
                                                                 ))}

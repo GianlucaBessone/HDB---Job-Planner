@@ -174,8 +174,8 @@ export default function DatasetsCliente({ user }: { user: any }) {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                        <Database className="w-7 h-7 text-indigo-600 dark:text-indigo-400" /> Datasets
+                    <h1 className="text-title text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                        <Database className="text-indigo-600 dark:text-indigo-400 w-5 h-5 text-brand-600 dark:text-brand-300" /> Datasets
                     </h1>
                     <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                         Motor de extracción de datos, agregaciones y consultas SQL/Visuales para KPIs y Gráficos.
@@ -193,7 +193,7 @@ export default function DatasetsCliente({ user }: { user: any }) {
                     </button>
                     <button 
                         onClick={() => { setEditingDataset(null); setShowFormModal(true); }} 
-                        className="flex items-center gap-2 h-10 px-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-sm transition-all"
+                        className="flex items-center gap-2 h-10 px-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all"
                     >
                         <Plus className="w-4 h-4" /> Nuevo Dataset
                     </button>
@@ -207,7 +207,7 @@ export default function DatasetsCliente({ user }: { user: any }) {
                         <Layers className="w-4 h-4" />
                     </div>
                     <div>
-                        <div className="text-lg font-black text-slate-800 dark:text-slate-100">{stats.total}</div>
+                        <div className="text-lg font-bold text-slate-800 dark:text-slate-100">{stats.total}</div>
                         <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Total Datasets</div>
                     </div>
                 </div>
@@ -217,7 +217,7 @@ export default function DatasetsCliente({ user }: { user: any }) {
                         <CheckCircle2 className="w-4 h-4" />
                     </div>
                     <div>
-                        <div className="text-lg font-black text-emerald-600 dark:text-emerald-400">{stats.activos}</div>
+                        <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{stats.activos}</div>
                         <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Activos</div>
                     </div>
                 </div>
@@ -227,7 +227,7 @@ export default function DatasetsCliente({ user }: { user: any }) {
                         <Clock className="w-4 h-4" />
                     </div>
                     <div>
-                        <div className="text-lg font-black text-amber-600 dark:text-amber-400">{stats.programados}</div>
+                        <div className="text-lg font-bold text-amber-600 dark:text-amber-400">{stats.programados}</div>
                         <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Programados</div>
                     </div>
                 </div>
@@ -237,7 +237,7 @@ export default function DatasetsCliente({ user }: { user: any }) {
                         <AlertTriangle className="w-4 h-4" />
                     </div>
                     <div>
-                        <div className="text-lg font-black text-rose-600 dark:text-rose-400">{stats.errores}</div>
+                        <div className="text-lg font-bold text-rose-600 dark:text-rose-400">{stats.errores}</div>
                         <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Con Error</div>
                     </div>
                 </div>
@@ -318,7 +318,7 @@ export default function DatasetsCliente({ user }: { user: any }) {
                     ) : (
                         <button 
                             onClick={() => { setEditingDataset(null); setShowFormModal(true); }}
-                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all"
+                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all"
                         >
                             Crear Nuevo Dataset
                         </button>
@@ -338,21 +338,21 @@ export default function DatasetsCliente({ user }: { user: any }) {
                                 <div className="flex justify-between items-start mb-3 gap-3">
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                                            <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/40 px-2 py-0.5 rounded uppercase tracking-wider font-mono">
+                                            <span className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/40 px-2 py-0.5 rounded uppercase tracking-wider font-mono">
                                                 {ds.codigoDataset}
                                             </span>
-                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
+                                            <span className={`text-[11px] font-bold px-2 py-0.5 rounded uppercase ${
                                                 ds.estado === 'Activo' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400' :
                                                 ds.estado === 'Error' ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400' :
                                                 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
                                             }`}>
                                                 {ds.estado}
                                             </span>
-                                            <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">
+                                            <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">
                                                 {isSQL ? 'SQL' : 'Visual'}
                                             </span>
                                             {!ds.habilitado && (
-                                                <span className="text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 px-2 py-0.5 rounded uppercase">
+                                                <span className="text-[11px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 px-2 py-0.5 rounded uppercase">
                                                     Deshabilitado
                                                 </span>
                                             )}
@@ -422,7 +422,7 @@ export default function DatasetsCliente({ user }: { user: any }) {
                                 <div className="text-[11px] text-slate-400 mb-3 flex items-center justify-between">
                                     <span>Última ejec: <strong className="text-slate-600 dark:text-slate-300 font-normal">{lastExecDate}</strong></span>
                                     {ds.limiteRegistros && (
-                                        <span className="font-mono text-[10px]">Máx {ds.limiteRegistros} filas</span>
+                                        <span className="font-mono text-[11px]">Máx {ds.limiteRegistros} filas</span>
                                     )}
                                 </div>
 

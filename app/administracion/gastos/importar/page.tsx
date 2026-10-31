@@ -204,7 +204,7 @@ export default function ImportarGastos() {
   // Base classes for the new condensed layout
   const inputClass = "w-full min-w-0 bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 hover:bg-slate-100 dark:hover:bg-slate-700/50 focus:bg-white dark:focus:bg-slate-800 focus:ring-0 rounded px-1.5 py-0.5 text-xs text-slate-800 dark:text-slate-200 transition-all outline-none font-medium h-[26px]";
   const numberClass = `${inputClass} text-right font-mono`;
-  const thClass = "p-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 dark:border-slate-700 align-middle leading-tight";
+  const thClass = "p-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200 dark:border-slate-700 align-middle leading-tight";
 
   return (
     <div className="flex flex-col h-full bg-background text-foreground">
@@ -241,7 +241,7 @@ export default function ImportarGastos() {
               <button 
                 onClick={() => fileInputRef.current?.click()}
                 disabled={loading}
-                className="flex items-center justify-center px-4 py-2 bg-primary hover:bg-primary/90 text-white text-xs font-bold rounded-lg shadow-sm shadow-blue-600/20 transition-colors disabled:opacity-50"
+                className="flex items-center justify-center px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-lg transition-colors disabled:opacity-50"
               >
                 {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
                 Subir Archivo Excel
@@ -271,7 +271,7 @@ export default function ImportarGastos() {
             {data.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-slate-400">
                 <FileSpreadsheet className="w-12 h-12 mb-3 opacity-20" />
-                <p className="font-bold uppercase tracking-widest text-[10px]">Sube un archivo para previsualizar los datos</p>
+                <p className="font-bold uppercase tracking-wider text-[11px]">Sube un archivo para previsualizar los datos</p>
               </div>
             ) : (
               <div className="min-w-max">
@@ -366,7 +366,7 @@ export default function ImportarGastos() {
       </div>
 
       {/* Floating Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-200 dark:border-slate-700 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] z-40 flex justify-between items-center">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-t border-slate-200 dark:border-slate-700 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] z-40 flex justify-between items-center">
         <button 
           onClick={() => router.back()}
           className="px-6 py-2.5 rounded-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-2"
@@ -377,7 +377,7 @@ export default function ImportarGastos() {
         <button 
           onClick={handleSave}
           disabled={saving || data.length === 0}
-          className="px-8 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:hover:bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-600/30 transition-all flex items-center gap-2"
+          className="px-8 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:hover:bg-emerald-600 text-white rounded-xl font-bold transition-all flex items-center gap-2"
         >
           {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
           Guardar Importación

@@ -1,29 +1,21 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Home,
-  ChevronDown,
-  ChevronUp,
-  Pencil,
-  X,
-  Star,
+  Check,
   Clock as ClockIcon,
   GripVertical,
-  Trash2,
-  Briefcase,
-  Activity,
-  AlertTriangle,
-  ShieldAlert,
-  Calendar,
+  Pencil,
+  Search,
+  Star,
+
 } from "lucide-react";
 import Link from "next/link";
 import {
   ViewConfig,
   isViewAllowed,
   DEFAULT_VIEWS,
-  DEFAULT_SECTIONS,
   groupViewsBySection,
   getViewConfig,
 } from "@/lib/viewAccess";
@@ -37,6 +29,26 @@ import {
   HomePrefs,
 } from "@/lib/viewPreferences";
 import TechAssistantChat from "@/components/TechAssistantChat";
+import { EmptyState, LoadingState } from "@/components/ui/States";
+import { cn } from "@/lib/cn";
+
+const ROLE_LABEL: Record<string, string> = {
+  admin: "Administrador",
+  supervisor: "Supervisor",
+  operador: "Operador",
+  qa: "Calidad",
+  vendedor: "Vendedor",
+};
+
+function greeting(date: Date) {
+  const h = date.getHours();
+  if (h < 12) return "Buenos días";
+  if (h < 20) return "Buenas tardes";
+  return "Buenas noches";
+}
+
+const normalize = (s: string) =>
+  (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 export default function HomePage() {
   const router = useRouter();
@@ -60,16 +72,18 @@ export default function HomePage() {
   });
 
   const [editMode, setEditMode] = useState(false);
+  const [query, setQuery] = useState("");
   const [favorites, setFavoritesLocal] = useState<string[]>([]);
   const [recentKeys, setRecentKeys] = useState<string[]>([]);
   const [prefs, setPrefs] = useState<HomePrefs>({
     showRecents: true,
     showFavorites: true,
   });
-  const [recentsExpanded, setRecentsExpanded] = useState(false);
   const [dragOverFavorites, setDragOverFavorites] = useState(false);
+  const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
+    setNow(new Date());
     const stored = localStorage.getItem("currentUser");
     if (stored) {
       try {
@@ -104,10 +118,8 @@ export default function HomePage() {
   const show = (key: string) =>
     isViewAllowed(key, role, "home", effectiveViews);
 
-  // Get view by key
   const getView = (key: string) => effectiveViews.find((v) => v.key === key);
 
-  // Favorites management
   const addFavorite = useCallback(
     (key: string) => {
       setFavoritesLocal((prev) => {
@@ -131,6 +143,11 @@ export default function HomePage() {
     [userId],
   );
 
+  const toggleFavorite = useCallback(
+    (key: string) => (favorites.includes(key) ? removeFavorite(key) : addFavorite(key)),
+    [favorites, addFavorite, removeFavorite],
+  );
+
   const togglePref = useCallback(
     (key: keyof HomePrefs) => {
       setPrefs((prev) => {
@@ -142,22 +159,11 @@ export default function HomePage() {
     [userId],
   );
 
-  // Drag handlers
+  // Drag & drop hacia Favoritos (modo personalizar)
   const handleDragStart = (e: React.DragEvent, viewKey: string) => {
     e.dataTransfer.setData("text/plain", viewKey);
     e.dataTransfer.effectAllowed = "copy";
   };
-
-  const handleDragOverFavorites = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "copy";
-    setDragOverFavorites(true);
-  };
-
-  const handleDragLeaveFavorites = () => {
-    setDragOverFavorites(false);
-  };
-
   const handleDropFavorites = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOverFavorites(false);
@@ -165,240 +171,201 @@ export default function HomePage() {
     if (key) addFavorite(key);
   };
 
-  const gridClass =
-    "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 transition-all duration-300";
+  const grouped = useMemo(
+    () => groupViewsBySection(effectiveViews, role, "home"),
+    [effectiveViews, role],
+  );
+
+  const filteredGroups = useMemo(() => {
+    const q = normalize(query.trim());
+    if (!q) return grouped;
+    return grouped
+      .map((g) => ({
+        ...g,
+        views: g.views.filter(
+          (v) =>
+            normalize(v.label).includes(q) ||
+            normalize(v.description).includes(q) ||
+            normalize(g.section.label).includes(q),
+        ),
+      }))
+      .filter((g) => g.views.length > 0);
+  }, [grouped, query]);
 
   if (!userRole) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-      </div>
-    );
+    return <LoadingState />;
   }
 
-  // Build section groups
-  const grouped = groupViewsBySection(effectiveViews, role, "home");
-
-  // Recents
   const recentViews = recentKeys
     .map((key) => getView(key))
-    .filter((v): v is ViewConfig => !!v && show(v.key));
+    .filter((v): v is ViewConfig => !!v && show(v.key))
+    .slice(0, 8);
 
-  // Favorites
   const favoriteViews = favorites
     .map((key) => getView(key))
     .filter((v): v is ViewConfig => !!v && show(v.key));
 
+  const isSearching = query.trim().length > 0;
+  const gridClass =
+    "grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-2.5";
+
   return (
-    <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
-      {/* Header with controls */}
-      <div className="flex flex-row justify-between items-center gap-2 md:gap-4 w-full">
-        <div className="space-y-0.5 min-w-0">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-1.5 sm:gap-2 md:gap-3 truncate">
-            <Home className="w-5 h-5 sm:w-6 h-6 md:w-8 md:h-8 text-primary shrink-0" />
-            <span className="truncate">Hola, {userName.split(" ")[0]}</span>
-          </h2>
-          <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium tracking-tight uppercase tracking-widest font-black leading-none">
-            {role}
+    <div className="w-full space-y-8 pb-12">
+      {/* Encabezado */}
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-[13px] text-slate-500 dark:text-slate-400 first-letter:uppercase">
+            {now?.toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" })}
+          </p>
+          <h1 className="text-display text-slate-900 dark:text-slate-50 truncate mt-0.5">
+            {now ? greeting(now) : "Hola"}, {userName.split(" ")[0]}
+          </h1>
+          <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-1">
+            {ROLE_LABEL[role] || role} · {grouped.reduce((n, g) => n + g.views.length, 0)} módulos disponibles
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          {/* Edit mode toggle */}
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          <div className="relative flex-1 md:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" aria-hidden="true" />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar un módulo"
+              aria-label="Buscar un módulo"
+              className="input !pl-9"
+            />
+          </div>
           <button
             onClick={() => setEditMode(!editMode)}
-            className={`p-2 rounded-xl transition-all duration-300 active:scale-95 ${
-              editMode
-                ? "bg-primary text-white shadow-md shadow-primary/20"
-                : "bg-secondary text-secondary-foreground/60 text-slate-400 dark:text-slate-500 hover:text-primary border border-slate-200 dark:border-slate-800"
-            }`}
-            title="Personalizar inicio"
+            className={cn("btn shrink-0", editMode ? "btn-primary" : "btn-secondary")}
+            aria-pressed={editMode}
           >
-            {editMode ? (
-              <X className="w-4 h-4" />
-            ) : (
-              <Pencil className="w-4 h-4" />
-            )}
+            {editMode ? <Check /> : <Pencil />}
+            <span className="hidden sm:inline">{editMode ? "Listo" : "Personalizar"}</span>
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* Edit mode controls */}
+      {/* Personalización */}
       {editMode && (
-        <div className="bg-primary/5 dark:bg-primary/10 border border-primary/20 rounded-2xl p-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-          <p className="text-xs font-black text-primary uppercase tracking-widest">
-            Personalizar Inicio
+        <section className="surface p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 animate-in fade-in duration-150" aria-label="Personalizar inicio">
+          <p className="text-[13px] text-slate-600 dark:text-slate-300 flex-1">
+            Marcá la estrella de un módulo, o arrastralo a Favoritos, para tenerlo a mano.
           </p>
-          <div className="flex flex-wrap gap-3">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={prefs.showRecents}
-                onChange={() => togglePref("showRecents")}
-                className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary"
-              />
-              <span className="text-sm font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
-                <ClockIcon className="w-3.5 h-3.5" /> Recientes
-              </span>
+          <div className="flex flex-wrap gap-4">
+            <label className="flex items-center gap-2 cursor-pointer text-[13px] font-medium text-slate-700 dark:text-slate-200">
+              <input type="checkbox" checked={prefs.showRecents} onChange={() => togglePref("showRecents")} className="w-4 h-4 rounded" />
+              Mostrar recientes
             </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={prefs.showFavorites}
-                onChange={() => togglePref("showFavorites")}
-                className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary"
-              />
-              <span className="text-sm font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
-                <Star className="w-3.5 h-3.5" /> Favoritos
-              </span>
+            <label className="flex items-center gap-2 cursor-pointer text-[13px] font-medium text-slate-700 dark:text-slate-200">
+              <input type="checkbox" checked={prefs.showFavorites} onChange={() => togglePref("showFavorites")} className="w-4 h-4 rounded" />
+              Mostrar favoritos
             </label>
           </div>
-          <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
-            Arrastrá las tarjetas o tocá la estrella para agregarlas a Favoritos.
-          </p>
-        </div>
+        </section>
       )}
 
-      {/* Recents section — collapsible */}
-      {prefs.showRecents && recentViews.length > 0 && (
-        <div className="space-y-2">
-          <button
-            onClick={() => setRecentsExpanded(!recentsExpanded)}
-            className="flex items-center gap-2 text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 hover:text-primary transition-colors group w-full text-left"
-          >
-            <ClockIcon className="w-4 h-4" />
-            <span>Recientes</span>
-            <span className="text-[10px] font-bold bg-muted text-muted-foreground text-slate-400 dark:text-slate-500 px-1.5 py-0.5 rounded-md">
-              {recentViews.length}
-            </span>
-            {recentsExpanded ? (
-              <ChevronUp className="w-4 h-4 ml-auto" />
-            ) : (
-              <ChevronDown className="w-4 h-4 ml-auto" />
+      {/* Recientes: accesos de un clic */}
+      {!isSearching && prefs.showRecents && recentViews.length > 0 && (
+        <section aria-labelledby="home-recientes">
+          <h2 id="home-recientes" className="eyebrow flex items-center gap-1.5 mb-2.5">
+            <ClockIcon className="w-3.5 h-3.5" aria-hidden="true" /> Recientes
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {recentViews.map((v) => (
+              <Link
+                key={`recent-${v.key}`}
+                href={v.key}
+                className="inline-flex items-center gap-2 h-9 pl-2.5 pr-3 rounded-lg border border-border bg-card text-[13px] font-medium text-slate-700 dark:text-slate-200 hover:border-slate-300 hover:bg-slate-50 dark:hover:border-slate-600 dark:hover:bg-slate-700/50 transition-colors"
+              >
+                <span className="text-slate-500 dark:text-slate-400">{renderIcon(v.iconName, "w-4 h-4")}</span>
+                {v.label}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Favoritos */}
+      {!isSearching && prefs.showFavorites && (favoriteViews.length > 0 || editMode) && (
+        <section aria-labelledby="home-favoritos">
+          <h2 id="home-favoritos" className="eyebrow flex items-center gap-1.5 mb-2.5">
+            <Star className="w-3.5 h-3.5" aria-hidden="true" /> Favoritos
+            {favoriteViews.length > 0 && <span className="text-slate-400 font-normal normal-case tracking-normal">({favoriteViews.length})</span>}
+          </h2>
+          <div
+            onDragOver={editMode ? (e) => { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; setDragOverFavorites(true); } : undefined}
+            onDragLeave={editMode ? () => setDragOverFavorites(false) : undefined}
+            onDrop={editMode ? handleDropFavorites : undefined}
+            className={cn(
+              editMode && "rounded-2xl border-2 border-dashed p-2.5 transition-colors",
+              editMode && (dragOverFavorites ? "border-brand-400 bg-brand-50/60 dark:bg-brand-950/40" : "border-slate-200 dark:border-slate-700"),
             )}
-          </button>
-          {recentsExpanded && (
-            <div
-              className={`${gridClass} animate-in fade-in slide-in-from-top-2 duration-300`}
-            >
-              {recentViews.map((v) => (
-                <ActionCard
-                  key={`recent-${v.key}`}
+          >
+            {favoriteViews.length === 0 ? (
+              <p className="py-6 text-center text-[13px] text-slate-500 dark:text-slate-400">
+                Arrastrá módulos acá o marcá su estrella.
+              </p>
+            ) : (
+              <div className={gridClass}>
+                {favoriteViews.map((v) => (
+                  <ModuleTile
+                    key={`fav-${v.key}`}
+                    view={v}
+                    editMode={editMode}
+                    isFavorite
+                    onToggleFavorite={removeFavorite}
+                    onDragStart={handleDragStart}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Módulos por sección */}
+      {filteredGroups.length === 0 ? (
+        <div className="surface">
+          <EmptyState
+            icon={<Search />}
+            title="No hay módulos que coincidan"
+            description={`No encontramos módulos para "${query}". Probá con otra palabra o usá el buscador global (Ctrl K) para buscar acciones.`}
+            action={<button className="btn btn-secondary btn-sm" onClick={() => setQuery("")}>Limpiar búsqueda</button>}
+          />
+        </div>
+      ) : (
+        filteredGroups.map(({ section, views: sectionViews }) => (
+          <section key={section.key} aria-labelledby={`home-sec-${section.key}`}>
+            <h2 id={`home-sec-${section.key}`} className="eyebrow mb-2.5">
+              {section.label}
+            </h2>
+            <div className={gridClass}>
+              {sectionViews.map((v) => (
+                <ModuleTile
+                  key={v.key}
                   view={v}
                   editMode={editMode}
                   onDragStart={handleDragStart}
                   isFavorite={favorites.includes(v.key)}
-                  onToggleFavorite={favorites.includes(v.key) ? removeFavorite : addFavorite}
+                  onToggleFavorite={toggleFavorite}
                 />
               ))}
             </div>
-          )}
-        </div>
+          </section>
+        ))
       )}
-
-      {/* Favorites section */}
-      {prefs.showFavorites && (
-        <div className="space-y-2">
-          {(favoriteViews.length > 0 || editMode) && (
-            <>
-              <div className="flex items-center gap-2 px-1">
-                <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-                <span className="text-sm font-black text-amber-500 uppercase tracking-widest">
-                  Favoritos
-                </span>
-                {favoriteViews.length > 0 && (
-                  <span className="text-[10px] font-bold bg-amber-50 dark:bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded-md">
-                    {favoriteViews.length}
-                  </span>
-                )}
-              </div>
-
-              {editMode && (
-                <div
-                  onDragOver={handleDragOverFavorites}
-                  onDragLeave={handleDragLeaveFavorites}
-                  onDrop={handleDropFavorites}
-                  className={`min-h-[80px] rounded-2xl border-2 border-dashed transition-all duration-300 flex items-center justify-center ${
-                    dragOverFavorites
-                      ? "border-amber-400 bg-amber-50/50 dark:bg-amber-500/5 scale-[1.01]"
-                      : "border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30"
-                  } ${favoriteViews.length > 0 ? "p-3" : "p-6"}`}
-                >
-                  {favoriteViews.length === 0 ? (
-                    <p className="text-sm text-slate-400 dark:text-slate-500 font-medium text-center">
-                      Arrastrá tarjetas aquí o tocá la estrella para agregarlas a favoritos
-                    </p>
-                  ) : (
-                    <div className={`${gridClass} w-full`}>
-                      {favoriteViews.map((v) => (
-                        <div
-                          key={`fav-${v.key}`}
-                          className="relative group/fav"
-                        >
-                          <ActionCard
-                            view={v}
-                            editMode={false}
-                            onDragStart={handleDragStart}
-                          />
-                          <button
-                            onClick={() => removeFavorite(v.key)}
-                            className="absolute -top-2 -right-2 w-7 h-7 min-h-0 flex items-center justify-center bg-rose-500 text-white rounded-full shadow-lg sm:opacity-0 sm:group-hover/fav:opacity-100 transition-all duration-200 hover:scale-110 z-10"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {!editMode && favoriteViews.length > 0 && (
-                <div className={gridClass}>
-                  {favoriteViews.map((v) => (
-                    <ActionCard
-                      key={`fav-${v.key}`}
-                      view={v}
-                      editMode={false}
-                      onDragStart={handleDragStart}
-                    />
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      )}
-
-      {/* Section groups — dynamically from config */}
-      {grouped.map(({ section, views: sectionViews }) => (
-        <div key={section.key} className="space-y-6">
-          <h3 className="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 animate-in fade-in duration-300">
-            {section.label}
-          </h3>
-          <div className={gridClass}>
-            {sectionViews.map((v) => (
-              <ActionCard
-                key={v.key}
-                view={v}
-                editMode={editMode}
-                onDragStart={handleDragStart}
-                isFavorite={favorites.includes(v.key)}
-                onToggleFavorite={favorites.includes(v.key) ? removeFavorite : addFavorite}
-              />
-            ))}
-          </div>
-        </div>
-      ))}
 
       {userData && <TechAssistantChat user={userData} />}
     </div>
   );
 }
 
-// ── ActionCard ─────────────────────────────────────────────────────
+// ── Mosaico de módulo ─────────────────────────────────────────────
 
-function ActionCard({
+function ModuleTile({
   view,
   editMode,
   onDragStart,
@@ -411,66 +378,56 @@ function ActionCard({
   isFavorite?: boolean;
   onToggleFavorite?: (key: string) => void;
 }) {
-  let containerClass =
-    "bg-card text-card-foreground border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:-translate-y-[1px] hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 flex flex-row items-center h-[72px] p-3 rounded-xl gap-3 outline-primary focus-visible:ring-2 focus-visible:ring-primary/20 overflow-hidden group";
-  let iconWrapperClass = `${view.color} text-white shadow-sm shrink-0 p-2 rounded-lg flex items-center justify-center`;
-  let titleClass =
-    "font-bold text-[13px] text-slate-800 dark:text-slate-100 leading-tight group-hover:text-primary transition-colors";
-  let descClass =
-    "font-medium text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide line-clamp-2 mt-0.5 leading-tight";
-  let textContainerClass = "flex-1 min-w-0";
-
-  if (editMode) {
-    containerClass +=
-      " cursor-grab active:cursor-grabbing ring-2 ring-transparent hover:ring-primary/30";
-  }
-
-  const card = (
-    <div className={containerClass}>
-      {editMode && onDragStart && (
-        <GripVertical className="w-4 h-4 text-slate-300 dark:text-slate-600 shrink-0 hidden sm:block" />
+  const body = (
+    <>
+      {editMode && (
+        <GripVertical className="w-4 h-4 text-slate-300 dark:text-slate-600 shrink-0 hidden sm:block" aria-hidden="true" />
       )}
-      <div className={iconWrapperClass}>
-        {renderIcon(view.iconName, "w-5 h-5")}
-      </div>
-      <div className={textContainerClass}>
-        <h4 className={titleClass}>{view.label}</h4>
-        <p className={descClass}>{view.description}</p>
-      </div>
-      {editMode && onToggleFavorite && (
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onToggleFavorite(view.key);
-          }}
-          className={`shrink-0 w-8 h-8 min-h-0 flex items-center justify-center rounded-full transition-colors ${
-            isFavorite
-              ? "text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-500/10"
-              : "text-slate-300 dark:text-slate-600 hover:text-amber-400 hover:bg-slate-50 dark:hover:bg-slate-700"
-          }`}
-        >
-          <Star className={`w-4 h-4 ${isFavorite ? "fill-amber-500" : ""}`} />
-        </button>
-      )}
-    </div>
+      <span className="w-9 h-9 rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-700/70 dark:text-slate-300 flex items-center justify-center shrink-0 transition-colors group-hover:bg-brand-50 group-hover:text-brand-700 dark:group-hover:bg-brand-950 dark:group-hover:text-brand-200">
+        {renderIcon(view.iconName, "w-[18px] h-[18px]")}
+      </span>
+      <span className="flex-1 min-w-0">
+        <span className="block text-[13px] font-semibold text-slate-900 dark:text-slate-100 leading-tight truncate">
+          {view.label}
+        </span>
+        <span className="block text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+          {view.description}
+        </span>
+      </span>
+    </>
   );
+
+  const tileClass =
+    "group relative flex items-center gap-3 h-[60px] pl-3 pr-2 rounded-xl border border-border bg-card hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-sm transition-[border-color,box-shadow] duration-150";
 
   if (editMode) {
     return (
       <div
         draggable={!!onDragStart}
         onDragStart={(e) => onDragStart && onDragStart(e, view.key)}
-        className="relative block focus:outline-none"
+        className={cn(tileClass, "cursor-grab active:cursor-grabbing")}
       >
-        {card}
+        {body}
+        {onToggleFavorite && (
+          <button
+            onClick={() => onToggleFavorite(view.key)}
+            className={cn(
+              "btn btn-ghost btn-icon btn-sm btn-icon-inline shrink-0",
+              isFavorite && "text-warning-600 hover:text-warning-700 dark:text-warning-400",
+            )}
+            aria-pressed={isFavorite}
+            aria-label={isFavorite ? `Quitar ${view.label} de favoritos` : `Agregar ${view.label} a favoritos`}
+          >
+            <Star className={cn(isFavorite && "fill-current")} />
+          </button>
+        )}
       </div>
     );
   }
 
   return (
-    <Link href={view.key} className="relative block focus:outline-none">
-      {card}
+    <Link href={view.key} className={tileClass}>
+      {body}
     </Link>
   );
 }

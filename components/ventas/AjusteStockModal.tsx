@@ -78,7 +78,7 @@ export default function AjusteStockModal({
   const delta = (parseFloat(String(nuevoStock)) || 0) - (producto.stockActual ?? 0);
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in duration-200">
       <div className="bg-card border border-slate-200 dark:border-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/30">
@@ -87,7 +87,7 @@ export default function AjusteStockModal({
               <PackagePlus className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-sm font-black text-slate-900 dark:text-slate-100">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                 Ajuste Rápido de Stock
               </h3>
               <p className="text-xs text-slate-500 font-mono">{producto.sku}</p>
@@ -104,7 +104,7 @@ export default function AjusteStockModal({
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 text-xs">
-            <span className="text-slate-400 block text-[10px] uppercase font-bold">Producto:</span>
+            <span className="text-slate-400 block text-[11px] uppercase font-bold">Producto:</span>
             <p className="font-semibold text-slate-800 dark:text-slate-200 truncate">{producto.descripcion}</p>
           </div>
 
@@ -113,7 +113,7 @@ export default function AjusteStockModal({
               <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
                 Stock Actual
               </label>
-              <div className="h-10 px-3 flex items-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-extrabold text-sm">
+              <div className="h-10 px-3 flex items-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-sm">
                 {producto.stockActual} unidades
               </div>
             </div>
@@ -129,7 +129,7 @@ export default function AjusteStockModal({
                 value={nuevoStock}
                 onChange={(e) => setNuevoStock(e.target.value)}
                 placeholder="0"
-                className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-sm font-extrabold text-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+                className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-sm font-bold text-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
             </div>
           </div>
@@ -153,7 +153,7 @@ export default function AjusteStockModal({
               <select
                 value={almacenId}
                 onChange={(e) => setAlmacenId(e.target.value)}
-                className="w-full h-9 px-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/40"
+                className="w-full h-9 px-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-xs focus:outline-none focus:ring-2 focus:ring-primary/40"
               >
                 {meta.almacenes.map((a) => (
                   <option key={a.id} value={a.id}>
@@ -170,7 +170,7 @@ export default function AjusteStockModal({
               <select
                 value={tipo}
                 onChange={(e) => setTipo(e.target.value as any)}
-                className="w-full h-9 px-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/40"
+                className="w-full h-9 px-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-xs focus:outline-none focus:ring-2 focus:ring-primary/40"
               >
                 <option value="AJUSTE">Ajuste de inventario</option>
                 <option value="CONTEO">Conteo físico</option>
@@ -189,7 +189,7 @@ export default function AjusteStockModal({
               value={motivo}
               onChange={(e) => setMotivo(e.target.value)}
               placeholder="Ej: Diferencia por rotura, sobrante de conteo..."
-              className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/40"
+              className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-card text-xs focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
           </div>
 
@@ -205,7 +205,7 @@ export default function AjusteStockModal({
             <button
               type="submit"
               disabled={isSaving}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-xs font-bold shadow-md shadow-primary/20 hover:opacity-90 disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 disabled:opacity-50"
             >
               {isSaving ? (
                 <>

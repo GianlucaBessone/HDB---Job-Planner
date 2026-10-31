@@ -211,13 +211,13 @@ export default function ReportTicketModal({ open, onClose, onCreated, initialTip
 
     return (
         <div className="fixed inset-0 z-[210] flex items-start sm:items-center justify-center p-3 sm:p-6 overflow-y-auto">
-            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose} />
+            <div className="fixed inset-0 bg-slate-950/50 animate-in fade-in duration-200" onClick={onClose} />
 
             <div
                 role="dialog"
                 aria-modal="true"
                 aria-label="Reportar una falla o sugerencia"
-                className="relative w-full max-w-2xl bg-card text-card-foreground rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-top-4 duration-300 my-auto"
+                className="relative w-full max-w-2xl bg-card text-card-foreground rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-200 my-auto"
             >
                 {/* Header */}
                 <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-slate-100 dark:border-slate-700">
@@ -226,10 +226,10 @@ export default function ReportTicketModal({ open, onClose, onCreated, initialTip
                             <Bug className="w-5 h-5" />
                         </div>
                         <div className="min-w-0">
-                            <h2 className="text-base sm:text-lg font-black text-slate-800 dark:text-slate-100 leading-tight">
+                            <h2 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 leading-tight">
                                 {creado ? 'Ticket creado' : 'Reportar una falla o sugerencia'}
                             </h2>
-                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                                 Soporte SGI · Te guiamos paso a paso
                             </p>
                         </div>
@@ -246,7 +246,7 @@ export default function ReportTicketModal({ open, onClose, onCreated, initialTip
                         </div>
                         <p className="text-sm font-bold text-slate-500 dark:text-slate-400 mb-1">Tu ticket fue registrado</p>
                         <div className="flex items-center justify-center gap-2 mb-2">
-                            <p className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">{creado.codigo}</p>
+                            <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">{creado.codigo}</p>
                             <button
                                 onClick={() => {
                                     navigator.clipboard?.writeText(creado.codigo);
@@ -322,14 +322,14 @@ export default function ReportTicketModal({ open, onClose, onCreated, initialTip
                                     return (
                                         <div key={s.id} className="flex items-center gap-2 flex-1 min-w-0">
                                             <div className={`flex items-center gap-2 min-w-0 ${active || done ? '' : 'opacity-40'}`}>
-                                                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${
+                                                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 ${
                                                     done ? 'bg-emerald-500 text-white' :
                                                     active ? 'bg-rose-600 text-white' :
                                                     'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
                                                 }`}>
                                                     {done ? <Check className="w-3.5 h-3.5" /> : s.id + 1}
                                                 </div>
-                                                <span className={`text-[10px] font-black uppercase tracking-widest truncate hidden sm:block ${
+                                                <span className={`text-[11px] font-semibold uppercase tracking-wider truncate hidden sm:block ${
                                                     active ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400'
                                                 }`}>
                                                     {s.label}
@@ -348,7 +348,7 @@ export default function ReportTicketModal({ open, onClose, onCreated, initialTip
                             {/* Paso 1: tipo */}
                             {step === 0 && (
                                 <div className="animate-in fade-in slide-in-from-right-2 duration-200">
-                                    <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-1">¿Qué querés reportar?</h3>
+                                    <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-1">¿Qué querés reportar?</h3>
                                     <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mb-4">Elegí la opción que mejor describa tu caso.</p>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -392,14 +392,14 @@ export default function ReportTicketModal({ open, onClose, onCreated, initialTip
                             {step === 1 && (
                                 <div className="animate-in fade-in slide-in-from-right-2 duration-200 space-y-4">
                                     <div>
-                                        <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-1">Contanos qué pasó</h3>
+                                        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-1">Contanos qué pasó</h3>
                                         <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">
                                             No hace falta que sea técnico. Escribí con tus palabras.
                                         </p>
                                     </div>
 
                                     <div>
-                                        <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">
+                                        <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                             Título corto <span className="text-rose-500">*</span>
                                         </label>
                                         <input
@@ -407,13 +407,13 @@ export default function ReportTicketModal({ open, onClose, onCreated, initialTip
                                             value={titulo}
                                             onChange={e => setTitulo(e.target.value.slice(0, TICKET_TITULO_MAX))}
                                             placeholder={esError ? 'Ej: El botón Guardar no responde en Proyectos' : 'Ej: Poder exportar el cronograma a Excel'}
-                                            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all"
+                                            className="w-full px-3.5 py-2.5 rounded-xl bg-card border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all"
                                         />
-                                        <p className="text-[10px] text-slate-400 text-right mt-1">{titulo.length}/{TICKET_TITULO_MAX}</p>
+                                        <p className="text-[11px] text-slate-400 text-right mt-1">{titulo.length}/{TICKET_TITULO_MAX}</p>
                                     </div>
 
                                     <div>
-                                        <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">
+                                        <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                             Descripción <span className="text-rose-500">*</span>
                                         </label>
                                         <textarea
@@ -421,14 +421,14 @@ export default function ReportTicketModal({ open, onClose, onCreated, initialTip
                                             onChange={e => setDescripcion(e.target.value.slice(0, 8000))}
                                             rows={4}
                                             placeholder={esError ? 'Ej: Estaba cargando un proyecto y al hacer clic en Guardar no pasó nada. Probé dos veces.' : 'Ej: Hoy tenemos que pasar el cronograma a mano a Excel. Nos llevaría 10 minutos menos por día.'}
-                                            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all resize-none"
+                                            className="w-full px-3.5 py-2.5 rounded-xl bg-card border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all resize-none"
                                         />
                                     </div>
 
                                     {esError && (
                                         <>
                                             <div>
-                                                <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">
+                                                <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                                     ¿Cómo lo reproducimos? <span className="text-slate-300 dark:text-slate-600">(opcional)</span>
                                                 </label>
                                                 <textarea
@@ -436,11 +436,11 @@ export default function ReportTicketModal({ open, onClose, onCreated, initialTip
                                                     onChange={e => setPasosReproducir(e.target.value.slice(0, 4000))}
                                                     rows={3}
                                                     placeholder={'1. Entrar a Proyectos\n2. Abrir un proyecto\n3. Tocar Guardar'}
-                                                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all resize-none"
+                                                    className="w-full px-3.5 py-2.5 rounded-xl bg-card border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all resize-none"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">
+                                                <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                                     ¿Qué esperabas que pasara? <span className="text-slate-300 dark:text-slate-600">(opcional)</span>
                                                 </label>
                                                 <input
@@ -448,7 +448,7 @@ export default function ReportTicketModal({ open, onClose, onCreated, initialTip
                                                     value={comportamientoEsperado}
                                                     onChange={e => setComportamientoEsperado(e.target.value.slice(0, 2000))}
                                                     placeholder="Ej: Que el proyecto se guarde y me lleve al listado"
-                                                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all"
+                                                    className="w-full px-3.5 py-2.5 rounded-xl bg-card border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all"
                                                 />
                                             </div>
                                         </>
@@ -460,7 +460,7 @@ export default function ReportTicketModal({ open, onClose, onCreated, initialTip
                             {step === 2 && (
                                 <div className="animate-in fade-in slide-in-from-right-2 duration-200 space-y-5">
                                     <div>
-                                        <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-1">¿Qué tan urgente es?</h3>
+                                        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-1">¿Qué tan urgente es?</h3>
                                         <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mb-3">
                                             Esto nos ayuda a ordenar la cola. No hace falta exagerar: elegí lo que más se parezca.
                                         </p>
@@ -496,7 +496,7 @@ export default function ReportTicketModal({ open, onClose, onCreated, initialTip
                                     </div>
 
                                     <div>
-                                        <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-1">¿A quién afecta?</h3>
+                                        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-1">¿A quién afecta?</h3>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
                                             {TICKET_IMPACTOS.map(i => {
                                                 const selected = impacto === i.value;
@@ -524,7 +524,7 @@ export default function ReportTicketModal({ open, onClose, onCreated, initialTip
                                     <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
                                         <Info className="w-4 h-4 text-slate-400 shrink-0" />
                                         <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                                            Prioridad estimada: <span className="font-black text-slate-700 dark:text-slate-200">{TICKET_PRIORIDAD_LABEL[prioridad]}</span>.
+                                            Prioridad estimada: <span className="font-bold text-slate-700 dark:text-slate-200">{TICKET_PRIORIDAD_LABEL[prioridad]}</span>.
                                             El equipo puede ajustarla después.
                                         </p>
                                     </div>
@@ -535,7 +535,7 @@ export default function ReportTicketModal({ open, onClose, onCreated, initialTip
                             {step === 3 && (
                                 <div className="animate-in fade-in slide-in-from-right-2 duration-200 space-y-4">
                                     <div>
-                                        <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-1">Revisá y enviá</h3>
+                                        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-1">Revisá y enviá</h3>
                                         <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">
                                             Adjuntamos automáticamente el contexto técnico para que podamos reproducirlo.
                                         </p>
@@ -544,7 +544,7 @@ export default function ReportTicketModal({ open, onClose, onCreated, initialTip
                                     <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/40 p-3.5">
                                         <div className="flex items-center gap-2 mb-2">
                                             <Monitor className="w-3.5 h-3.5 text-slate-400" />
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Contexto automático</p>
+                                            <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Contexto automático</p>
                                         </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
                                             <p><span className="text-slate-400">Pantalla:</span> {contexto.ruta || '—'}</p>
@@ -558,9 +558,9 @@ export default function ReportTicketModal({ open, onClose, onCreated, initialTip
                                         <div className="flex items-center justify-between mb-2">
                                             <div className="flex items-center gap-2">
                                                 <Paperclip className="w-3.5 h-3.5 text-slate-400" />
-                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Capturas (opcional)</p>
+                                                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Capturas (opcional)</p>
                                             </div>
-                                            <span className="text-[10px] font-bold text-slate-400">{adjuntos.length}/3</span>
+                                            <span className="text-[11px] font-bold text-slate-400">{adjuntos.length}/3</span>
                                         </div>
 
                                         {adjuntos.length > 0 && (
@@ -598,7 +598,7 @@ export default function ReportTicketModal({ open, onClose, onCreated, initialTip
                                     </div>
 
                                     <div>
-                                        <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">
+                                        <label className="block mb-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                             Etiquetas <span className="text-slate-300 dark:text-slate-600">(opcional, separadas por coma)</span>
                                         </label>
                                         <input
@@ -606,7 +606,7 @@ export default function ReportTicketModal({ open, onClose, onCreated, initialTip
                                             value={etiquetas}
                                             onChange={e => setEtiquetas(e.target.value)}
                                             placeholder="Ej: proyectos, mobile, exportación"
-                                            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all"
+                                            className="w-full px-3.5 py-2.5 rounded-xl bg-card border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all"
                                         />
                                     </div>
 
@@ -652,7 +652,7 @@ export default function ReportTicketModal({ open, onClose, onCreated, initialTip
                                 <button
                                     type="button"
                                     onClick={siguiente}
-                                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 text-white text-[13px] font-bold hover:bg-rose-700 transition-colors shadow-sm disabled:opacity-50"
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 text-white text-[13px] font-bold hover:bg-rose-700 transition-colors disabled:opacity-50"
                                     disabled={!puedeAvanzar()}
                                 >
                                     Siguiente
@@ -663,7 +663,7 @@ export default function ReportTicketModal({ open, onClose, onCreated, initialTip
                                     type="button"
                                     onClick={enviar}
                                     disabled={enviando}
-                                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 text-white text-[13px] font-bold hover:bg-rose-700 transition-colors shadow-sm disabled:opacity-60"
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 text-white text-[13px] font-bold hover:bg-rose-700 transition-colors disabled:opacity-60"
                                 >
                                     {enviando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                                     {enviando ? 'Enviando…' : 'Crear ticket'}

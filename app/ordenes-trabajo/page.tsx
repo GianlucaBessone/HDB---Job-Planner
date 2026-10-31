@@ -148,7 +148,7 @@ export default function OrdenesTrabajoClientsPage() {
   }, [clients, search]);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-4 sm:p-8 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
         <div>
@@ -156,7 +156,7 @@ export default function OrdenesTrabajoClientsPage() {
             <FileText className="w-4 h-4" />
             <span>Módulo de Órdenes de Trabajo</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+          <h1 className="text-title text-slate-900 dark:text-slate-100">
             Clientes Habilitados para OT
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
@@ -177,7 +177,7 @@ export default function OrdenesTrabajoClientsPage() {
           {/* Button: Nueva OT (Fixed: single + icon) */}
           <Link
             href="/ordenes-trabajo/nueva"
-            className="px-4 py-2.5 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition-colors"
+            className="px-4 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold flex items-center gap-2 transition-colors"
           >
             <Plus className="w-4 h-4" />
             Nueva OT
@@ -215,7 +215,7 @@ export default function OrdenesTrabajoClientsPage() {
           </p>
           <button
             onClick={openAddClientModal}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl shadow-sm hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary-hover transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             Agregar Cliente
@@ -232,7 +232,7 @@ export default function OrdenesTrabajoClientsPage() {
                 {/* Client Header */}
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-primary flex items-center justify-center font-black text-sm shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
                       <Building2 className="w-5 h-5" />
                     </div>
                     <div>
@@ -266,11 +266,11 @@ export default function OrdenesTrabajoClientsPage() {
 
                 {/* Sub-info Badges */}
                 <div className="flex items-center gap-2 mb-4">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300">
                     <FolderGit2 className="w-3 h-3 text-slate-400" />
                     {client.totalProyectos} {client.totalProyectos === 1 ? 'Proyecto' : 'Proyectos'}
                   </span>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-600 dark:text-slate-300">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300">
                     <UserCheck className="w-3 h-3 text-slate-400" />
                     {client.responsablesActivos} {client.responsablesActivos === 1 ? 'Responsable' : 'Responsables'}
                   </span>
@@ -279,31 +279,31 @@ export default function OrdenesTrabajoClientsPage() {
                 {/* OTs Metrics Grid */}
                 <div className="grid grid-cols-3 gap-2 py-3 border-t border-b border-slate-100 dark:border-slate-800/80 mb-4 text-center">
                   <div>
-                    <div className="text-[10px] font-bold uppercase text-slate-400 flex items-center justify-center gap-1">
+                    <div className="text-[11px] font-bold uppercase text-slate-400 flex items-center justify-center gap-1">
                       <Clock className="w-3 h-3 text-blue-500" />
                       Abiertas
                     </div>
-                    <div className="text-base font-black text-slate-900 dark:text-slate-100 mt-0.5">
+                    <div className="text-base font-bold text-slate-900 dark:text-slate-100 mt-0.5">
                       {client.abiertas}
                     </div>
                   </div>
 
                   <div>
-                    <div className="text-[10px] font-bold uppercase text-slate-400 flex items-center justify-center gap-1">
+                    <div className="text-[11px] font-bold uppercase text-slate-400 flex items-center justify-center gap-1">
                       <FileSignature className="w-3 h-3 text-purple-500" />
                       Firma
                     </div>
-                    <div className="text-base font-black text-purple-600 dark:text-purple-400 mt-0.5">
+                    <div className="text-base font-bold text-purple-600 dark:text-purple-400 mt-0.5">
                       {client.pendientesFirma}
                     </div>
                   </div>
 
                   <div>
-                    <div className="text-[10px] font-bold uppercase text-slate-400 flex items-center justify-center gap-1">
+                    <div className="text-[11px] font-bold uppercase text-slate-400 flex items-center justify-center gap-1">
                       <CheckCircle2 className="w-3 h-3 text-emerald-500" />
                       Cerradas
                     </div>
-                    <div className="text-base font-black text-slate-700 dark:text-slate-300 mt-0.5">
+                    <div className="text-base font-bold text-slate-700 dark:text-slate-300 mt-0.5">
                       {client.cerradas}
                     </div>
                   </div>
@@ -325,7 +325,7 @@ export default function OrdenesTrabajoClientsPage() {
 
       {/* Modal Agregar Cliente a OT */}
       {isAddClientOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2 text-primary font-bold text-sm">
@@ -345,7 +345,7 @@ export default function OrdenesTrabajoClientsPage() {
             </p>
 
             <div>
-              <label className="text-[11px] font-bold uppercase text-slate-400 mb-1.5 block">
+              <label className="mb-1.5 block text-[13px] font-medium text-slate-700 dark:text-slate-200">
                 Cliente SGI
               </label>
               <SearchableCombobox
@@ -375,7 +375,7 @@ export default function OrdenesTrabajoClientsPage() {
                 type="button"
                 onClick={handleEnableClient}
                 disabled={addingClient || !selectedAddClientId}
-                className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-2 disabled:opacity-50"
+                className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-2 disabled:opacity-50"
               >
                 {addingClient && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                 Habilitar Cliente

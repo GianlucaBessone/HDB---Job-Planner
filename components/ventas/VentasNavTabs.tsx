@@ -67,14 +67,14 @@ export default function VentasNavTabs({ currentTab, className }: VentasNavTabsPr
             href={tab.href}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all whitespace-nowrap ${
               tab.isActive
-                ? 'bg-card text-primary shadow-xs font-black ring-1 ring-slate-200/80 dark:ring-slate-700/80'
+                ? 'bg-card text-primary shadow-xs font-bold ring-1 ring-slate-200/80 dark:ring-slate-700/80'
                 : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 font-semibold'
             }`}
           >
             <Icon className={`w-3.5 h-3.5 shrink-0 ${tab.isActive ? 'text-primary' : 'text-slate-400'}`} />
             <span>{tab.label}</span>
             {tab.badge && (
-              <span className="text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 rounded bg-amber-100/80 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/30 leading-none">
+              <span className="text-[11px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded bg-amber-100/80 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/30 leading-none">
                 {tab.badge}
               </span>
             )}

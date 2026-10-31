@@ -56,7 +56,7 @@ export default function PrimerAccesoPage() {
           <div className="inline-flex p-3 rounded-2xl bg-amber-500/10 text-amber-600 mb-1">
             <KeyRound className="w-8 h-8" />
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">
+          <h1 className="text-title text-slate-900 dark:text-slate-100">
             Primer Acceso al Portal
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -103,7 +103,7 @@ export default function PrimerAccesoPage() {
           <button
             type="submit"
             disabled={submitting || !claveNueva}
-            className="w-full py-3 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md transition-all disabled:opacity-50"
+            className="w-full py-3 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50"
           >
             {submitting ? (
               <>

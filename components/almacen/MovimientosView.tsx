@@ -237,7 +237,7 @@ export default function MovimientosView({ meta, initialSku }: MovimientosViewPro
                 }
               }}
               placeholder="Filtrar por SKU, Producto o N° Comprobante..."
-              className="w-full pl-8 pr-7 h-8 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-background focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
+              className="w-full pl-8 pr-7 h-8 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-card focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
             />
             {skuSearch && (
               <button
@@ -258,7 +258,7 @@ export default function MovimientosView({ meta, initialSku }: MovimientosViewPro
                 setSelectedTipo(e.target.value);
                 setPage(1);
               }}
-              className="w-full h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-card text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
             >
               <option value="">Todos los Tipos</option>
               <option value="STOCK_INICIAL">Stock Inicial</option>
@@ -281,7 +281,7 @@ export default function MovimientosView({ meta, initialSku }: MovimientosViewPro
                 setSelectedAlmacen(e.target.value);
                 setPage(1);
               }}
-              className="w-full h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-card text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
             >
               <option value="">Todos Almacenes</option>
               {meta.almacenes.map((a) => (
@@ -341,7 +341,7 @@ export default function MovimientosView({ meta, initialSku }: MovimientosViewPro
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[11px] font-black text-slate-500 uppercase tracking-wider select-none whitespace-nowrap">
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none whitespace-nowrap">
                 {[
                   { key: 'fecha', label: 'Fecha y Hora', className: 'py-2.5 px-3', align: 'left' },
                   { key: 'numero', label: 'Comprobante', className: 'py-2.5 px-2.5', align: 'left' },
@@ -426,12 +426,12 @@ export default function MovimientosView({ meta, initialSku }: MovimientosViewPro
                       <td className="py-2 px-2.5 font-mono text-xs font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
                         {m.numero || 'LEGACY'}
                         {m.esRevertido && (
-                          <span className="ml-1 text-[9px] px-1 py-0.2 rounded bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-400 font-extrabold uppercase">
+                          <span className="ml-1 text-[11px] px-1 py-0.2 rounded bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-400 font-semibold uppercase">
                             Revertido
                           </span>
                         )}
                         {m.esReversa && (
-                          <span className="ml-1 text-[9px] px-1 py-0.2 rounded bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400 font-extrabold uppercase">
+                          <span className="ml-1 text-[11px] px-1 py-0.2 rounded bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400 font-semibold uppercase">
                             Reversa
                           </span>
                         )}
@@ -443,7 +443,7 @@ export default function MovimientosView({ meta, initialSku }: MovimientosViewPro
                         {m.descripcion}
                       </td>
                       <td className="py-2 px-2.5 text-center whitespace-nowrap">
-                        <span className="inline-block px-2 py-0.5 rounded text-[10px] font-black border uppercase tracking-wider bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700">
+                        <span className="inline-block px-2 py-0.5 rounded text-[11px] font-semibold border uppercase tracking-wider bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700">
                           {m.tipo.replace('_', ' ')}
                         </span>
                       </td>
@@ -451,7 +451,7 @@ export default function MovimientosView({ meta, initialSku }: MovimientosViewPro
                         {m.almacenNombre}
                       </td>
                       <td className="py-2 px-2 text-right whitespace-nowrap">
-                        <div className="inline-flex items-center gap-1 font-mono text-xs font-black">
+                        <div className="inline-flex items-center gap-1 font-mono text-xs font-bold">
                           {isPositivo ? (
                             <span className="text-emerald-600 dark:text-emerald-400 inline-flex items-center">
                               <ArrowDownLeft className="w-3.5 h-3.5 inline mr-0.5" />
@@ -542,7 +542,7 @@ export default function MovimientosView({ meta, initialSku }: MovimientosViewPro
 
       {/* Modal Detalle de Movimiento */}
       {isDetailOpen && selectedMov && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/50-xs animate-in fade-in duration-150">
           <div className="bg-card border border-slate-200 dark:border-slate-800 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden p-6 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2.5">
@@ -550,7 +550,7 @@ export default function MovimientosView({ meta, initialSku }: MovimientosViewPro
                   <ShieldCheck className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-slate-900 dark:text-slate-100">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                     Comprobante {selectedMov.numero}
                   </h3>
                   <p className="text-[11px] text-slate-500 font-mono">
@@ -568,34 +568,34 @@ export default function MovimientosView({ meta, initialSku }: MovimientosViewPro
 
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Producto</span>
+                <span className="text-[11px] uppercase font-bold text-slate-400 block">Producto</span>
                 <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{selectedMov.sku}</span>
                 <p className="text-slate-600 dark:text-slate-300 truncate font-medium">{selectedMov.descripcion}</p>
               </div>
 
               <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Almacén y Ubicación</span>
+                <span className="text-[11px] uppercase font-bold text-slate-400 block">Almacén y Ubicación</span>
                 <p className="font-bold text-slate-800 dark:text-slate-200">{selectedMov.almacenNombre}</p>
                 <p className="text-slate-500 font-mono text-[11px]">{selectedMov.ubicacionCodigo || 'Sin ubicación específica'}</p>
               </div>
 
               <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Tipo y Variación</span>
+                <span className="text-[11px] uppercase font-bold text-slate-400 block">Tipo y Variación</span>
                 <span className="font-bold text-slate-800 dark:text-slate-200">{selectedMov.tipo}</span>
-                <p className="font-mono font-black text-sm text-primary mt-0.5">
+                <p className="font-mono font-bold text-sm text-primary mt-0.5">
                   {selectedMov.variacion > 0 ? `+${selectedMov.variacion}` : selectedMov.variacion} {selectedMov.unidad}
                 </p>
               </div>
 
               <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Saldos Auditados</span>
+                <span className="text-[11px] uppercase font-bold text-slate-400 block">Saldos Auditados</span>
                 <p className="font-mono text-slate-600 dark:text-slate-300">Anterior: <strong>{selectedMov.stockAnterior}</strong></p>
-                <p className="font-mono text-slate-900 dark:text-slate-100 font-black">Posterior: <strong>{selectedMov.stockPosterior}</strong></p>
+                <p className="font-mono text-slate-900 dark:text-slate-100 font-bold">Posterior: <strong>{selectedMov.stockPosterior}</strong></p>
               </div>
             </div>
 
             <div className="space-y-1 text-xs">
-              <span className="text-[10px] uppercase font-bold text-slate-400">Motivo / Justificación</span>
+              <span className="text-[11px] uppercase font-bold text-slate-400">Motivo / Justificación</span>
               <p className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-200 font-medium">
                 {selectedMov.motivo || 'Sin motivo especificado'}
               </p>
@@ -603,7 +603,7 @@ export default function MovimientosView({ meta, initialSku }: MovimientosViewPro
 
             {selectedMov.referencia && (
               <div className="space-y-1 text-xs">
-                <span className="text-[10px] uppercase font-bold text-slate-400">Referencia Documental</span>
+                <span className="text-[11px] uppercase font-bold text-slate-400">Referencia Documental</span>
                 <p className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 font-mono text-slate-700 dark:text-slate-300">
                   {selectedMov.referencia} {selectedMov.referenciaTipo ? `(${selectedMov.referenciaTipo})` : ''}
                 </p>
@@ -625,11 +625,11 @@ export default function MovimientosView({ meta, initialSku }: MovimientosViewPro
 
       {/* Modal Reversión */}
       {reversarMov && (
-        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-950/50-xs animate-in fade-in duration-150">
           <div className="bg-card border border-slate-200 dark:border-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden p-6 space-y-4">
             <div className="flex items-center gap-2.5 text-rose-600 dark:text-rose-400">
               <RotateCcw className="w-5 h-5" />
-              <h3 className="text-sm font-black text-slate-900 dark:text-slate-100">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                 Revertir Movimiento {reversarMov.numero}
               </h3>
             </div>
@@ -649,7 +649,7 @@ export default function MovimientosView({ meta, initialSku }: MovimientosViewPro
                 value={motivoReversa}
                 onChange={(e) => setMotivoReversa(e.target.value)}
                 placeholder="Indique claramente por qué se revierte este movimiento..."
-                className="w-full p-2.5 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-background focus:outline-none focus:ring-2 focus:ring-rose-500/30"
+                className="w-full p-2.5 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-card focus:outline-none focus:ring-2 focus:ring-rose-500/30"
               />
             </div>
 
@@ -666,7 +666,7 @@ export default function MovimientosView({ meta, initialSku }: MovimientosViewPro
                 type="button"
                 disabled={isReverting || !motivoReversa.trim()}
                 onClick={handleConfirmReversion}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 disabled:opacity-50 shadow-sm"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 disabled:opacity-50"
               >
                 {isReverting ? (
                   <>

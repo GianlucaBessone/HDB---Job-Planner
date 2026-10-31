@@ -40,7 +40,7 @@ export default function HistoryTab({ user }: { user: any }) {
 
     return (
         <div className="space-y-4">
-            <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                 <History className="w-5 h-5 text-indigo-500" /> Historial de Cambios (QMS)
             </h3>
 
@@ -61,13 +61,13 @@ export default function HistoryTab({ user }: { user: any }) {
                                 </div>
                                 <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-card text-card-foreground shadow-sm">
                                     <div className="flex items-center justify-between mb-1">
-                                        <div className="font-black text-sm text-slate-800 dark:text-slate-100">{v.document?.codigoDocumental} v{v.versionLabel}</div>
-                                        <div className="text-[10px] font-bold text-slate-400">{format(new Date(v.createdAt), "dd MMM, yyyy", { locale: es })}</div>
+                                        <div className="font-bold text-sm text-slate-800 dark:text-slate-100">{v.document?.codigoDocumental} v{v.versionLabel}</div>
+                                        <div className="text-[11px] font-bold text-slate-400">{format(new Date(v.createdAt), "dd MMM, yyyy", { locale: es })}</div>
                                     </div>
                                     <div className="text-xs font-medium text-slate-600 dark:text-slate-400 mt-1">
                                         {v.motivoCambio || 'Actualización de documento'}
                                     </div>
-                                    <div className="text-[10px] font-bold text-slate-400 mt-2 flex justify-between">
+                                    <div className="text-[11px] font-bold text-slate-400 mt-2 flex justify-between">
                                         <span>Autor: {v.autorNombre || 'Sistema'}</span>
                                         <span className={`px-1.5 py-0.5 rounded ${v.estado === 'vigente' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-600'}`}>
                                             {v.estado.toUpperCase()}

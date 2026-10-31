@@ -230,7 +230,7 @@ export default function AlmacenesView() {
       {/* Encabezado y Creación */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-sm font-black text-slate-900 dark:text-slate-100">
+          <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
             Maestro de Almacenes y Ubicaciones Físicas
           </h2>
           <p className="text-xs text-slate-500">
@@ -251,7 +251,7 @@ export default function AlmacenesView() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Lista de Almacenes */}
         <div className="space-y-2.5">
-          <div className="text-xs font-black text-slate-500 uppercase tracking-wider px-1">
+          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-1">
             Almacenes ({almacenes.length})
           </div>
 
@@ -286,17 +286,17 @@ export default function AlmacenesView() {
                         <div className="flex items-center gap-1.5">
                           <span className="text-xs font-bold text-slate-900 dark:text-slate-100">{alm.nombre}</span>
                           {alm.esPredeterminado && (
-                            <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                            <span className="text-[11px] font-semibold uppercase px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
                               Predeterminado
                             </span>
                           )}
                           {!alm.activo && (
-                            <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">
+                            <span className="text-[11px] font-semibold uppercase px-1.5 py-0.2 rounded bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">
                               Inactivo
                             </span>
                           )}
                         </div>
-                        <span className="font-mono text-[10px] text-slate-400 font-bold block">{alm.codigo}</span>
+                        <span className="font-mono text-[11px] text-slate-400 font-bold block">{alm.codigo}</span>
                       </div>
                     </div>
 
@@ -334,7 +334,7 @@ export default function AlmacenesView() {
                     </p>
                   )}
 
-                  <div className="grid grid-cols-3 gap-1 pt-2.5 mt-2 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-400 font-mono">
+                  <div className="grid grid-cols-3 gap-1 pt-2.5 mt-2 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 font-mono">
                     <div>
                       Ubicaciones: <strong className="text-slate-700 dark:text-slate-300">{alm._count.ubicaciones}</strong>
                     </div>
@@ -354,7 +354,7 @@ export default function AlmacenesView() {
         {/* Panel de Ubicaciones del Almacén Seleccionado */}
         <div className="lg:col-span-2 space-y-2.5">
           <div className="flex items-center justify-between px-1">
-            <div className="text-xs font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
               <span>Ubicaciones de:</span>
               <strong className="text-slate-800 dark:text-slate-200">{selectedAlmacen?.nombre || 'Seleccione un almacén'}</strong>
             </div>
@@ -375,7 +375,7 @@ export default function AlmacenesView() {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[11px] font-black text-slate-500 uppercase tracking-wider select-none">
+                  <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none">
                     <th className="py-2.5 px-3 w-32">Código</th>
                     <th className="py-2.5 px-3">Descripción / Referencia</th>
                     <th className="py-2.5 px-3">Tipo</th>
@@ -402,13 +402,13 @@ export default function AlmacenesView() {
                           {ubi.nombre || '—'}
                         </td>
                         <td className="py-2.5 px-3 whitespace-nowrap">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                          <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                             {ubi.tipo || 'ESTANTERIA'}
                           </span>
                         </td>
                         <td className="py-2.5 px-3 text-center whitespace-nowrap">
                           <span
-                            className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
+                            className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold ${
                               ubi.activo
                                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                                 : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
@@ -439,12 +439,12 @@ export default function AlmacenesView() {
 
       {/* Modal Almacén */}
       {isAlmacenModalOpen && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/50-xs animate-in fade-in duration-150">
           <div className="bg-card border border-slate-200 dark:border-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden p-6 space-y-4 text-xs">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2 text-primary font-bold">
                 <Warehouse className="w-5 h-5" />
-                <h3 className="text-sm font-black text-slate-900 dark:text-slate-100">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                   {editingAlmacen ? 'Editar Almacén' : 'Nuevo Almacén'}
                 </h3>
               </div>
@@ -573,12 +573,12 @@ export default function AlmacenesView() {
 
       {/* Modal Ubicación */}
       {isUbicacionModalOpen && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/50-xs animate-in fade-in duration-150">
           <div className="bg-card border border-slate-200 dark:border-slate-800 w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden p-6 space-y-4 text-xs">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2 text-primary font-bold">
                 <MapPin className="w-5 h-5" />
-                <h3 className="text-sm font-black text-slate-900 dark:text-slate-100">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                   {editingUbicacion ? 'Editar Ubicación' : 'Nueva Ubicación'}
                 </h3>
               </div>

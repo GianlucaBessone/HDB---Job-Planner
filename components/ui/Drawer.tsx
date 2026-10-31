@@ -73,7 +73,7 @@ export function Drawer({
         <div className="fixed inset-0 z-[100] flex justify-end">
             {/* Backdrop */}
             <div 
-                className={`fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300 ease-out ${
+                className={`scrim transition-opacity duration-200 ease-out ${
                     isOpen ? 'opacity-100' : 'opacity-0'
                 }`}
                 onClick={onClose}
@@ -81,32 +81,34 @@ export function Drawer({
 
             {/* Drawer Panel */}
             <div 
-                className={`relative w-full ${sizeClasses[size]} flex flex-col bg-background shadow-2xl transition-transform duration-300 ease-out will-change-transform ${
+                role="dialog"
+                aria-modal="true"
+                className={`relative w-full ${sizeClasses[size]} flex flex-col bg-background border-l border-border shadow-2xl transition-transform duration-200 ease-standard will-change-transform ${
                     isOpen ? 'translate-x-0' : 'translate-x-full'
                 }`}
             >
                 {/* Header */}
                 {(title || subtitle || actions) && (
-                    <div className="flex flex-col gap-2 px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-card z-10 shrink-0">
+                    <div className="flex flex-col gap-2 px-5 py-3.5 border-b border-border bg-card z-10 shrink-0">
                         <div className="flex items-center justify-between gap-4">
                             <div className="flex-1 min-w-0">
                                 {title && (
-                                    <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 truncate">
+                                    <h2 className="text-heading text-slate-900 dark:text-slate-50 truncate">
                                         {title}
                                     </h2>
                                 )}
                                 {subtitle && (
-                                    <div className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5 truncate">
+                                    <div className="text-[13px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
                                         {subtitle}
                                     </div>
                                 )}
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
                                 {actions}
-                                <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-2 hidden sm:block" />
+                                <div className="w-px h-6 bg-border mx-1 hidden sm:block" />
                                 <button
                                     onClick={onClose}
-                                    className="p-2 -mr-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-300 dark:hover:bg-slate-800 transition-colors"
+                                    className="btn btn-ghost btn-icon btn-icon-inline -mr-2"
                                     aria-label="Cerrar panel"
                                 >
                                     <X className="w-5 h-5" />
@@ -117,7 +119,7 @@ export function Drawer({
                 )}
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto bg-slate-50/50 dark:bg-slate-900/20 overscroll-contain">
+                <div className="flex-1 overflow-y-auto bg-surface-sunken overscroll-contain">
                     {children}
                 </div>
             </div>

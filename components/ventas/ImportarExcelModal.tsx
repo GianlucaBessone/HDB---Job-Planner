@@ -272,7 +272,7 @@ export default function ImportarExcelModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in duration-200">
       <div className="bg-card border border-slate-200 dark:border-slate-800 w-full max-w-5xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/30">
@@ -281,7 +281,7 @@ export default function ImportarExcelModal({
               <FileSpreadsheet className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 tracking-tight">
                 Importar Ajustes de Productos desde Excel
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -340,7 +340,7 @@ export default function ImportarExcelModal({
                 {isValidating ? (
                   <>
                     <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
-                    <h4 className="text-sm font-black text-slate-800 dark:text-slate-200 mb-1">
+                    <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-1">
                       Validando archivo...
                     </h4>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -353,7 +353,7 @@ export default function ImportarExcelModal({
                       <Upload className="w-8 h-8" />
                     </div>
 
-                    <h4 className="text-sm font-black text-slate-800 dark:text-slate-200 mb-1">
+                    <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-1">
                       Arrastre o seleccione su archivo Excel
                     </h4>
                     <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mb-6 leading-relaxed">
@@ -363,7 +363,7 @@ export default function ImportarExcelModal({
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="px-6 py-2.5 rounded-xl bg-primary text-white text-xs font-bold shadow-md shadow-primary/25 hover:opacity-90 transition-opacity"
+                      className="px-6 py-2.5 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 transition-opacity"
                     >
                       Elegir Archivo Excel
                     </button>
@@ -381,7 +381,7 @@ export default function ImportarExcelModal({
                 <div className="flex items-center gap-2">
                   <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{fileName}</span>
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-[11px] text-slate-400">
                     ({validationReport.resumen.totalFilas} filas)
                   </span>
                 </div>
@@ -404,10 +404,10 @@ export default function ImportarExcelModal({
                     <FileSpreadsheet className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-lg font-black text-slate-700 dark:text-slate-200">
+                    <span className="text-lg font-bold text-slate-700 dark:text-slate-200">
                       {validationReport.resumen.totalFilas}
                     </span>
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">
                       Filas
                     </p>
                   </div>
@@ -418,10 +418,10 @@ export default function ImportarExcelModal({
                     <CheckCircle2 className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-lg font-black text-emerald-700 dark:text-emerald-300">
+                    <span className="text-lg font-bold text-emerald-700 dark:text-emerald-300">
                       {validationReport.resumen.productosEncontrados}
                     </span>
-                    <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">
+                    <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">
                       Encontrados
                     </p>
                   </div>
@@ -432,10 +432,10 @@ export default function ImportarExcelModal({
                     <AlertTriangle className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-lg font-black text-amber-700 dark:text-amber-300">
+                    <span className="text-lg font-bold text-amber-700 dark:text-amber-300">
                       {validationReport.resumen.productosNoEncontrados}
                     </span>
-                    <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide">
+                    <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide">
                       No Encontrados
                     </p>
                   </div>
@@ -446,10 +446,10 @@ export default function ImportarExcelModal({
                     <XCircle className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-lg font-black text-rose-700 dark:text-rose-300">
+                    <span className="text-lg font-bold text-rose-700 dark:text-rose-300">
                       {validationReport.resumen.filasConError}
                     </span>
-                    <p className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wide">
+                    <p className="text-[11px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wide">
                       Errores
                     </p>
                   </div>
@@ -466,7 +466,7 @@ export default function ImportarExcelModal({
                     <button
                       type="button"
                       onClick={() => handleDownloadErrors(validationReport.errores)}
-                      className="flex items-center gap-1 px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      className="flex items-center gap-1 px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                     >
                       <Download className="w-3 h-3" />
                       Descargar Errores
@@ -496,7 +496,7 @@ export default function ImportarExcelModal({
                   </h4>
                   <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden max-h-80 overflow-y-auto">
                     <table className="w-full text-left text-xs border-collapse">
-                      <thead className="sticky top-0 bg-slate-100 dark:bg-slate-800/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 text-slate-500 font-bold uppercase text-[10px]">
+                      <thead className="sticky top-0 bg-slate-100 dark:bg-slate-800/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 text-slate-500 font-bold uppercase text-[11px]">
                         <tr>
                           <th className="py-2.5 px-3">Fila</th>
                           <th className="py-2.5 px-3">Producto (SKU)</th>
@@ -512,22 +512,22 @@ export default function ImportarExcelModal({
                             <tr key={`${idx}-${cIdx}`} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                               {cIdx === 0 ? (
                                 <>
-                                  <td className="py-2 px-3 text-slate-400 font-mono text-[10px]" rowSpan={item.cambios.length}>
+                                  <td className="py-2 px-3 text-slate-400 font-mono text-[11px]" rowSpan={item.cambios.length}>
                                     {item.filaNumero}
                                   </td>
                                   <td className="py-2 px-3" rowSpan={item.cambios.length}>
                                     <div>
                                       <span className="font-mono font-bold text-slate-900 dark:text-slate-100">{item.sku}</span>
-                                      <p className="text-[10px] text-slate-400 truncate max-w-[180px]">{item.descripcion}</p>
+                                      <p className="text-[11px] text-slate-400 truncate max-w-[180px]">{item.descripcion}</p>
                                     </div>
                                   </td>
                                 </>
                               ) : null}
                               <td className="py-2 px-3 text-slate-700 dark:text-slate-300 font-semibold">{cambio.campo}</td>
                               <td className="py-2 px-3 text-right font-mono text-slate-500">{cambio.valorActual}</td>
-                              <td className="py-2 px-3 text-right font-mono font-extrabold text-emerald-600 dark:text-emerald-400">{cambio.valorNuevo}</td>
+                              <td className="py-2 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{cambio.valorNuevo}</td>
                               <td className="py-2 px-3 text-center">
-                                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400">
+                                <span className="px-1.5 py-0.5 rounded text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400">
                                   Modificar
                                 </span>
                               </td>
@@ -560,7 +560,7 @@ export default function ImportarExcelModal({
               {/* Success banner */}
               <div className="p-6 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 text-center">
                 <CheckCircle2 className="w-10 h-10 text-emerald-600 dark:text-emerald-400 mx-auto mb-3" />
-                <h4 className="text-base font-black text-emerald-800 dark:text-emerald-200 mb-1">
+                <h4 className="text-base font-bold text-emerald-800 dark:text-emerald-200 mb-1">
                   Importación Completada
                 </h4>
                 <p className="text-xs text-emerald-600 dark:text-emerald-400">
@@ -571,34 +571,34 @@ export default function ImportarExcelModal({
               {/* Result metrics */}
               <div className="grid grid-cols-4 gap-3">
                 <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 text-center">
-                  <span className="text-xl font-black text-slate-700 dark:text-slate-200">
+                  <span className="text-xl font-bold text-slate-700 dark:text-slate-200">
                     {importResult.resumen.filasProcesadas ?? importResult.resumen.filasProcessadas ?? 0}
                   </span>
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">
                     Filas Procesadas
                   </p>
                 </div>
                 <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 text-center">
-                  <span className="text-xl font-black text-emerald-700 dark:text-emerald-300">
+                  <span className="text-xl font-bold text-emerald-700 dark:text-emerald-300">
                     {importResult.resumen.productosActualizados}
                   </span>
-                  <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">
+                  <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">
                     Actualizados
                   </p>
                 </div>
                 <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40 text-center">
-                  <span className="text-xl font-black text-amber-700 dark:text-amber-300">
+                  <span className="text-xl font-bold text-amber-700 dark:text-amber-300">
                     {importResult.resumen.filasOmitidas}
                   </span>
-                  <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide">
+                  <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide">
                     Omitidas
                   </p>
                 </div>
                 <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/40 text-center">
-                  <span className="text-xl font-black text-rose-700 dark:text-rose-300">
+                  <span className="text-xl font-bold text-rose-700 dark:text-rose-300">
                     {importResult.resumen.errores}
                   </span>
-                  <p className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wide">
+                  <p className="text-[11px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wide">
                     Errores
                   </p>
                 </div>
@@ -651,7 +651,7 @@ export default function ImportarExcelModal({
                 type="button"
                 disabled={isApplying || validationReport.resumen.cambiosPendientes === 0}
                 onClick={handleConfirmImport}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow-md shadow-emerald-600/25 hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors disabled:opacity-50"
               >
                 {isApplying ? (
                   <>

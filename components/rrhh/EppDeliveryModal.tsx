@@ -293,7 +293,7 @@ export default function EppDeliveryModal({
 
     return (
         <>
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in overflow-y-auto">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in overflow-y-auto">
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl my-8">
                     {/* Header */}
                     <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/40">
@@ -302,7 +302,7 @@ export default function EppDeliveryModal({
                                 <ShieldCheck className="w-6 h-6" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-black text-slate-900 dark:text-slate-100">
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                                     Despacho y Entrega de EPP
                                 </h3>
                                 <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -323,7 +323,7 @@ export default function EppDeliveryModal({
                     <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
                         {/* 1. Selección de Operador */}
                         <div className="space-y-2">
-                            <label className="text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center justify-between">
+                            <label className="flex items-center justify-between text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                 <span>Operador Receptor *</span>
                                 <button
                                     type="button"
@@ -338,7 +338,7 @@ export default function EppDeliveryModal({
                             <select
                                 value={selectedOperatorId}
                                 onChange={(e) => setSelectedOperatorId(e.target.value)}
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                className="w-full px-4 py-3 bg-card border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                             >
                                 <option value="">-- Seleccione un operador --</option>
                                 {operadores.map(op => (
@@ -371,7 +371,7 @@ export default function EppDeliveryModal({
 
                         {/* 2. Agregar Elementos de EPP */}
                         <div className="space-y-3">
-                            <label className="text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 block">
+                            <label className="block text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                 Elementos a Entregar ({itemsToDeliver.length})
                             </label>
 
@@ -418,7 +418,7 @@ export default function EppDeliveryModal({
                                         <button
                                             type="button"
                                             onClick={handleAddItem}
-                                            className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 shadow-sm"
+                                            className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1"
                                         >
                                             <Plus className="w-4 h-4" />
                                             Agregar
@@ -448,7 +448,7 @@ export default function EppDeliveryModal({
                                                             <span className="font-bold text-slate-800 dark:text-slate-100">
                                                                 {catItem?.nombre || 'Elemento EPP'}
                                                             </span>
-                                                            <span className="text-[10px] text-slate-400 block">
+                                                            <span className="text-[11px] text-slate-400 block">
                                                                 {catItem?.categoria} {item.talle ? `· Talle: ${item.talle}` : ''} · Vigencia: {catItem?.diasValidez || 365} días
                                                             </span>
                                                         </div>
@@ -471,7 +471,7 @@ export default function EppDeliveryModal({
 
                         {/* 3. Modalidad de Firma */}
                         <div className="space-y-3">
-                            <label className="text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 block">
+                            <label className="block text-[13px] font-medium text-slate-700 dark:text-slate-200">
                                 Modalidad de Conformidad y Firma
                             </label>
 
@@ -487,7 +487,7 @@ export default function EppDeliveryModal({
                                 >
                                     <div className="flex items-center gap-2 mb-1">
                                         <Send className="w-4 h-4 text-indigo-600" />
-                                        <span className="text-xs font-black text-slate-900 dark:text-slate-100">
+                                        <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
                                             Firma en "Mis EPP"
                                         </span>
                                     </div>
@@ -507,7 +507,7 @@ export default function EppDeliveryModal({
                                 >
                                     <div className="flex items-center gap-2 mb-1">
                                         <PenTool className="w-4 h-4 text-emerald-600" />
-                                        <span className="text-xs font-black text-slate-900 dark:text-slate-100">
+                                        <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
                                             Firma Presencial Ahora
                                         </span>
                                     </div>
@@ -608,7 +608,7 @@ export default function EppDeliveryModal({
                                 type="button"
                                 onClick={handleSubmit}
                                 disabled={submitting}
-                                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-emerald-600/20 flex items-center gap-1.5 disabled:opacity-50"
+                                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 disabled:opacity-50"
                             >
                                 {submitting ? (
                                     <>

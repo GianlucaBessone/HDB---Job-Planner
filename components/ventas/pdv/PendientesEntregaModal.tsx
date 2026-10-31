@@ -112,7 +112,7 @@ export default function PendientesEntregaModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[85] flex items-center justify-center p-2 sm:p-3 bg-slate-900/60 backdrop-blur-xs">
+    <div className="fixed inset-0 z-[85] flex items-center justify-center p-2 sm:p-3 bg-slate-950/50-xs">
       <div className="bg-card w-[98vw] max-w-none h-[96vh] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
@@ -122,10 +122,10 @@ export default function PendientesEntregaModal({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-black text-slate-900 dark:text-slate-100">
+                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                   Pendientes de Entrega de Materiales
                 </h3>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300/40">
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300/40">
                   {ventas.length} {ventas.length === 1 ? 'venta pendiente' : 'ventas pendientes'}
                 </span>
               </div>
@@ -196,7 +196,7 @@ export default function PendientesEntregaModal({
                   <div className="p-4 bg-slate-50/70 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4">
                     <div className="space-y-1">
                       <div className="flex items-center gap-3">
-                        <span className="font-mono font-black text-sm text-slate-900 dark:text-slate-100">
+                        <span className="font-mono font-bold text-sm text-slate-900 dark:text-slate-100">
                           {v.numero}
                         </span>
                         <span className="text-xs text-slate-500">
@@ -207,7 +207,7 @@ export default function PendientesEntregaModal({
                           })}
                         </span>
                         <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                          className={`px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase ${
                             v.estadoEntrega === 'PARCIAL'
                               ? 'bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 border border-blue-200'
                               : 'bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border border-amber-200'
@@ -278,7 +278,7 @@ export default function PendientesEntregaModal({
                                   'Ventas HDB',
                               })
                             }
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-mono text-[10px] font-bold border border-indigo-200 hover:bg-indigo-100 transition-colors"
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-mono text-[11px] font-bold border border-indigo-200 hover:bg-indigo-100 transition-colors"
                             title="Ver e imprimir remito"
                           >
                             <Printer className="w-3 h-3" />
@@ -292,14 +292,14 @@ export default function PendientesEntregaModal({
                   {/* Tabla de Artículos con Saldo Pendiente */}
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-50/80 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                      <thead className="bg-slate-50/80 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
                         <tr>
                           <th className="py-2.5 px-3 w-28">SKU</th>
                           <th className="py-2.5 px-3">Descripción del Material</th>
                           <th className="py-2.5 px-3 text-center w-24">Venta Total</th>
                           <th className="py-2.5 px-3 text-center w-24">Ya Entregado</th>
                           <th className="py-2.5 px-3 text-center w-24">Cancelado</th>
-                          <th className="py-2.5 px-3 text-right w-28 font-black text-amber-700 dark:text-amber-400">
+                          <th className="py-2.5 px-3 text-right w-28 font-bold text-amber-700 dark:text-amber-400">
                             Saldo Pendiente
                           </th>
                         </tr>
@@ -322,7 +322,7 @@ export default function PendientesEntregaModal({
                             <td className="py-2 px-3 text-center text-slate-400">
                               {it.cantidadCancelada || 0} {it.unidad || 'u.'}
                             </td>
-                            <td className="py-2 px-3 text-right font-black text-amber-600 dark:text-amber-400 text-xs">
+                            <td className="py-2 px-3 text-right font-bold text-amber-600 dark:text-amber-400 text-xs">
                               {it.cantidadPendiente} {it.unidad || 'u.'}
                             </td>
                           </tr>
@@ -338,14 +338,14 @@ export default function PendientesEntregaModal({
 
         {/* Modal interno para Confirmar Cancelación */}
         {ventaACancelar && (
-          <div className="fixed inset-0 z-[95] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="fixed inset-0 z-[95] flex items-center justify-center p-4 bg-slate-950/50-xs">
             <div className="bg-card w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in-95">
               <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
                 <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-950/60 flex items-center justify-center">
                   <Ban className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-base font-black text-slate-900 dark:text-slate-100">
+                  <h4 className="text-base font-bold text-slate-900 dark:text-slate-100">
                     Cancelar Saldo Pendiente
                   </h4>
                   <p className="text-xs text-slate-500">

@@ -66,7 +66,7 @@ export default function ComprobanteModal({
   const fechaFormateada = safeFormatDateTime(venta.fecha || venta.createdAt);
 
   return (
-    <div className="fixed inset-0 z-[95] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div className="fixed inset-0 z-[95] flex items-center justify-center p-4 bg-slate-950/50-xs">
       {/* Estilos para impresión física limpia de ticket/comprobante */}
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {
@@ -94,7 +94,7 @@ export default function ComprobanteModal({
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 print:hidden">
           <div className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-            <h3 className="text-base font-black text-slate-900 dark:text-slate-100">
+            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
               Comprobante de Venta {venta.numero}
             </h3>
           </div>
@@ -140,11 +140,11 @@ export default function ComprobanteModal({
           >
             {/* Membrete comercial */}
             <div className="text-center pb-3 border-b border-dashed border-slate-300 dark:border-slate-700">
-              <h2 className="text-lg font-black tracking-tight text-slate-900 dark:text-slate-100">
+              <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
                 HDB - Materiales Eléctricos
               </h2>
               <p className="text-[11px] text-slate-500">SISTEMA INTEGRADO DE GESTIÓN (SGI)</p>
-              <div className="mt-2 inline-block px-2.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50 text-[10px] font-bold uppercase tracking-wider">
+              <div className="mt-2 inline-block px-2.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50 text-[11px] font-bold uppercase tracking-wider">
                 COMPROBANTE INTERNO DE VENTA — NO VÁLIDO COMO FACTURA
               </div>
             </div>
@@ -163,7 +163,7 @@ export default function ComprobanteModal({
                 <span className="text-slate-500">CLIENTE: </span>
                 <span className="font-bold">{venta.clienteNombre || 'Consumidor Final'}</span>
                 {venta.clienteIdentificacion && (
-                  <span className="text-slate-500 block text-[10px]">
+                  <span className="text-slate-500 block text-[11px]">
                     CUIT/DNI: {venta.clienteIdentificacion}
                   </span>
                 )}
@@ -209,12 +209,12 @@ export default function ComprobanteModal({
                         <div className="font-medium text-slate-800 dark:text-slate-200">
                           {it.descripcion}
                         </div>
-                        <div className="text-[10px] text-slate-400">SKU: {it.sku}</div>
+                        <div className="text-[11px] text-slate-400">SKU: {it.sku}</div>
                       </td>
                       <td className="py-1.5 align-top text-right whitespace-nowrap">
                         {formatARS(it.precioUnitario)}
                         {it.descuentoPorcentaje > 0 && (
-                          <div className="text-[9px] text-emerald-600">-{it.descuentoPorcentaje}%</div>
+                          <div className="text-[11px] text-emerald-600">-{it.descuentoPorcentaje}%</div>
                         )}
                       </td>
                       <td className="py-1.5 align-top text-right font-bold whitespace-nowrap">
@@ -251,12 +251,12 @@ export default function ComprobanteModal({
                   <span>+{formatARS(venta.impuestosMonto)}</span>
                 </div>
               ) : (Number(venta.impuestosMonto) || 0) > 0 ? (
-                <div className="flex justify-between text-slate-400 text-[10px]">
+                <div className="flex justify-between text-slate-400 text-[11px]">
                   <span>(IVA estimado incluido):</span>
                   <span>{formatARS(venta.impuestosMonto)}</span>
                 </div>
               ) : null}
-              <div className="flex justify-between text-base font-black text-slate-900 dark:text-slate-100 pt-2 border-t border-slate-300 dark:border-slate-700">
+              <div className="flex justify-between text-base font-bold text-slate-900 dark:text-slate-100 pt-2 border-t border-slate-300 dark:border-slate-700">
                 <span>TOTAL OPERACIÓN:</span>
                 <span>{formatARS(venta.total)}</span>
               </div>
@@ -279,7 +279,7 @@ export default function ComprobanteModal({
 
               {/* Vuelto en efectivo si existió */}
               {Array.isArray(venta.pagos) && venta.pagos.some((p: any) => p.vuelto && p.vuelto > 0) && (
-                <div className="flex justify-between text-slate-500 text-[10px] pt-1">
+                <div className="flex justify-between text-slate-500 text-[11px] pt-1">
                   <span>CAMBIO / VUELTO ENTREGADO:</span>
                   <span>
                     {formatARS(
@@ -291,12 +291,12 @@ export default function ComprobanteModal({
 
               {/* Imputación a Cuenta Corriente */}
               {Number(venta.imputadoCuentaCorriente) > 0 && (
-                <div className="p-2 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40 text-amber-900 dark:text-amber-300 mt-2 text-[10px]">
+                <div className="p-2 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40 text-amber-900 dark:text-amber-300 mt-2 text-[11px]">
                   <div className="flex justify-between font-bold">
                     <span>IMPUTADO A CUENTA CORRIENTE:</span>
                     <span>{formatARS(venta.imputadoCuentaCorriente)}</span>
                   </div>
-                  <div className="text-[9px] text-amber-700 dark:text-amber-400 mt-0.5">
+                  <div className="text-[11px] text-amber-700 dark:text-amber-400 mt-0.5">
                     Cliente: {venta.clienteNombre} — Saldo pendiente a conciliar en módulo de CC.
                   </div>
                 </div>
@@ -304,7 +304,7 @@ export default function ComprobanteModal({
             </div>
 
             {/* Pie de comprobante */}
-            <div className="text-center pt-4 border-t border-dashed border-slate-300 dark:border-slate-700 text-[10px] text-slate-400">
+            <div className="text-center pt-4 border-t border-dashed border-slate-300 dark:border-slate-700 text-[11px] text-slate-400">
               <p>¡Gracias por su compra!</p>
               <p>HDB - Materiales Eléctricos — Trazabilidad interna ID: {venta.id}</p>
             </div>

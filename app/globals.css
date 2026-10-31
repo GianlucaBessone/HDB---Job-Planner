@@ -2,998 +2,707 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ════════════════════════════════════════════════════════════════════════════
+   HDB SGI — DESIGN TOKENS
+   Fuente de verdad visual: docs/DESIGN_SYSTEM.md y docs/BRAND_GUIDELINES.md.
+   Todos los colores son tripletes RGB para que Tailwind pueda aplicar opacidad
+   (bg-primary/10). Las utilidades slate/indigo/emerald/... del código existente
+   están mapeadas a estas rampas en tailwind.config.ts.
+   ════════════════════════════════════════════════════════════════════════════ */
+
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222.2 84% 4.9%;
+    /* ── Neutros "grafito" (claro) ── */
+    --neutral-50: 246 247 249;
+    --neutral-100: 238 240 243;
+    --neutral-200: 225 228 233;
+    --neutral-300: 201 206 214;
+    --neutral-400: 110 119 135;   /* 4.5:1 sobre blanco: válido como texto secundario */
+    --neutral-500: 90 99 114;
+    --neutral-600: 71 80 97;
+    --neutral-700: 53 61 76;
+    --neutral-800: 35 42 54;
+    --neutral-900: 22 27 36;
+    --neutral-950: 13 17 24;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* ── Estados ── */
+    --success-50: 236 253 245;  --success-100: 209 250 229; --success-200: 167 243 208;
+    --success-300: 110 231 183; --success-400: 52 211 153;  --success-500: 16 185 129;
+    --success-600: 5 150 105;   --success-700: 4 120 87;    --success-800: 6 95 70;
+    --success-900: 6 78 59;     --success-950: 2 44 34;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --warning-50: 255 251 235;  --warning-100: 254 243 199; --warning-200: 253 230 138;
+    --warning-300: 252 211 77;  --warning-400: 251 191 36;  --warning-500: 245 158 11;
+    --warning-600: 217 119 6;   --warning-700: 180 83 9;    --warning-800: 146 64 14;
+    --warning-900: 120 53 15;   --warning-950: 69 26 3;
 
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
+    --danger-50: 254 242 242;   --danger-100: 254 226 226;  --danger-200: 254 202 202;
+    --danger-300: 252 165 165;  --danger-400: 248 113 113;  --danger-500: 239 68 68;
+    --danger-600: 220 38 38;    --danger-700: 185 28 28;    --danger-800: 153 27 27;
+    --danger-900: 127 29 29;    --danger-950: 69 10 10;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --info-50: 240 249 255;     --info-100: 224 242 254;    --info-200: 186 230 253;
+    --info-300: 125 211 252;    --info-400: 56 189 248;     --info-500: 14 165 233;
+    --info-600: 2 132 199;      --info-700: 3 105 161;      --info-800: 7 89 133;
+    --info-900: 12 74 110;      --info-950: 8 47 73;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent-50: 245 243 255;   --accent-100: 237 233 254;  --accent-200: 221 214 254;
+    --accent-300: 196 181 253;  --accent-400: 167 139 250;  --accent-500: 139 92 246;
+    --accent-600: 124 58 237;   --accent-700: 109 40 217;   --accent-800: 91 33 182;
+    --accent-900: 76 29 149;    --accent-950: 46 16 101;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* ── Semánticos ── */
+    --background: var(--neutral-50);
+    --foreground: var(--neutral-900);
+    --card: 255 255 255;
+    --card-foreground: var(--neutral-900);
+    --popover: 255 255 255;
+    --popover-foreground: var(--neutral-900);
+    --surface-sunken: var(--neutral-50);
+    --primary: var(--brand-600);
+    --primary-hover: var(--brand-700);
+    --primary-foreground: 255 255 255;
+    --secondary: var(--neutral-100);
+    --secondary-foreground: var(--neutral-800);
+    --muted: var(--neutral-100);
+    --muted-foreground: var(--neutral-500);
+    --accent: var(--brand-50);
+    --accent-foreground: var(--brand-700);
+    --destructive: var(--danger-600);
+    --destructive-foreground: 255 255 255;
+    --border: var(--neutral-200);
+    --input: var(--neutral-300);
+    --ring: var(--brand-500);
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* ── Forma ── */
+    --radius-sm: 3px;
+    --radius-md: 5px;
+    --radius-lg: 6px;
+    --radius-xl: 8px;
+    --radius-2xl: 10px;
+    --radius-3xl: 12px;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    /* ── Elevación: solo superficies que flotan llevan sombra ── */
+    --shadow-xs: 0 1px 2px rgb(16 24 40 / 0.04);
+    --shadow-sm: 0 1px 2px rgb(16 24 40 / 0.05), 0 1px 3px rgb(16 24 40 / 0.04);
+    --shadow-md: 0 4px 10px -2px rgb(16 24 40 / 0.08), 0 2px 4px -2px rgb(16 24 40 / 0.04);
+    --shadow-lg: 0 12px 24px -6px rgb(16 24 40 / 0.12), 0 4px 8px -4px rgb(16 24 40 / 0.05);
+    --shadow-xl: 0 24px 48px -12px rgb(16 24 40 / 0.22), 0 6px 12px -6px rgb(16 24 40 / 0.06);
+    --shadow-inner: inset 0 1px 2px rgb(16 24 40 / 0.05);
 
-    --radius: 1rem;
+    /* ── Layout ── */
+    --topbar-h: 3.5rem;
+    --sidebar-w: 248px;
   }
 
   .dark {
-    --background: 222.2 47.4% 11.2%;
-    --foreground: 210 40% 98%;
+    /* Neutros ajustados para contraste sobre superficies oscuras (no se invierten) */
+    --neutral-50: 244 246 248;
+    --neutral-100: 232 235 239;
+    --neutral-200: 211 216 223;
+    --neutral-300: 184 191 201;
+    --neutral-400: 155 163 175;
+    --neutral-500: 133 142 155;
+    --neutral-600: 66 74 88;
+    --neutral-700: 46 53 65;
+    --neutral-800: 30 35 44;
+    --neutral-900: 22 26 33;
+    --neutral-950: 14 17 22;
 
-    --card: 215 27.9% 16.9%;
-    --card-foreground: 210 40% 98%;
+    --background: var(--neutral-950);
+    --foreground: var(--neutral-100);
+    --card: var(--neutral-800);
+    --card-foreground: var(--neutral-100);
+    --popover: 34 40 50;
+    --popover-foreground: var(--neutral-100);
+    --surface-sunken: var(--neutral-900);
+    --primary: var(--brand-600);
+    --primary-hover: var(--brand-500);
+    --secondary: var(--neutral-700);
+    --secondary-foreground: var(--neutral-100);
+    --muted: var(--neutral-700);
+    --muted-foreground: var(--neutral-400);
+    --accent: var(--brand-950);
+    --accent-foreground: var(--brand-200);
+    --destructive: var(--danger-600);
+    --border: var(--neutral-700);
+    --input: var(--neutral-600);
+    --ring: var(--brand-400);
 
-    --popover: 222.2 47.4% 11.2%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.3);
+    --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.35);
+    --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.45);
+    --shadow-lg: 0 12px 28px -6px rgb(0 0 0 / 0.55);
+    --shadow-xl: 0 24px 56px -12px rgb(0 0 0 / 0.65);
+    --shadow-inner: inset 0 1px 2px rgb(0 0 0 / 0.3);
+    color-scheme: dark;
   }
 
-  /* COLOR THEMES (60-30-10 Harmony) */
-
-  /* Indigo */
+  /* ── Temas de acento (Configuración → Tema). Solo cambian la rampa de marca;
+        los neutros se mantienen para que la legibilidad no dependa del tema. ── */
+  :root, [data-color-theme="actual"] {
+    --brand-50: 242 246 253;
+    --brand-100: 226 236 251;
+    --brand-200: 193 214 246;
+    --brand-300: 150 185 238;
+    --brand-400: 95 147 227;
+    --brand-500: 47 116 218;
+    --brand-600: 31 96 193;
+    --brand-700: 26 81 162;
+    --brand-800: 25 66 128;
+    --brand-900: 22 53 100;
+    --brand-950: 15 34 61;
+  }
   [data-color-theme="indigo"] {
-    --primary: 250 85% 60%;
-    --primary-foreground: 0 0% 100%;
-    --ring: 250 85% 60%;
-    --background: 250 15% 96%;
-    --foreground: 250 35% 15%;
-    --card: 250 15% 99%;
-    --card-foreground: 250 35% 15%;
-    --popover: 250 15% 99%;
-    --popover-foreground: 250 35% 15%;
-    --secondary: 250 25% 92%;
-    --secondary-foreground: 250 45% 20%;
-    --muted: 250 15% 92%;
-    --muted-foreground: 250 15% 45%;
-    --border: 250 15% 86%;
-    --input: 250 15% 86%;
+    --brand-50: 244 245 252;
+    --brand-100: 231 232 249;
+    --brand-200: 205 207 243;
+    --brand-300: 168 172 233;
+    --brand-400: 104 111 217;
+    --brand-500: 68 76 204;
+    --brand-600: 43 52 182;
+    --brand-700: 36 44 154;
+    --brand-800: 33 39 120;
+    --brand-900: 29 33 92;
+    --brand-950: 19 21 57;
   }
-  .dark[data-color-theme="indigo"] {
-    --primary: 250 85% 65%;
-    --primary-foreground: 0 0% 100%;
-    --ring: 250 85% 65%;
-    --background: 250 20% 6%;
-    --foreground: 250 15% 90%;
-    --card: 250 20% 8%;
-    --card-foreground: 250 15% 90%;
-    --popover: 250 20% 8%;
-    --popover-foreground: 250 15% 90%;
-    --secondary: 250 25% 15%;
-    --secondary-foreground: 250 15% 90%;
-    --muted: 250 20% 15%;
-    --muted-foreground: 250 15% 65%;
-    --border: 250 20% 20%;
-    --input: 250 20% 20%;
-  }
-
-  /* Naranja */
   [data-color-theme="naranja"] {
-    --primary: 25 95% 53%;
-    --primary-foreground: 0 0% 100%;
-    --ring: 25 95% 53%;
-    --background: 25 15% 96%;
-    --foreground: 25 35% 15%;
-    --card: 25 15% 99%;
-    --card-foreground: 25 35% 15%;
-    --popover: 25 15% 99%;
-    --popover-foreground: 25 35% 15%;
-    --secondary: 25 25% 92%;
-    --secondary-foreground: 25 45% 20%;
-    --muted: 25 15% 92%;
-    --muted-foreground: 25 15% 45%;
-    --border: 25 15% 86%;
-    --input: 25 15% 86%;
+    --brand-50: 253 246 241;
+    --brand-100: 252 236 225;
+    --brand-200: 249 214 191;
+    --brand-300: 245 184 143;
+    --brand-400: 241 145 80;
+    --brand-500: 230 106 22;
+    --brand-600: 192 84 12;
+    --brand-700: 158 70 11;
+    --brand-800: 122 56 13;
+    --brand-900: 95 45 14;
+    --brand-950: 58 28 10;
   }
-  .dark[data-color-theme="naranja"] {
-    --primary: 25 95% 48%;
-    --primary-foreground: 0 0% 100%;
-    --ring: 25 95% 48%;
-    --background: 25 20% 6%;
-    --foreground: 25 15% 90%;
-    --card: 25 20% 8%;
-    --card-foreground: 25 15% 90%;
-    --popover: 25 20% 8%;
-    --popover-foreground: 25 15% 90%;
-    --secondary: 25 25% 15%;
-    --secondary-foreground: 25 15% 90%;
-    --muted: 25 20% 15%;
-    --muted-foreground: 25 15% 65%;
-    --border: 25 20% 20%;
-    --input: 25 20% 20%;
-  }
-
-  /* Verde */
   [data-color-theme="verde"] {
-    --primary: 142 76% 36%;
-    --primary-foreground: 0 0% 100%;
-    --ring: 142 76% 36%;
-    --background: 142 15% 96%;
-    --foreground: 142 35% 15%;
-    --card: 142 15% 99%;
-    --card-foreground: 142 35% 15%;
-    --popover: 142 15% 99%;
-    --popover-foreground: 142 35% 15%;
-    --secondary: 142 25% 92%;
-    --secondary-foreground: 142 45% 20%;
-    --muted: 142 15% 92%;
-    --muted-foreground: 142 15% 45%;
-    --border: 142 15% 86%;
-    --input: 142 15% 86%;
+    --brand-50: 242 252 247;
+    --brand-100: 227 249 239;
+    --brand-200: 193 241 219;
+    --brand-300: 148 231 192;
+    --brand-400: 104 217 164;
+    --brand-500: 44 172 113;
+    --brand-600: 31 132 85;
+    --brand-700: 26 110 71;
+    --brand-800: 25 88 59;
+    --brand-900: 22 70 48;
+    --brand-950: 15 44 31;
   }
-  .dark[data-color-theme="verde"] {
-    --primary: 142 76% 45%;
-    --primary-foreground: 0 0% 100%;
-    --ring: 142 76% 45%;
-    --background: 142 20% 6%;
-    --foreground: 142 15% 90%;
-    --card: 142 20% 8%;
-    --card-foreground: 142 15% 90%;
-    --popover: 142 20% 8%;
-    --popover-foreground: 142 15% 90%;
-    --secondary: 142 25% 15%;
-    --secondary-foreground: 142 15% 90%;
-    --muted: 142 20% 15%;
-    --muted-foreground: 142 15% 65%;
-    --border: 142 20% 20%;
-    --input: 142 20% 20%;
-  }
-
-  /* Celeste */
   [data-color-theme="celeste"] {
-    --primary: 199 89% 48%;
-    --primary-foreground: 0 0% 100%;
-    --ring: 199 89% 48%;
-    --background: 199 15% 96%;
-    --foreground: 199 35% 15%;
-    --card: 199 15% 99%;
-    --card-foreground: 199 35% 15%;
-    --popover: 199 15% 99%;
-    --popover-foreground: 199 35% 15%;
-    --secondary: 199 25% 92%;
-    --secondary-foreground: 199 45% 20%;
-    --muted: 199 15% 92%;
-    --muted-foreground: 199 15% 45%;
-    --border: 199 15% 86%;
-    --input: 199 15% 86%;
+    --brand-50: 240 249 253;
+    --brand-100: 224 243 251;
+    --brand-200: 187 230 249;
+    --brand-300: 138 212 244;
+    --brand-400: 87 190 234;
+    --brand-500: 24 165 222;
+    --brand-600: 19 125 170;
+    --brand-700: 16 104 142;
+    --brand-800: 18 84 111;
+    --brand-900: 18 66 86;
+    --brand-950: 12 42 54;
   }
-  .dark[data-color-theme="celeste"] {
-    --primary: 199 89% 48%;
-    --primary-foreground: 0 0% 100%;
-    --ring: 199 89% 48%;
-    --background: 199 20% 6%;
-    --foreground: 199 15% 90%;
-    --card: 199 20% 8%;
-    --card-foreground: 199 15% 90%;
-    --popover: 199 20% 8%;
-    --popover-foreground: 199 15% 90%;
-    --secondary: 199 25% 15%;
-    --secondary-foreground: 199 15% 90%;
-    --muted: 199 20% 15%;
-    --muted-foreground: 199 15% 65%;
-    --border: 199 20% 20%;
-    --input: 199 20% 20%;
-  }
-
-  /* Rojo */
   [data-color-theme="rojo"] {
-    --primary: 0 84% 60%;
-    --primary-foreground: 0 0% 100%;
-    --ring: 0 84% 60%;
-    --background: 0 15% 96%;
-    --foreground: 0 35% 15%;
-    --card: 0 15% 99%;
-    --card-foreground: 0 35% 15%;
-    --popover: 0 15% 99%;
-    --popover-foreground: 0 35% 15%;
-    --secondary: 0 25% 92%;
-    --secondary-foreground: 0 45% 20%;
-    --muted: 0 15% 92%;
-    --muted-foreground: 0 15% 45%;
-    --border: 0 15% 86%;
-    --input: 0 15% 86%;
+    --brand-50: 252 242 243;
+    --brand-100: 249 226 228;
+    --brand-200: 243 193 196;
+    --brand-300: 235 151 156;
+    --brand-400: 227 95 104;
+    --brand-500: 216 44 55;
+    --brand-600: 193 31 42;
+    --brand-700: 162 26 35;
+    --brand-800: 128 25 31;
+    --brand-900: 100 22 27;
+    --brand-950: 61 15 18;
   }
-  .dark[data-color-theme="rojo"] {
-    --primary: 0 84% 50%;
-    --primary-foreground: 0 0% 100%;
-    --ring: 0 84% 50%;
-    --background: 0 20% 6%;
-    --foreground: 0 15% 90%;
-    --card: 0 20% 8%;
-    --card-foreground: 0 15% 90%;
-    --popover: 0 20% 8%;
-    --popover-foreground: 0 15% 90%;
-    --secondary: 0 25% 15%;
-    --secondary-foreground: 0 15% 90%;
-    --muted: 0 20% 15%;
-    --muted-foreground: 0 15% 65%;
-    --border: 0 20% 20%;
-    --input: 0 20% 20%;
-  }
-
-  /* Rosa */
   [data-color-theme="rosa"] {
-    --primary: 330 81% 60%;
-    --primary-foreground: 0 0% 100%;
-    --ring: 330 81% 60%;
-    --background: 330 15% 96%;
-    --foreground: 330 35% 15%;
-    --card: 330 15% 99%;
-    --card-foreground: 330 35% 15%;
-    --popover: 330 15% 99%;
-    --popover-foreground: 330 35% 15%;
-    --secondary: 330 25% 92%;
-    --secondary-foreground: 330 45% 20%;
-    --muted: 330 15% 92%;
-    --muted-foreground: 330 15% 45%;
-    --border: 330 15% 86%;
-    --input: 330 15% 86%;
+    --brand-50: 251 243 247;
+    --brand-100: 248 229 238;
+    --brand-200: 240 199 218;
+    --brand-300: 230 159 192;
+    --brand-400: 221 100 157;
+    --brand-500: 206 52 124;
+    --brand-600: 186 38 107;
+    --brand-700: 156 32 90;
+    --brand-800: 124 30 74;
+    --brand-900: 97 26 59;
+    --brand-950: 59 17 37;
   }
-  .dark[data-color-theme="rosa"] {
-    --primary: 330 81% 50%;
-    --primary-foreground: 0 0% 100%;
-    --ring: 330 81% 50%;
-    --background: 330 20% 6%;
-    --foreground: 330 15% 90%;
-    --card: 330 20% 8%;
-    --card-foreground: 330 15% 90%;
-    --popover: 330 20% 8%;
-    --popover-foreground: 330 15% 90%;
-    --secondary: 330 25% 15%;
-    --secondary-foreground: 330 15% 90%;
-    --muted: 330 20% 15%;
-    --muted-foreground: 330 15% 65%;
-    --border: 330 20% 20%;
-    --input: 330 20% 20%;
-  }
-
-  /* Violeta */
   [data-color-theme="violeta"] {
-    --primary: 262 83% 58%;
-    --primary-foreground: 0 0% 100%;
-    --ring: 262 83% 58%;
-    --background: 262 15% 96%;
-    --foreground: 262 35% 15%;
-    --card: 262 15% 99%;
-    --card-foreground: 262 35% 15%;
-    --popover: 262 15% 99%;
-    --popover-foreground: 262 35% 15%;
-    --secondary: 262 25% 92%;
-    --secondary-foreground: 262 45% 20%;
-    --muted: 262 15% 92%;
-    --muted-foreground: 262 15% 45%;
-    --border: 262 15% 86%;
-    --input: 262 15% 86%;
+    --brand-50: 246 243 251;
+    --brand-100: 236 230 248;
+    --brand-200: 214 202 241;
+    --brand-300: 185 164 232;
+    --brand-400: 146 108 214;
+    --brand-500: 118 72 199;
+    --brand-600: 95 47 177;
+    --brand-700: 80 40 149;
+    --brand-800: 67 36 117;
+    --brand-900: 54 31 90;
+    --brand-950: 35 21 56;
   }
-  .dark[data-color-theme="violeta"] {
-    --primary: 262 83% 58%;
-    --primary-foreground: 0 0% 100%;
-    --ring: 262 83% 58%;
-    --background: 262 20% 6%;
-    --foreground: 262 15% 90%;
-    --card: 262 20% 8%;
-    --card-foreground: 262 15% 90%;
-    --popover: 262 20% 8%;
-    --popover-foreground: 262 15% 90%;
-    --secondary: 262 25% 15%;
-    --secondary-foreground: 262 15% 90%;
-    --muted: 262 20% 15%;
-    --muted-foreground: 262 15% 65%;
-    --border: 262 20% 20%;
-    --input: 262 20% 20%;
-  }
-
-  /* Gris */
   [data-color-theme="gris"] {
-    --primary: 215 16% 47%;
-    --primary-foreground: 0 0% 100%;
-    --ring: 215 16% 47%;
-    --background: 215 15% 96%;
-    --foreground: 215 35% 15%;
-    --card: 215 15% 99%;
-    --card-foreground: 215 35% 15%;
-    --popover: 215 15% 99%;
-    --popover-foreground: 215 35% 15%;
-    --secondary: 215 25% 92%;
-    --secondary-foreground: 215 45% 20%;
-    --muted: 215 15% 92%;
-    --muted-foreground: 215 15% 45%;
-    --border: 215 15% 86%;
-    --input: 215 15% 86%;
-  }
-  .dark[data-color-theme="gris"] {
-    --primary: 215 16% 47%;
-    --primary-foreground: 0 0% 100%;
-    --ring: 215 16% 47%;
-    --background: 215 20% 6%;
-    --foreground: 215 15% 90%;
-    --card: 215 20% 8%;
-    --card-foreground: 215 15% 90%;
-    --popover: 215 20% 8%;
-    --popover-foreground: 215 15% 90%;
-    --secondary: 215 25% 15%;
-    --secondary-foreground: 215 15% 90%;
-    --muted: 215 20% 15%;
-    --muted-foreground: 215 15% 65%;
-    --border: 215 20% 20%;
-    --input: 215 20% 20%;
+    --brand-50: 247 247 248;
+    --brand-100: 238 239 241;
+    --brand-200: 218 221 226;
+    --brand-300: 193 198 206;
+    --brand-400: 148 157 173;
+    --brand-500: 120 133 153;
+    --brand-600: 96 108 128;
+    --brand-700: 82 92 107;
+    --brand-800: 68 75 86;
+    --brand-900: 54 59 67;
+    --brand-950: 35 38 42;
   }
 }
 
+/* ════════════════════════════════════════════════════════════════════════════
+   BASE
+   ════════════════════════════════════════════════════════════════════════════ */
 @layer base {
   * {
     @apply border-border;
   }
-  
-  /* HIGH DENSITY ERP SCALING */
+
+  /* Densidad ERP: 14px de base en escritorio, algo más en móvil para el tacto */
   html {
-    font-size: 14px; /* Base desktop ERP density (~12.5% reduction) */
+    font-size: 14px;
+    -webkit-text-size-adjust: 100%;
   }
   @media (max-width: 1024px) {
-    html {
-      font-size: 13.5px; /* Tablet */
-    }
+    html { font-size: 14px; }
   }
   @media (max-width: 768px) {
-    html {
-      font-size: 14.5px; /* Mobile (larger for touch targets) */
-    }
-  }
-  @media (max-width: 380px) {
-    html {
-      font-size: 13px; /* Small mobile */
-    }
+    html { font-size: 14.5px; }
   }
 
   body {
     @apply bg-background text-foreground antialiased;
     min-width: 320px;
+    font-feature-settings: "cv02", "ss01";
+  }
+
+  h1, h2, h3, h4 {
+    text-wrap: balance;
+  }
+
+  /* Cifras alineadas en tablas y KPIs */
+  table, .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::selection {
+    background-color: rgb(var(--brand-200));
+    color: rgb(var(--neutral-900));
+  }
+
+  /* Foco visible y consistente en todo control interactivo (WCAG 2.4.7 / 2.4.11) */
+  :where(a, button, [role="button"], [role="tab"], [role="menuitem"], [role="option"], summary, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid rgb(var(--ring));
+    outline-offset: 2px;
+  }
+  :where(input, select, textarea):focus-visible {
+    outline-offset: 0;
+  }
+
+  /* Controles de formulario: valores por defecto del sistema (especificidad 0,
+     cualquier utilidad del componente los reemplaza). */
+  :where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]), select, textarea) {
+    background-color: rgb(var(--card));
+    color: rgb(var(--foreground));
+    border-color: rgb(var(--input));
+  }
+  :where(input, textarea)::placeholder {
+    color: rgb(var(--neutral-400));
+    opacity: 1;
+  }
+  :where(input[type="checkbox"], input[type="radio"]) {
+    accent-color: rgb(var(--primary));
+  }
+  :where(input, select, textarea):disabled {
+    cursor: not-allowed;
+  }
+
+  [disabled], [aria-disabled="true"] {
+    cursor: not-allowed;
   }
 }
 
-.glass {
-  @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-xl;
+/* ════════════════════════════════════════════════════════════════════════════
+   COMPONENTES BASE (ver components/ui/*). Usá las clases cuando no puedas usar
+   el componente React; no copies sus utilidades a mano.
+   ════════════════════════════════════════════════════════════════════════════ */
+@layer components {
+
+  /* ── Densidad de controles ── */
+  :where(input[type="text"], input[type="email"], input[type="number"], input[type="tel"], input[type="password"], input[type="search"],
+  input[type="date"], input[type="time"], input[type="datetime-local"], input[type="month"], select, textarea) {
+    @apply min-h-[34px] px-2.5 py-1.5 text-sm rounded-lg;
+  }
+
+  /* ── Tablas de datos: una sola densidad en toda la aplicación ── */
+  @media (min-width: 768px) {
+    table {
+      font-size: 13px !important;
+    }
+    table th, table td {
+      height: 36px !important;
+      padding: 6px 10px !important;
+    }
+    table td {
+      font-size: 13px !important;
+    }
+    table th {
+      font-size: 11px !important;
+      font-weight: 600 !important;
+      text-transform: uppercase;
+      letter-spacing: 0.04em !important;
+    }
+  }
+  table thead th {
+    color: rgb(var(--neutral-500));
+  }
+
+  /* Botones */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 h-9 px-3.5 rounded-lg text-[13px] font-medium leading-none whitespace-nowrap select-none
+           border border-transparent transition-colors duration-150 ease-standard
+           disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .btn > svg { @apply w-4 h-4 shrink-0; }
+  .btn-sm { @apply h-8 px-2.5 text-xs gap-1.5; }
+  .btn-sm > svg { @apply w-3.5 h-3.5; }
+  .btn-lg { @apply h-11 px-5 text-sm; }
+  .btn-icon { @apply w-9 px-0; }
+  .btn-icon.btn-sm { @apply w-8; }
+  .btn-primary { @apply bg-primary text-primary-foreground hover:bg-primary-hover active:bg-brand-800; }
+  .btn-secondary { @apply bg-card text-slate-700 border-slate-300 hover:bg-slate-50 active:bg-slate-100 dark:text-slate-200 dark:border-slate-600 dark:hover:bg-slate-700; }
+  .btn-tonal { @apply bg-brand-50 text-brand-700 hover:bg-brand-100 dark:bg-brand-950 dark:text-brand-200 dark:hover:bg-brand-900; }
+  .btn-ghost { @apply bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-slate-100; }
+  .btn-danger { @apply bg-danger-600 text-white hover:bg-danger-700; }
+  .btn-danger-ghost { @apply bg-transparent text-danger-700 hover:bg-danger-50 dark:text-danger-300 dark:hover:bg-danger-950; }
+
+  /* Campos */
+  .field-label { @apply block text-[13px] font-medium text-slate-700 dark:text-slate-200 mb-1.5; }
+  .field-hint { @apply mt-1.5 text-xs text-slate-500 dark:text-slate-400; }
+  .field-error { @apply mt-1.5 text-xs font-medium text-danger-700 dark:text-danger-300; }
+  .input {
+    @apply block w-full h-9 rounded-lg border border-input bg-card px-3 text-sm text-foreground
+           placeholder:text-slate-400 transition-[border-color,box-shadow] duration-150
+           hover:border-slate-400 focus:outline-none focus:border-brand-500 focus:shadow-focus
+           disabled:bg-slate-50 disabled:text-slate-500 dark:disabled:bg-slate-900;
+  }
+  .input[aria-invalid="true"] { @apply border-danger-500 focus:shadow-[0_0_0_3px_rgb(var(--danger-500)/0.25)]; }
+  textarea.input { @apply h-auto min-h-[88px] py-2 leading-relaxed; }
+
+  /* Superficies */
+  .surface { @apply bg-card text-card-foreground border border-border rounded-2xl; }
+  .surface-header { @apply flex items-center justify-between gap-3 px-4 py-3 border-b border-border; }
+  .surface-title { @apply text-heading text-slate-900 dark:text-slate-100; }
+
+  /* Etiqueta de sección / metadato */
+  .eyebrow { @apply text-eyebrow uppercase text-slate-500 dark:text-slate-400; }
+
+  /* Badges de estado */
+  .badge { @apply inline-flex items-center gap-1 h-[22px] px-2 rounded-md text-xs font-medium whitespace-nowrap border; }
+  .badge > svg { @apply w-3 h-3; }
+  .badge-neutral { @apply bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-700 dark:text-slate-200 dark:border-slate-600; }
+  .badge-brand { @apply bg-brand-50 text-brand-700 border-brand-200 dark:bg-brand-950 dark:text-brand-200 dark:border-brand-800; }
+  .badge-success { @apply bg-success-50 text-success-800 border-success-200 dark:bg-success-950 dark:text-success-300 dark:border-success-900; }
+  .badge-warning { @apply bg-warning-50 text-warning-800 border-warning-200 dark:bg-warning-950 dark:text-warning-300 dark:border-warning-900; }
+  .badge-danger { @apply bg-danger-50 text-danger-800 border-danger-200 dark:bg-danger-950 dark:text-danger-300 dark:border-danger-900; }
+  .badge-info { @apply bg-info-50 text-info-800 border-info-200 dark:bg-info-950 dark:text-info-300 dark:border-info-900; }
+
+  .kbd { @apply inline-flex items-center h-5 px-1.5 rounded border border-slate-300 bg-slate-50 font-mono text-[11px] text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300; }
+
+  .skeleton { @apply rounded-lg bg-slate-200/70 dark:bg-slate-700/60 animate-pulse; }
+
+  /* Overlay de diálogos y paneles */
+  .scrim { @apply fixed inset-0 bg-slate-950/50 dark:bg-black/60; }
+
+  /* Lista de navegación lateral */
+  .nav-item {
+    @apply flex items-center gap-2.5 h-9 px-2.5 rounded-lg text-[13px] font-medium text-slate-600 dark:text-slate-300
+           hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100 transition-colors;
+  }
+  .nav-item[aria-current="page"] {
+    @apply bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-200;
+  }
+  .nav-item > svg { @apply w-[18px] h-[18px] shrink-0 opacity-80; }
 }
 
-.dark .glass {
-  @apply bg-slate-900/70 border-slate-700/50;
+/* ════════════════════════════════════════════════════════════════════════════
+   CAPA DE COMPATIBILIDAD DE MODO OSCURO
+   Parte del código heredado usa tonos claros sin variante dark:. Estas reglas
+   los adaptan. Para código nuevo usá tokens (bg-card, text-muted-foreground) o
+   los componentes de components/ui y no dependas de esta capa.
+   ════════════════════════════════════════════════════════════════════════════ */
+@layer components {
+  /* Superficies claras sin variante oscura */
+  .dark .bg-white\/90, .dark .bg-white\/80, .dark .bg-white\/70 { background-color: rgb(var(--card) / 0.92) !important; }
+  .dark .bg-white\/50 { background-color: rgb(var(--card) / 0.6) !important; }
+  .dark .bg-slate-50\/50 { background-color: rgb(var(--neutral-900) / 0.5) !important; }
+  .dark .bg-slate-100\/50, .dark .bg-slate-100\/60, .dark .bg-slate-100 { background-color: rgb(var(--neutral-700) / 0.5) !important; }
+  .dark .bg-slate-200\/50 { background-color: rgb(var(--neutral-700) / 0.7) !important; }
+
+  /* Tablas */
+  .dark table thead tr, .dark table thead th {
+    background-color: rgb(var(--neutral-900)) !important;
+    border-color: rgb(var(--neutral-700)) !important;
+    color: rgb(var(--neutral-300)) !important;
+  }
+  .dark .divide-slate-50 > :not([hidden]) ~ :not([hidden]),
+  .dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: rgb(var(--neutral-700)) !important; }
+  .dark table tbody tr:hover { background-color: rgb(var(--neutral-700) / 0.35) !important; }
+
+  /* Bordes claros */
+  .dark .border-slate-50, .dark .border-slate-100 { border-color: rgb(var(--neutral-700)) !important; }
+  .dark .border-white\/10, .dark .border-white\/20 { border-color: rgb(var(--neutral-400) / 0.12) !important; }
+  .dark .hover\:border-slate-100:hover, .dark .hover\:border-slate-200:hover { border-color: rgb(var(--neutral-600)) !important; }
+  .dark .hover\:border-slate-300:hover { border-color: rgb(var(--neutral-500)) !important; }
+
+  /* Tonos de estado claros → tinte translúcido */
+  .dark .bg-indigo-50, .dark .bg-blue-50, .dark .bg-brand-50 { background-color: rgb(var(--brand-500) / 0.12) !important; }
+  .dark .bg-indigo-50\/50, .dark .bg-indigo-50\/30, .dark .bg-indigo-100\/50 { background-color: rgb(var(--brand-500) / 0.08) !important; }
+  .dark .bg-indigo-100, .dark .bg-blue-100 { background-color: rgb(var(--brand-500) / 0.2) !important; }
+  .dark .text-indigo-600, .dark .text-indigo-700, .dark .text-indigo-800, .dark .text-indigo-900 { color: rgb(var(--brand-300)) !important; }
+  .dark .text-blue-600, .dark .text-blue-700, .dark .text-blue-800 { color: rgb(var(--info-300)) !important; }
+  .dark .border-indigo-100, .dark .border-indigo-200, .dark .border-indigo-100\/50,
+  .dark .border-blue-100, .dark .border-blue-200 { border-color: rgb(var(--brand-500) / 0.25) !important; }
+  .dark .hover\:bg-indigo-50:hover, .dark .hover\:bg-indigo-100:hover,
+  .dark .hover\:bg-blue-50:hover, .dark .focus\:bg-indigo-50:focus { background-color: rgb(var(--brand-500) / 0.18) !important; }
+
+  .dark .bg-amber-50, .dark .bg-yellow-50 { background-color: rgb(var(--warning-500) / 0.1) !important; }
+  .dark .bg-amber-50\/30, .dark .bg-amber-50\/50 { background-color: rgb(var(--warning-500) / 0.06) !important; }
+  .dark .bg-amber-100, .dark .bg-yellow-100 { background-color: rgb(var(--warning-500) / 0.18) !important; }
+  .dark .text-amber-600, .dark .text-amber-700, .dark .text-amber-800, .dark .text-amber-900,
+  .dark .text-yellow-700, .dark .text-yellow-800 { color: rgb(var(--warning-300)) !important; }
+  .dark .border-amber-100, .dark .border-amber-200 { border-color: rgb(var(--warning-500) / 0.25) !important; }
+  .dark .hover\:bg-amber-50:hover, .dark .hover\:bg-amber-100:hover { background-color: rgb(var(--warning-500) / 0.18) !important; }
+
+  .dark .bg-emerald-50, .dark .bg-green-50 { background-color: rgb(var(--success-500) / 0.1) !important; }
+  .dark .bg-emerald-50\/50 { background-color: rgb(var(--success-500) / 0.06) !important; }
+  .dark .bg-emerald-100, .dark .bg-green-100 { background-color: rgb(var(--success-500) / 0.18) !important; }
+  .dark .text-emerald-600, .dark .text-emerald-700, .dark .text-emerald-800,
+  .dark .text-green-600, .dark .text-green-700, .dark .text-green-800 { color: rgb(var(--success-300)) !important; }
+  .dark .border-emerald-100, .dark .border-emerald-200, .dark .border-green-200 { border-color: rgb(var(--success-500) / 0.25) !important; }
+  .dark .hover\:bg-emerald-50:hover, .dark .hover\:bg-emerald-100:hover { background-color: rgb(var(--success-500) / 0.18) !important; }
+
+  .dark .bg-rose-50, .dark .bg-red-50, .dark .bg-red-50\/90 { background-color: rgb(var(--danger-500) / 0.1) !important; }
+  .dark .bg-rose-100, .dark .bg-red-100 { background-color: rgb(var(--danger-500) / 0.18) !important; }
+  .dark .text-rose-600, .dark .text-rose-700, .dark .text-rose-800,
+  .dark .text-red-600, .dark .text-red-700, .dark .text-red-800 { color: rgb(var(--danger-300)) !important; }
+  .dark .border-rose-100, .dark .border-rose-200, .dark .border-red-100, .dark .border-red-200 { border-color: rgb(var(--danger-500) / 0.25) !important; }
+  .dark .hover\:bg-rose-50:hover, .dark .hover\:bg-rose-100:hover, .dark .hover\:bg-red-50:hover { background-color: rgb(var(--danger-500) / 0.16) !important; }
+
+  .dark .bg-violet-50, .dark .bg-purple-50 { background-color: rgb(var(--accent-500) / 0.1) !important; }
+  .dark .bg-violet-100, .dark .bg-purple-100 { background-color: rgb(var(--accent-500) / 0.18) !important; }
+  .dark .text-violet-600, .dark .text-violet-700, .dark .text-purple-600, .dark .text-purple-700 { color: rgb(var(--accent-300)) !important; }
+  .dark .border-violet-100, .dark .border-violet-200, .dark .border-purple-200 { border-color: rgb(var(--accent-500) / 0.25) !important; }
+
+  .dark .bg-fuchsia-100 { @apply bg-fuchsia-500/20 !important; }
+  .dark .text-fuchsia-700 { @apply text-fuchsia-300 !important; }
+  .dark .border-fuchsia-200 { @apply border-fuchsia-500/25 !important; }
+  .dark .bg-cyan-50 { @apply bg-cyan-500/10 !important; }
+  .dark .bg-teal-50 { @apply bg-teal-500/10 !important; }
+  .dark .bg-sky-50 { @apply bg-sky-500/10 !important; }
+  .dark .bg-orange-50 { @apply bg-orange-500/10 !important; }
+  .dark .text-orange-600, .dark .text-orange-700 { @apply text-orange-300 !important; }
+  .dark .text-sky-600, .dark .text-sky-700 { @apply text-sky-300 !important; }
+  .dark .text-cyan-600, .dark .text-cyan-700 { @apply text-cyan-300 !important; }
+  .dark .text-teal-600, .dark .text-teal-700 { @apply text-teal-300 !important; }
+
+  /* Textos neutros sin variante oscura */
+  .dark .text-slate-900 { color: rgb(var(--neutral-50)) !important; }
+  .dark .text-slate-800 { color: rgb(var(--neutral-100)) !important; }
+  .dark .text-slate-700 { color: rgb(var(--neutral-200)) !important; }
+  .dark .text-slate-600 { color: rgb(var(--neutral-300)) !important; }
+
+  /* Hovers claros */
+  .dark .hover\:bg-slate-50:hover, .dark .hover\:bg-white:hover { background-color: rgb(var(--neutral-700) / 0.5) !important; }
+  .dark .hover\:bg-slate-100:hover, .dark .hover\:bg-slate-200:hover { background-color: rgb(var(--neutral-700) / 0.7) !important; }
+
+  /* Anillos de los gráficos de dona */
+  .dark svg circle[stroke="#f1f5f9"] { stroke: rgb(var(--neutral-700)) !important; }
+
+  /* Contorno blanco de contadores de notificación */
+  .dark .border-2.border-white { border-color: rgb(var(--neutral-800)) !important; }
+
+  /* Opciones nativas */
+  .dark select option {
+    background-color: rgb(var(--neutral-800));
+    color: rgb(var(--neutral-100));
+  }
+
+  .dark input::placeholder, .dark textarea::placeholder { color: rgb(var(--neutral-500)) !important; }
+
+  .dark .bg-primary\/5 { background-color: rgb(var(--brand-500) / 0.08) !important; }
+  .dark .bg-primary\/10 { background-color: rgb(var(--brand-500) / 0.14) !important; }
+  .dark .bg-primary\/20 { background-color: rgb(var(--brand-500) / 0.22) !important; }
+  .dark .text-primary { color: rgb(var(--brand-300)); }
 }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   UTILIDADES
+   ════════════════════════════════════════════════════════════════════════════ */
 
 .whatsapp-preview {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   @apply bg-[#E5DDD5] p-6 rounded-2xl shadow-inner overflow-y-auto max-h-[400px] text-xs leading-relaxed text-[#111B21] border border-slate-300 whitespace-pre-wrap;
 }
-
 .dark .whatsapp-preview {
   @apply bg-[#0e1621] text-slate-100 border-slate-700;
 }
 
-/* ════════════════════════════════════════════════════════════════════════════ */
-/* DARK MODE — COMPREHENSIVE OVERRIDES FOR PROFESSIONAL UI                   */
-/* ════════════════════════════════════════════════════════════════════════════ */
-@layer components {
-
-  /* ── 0. FORM CONTROLS (DESKTOP DENSITY 34px) ────────────────────────── */
-  :where(input[type="text"], input[type="email"], input[type="number"], input[type="tel"], input[type="password"], input[type="search"],
-  input[type="date"], input[type="time"], input[type="datetime-local"], select, textarea) {
-    @apply min-h-[34px] px-2.5 py-1.5 text-sm rounded-lg;
-  }
-
-  /* ── 0.5. DATA TABLES (DESKTOP DENSITY 30px) ────────────────────────── */
-  @media (min-width: 768px) {
-    table {
-      @apply text-[12px] !important;
-    }
-    table th, table td {
-      height: 30px !important;
-      padding-top: 3px !important;
-      padding-bottom: 3px !important;
-      padding-left: 8px !important;
-      padding-right: 8px !important;
-    }
-    table th {
-      @apply text-[11px] font-bold uppercase tracking-wide !important;
-    }
-    table td {
-      @apply text-[12px] !important;
-    }
-  }
-
-  /* ── 1. FOCUS RINGS — softer in dark mode ─────────────────────────────── */
-  .dark *:focus, 
-  .dark *:focus-visible, 
-  .dark *:focus-within {
-    --tw-ring-color: rgba(99, 102, 241, 0.15) !important;
-  }
-
-  /* ── 2. SHADOWS — dark-appropriate (less blur, more opacity) ──────────── */
-  .dark .shadow-sm, 
-  .dark .shadow-md, 
-  .dark .shadow-lg, 
-  .dark .shadow-xl, 
-  .dark .shadow-2xl {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
-  }
-  .dark .shadow-inner {
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3) !important;
-  }
-  /* Colored shadows → muted */
-  .dark .shadow-indigo-500\/20, .dark .shadow-indigo-500\/30,
-  .dark .shadow-indigo-200 {
-    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.08) !important;
-  }
-  .dark .shadow-primary\/20 {
-    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.08) !important;
-  }
-  .dark .shadow-green-600\/10, .dark .shadow-green-600\/30 {
-    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.08) !important;
-  }
-  .dark .shadow-emerald-200 {
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.06) !important;
-  }
-  .dark .shadow-blue-200 {
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.06) !important;
-  }
-  .dark .shadow-amber-200, .dark .shadow-amber-500\/20 {
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.06) !important;
-  }
-  .dark .shadow-red-200 {
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.06) !important;
-  }
-  .dark .shadow-rose-200 {
-    box-shadow: 0 4px 12px rgba(244, 63, 94, 0.06) !important;
-  }
-
-  /* ── 3. WHITE/LIGHT BACKGROUND LEAKS ──────────────────────────────────── */
-  /* Surfaces that use light colors without dark: variants */
-  .dark .bg-white\/90 {
-    background-color: rgba(30, 41, 59, 0.9) !important;
-  }
-  .dark .bg-white\/80 {
-    background-color: rgba(30, 41, 59, 0.8) !important;
-  }
-  .dark .bg-white\/70 {
-    background-color: rgba(30, 41, 59, 0.7) !important;
-  }
-  .dark .bg-white\/50 {
-    background-color: rgba(30, 41, 59, 0.5) !important;
-  }
-  .dark .bg-red-50\/90 {
-    background-color: rgba(244, 63, 94, 0.12) !important;
-  }
-  .dark .bg-slate-50\/50 {
-    @apply bg-slate-800/40 !important;
-  }
-  .dark .bg-slate-100\/50 {
-    @apply bg-slate-800/60 !important;
-  }
-  .dark .bg-slate-200\/50 {
-    @apply bg-slate-700/60 !important;
-  }
-  .dark .bg-slate-100\/60 {
-    @apply bg-slate-800/50 !important;
-  }
-  .dark .bg-slate-100 {
-    @apply bg-slate-800/50 !important;
-  }
-
-  /* ── 4. TABLES ────────────────────────────────────────────────────────── */
-  /* Header rows */
-  .dark table thead tr, 
-  .dark table thead th {
-    @apply bg-slate-800/90 border-slate-700 text-slate-300 !important;
-  }
-  /* Body row dividers */
-  .dark .divide-slate-50 > :not([hidden]) ~ :not([hidden]) {
-    border-color: rgba(51, 65, 85, 0.5) !important;
-  }
-  .dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
-    border-color: rgba(51, 65, 85, 0.5) !important;
-  }
-  /* Hover on table rows */
-  .dark .hover\:bg-slate-50\/50:hover {
-    @apply bg-slate-700/30 !important;
-  }
-  .dark table tbody tr:hover {
-    background-color: rgba(51, 65, 85, 0.25) !important;
-  }
-
-  /* ── 5. BORDERS — light borders that leak ─────────────────────────────── */
-  .dark .border-slate-50 {
-    @apply border-slate-700/50 !important;
-  }
-  .dark .border-slate-100 {
-    @apply border-slate-700/50 !important;
-  }
-  .dark .border-white\/10 {
-    border-color: rgba(148, 163, 184, 0.08) !important;
-  }
-  .dark .border-white\/20 {
-    border-color: rgba(148, 163, 184, 0.1) !important;
-  }
-  .dark .hover\:border-slate-100:hover {
-    @apply border-slate-600/50 !important;
-  }
-  .dark .hover\:border-slate-200:hover {
-    @apply border-slate-600 !important;
-  }
-  .dark .hover\:border-slate-300:hover {
-    @apply border-slate-500 !important;
-  }
-
-  /* ── 6. SEMANTIC COLORS: All families ─────────────────────────────────── */
-
-  /* ── Indigo ── */
-  .dark .bg-indigo-50 { @apply bg-indigo-500/10 text-indigo-300 !important; }
-  .dark .bg-indigo-50\/50 { background-color: rgba(99, 102, 241, 0.06) !important; }
-  .dark .bg-indigo-100 { @apply bg-indigo-500/20 text-indigo-300 border-indigo-500/30 !important; }
-  .dark .bg-indigo-100\/50 { background-color: rgba(99, 102, 241, 0.12) !important; }
-  .dark .text-indigo-600, .dark .text-indigo-700, .dark .text-indigo-900 { @apply text-indigo-400 !important; }
-  .dark .border-indigo-100, .dark .border-indigo-200, .dark .border-indigo-100\/50 { @apply border-indigo-500/20 !important; }
-  .dark .hover\:bg-indigo-50:hover { @apply bg-indigo-500/20 !important; }
-  .dark .hover\:bg-indigo-100:hover { @apply bg-indigo-500/25 !important; }
-  .dark .focus\:bg-indigo-50:focus { @apply bg-indigo-500/20 !important; }
-  .dark .bg-indigo-50\/30 { @apply bg-indigo-500/5 !important; }
-  .dark .focus\:ring-indigo-100 { --tw-ring-color: rgba(99, 102, 241, 0.12) !important; }
-
-  /* ── Amber / Warning ── */
-  .dark .bg-amber-50 { @apply bg-amber-500/10 text-amber-400 !important; }
-  .dark .bg-amber-100 { @apply bg-amber-500/20 text-amber-300 border-amber-500/30 !important; }
-  .dark .text-amber-600, .dark .text-amber-700, .dark .text-amber-800, .dark .text-amber-900 { @apply text-amber-400 !important; }
-  .dark .border-amber-100, .dark .border-amber-200 { @apply border-amber-500/20 !important; }
-  .dark .hover\:bg-amber-50:hover { @apply bg-amber-500/20 !important; }
-  .dark .bg-amber-50\/30 { @apply bg-amber-500/5 !important; }
-
-  /* ── Emerald / Success ── */
-  .dark .bg-emerald-50 { @apply bg-emerald-500/10 text-emerald-400 border-emerald-500/20 !important; }
-  .dark .bg-emerald-50\/50 { background-color: rgba(16, 185, 129, 0.06) !important; }
-  .dark .bg-emerald-100 { @apply bg-emerald-500/20 text-emerald-300 border-emerald-500/30 !important; }
-  .dark .text-emerald-600, .dark .text-emerald-700, .dark .text-emerald-800 { @apply text-emerald-400 !important; }
-  .dark .border-emerald-100, .dark .border-emerald-200 { @apply border-emerald-500/20 !important; }
-  .dark .hover\:bg-emerald-50:hover, .dark .hover\:bg-emerald-100:hover { @apply bg-emerald-500/20 !important; }
-
-  /* ── Rose / Error ── */
-  .dark .bg-rose-50 { @apply bg-rose-500/10 text-rose-400 border-rose-500/20 !important; }
-  .dark .bg-rose-100 { @apply bg-rose-500/20 text-rose-300 border-rose-500/30 !important; }
-  .dark .text-rose-500, .dark .text-rose-600, .dark .text-rose-700, .dark .text-rose-800 { @apply text-rose-400 !important; }
-  .dark .border-rose-100, .dark .border-rose-200 { @apply border-rose-500/20 !important; }
-  .dark .hover\:bg-rose-50:hover, .dark .hover\:bg-rose-100:hover { @apply bg-rose-500/20 !important; }
-
-  /* ── Blue ── */
-  .dark .bg-blue-50 { @apply bg-blue-500/10 text-blue-400 !important; }
-  .dark .bg-blue-100 { @apply bg-blue-500/20 text-blue-300 border-blue-500/30 !important; }
-  .dark .text-blue-600, .dark .text-blue-700 { @apply text-blue-400 !important; }
-  .dark .border-blue-100, .dark .border-blue-200 { @apply border-blue-500/20 !important; }
-  .dark .hover\:bg-blue-50:hover { @apply bg-blue-500/20 !important; }
-
-  /* ── Violet ── */
-  .dark .bg-violet-50 { @apply bg-violet-500/10 text-violet-400 !important; }
-  .dark .bg-violet-100 { @apply bg-violet-500/20 text-violet-300 border-violet-500/30 !important; }
-  .dark .text-violet-600, .dark .text-violet-700 { @apply text-violet-400 !important; }
-  .dark .border-violet-100, .dark .border-violet-200 { @apply border-violet-500/20 !important; }
-
-  /* ── Red ── */
-  .dark .bg-red-50 { @apply bg-red-500/10 text-red-400 !important; }
-  .dark .bg-red-100 { @apply bg-red-500/20 text-red-300 border-red-500/30 !important; }
-  .dark .text-red-600, .dark .text-red-700, .dark .text-red-700 { @apply text-red-400 !important; }
-  .dark .text-red-800 { @apply text-red-300 !important; }
-  .dark .border-red-100, .dark .border-red-200 { @apply border-red-500/20 !important; }
-
-  /* ── Fuchsia (used in notification categories) ── */
-  .dark .bg-fuchsia-100 { @apply bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/30 !important; }
-  .dark .text-fuchsia-700 { @apply text-fuchsia-400 !important; }
-  .dark .border-fuchsia-200 { @apply border-fuchsia-500/20 !important; }
-
-  /* ── Cyan / Teal ── */
-  .dark .bg-cyan-50 { @apply bg-cyan-500/10 text-cyan-400 !important; }
-  .dark .bg-teal-50 { @apply bg-teal-500/10 text-teal-400 !important; }
-
-  /* ── 7. TEXT COLOR FIXES ───────────────────────────────────────────────── */
-  /* Hard-coded light-mode text colors that fail in dark */
-  .dark .text-emerald-700.font-black { @apply text-emerald-400 !important; }
-  .dark .text-amber-700.font-black { @apply text-amber-400 !important; }
-  .dark .text-rose-700.font-black { @apply text-rose-400 !important; }
-  .dark .text-slate-800 { @apply text-slate-200 !important; }
-  .dark .text-slate-700 { @apply text-slate-300 !important; }
-  .dark .text-slate-600 { @apply text-slate-400 !important; }
-  .dark .text-slate-900 { @apply text-slate-100 !important; }
-
-  /* ── 8. SVG FILLS — donut charts bg ring ──────────────────────────────── */
-  .dark svg circle[stroke="#f1f5f9"] {
-    stroke: #334155 !important;
-  }
-
-  /* ── 9. NOTIFICATION BADGE — border against dark header ───────────────── */
-  .dark .border-2.border-white {
-    @apply border-slate-800 !important;
-  }
-
-  /* ── 10. SELECT/OPTION — native elements need explicit dark styling ──── */
-  .dark select option {
-    background-color: #1e293b !important;
-    color: #e2e8f0 !important;
-  }
-
-  /* ── 11. SCROLLBAR — dark mode ────────────────────────────────────────── */
-  .dark ::-webkit-scrollbar-thumb {
-    @apply bg-slate-700 hover:bg-slate-600 !important;
-  }
-  .dark ::-webkit-scrollbar-track {
-    @apply bg-transparent !important;
-  }
-
-  /* ── 12. SEARCH INPUT INSIDE DROPDOWNS (missing dark bg) ─────────────── */
-  .dark input.outline-none:not([class*="dark:"]) {
-    color: #e2e8f0;
-  }
-  .dark input::placeholder {
-    color: #64748b !important;
-  }
-  .dark textarea::placeholder {
-    color: #64748b !important;
-  }
-
-  /* ── 13. HOVER STATES — light hovers that don't adapt ─────────────────── */
-  .dark .hover\:bg-slate-50:hover {
-    @apply bg-slate-700/40 !important;
-  }
-  .dark .hover\:bg-slate-100:hover {
-    @apply bg-slate-700/50 !important;
-  }
-  .dark .hover\:bg-slate-200:hover {
-    @apply bg-slate-700/60 !important;
-  }
-  .dark .hover\:bg-white:hover {
-    @apply bg-slate-700/50 !important;
-  }
-  .dark .hover\:bg-rose-100:hover {
-    @apply bg-rose-500/20 !important;
-  }
-  .dark .hover\:bg-amber-100:hover {
-    @apply bg-amber-500/20 !important;
-  }
-  .dark .hover\:bg-indigo-100:hover {
-    @apply bg-indigo-500/20 !important;
-  }
-  .dark .hover\:bg-red-50:hover {
-    @apply bg-red-500/15 !important;
-  }
-
-  /* ── 14. BORDER-T / BORDER-B dividers that use light colors ──────────── */
-  .dark .border-t.border-slate-50,
-  .dark .border-b.border-slate-50 {
-    @apply border-slate-700/50 !important;
-  }
-
-  /* ── 15. DISABLED STATES ──────────────────────────────────────────────── */
-  .dark .disabled\:opacity-50[disabled] {
-    opacity: 0.4 !important;
-  }
-
-  /* ── 16. PRIMARY/10 background ────────────────────────────────────────── */
-  .dark .bg-primary\/5 {
-    background-color: rgba(99, 102, 241, 0.05) !important;
-  }
-  .dark .bg-primary\/10 {
-    background-color: rgba(99, 102, 241, 0.12) !important;
-  }
-  .dark .bg-primary\/20 {
-    background-color: rgba(99, 102, 241, 0.2) !important;
-  }
-
-  /* ── 17. HOVER SHADOW — prevent bright shadow on hover in dark ────────── */
-  .dark .hover\:shadow-xl:hover {
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5) !important;
-  }
-}
-/* ────────────────────────────────────────────────────────── */
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  @apply bg-transparent;
-}
+/* Scrollbars discretas */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-200 rounded-full hover:bg-slate-300 transition-colors;
+  background-color: rgb(var(--neutral-300));
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
+::-webkit-scrollbar-thumb:hover { background-color: rgb(var(--neutral-400)); }
+.dark ::-webkit-scrollbar-thumb { background-color: rgb(var(--neutral-600)); }
+.custom-scrollbar::-webkit-scrollbar { height: 8px; width: 8px; }
 
-/* Animations */
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
+.animate-slide-up { animation: slideUp 0.2s ease-out forwards; }
 
-.animate-slide-up {
-  animation: slideUp 0.4s ease-out forwards;
-}
+/* Safe Area para equipos con notch */
+.safe-area-top { padding-top: env(safe-area-inset-top, 0px); }
+.safe-area-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
 
-/* Safe Area for notched devices (iPhone X+) */
-.safe-area-top {
-  padding-top: env(safe-area-inset-top, 0px);
-}
-.safe-area-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-/* Mobile touch improvements */
 @media (max-width: 768px) {
-  /* Prevent iOS zoom on input focus. Only target text-like inputs to avoid breaking native Android pickers scale */
+  /* Evita el zoom de iOS al enfocar campos de texto */
   :where(input[type="text"], input[type="email"], input[type="number"], input[type="tel"], input[type="password"], input[type="search"], select, textarea) {
     font-size: 16px !important;
   }
 
-  /* Better tap feedback */
   button, a {
-    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.1);
+    -webkit-tap-highlight-color: rgb(var(--brand-500) / 0.12);
   }
 
-  /* Smoother scrolling */
   html {
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
   }
 
-  /* WhatsApp preview mobile spacing */
-  .whatsapp-preview {
-    @apply p-4 max-h-[300px];
-  }
+  .whatsapp-preview { @apply p-4 max-h-[300px]; }
 
-  /* ── Touch-friendly inputs on mobile (Dense ERP 40px) ── */
+  /* Objetivos táctiles de 40px (WCAG 2.5.8) */
   :where(input[type="text"], input[type="email"], input[type="number"], input[type="tel"], input[type="password"], input[type="search"],
-  input[type="date"],
-  input[type="time"],
-  input[type="datetime-local"],
-  select, textarea) {
+  input[type="date"], input[type="time"], input[type="datetime-local"], select, textarea) {
     min-height: 40px !important;
-    @apply text-sm rounded-lg px-2.5 py-1.5;
   }
-
-  /* ── Native date/time picker icons are shown — we hide the decorative icon in the component itself on mobile ── */
-
-  /* ── Minimum touch target on mobile ── */
   button {
-    @apply text-sm;
     min-height: 40px;
   }
-
-  /* Exception: inline icon-only buttons don't need 44px min-height */
   button.btn-icon-inline {
     min-height: unset;
   }
 
-  /* ── Reduce oversized rounded corners on mobile ── */
-  .rounded-\[2\.5rem\],
-  .rounded-\[3rem\],
-  .rounded-\[2rem\] {
-    @apply rounded-2xl;
-  }
-
-  /* ── Tables: readable on mobile ── */
-  table th,
-  table td {
+  table th, table td {
     @apply px-2.5 py-2.5 text-xs;
-  }
-
-  /* ── Reduce heavy animations on mobile ── */
-  .hover\:shadow-xl:hover {
-    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), 0 4px 10px -2px rgba(0,0,0,.06);
   }
 }
 
-/* Small phones (iPhone SE, Xiaomi Redmi, etc.) */
 @media (max-width: 390px) {
-  :where(input[type="date"],
-  input[type="time"],
-  input[type="datetime-local"],
-  select) {
+  :where(input[type="date"], input[type="time"], input[type="datetime-local"], select) {
     min-height: 44px !important;
     @apply text-xs px-2 py-2;
   }
 }
 
-/* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
-/* ── Toast enter animation ── */
 @keyframes toastSlideIn {
-  from { opacity: 0; transform: translateY(-10px); }
+  from { opacity: 0; transform: translateY(-6px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.animate-toast-in {
-  animation: toastSlideIn 0.3s ease-out forwards;
-}
+.animate-toast-in { animation: toastSlideIn 0.2s ease-out forwards; }
 
-/* ── Spinner animation ── */
-@keyframes spinSmooth {
-  to { transform: rotate(360deg); }
-}
-.animate-spin-smooth {
-  animation: spinSmooth 0.8s linear infinite;
-}
+@keyframes spinSmooth { to { transform: rotate(360deg); } }
+.animate-spin-smooth { animation: spinSmooth 0.8s linear infinite; }
 
-/* ── Mobile card entry ── */
 @keyframes cardFadeIn {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.animate-card-in {
-  animation: cardFadeIn 0.25s ease-out forwards;
-}
+.animate-card-in { animation: cardFadeIn 0.2s ease-out forwards; }
 
-/* ── Modal open: lock body scroll ── */
-/* Prevents background from scrolling when a modal is open */
+/* Bloqueo del scroll del fondo con un modal abierto */
 body.modal-open {
   overflow: hidden;
-  /* iOS Safari: relies on fixed positioning to prevent scroll */
   position: fixed;
   width: 100%;
-  /* Preserve the current scroll position so content doesn't jump */
-  /* The JS must set top: -scrollY when adding the class */
 }
 
-/* ── Custom Scrollbar ── */
-.custom-scrollbar::-webkit-scrollbar {
-  height: 8px;
-  width: 8px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-.dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #334155;
-}
-.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #475569;
-}
-
-/* ────────────────────────────────────────────────────────── */
-/* TYPOGRAPHY STANDARDIZATION FOR HELP PANELS AND ARTICLES     */
-/* ────────────────────────────────────────────────────────── */
+/* ── Tipografía de artículos y paneles de ayuda ── */
 .prose {
-  font-size: 0.875rem !important; /* 14px */
-  line-height: 1.5rem !important; /* 24px */
-  color: hsl(var(--foreground)) !important;
+  font-size: 0.9375rem !important;
+  line-height: 1.6 !important;
+  color: rgb(var(--foreground)) !important;
 }
-
 .prose h1, .prose h2, .prose h3, .prose h4 {
-  font-weight: 600 !important; /* Semibold */
-  color: hsl(var(--foreground)) !important;
+  font-weight: 600 !important;
+  color: rgb(var(--foreground)) !important;
   margin-top: 1.25rem !important;
   margin-bottom: 0.5rem !important;
 }
-
-.prose h1 { font-size: 1.25rem !important; }
+.prose h1 { font-size: 1.375rem !important; }
 .prose h2 { font-size: 1.125rem !important; }
-.prose h3 { font-size: 0.95rem !important; }
-.prose h4 { font-size: 0.875rem !important; }
-
+.prose h3 { font-size: 1rem !important; }
+.prose h4 { font-size: 0.9375rem !important; }
 .prose p {
   margin-bottom: 0.75rem !important;
-  font-weight: 400 !important; /* Normal font weight */
-  font-size: 0.875rem !important;
-  line-height: 1.5 !important;
-  color: hsl(var(--muted-foreground)) !important;
+  font-weight: 400 !important;
+  font-size: 0.9375rem !important;
+  line-height: 1.6 !important;
+  color: rgb(var(--neutral-600)) !important;
 }
-
-.dark .prose p {
-  color: #94a3b8 !important; /* Slate 400 */
-}
-
-.prose strong, .prose b {
-  font-weight: 600 !important;
-}
-
-.prose ul {
-  list-style-type: disc !important;
-  padding-left: 1.25rem !important;
-  margin-bottom: 0.75rem !important;
-}
-
-.prose ol {
-  list-style-type: decimal !important;
-  padding-left: 1.25rem !important;
-  margin-bottom: 0.75rem !important;
-}
-
+.dark .prose p { color: rgb(var(--neutral-300)) !important; }
+.prose strong, .prose b { font-weight: 600 !important; }
+.prose ul { list-style-type: disc !important; padding-left: 1.25rem !important; margin-bottom: 0.75rem !important; }
+.prose ol { list-style-type: decimal !important; padding-left: 1.25rem !important; margin-bottom: 0.75rem !important; }
 .prose li {
   margin-bottom: 0.25rem !important;
-  font-size: 0.875rem !important;
+  font-size: 0.9375rem !important;
   font-weight: 400 !important;
-  color: hsl(var(--muted-foreground)) !important;
+  color: rgb(var(--neutral-600)) !important;
 }
+.dark .prose li { color: rgb(var(--neutral-300)) !important; }
+.prose li strong { font-weight: 600 !important; color: rgb(var(--foreground)) !important; }
+.prose a { color: rgb(var(--brand-600)); text-decoration: underline; text-underline-offset: 2px; }
+.prose code { font-family: theme('fontFamily.mono'); font-size: 0.85em; }
 
-.dark .prose li {
-  color: #94a3b8 !important;
-}
-
-.prose li strong {
-  font-weight: 600 !important;
-  color: hsl(var(--foreground)) !important;
-}
-
-/* prose-sm for compact view (sidebars/drawers) */
-.prose-sm {
-  font-size: 0.8125rem !important; /* 13px */
-  line-height: 1.375rem !important; /* 22px */
-}
-
+.prose-sm { font-size: 0.8125rem !important; line-height: 1.375rem !important; }
 .prose-sm h1 { font-size: 1.125rem !important; }
 .prose-sm h2 { font-size: 1rem !important; }
 .prose-sm h3 { font-size: 0.875rem !important; }
 .prose-sm h4 { font-size: 0.8125rem !important; }
+.prose-sm p { margin-bottom: 0.5rem !important; font-size: 0.8125rem !important; font-weight: 400 !important; }
+.prose-sm ul, .prose-sm ol { padding-left: 1rem !important; margin-bottom: 0.5rem !important; }
+.prose-sm li { margin-bottom: 0.125rem !important; font-size: 0.8125rem !important; font-weight: 400 !important; }
 
-.prose-sm p {
-  margin-bottom: 0.5rem !important;
-  font-size: 0.8125rem !important;
-  font-weight: 400 !important;
-}
-
-.prose-sm ul, .prose-sm ol {
-  padding-left: 1rem !important;
-  margin-bottom: 0.5rem !important;
-}
-
-.prose-sm li {
-  margin-bottom: 0.125rem !important;
-  font-size: 0.8125rem !important;
-  font-weight: 400 !important;
-}
-
-/* ── Prevent Overflow Utilities ── */
 .truncate-multiline {
   display: -webkit-box;
   -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;  
+  -webkit-box-orient: vertical;
   overflow: hidden;
 }
 .no-overflow-container {
@@ -1002,28 +711,16 @@ body.modal-open {
   white-space: nowrap;
 }
 
-/* ── Responsive Layout Safety Net ── */
-/* Prevents text from breaking out of containers globally, useful for long unspaced strings */
-* {
-  overflow-wrap: break-word;
-}
+* { overflow-wrap: break-word; }
 
-/* Base modal constraint to prevent viewport overflow on tiny screens or horizontal orientation */
 .modal-content-safe {
   max-height: 90vh;
   overflow-y: auto;
 }
 
-/* ── Hide scrollbar for wheel picker ── */
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* ── Fade mask for wheel picker ── */
 .mask-image-fade {
   mask-image: linear-gradient(to bottom, transparent, black 30%, black 70%, transparent);
   -webkit-mask-image: linear-gradient(to bottom, transparent, black 30%, black 70%, transparent);

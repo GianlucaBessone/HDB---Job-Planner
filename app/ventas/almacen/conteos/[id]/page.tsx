@@ -326,14 +326,14 @@ export default function ConteoTerminalPage({ params: paramsPromise }: { params: 
             </Link>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-base font-black text-slate-900 dark:text-slate-100">
+                <h1 className="text-base font-bold text-slate-900 dark:text-slate-100">
                   {conteo.numero}
                 </h1>
                 <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                   {conteo.tipo}
                 </span>
                 <span
-                  className={`text-xs px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider ${
+                  className={`text-xs px-2.5 py-0.5 rounded-full font-semibold uppercase tracking-wider ${
                     conteo.estado === 'CONFIRMADO'
                       ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                       : conteo.estado === 'PENDIENTE_REVISION'
@@ -381,7 +381,7 @@ export default function ConteoTerminalPage({ params: paramsPromise }: { params: 
                   <button
                     type="button"
                     onClick={() => setIsConfirmModalOpen(true)}
-                    className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-primary text-white text-xs font-bold shadow-md shadow-primary/20 hover:opacity-90 transition-all whitespace-nowrap"
+                    className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 transition-all whitespace-nowrap"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     <span>Confirmar y Ajustar Stock</span>
@@ -410,36 +410,36 @@ export default function ConteoTerminalPage({ params: paramsPromise }: { params: 
         {/* Panel de Resumen de Impacto en Diferencias */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
           <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Artículos</span>
-            <span className="font-mono text-sm font-black text-slate-900 dark:text-slate-100">
+            <span className="text-[11px] uppercase font-bold text-slate-400 block">Total Artículos</span>
+            <span className="font-mono text-sm font-bold text-slate-900 dark:text-slate-100">
               {conteo.estadisticas.totalItems}
             </span>
           </div>
 
           <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Artículos Contados</span>
-            <span className="font-mono text-sm font-black text-sky-600 dark:text-sky-400">
+            <span className="text-[11px] uppercase font-bold text-slate-400 block">Artículos Contados</span>
+            <span className="font-mono text-sm font-bold text-sky-600 dark:text-sky-400">
               {conteo.estadisticas.contados} ({conteo.estadisticas.porcentajeAvance}%)
             </span>
           </div>
 
           <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Con Diferencia</span>
-            <span className="font-mono text-sm font-black text-amber-600 dark:text-amber-400">
+            <span className="text-[11px] uppercase font-bold text-slate-400 block">Con Diferencia</span>
+            <span className="font-mono text-sm font-bold text-amber-600 dark:text-amber-400">
               {conteo.estadisticas.conDiferencias} líneas
             </span>
           </div>
 
           <div className="p-2.5 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30">
-            <span className="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-400 block">Sobrantes</span>
-            <span className="font-mono text-sm font-black text-emerald-700 dark:text-emerald-400">
+            <span className="text-[11px] uppercase font-bold text-emerald-700 dark:text-emerald-400 block">Sobrantes</span>
+            <span className="font-mono text-sm font-bold text-emerald-700 dark:text-emerald-400">
               +{conteo.estadisticas.unidadesSobrantes} u.
             </span>
           </div>
 
           <div className="p-2.5 rounded-xl bg-rose-50/60 dark:bg-rose-950/30">
-            <span className="text-[10px] uppercase font-bold text-rose-700 dark:text-rose-400 block">Faltantes (Merma)</span>
-            <span className="font-mono text-sm font-black text-rose-700 dark:text-rose-400">
+            <span className="text-[11px] uppercase font-bold text-rose-700 dark:text-rose-400 block">Faltantes (Merma)</span>
+            <span className="font-mono text-sm font-bold text-rose-700 dark:text-rose-400">
               -{conteo.estadisticas.unidadesFaltantes} u.
             </span>
           </div>
@@ -459,7 +459,7 @@ export default function ConteoTerminalPage({ params: paramsPromise }: { params: 
                 onChange={(e) => setBarcodeInput(e.target.value)}
                 placeholder="Escanee código de barras o escriba SKU y presione Enter..."
                 autoFocus
-                className="w-full pl-9 pr-3 h-10 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-background font-mono focus:outline-none focus:ring-2 focus:ring-primary/40 font-bold"
+                className="w-full pl-9 pr-3 h-10 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-card font-mono focus:outline-none focus:ring-2 focus:ring-primary/40 font-bold"
               />
             </div>
 
@@ -517,7 +517,7 @@ export default function ConteoTerminalPage({ params: paramsPromise }: { params: 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[11px] font-black text-slate-500 uppercase tracking-wider select-none whitespace-nowrap">
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none whitespace-nowrap">
                 {[
                   { key: 'sku', label: 'SKU', className: 'py-2.5 px-3 w-32', align: 'left' },
                   { key: 'descripcion', label: 'Producto', className: 'py-2.5 px-3', align: 'left' },
@@ -617,7 +617,7 @@ export default function ConteoTerminalPage({ params: paramsPromise }: { params: 
                     </td>
                     <td className="py-2 px-3 text-center">
                       {esBloqueado ? (
-                        <span className="font-mono text-xs font-black text-slate-900 dark:text-slate-100">
+                        <span className="font-mono text-xs font-bold text-slate-900 dark:text-slate-100">
                           {item.cantidadContada !== null ? item.cantidadContada : '—'}
                         </span>
                       ) : (
@@ -628,7 +628,7 @@ export default function ConteoTerminalPage({ params: paramsPromise }: { params: 
                           value={item.cantidadContada !== null ? item.cantidadContada : ''}
                           onChange={(e) => handleCantidadChange(originalIdx, e.target.value)}
                           placeholder="Sin contar"
-                          className="w-28 h-8 px-2 text-right font-mono text-xs font-black rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+                          className="w-28 h-8 px-2 text-right font-mono text-xs font-bold rounded-lg border border-slate-200 dark:border-slate-700 bg-background text-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
                         />
                       )}
                     </td>
@@ -651,12 +651,12 @@ export default function ConteoTerminalPage({ params: paramsPromise }: { params: 
                         <span className="text-slate-300 dark:text-slate-600">—</span>
                       )}
                     </td>
-                    <td className="py-2 px-2 text-center font-bold text-[10px] text-slate-500 uppercase">
+                    <td className="py-2 px-2 text-center font-bold text-[11px] text-slate-500 uppercase">
                       {item.unidad}
                     </td>
                     <td className="py-2 px-3 text-center whitespace-nowrap">
                       <span
-                        className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
+                        className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold ${
                           item.estado === 'CONTADO'
                             ? 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300'
                             : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
@@ -675,11 +675,11 @@ export default function ConteoTerminalPage({ params: paramsPromise }: { params: 
 
       {/* Modal Confirmar y Ajustar */}
       {isConfirmModalOpen && (
-        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-950/50-xs animate-in fade-in duration-150">
           <div className="bg-card border border-slate-200 dark:border-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden p-6 space-y-4">
             <div className="flex items-center gap-2.5 text-primary">
               <CheckCircle2 className="w-5 h-5" />
-              <h3 className="text-sm font-black text-slate-900 dark:text-slate-100">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                 Confirmar Sesión de Conteo {conteo.numero}
               </h3>
             </div>
@@ -722,7 +722,7 @@ export default function ConteoTerminalPage({ params: paramsPromise }: { params: 
                 type="button"
                 disabled={confirming}
                 onClick={handleConfirmarAjuste}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white text-xs font-bold shadow-md shadow-primary/20 hover:opacity-90 disabled:opacity-50"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white text-xs font-bold hover:opacity-90 disabled:opacity-50"
               >
                 {confirming ? (
                   <>
@@ -740,11 +740,11 @@ export default function ConteoTerminalPage({ params: paramsPromise }: { params: 
 
       {/* Modal Cancelar Conteo */}
       {isCancelModalOpen && (
-        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-950/50-xs animate-in fade-in duration-150">
           <div className="bg-card border border-slate-200 dark:border-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden p-6 space-y-4">
             <div className="flex items-center gap-2 text-rose-600">
               <XCircle className="w-5 h-5" />
-              <h3 className="text-sm font-black text-slate-900 dark:text-slate-100">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                 Cancelar Conteo {conteo.numero}
               </h3>
             </div>

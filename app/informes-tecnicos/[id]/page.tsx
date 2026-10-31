@@ -217,10 +217,10 @@ export default function InformeFormPage({ params: paramsPromise }: { params: Pro
         if (field.type === 'textarea') {
             return (
                 <div key={field.id} className="space-y-1">
-                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest">{field.label}</label>
+                    <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">{field.label}</label>
                     <textarea 
                         disabled={informe.status === 'finalizado'}
-                        className="w-full bg-background border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none min-h-[100px]"
+                        className="w-full bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none min-h-[100px]"
                         value={val}
                         onChange={(e) => handleFieldChange(field.id, e.target.value)}
                         placeholder={field.label}
@@ -251,7 +251,7 @@ export default function InformeFormPage({ params: paramsPromise }: { params: Pro
             return (
                 <div key={field.id} className="space-y-2 mt-4">
                     <div className="flex items-center justify-between">
-                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest">{field.label}</label>
+                        <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">{field.label}</label>
                         {informe.status !== 'finalizado' && (
                             <button onClick={() => addTableRow(field.id)} className="text-xs font-bold text-primary flex items-center gap-1 bg-primary/10 px-2 py-1 rounded-lg">
                                 <Plus className="w-3 h-3" /> Agregar fila
@@ -260,7 +260,7 @@ export default function InformeFormPage({ params: paramsPromise }: { params: Pro
                     </div>
                     <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-xl">
                         <table className="w-full text-left text-sm">
-                            <thead className="bg-slate-50 dark:bg-slate-800/50 text-[10px] uppercase font-black text-slate-500 tracking-widest">
+                            <thead className="bg-slate-50 dark:bg-slate-800/50 text-[11px] uppercase font-semibold text-slate-500 tracking-wider">
                                 <tr>
                                     {field.columns.map((col: any) => (
                                         <th key={col.id} className="px-3 py-2 border-b border-slate-200 dark:border-slate-700">{col.label}</th>
@@ -312,11 +312,11 @@ export default function InformeFormPage({ params: paramsPromise }: { params: Pro
         
         return (
             <div key={field.id} className="space-y-1">
-                <label className="text-xs font-black text-slate-500 uppercase tracking-widest">{field.label}</label>
+                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">{field.label}</label>
                 <input 
                     disabled={informe.status === 'finalizado'}
                     type={field.type === 'number' ? 'number' : 'text'}
-                    className="w-full bg-background border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                    className="w-full bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
                     value={val}
                     onChange={(e) => handleFieldChange(field.id, e.target.value)}
                     placeholder={field.label}
@@ -339,7 +339,7 @@ export default function InformeFormPage({ params: paramsPromise }: { params: Pro
 
     return (
         <>
-        <div className="w-full max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6 pb-24">
+        <div className="w-full max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-2 duration-200 space-y-6 pb-24">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-1">
@@ -347,14 +347,14 @@ export default function InformeFormPage({ params: paramsPromise }: { params: Pro
                         <ArrowLeft className="w-4 h-4" /> Volver
                     </Link>
                     <div className="flex items-center gap-2 mb-1">
-                        <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${
+                        <span className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold uppercase tracking-wider ${
                             informe.status === 'finalizado' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
                         }`}>
                             {informe.status === 'finalizado' ? '✓ Finalizado' : 'Borrador'}
                         </span>
-                        {informe.signature && <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest">Firmado</span>}
+                        {informe.signature && <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-lg text-[11px] font-semibold uppercase tracking-wider">Firmado</span>}
                     </div>
-                    <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight flex items-center gap-2">
+                    <h2 className="text-title text-slate-900 dark:text-slate-50 flex items-center gap-2">
                         <span className="text-primary font-mono">{informe.reportNumber}</span>
                         <span className="text-slate-300">|</span>
                         {informe.template?.name}
@@ -374,13 +374,13 @@ export default function InformeFormPage({ params: paramsPromise }: { params: Pro
 
             {/* General Info */}
             <div className="bg-card border border-slate-200 dark:border-slate-700 rounded-2xl p-5 sm:p-6 space-y-4">
-                <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-2">Información General</h3>
+                <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">Información General</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     <div className="space-y-1">
-                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Proyecto</label>
+                        <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Proyecto</label>
                         <select 
                             disabled={isReadOnly}
-                            className="w-full bg-background border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                            className="w-full bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
                             value={headerData.projectId} onChange={e => {
                                 const val = e.target.value;
                                 const proj = projects.find(p => p.id === val);
@@ -396,10 +396,10 @@ export default function InformeFormPage({ params: paramsPromise }: { params: Pro
                         </select>
                     </div>
                     <div className="space-y-1">
-                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Cliente</label>
+                        <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Cliente</label>
                         <select 
                             disabled={isReadOnly}
-                            className="w-full bg-background border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                            className="w-full bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
                             value={headerData.clientId} onChange={e => setHeaderData({...headerData, clientId: e.target.value})}
                         >
                             <option value="">Seleccionar...</option>
@@ -407,10 +407,10 @@ export default function InformeFormPage({ params: paramsPromise }: { params: Pro
                         </select>
                     </div>
                     <div className="space-y-1">
-                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Responsable</label>
+                        <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Responsable</label>
                         <select 
                             disabled={isReadOnly}
-                            className="w-full bg-background border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                            className="w-full bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none"
                             value={headerData.responsableId} onChange={e => setHeaderData({...headerData, responsableId: e.target.value})}
                         >
                             <option value="">Seleccionar...</option>
@@ -418,16 +418,16 @@ export default function InformeFormPage({ params: paramsPromise }: { params: Pro
                         </select>
                     </div>
                     <div className="space-y-1">
-                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Planta</label>
-                        <input disabled={isReadOnly} type="text" className="w-full bg-background border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm" value={headerData.planta} onChange={e => setHeaderData({...headerData, planta: e.target.value})} />
+                        <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Planta</label>
+                        <input disabled={isReadOnly} type="text" className="w-full bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm" value={headerData.planta} onChange={e => setHeaderData({...headerData, planta: e.target.value})} />
                     </div>
                     <div className="space-y-1">
-                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Sector</label>
-                        <input disabled={isReadOnly} type="text" className="w-full bg-background border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm" value={headerData.sector} onChange={e => setHeaderData({...headerData, sector: e.target.value})} />
+                        <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Sector</label>
+                        <input disabled={isReadOnly} type="text" className="w-full bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm" value={headerData.sector} onChange={e => setHeaderData({...headerData, sector: e.target.value})} />
                     </div>
                     <div className="space-y-1">
-                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Equipo / Activo</label>
-                        <input disabled={isReadOnly} type="text" className="w-full bg-background border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm" value={headerData.equipo} onChange={e => setHeaderData({...headerData, equipo: e.target.value})} />
+                        <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Equipo / Activo</label>
+                        <input disabled={isReadOnly} type="text" className="w-full bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm" value={headerData.equipo} onChange={e => setHeaderData({...headerData, equipo: e.target.value})} />
                     </div>
                 </div>
             </div>
@@ -435,7 +435,7 @@ export default function InformeFormPage({ params: paramsPromise }: { params: Pro
             {/* Dynamic Sections */}
             {informe.template?.schema?.sections?.map((section: any) => (
                 <div key={section.id} className="bg-card border border-slate-200 dark:border-slate-700 rounded-2xl p-5 sm:p-6 space-y-4">
-                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-2">{section.title}</h3>
+                    <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">{section.title}</h3>
                     <div className="grid grid-cols-1 gap-4">
                         {section.fields?.map((field: any) => renderField(field))}
                     </div>
@@ -445,7 +445,7 @@ export default function InformeFormPage({ params: paramsPromise }: { params: Pro
         </div>
 
         {/* Action Bar (Bottom) */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 z-50">
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-t border-slate-200 dark:border-slate-800 z-50">
             <div className="max-w-4xl mx-auto flex items-center justify-between">
                 <div>
                     {informe.status !== 'finalizado' ? (
@@ -481,7 +481,7 @@ export default function InformeFormPage({ params: paramsPromise }: { params: Pro
                             <button 
                                 onClick={handleFinalize} 
                                 disabled={saving || !informe.signature} 
-                                className="px-6 py-2 bg-primary text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl font-bold text-sm flex items-center gap-2 transition-colors"
+                                className="px-6 py-2 bg-primary text-white hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed rounded-xl font-bold text-sm flex items-center gap-2 transition-colors"
                             >
                                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />} Finalizar
                             </button>
@@ -493,11 +493,11 @@ export default function InformeFormPage({ params: paramsPromise }: { params: Pro
 
         {/* Delete Modal for Finalizado */}
         {showDeleteModal && (
-            <div className="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="fixed inset-0 z-[100] bg-slate-950/50 flex items-center justify-center p-4">
                 <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
                     <div className="p-6 space-y-4">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">Eliminar Informe Finalizado</h3>
+                            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Eliminar Informe Finalizado</h3>
                             <button onClick={() => setShowDeleteModal(false)} className="text-slate-400 hover:text-slate-600">
                                 <X className="w-5 h-5" />
                             </button>
@@ -507,9 +507,9 @@ export default function InformeFormPage({ params: paramsPromise }: { params: Pro
                         </div>
                         <div className="space-y-3">
                             <div className="space-y-1">
-                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Justificación</label>
+                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">Justificación</label>
                                 <textarea 
-                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm outline-none focus:border-primary"
+                                    className="w-full bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm outline-none focus:border-primary"
                                     placeholder="Motivo de la eliminación"
                                     value={deleteJustificacion}
                                     onChange={e => setDeleteJustificacion(e.target.value)}
@@ -517,10 +517,10 @@ export default function InformeFormPage({ params: paramsPromise }: { params: Pro
                                 />
                             </div>
                             <div className="space-y-1">
-                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest">DNI del Administrador / Supervisor</label>
+                                <label className="text-[13px] font-medium text-slate-700 dark:text-slate-200">DNI del Administrador / Supervisor</label>
                                 <input 
                                     type="text"
-                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm outline-none focus:border-primary"
+                                    className="w-full bg-card border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm outline-none focus:border-primary"
                                     placeholder="Ingresa tu DNI"
                                     value={deleteDni}
                                     onChange={e => setDeleteDni(e.target.value)}

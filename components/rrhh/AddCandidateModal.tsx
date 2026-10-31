@@ -152,7 +152,7 @@ export default function AddCandidateModal({
     });
 
     return (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-950/50 animate-in fade-in">
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
                 {/* Header */}
                 <div className="flex items-start justify-between p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
@@ -161,7 +161,7 @@ export default function AddCandidateModal({
                             <div className="p-2 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-xl">
                                 <UserPlus className="w-5 h-5" />
                             </div>
-                            <h2 className="text-lg font-black text-slate-800 dark:text-slate-100">
+                            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">
                                 Cargar Postulante
                             </h2>
                         </div>
@@ -390,7 +390,7 @@ export default function AddCandidateModal({
                                                 {candidate.tags && candidate.tags.length > 0 && (
                                                     <div className="flex flex-wrap gap-1 mt-1.5">
                                                         {candidate.tags.slice(0, 3).map((tag: any) => (
-                                                            <span key={tag.id} className="text-[9px] uppercase font-bold px-1.5 py-0.2 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-700">
+                                                            <span key={tag.id} className="text-[11px] uppercase font-bold px-1.5 py-0.2 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-700">
                                                                 {tag.name}
                                                             </span>
                                                         ))}
@@ -440,7 +440,7 @@ export default function AddCandidateModal({
                             type="submit"
                             form="add-candidate-form"
                             disabled={isLoading}
-                            className="px-5 py-2 text-sm font-bold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-colors flex items-center gap-2 disabled:opacity-50"
+                            className="px-5 py-2 text-sm font-bold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white transition-colors flex items-center gap-2 disabled:opacity-50"
                         >
                             {isLoading ? (
                                 <>

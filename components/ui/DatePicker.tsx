@@ -63,7 +63,7 @@ export function DatePicker({ value, onChange, label, placeholder = 'Seleccionar 
 
         for (let i = 0; i < 7; i++) {
             days.push(
-                <div key={i} className="text-center text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1.5">
+                <div key={i} className="text-center text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1.5">
                     {format(addDays(startDate, i), 'EEEEEE', { locale: es })}
                 </div>
             );
@@ -97,7 +97,7 @@ export function DatePicker({ value, onChange, label, placeholder = 'Seleccionar 
                         className={`w-8.5 h-8.5 md:w-9 md:h-9 flex items-center justify-center rounded-full text-xs md:text-sm font-bold transition-all mx-auto
                             ${!isCurrentMonth ? 'text-slate-300 dark:text-slate-600 font-medium' : ''}
                             ${isSelected 
-                                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' 
+                                ? 'bg-indigo-600 text-white shadow-md' 
                                 : isCurrentMonth 
                                     ? 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800' 
                                     : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
@@ -136,7 +136,7 @@ export function DatePicker({ value, onChange, label, placeholder = 'Seleccionar 
     return (
         <div className="relative" ref={containerRef}>
             {label && (
-                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1 mb-2">
+                <label className="flex items-center gap-2 px-1 mb-2 text-[13px] font-medium text-slate-700 dark:text-slate-200">
                     {label}
                 </label>
             )}
@@ -155,13 +155,13 @@ export function DatePicker({ value, onChange, label, placeholder = 'Seleccionar 
             {isOpen && (
                 <>
                     {/* Mobile Backdrop */}
-                    <div className="fixed inset-0 z-[105] bg-slate-900/40 backdrop-blur-sm md:hidden animate-in fade-in duration-200" onClick={() => setIsOpen(false)} />
+                    <div className="fixed inset-0 z-[105] bg-slate-950/50 md:hidden animate-in fade-in duration-200" onClick={() => setIsOpen(false)} />
                     
                     {/* Responsive Modal/Popover */}
                     <div className={`
                         fixed bottom-0 left-0 right-0 z-[110] bg-card rounded-t-3xl shadow-[0_-8px_30px_rgb(0,0,0,0.12)] border-t border-slate-200 dark:border-slate-700
                         md:absolute md:bottom-auto md:left-0 md:right-auto md:top-[calc(100%+6px)] md:w-[320px] md:rounded-2xl md:border md:origin-top-left
-                        animate-in md:zoom-in-95 slide-in-from-bottom-8 md:slide-in-from-bottom-0 duration-300 pb-[env(safe-area-inset-bottom)]
+                        animate-in md:zoom-in-95 slide-in-from-bottom-2 md:slide-in-from-bottom-0 duration-200 pb-[env(safe-area-inset-bottom)]
                     `}>
                         {/* Drag Handle for Mobile */}
                         <div className="w-10 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mt-3 mb-1 md:hidden" />

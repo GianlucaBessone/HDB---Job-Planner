@@ -98,7 +98,7 @@ export default function PortalDashboardPage() {
     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
     legend: {
       data: ['Abiertas', 'Cerradas'],
-      textStyle: { color: '#64748b', fontSize: 11 },
+      textStyle: { color: '#5a6372', fontSize: 11 },
       bottom: 0,
       itemHeight: 8,
       itemWidth: 12,
@@ -107,20 +107,20 @@ export default function PortalDashboardPage() {
     xAxis: {
       type: 'category',
       data: data?.graficoOts?.categories || [],
-      axisLine: { lineStyle: { color: '#cbd5e1' } },
-      axisLabel: { fontSize: 10, color: '#64748b' },
+      axisLine: { lineStyle: { color: '#c9ced6' } },
+      axisLabel: { fontSize: 10, color: '#5a6372' },
     },
     yAxis: {
       type: 'value',
-      splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } },
-      axisLabel: { fontSize: 10, color: '#64748b' },
+      splitLine: { lineStyle: { type: 'dashed', color: '#eef0f3' } },
+      axisLabel: { fontSize: 10, color: '#5a6372' },
     },
     series: [
       {
         name: 'Abiertas',
         type: 'bar',
         data: data?.graficoOts?.abiertas || [],
-        itemStyle: { color: '#3b82f6', borderRadius: [3, 3, 0, 0] },
+        itemStyle: { color: '#2f74da', borderRadius: [3, 3, 0, 0] },
       },
       {
         name: 'Cerradas',
@@ -144,7 +144,7 @@ export default function PortalDashboardPage() {
     },
     legend: {
       bottom: 0,
-      textStyle: { color: '#64748b', fontSize: 10 },
+      textStyle: { color: '#5a6372', fontSize: 10 },
       itemHeight: 8,
       itemWidth: 12,
     },
@@ -188,7 +188,7 @@ export default function PortalDashboardPage() {
     },
     legend: {
       data: ['Total', 'M. Obra', 'Materiales'],
-      textStyle: { color: '#64748b', fontSize: 11 },
+      textStyle: { color: '#5a6372', fontSize: 11 },
       bottom: 0,
       itemHeight: 8,
       itemWidth: 12,
@@ -197,17 +197,17 @@ export default function PortalDashboardPage() {
     xAxis: {
       type: 'category',
       data: data?.graficoCostos?.categories || [],
-      axisLine: { lineStyle: { color: '#cbd5e1' } },
-      axisLabel: { fontSize: 10, color: '#64748b' },
+      axisLine: { lineStyle: { color: '#c9ced6' } },
+      axisLabel: { fontSize: 10, color: '#5a6372' },
     },
     yAxis: {
       type: 'value',
       axisLabel: {
         fontSize: 10,
-        color: '#64748b',
+        color: '#5a6372',
         formatter: (val: number) => `$${(val / 1000).toFixed(0)}k`,
       },
-      splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } },
+      splitLine: { lineStyle: { type: 'dashed', color: '#eef0f3' } },
     },
     series: [
       {
@@ -223,7 +223,7 @@ export default function PortalDashboardPage() {
         type: 'line',
         smooth: true,
         data: data?.graficoCostos?.manoObra || [],
-        itemStyle: { color: '#6366f1' },
+        itemStyle: { color: '#2f74da' },
         lineStyle: { width: 1.5, type: 'dashed' },
       },
       {
@@ -258,18 +258,18 @@ export default function PortalDashboardPage() {
       type: 'value',
       axisLabel: {
         fontSize: 10,
-        color: '#64748b',
+        color: '#5a6372',
         formatter: (val: number) => `$${(val / 1000).toFixed(0)}k`,
       },
-      splitLine: { lineStyle: { type: 'dashed', color: '#f1f5f9' } },
+      splitLine: { lineStyle: { type: 'dashed', color: '#eef0f3' } },
     },
     yAxis: {
       type: 'category',
       data: sectorNames,
-      axisLine: { lineStyle: { color: '#cbd5e1' } },
+      axisLine: { lineStyle: { color: '#c9ced6' } },
       axisLabel: {
         fontSize: 10,
-        color: '#64748b',
+        color: '#5a6372',
         formatter: (val: string) => (val.length > 18 ? val.substring(0, 16) + '...' : val),
       },
     },
@@ -287,8 +287,8 @@ export default function PortalDashboardPage() {
       {/* Header Compacto */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
-            <Activity className="w-5 h-5 text-primary" />
+          <h1 className="text-title text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <Activity className="w-5 h-5 text-brand-600 dark:text-brand-300" />
             Dashboard Operativo & Económico
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -315,11 +315,11 @@ export default function PortalDashboardPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-2 text-xs font-medium">
           {/* Período: Año */}
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">Año</label>
+            <label className="mb-1 block text-[13px] font-medium text-slate-700 dark:text-slate-200">Año</label>
             <select
               value={year}
               onChange={(e) => setYear(parseInt(e.target.value, 10))}
-              className="w-full h-8 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full h-8 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-card text-slate-800 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary"
             >
               {[currentYear - 2, currentYear - 1, currentYear, currentYear + 1].map((y) => (
                 <option key={y} value={y}>
@@ -331,11 +331,11 @@ export default function PortalDashboardPage() {
 
           {/* Período: Trimestre */}
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">Trimestre</label>
+            <label className="mb-1 block text-[13px] font-medium text-slate-700 dark:text-slate-200">Trimestre</label>
             <select
               value={quarter}
               onChange={(e) => setQuarter(e.target.value)}
-              className="w-full h-8 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full h-8 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-card text-slate-800 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary"
             >
               <option value="TODOS">Año Completo</option>
               <option value="Q1">Q1 (Ene - Mar)</option>
@@ -347,11 +347,11 @@ export default function PortalDashboardPage() {
 
           {/* Proyecto */}
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">Proyecto</label>
+            <label className="mb-1 block text-[13px] font-medium text-slate-700 dark:text-slate-200">Proyecto</label>
             <select
               value={selectedProjectId}
               onChange={(e) => setSelectedProjectId(e.target.value)}
-              className="w-full h-8 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary truncate"
+              className="w-full h-8 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-card text-slate-800 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary truncate"
             >
               <option value="">Todos los Proyectos</option>
               {(data?.proyectosDisponibles || []).map((p: any) => (
@@ -364,11 +364,11 @@ export default function PortalDashboardPage() {
 
           {/* Sector / Ubicación */}
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">Sector / Ubicación</label>
+            <label className="mb-1 block text-[13px] font-medium text-slate-700 dark:text-slate-200">Sector / Ubicación</label>
             <select
               value={selectedSector}
               onChange={(e) => setSelectedSector(e.target.value)}
-              className="w-full h-8 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary truncate"
+              className="w-full h-8 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-card text-slate-800 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary truncate"
             >
               <option value="">Todos los Sectores</option>
               {(data?.sectoresDisponibles || []).map((s: string) => (
@@ -381,11 +381,11 @@ export default function PortalDashboardPage() {
 
           {/* Estado */}
           <div className="col-span-2 sm:col-span-4 lg:col-span-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">Estado</label>
+            <label className="mb-1 block text-[13px] font-medium text-slate-700 dark:text-slate-200">Estado</label>
             <select
               value={selectedEstado}
               onChange={(e) => setSelectedEstado(e.target.value)}
-              className="w-full h-8 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full h-8 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-card text-slate-800 dark:text-slate-100 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary"
             >
               <option value="TODOS">Todos los Estados</option>
               <option value="ABIERTA">Abiertas</option>
@@ -418,13 +418,13 @@ export default function PortalDashboardPage() {
             {/* OTs del Período */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-xs">
               <div className="flex items-center justify-between text-slate-400 mb-1">
-                <span className="text-[10px] uppercase font-bold tracking-wider">OTs Período</span>
+                <span className="text-[11px] uppercase font-bold tracking-wider">OTs Período</span>
                 <Layers className="w-3.5 h-3.5 text-blue-500" />
               </div>
-              <div className="text-xl font-black text-slate-900 dark:text-slate-100 leading-tight">
+              <div className="text-xl font-bold text-slate-900 dark:text-slate-100 leading-tight">
                 {kpis.totalOts}
               </div>
-              <div className="text-[10px] text-slate-500 mt-1 flex items-center gap-1 font-medium">
+              <div className="text-[11px] text-slate-500 mt-1 flex items-center gap-1 font-medium">
                 <span className="text-blue-600 font-bold">{kpis.abiertasActuales} act.</span> ·{' '}
                 <span className="text-emerald-600 font-bold">{kpis.cerradasPeriodo} cer.</span>
               </div>
@@ -433,13 +433,13 @@ export default function PortalDashboardPage() {
             {/* Horas Totales */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-xs">
               <div className="flex items-center justify-between text-slate-400 mb-1">
-                <span className="text-[10px] uppercase font-bold tracking-wider">Horas Acum.</span>
+                <span className="text-[11px] uppercase font-bold tracking-wider">Horas Acum.</span>
                 <Clock className="w-3.5 h-3.5 text-indigo-500" />
               </div>
-              <div className="text-xl font-black text-slate-900 dark:text-slate-100 font-mono leading-tight">
+              <div className="text-xl font-bold text-slate-900 dark:text-slate-100 font-mono leading-tight">
                 {kpis.totalHoras} h
               </div>
-              <div className="text-[10px] text-slate-500 mt-1 font-medium">
+              <div className="text-[11px] text-slate-500 mt-1 font-medium">
                 {kpis.tiempoPromedioHoras ? `~${kpis.tiempoPromedioHoras}h / res.` : 'Tiempo cargado'}
               </div>
             </div>
@@ -447,13 +447,13 @@ export default function PortalDashboardPage() {
             {/* Costo Total */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-xs">
               <div className="flex items-center justify-between text-slate-400 mb-1">
-                <span className="text-[10px] uppercase font-bold tracking-wider">Costo Total</span>
+                <span className="text-[11px] uppercase font-bold tracking-wider">Costo Total</span>
                 <DollarSign className="w-3.5 h-3.5 text-primary" />
               </div>
-              <div className="text-xl font-black text-primary font-mono leading-tight">
+              <div className="text-xl font-bold text-primary font-mono leading-tight">
                 ${kpis.costoTotal.toLocaleString('es-AR')}
               </div>
-              <div className="text-[10px] text-slate-500 mt-1 font-medium truncate">
+              <div className="text-[11px] text-slate-500 mt-1 font-medium truncate">
                 Mano de obra + Mat.
               </div>
             </div>
@@ -461,13 +461,13 @@ export default function PortalDashboardPage() {
             {/* Mano de Obra */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-xs">
               <div className="flex items-center justify-between text-slate-400 mb-1">
-                <span className="text-[10px] uppercase font-bold tracking-wider">Mano de Obra</span>
+                <span className="text-[11px] uppercase font-bold tracking-wider">Mano de Obra</span>
                 <Users className="w-3.5 h-3.5 text-indigo-600" />
               </div>
-              <div className="text-xl font-black text-indigo-600 dark:text-indigo-400 font-mono leading-tight">
+              <div className="text-xl font-bold text-indigo-600 dark:text-indigo-400 font-mono leading-tight">
                 ${kpis.manoObra.toLocaleString('es-AR')}
               </div>
-              <div className="text-[10px] text-slate-500 mt-1 font-medium truncate">
+              <div className="text-[11px] text-slate-500 mt-1 font-medium truncate">
                 {kpis.costoTotal > 0 ? `${Math.round((kpis.manoObra / kpis.costoTotal) * 100)}% del total` : '0%'}
               </div>
             </div>
@@ -475,13 +475,13 @@ export default function PortalDashboardPage() {
             {/* Materiales */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-xs">
               <div className="flex items-center justify-between text-slate-400 mb-1">
-                <span className="text-[10px] uppercase font-bold tracking-wider">Materiales</span>
+                <span className="text-[11px] uppercase font-bold tracking-wider">Materiales</span>
                 <Boxes className="w-3.5 h-3.5 text-amber-500" />
               </div>
-              <div className="text-xl font-black text-amber-600 dark:text-amber-400 font-mono leading-tight">
+              <div className="text-xl font-bold text-amber-600 dark:text-amber-400 font-mono leading-tight">
                 ${kpis.materiales.toLocaleString('es-AR')}
               </div>
-              <div className="text-[10px] text-slate-500 mt-1 font-medium truncate">
+              <div className="text-[11px] text-slate-500 mt-1 font-medium truncate">
                 {kpis.costoTotal > 0 ? `${Math.round((kpis.materiales / kpis.costoTotal) * 100)}% del total` : '0%'}
               </div>
             </div>
@@ -489,13 +489,13 @@ export default function PortalDashboardPage() {
             {/* Promedio / OT */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-xs">
               <div className="flex items-center justify-between text-slate-400 mb-1">
-                <span className="text-[10px] uppercase font-bold tracking-wider">Promedio / OT</span>
+                <span className="text-[11px] uppercase font-bold tracking-wider">Promedio / OT</span>
                 <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
               </div>
-              <div className="text-xl font-black text-slate-900 dark:text-slate-100 font-mono leading-tight">
+              <div className="text-xl font-bold text-slate-900 dark:text-slate-100 font-mono leading-tight">
                 ${kpis.costoPromedioOt.toLocaleString('es-AR')}
               </div>
-              <div className="text-[10px] text-purple-600 dark:text-purple-400 mt-1 font-semibold truncate">
+              <div className="text-[11px] text-purple-600 dark:text-purple-400 mt-1 font-semibold truncate">
                 {kpis.pendientesFirma} pend. firma
               </div>
             </div>
@@ -507,11 +507,11 @@ export default function PortalDashboardPage() {
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 shadow-xs">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
                 <div>
-                  <h3 className="text-xs font-black text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
                     <Activity className="w-3.5 h-3.5 text-blue-500" />
                     Órdenes de Trabajo por Período
                   </h3>
-                  <p className="text-[10px] text-slate-400">Volumen mensual de OTs abiertas vs cerradas</p>
+                  <p className="text-[11px] text-slate-400">Volumen mensual de OTs abiertas vs cerradas</p>
                 </div>
               </div>
               <div className="h-[220px]">
@@ -528,11 +528,11 @@ export default function PortalDashboardPage() {
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 shadow-xs">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
                 <div>
-                  <h3 className="text-xs font-black text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
                     <PieChart className="w-3.5 h-3.5 text-purple-500" />
                     Distribución por Estado
                   </h3>
-                  <p className="text-[10px] text-slate-400">Proporción de OTs abiertas, pausadas, pendientes y cerradas</p>
+                  <p className="text-[11px] text-slate-400">Proporción de OTs abiertas, pausadas, pendientes y cerradas</p>
                 </div>
               </div>
               <div className="h-[220px]">
@@ -549,11 +549,11 @@ export default function PortalDashboardPage() {
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 shadow-xs">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
                 <div>
-                  <h3 className="text-xs font-black text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
                     <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
                     Evolución Económica de Costos
                   </h3>
-                  <p className="text-[10px] text-slate-400">Costo total acumulado, mano de obra y materiales por mes</p>
+                  <p className="text-[11px] text-slate-400">Costo total acumulado, mano de obra y materiales por mes</p>
                 </div>
               </div>
               <div className="h-[220px]">
@@ -570,11 +570,11 @@ export default function PortalDashboardPage() {
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 shadow-xs">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-2">
                 <div>
-                  <h3 className="text-xs font-black text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
                     <MapPin className="w-3.5 h-3.5 text-primary" />
                     Costos por Sector / Ubicación
                   </h3>
-                  <p className="text-[10px] text-slate-400">Ranking de sectores o plantas con mayor costo acumulado</p>
+                  <p className="text-[11px] text-slate-400">Ranking de sectores o plantas con mayor costo acumulado</p>
                 </div>
               </div>
               <div className="h-[220px]">

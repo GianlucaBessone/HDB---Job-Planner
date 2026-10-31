@@ -50,7 +50,7 @@ export default async function DocumentPrintVerificationPage({
           ) : (
             <CheckCircle2 className="w-16 h-16 mx-auto mb-4 opacity-90" />
           )}
-          <h1 className="text-3xl font-black tracking-tight uppercase">
+          <h1 className="text-title">
             {isObsolete ? "Copia Obsoleta" : "Copia Vigente"}
           </h1>
           <p className="mt-2 text-sm font-medium opacity-90 uppercase tracking-wider">
@@ -61,7 +61,7 @@ export default async function DocumentPrintVerificationPage({
         {/* Document Details */}
         <div className="p-6 space-y-6">
           <div className="text-center pb-6 border-b border-slate-100 dark:border-slate-800">
-            <div className="inline-block px-3 py-1 bg-muted text-muted-foreground text-slate-600 dark:text-slate-300 font-bold text-xs rounded-full mb-3 uppercase tracking-wider">
+            <div className="inline-block px-3 py-1 bg-muted text-slate-600 dark:text-slate-300 font-bold text-xs rounded-full mb-3 uppercase tracking-wider">
               {document.codigoDocumental}
             </div>
             <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 leading-tight">
@@ -112,7 +112,7 @@ export default async function DocumentPrintVerificationPage({
           )}
         </div>
 
-        <div className="bg-background text-foreground/50 p-4 text-center border-t border-slate-100 dark:border-slate-800">
+        <div className="bg-background text-foreground p-4 text-center border-t border-slate-100 dark:border-slate-800">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
             HDB - Sistema de Gestión Integrado
           </p>

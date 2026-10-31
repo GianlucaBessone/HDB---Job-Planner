@@ -319,7 +319,7 @@ export default function PublicToolAuditPage() {
         <div className="w-full max-w-full min-w-0 font-sans pb-12 space-y-4 sm:space-y-6">
             
             {/* Auditor Top Banner */}
-            <div className="w-full min-w-0 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-md border border-indigo-900/30">
+            <div className="w-full min-w-0 bg-slate-900 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-md border border-indigo-900/30">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
                     <div className="flex items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
                         <button 
@@ -334,8 +334,8 @@ export default function PublicToolAuditPage() {
                         </div>
                         <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
-                                <span className="font-black tracking-tight text-sm sm:text-base truncate">HDB Servicios Eléctricos</span>
-                                <span className="bg-indigo-500/30 text-indigo-200 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border border-indigo-400/20 shrink-0">AUDIT SGI</span>
+                                <span className="font-bold tracking-tight text-sm sm:text-base truncate">HDB Servicios Eléctricos</span>
+                                <span className="bg-indigo-500/30 text-indigo-200 text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border border-indigo-400/20 shrink-0">AUDIT SGI</span>
                             </div>
                             <p className="text-[11px] text-indigo-200/80 font-medium truncate">Certificado de Verificación y Control</p>
                         </div>
@@ -345,7 +345,7 @@ export default function PublicToolAuditPage() {
                     <div className="w-full sm:w-auto">
                         <button
                             onClick={() => setIsScanning(true)}
-                            className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all shadow flex items-center justify-center gap-2 active:scale-95"
+                            className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all shadow flex items-center justify-center gap-2"
                         >
                             <Camera className="w-4 h-4" /> Escanear Otro QR
                         </button>
@@ -363,7 +363,7 @@ export default function PublicToolAuditPage() {
                             placeholder="Buscar otro ID (ej. EV5PR2RC)..."
                             value={searchId}
                             onChange={(e) => setSearchId(e.target.value)}
-                            className="w-full min-w-0 pl-9 pr-3 py-2 bg-background border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-medium focus:outline-none focus:border-indigo-500 transition-colors"
+                            className="w-full min-w-0 pl-9 pr-3 py-2 bg-card border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-medium focus:outline-none focus:border-indigo-500 transition-colors"
                         />
                     </div>
                     <button
@@ -390,7 +390,7 @@ export default function PublicToolAuditPage() {
                     <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 text-rose-600 rounded-full flex items-center justify-center mx-auto">
                         <XCircle className="w-7 h-7" />
                     </div>
-                    <h2 className="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-100">Elemento No Encontrado</h2>
+                    <h2 className="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-100">Elemento No Encontrado</h2>
                     <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto break-words">
                         No se encontró ningún registro para el identificador <span className="font-mono font-bold text-slate-800 dark:text-slate-200">"{toolId}"</span>.
                     </p>
@@ -405,7 +405,7 @@ export default function PublicToolAuditPage() {
 
             {/* Main Tool / Cart Data View */}
             {tool && !loading && (
-                <div className="space-y-4 sm:space-y-6 w-full min-w-0 animate-in fade-in duration-300">
+                <div className="space-y-4 sm:space-y-6 w-full min-w-0 animate-in fade-in duration-200">
                     
                     {/* Status Header Card */}
                     <div className="w-full min-w-0 bg-card text-card-foreground rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm border border-slate-200 dark:border-slate-800 relative">
@@ -414,21 +414,21 @@ export default function PublicToolAuditPage() {
                         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4 sm:pb-6 min-w-0">
                             <div className="min-w-0 flex-1">
                                 <div className="flex flex-wrap items-center gap-1.5 mb-2">
-                                    <span className="px-2 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-[10px] font-black uppercase tracking-wider border border-indigo-200/50 dark:border-indigo-800/50">
+                                    <span className="px-2 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-[11px] font-semibold uppercase tracking-wider border border-indigo-200/50 dark:border-indigo-800/50">
                                         {tool.tipo}
                                     </span>
                                     {tool.subtipo && (
-                                        <span className="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold uppercase tracking-wider">
+                                        <span className="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] font-bold uppercase tracking-wider">
                                             {tool.subtipo}
                                         </span>
                                     )}
                                     {tool.rubro && (
-                                        <span className="px-2 py-0.5 rounded-lg bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 text-[10px] font-bold uppercase tracking-wider">
+                                        <span className="px-2 py-0.5 rounded-lg bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 text-[11px] font-bold uppercase tracking-wider">
                                             {tool.rubro}
                                         </span>
                                     )}
                                 </div>
-                                <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight break-words">
+                                <h1 className="text-title text-slate-900 dark:text-white break-words">
                                     {tool.nombre}
                                 </h1>
                                 <div className="flex flex-wrap items-center gap-2 mt-1.5 text-xs text-slate-400 font-mono">
@@ -449,7 +449,7 @@ export default function PublicToolAuditPage() {
                                 </button>
                                 <button
                                     onClick={handlePrintAuditSheet}
-                                    className="flex-1 md:flex-initial px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow flex items-center justify-center gap-1.5 active:scale-95"
+                                    className="flex-1 md:flex-initial px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow flex items-center justify-center gap-1.5"
                                 >
                                     <Printer className="w-4 h-4" />
                                     <span>Imprimir Certificado</span>
@@ -471,14 +471,14 @@ export default function PublicToolAuditPage() {
                                                     <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${config.text}`} />
                                                 </div>
                                                 <div className="min-w-0 flex-1">
-                                                    <div className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-500">Estado de Control Metrológico</div>
-                                                    <div className={`text-sm sm:text-base md:text-lg font-black ${config.text} mt-0.5 break-words`}>
+                                                    <div className="text-[11px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-500">Estado de Control Metrológico</div>
+                                                    <div className={`text-sm sm:text-base md:text-lg font-bold ${config.text} mt-0.5 break-words`}>
                                                         {config.label}
                                                     </div>
                                                     {tool.diasRestantes !== null && tool.diasRestantes !== undefined && (
                                                         <div className="text-xs font-semibold text-slate-600 dark:text-slate-400 mt-0.5">
                                                             {tool.diasRestantes >= 0 ? (
-                                                                <span>Vigencia restante: <strong className="font-black text-slate-900 dark:text-slate-100">{tool.diasRestantes} días</strong></span>
+                                                                <span>Vigencia restante: <strong className="font-bold text-slate-900 dark:text-slate-100">{tool.diasRestantes} días</strong></span>
                                                             ) : (
                                                                 <span className="text-rose-600 font-bold">Vencido hace {Math.abs(tool.diasRestantes)} días</span>
                                                             )}
@@ -488,7 +488,7 @@ export default function PublicToolAuditPage() {
                                             </div>
 
                                             <div className="text-left sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-200/50 dark:border-slate-700/50 w-full sm:w-auto shrink-0">
-                                                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400 block">Frecuencia de Control</span>
+                                                <span className="text-[11px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400 block">Frecuencia de Control</span>
                                                 <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">Cada {tool.periodoControl} días</span>
                                             </div>
                                         </div>
@@ -507,16 +507,16 @@ export default function PublicToolAuditPage() {
                         {/* Inspection Timeline Metrics */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 mt-4 sm:mt-6 w-full min-w-0">
                             <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-background border border-slate-100 dark:border-slate-800 min-w-0">
-                                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1 mb-0.5 truncate">
+                                <span className="text-[11px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1 mb-0.5 truncate">
                                     <CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" /> Estado Físico
                                 </span>
-                                <span className={`text-xs sm:text-sm font-black truncate block ${tool.estadoHerramienta === 'APROBADA' ? 'text-emerald-600' : (tool.estadoHerramienta === 'RECHAZADA' ? 'text-rose-600' : 'text-slate-700 dark:text-slate-300')}`}>
+                                <span className={`text-xs sm:text-sm font-bold truncate block ${tool.estadoHerramienta === 'APROBADA' ? 'text-emerald-600' : (tool.estadoHerramienta === 'RECHAZADA' ? 'text-rose-600' : 'text-slate-700 dark:text-slate-300')}`}>
                                     {tool.estadoHerramienta || 'No Verificada'}
                                 </span>
                             </div>
 
                             <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-background border border-slate-100 dark:border-slate-800 min-w-0">
-                                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1 mb-0.5 truncate">
+                                <span className="text-[11px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1 mb-0.5 truncate">
                                     <Calendar className="w-3 h-3 text-indigo-500 shrink-0" /> Último Control
                                 </span>
                                 <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 truncate block">
@@ -525,7 +525,7 @@ export default function PublicToolAuditPage() {
                             </div>
 
                             <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-background border border-slate-100 dark:border-slate-800 min-w-0">
-                                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1 mb-0.5 truncate">
+                                <span className="text-[11px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1 mb-0.5 truncate">
                                     <User className="w-3 h-3 text-indigo-500 shrink-0" /> Responsable
                                 </span>
                                 <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 truncate block">
@@ -534,10 +534,10 @@ export default function PublicToolAuditPage() {
                             </div>
 
                             <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-background border border-slate-100 dark:border-slate-800 min-w-0">
-                                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1 mb-0.5 truncate">
+                                <span className="text-[11px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1 mb-0.5 truncate">
                                     <Clock className="w-3 h-3 text-amber-500 shrink-0" /> Próx. Control
                                 </span>
-                                <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-slate-100 truncate block">
+                                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 truncate block">
                                     {formatDate(tool.proximoControlFecha)}
                                 </span>
                             </div>
@@ -572,7 +572,7 @@ export default function PublicToolAuditPage() {
                         <div className="w-full min-w-0 bg-card text-card-foreground rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm border border-slate-200 dark:border-slate-800 space-y-4 sm:space-y-6">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3 sm:pb-4 min-w-0">
                                 <div className="min-w-0">
-                                    <h2 className="text-base sm:text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                                    <h2 className="text-base sm:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                         <Package className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-500 shrink-0" />
                                         Contenido del Carro de Herramientas
                                     </h2>
@@ -612,7 +612,7 @@ export default function PublicToolAuditPage() {
                                 {/* 1. Tools under active control (FIRST, sorted A-Z) */}
                                 {conControlList.length > 0 && (
                                     <div className="space-y-3 w-full min-w-0">
-                                        <h3 className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
+                                        <h3 className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
                                             <ShieldCheck className="w-4 h-4 shrink-0" /> 1. Herramientas Sujetas a Control ({conControlList.length})
                                         </h3>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full min-w-0">
@@ -626,25 +626,25 @@ export default function PublicToolAuditPage() {
                                                     >
                                                         <div className="flex justify-between items-start gap-2 mb-2 min-w-0">
                                                             <div className="min-w-0 flex-1">
-                                                                <h4 className="text-xs sm:text-sm font-black text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 transition-colors break-words">
+                                                                <h4 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 transition-colors break-words">
                                                                     {h.nombre}
                                                                 </h4>
-                                                                <span className="text-[10px] font-bold font-mono text-slate-400 block mt-0.5 truncate">
+                                                                <span className="text-[11px] font-bold font-mono text-slate-400 block mt-0.5 truncate">
                                                                     ID: {h.id} {h.marca ? `• ${h.marca}` : ''}
                                                                 </span>
                                                             </div>
-                                                            <div className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider shrink-0 ${hConfig.bg}`}>
+                                                            <div className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold uppercase tracking-wider shrink-0 ${hConfig.bg}`}>
                                                                 {hConfig.label}
                                                             </div>
                                                         </div>
 
                                                         <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 text-[11px] min-w-0">
                                                             <div className="min-w-0">
-                                                                <span className="text-slate-400 block text-[9px] font-bold uppercase truncate">Último Control</span>
+                                                                <span className="text-slate-400 block text-[11px] font-bold uppercase truncate">Último Control</span>
                                                                 <span className="font-bold text-slate-700 dark:text-slate-300 truncate block">{formatDate(h.ultimoControlFecha)}</span>
                                                             </div>
                                                             <div className="min-w-0">
-                                                                <span className="text-slate-400 block text-[9px] font-bold uppercase truncate">Próximo Vto.</span>
+                                                                <span className="text-slate-400 block text-[11px] font-bold uppercase truncate">Próximo Vto.</span>
                                                                 <span className="font-bold text-slate-700 dark:text-slate-300 truncate block">{formatDate(h.proximoControlFecha)}</span>
                                                             </div>
                                                         </div>
@@ -658,7 +658,7 @@ export default function PublicToolAuditPage() {
                                 {/* 2. Tools without periodic control (SECOND, sorted A-Z) */}
                                 {sinControlList.length > 0 && (
                                     <div className="space-y-3 pt-2 w-full min-w-0">
-                                        <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                                        <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
                                             <Wrench className="w-4 h-4 shrink-0" /> 2. Otras Herramientas y Accesorios ({sinControlList.length})
                                         </h3>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 w-full min-w-0">
@@ -669,7 +669,7 @@ export default function PublicToolAuditPage() {
                                                     className="p-2.5 sm:p-3 rounded-xl bg-background border border-slate-200/80 dark:border-slate-800 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors min-w-0"
                                                 >
                                                     <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate mr-2">{h.nombre}</span>
-                                                    <span className="text-[9px] font-mono font-bold text-slate-400 shrink-0">{h.id}</span>
+                                                    <span className="text-[11px] font-mono font-bold text-slate-400 shrink-0">{h.id}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -682,7 +682,7 @@ export default function PublicToolAuditPage() {
                     {/* Recent Verification History */}
                     {tool.verificaciones && tool.verificaciones.length > 0 && (
                         <div className="w-full min-w-0 bg-card text-card-foreground rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm border border-slate-200 dark:border-slate-800 space-y-3">
-                            <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+                            <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                 <Clock className="w-4 h-4 text-indigo-500 shrink-0" />
                                 Historial Reciente de Verificaciones
                             </h3>
@@ -706,7 +706,7 @@ export default function PublicToolAuditPage() {
                                                 <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block truncate">
                                                     Verificación {v.estado}
                                                 </span>
-                                                <span className="text-[10px] sm:text-[11px] text-slate-400 block truncate">
+                                                <span className="text-[11px] sm:text-[11px] text-slate-400 block truncate">
                                                     Por: <strong className="text-slate-600 dark:text-slate-300 font-semibold">{v.operadorNombre}</strong>
                                                 </span>
                                             </div>
@@ -723,7 +723,7 @@ export default function PublicToolAuditPage() {
                     {/* Audit Verification Footer Stamp */}
                     <div className="text-center py-4 border-t border-slate-200 dark:border-slate-800 text-[11px] sm:text-xs text-slate-400 space-y-0.5">
                         <p className="font-semibold">HDB Servicios Eléctricos — Sistema de Gestión Integral de Calidad y Seguridad</p>
-                        <p className="text-[10px]">Registro público oficial en tiempo real para auditorías y fiscalizaciones.</p>
+                        <p className="text-[11px]">Registro público oficial en tiempo real para auditorías y fiscalizaciones.</p>
                     </div>
                 </div>
             )}
@@ -792,7 +792,7 @@ function PublicDetailScannerModal({ onScan, onClose }: { onScan: (text: string) 
     }, [containerId, onScan, onClose]);
 
     return (
-        <div className="fixed inset-0 z-[200] bg-slate-900/90 backdrop-blur-md flex flex-col items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[200] bg-slate-950/50 flex flex-col items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
             <div className="w-full max-w-sm bg-card text-card-foreground rounded-3xl overflow-hidden shadow-2xl space-y-3">
                 <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-xs sm:text-sm">
@@ -815,7 +815,7 @@ function PublicDetailScannerModal({ onScan, onClose }: { onScan: (text: string) 
             </div>
             <button
                 onClick={onClose}
-                className="mt-4 px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-full font-bold text-xs uppercase tracking-widest transition-all"
+                className="mt-4 px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-full font-bold text-xs transition-all"
             >
                 Cerrar
             </button>

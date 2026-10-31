@@ -27,7 +27,7 @@ export default async function ArticuloPage({ params: paramsPromise }: { params: 
   });
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+    <div className="max-w-4xl mx-auto space-y-8">
       {/* Navegación Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm font-bold text-slate-500">
         <Link href="/centro-ayuda" className="hover:text-blue-600 transition-colors">
@@ -43,7 +43,7 @@ export default async function ArticuloPage({ params: paramsPromise }: { params: 
 
       {/* Encabezado del Artículo */}
       <div className="space-y-4">
-        <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100">
+        <h1 className="text-title text-slate-800 dark:text-slate-100">
           {article.title}
         </h1>
         <p className="text-base text-slate-500 dark:text-slate-400">
@@ -58,7 +58,7 @@ export default async function ArticuloPage({ params: paramsPromise }: { params: 
           {/* Cómo Acceder */}
           {article.comoAcceder && (
             <div className="bg-blue-50 dark:bg-blue-900/20 p-5 rounded-2xl border border-blue-100 dark:border-blue-800">
-              <h3 className="text-xs font-bold text-blue-600 uppercase tracking-widest mb-2 flex items-center gap-2">
+              <h3 className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-2 flex items-center gap-2">
                 <Info className="w-4 h-4" /> Cómo acceder
               </h3>
               <p className="text-sm text-slate-700 dark:text-slate-200">{article.comoAcceder}</p>
@@ -68,7 +68,7 @@ export default async function ArticuloPage({ params: paramsPromise }: { params: 
           {/* Objetivo */}
           {article.objetivo && (
             <div className="bg-emerald-50 dark:bg-emerald-900/20 p-5 rounded-2xl border border-emerald-100 dark:border-emerald-800">
-              <h3 className="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2 flex items-center gap-2">
+              <h3 className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-2 flex items-center gap-2">
                 <CheckCircle className="w-4 h-4" /> Objetivo del Módulo
               </h3>
               <p className="text-sm text-slate-700 dark:text-slate-200">{article.objetivo}</p>
@@ -85,7 +85,7 @@ export default async function ArticuloPage({ params: paramsPromise }: { params: 
           {/* Buenas Prácticas */}
           {article.buenasPracticas && (
             <div className="bg-amber-50 dark:bg-amber-900/20 p-5 rounded-2xl border border-amber-100 dark:border-amber-800 mt-8">
-              <h3 className="text-xs font-black text-amber-600 uppercase tracking-widest mb-2 flex items-center gap-2">
+              <h3 className="text-xs font-semibold text-amber-600 uppercase tracking-wider mb-2 flex items-center gap-2">
                 Buenas Prácticas
               </h3>
               <div className="prose prose-sm prose-slate dark:prose-invert">
@@ -97,8 +97,8 @@ export default async function ArticuloPage({ params: paramsPromise }: { params: 
           {/* FAQs */}
           {article.faqs.length > 0 && (
             <div className="pt-8 border-t border-slate-200 dark:border-slate-700">
-              <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-6">
-                <HelpCircle className="w-6 h-6 text-slate-400" />
+              <h2 className="text-title text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-6">
+                <HelpCircle className="text-slate-400 w-5 h-5 text-brand-600 dark:text-brand-300" />
                 Preguntas Frecuentes
               </h2>
               <div className="space-y-4">
