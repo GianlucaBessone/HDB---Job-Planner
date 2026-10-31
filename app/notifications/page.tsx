@@ -56,23 +56,19 @@ function NotificationsContent() {
         });
     };
 
+    // Archiva todas las notificaciones del usuario (no solo la pestaña visible),
+    // como indica el modal de confirmación. Sin `ids`, la API archiva todo.
     const handleClearAll = async () => {
         if (!user) return;
-        const currentDisplayed = getDisplayedNotifications();
-        const idsToClear = currentDisplayed.map(n => n.id);
-        if (idsToClear.length === 0) return;
 
         try {
             const res = await safeApiRequest(`/api/activities?operatorId=${user.id}`, {
                 method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ids: idsToClear })
             });
-            if (res.ok) {
-                setNotifications(prev => prev.filter(n => !idsToClear.includes(n.id)));
-                showToast('Actividad limpiada', 'success');
-                window.dispatchEvent(new Event('notifications-updated'));
-            }
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            setNotifications([]);
+            showToast('Actividad limpiada', 'success');
+            window.dispatchEvent(new Event('notifications-updated'));
         } catch (error) {
             showToast('Error al limpiar actividad', 'error');
         }
@@ -174,11 +170,10 @@ function NotificationsContent() {
             const res = await safeApiRequest(`/api/activities/${recipientId}`, {
                 method: 'DELETE',
             });
-            if (res.ok) {
-                setNotifications(prev => prev.filter(n => n.id !== id));
-                showToast('Actividad eliminada', 'success');
-                window.dispatchEvent(new Event('notifications-updated'));
-            }
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            setNotifications(prev => prev.filter(n => n.id !== id));
+            showToast('Actividad eliminada', 'success');
+            window.dispatchEvent(new Event('notifications-updated'));
         } catch (error) {
             showToast('Error al eliminar actividad', 'error');
         }
