@@ -41,6 +41,7 @@ Una **"H" cuyo travesaño es una chispa**: dos verticales firmes unidas por una 
 - Tamaños: 28 px en barras de navegación, 36 px en el ingreso, 48 px en la pantalla de carga.
 - Área de respeto: la mitad del lado del cuadrado.
 - No rotar, no aplicar degradados ni sombras, no cambiar el trazo.
+- Los íconos de la PWA (`public/images/**`) y el favicon (`public/icon.svg`) salen del mismo isotipo. Si cambia, regeneralos con `node scripts/pwa/generate-icons.js`.
 
 ### Logotipo
 
